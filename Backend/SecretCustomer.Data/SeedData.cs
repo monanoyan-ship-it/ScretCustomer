@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using System.Text.Json;
 
 namespace SecretCustomer.Data;
 
@@ -171,7 +172,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Masalar temiz mi?",
-                    QuestionType = QuestionType.YesNo,
+                    Type = QuestionType.Likert,
                     Points = 5,
                     AllowNA = false,
                     Order = 1,
@@ -182,7 +183,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Tuvalet temizliği nasıl?",
-                    QuestionType = QuestionType.Rating,
+                    Type = QuestionType.Star,
                     Points = 10,
                     AllowNA = false,
                     Order = 2,
@@ -193,7 +194,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Genel temizlik hakkında ek gözlemler",
-                    QuestionType = QuestionType.Text,
+                    Type = QuestionType.Text,
                     Points = 0,
                     AllowNA = false,
                     Order = 3,
@@ -206,10 +207,10 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Karşılama nasıldı?",
-                    QuestionType = QuestionType.MultipleChoice,
+                    Type = QuestionType.MultipleChoice,
                     Points = 5,
                     AllowNA = false,
-                    Options = "Mükemmel,İyi,Orta,Kötü",
+                    OptionsJson = JsonSerializer.Serialize(new[] { "Mükemmel", "İyi", "Orta", "Kötü" }),
                     Order = 1,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -218,7 +219,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Sipariş alma süresi uygun muydu?",
-                    QuestionType = QuestionType.YesNo,
+                    Type = QuestionType.Likert,
                     Points = 5,
                     AllowNA = true,
                     Order = 2,
@@ -229,7 +230,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Personel ilgisi nasıldı?",
-                    QuestionType = QuestionType.Rating,
+                    Type = QuestionType.Star,
                     Points = 10,
                     AllowNA = false,
                     Order = 3,
@@ -242,7 +243,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Yemek sıcaklığı uygun muydu?",
-                    QuestionType = QuestionType.YesNo,
+                    Type = QuestionType.Likert,
                     Points = 5,
                     AllowNA = false,
                     Order = 1,
@@ -253,7 +254,7 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Yemek lezzeti nasıldı?",
-                    QuestionType = QuestionType.Rating,
+                    Type = QuestionType.Star,
                     Points = 15,
                     AllowNA = false,
                     Order = 2,
@@ -264,10 +265,10 @@ public static class SeedData
                     Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Porsiyon büyüklüğü nasıldı?",
-                    QuestionType = QuestionType.MultipleChoice,
+                    Type = QuestionType.MultipleChoice,
                     Points = 5,
                     AllowNA = true,
-                    Options = "Çok Büyük,Uygun,Küçük,Çok Küçük",
+                    OptionsJson = JsonSerializer.Serialize(new[] { "Çok Büyük", "Uygun", "Küçük", "Çok Küçük" }),
                     Order = 3,
                     CreatedAt = DateTime.UtcNow
                 }
@@ -283,6 +284,8 @@ public static class SeedData
                 Id = Guid.NewGuid(),
                 Name = "2025 Q1 Restaurant Evaluation",
                 Description = "2025 yılı 1. çeyrek restaurant değerlendirme projesi",
+                ChecklistId = checklist.Id,
+                AssignmentType = AssignmentType.Internal,
                 StartDate = DateTime.UtcNow,
                 EndDate = DateTime.UtcNow.AddMonths(3),
                 IsActive = true,
@@ -300,10 +303,8 @@ public static class SeedData
                 ProjectId = project.Id,
                 BranchId = branch1.Id,
                 ChecklistId = checklist.Id,
-                EvaluatorId = evaluator1.Id,
-                AssignmentType = AssignmentType.Internal,
-                Status = EvaluationStatus.Pending,
-                Deadline = DateTime.UtcNow.AddDays(7),
+                AssignedUserId = evaluator1.Id,
+                DueDate = DateTime.UtcNow.AddDays(7),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -313,10 +314,8 @@ public static class SeedData
                 ProjectId = project.Id,
                 BranchId = branch2.Id,
                 ChecklistId = checklist.Id,
-                EvaluatorId = evaluator2.Id,
-                AssignmentType = AssignmentType.Internal,
-                Status = EvaluationStatus.Pending,
-                Deadline = DateTime.UtcNow.AddDays(7),
+                AssignedUserId = evaluator2.Id,
+                DueDate = DateTime.UtcNow.AddDays(7),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -327,10 +326,8 @@ public static class SeedData
                 ProjectId = project.Id,
                 BranchId = branch3.Id,
                 ChecklistId = checklist.Id,
-                AssignmentType = AssignmentType.External,
-                Status = EvaluationStatus.Pending,
                 UniqueLink = Guid.NewGuid().ToString("N"),
-                Deadline = DateTime.UtcNow.AddDays(14),
+                DueDate = DateTime.UtcNow.AddDays(14),
                 CreatedAt = DateTime.UtcNow
             };
 
