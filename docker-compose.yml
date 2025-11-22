@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: secretcustomer-db
+    environment:
+      POSTGRES_DB: SecretCustomerDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-SecurePassword123!}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - secretcustomer-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # .NET API
+  api:
+    build:
+      context: ./Backend
+      dockerfile: SecretCustomer.API/Dockerfile
+    container_name: secretcustomer-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=SecretCustomerDB;Username=postgres;Password=${DB_PASSWORD:-SecurePassword123!}
+      - JwtSettings__SecretKey=${JWT_SECRET:-YourSuperSecretKeyForJWT_MinLength32Characters!}
+      - JwtSettings__Issuer=SecretCustomerAPI
+      - JwtSettings__Audience=SecretCustomerClient
+      - JwtSettings__ExpirationMinutes=1440
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - secretcustomer-network
+    restart: unless-stopped
+
+  # Frontend (Static files served by nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: secretcustomer-frontend
+    volumes:
+      - ./Frontend/wwwroot:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - secretcustomer-network
+    restart: unless-stopped
+
+networks:
+  secretcustomer-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

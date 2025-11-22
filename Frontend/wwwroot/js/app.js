@@ -23,6 +23,7 @@ function AppViewModel() {
     // Page ViewModels
     self.dashboardViewModel = null;
     self.checklistsViewModel = null;
+    self.projectsViewModel = null;
     self.evaluationsViewModel = null;
     self.assignmentsViewModel = null;
 
@@ -65,6 +66,7 @@ function AppViewModel() {
         // Clean up ViewModels
         self.dashboardViewModel = null;
         self.checklistsViewModel = null;
+        self.projectsViewModel = null;
         self.evaluationsViewModel = null;
         self.assignmentsViewModel = null;
     };
@@ -94,6 +96,10 @@ function AppViewModel() {
             self.checklistsViewModel = new ChecklistsViewModel();
         }
 
+        if (page === 'projects' && !self.projectsViewModel) {
+            self.projectsViewModel = new ProjectsViewModel();
+        }
+
         if (page === 'evaluations' && !self.evaluationsViewModel) {
             self.evaluationsViewModel = new EvaluationsViewModel();
         }
@@ -109,6 +115,10 @@ function AppViewModel() {
 
         if (page === 'checklists' && self.checklistsViewModel) {
             self.checklistsViewModel.loadChecklists();
+        }
+
+        if (page === 'projects' && self.projectsViewModel) {
+            self.projectsViewModel.loadProjects();
         }
 
         if (page === 'evaluations' && self.evaluationsViewModel) {

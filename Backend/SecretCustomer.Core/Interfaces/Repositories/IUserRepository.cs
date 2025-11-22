@@ -1,12 +1,24 @@
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.Interfaces.Repositories;
 
 public interface IUserRepository
 {
+    // Authentication related
     Task<User?> GetByUsernameAsync(string username);
     Task<User?> GetByEmailAsync(string email);
-    Task<User> CreateAsync(User user);
     Task<bool> ExistsByUsernameAsync(string username);
     Task<bool> ExistsByEmailAsync(string email);
+
+    // CRUD operations
+    Task<User?> GetByIdAsync(Guid id);
+    Task<IEnumerable<User>> GetAllAsync();
+    Task<IEnumerable<User>> GetByRoleAsync(UserRole role);
+    Task<IEnumerable<User>> GetByBranchAsync(Guid branchId);
+    Task<IEnumerable<User>> GetActiveUsersAsync();
+    Task<User> CreateAsync(User user);
+    Task<User> UpdateAsync(User user);
+    Task DeleteAsync(Guid id);
+    Task<bool> ChangePasswordAsync(Guid userId, string newPasswordHash);
 }

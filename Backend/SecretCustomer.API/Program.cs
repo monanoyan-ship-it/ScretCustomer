@@ -51,6 +51,7 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
@@ -59,6 +60,9 @@ builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IEvaluationService, EvaluationService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // CORS Configuration
 builder.Services.AddCors(options =>
@@ -103,3 +107,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Make the implicit Program class accessible to integration tests
+public partial class Program { }
