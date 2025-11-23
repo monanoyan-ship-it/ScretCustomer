@@ -1,0 +1,123 @@
+@model ProjectIndexViewModel
+@{
+    ViewData["Title"] = "Projeler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Projeler</h2>
+    <div>
+        <div class="form-check form-switch d-inline-block me-3">
+            <input class="form-check-input" type="checkbox" id="includeInactive"
+                   @(Model.IncludeInactive ? "checked" : "")
+                   onchange="window.location.href='@Url.Action("Index")?includeInactive=' + this.checked">
+            <label class="form-check-label" for="includeInactive">
+                Kapalı Projeleri Göster
+            </label>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Yeni Proje
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    @if (Model.Projects.Any())
+    {
+        @foreach (var project in Model.Projects)
+        {
+            var completionPercentage = project.TotalAssignments > 0
+                ? (project.CompletedAssignments * 100.0 / project.TotalAssignments)
+                : 0;
+
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">@project.Name</h5>
+                            <span class="badge @(project.IsActive ? "bg-success" : "bg-secondary")">
+                                @(project.IsActive ? "Aktif" : "Kapalı")
+                            </span>
+                        </div>
+
+                        <p class="card-text text-muted small">@(project.Description ?? "Açıklama yok")</p>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">İlerleme</small>
+                                <small class="text-muted">
+                                    @project.CompletedAssignments / @project.TotalAssignments
+                                </small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: @completionPercentage.ToString("F0")%"
+                                     aria-valuenow="@completionPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-list-check"></i> @project.ChecklistName<br>
+                                <i class="bi bi-person-badge"></i> @project.AssignmentType<br>
+                                <i class="bi bi-calendar-range"></i>
+                                @project.StartDate.ToString("dd.MM.yyyy") - @project.EndDate.ToString("dd.MM.yyyy")
+                            </small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            @if (project.IsActive)
+                            {
+                                <a asp-action="Edit" asp-route-id="@project.Id" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Close" asp-route-id="@project.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-warning"
+                                            onclick="return confirm('Bu projeyi kapatmak istediğinizden emin misiniz?')">
+                                        <i class="bi bi-lock"></i>
+                                    </button>
+                                </form>
+                            }
+                            <form asp-action="Delete" asp-route-id="@project.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Bu projeyi silmek istediğinizden emin misiniz?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> Oluşturulma: @project.CreatedAt.ToString("dd.MM.yyyy")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz proje bulunmamaktadır.
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,122 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2 class="mb-4">Dashboard</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Toplam Değerlendirme</h6>
+                        <h3>@Model.TotalEvaluations</h3>
+                    </div>
+                    <i class="bi bi-clipboard-check fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Ortalama Puan</h6>
+                        <h3>@Model.AverageScore.ToString("F1")</h3>
+                    </div>
+                    <i class="bi bi-star-fill fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card bg-info text-white shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Değişim</h6>
+                        <h3>
+                            @Model.PercentageChange.ToString("F1")%
+                            @if (Model.PercentageChange > 0)
+                            {
+                                <i class="bi bi-arrow-up"></i>
+                            }
+                            else if (Model.PercentageChange < 0)
+                            {
+                                <i class="bi bi-arrow-down"></i>
+                            }
+                        </h3>
+                    </div>
+                    <i class="bi bi-graph-up fs-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">En İyi 5 Şube</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopBranches.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var branch in Model.TopBranches)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@branch.BranchName</span>
+                                <span class="badge bg-success rounded-pill">@branch.AverageScore.ToString("F1")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Henüz veri bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Geliştirilmesi Gereken 5 Şube</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.BottomBranches.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var branch in Model.BottomBranches)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@branch.BranchName</span>
+                                <span class="badge bg-warning rounded-pill">@branch.AverageScore.ToString("F1")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Henüz veri bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

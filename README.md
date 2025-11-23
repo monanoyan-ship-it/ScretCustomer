@@ -146,14 +146,42 @@ Assignment *--1 User (Evaluator)
 Assignment 1--1 Evaluation 1--* Answer *--1 Question
 ```
 
+## 📅 Changelog (Son Değişiklikler)
+
+### 2025-01-23 - MVC Yapısı ve Sidebar Menü
+**Değişiklikler:**
+- ✅ **Database resetlendi** - Tüm tablolar yeniden oluşturuldu, seed data eklendi
+- ✅ **MVC yapısı düzenlendi**:
+  - API controller'lar kaldırıldı (artık sadece MVC kullanılıyor)
+  - MVC controller'lar `Controllers/MVC/` → `Controllers/` taşındı
+  - Namespace'ler güncellendi
+- ✅ **Bootstrap 5.0 Sidebar menü eklendi**:
+  - Sol tarafta sabit sidebar (280px genişlik)
+  - Üst bar sadece kullanıcı bilgisi için
+  - Aktif sayfa vurgulama
+  - Responsive tasarım
+- ✅ **Test yapısı basitleştirildi**:
+  - `SecretCustomer.API.Tests` kaldırıldı (API controller'lar olmadığı için)
+  - `SecretCustomer.Services.Tests` tutuldu (6 test başarılı)
+- ✅ **Program.cs temizlendi**:
+  - API controller registration kaldırıldı
+  - OpenAPI/Swagger kaldırıldı
+  - Sadece MVC routing kaldı
+
+**Önemli Notlar:**
+- Admin şifresi: `Admin@123`
+- Uygulama artık tamamen MVC tabanlı (API endpoints kaldırıldı)
+- Sidebar'da rol bazlı menü itemleri gösteriliyor
+- Services katmanı testleri tüm business logic'i kapsar
+
 ## 🔐 Authentication & Authorization
 
-- **JWT Bearer Token** authentication
+- **Cookie-based** authentication (MVC için)
 - **BCrypt** password hashing
 - **Role-based** access control
-- Token expiration: 24 saat (configurable)
+- Session timeout: 24 saat (configurable)
 
-### API Endpoints
+### Önceki API Endpoints (Artık Kullanılmıyor)
 
 #### Auth
 - `POST /api/auth/login` - Kullanıcı girişi

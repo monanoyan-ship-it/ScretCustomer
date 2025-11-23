@@ -1,0 +1,72 @@
+@model ChecklistIndexViewModel
+@{
+    ViewData["Title"] = "Kontrol Listeleri";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Kontrol Listeleri</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Yeni Kontrol Listesi
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    @if (Model.Checklists.Any())
+    {
+        @foreach (var checklist in Model.Checklists)
+        {
+            <div class="col-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">@checklist.Name</h5>
+                                <p class="card-text text-muted">@checklist.Description</p>
+                                <span class="badge bg-info">@checklist.Sections.Count Bölüm</span>
+                                <span class="badge bg-secondary ms-2">v@checklist.Version</span>
+                            </div>
+                            <div class="btn-group">
+                                <a asp-action="View" asp-route-id="@checklist.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Görüntüle
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@checklist.Id" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </a>
+                                <form asp-action="Clone" asp-route-id="@checklist.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-info" onclick="return confirm('Bu kontrol listesini klonlamak istediğinizden emin misiniz?')">
+                                        <i class="bi bi-files"></i> Klonla
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz kontrol listesi bulunmamaktadır.
+            </div>
+        </div>
+    }
+</div>

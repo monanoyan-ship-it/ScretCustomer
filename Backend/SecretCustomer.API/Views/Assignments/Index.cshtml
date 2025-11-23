@@ -1,0 +1,116 @@
+@model AssignmentIndexViewModel
+@{
+    ViewData["Title"] = "Atamalarım";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Atama Yönetimi</h2>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Yeni Atama
+        </a>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Durum</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tümü</option>
+                            <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Bekliyor</option>
+                            <option value="InProgress" selected="@(Model.StatusFilter == "InProgress")">Devam Ediyor</option>
+                            <option value="Completed" selected="@(Model.StatusFilter == "Completed")">Tamamlandı</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tip</label>
+                        <select name="type" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tümü</option>
+                            <option value="Internal" selected="@(Model.TypeFilter == "Internal")">İç Değerlendirme</option>
+                            <option value="External" selected="@(Model.TypeFilter == "External")">Dış Değerlendirme</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Arama</label>
+                        <input type="text" name="search" class="form-control" placeholder="Proje veya şube adı..." value="@Model.SearchQuery">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="row">
+    @if (Model.Assignments.Any())
+    {
+        @foreach (var assignment in Model.Assignments)
+        {
+            <div class="col-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">@assignment.ProjectName</h5>
+                                <p class="card-text">
+                                    <strong>Şube:</strong> @(assignment.BranchName ?? "Atanmamış")<br>
+                                    <strong>Kontrol Listesi:</strong> @assignment.ChecklistName<br>
+                                    <strong>Değerlendirici:</strong> @(assignment.AssignedUserName ?? "Atanmamış")<br>
+                                    <strong>Deadline:</strong> @assignment.DueDate.ToString("dd.MM.yyyy")<br>
+                                    <strong>Durum:</strong> @(assignment.IsCompleted ? "Tamamlandı" : "Bekliyor")
+                                </p>
+                                @if (!string.IsNullOrEmpty(assignment.UniqueLink))
+                                {
+                                    <span class="badge bg-secondary ms-2">
+                                        <i class="bi bi-link"></i> Link
+                                    </span>
+                                }
+                            </div>
+                            @if (User.IsInRole("Admin") && !assignment.IsCompleted)
+                            {
+                                <div class="btn-group-vertical">
+                                    <form asp-action="Delete" asp-route-id="@assignment.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Bu atamayı silmek istediğinizden emin misiniz?')">
+                                            <i class="bi bi-trash"></i> Sil
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Atama bulunamadı.
+            </div>
+        </div>
+    }
+</div>

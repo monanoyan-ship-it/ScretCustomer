@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,7 +29,22 @@ builder.Services.AddSingleton(new JwtHelper(
     int.Parse(jwtSettings["ExpirationMinutes"] ?? "1440")
 ));
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// Authentication - Support both JWT (for API) and Cookie (for MVC)
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(24);
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -44,6 +60,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+// Session support
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(24);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Repository Registration
 builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
@@ -75,9 +99,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Add MVC support (Controllers with Views)
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -92,19 +115,26 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
 app.UseCors("AllowAll");
 
+// Enable static files (for CSS, JS, images)
+app.UseStaticFiles();
+
+// Enable routing
+app.UseRouting();
+
 app.UseHttpsRedirection();
+
+// Enable session
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+// Map MVC default route
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
 

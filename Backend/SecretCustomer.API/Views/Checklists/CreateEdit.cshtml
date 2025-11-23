@@ -1,0 +1,75 @@
+@model ChecklistCreateEditViewModel
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Kontrol Listesi Düzenle" : "Yeni Kontrol Listesi";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    <strong>Not:</strong> Kontrol listelerini oluşturmak ve düzenlemek için lütfen API endpoint'lerini kullanın.
+    Bu sayfa sadece temel bilgileri görüntüler.
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <form asp-action="Save" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row">
+                <div class="col-md-9 mb-3">
+                    <label asp-for="Name" class="form-label">Kontrol Listesi Adı *</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label asp-for="Version" class="form-label">Versiyon</label>
+                    <input asp-for="Version" type="number" class="form-control" min="1" />
+                    <span asp-validation-for="Version" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Açıklama</label>
+                <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                Bölümler ve sorular için API kullanılması gerekmektedir. Mevcut veriler korunacaktır.
+            </div>
+
+            @if (Model.Sections.Any())
+            {
+                <div class="mb-3">
+                    <h6>Mevcut Bölümler</h6>
+                    <ul class="list-group">
+                        @foreach (var sec in Model.Sections)
+                        {
+                            <li class="list-group-item">
+                                <strong>@sec.Name</strong>
+                                <span class="badge bg-secondary ms-2">@sec.Questions.Count soru</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> İptal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

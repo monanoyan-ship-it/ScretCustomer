@@ -1,0 +1,61 @@
+@model EvaluationIndexViewModel
+@{
+    ViewData["Title"] = "Değerlendirmeler";
+}
+
+<h2 class="mb-4">Değerlendirmeler</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<h5 class="mb-3">Bekleyen Değerlendirmeler</h5>
+
+<div class="row">
+    @if (Model.PendingAssignments.Any())
+    {
+        @foreach (var assignment in Model.PendingAssignments)
+        {
+            <div class="col-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">@assignment.ProjectName</h5>
+                                <p class="card-text text-muted">
+                                    <strong>Şube:</strong> @(assignment.BranchName ?? "Atanmamış")<br>
+                                    <strong>Kontrol Listesi:</strong> @assignment.ChecklistName<br>
+                                    <strong>Deadline:</strong> @assignment.DueDate.ToString("dd.MM.yyyy")
+                                </p>
+                                <span class="badge bg-warning text-dark">Bekliyor</span>
+                            </div>
+                            <a asp-action="Start" asp-route-assignmentId="@assignment.Id" class="btn btn-primary">
+                                <i class="bi bi-play-fill"></i> Değerlendirmeye Başla
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Bekleyen değerlendirme bulunmamaktadır.
+            </div>
+        </div>
+    }
+</div>
