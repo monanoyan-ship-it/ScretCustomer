@@ -1,151 +1,104 @@
-// Main Application ViewModel
-function AppViewModel() {
-    const self = this;
+// Main Application - Routing and initialization
+(function() {
+    'use strict';
 
-    // Authentication state
-    self.isAuthenticated = ko.observable(authService.isAuthenticated());
-    self.currentUser = ko.observable(authService.getCurrentUser());
-    self.isAdmin = ko.computed(() => self.currentUser() && self.currentUser().role === 'Admin');
-    self.isTeamLeader = ko.computed(() => self.currentUser() && self.currentUser().role === 'TeamLeader');
-    self.isEvaluator = ko.computed(() => self.currentUser() && self.currentUser().role === 'Evaluator');
+    var app = Sammy('#app-container', function() {
+        var self = this;
 
-    // Current page
-    self.currentPage = ko.observable('login');
-
-    // Loading state
-    self.isLoading = ko.observable(false);
-
-    // Login form
-    self.loginUsername = ko.observable('');
-    self.loginPassword = ko.observable('');
-    self.loginError = ko.observable('');
-
-    // Page ViewModels
-    self.dashboardViewModel = null;
-    self.checklistsViewModel = null;
-    self.projectsViewModel = null;
-    self.evaluationsViewModel = null;
-    self.assignmentsViewModel = null;
-
-    // Login function
-    self.login = async function() {
-        self.loginError('');
-        self.isLoading(true);
-
-        try {
-            const response = await authService.login(
-                self.loginUsername(),
-                self.loginPassword()
-            );
-
-            // Update authentication state
-            self.isAuthenticated(true);
-            self.currentUser(authService.getCurrentUser());
-
-            // Clear login form
-            self.loginUsername('');
-            self.loginPassword('');
-
-            // Navigate to dashboard
-            self.navigateTo('dashboard');
-        } catch (error) {
-            console.error('Login failed:', error);
-            self.loginError(error.message || 'Giriş başarısız. Lütfen kullanıcı adı ve şifrenizi kontrol edin.');
-        } finally {
-            self.isLoading(false);
-        }
-    };
-
-    // Logout function
-    self.logout = function() {
-        authService.logout();
-        self.isAuthenticated(false);
-        self.currentUser(null);
-        self.currentPage('login');
-
-        // Clean up ViewModels
-        self.dashboardViewModel = null;
-        self.checklistsViewModel = null;
-        self.projectsViewModel = null;
-        self.evaluationsViewModel = null;
-        self.assignmentsViewModel = null;
-    };
-
-    // Navigation function
-    self.navigateTo = function(page) {
-        // Check authentication
-        if (page !== 'login' && !self.isAuthenticated()) {
-            self.currentPage('login');
-            return;
+        // Helper to check authentication
+        function requireAuth() {
+            if (!authService.isAuthenticated()) {
+                self.redirect('#/login');
+                return false;
+            }
+            return true;
         }
 
-        // Check admin access for certain pages
-        if ((page === 'checklists' || page === 'projects') && !self.isAdmin()) {
-            alert('Bu sayfaya erişim yetkiniz yok.');
-            return;
+        // Helper to apply bindings
+        function applyViewModel(viewModel, templateUrl) {
+            // Load template
+            fetch(templateUrl)
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.getElementById('app-container');
+                    ko.cleanNode(container);
+                    container.innerHTML = html;
+                    ko.applyBindings(viewModel, container);
+                })
+                .catch(err => {
+                    console.error('Error loading template:', err);
+                    alert('Sayfa y�klenirken bir hata olu_tu.');
+                });
         }
 
-        self.currentPage(page);
+        // Routes
+        this.get('#/login', function() {
+            if (authService.isAuthenticated()) {
+                this.redirect('#/dashboard');
+                return;
+            }
+            applyViewModel(new LoginViewModel(), '/templates/login.html');
+        });
 
-        // Initialize ViewModels when navigating to specific pages
-        if (page === 'dashboard' && !self.dashboardViewModel) {
-            self.dashboardViewModel = new DashboardViewModel();
-        }
+        this.get('#/dashboard', function() {
+            if (!requireAuth()) return;
+            applyViewModel(new DashboardViewModel(), '/templates/dashboard.html');
+        });
 
-        if (page === 'checklists' && !self.checklistsViewModel) {
-            self.checklistsViewModel = new ChecklistsViewModel();
-        }
+        this.get('#/checklists', function() {
+            if (!requireAuth()) return;
+            if (!authService.isAdmin()) {
+                alert('Bu sayfaya eri_im yetkiniz yok.');
+                self.redirect('#/dashboard');
+                return;
+            }
+            applyViewModel(new ChecklistViewModel(), '/templates/checklists.html');
+        });
 
-        if (page === 'projects' && !self.projectsViewModel) {
-            self.projectsViewModel = new ProjectsViewModel();
-        }
+        this.get('#/checklists/:id', function() {
+            if (!requireAuth()) return;
+            const id = this.params.id;
+            applyViewModel(new ChecklistDetailViewModel(id), '/templates/checklist-detail.html');
+        });
 
-        if (page === 'evaluations' && !self.evaluationsViewModel) {
-            self.evaluationsViewModel = new EvaluationsViewModel();
-        }
+        this.get('#/projects', function() {
+            if (!requireAuth()) return;
+            if (!authService.isAdmin()) {
+                alert('Bu sayfaya eri_im yetkiniz yok.');
+                self.redirect('#/dashboard');
+                return;
+            }
+            applyViewModel(new ProjectViewModel(), '/templates/projects.html');
+        });
 
-        if (page === 'assignments' && !self.assignmentsViewModel) {
-            self.assignmentsViewModel = new AssignmentsViewModel();
-        }
+        this.get('#/assignments', function() {
+            if (!requireAuth()) return;
+            applyViewModel(new AssignmentViewModel(), '/templates/assignments.html');
+        });
 
-        // Reload data if ViewModel already exists
-        if (page === 'dashboard' && self.dashboardViewModel) {
-            self.dashboardViewModel.loadDashboardData();
-        }
+        this.get('#/assignments/:id/evaluate', function() {
+            if (!requireAuth()) return;
+            const id = this.params.id;
+            applyViewModel(new EvaluationViewModel(id), '/templates/evaluation.html');
+        });
 
-        if (page === 'checklists' && self.checklistsViewModel) {
-            self.checklistsViewModel.loadChecklists();
-        }
+        this.get('#/evaluations', function() {
+            if (!requireAuth()) return;
+            applyViewModel(new EvaluationListViewModel(), '/templates/evaluation-list.html');
+        });
 
-        if (page === 'projects' && self.projectsViewModel) {
-            self.projectsViewModel.loadProjects();
-        }
+        // Default route
+        this.get('/', function() {
+            if (authService.isAuthenticated()) {
+                this.redirect('#/dashboard');
+            } else {
+                this.redirect('#/login');
+            }
+        });
+    });
 
-        if (page === 'evaluations' && self.evaluationsViewModel) {
-            self.evaluationsViewModel.loadPendingAssignments();
-        }
-
-        if (page === 'assignments' && self.assignmentsViewModel) {
-            self.assignmentsViewModel.loadAssignments();
-        }
-    };
-
-    // Initialize app
-    self.init = function() {
-        // Check if user is already logged in
-        if (self.isAuthenticated()) {
-            self.navigateTo('dashboard');
-        } else {
-            self.currentPage('login');
-        }
-    };
-
-    // Run initialization
-    self.init();
-}
-
-// Apply Knockout bindings when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    const appViewModel = new AppViewModel();
-    ko.applyBindings(appViewModel);
-});
+    // Start the application when DOM is ready
+    $(document).ready(function() {
+        app.run('#/');
+    });
+})();

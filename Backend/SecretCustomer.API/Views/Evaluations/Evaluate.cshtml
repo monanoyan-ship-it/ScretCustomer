@@ -1,4 +1,3 @@
-@model EvaluationFormViewModel
 @{
     ViewData["Title"] = "Değerlendirme Formu";
 }
@@ -6,140 +5,13 @@
 <div class="card shadow">
     <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">@Model.ProjectName</h4>
+            <h4 class="mb-0">Değerlendirme Formu</h4>
             <a asp-action="Index" class="btn btn-sm btn-light">
                 <i class="bi bi-x-circle"></i> İptal
             </a>
         </div>
     </div>
     <div class="card-body">
-        <div class="mb-3">
-            <strong>Şube:</strong> @Model.BranchName<br>
-            <strong>Kontrol Listesi:</strong> @Model.ChecklistName
-        </div>
-
-        <form asp-action="Submit" method="post">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-            <input type="hidden" asp-for="AssignmentId" />
-            <input type="hidden" asp-for="ProjectName" />
-            <input type="hidden" asp-for="BranchName" />
-            <input type="hidden" asp-for="ChecklistName" />
-
-            @for (int secIndex = 0; secIndex < Model.Sections.Count; secIndex++)
-            {
-                var sec = Model.Sections[secIndex];
-                <input type="hidden" asp-for="Sections[secIndex].Name" />
-
-                <div class="card mb-4 border-primary">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">@sec.Name</h5>
-                    </div>
-                    <div class="card-body">
-                        @for (int questionIndex = 0; questionIndex < sec.Questions.Count; questionIndex++)
-                        {
-                            var question = sec.Questions[questionIndex];
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].QuestionId" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].Text" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].QuestionType" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].Points" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].AllowNA" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].Options" />
-                            <input type="hidden" asp-for="Sections[secIndex].Questions[questionIndex].Order" />
-
-                            <div class="mb-4 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <label class="form-label fw-bold">
-                                        @question.Order. @question.Text
-                                        <span class="badge bg-info ms-2">@question.Points puan</span>
-                                    </label>
-                                    @if (question.AllowNA)
-                                    {
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input"
-                                                   asp-for="Sections[secIndex].Questions[questionIndex].AnswerIsNA"
-                                                   id="na-@secIndex-@questionIndex" />
-                                            <label class="form-check-label" for="na-@secIndex-@questionIndex">
-                                                N/A
-                                            </label>
-                                        </div>
-                                    }
-                                </div>
-
-                                @if (question.QuestionType == "YesNo")
-                                {
-                                    <div class="btn-group w-100" role="group">
-                                        <input type="radio" class="btn-check"
-                                               asp-for="Sections[secIndex].Questions[questionIndex].AnswerNumeric"
-                                               value="1" id="yes-@secIndex-@questionIndex" />
-                                        <label class="btn btn-outline-success" for="yes-@secIndex-@questionIndex">
-                                            <i class="bi bi-check-circle"></i> Evet
-                                        </label>
-
-                                        <input type="radio" class="btn-check"
-                                               asp-for="Sections[secIndex].Questions[questionIndex].AnswerNumeric"
-                                               value="0" id="no-@secIndex-@questionIndex" />
-                                        <label class="btn btn-outline-danger" for="no-@secIndex-@questionIndex">
-                                            <i class="bi bi-x-circle"></i> Hayır
-                                        </label>
-                                    </div>
-                                }
-                                else if (question.QuestionType == "Rating")
-                                {
-                                    <div class="btn-group w-100" role="group">
-                                        @for (int rating = 1; rating <= 5; rating++)
-                                        {
-                                            var ratingValue = rating;
-                                            <input type="radio" class="btn-check"
-                                                   asp-for="Sections[secIndex].Questions[questionIndex].AnswerNumeric"
-                                                   value="@ratingValue" id="rating-@secIndex-@questionIndex-@ratingValue" />
-                                            <label class="btn btn-outline-primary" for="rating-@secIndex-@questionIndex-@ratingValue">
-                                                @ratingValue
-                                            </label>
-                                        }
-                                    </div>
-                                    <small class="text-muted">1: Çok Kötü, 5: Mükemmel</small>
-                                }
-                                else if (question.QuestionType == "MultipleChoice")
-                                {
-                                    <select asp-for="Sections[secIndex].Questions[questionIndex].AnswerText" class="form-select">
-                                        <option value="">Seçiniz...</option>
-                                        @if (!string.IsNullOrEmpty(question.Options))
-                                        {
-                                            @foreach (var option in question.Options.Split(','))
-                                            {
-                                                <option value="@option.Trim()">@option.Trim()</option>
-                                            }
-                                        }
-                                    </select>
-                                }
-                                else if (question.QuestionType == "Text")
-                                {
-                                    <textarea asp-for="Sections[secIndex].Questions[questionIndex].AnswerText"
-                                              class="form-control" rows="3"
-                                              placeholder="Cevabınızı buraya yazın..."></textarea>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-
-            <div class="mb-3">
-                <label asp-for="Notes" class="form-label fw-bold">Genel Notlar (İsteğe Bağlı)</label>
-                <textarea asp-for="Notes" class="form-control" rows="4"
-                          placeholder="Değerlendirme ile ilgili genel notlarınızı buraya yazabilirsiniz..."></textarea>
-            </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-lg btn-success">
-                    <i class="bi bi-send"></i> Değerlendirmeyi Gönder
-                </button>
-            </div>
-        </form>
+        <p class="text-muted">Bu sayfa KnockoutJS ile yüklenecek şekilde yapılandırılacak.</p>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

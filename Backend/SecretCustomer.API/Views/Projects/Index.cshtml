@@ -1,123 +1,382 @@
-@model ProjectIndexViewModel
 @{
     ViewData["Title"] = "Projeler";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Projeler</h2>
-    <div>
-        <div class="form-check form-switch d-inline-block me-3">
-            <input class="form-check-input" type="checkbox" id="includeInactive"
-                   @(Model.IncludeInactive ? "checked" : "")
-                   onchange="window.location.href='@Url.Action("Index")?includeInactive=' + this.checked">
-            <label class="form-check-label" for="includeInactive">
-                Kapalı Projeleri Göster
-            </label>
-        </div>
-        <a asp-action="Create" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Yeni Proje
-        </a>
-    </div>
-</div>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<div class="row">
-    @if (Model.Projects.Any())
-    {
-        @foreach (var project in Model.Projects)
-        {
-            var completionPercentage = project.TotalAssignments > 0
-                ? (project.CompletedAssignments * 100.0 / project.TotalAssignments)
-                : 0;
-
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title">@project.Name</h5>
-                            <span class="badge @(project.IsActive ? "bg-success" : "bg-secondary")">
-                                @(project.IsActive ? "Aktif" : "Kapalı")
-                            </span>
-                        </div>
-
-                        <p class="card-text text-muted small">@(project.Description ?? "Açıklama yok")</p>
-
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">İlerleme</small>
-                                <small class="text-muted">
-                                    @project.CompletedAssignments / @project.TotalAssignments
-                                </small>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar" role="progressbar"
-                                     style="width: @completionPercentage.ToString("F0")%"
-                                     aria-valuenow="@completionPercentage" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <i class="bi bi-list-check"></i> @project.ChecklistName<br>
-                                <i class="bi bi-person-badge"></i> @project.AssignmentType<br>
-                                <i class="bi bi-calendar-range"></i>
-                                @project.StartDate.ToString("dd.MM.yyyy") - @project.EndDate.ToString("dd.MM.yyyy")
-                            </small>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            @if (project.IsActive)
-                            {
-                                <a asp-action="Edit" asp-route-id="@project.Id" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form asp-action="Close" asp-route-id="@project.Id" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-warning"
-                                            onclick="return confirm('Bu projeyi kapatmak istediğinizden emin misiniz?')">
-                                        <i class="bi bi-lock"></i>
-                                    </button>
-                                </form>
-                            }
-                            <form asp-action="Delete" asp-route-id="@project.Id" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick="return confirm('Bu projeyi silmek istediğinizden emin misiniz?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <small class="text-muted">
-                            <i class="bi bi-clock"></i> Oluşturulma: @project.CreatedAt.ToString("dd.MM.yyyy")
-                        </small>
-                    </div>
-                </div>
+<div id="projects-app">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Projeler</h2>
+        <div>
+            <div class="form-check form-switch d-inline-block me-3">
+                <input class="form-check-input" type="checkbox" data-bind="checked: includeInactive, click: loadProjects" id="includeInactive">
+                <label class="form-check-label" for="includeInactive">
+                    Kapalı Projeleri Göster
+                </label>
             </div>
-        }
-    }
-    else
-    {
-        <div class="col-12">
+            <button class="btn btn-primary" data-bind="click: createNew">
+                <i class="bi bi-plus-circle"></i> Yeni Proje
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Messages -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="row" data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div class="col-12" data-bind="visible: projects().length === 0">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> Henüz proje bulunmamaktadır.
             </div>
         </div>
-    }
-</div>
+
+        <!-- Project Cards -->
+        <div class="col-md-6 col-lg-4 mb-4" data-bind="foreach: projects">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title" data-bind="text: name"></h5>
+                        <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Kapalı'"></span>
+                    </div>
+
+                    <p class="card-text text-muted small" data-bind="text: description || 'Açıklama yok'"></p>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">İlerleme</small>
+                            <small class="text-muted">
+                                <span data-bind="text: completedAssignments || 0"></span> / <span data-bind="text: totalAssignments || 0"></span>
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" data-bind="style: { width: completionPercentage() + '%' }"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-list-check"></i> <span data-bind="text: checklistName || 'N/A'"></span><br>
+                            <i class="bi bi-calendar-range"></i>
+                            <span data-bind="text: new Date(startDate).toLocaleDateString('tr-TR')"></span> -
+                            <span data-bind="text: new Date(endDate).toLocaleDateString('tr-TR')"></span>
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.editProject, visible: isActive">
+                            <i class="bi bi-pencil"></i> Düzenle
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteProject">
+                            <i class="bi bi-trash"></i> Sil
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> Oluşturulma: <span data-bind="text: new Date(createdAt).toLocaleDateString('tr-TR')"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingProject">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Proje</span>
+                        <span data-bind="visible: id">Proje Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Proje Adı *</label>
+                        <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: 2025 Q1 Gizli Müşteri Projesi" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" data-bind="value: description" rows="3" placeholder="Proje hakkında açıklama..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kontrol Listesi *</label>
+                        <select class="form-select" data-bind="value: checklistId, options: $parent.availableChecklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                        <small class="text-muted">Bu projede kullanılacak değerlendirme formu</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç Tarihi *</label>
+                            <input type="date" class="form-control" data-bind="value: startDate" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş Tarihi *</label>
+                            <input type="date" class="form-control" data-bind="value: endDate" />
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="projectIsActive" />
+                        <label class="form-check-label" for="projectIsActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveProject, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of projects-app -->
+
+@section Scripts {
+    <script>
+        // ViewModel Constructor
+        function ProjectEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.name = ko.observable(data.name || '');
+            self.description = ko.observable(data.description || '');
+            self.checklistId = ko.observable(data.checklistId || '');
+            self.startDate = ko.observable(data.startDate ? data.startDate.split('T')[0] : '');
+            self.endDate = ko.observable(data.endDate ? data.endDate.split('T')[0] : '');
+            self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+
+            self.toDTO = function() {
+                return {
+                    name: self.name(),
+                    description: self.description(),
+                    checklistId: self.checklistId(),
+                    startDate: self.startDate(),
+                    endDate: self.endDate(),
+                    isActive: self.isActive()
+                };
+            };
+        }
+
+        // Main ViewModel
+        function ProjectsViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(false);
+            self.isSaving = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+            self.includeInactive = ko.observable(false);
+
+            // Data
+            self.projects = ko.observableArray([]);
+            self.availableChecklists = ko.observableArray([]);
+            self.editingProject = ko.observable(null);
+
+            // Modal state
+            self.isModalOpen = ko.observable(false);
+
+            // Load projects
+            self.loadProjects = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                var url = '/api/projects';
+                if (self.includeInactive()) {
+                    url += '?includeInactive=true';
+                }
+
+                fetch(url, { credentials: 'include' })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Yükleme başarısız');
+                        return res.json();
+                    })
+                    .then(data => {
+                        data.forEach(function(project) {
+                            project.completionPercentage = ko.computed(function() {
+                                var total = project.totalAssignments || 0;
+                                var completed = project.completedAssignments || 0;
+                                return total > 0 ? (completed * 100.0 / total).toFixed(0) : 0;
+                            });
+                        });
+                        self.projects(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        self.errorMessage('Projeler yüklenirken bir hata oluştu.');
+                    })
+                    .finally(() => {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Load available checklists
+            self.loadChecklists = function() {
+                fetch('/api/checklists', { credentials: 'include' })
+                    .then(res => res.json())
+                    .then(data => {
+                        self.availableChecklists(data.filter(c => c.isActive));
+                    })
+                    .catch(error => {
+                        console.error('Error loading checklists:', error);
+                    });
+            };
+
+            // Create new project
+            self.createNew = function() {
+                self.editingProject(new ProjectEditViewModel());
+                self.isModalOpen(true);
+            };
+
+            // Edit existing project
+            self.editProject = function(project) {
+                console.log('Fetching project:', project.id);
+
+                fetch('/api/projects/' + project.id, { credentials: 'include' })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error('Error response (raw):', text);
+
+                                try {
+                                    const errorData = JSON.parse(text);
+                                    console.error('Error response (parsed):', errorData);
+
+                                    if (errorData.error) {
+                                        console.error('Exception:', errorData.error);
+                                        console.error('Stack trace:', errorData.details);
+                                    }
+
+                                    throw new Error(errorData.error || errorData.message || 'API Error: ' + response.status);
+                                } catch (jsonError) {
+                                    console.error('Could not parse JSON, using text:', text);
+                                    throw new Error('API Error: ' + response.status);
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Project data:', data);
+                        self.editingProject(new ProjectEditViewModel(data));
+                        self.isModalOpen(true);
+                    })
+                    .catch(error => {
+                        console.error('Edit error:', error);
+                        self.errorMessage('Proje yüklenirken bir hata oluştu: ' + error.message);
+                    });
+            };
+
+            // Save project
+            self.saveProject = function() {
+                var project = self.editingProject();
+
+                // Validation
+                if (!project.name() || project.name().trim() === '') {
+                    alert('Proje adı zorunludur!');
+                    return;
+                }
+
+                if (!project.checklistId()) {
+                    alert('Kontrol listesi seçmelisiniz!');
+                    return;
+                }
+
+                if (!project.startDate() || !project.endDate()) {
+                    alert('Başlangıç ve bitiş tarihleri zorunludur!');
+                    return;
+                }
+
+                var dto = project.toDTO();
+
+                self.isSaving(true);
+                var endpoint = project.id ? '/api/projects/' + project.id : '/api/projects';
+                var method = project.id ? 'PUT' : 'POST';
+
+                fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Kayıt başarısız');
+                    return response.json();
+                })
+                .then(data => {
+                    self.successMessage('Proje başarıyla kaydedildi.');
+                    self.closeModal();
+                    self.loadProjects();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Proje kaydedilirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isSaving(false);
+                });
+            };
+
+            // Delete project
+            self.deleteProject = function(project) {
+                if (!confirm('Bu projeyi silmek istediğinizden emin misiniz?')) return;
+
+                fetch('/api/projects/' + project.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Proje başarıyla silindi.');
+                    self.projects.remove(project);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Proje silinirken bir hata oluştu.');
+                });
+            };
+
+            // Close modal
+            self.closeModal = function() {
+                self.isModalOpen(false);
+                self.editingProject(null);
+            };
+
+            // Initialize
+            self.loadProjects();
+            self.loadChecklists();
+        }
+
+        // Apply bindings
+        $(document).ready(function() {
+            ko.applyBindings(new ProjectsViewModel(), document.getElementById('projects-app'));
+        });
+    </script>
+}

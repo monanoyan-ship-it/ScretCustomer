@@ -30,6 +30,7 @@ Kapsamlı bir gizli müşteri (secret customer) değerlendirme ve raporlama sist
 4. **Atamalar** - İç/Dış değerlendirici atamaları
 5. **Değerlendirmeler** - Form doldurma ve N/A desteği
 6. **Dashboard** - Role-based istatistikler ve raporlar
+7. **Saha Çalışanları** - Saha çalışanı yönetimi (CRUD, telefon, adres bilgileri)
 
 ## 🚀 Hızlı Başlangıç
 
@@ -258,6 +259,10 @@ Detaylı dokümantasyon `docs/` klasöründe:
 9. **09-frontend-degerlendirme-formu-ui.md** - Evaluation form UI
 10. **10-frontend-ozet.md** - Frontend genel özet
 11. **11-database-setup.md** - Database setup rehberi
+12. **12-docker-deployment.md** - Docker ile deployment rehberi
+13. **13-knockoutjs-kullanimi.md** - KnockoutJS kullanım kılavuzu
+14. **14-mimari-yaklasim-spa.md** - ⭐ SPA mimari yaklaşımı ve kurallar
+15. **15-saha-calisanlari-modulu.md** - Saha çalışanları modülü dokümantasyonu
 
 ## 🔧 Teknoloji Stack
 

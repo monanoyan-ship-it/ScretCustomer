@@ -29,21 +29,19 @@ builder.Services.AddSingleton(new JwtHelper(
     int.Parse(jwtSettings["ExpirationMinutes"] ?? "1440")
 ));
 
-// Authentication - Support both JWT (for API) and Cookie (for MVC)
+// Authentication - Cookie for MVC, JWT for API
 builder.Services.AddAuthentication(options =>
     {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultScheme = "Cookies";
+        options.DefaultChallengeScheme = "Cookies";
     })
-    .AddCookie(options =>
+    .AddCookie("Cookies", options =>
     {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = true;
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     })
     .AddJwtBearer(options =>
     {
@@ -61,7 +59,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Session support
+// Session support for MVC
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(24);
@@ -76,6 +74,7 @@ builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
+builder.Services.AddScoped<IFieldWorkerRepository, FieldWorkerRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
@@ -87,6 +86,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 
 // CORS Configuration
 builder.Services.AddCors(options =>
@@ -99,8 +99,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add MVC support (Controllers with Views)
+// Add MVC Controllers with Views
 builder.Services.AddControllersWithViews();
+// Also add API controllers
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -117,13 +119,12 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseCors("AllowAll");
 
-// Enable static files (for CSS, JS, images)
+app.UseHttpsRedirection();
+
+// Enable static files
 app.UseStaticFiles();
 
-// Enable routing
 app.UseRouting();
-
-app.UseHttpsRedirection();
 
 // Enable session
 app.UseSession();
@@ -131,10 +132,13 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map MVC default route
+// Map MVC Controllers (for Views)
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Map API Controllers
+app.MapControllers();
 
 app.Run();
 

@@ -1,50 +1,115 @@
-@using System.Security.Claims
+<!-- Sidebar Component -->
+<div id="sidebar-component">
+    <!-- Sidebar Overlay (closes menu on mobile) -->
+    <div class="sidebar-overlay" data-bind="visible: isOpen, click: toggle"></div>
 
-<div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <i class="bi bi-clipboard-check fs-4 me-2"></i>
-        <span class="fs-5">Gizli Müşteri</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-        <li class="nav-item">
-            <a asp-controller="Dashboard" asp-action="Index" class="nav-link text-white" aria-current="page">
-                <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
-            </a>
-        </li>
+    <!-- Sidebar Menu -->
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" data-bind="css: { 'sidebar-open': isOpen }">
+        <!-- Close Button (Mobile) -->
+        <button class="btn btn-close btn-close-white position-absolute d-lg-none" style="top: 10px; right: 10px;" data-bind="click: toggle"></button>
 
-        @if (User.IsInRole("Admin"))
-        {
-            <li>
-                <a asp-controller="Checklists" asp-action="Index" class="nav-link text-white">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <i class="bi bi-clipboard-check fs-4 me-2"></i>
+            <span class="fs-5">Gizli Müşteri</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="/Dashboard/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <!-- Admin Only Menu Items -->
+            <li data-bind="visible: isAdmin">
+                <a href="/Checklists/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-list-check me-2"></i>
                     Kontrol Listeleri
                 </a>
             </li>
-            <li>
-                <a asp-controller="Projects" asp-action="Index" class="nav-link text-white">
+            <li data-bind="visible: isAdmin">
+                <a href="/Projects/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-folder me-2"></i>
                     Projeler
                 </a>
             </li>
-        }
+            <li data-bind="visible: isAdmin">
+                <a href="/FieldWorkers/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-people me-2"></i>
+                    Saha Çalışanları
+                </a>
+            </li>
 
-        <li>
-            <a asp-controller="Assignments" asp-action="Index" class="nav-link text-white">
-                <i class="bi bi-clipboard me-2"></i>
-                Atamalarım
-            </a>
-        </li>
-
-        @if (User.IsInRole("Evaluator") || User.IsInRole("Admin"))
-        {
             <li>
-                <a asp-controller="Evaluations" asp-action="Index" class="nav-link text-white">
+                <a href="/Assignments/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-clipboard me-2"></i>
+                    Atamalarım
+                </a>
+            </li>
+
+            <li data-bind="visible: isEvaluator || isAdmin">
+                <a href="/Evaluations/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-pencil-square me-2"></i>
                     Değerlendirmeler
                 </a>
             </li>
-        }
-    </ul>
+        </ul>
+    </div>
 </div>
+
+<script>
+    // Sidebar Component ViewModel
+    function SidebarViewModel() {
+        var self = this;
+
+        self.isOpen = ko.observable(false);
+        self.userRole = ko.observable('');
+
+        self.isAdmin = ko.computed(function() {
+            return self.userRole() === 'Admin';
+        });
+
+        self.isEvaluator = ko.computed(function() {
+            return self.userRole() === 'Evaluator' || self.userRole() === 'CustomerRepresentative';
+        });
+
+        // Toggle sidebar
+        self.toggle = function() {
+            self.isOpen(!self.isOpen());
+        };
+
+        // Close sidebar (for menu clicks)
+        self.closeSidebar = function() {
+            if (window.innerWidth < 992) {
+                self.isOpen(false);
+            }
+            return true; // Allow navigation
+        };
+
+        // Load current user info
+        fetch('/api/auth/me', {
+            credentials: 'include'
+        })
+        .then(res => res.json())
+        .then(data => {
+            self.userRole(data.role);
+        })
+        .catch(error => {
+            console.error('Error loading user info:', error);
+        });
+
+        // Expose toggle globally for hamburger button
+        window.toggleSidebar = self.toggle;
+    }
+
+    // Apply binding to sidebar component
+    $(document).ready(function() {
+        if (document.getElementById('sidebar-component')) {
+            ko.applyBindings(
+                new SidebarViewModel(),
+                document.getElementById('sidebar-component')
+            );
+        }
+    });
+</script>

@@ -1,72 +1,618 @@
-@model ChecklistIndexViewModel
 @{
     ViewData["Title"] = "Kontrol Listeleri";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Kontrol Listeleri</h2>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Yeni Kontrol Listesi
-    </a>
-</div>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div id="checklists-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Kontrol Listeleri</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Kontrol Listesi
+        </button>
     </div>
-}
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
     </div>
-}
 
-<div class="row">
-    @if (Model.Checklists.Any())
-    {
-        @foreach (var checklist in Model.Checklists)
-        {
-            <div class="col-12 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="card-title">@checklist.Name</h5>
-                                <p class="card-text text-muted">@checklist.Description</p>
-                                <span class="badge bg-info">@checklist.Sections.Count Bölüm</span>
-                                <span class="badge bg-secondary ms-2">v@checklist.Version</span>
-                            </div>
-                            <div class="btn-group">
-                                <a asp-action="View" asp-route-id="@checklist.Id" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Görüntüle
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@checklist.Id" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil"></i> Düzenle
-                                </a>
-                                <form asp-action="Clone" asp-route-id="@checklist.Id" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-info" onclick="return confirm('Bu kontrol listesini klonlamak istediğinizden emin misiniz?')">
-                                        <i class="bi bi-files"></i> Klonla
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    }
-    else
-    {
-        <div class="col-12">
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Checklists List -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: checklists().length === 0">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> Henüz kontrol listesi bulunmamaktadır.
             </div>
         </div>
-    }
+
+        <!-- Checklist Cards -->
+        <div class="row" data-bind="foreach: checklists">
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" data-bind="text: name"></h5>
+                        <p class="card-text text-muted" data-bind="text: description || 'Açıklama yok'"></p>
+                        <div class="mb-3">
+                            <span class="badge bg-info">
+                                <span data-bind="text: (sections && sections.length) || 0"></span> Bölüm
+                            </span>
+                            <span class="badge bg-secondary ms-2">
+                                v<span data-bind="text: version || 1"></span>
+                            </span>
+                            <span class="badge ms-2" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                        </div>
+                        <div class="btn-group w-100">
+                            <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.viewChecklist">
+                                <i class="bi bi-eye"></i> Görüntüle
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.editChecklist">
+                                <i class="bi bi-pencil"></i> Düzenle
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" data-bind="click: $parent.cloneChecklist">
+                                <i class="bi bi-files"></i> Klonla
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteChecklist">
+                                <i class="bi bi-trash"></i> Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+<div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" data-bind="with: editingChecklist">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span data-bind="visible: !id">Yeni Kontrol Listesi</span>
+                    <span data-bind="visible: id">Kontrol Listesi Düzenle</span>
+                </h5>
+                <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-9 mb-3">
+                        <label class="form-label">Kontrol Listesi Adı *</label>
+                        <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: Restoran Hijyen Kontrol Listesi" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Versiyon</label>
+                        <input type="number" class="form-control" data-bind="value: version" min="1" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Açıklama</label>
+                    <textarea class="form-control" data-bind="value: description" rows="2" placeholder="Kontrol listesi hakkında kısa açıklama..."></textarea>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                    <label class="form-check-label" for="isActive">Aktif</label>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6>Bölümler ve Sorular</h6>
+                    <button type="button" class="btn btn-sm btn-success" data-bind="click: $parent.addSection">
+                        <i class="bi bi-plus-circle"></i> Bölüm Ekle
+                    </button>
+                </div>
+
+                <!-- Sections -->
+                <div data-bind="foreach: sections">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <input type="text" class="form-control form-control-sm w-50" data-bind="value: name" placeholder="Bölüm adı" />
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parents[1].addQuestion">
+                                        <i class="bi bi-plus"></i> Soru Ekle
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parents[1].removeSection">
+                                        <i class="bi bi-trash"></i> Sil
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div data-bind="visible: questions().length === 0" class="text-muted text-center py-3">
+                                Bu bölümde henüz soru bulunmamaktadır.
+                            </div>
+
+                            <!-- Questions -->
+                            <div data-bind="foreach: questions">
+                                <div class="border rounded p-3 mb-2">
+                                    <div class="row">
+                                        <div class="col-md-8 mb-2">
+                                            <label class="form-label">Soru Metni</label>
+                                            <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="Soru metni" />
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label">Puan</label>
+                                            <input type="number" class="form-control form-control-sm" data-bind="value: points" min="0" />
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label">Sıra</label>
+                                            <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label">Tip</label>
+                                            <select class="form-select form-select-sm" data-bind="value: type">
+                                                <option value="YesNo">Evet/Hayır</option>
+                                                <option value="Rating">Puanlama (1-5)</option>
+                                                <option value="Text">Metin</option>
+                                                <option value="MultipleChoice">Çoktan Seçmeli</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-2" data-bind="visible: type() === 'MultipleChoice'">
+                                            <label class="form-label">Seçenekler (virgülle ayırın)</label>
+                                            <input type="text" class="form-control form-control-sm" data-bind="value: options" placeholder="Seçenek1, Seçenek2" />
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" data-bind="checked: allowNA, attr: { id: 'na-' + $index() }" />
+                                                <label class="form-check-label" data-bind="attr: { for: 'na-' + $index() }">N/A İzin Ver</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <button type="button" class="btn btn-sm btn-danger w-100" data-bind="click: $parents[2].removeQuestion">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-bind="visible: sections().length === 0" class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Henüz bölüm eklenmemiş. Lütfen en az bir bölüm ve soru ekleyin.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                <button type="button" class="btn btn-primary" data-bind="click: $parent.saveChecklist, disable: $parent.isSaving">
+                    <span data-bind="visible: !$parent.isSaving()">
+                        <i class="bi bi-save"></i> Kaydet
+                    </span>
+                    <span data-bind="visible: $parent.isSaving">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Kaydediliyor...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+<div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+<!-- View Modal -->
+<div class="modal fade" data-bind="css: { show: isViewModalOpen }, style: { display: isViewModalOpen() ? 'block' : 'none' }" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" data-bind="with: viewingChecklist">
+            <div class="modal-header">
+                <h5 class="modal-title" data-bind="text: name"></h5>
+                <button type="button" class="btn-close" data-bind="click: $parent.closeViewModal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted" data-bind="text: description || 'Açıklama yok'"></p>
+                <div class="mb-3">
+                    <span class="badge bg-secondary">Versiyon: <span data-bind="text: version"></span></span>
+                    <span class="badge bg-info ms-2"><span data-bind="text: (sections && sections.length) || 0"></span> Bölüm</span>
+                </div>
+
+                <hr>
+
+                <!-- Sections (Read-only) -->
+                <div data-bind="foreach: sections || []">
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0" data-bind="text: name"></h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Soru</th>
+                                        <th>Tip</th>
+                                        <th>Puan</th>
+                                        <th>N/A</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: questions">
+                                    <tr>
+                                        <td data-bind="text: text"></td>
+                                        <td><span class="badge bg-info" data-bind="text: type"></span></td>
+                                        <td data-bind="text: points"></td>
+                                        <td>
+                                            <span data-bind="visible: allowNA" class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                            </span>
+                                            <span data-bind="visible: !allowNA" class="text-muted">
+                                                <i class="bi bi-dash-circle"></i>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeViewModal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade" data-bind="css: { show: isViewModalOpen }, style: { display: isViewModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of checklists-app -->
+
+@section Scripts {
+    <script>
+        // ViewModel Constructors
+
+
+        function QuestionEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.text = ko.observable(data.text || '');
+            self.type = ko.observable(data.type || 'YesNo');
+            self.points = ko.observable(data.points || 10);
+            self.allowNA = ko.observable(data.allowNA || false);
+            self.options = ko.observable(data.options || '');
+            self.order = ko.observable(data.order || 0);
+
+            // Convert to DTO
+            self.toDTO = function(orderIndex) {
+                return {
+                    id: self.id,
+                    text: self.text(),
+                    type: self.type(),
+                    points: parseInt(self.points()) || 0,
+                    allowNA: self.allowNA(),
+                    options: self.options(),
+                    order: orderIndex !== undefined ? orderIndex + 1 : self.order()
+                };
+            };
+        }
+
+        function SectionEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.name = ko.observable(data.name || '');
+            self.order = ko.observable(data.order || 0);
+            self.questions = ko.observableArray((data.questions || []).map(function(q) {
+                return new QuestionEditViewModel(q);
+            }));
+
+            // Convert to DTO
+            self.toDTO = function(orderIndex) {
+                return {
+                    id: self.id,
+                    name: self.name(),
+                    order: orderIndex !== undefined ? orderIndex + 1 : self.order(),
+                    questions: self.questions().map(function(q, qIndex) {
+                        return q.toDTO(qIndex);
+                    })
+                };
+            };
+        }
+
+        function ChecklistEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.name = ko.observable(data.name || '');
+            self.description = ko.observable(data.description || '');
+            self.version = ko.observable(data.version || 1);
+            self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+            self.sections = ko.observableArray((data.sections || []).map(function(s) {
+                return new SectionEditViewModel(s);
+            }));
+
+            // Convert to DTO
+            self.toDTO = function() {
+                return {
+                    name: self.name(),
+                    description: self.description(),
+                    version: self.version(),
+                    isActive: self.isActive(),
+                    sections: self.sections().map(function(s, sIndex) {
+                        return s.toDTO(sIndex);
+                    })
+                };
+            };
+        }
+
+        // Main ViewModel
+        function ChecklistsViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(false);
+            self.isSaving = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+
+            // Data
+            self.checklists = ko.observableArray([]);
+            self.editingChecklist = ko.observable(null);
+            self.viewingChecklist = ko.observable(null);
+
+            // Modal state
+            self.isModalOpen = ko.observable(false);
+            self.isViewModalOpen = ko.observable(false);
+
+            // Load checklists
+            self.loadChecklists = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/checklists', { credentials: 'include' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Yükleme başarısız');
+                        return response.json();
+                    })
+                    .then(data => {
+                        self.checklists(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        self.errorMessage('Kontrol listeleri yüklenirken bir hata oluştu.');
+                    })
+                    .finally(() => {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Create new checklist
+            self.createNew = function() {
+                self.editingChecklist(new ChecklistEditViewModel());
+                self.isModalOpen(true);
+            };
+
+            // Edit existing checklist
+            self.editChecklist = function(checklist) {
+                // Load full checklist data from API
+                console.log('Fetching checklist:', checklist.id);
+
+                fetch('/api/checklists/' + checklist.id, { credentials: 'include' })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            // Read as text first, then try to parse as JSON
+                            return response.text().then(text => {
+                                console.error('Error response (raw):', text);
+
+                                try {
+                                    const errorData = JSON.parse(text);
+                                    console.error('Error response (parsed):', errorData);
+
+                                    if (errorData.error) {
+                                        console.error('Exception:', errorData.error);
+                                        console.error('Stack trace:', errorData.details);
+                                    }
+
+                                    throw new Error(errorData.error || errorData.message || 'API Error: ' + response.status);
+                                } catch (jsonError) {
+                                    // Not JSON, use text as-is
+                                    console.error('Could not parse JSON, using text:', text);
+                                    throw new Error('API Error: ' + response.status);
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Checklist data:', data);
+
+                        // Create ViewModel from API data
+                        self.editingChecklist(new ChecklistEditViewModel(data));
+                        self.isModalOpen(true);
+                    })
+                    .catch(error => {
+                        console.error('Edit error:', error);
+                        self.errorMessage('Kontrol listesi yüklenirken bir hata oluştu: ' + error.message);
+                    });
+            };
+
+            // View checklist details
+            self.viewChecklist = function(checklist) {
+                console.log('Viewing checklist:', checklist.id);
+
+                fetch('/api/checklists/' + checklist.id, { credentials: 'include' })
+                    .then(response => {
+                        console.log('View response status:', response.status);
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error('View error response:', text);
+                                throw new Error('API Error: ' + response.status);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('View checklist data:', data);
+                        self.viewingChecklist(data);
+                        self.isViewModalOpen(true);
+                    })
+                    .catch(error => {
+                        console.error('View error:', error);
+                        self.errorMessage('Kontrol listesi yüklenirken bir hata oluştu: ' + error.message);
+                    });
+            };
+
+            // Add section
+            self.addSection = function() {
+                var checklist = self.editingChecklist();
+                var newSection = new SectionEditViewModel({
+                    order: checklist.sections().length + 1
+                });
+                checklist.sections.push(newSection);
+            };
+
+            // Remove section
+            self.removeSection = function(section) {
+                if (!confirm('Bu bölümü silmek istediğinizden emin misiniz?')) return;
+                var checklist = self.editingChecklist();
+                checklist.sections.remove(section);
+            };
+
+            // Add question
+            self.addQuestion = function(section) {
+                var newQuestion = new QuestionEditViewModel({
+                    order: section.questions().length + 1
+                });
+                section.questions.push(newQuestion);
+            };
+
+            // Remove question
+            self.removeQuestion = function(question) {
+                var section = self.editingChecklist().sections().find(s => s.questions().includes(question));
+                if (section) {
+                    section.questions.remove(question);
+                }
+            };
+
+            // Save checklist
+            self.saveChecklist = function() {
+                var checklist = self.editingChecklist();
+
+                // Validation
+                if (!checklist.name() || checklist.name().trim() === '') {
+                    alert('Kontrol listesi adı zorunludur!');
+                    return;
+                }
+
+                if (checklist.sections().length === 0) {
+                    alert('En az bir bölüm eklemelisiniz!');
+                    return;
+                }
+
+                // Convert to DTO using toDTO() method
+                var dto = checklist.toDTO();
+
+                self.isSaving(true);
+                var endpoint = checklist.id ? '/api/checklists/' + checklist.id : '/api/checklists';
+                var method = checklist.id ? 'PUT' : 'POST';
+
+                fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Kayıt başarısız');
+                    return response.json();
+                })
+                .then(data => {
+                    self.successMessage('Kontrol listesi başarıyla kaydedildi.');
+                    self.closeModal();
+                    self.loadChecklists();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Kontrol listesi kaydedilirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isSaving(false);
+                });
+            };
+
+            // Clone checklist
+            self.cloneChecklist = function(checklist) {
+                if (!confirm('Bu kontrol listesini klonlamak istediğinizden emin misiniz?')) return;
+
+                var newName = prompt('Yeni kontrol listesi adı:', checklist.name + ' (Kopya)');
+                if (!newName) return;
+
+                fetch('/api/checklists/' + checklist.id + '/clone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(newName)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Klonlama başarısız');
+                    return response.json();
+                })
+                .then(() => {
+                    self.successMessage('Kontrol listesi başarıyla klonlandı.');
+                    self.loadChecklists();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Kontrol listesi klonlanırken bir hata oluştu.');
+                });
+            };
+
+            // Delete checklist
+            self.deleteChecklist = function(checklist) {
+                if (!confirm('Bu kontrol listesini silmek istediğinizden emin misiniz?')) return;
+
+                fetch('/api/checklists/' + checklist.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Kontrol listesi başarıyla silindi.');
+                    self.checklists.remove(checklist);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Kontrol listesi silinirken bir hata oluştu.');
+                });
+            };
+
+            // Close modals
+            self.closeModal = function() {
+                self.isModalOpen(false);
+                self.editingChecklist(null);
+            };
+
+            self.closeViewModal = function() {
+                self.isViewModalOpen(false);
+                self.viewingChecklist(null);
+            };
+
+            // Initialize
+            self.loadChecklists();
+        }
+
+        // Apply bindings
+        $(document).ready(function() {
+            ko.applyBindings(new ChecklistsViewModel(), document.getElementById('checklists-app'));
+        });
+    </script>
+}

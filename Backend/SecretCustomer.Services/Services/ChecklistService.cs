@@ -212,6 +212,24 @@ public class ChecklistService : IChecklistService
         }
     }
 
+    private List<QuestionOptionDto>? ParseQuestionOptions(string? optionsJson)
+    {
+        if (string.IsNullOrWhiteSpace(optionsJson))
+            return null;
+
+        try
+        {
+            // Try to deserialize as List<QuestionOptionDto>
+            return JsonSerializer.Deserialize<List<QuestionOptionDto>>(optionsJson);
+        }
+        catch (JsonException)
+        {
+            // If that fails, it might be a simple string or comma-separated values
+            // Return null for now - frontend will handle it
+            return null;
+        }
+    }
+
     private ChecklistDto MapToDto(Checklist checklist)
     {
         return new ChecklistDto
@@ -238,9 +256,7 @@ public class ChecklistService : IChecklistService
                     Points = q.Points,
                     AllowNA = q.AllowNA,
                     IsRequired = q.IsRequired,
-                    Options = q.OptionsJson != null
-                        ? JsonSerializer.Deserialize<List<QuestionOptionDto>>(q.OptionsJson)
-                        : null
+                    Options = ParseQuestionOptions(q.OptionsJson)
                 }).ToList()
             }).ToList()
         };

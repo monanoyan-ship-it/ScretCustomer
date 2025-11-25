@@ -9,6 +9,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
+    <!-- jQuery (Must be loaded before KnockoutJS) -->
+    <script src="~/lib/jquery/jquery.min.js"></script>
+
+    <!-- KnockoutJS -->
+    <script src="~/lib/knockout/knockout-latest.min.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/app.css">
     <link rel="stylesheet" href="~/css/sidebar.css">
@@ -23,7 +29,7 @@
             <partial name="_Sidebar" />
 
             <!-- Main Content -->
-            <div class="flex-grow-1 d-flex flex-column">
+            <div class="flex-grow-1 d-flex flex-column" style="margin-left: 280px;">
                 <!-- Top Navigation Bar -->
                 <partial name="_TopNav" />
 

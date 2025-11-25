@@ -1,7 +1,11 @@
-@using System.Security.Claims
-
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+<!-- TopNav Component -->
+<nav id="topnav-component" class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <div class="container-fluid">
+        <!-- Hamburger Menu Button -->
+        <button class="btn btn-outline-secondary d-lg-none me-2" type="button" onclick="window.toggleSidebar()">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -11,21 +15,23 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle me-2 fs-5"></i>
-                        <span>@User.FindFirst(ClaimTypes.Name)?.Value</span>
+                        <span data-bind="text: userName"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <h6 class="dropdown-header">
                                 <i class="bi bi-shield-check me-1"></i>
-                                @User.FindFirst(ClaimTypes.Role)?.Value
+                                <span data-bind="text: userRole"></span>
                             </h6>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
-                                <i class="bi bi-box-arrow-right me-2"></i>
-                                Çıkış Yap
-                            </a>
+                            <form method="post" action="/Account/Logout">
+                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; cursor: pointer; width: 100%; text-align: left;">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    Çıkış Yap
+                                </button>
+                            </form>
                         </li>
                     </ul>
                 </li>
@@ -33,3 +39,36 @@
         </div>
     </div>
 </nav>
+
+<script>
+    // TopNav Component ViewModel
+    function TopNavViewModel() {
+        var self = this;
+
+        self.userName = ko.observable('...');
+        self.userRole = ko.observable('...');
+
+        // Load current user info
+        fetch('/api/auth/me', {
+            credentials: 'include'
+        })
+        .then(res => res.json())
+        .then(data => {
+            self.userName(data.username || 'Kullanıcı');
+            self.userRole(data.role || 'User');
+        })
+        .catch(error => {
+            console.error('Error loading user info:', error);
+        });
+    }
+
+    // Apply binding to topnav component
+    $(document).ready(function() {
+        if (document.getElementById('topnav-component')) {
+            ko.applyBindings(
+                new TopNavViewModel(),
+                document.getElementById('topnav-component')
+            );
+        }
+    });
+</script>

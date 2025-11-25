@@ -1,157 +1,35 @@
-/* Custom Application Styles */
+/* Custom styles for Secret Customer App */
 
-/* General */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
 }
 
-/* Navigation */
-.navbar-brand {
-    font-weight: 600;
-    font-size: 1.25rem;
-}
-
-.navbar-nav .nav-link {
-    padding: 0.5rem 1rem;
-    transition: background-color 0.3s;
-}
-
-.navbar-nav .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-/* Cards */
 .card {
     border: none;
-    border-radius: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 10px;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Dashboard Cards */
-.card.bg-primary,
-.card.bg-success,
-.card.bg-info,
-.card.bg-warning {
-    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark, #0056b3) 100%);
-}
-
-.card.bg-success {
-    background: linear-gradient(135deg, var(--bs-success) 0%, var(--bs-success-dark, #157347) 100%);
-}
-
-.card.bg-info {
-    background: linear-gradient(135deg, var(--bs-info) 0%, var(--bs-info-dark, #087990) 100%);
-}
-
-/* Login Page */
-#login-page .card {
-    max-width: 400px;
-}
-
-#login-page .card-body {
-    padding: 2rem;
-}
-
-#login-page .bi-clipboard-check {
-    color: var(--bs-primary);
-}
-
-/* Buttons */
-.btn {
-    border-radius: 6px;
-    padding: 0.5rem 1.25rem;
-    font-weight: 500;
-    transition: all 0.3s;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn-group .btn {
-    border-radius: 0;
-}
-
-.btn-group .btn:first-child {
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-}
-
-.btn-group .btn:last-child {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-/* Badges */
-.badge {
-    font-weight: 500;
-    padding: 0.35rem 0.65rem;
-}
-
-/* List Groups */
-.list-group-item {
-    border: none;
-    border-bottom: 1px solid #dee2e6;
-    padding: 1rem 1.25rem;
-}
-
-.list-group-item:last-child {
-    border-bottom: none;
-}
-
-/* Loading Spinner */
-.spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-    border-width: 0.15rem;
-}
-
-/* Alerts */
-.alert {
-    border-radius: 6px;
-    border: none;
-}
-
-/* Forms */
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.form-label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
-
-/* Card Headers */
 .card-header {
-    border-bottom: 2px solid #e9ecef;
-    font-weight: 600;
+    border-radius: 10px 10px 0 0 !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .navbar-nav {
-        padding: 1rem 0;
-    }
+.btn {
+    border-radius: 5px;
+}
 
-    .navbar-nav .nav-link {
-        padding: 0.75rem 1rem;
-    }
+.nav-pills .nav-link {
+    border-radius: 5px;
+}
 
-    .card-body {
-        padding: 1rem;
-    }
+.nav-pills .nav-link.active {
+    background-color: #0d6efd;
+}
+
+/* Loading spinner centering */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
 }
 
 /* Custom animations */
@@ -170,15 +48,20 @@ body {
     animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Utility classes */
-.text-white-50 {
-    color: rgba(255, 255, 255, 0.5) !important;
+/* Responsive layout adjustments */
+@media (max-width: 991.98px) {
+    .flex-grow-1.d-flex.flex-column {
+        margin-left: 0 !important;
+    }
 }
 
-.shadow {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-}
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .nav-pills {
+        flex-direction: column;
+    }
 
-.shadow-sm {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    .nav-pills .nav-item {
+        margin-bottom: 0.5rem;
+    }
 }

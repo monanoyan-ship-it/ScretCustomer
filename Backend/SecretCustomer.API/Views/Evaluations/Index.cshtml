@@ -1,61 +1,106 @@
-@model EvaluationIndexViewModel
 @{
-    ViewData["Title"] = "Değerlendirmeler";
+    ViewData["Title"] = "Değerlendirmelerim";
 }
 
-<h2 class="mb-4">Değerlendirmeler</h2>
+<h2 class="mb-4">Değerlendirmelerim</h2>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["Success"]
+<!-- Evaluations List Component -->
+<div id="evaluations-list-component">
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-}
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
+    <!-- Evaluations -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: evaluations().length === 0" class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Henüz değerlendirme bulunmamaktadır.
+        </div>
 
-<h5 class="mb-3">Bekleyen Değerlendirmeler</h5>
-
-<div class="row">
-    @if (Model.PendingAssignments.Any())
-    {
-        @foreach (var assignment in Model.PendingAssignments)
-        {
-            <div class="col-12 mb-3">
-                <div class="card shadow-sm">
+        <!-- Evaluations Grid -->
+        <div class="row" data-bind="foreach: evaluations">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="card-title">@assignment.ProjectName</h5>
-                                <p class="card-text text-muted">
-                                    <strong>Şube:</strong> @(assignment.BranchName ?? "Atanmamış")<br>
-                                    <strong>Kontrol Listesi:</strong> @assignment.ChecklistName<br>
-                                    <strong>Deadline:</strong> @assignment.DueDate.ToString("dd.MM.yyyy")
-                                </p>
-                                <span class="badge bg-warning text-dark">Bekliyor</span>
+                        <h5 class="card-title" data-bind="text: projectName || 'Proje'"></h5>
+                        <p class="text-muted">
+                            <i class="bi bi-building"></i> <span data-bind="text: branchName || 'N/A'"></span>
+                        </p>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Puan</span>
+                                <strong>
+                                    <span data-bind="text: (scorePercentage || 0).toFixed(1)"></span>%
+                                </strong>
                             </div>
-                            <a asp-action="Start" asp-route-assignmentId="@assignment.Id" class="btn btn-primary">
-                                <i class="bi bi-play-fill"></i> Değerlendirmeye Başla
-                            </a>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning' : 'bg-danger')"></div>
+                            </div>
                         </div>
+
+                        <p class="text-muted small">
+                            <i class="bi bi-calendar"></i>
+                            <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : 'Tarih yok'"></span>
+                        </p>
+
+                        <span class="badge" data-bind="css: status === 'Completed' ? 'bg-success' : 'bg-warning', text: status === 'Completed' ? 'Tamamlandı' : 'Bekliyor'"></span>
                     </div>
                 </div>
             </div>
-        }
-    }
-    else
-    {
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Bekleyen değerlendirme bulunmamaktadır.
-            </div>
         </div>
-    }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Evaluations List Component ViewModel
+        function EvaluationsListViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.errorMessage = ko.observable('');
+            self.evaluations = ko.observableArray([]);
+
+            self.loadEvaluations = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/evaluations/evaluator', {
+                    credentials: 'include'
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Yükleme başarısız');
+                    return res.json();
+                })
+                .then(data => {
+                    self.evaluations(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Değerlendirmeler yüklenirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isLoading(false);
+                });
+            };
+
+            self.loadEvaluations();
+        }
+
+        // Apply binding to component
+        $(document).ready(function() {
+            ko.applyBindings(
+                new EvaluationsListViewModel(),
+                document.getElementById('evaluations-list-component')
+            );
+        });
+    </script>
+}

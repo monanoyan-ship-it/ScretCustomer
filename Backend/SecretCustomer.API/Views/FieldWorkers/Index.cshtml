@@ -1,0 +1,313 @@
+@{
+    ViewData["Title"] = "Saha Çalışanları";
+}
+
+<div id="fieldworkers-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Saha Çalışanları</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Saha Çalışanı
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Field Workers Table -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: fieldWorkers().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz saha çalışanı bulunmamaktadır.
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div data-bind="visible: fieldWorkers().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ad Soyad</th>
+                            <th>Telefon</th>
+                            <th>E-posta</th>
+                            <th>Adres</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: fieldWorkers">
+                        <tr>
+                            <td data-bind="text: firstName + ' ' + lastName"></td>
+                            <td data-bind="text: phoneNumber"></td>
+                            <td data-bind="text: email || '-'"></td>
+                            <td data-bind="text: address"></td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editFieldWorker">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteFieldWorker">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingFieldWorker">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Saha Çalışanı</span>
+                        <span data-bind="visible: id">Saha Çalışanı Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ahmet" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Yılmaz" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon *</label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="+90 555 123 45 67" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="ahmet@example.com" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adres *</label>
+                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="Tam adres bilgisi..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notlar</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="Ek notlar..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveFieldWorker, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of fieldworkers-app -->
+
+@section Scripts {
+    <script>
+        function FieldWorkerEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.firstName = ko.observable(data.firstName || '');
+            self.lastName = ko.observable(data.lastName || '');
+            self.phoneNumber = ko.observable(data.phoneNumber || '');
+            self.email = ko.observable(data.email || '');
+            self.address = ko.observable(data.address || '');
+            self.notes = ko.observable(data.notes || '');
+            self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+        }
+
+        function FieldWorkersViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(false);
+            self.isSaving = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+
+            // Data
+            self.fieldWorkers = ko.observableArray([]);
+            self.editingFieldWorker = ko.observable(null);
+
+            // Modal state
+            self.isModalOpen = ko.observable(false);
+
+            // Load field workers
+            self.loadFieldWorkers = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/fieldworkers', { credentials: 'include' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Yükleme başarısız');
+                        return response.json();
+                    })
+                    .then(data => {
+                        self.fieldWorkers(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        self.errorMessage('Saha çalışanları yüklenirken bir hata oluştu.');
+                    })
+                    .finally(() => {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Create new field worker
+            self.createNew = function() {
+                self.editingFieldWorker(new FieldWorkerEditViewModel());
+                self.isModalOpen(true);
+            };
+
+            // Edit existing field worker
+            self.editFieldWorker = function(fieldWorker) {
+                self.editingFieldWorker(new FieldWorkerEditViewModel(fieldWorker));
+                self.isModalOpen(true);
+            };
+
+            // Save field worker
+            self.saveFieldWorker = function() {
+                var fw = self.editingFieldWorker();
+
+                // Validation
+                if (!fw.firstName() || fw.firstName().trim() === '') {
+                    alert('Ad alanı zorunludur!');
+                    return;
+                }
+
+                if (!fw.lastName() || fw.lastName().trim() === '') {
+                    alert('Soyad alanı zorunludur!');
+                    return;
+                }
+
+                if (!fw.phoneNumber() || fw.phoneNumber().trim() === '') {
+                    alert('Telefon numarası zorunludur!');
+                    return;
+                }
+
+                if (!fw.address() || fw.address().trim() === '') {
+                    alert('Adres alanı zorunludur!');
+                    return;
+                }
+
+                // Prepare DTO
+                var dto = {
+                    firstName: fw.firstName(),
+                    lastName: fw.lastName(),
+                    phoneNumber: fw.phoneNumber(),
+                    email: fw.email() || null,
+                    address: fw.address(),
+                    notes: fw.notes() || null,
+                    isActive: fw.isActive()
+                };
+
+                self.isSaving(true);
+                var endpoint = fw.id ? '/api/fieldworkers/' + fw.id : '/api/fieldworkers';
+                var method = fw.id ? 'PUT' : 'POST';
+
+                fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Kayıt başarısız');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    self.successMessage('Saha çalışanı başarıyla kaydedildi.');
+                    self.closeModal();
+                    self.loadFieldWorkers();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage(error.message || 'Saha çalışanı kaydedilirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isSaving(false);
+                });
+            };
+
+            // Delete field worker
+            self.deleteFieldWorker = function(fieldWorker) {
+                if (!confirm('Bu saha çalışanını silmek istediğinizden emin misiniz?')) return;
+
+                fetch('/api/fieldworkers/' + fieldWorker.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Saha çalışanı başarıyla silindi.');
+                    self.fieldWorkers.remove(fieldWorker);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Saha çalışanı silinirken bir hata oluştu.');
+                });
+            };
+
+            // Close modal
+            self.closeModal = function() {
+                self.isModalOpen(false);
+                self.editingFieldWorker(null);
+            };
+
+            // Initialize
+            self.loadFieldWorkers();
+        }
+
+        // Apply bindings
+        $(document).ready(function() {
+            ko.applyBindings(new FieldWorkersViewModel(), document.getElementById('fieldworkers-app'));
+        });
+    </script>
+}

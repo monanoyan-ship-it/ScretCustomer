@@ -1,0 +1,76 @@
+<div class="container-fluid">
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#/dashboard">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Gizli Müşteri Sistemi
+            </a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-danger btn-sm" onclick="authService.logout(); window.location.hash = '#/login';">
+                    <i class="bi bi-box-arrow-right me-1"></i>
+                    Çıkış
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Kontrol Listeleri</h2>
+        <a href="#/dashboard" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard'a Dön
+        </a>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger">
+        <span data-bind="text: errorMessage"></span>
+    </div>
+
+    <!-- Checklists Table -->
+    <div data-bind="visible: !isLoading() && checklists().length > 0">
+        <div class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>İsim</th>
+                            <th>Açıklama</th>
+                            <th>Aktif</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: checklists">
+                        <tr>
+                            <td data-bind="text: name"></td>
+                            <td data-bind="text: description"></td>
+                            <td>
+                                <span data-bind="visible: isActive" class="badge bg-success">Aktif</span>
+                                <span data-bind="visible: !isActive" class="badge bg-secondary">Pasif</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-2" data-bind="click: $parent.viewChecklist">
+                                    <i class="bi bi-eye"></i> Görüntüle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteChecklist">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div data-bind="visible: !isLoading() && checklists().length === 0" class="text-center py-5">
+        <i class="bi bi-list-check fs-1 text-muted"></i>
+        <p class="text-muted mt-3">Henüz kontrol listesi bulunmamaktadır.</p>
+    </div>
+</div>

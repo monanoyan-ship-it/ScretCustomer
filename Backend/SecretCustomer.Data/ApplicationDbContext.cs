@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Assignment> Assignments { get; set; }
     public DbSet<Evaluation> Evaluations { get; set; }
     public DbSet<Answer> Answers { get; set; }
+    public DbSet<FieldWorker> FieldWorkers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +39,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Assignment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Evaluation>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Answer>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<FieldWorker>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

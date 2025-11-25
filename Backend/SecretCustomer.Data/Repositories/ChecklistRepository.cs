@@ -15,13 +15,15 @@ public class ChecklistRepository : IChecklistRepository
 
     public async Task<Checklist?> GetByIdAsync(Guid id, bool includeDetails = false)
     {
-        var query = _context.Checklists.AsQueryable();
+        var query = _context.Checklists
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
 
         if (includeDetails)
         {
             query = query
-                .Include(c => c.Sections.OrderBy(s => s.Order))
-                    .ThenInclude(s => s.Questions.OrderBy(q => q.Order));
+                .Include(c => c.Sections.Where(s => !s.IsDeleted).OrderBy(s => s.Order))
+                    .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted).OrderBy(q => q.Order));
         }
 
         return await query.FirstOrDefaultAsync(c => c.Id == id);
@@ -30,7 +32,8 @@ public class ChecklistRepository : IChecklistRepository
     public async Task<IEnumerable<Checklist>> GetAllAsync(bool includeInactive = false)
     {
         var query = _context.Checklists
-            .Include(c => c.Sections)
+            .Where(c => !c.IsDeleted)
+            .Include(c => c.Sections.Where(s => !s.IsDeleted))
             .AsQueryable();
 
         if (!includeInactive)

@@ -15,13 +15,15 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<Project?> GetByIdAsync(Guid id, bool includeDetails = false)
     {
-        var query = _context.Projects.AsQueryable();
+        var query = _context.Projects
+            .Where(p => !p.IsDeleted)
+            .AsQueryable();
 
         if (includeDetails)
         {
             query = query
                 .Include(p => p.Checklist)
-                .Include(p => p.Assignments);
+                .Include(p => p.Assignments.Where(a => !a.IsDeleted));
         }
 
         return await query.FirstOrDefaultAsync(p => p.Id == id);
@@ -30,7 +32,9 @@ public class ProjectRepository : IProjectRepository
     public async Task<IEnumerable<Project>> GetAllAsync(bool includeInactive = false)
     {
         var query = _context.Projects
+            .Where(p => !p.IsDeleted)
             .Include(p => p.Checklist)
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
             .AsQueryable();
 
         if (!includeInactive)

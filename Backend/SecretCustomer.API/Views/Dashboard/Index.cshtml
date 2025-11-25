@@ -1,122 +1,243 @@
-@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
 
 <h2 class="mb-4">Dashboard</h2>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<!-- Stats Cards Component -->
+<div id="dashboard-stats-component">
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
     </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger">
+        <span data-bind="text: errorMessage"></span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row" data-bind="visible: !isLoading()">
+        <div class="col-md-4 mb-4">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Toplam Değerlendirme</h6>
+                            <h3 data-bind="text: totalEvaluations"></h3>
+                        </div>
+                        <i class="bi bi-clipboard-check fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Ortalama Puan</h6>
+                            <h3 data-bind="text: averageScore().toFixed(1)"></h3>
+                        </div>
+                        <i class="bi bi-star-fill fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Değişim</h6>
+                            <h3>
+                                <span data-bind="text: percentageChange().toFixed(1)"></span>%
+                                <i data-bind="css: percentageChange() >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+                            </h3>
+                        </div>
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Branches Component -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div id="dashboard-top-branches-component">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">En İyi 5 Şube</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isLoading" class="text-center">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div data-bind="visible: !isLoading() && topBranches().length === 0" class="text-center text-muted">
+                        Henüz veri bulunmamaktadır.
+                    </div>
+
+                    <!-- Branches List -->
+                    <ul class="list-group list-group-flush" data-bind="foreach: topBranches, visible: !isLoading()">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span data-bind="text: branchName"></span>
+                            <span class="badge bg-success rounded-pill" data-bind="text: averageScore.toFixed(1)"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div id="dashboard-bottom-branches-component">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Geliştirilmesi Gereken 5 Şube</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isLoading" class="text-center">
+                        <div class="spinner-border spinner-border-sm"></div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div data-bind="visible: !isLoading() && bottomBranches().length === 0" class="text-center text-muted">
+                        Henüz veri bulunmamaktadır.
+                    </div>
+
+                    <!-- Branches List -->
+                    <ul class="list-group list-group-flush" data-bind="foreach: bottomBranches, visible: !isLoading()">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span data-bind="text: branchName"></span>
+                            <span class="badge bg-warning rounded-pill" data-bind="text: averageScore.toFixed(1)"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Stats Component ViewModel
+        function DashboardStatsViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.errorMessage = ko.observable('');
+            self.totalEvaluations = ko.observable(0);
+            self.averageScore = ko.observable(0);
+            self.percentageChange = ko.observable(0);
+
+            self.loadStats = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/dashboard/admin', {
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Yükleme başarısız');
+                    return response.json();
+                })
+                .then(data => {
+                    self.totalEvaluations(data.totalEvaluations || 0);
+                    self.averageScore(data.averageScore || 0);
+                    self.percentageChange(data.percentageChange || 0);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Dashboard verileri yüklenirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isLoading(false);
+                });
+            };
+
+            self.loadStats();
+        }
+
+        // Top Branches Component ViewModel
+        function DashboardTopBranchesViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.topBranches = ko.observableArray([]);
+
+            self.loadBranches = function() {
+                self.isLoading(true);
+
+                fetch('/api/dashboard/admin', {
+                    credentials: 'include'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    self.topBranches(data.topBranches || []);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    self.isLoading(false);
+                });
+            };
+
+            self.loadBranches();
+        }
+
+        // Bottom Branches Component ViewModel
+        function DashboardBottomBranchesViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.bottomBranches = ko.observableArray([]);
+
+            self.loadBranches = function() {
+                self.isLoading(true);
+
+                fetch('/api/dashboard/admin', {
+                    credentials: 'include'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    self.bottomBranches(data.bottomBranches || []);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    self.isLoading(false);
+                });
+            };
+
+            self.loadBranches();
+        }
+
+        // Apply bindings to each component
+        $(document).ready(function() {
+            ko.applyBindings(
+                new DashboardStatsViewModel(),
+                document.getElementById('dashboard-stats-component')
+            );
+
+            ko.applyBindings(
+                new DashboardTopBranchesViewModel(),
+                document.getElementById('dashboard-top-branches-component')
+            );
+
+            ko.applyBindings(
+                new DashboardBottomBranchesViewModel(),
+                document.getElementById('dashboard-bottom-branches-component')
+            );
+        });
+    </script>
 }
-
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card bg-primary text-white shadow">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50">Toplam Değerlendirme</h6>
-                        <h3>@Model.TotalEvaluations</h3>
-                    </div>
-                    <i class="bi bi-clipboard-check fs-1"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card bg-success text-white shadow">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50">Ortalama Puan</h6>
-                        <h3>@Model.AverageScore.ToString("F1")</h3>
-                    </div>
-                    <i class="bi bi-star-fill fs-1"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card bg-info text-white shadow">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50">Değişim</h6>
-                        <h3>
-                            @Model.PercentageChange.ToString("F1")%
-                            @if (Model.PercentageChange > 0)
-                            {
-                                <i class="bi bi-arrow-up"></i>
-                            }
-                            else if (Model.PercentageChange < 0)
-                            {
-                                <i class="bi bi-arrow-down"></i>
-                            }
-                        </h3>
-                    </div>
-                    <i class="bi bi-graph-up fs-1"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card shadow">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">En İyi 5 Şube</h5>
-            </div>
-            <div class="card-body">
-                @if (Model.TopBranches.Any())
-                {
-                    <ul class="list-group list-group-flush">
-                        @foreach (var branch in Model.TopBranches)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@branch.BranchName</span>
-                                <span class="badge bg-success rounded-pill">@branch.AverageScore.ToString("F1")</span>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <p class="text-muted text-center">Henüz veri bulunmamaktadır.</p>
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 mb-4">
-        <div class="card shadow">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Geliştirilmesi Gereken 5 Şube</h5>
-            </div>
-            <div class="card-body">
-                @if (Model.BottomBranches.Any())
-                {
-                    <ul class="list-group list-group-flush">
-                        @foreach (var branch in Model.BottomBranches)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@branch.BranchName</span>
-                                <span class="badge bg-warning rounded-pill">@branch.AverageScore.ToString("F1")</span>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <p class="text-muted text-center">Henüz veri bulunmamaktadır.</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
