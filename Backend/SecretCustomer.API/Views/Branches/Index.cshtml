@@ -1,0 +1,298 @@
+@{
+    ViewData["Title"] = "Şubeler";
+}
+
+<div id="branches-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Şubeler</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Şube
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Branches Table -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: branches().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz şube bulunmamaktadır.
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div data-bind="visible: branches().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Şube Adı</th>
+                            <th>Şube Kodu</th>
+                            <th>Şehir</th>
+                            <th>Bölge</th>
+                            <th>Kullanıcı Sayısı</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: branches">
+                        <tr>
+                            <td data-bind="text: name"></td>
+                            <td><span class="badge bg-secondary" data-bind="text: code"></span></td>
+                            <td data-bind="text: city || '-'"></td>
+                            <td data-bind="text: region || '-'"></td>
+                            <td><span class="badge bg-info" data-bind="text: userCount"></span></td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editBranch">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteBranch">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingBranch">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Şube</span>
+                        <span data-bind="visible: id">Şube Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şube Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: name" placeholder="Merkez Şube" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şube Kodu *</label>
+                            <input type="text" class="form-control" data-bind="value: code" placeholder="MRK001" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şehir</label>
+                            <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bölge</label>
+                            <input type="text" class="form-control" data-bind="value: region" placeholder="Marmara" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adres</label>
+                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="Şube adresi..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveBranch, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of branches-app -->
+
+@section Scripts {
+    <script>
+        function BranchEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.name = ko.observable(data.name || '');
+            self.code = ko.observable(data.code || '');
+            self.address = ko.observable(data.address || '');
+            self.city = ko.observable(data.city || '');
+            self.region = ko.observable(data.region || '');
+            self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+        }
+
+        function BranchesViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(false);
+            self.isSaving = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+
+            // Data
+            self.branches = ko.observableArray([]);
+            self.editingBranch = ko.observable(null);
+
+            // Modal state
+            self.isModalOpen = ko.observable(false);
+
+            // Load branches
+            self.loadBranches = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/branches', { credentials: 'include' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Yükleme başarısız');
+                        return response.json();
+                    })
+                    .then(data => {
+                        self.branches(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        self.errorMessage('Şubeler yüklenirken bir hata oluştu.');
+                    })
+                    .finally(() => {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Create new branch
+            self.createNew = function() {
+                self.editingBranch(new BranchEditViewModel());
+                self.isModalOpen(true);
+            };
+
+            // Edit existing branch
+            self.editBranch = function(branch) {
+                self.editingBranch(new BranchEditViewModel(branch));
+                self.isModalOpen(true);
+            };
+
+            // Save branch
+            self.saveBranch = function() {
+                var br = self.editingBranch();
+
+                // Validation
+                if (!br.name() || br.name().trim() === '') {
+                    alert('Şube adı zorunludur!');
+                    return;
+                }
+
+                if (!br.code() || br.code().trim() === '') {
+                    alert('Şube kodu zorunludur!');
+                    return;
+                }
+
+                // Prepare DTO
+                var dto = {
+                    name: br.name(),
+                    code: br.code(),
+                    address: br.address() || null,
+                    city: br.city() || null,
+                    region: br.region() || null,
+                    isActive: br.isActive()
+                };
+
+                self.isSaving(true);
+                var endpoint = br.id ? '/api/branches/' + br.id : '/api/branches';
+                var method = br.id ? 'PUT' : 'POST';
+
+                fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Kayıt başarısız');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    self.successMessage('Şube başarıyla kaydedildi.');
+                    self.closeModal();
+                    self.loadBranches();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage(error.message || 'Şube kaydedilirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isSaving(false);
+                });
+            };
+
+            // Delete branch
+            self.deleteBranch = function(branch) {
+                if (!confirm('Bu şubeyi silmek istediğinizden emin misiniz?')) return;
+
+                fetch('/api/branches/' + branch.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Şube başarıyla silindi.');
+                    self.branches.remove(branch);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Şube silinirken bir hata oluştu.');
+                });
+            };
+
+            // Close modal
+            self.closeModal = function() {
+                self.isModalOpen(false);
+                self.editingBranch(null);
+            };
+
+            // Initialize
+            self.loadBranches();
+        }
+
+        // Apply bindings
+        $(document).ready(function() {
+            ko.applyBindings(new BranchesViewModel(), document.getElementById('branches-app'));
+        });
+    </script>
+}

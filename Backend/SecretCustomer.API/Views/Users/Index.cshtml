@@ -1,0 +1,377 @@
+@{
+    ViewData["Title"] = "Kullanıcılar";
+}
+
+<div id="users-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Kullanıcılar</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Kullanıcı
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Users Table -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: users().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz kullanıcı bulunmamaktadır.
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div data-bind="visible: users().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı Adı</th>
+                            <th>Ad Soyad</th>
+                            <th>E-posta</th>
+                            <th>Rol</th>
+                            <th>Şube</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: users">
+                        <tr>
+                            <td><strong data-bind="text: username"></strong></td>
+                            <td data-bind="text: firstName + ' ' + lastName"></td>
+                            <td data-bind="text: email"></td>
+                            <td>
+                                <span class="badge" data-bind="css: $parent.getRoleBadgeClass(role), text: $parent.getRoleDisplayName(role)"></span>
+                            </td>
+                            <td data-bind="text: branchName || '-'"></td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editUser">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteUser">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingUser">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Kullanıcı</span>
+                        <span data-bind="visible: id">Kullanıcı Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Username (only for create) -->
+                    <div class="mb-3" data-bind="visible: !id">
+                        <label class="form-label">Kullanıcı Adı *</label>
+                        <input type="text" class="form-control" data-bind="value: username" placeholder="johndoe" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ahmet" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Yılmaz" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">E-posta *</label>
+                        <input type="email" class="form-control" data-bind="value: email" placeholder="ahmet@example.com" />
+                    </div>
+
+                    <!-- Password (only for create) -->
+                    <div class="mb-3" data-bind="visible: !id">
+                        <label class="form-label">Şifre *</label>
+                        <input type="password" class="form-control" data-bind="value: password" placeholder="En az 6 karakter" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rol *</label>
+                            <select class="form-select" data-bind="value: role">
+                                <option value="1">Admin</option>
+                                <option value="2">Team Leader</option>
+                                <option value="3">Evaluator</option>
+                                <option value="4">Customer Representative</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şube</label>
+                            <select class="form-select" data-bind="options: $parent.branches, optionsText: 'name', optionsValue: 'id', value: branchId, optionsCaption: '-- Şube Seçin --'"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveUser, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of users-app -->
+
+@section Scripts {
+    <script>
+        function UserEditViewModel(data) {
+            var self = this;
+            data = data || {};
+
+            self.id = data.id || null;
+            self.username = ko.observable(data.username || '');
+            self.firstName = ko.observable(data.firstName || '');
+            self.lastName = ko.observable(data.lastName || '');
+            self.email = ko.observable(data.email || '');
+            self.password = ko.observable('');
+            self.role = ko.observable(data.role !== undefined ? data.role.toString() : '3'); // Default: Evaluator
+            self.branchId = ko.observable(data.branchId || null);
+            self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+        }
+
+        function UsersViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(false);
+            self.isSaving = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+
+            // Data
+            self.users = ko.observableArray([]);
+            self.branches = ko.observableArray([]);
+            self.editingUser = ko.observable(null);
+
+            // Modal state
+            self.isModalOpen = ko.observable(false);
+
+            // Role display helpers
+            self.getRoleDisplayName = function(role) {
+                const roleNames = {
+                    1: 'Admin',
+                    2: 'Team Leader',
+                    3: 'Evaluator',
+                    4: 'Customer Representative'
+                };
+                return roleNames[role] || 'Unknown';
+            };
+
+            self.getRoleBadgeClass = function(role) {
+                const roleClasses = {
+                    1: 'bg-danger',
+                    2: 'bg-primary',
+                    3: 'bg-success',
+                    4: 'bg-info'
+                };
+                return roleClasses[role] || 'bg-secondary';
+            };
+
+            // Load users
+            self.loadUsers = function() {
+                self.isLoading(true);
+                self.errorMessage('');
+
+                fetch('/api/users', { credentials: 'include' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Yükleme başarısız');
+                        return response.json();
+                    })
+                    .then(data => {
+                        self.users(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        self.errorMessage('Kullanıcılar yüklenirken bir hata oluştu.');
+                    })
+                    .finally(() => {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Load branches
+            self.loadBranches = function() {
+                fetch('/api/branches/active', { credentials: 'include' })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Şubeler yüklenemedi');
+                        return response.json();
+                    })
+                    .then(data => {
+                        self.branches(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading branches:', error);
+                    });
+            };
+
+            // Create new user
+            self.createNew = function() {
+                self.editingUser(new UserEditViewModel());
+                self.isModalOpen(true);
+            };
+
+            // Edit existing user
+            self.editUser = function(user) {
+                self.editingUser(new UserEditViewModel(user));
+                self.isModalOpen(true);
+            };
+
+            // Save user
+            self.saveUser = function() {
+                var u = self.editingUser();
+
+                // Validation
+                if (!u.id && (!u.username() || u.username().trim() === '')) {
+                    alert('Kullanıcı adı zorunludur!');
+                    return;
+                }
+
+                if (!u.firstName() || u.firstName().trim() === '') {
+                    alert('Ad alanı zorunludur!');
+                    return;
+                }
+
+                if (!u.lastName() || u.lastName().trim() === '') {
+                    alert('Soyad alanı zorunludur!');
+                    return;
+                }
+
+                if (!u.email() || u.email().trim() === '') {
+                    alert('E-posta alanı zorunludur!');
+                    return;
+                }
+
+                if (!u.id && (!u.password() || u.password().trim().length < 6)) {
+                    alert('Şifre en az 6 karakter olmalıdır!');
+                    return;
+                }
+
+                // Prepare DTO
+                var dto = {
+                    firstName: u.firstName(),
+                    lastName: u.lastName(),
+                    email: u.email(),
+                    role: parseInt(u.role()),
+                    branchId: u.branchId() || null,
+                    isActive: u.isActive()
+                };
+
+                if (!u.id) {
+                    dto.username = u.username();
+                    dto.password = u.password();
+                }
+
+                self.isSaving(true);
+                var endpoint = u.id ? '/api/users/' + u.id : '/api/users';
+                var method = u.id ? 'PUT' : 'POST';
+
+                fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Kayıt başarısız');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    self.successMessage('Kullanıcı başarıyla kaydedildi.');
+                    self.closeModal();
+                    self.loadUsers();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage(error.message || 'Kullanıcı kaydedilirken bir hata oluştu.');
+                })
+                .finally(() => {
+                    self.isSaving(false);
+                });
+            };
+
+            // Delete user
+            self.deleteUser = function(user) {
+                if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) return;
+
+                fetch('/api/users/' + user.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Kullanıcı başarıyla silindi.');
+                    self.users.remove(user);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    self.errorMessage('Kullanıcı silinirken bir hata oluştu.');
+                });
+            };
+
+            // Close modal
+            self.closeModal = function() {
+                self.isModalOpen(false);
+                self.editingUser(null);
+            };
+
+            // Initialize
+            self.loadUsers();
+            self.loadBranches();
+        }
+
+        // Apply bindings
+        $(document).ready(function() {
+            ko.applyBindings(new UsersViewModel(), document.getElementById('users-app'));
+        });
+    </script>
+}

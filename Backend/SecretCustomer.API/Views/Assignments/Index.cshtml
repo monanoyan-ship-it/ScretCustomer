@@ -230,7 +230,7 @@
             };
 
             self.loadEvaluators = function() {
-                fetch('/api/users?role=Evaluator', { credentials: 'include' })
+                fetch('/api/users/role/3', { credentials: 'include' })
                     .then(res => res.json())
                     .then(data => {
                         self.availableEvaluators(data);

@@ -102,7 +102,8 @@ public class BranchRepository : IBranchRepository
         var branch = await _context.Branches.FindAsync(id);
         if (branch != null)
         {
-            _context.Branches.Remove(branch);
+            branch.IsDeleted = true;
+            branch.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }

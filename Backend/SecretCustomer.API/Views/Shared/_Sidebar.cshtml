@@ -35,6 +35,18 @@
                 </a>
             </li>
             <li data-bind="visible: isAdmin">
+                <a href="/Branches/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-building me-2"></i>
+                    Şubeler
+                </a>
+            </li>
+            <li data-bind="visible: isAdmin">
+                <a href="/Users/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Kullanıcılar
+                </a>
+            </li>
+            <li data-bind="visible: isAdmin">
                 <a href="/FieldWorkers/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-people me-2"></i>
                     Saha Çalışanları
