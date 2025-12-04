@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationIndex>
+  <ProjectInfo>
+    <Name>Gizli Müşteri / Değerlendirme Platformu</Name>
+    <Description>
+      is_kapsam.xml dokümanında belirtilen eksik özelliklerin implementasyon rehberleri
+    </Description>
+    <BaselineCompletion>82%</BaselineCompletion>
+    <LastUpdated>2025-12-04</LastUpdated>
+  </ProjectInfo>
+
+  <ImplementationGuides>
+    <Guide>
+      <ID>01</ID>
+      <FileName>01_yesno_question_type.xml</FileName>
+      <Title>YesNo Soru Tipi Ekleme</Title>
+      <Priority>Yüksek</Priority>
+      <EstimatedTime>30 dakika</EstimatedTime>
+      <Complexity>Düşük</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Yok</Dependencies>
+      <Summary>
+        Form builder'a Evet/Hayır (Yes/No) ikili soru tipi eklenmesi.
+        QuestionType enum'a YesNo = 5 değeri ve puan hesaplama mantığı.
+      </Summary>
+      <AffectedModules>
+        <Module>Core.Enums.QuestionType</Module>
+        <Module>Services.EvaluationService</Module>
+      </AffectedModules>
+      <RequiresMigration>false</RequiresMigration>
+    </Guide>
+
+    <Guide>
+      <ID>02</ID>
+      <FileName>02_question_description_hint.xml</FileName>
+      <Title>Soru Açıklama ve İpucu Field'ları</Title>
+      <Priority>Yüksek</Priority>
+      <EstimatedTime>1 saat</EstimatedTime>
+      <Complexity>Düşük</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Yok</Dependencies>
+      <Summary>
+        Her soruya açıklama (Description) ve ipucu (Hint) ekleme.
+        Değerlendiricilere soruyu daha iyi anlamaları için ek bilgi sağlanır.
+      </Summary>
+      <AffectedModules>
+        <Module>Core.Entities.Question</Module>
+        <Module>Core.DTOs.Checklist</Module>
+        <Module>Services.ChecklistService</Module>
+      </AffectedModules>
+      <RequiresMigration>true</RequiresMigration>
+    </Guide>
+
+    <Guide>
+      <ID>03</ID>
+      <FileName>03_copy_question_section.xml</FileName>
+      <Title>Soru ve Bölüm Kopyalama</Title>
+      <Priority>Orta</Priority>
+      <EstimatedTime>1.5 saat</EstimatedTime>
+      <Complexity>Orta</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Yok</Dependencies>
+      <Summary>
+        Form builder'da soru ve bölüm kopyalama özelliği.
+        Admin benzer soruları hızlıca çoğaltarak form oluşturma sürecini hızlandırır.
+      </Summary>
+      <AffectedModules>
+        <Module>Services.ChecklistService</Module>
+        <Module>API.Controllers.ChecklistsApiController</Module>
+      </AffectedModules>
+      <RequiresMigration>false</RequiresMigration>
+    </Guide>
+
+    <Guide>
+      <ID>04</ID>
+      <FileName>04_qr_code_generation.xml</FileName>
+      <Title>QR Kod Üretimi</Title>
+      <Priority>Yüksek</Priority>
+      <EstimatedTime>2 saat</EstimatedTime>
+      <Complexity>Orta</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>QRCoder NuGet package</Dependencies>
+      <Summary>
+        Dış müşteri anketleri için QR kod üretimi.
+        Müşteriler QR kodu tarayarak doğrudan form sayfasına yönlendirilir.
+        PNG ve Base64 formatları desteklenir.
+      </Summary>
+      <AffectedModules>
+        <Module>Services.QRCodeService (yeni)</Module>
+        <Module>API.Controllers.AssignmentsApiController</Module>
+      </AffectedModules>
+      <RequiresMigration>false</RequiresMigration>
+      <ExternalDependencies>
+        <Dependency>QRCoder 1.4.3</Dependency>
+      </ExternalDependencies>
+    </Guide>
+
+    <Guide>
+      <ID>05</ID>
+      <FileName>05_sms_integration.xml</FileName>
+      <Title>SMS Entegrasyonu</Title>
+      <Priority>Orta</Priority>
+      <EstimatedTime>3 saat</EstimatedTime>
+      <Complexity>Orta</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>SMS provider (Netgsm/Twilio)</Dependencies>
+      <Summary>
+        Dış müşterilere form linkinin SMS ile gönderilebilmesi.
+        Netgsm veya Twilio API entegrasyonu.
+        ExternalPhone field ve toplu SMS gönderimi.
+      </Summary>
+      <AffectedModules>
+        <Module>Core.Entities.Assignment</Module>
+        <Module>Services.NetgsmSmsService (yeni)</Module>
+        <Module>Services.AssignmentService</Module>
+      </AffectedModules>
+      <RequiresMigration>true</RequiresMigration>
+      <CostConsideration>
+        Netgsm: ~0.10 TL/SMS
+        Aylık 1000 form için ~100 TL/ay
+      </CostConsideration>
+    </Guide>
+
+    <Guide>
+      <ID>06</ID>
+      <FileName>06_audit_history_logs.xml</FileName>
+      <Title>Form Doldurma Logları ve Audit Trail</Title>
+      <Priority>Orta</Priority>
+      <EstimatedTime>2.5 saat</EstimatedTime>
+      <Complexity>Orta</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Yok</Dependencies>
+      <Summary>
+        Tüm form işlemlerinin (create, update, submit) loglanması.
+        AuditLog ve EvaluationHistory entity'leri.
+        ApplicationDbContext SaveChangesAsync override ile otomatik audit.
+      </Summary>
+      <AffectedModules>
+        <Module>Core.Entities.AuditLog (yeni)</Module>
+        <Module>Core.Entities.EvaluationHistory (yeni)</Module>
+        <Module>Data.ApplicationDbContext</Module>
+        <Module>Services.EvaluationService</Module>
+      </AffectedModules>
+      <RequiresMigration>true</RequiresMigration>
+      <PerformanceNote>
+        AuditLogs tablosu hızla büyüyebilir.
+        90 gün sonra arşivleme stratejisi önerilir.
+      </PerformanceNote>
+    </Guide>
+
+    <Guide>
+      <ID>07</ID>
+      <FileName>07_powerpoint_report_automation.xml</FileName>
+      <Title>PowerPoint Rapor Otomasyonu</Title>
+      <Priority>KRİTİK</Priority>
+      <EstimatedTime>6-8 saat</EstimatedTime>
+      <Complexity>Yüksek</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Python mikro servis, matplotlib, python-pptx</Dependencies>
+      <Summary>
+        Değerlendirme verilerinden otomatik grafikli PowerPoint raporu.
+        Python FastAPI mikro servisi (PythonServices/ppt_generator).
+        Aylık trend, şube karşılaştırma, top/bottom performans grafikleri.
+      </Summary>
+      <AffectedModules>
+        <Module>PythonServices/ppt_generator (yeni)</Module>
+        <Module>Services.ReportService</Module>
+        <Module>API.Controllers.ReportsApiController</Module>
+      </AffectedModules>
+      <RequiresMigration>false</RequiresMigration>
+      <TechnologyStack>
+        <Tech>Python 3.10+</Tech>
+        <Tech>FastAPI</Tech>
+        <Tech>python-pptx</Tech>
+        <Tech>matplotlib</Tech>
+        <Tech>pandas</Tech>
+      </TechnologyStack>
+      <Note>
+        XML dokümanında en çok vurgulanan özellik.
+        Mevcut PythonServices klasörü kullanılacak.
+      </Note>
+    </Guide>
+
+    <Guide>
+      <ID>08</ID>
+      <FileName>08_oauth2_integration.xml</FileName>
+      <Title>OAuth2 Entegrasyonu</Title>
+      <Priority>Düşük (Opsiyonel)</Priority>
+      <EstimatedTime>4 saat</EstimatedTime>
+      <Complexity>Orta-Yüksek</Complexity>
+      <Status>Beklemede</Status>
+      <Dependencies>Azure AD / Google OAuth</Dependencies>
+      <Summary>
+        Microsoft Azure AD ve Google ile OAuth2/OpenID Connect entegrasyonu.
+        Kurumsal SSO (Single Sign-On) desteği.
+        Mevcut JWT sistemi korunur, OAuth ek seçenek olarak eklenir.
+      </Summary>
+      <AffectedModules>
+        <Module>Core.Entities.User</Module>
+        <Module>API.Controllers.OAuthController (yeni)</Module>
+        <Module>Services.UserService</Module>
+      </AffectedModules>
+      <RequiresMigration>true</RequiresMigration>
+      <Providers>
+        <Provider>Microsoft Azure AD / Entra ID</Provider>
+        <Provider>Google OAuth 2.0</Provider>
+      </Providers>
+    </Guide>
+  </ImplementationGuides>
+
+  <RecommendedSequence>
+    <Phase id="1" name="Hızlı Kazanımlar (1 gün)">
+      <Description>Kolay ve hızlı implementasyonlar, hemen değer katar</Description>
+      <Guides>
+        <GuideRef id="01">YesNo Soru Tipi</GuideRef>
+        <GuideRef id="02">Soru Açıklama/İpucu</GuideRef>
+        <GuideRef id="03">Soru/Bölüm Kopyalama</GuideRef>
+      </Guides>
+      <TotalTime>3 saat</TotalTime>
+    </Phase>
+
+    <Phase id="2" name="Kullanıcı Erişimi (1-2 gün)">
+      <Description>Dış müşterilere ulaşım kanalları</Description>
+      <Guides>
+        <GuideRef id="04">QR Kod Üretimi</GuideRef>
+        <GuideRef id="05">SMS Entegrasyonu</GuideRef>
+      </Guides>
+      <TotalTime>5 saat</TotalTime>
+    </Phase>
+
+    <Phase id="3" name="İzleme ve Güvenlik (1 gün)">
+      <Description>Audit trail ve kullanıcı takibi</Description>
+      <Guides>
+        <GuideRef id="06">Audit History Logs</GuideRef>
+      </Guides>
+      <TotalTime>2.5 saat</TotalTime>
+    </Phase>
+
+    <Phase id="4" name="Kritik Özellik - Raporlama (2-3 gün)">
+      <Description>XML'de en çok vurgulanan özellik, yönetim sunumları için kritik</Description>
+      <Guides>
+        <GuideRef id="07">PowerPoint Rapor Otomasyonu</GuideRef>
+      </Guides>
+      <TotalTime>6-8 saat</TotalTime>
+    </Phase>
+
+    <Phase id="5" name="Opsiyonel İyileştirmeler">
+      <Description>Kurumsal kullanım için ek özellikler</Description>
+      <Guides>
+        <GuideRef id="08">OAuth2 Entegrasyonu</GuideRef>
+      </Guides>
+      <TotalTime>4 saat</TotalTime>
+    </Phase>
+  </RecommendedSequence>
+
+  <TotalEstimates>
+    <TotalTime>
+      <Minimum>20.5 saat</Minimum>
+      <Maximum>24.5 saat</Maximum>
+      <Note>OAuth2 hariç: 16.5-20.5 saat</Note>
+    </TotalTime>
+    <TotalComplexity>Orta-Yüksek</TotalComplexity>
+    <CriticalPath>
+      <Step>PowerPoint Rapor Otomasyonu (Faz 4)</Step>
+      <Reason>XML'de en yüksek öncelik, yönetim için kritik</Reason>
+    </CriticalPath>
+  </TotalEstimates>
+
+  <Prerequisites>
+    <Prerequisite>
+      <Title>Python 3.10+ Kurulu</Title>
+      <RequiredFor>Guide 07 (PowerPoint)</RequiredFor>
+    </Prerequisite>
+    <Prerequisite>
+      <Title>SMS Provider Hesabı</Title>
+      <RequiredFor>Guide 05 (SMS)</RequiredFor>
+      <Options>Netgsm veya Twilio</Options>
+    </Prerequisite>
+    <Prerequisite>
+      <Title>Azure AD / Google OAuth Credentials</Title>
+      <RequiredFor>Guide 08 (OAuth2)</RequiredFor>
+      <Optional>true</Optional>
+    </Prerequisite>
+  </Prerequisites>
+
+  <UsageInstructions>
+    <Step order="1">
+      <Title>XML Dosyasını Oku</Title>
+      <Description>
+        Her guide detaylı implementasyon adımları, kod örnekleri,
+        test senaryoları ve rollback planı içerir.
+      </Description>
+    </Step>
+    <Step order="2">
+      <Title>Sıra İzle</Title>
+      <Description>
+        RecommendedSequence bölümündeki fazları takip et.
+        Her faz bağımsız çalışabilir, paralel geliştirme mümkün.
+      </Description>
+    </Step>
+    <Step order="3">
+      <Title>Test Et</Title>
+      <Description>
+        Her guide'ın Testing bölümündeki test senaryolarını uygula.
+      </Description>
+    </Step>
+    <Step order="4">
+      <Title>Dokümantasyon Güncelle</Title>
+      <Description>
+        Implementasyon sonrası bu INDEX.xml'de Status field'ını "Tamamlandı" yap.
+      </Description>
+    </Step>
+  </UsageInstructions>
+
+  <Notes>
+    <Note type="info">
+      Tüm XML dosyaları Claude Code tarafından kolayca okunabilir formattadır.
+      Markdown veya Word yerine XML tercih edilmiştir.
+    </Note>
+    <Note type="warning">
+      PowerPoint rapor otomasyonu (Guide 07) en kritik ve en uzun süreli özelliktir.
+      Öncelikle bu özelliğe odaklanılması önerilir.
+    </Note>
+    <Note type="success">
+      Tüm guide'lar bağımsızdır. Paralel geliştirme yapılabilir.
+      Örnek: 1 developer SMS (Guide 05), diğeri QR kod (Guide 04) yapabilir.
+    </Note>
+  </Notes>
+
+  <ContactInfo>
+    <GeneratedBy>Claude Code (Anthropic)</GeneratedBy>
+    <Date>2025-12-04</Date>
+    <BaseDocument>is_kapsam.xml</BaseDocument>
+  </ContactInfo>
+</ImplementationIndex>

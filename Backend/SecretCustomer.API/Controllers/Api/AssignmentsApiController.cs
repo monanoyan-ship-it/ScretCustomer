@@ -11,11 +11,16 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AssignmentsApiController : ControllerBase
 {
     private readonly IAssignmentService _assignmentService;
+    private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<AssignmentsApiController> _logger;
 
-    public AssignmentsApiController(IAssignmentService assignmentService, ILogger<AssignmentsApiController> logger)
+    public AssignmentsApiController(
+        IAssignmentService assignmentService,
+        IQRCodeService qrCodeService,
+        ILogger<AssignmentsApiController> logger)
     {
         _assignmentService = assignmentService;
+        _qrCodeService = qrCodeService;
         _logger = logger;
     }
 
@@ -87,6 +92,55 @@ public class AssignmentsApiController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting assignment {Id}", id);
             return StatusCode(500, new { message = "Atama silinirken bir hata oluştu." });
+        }
+    }
+
+    [HttpGet("{id}/qr-code")]
+    [AllowAnonymous] // QR kod herkes tarafından erişilebilir olmalı
+    public async Task<IActionResult> GetQRCode(Guid id)
+    {
+        try
+        {
+            var assignment = await _assignmentService.GetByIdAsync(id);
+            if (assignment == null)
+                return NotFound(new { message = "Atama bulunamadı." });
+
+            // Base URL oluştur (request'ten al)
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            var qrBytes = _qrCodeService.GenerateAssignmentQRCode(
+                assignment.UniqueLink,
+                baseUrl);
+
+            return File(qrBytes, "image/png", $"assignment-{id}-qr.png");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating QR code for assignment {Id}", id);
+            return StatusCode(500, new { message = "QR kod oluşturulurken bir hata oluştu." });
+        }
+    }
+
+    [HttpGet("{id}/qr-code/base64")]
+    [AllowAnonymous]
+    public async Task<ActionResult<object>> GetQRCodeBase64(Guid id)
+    {
+        try
+        {
+            var assignment = await _assignmentService.GetByIdAsync(id);
+            if (assignment == null)
+                return NotFound(new { message = "Atama bulunamadı." });
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var qrBase64 = _qrCodeService.GenerateQRCodeBase64(
+                $"{baseUrl}/form/{assignment.UniqueLink}");
+
+            return Ok(new { qrCode = $"data:image/png;base64,{qrBase64}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating QR code base64 for assignment {Id}", id);
+            return StatusCode(500, new { message = "QR kod oluşturulurken bir hata oluştu." });
         }
     }
 }

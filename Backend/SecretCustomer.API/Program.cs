@@ -87,6 +87,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 
 // CORS Configuration
 builder.Services.AddCors(options =>

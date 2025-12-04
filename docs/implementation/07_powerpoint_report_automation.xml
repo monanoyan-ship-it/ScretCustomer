@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide>
+  <Feature>
+    <Name>PowerPoint Rapor Otomasyonu</Name>
+    <Priority>KRİTİK</Priority>
+    <EstimatedTime>6-8 saat</EstimatedTime>
+    <Complexity>Yüksek</Complexity>
+  </Feature>
+
+  <Purpose>
+    <Description>
+      Değerlendirme verilerinden otomatik olarak grafikli PowerPoint sunumu üretilmesi.
+      Admin filtreleme yaparak (tarih aralığı, şube, proje) özelleştirilmiş PPT raporu indirebilir.
+      Grafik türleri: Aylık ortalama, şube karşılaştırması, trend çizgileri, top/bottom performans.
+    </Description>
+    <XmlReference>
+      is_kapsam.xml, satır 151-159: "PowerPoint Rapor Çıktısı"
+      - Aylık ortalama puan grafikleri
+      - Bölge/şube karşılaştırmaları
+      - En yüksek/en düşük performans listeleri
+      - Trend çizgileri
+    </XmlReference>
+  </Purpose>
+
+  <TechnologyStack>
+    <Backend>
+      <Language>Python 3.10+</Language>
+      <Framework>FastAPI (mikro servis)</Framework>
+      <Libraries>
+        <Library>python-pptx (PowerPoint oluşturma)</Library>
+        <Library>matplotlib (grafik üretimi)</Library>
+        <Library>pandas (veri işleme)</Library>
+      </Libraries>
+    </Backend>
+    <Integration>
+      <Method>REST API çağrısı</Method>
+      <Description>C# API Python servisini çağırır, PPT dosyası döner</Description>
+    </Integration>
+  </TechnologyStack>
+
+  <ProjectStructure>
+    <Directory>
+      <Path>PythonServices/</Path>
+      <Structure><![CDATA[
+PythonServices/
+├── ppt_generator/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI app
+│   ├── requirements.txt     # Dependencies
+│   ├── models.py            # Pydantic models
+│   ├── generators/
+│   │   ├── __init__.py
+│   │   ├── chart_generator.py    # Matplotlib grafikleri
+│   │   └── ppt_builder.py        # PowerPoint oluşturma
+│   ├── templates/
+│   │   └── template.pptx         # Base template (opsiyonel)
+│   └── tests/
+│       └── test_generator.py
+├── Dockerfile
+├── docker-compose.yml (güncelle)
+└── README.md
+      ]]></Structure>
+    </Directory>
+  </ProjectStructure>
+
+  <Implementation>
+    <Step order="1">
+      <Title>Python Mikro Servis - requirements.txt</Title>
+      <File>PythonServices/ppt_generator/requirements.txt</File>
+      <Code><![CDATA[
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-pptx==0.6.23
+matplotlib==3.8.2
+pandas==2.1.4
+numpy==1.26.2
+pillow==10.1.0
+pydantic==2.5.0
+httpx==0.25.2
+      ]]></Code>
+    </Step>
+
+    <Step order="2">
+      <Title>Pydantic Models</Title>
+      <File>PythonServices/ppt_generator/models.py</File>
+      <Code><![CDATA[
+from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime
+
+class BranchScore(BaseModel):
+    branch_name: str
+    average_score: float
+    evaluation_count: int
+    region: Optional[str] = None
+
+class MonthlyTrend(BaseModel):
+    year: int
+    month: int
+    month_name: str
+    average_score: float
+    evaluation_count: int
+
+class ReportFilter(BaseModel):
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    project_id: Optional[str] = None
+    branch_id: Optional[str] = None
+    region: Optional[str] = None
+
+class ReportData(BaseModel):
+    title: str
+    subtitle: str
+    date_range: str
+    total_evaluations: int
+    average_score: float
+    top_branches: List[BranchScore]
+    bottom_branches: List[BranchScore]
+    monthly_trends: List[MonthlyTrend]
+    branch_comparisons: List[BranchScore]
+    filters: ReportFilter
+      ]]></Code>
+    </Step>
+
+    <Step order="3">
+      <Title>Chart Generator - Matplotlib</Title>
+      <File>PythonServices/ppt_generator/generators/chart_generator.py</File>
+      <Code><![CDATA[
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Backend for non-GUI
+import io
+from typing import List
+from models import BranchScore, MonthlyTrend
+
+class ChartGenerator:
+    def __init__(self):
+        # Türkçe karakter desteği
+        plt.rcParams['font.family'] = 'DejaVu Sans'
+        plt.rcParams['axes.unicode_minus'] = False
+
+    def generate_monthly_trend_chart(self, trends: List[MonthlyTrend]) -> io.BytesIO:
+        """Aylık trend çizgi grafiği"""
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        months = [f"{t.month_name[:3]} {t.year}" for t in trends]
+        scores = [t.average_score for t in trends]
+
+        ax.plot(months, scores, marker='o', linewidth=2, markersize=8, color='#1f77b4')
+        ax.fill_between(range(len(months)), scores, alpha=0.3, color='#1f77b4')
+
+        ax.set_xlabel('Ay', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Ortalama Puan (%)', fontsize=12, fontweight='bold')
+        ax.set_title('Aylık Performans Trendi', fontsize=14, fontweight='bold', pad=20)
+        ax.grid(True, alpha=0.3, linestyle='--')
+        ax.set_ylim(0, 100)
+
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+        # BytesIO'ya kaydet
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', dpi=300, bbox_inches='tight')
+        buffer.seek(0)
+        plt.close(fig)
+        return buffer
+
+    def generate_branch_comparison_chart(self, branches: List[BranchScore], top_n: int = 10) -> io.BytesIO:
+        """Şube karşılaştırma bar grafiği"""
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        # En iyi N şubeyi al
+        sorted_branches = sorted(branches, key=lambda x: x.average_score, reverse=True)[:top_n]
+
+        branch_names = [b.branch_name for b in sorted_branches]
+        scores = [b.average_score for b in sorted_branches]
+
+        # Renk gradyanı (en iyi yeşil, en kötü kırmızı)
+        colors = plt.cm.RdYlGn([s/100 for s in scores])
+
+        bars = ax.barh(branch_names, scores, color=colors, edgecolor='black', linewidth=0.5)
+
+        # Bar üzerine değer yaz
+        for i, (bar, score) in enumerate(zip(bars, scores)):
+            ax.text(score + 1, i, f'{score:.1f}%', va='center', fontsize=10, fontweight='bold')
+
+        ax.set_xlabel('Ortalama Puan (%)', fontsize=12, fontweight='bold')
+        ax.set_title(f'Şube Performans Karşılaştırması (Top {top_n})', fontsize=14, fontweight='bold', pad=20)
+        ax.set_xlim(0, 110)
+        ax.grid(True, axis='x', alpha=0.3, linestyle='--')
+
+        plt.tight_layout()
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', dpi=300, bbox_inches='tight')
+        buffer.seek(0)
+        plt.close(fig)
+        return buffer
+
+    def generate_top_bottom_chart(self, top_branches: List[BranchScore], bottom_branches: List[BranchScore]) -> io.BytesIO:
+        """En iyi ve en kötü şubeler karşılaştırması"""
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+        # En iyi şubeler
+        top_names = [b.branch_name for b in top_branches]
+        top_scores = [b.average_score for b in top_branches]
+        ax1.barh(top_names, top_scores, color='#2ecc71', edgecolor='black', linewidth=0.5)
+        ax1.set_title('En Yüksek Puanlı Şubeler', fontsize=12, fontweight='bold')
+        ax1.set_xlim(0, 100)
+        for i, score in enumerate(top_scores):
+            ax1.text(score + 2, i, f'{score:.1f}%', va='center', fontsize=9)
+
+        # En kötü şubeler
+        bottom_names = [b.branch_name for b in bottom_branches]
+        bottom_scores = [b.average_score for b in bottom_branches]
+        ax2.barh(bottom_names, bottom_scores, color='#e74c3c', edgecolor='black', linewidth=0.5)
+        ax2.set_title('En Düşük Puanlı Şubeler', fontsize=12, fontweight='bold')
+        ax2.set_xlim(0, 100)
+        for i, score in enumerate(bottom_scores):
+            ax2.text(score + 2, i, f'{score:.1f}%', va='center', fontsize=9)
+
+        plt.tight_layout()
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', dpi=300, bbox_inches='tight')
+        buffer.seek(0)
+        plt.close(fig)
+        return buffer
+
+    def generate_regional_comparison_chart(self, branches: List[BranchScore]) -> io.BytesIO:
+        """Bölgesel karşılaştırma (pie chart)"""
+        fig, ax = plt.subplots(figsize=(10, 8))
+
+        # Bölgelere göre grupla
+        region_data = {}
+        for branch in branches:
+            region = branch.region or "Belirtilmemiş"
+            if region not in region_data:
+                region_data[region] = {"count": 0, "total_score": 0}
+            region_data[region]["count"] += 1
+            region_data[region]["total_score"] += branch.average_score
+
+        # Ortalama hesapla
+        region_averages = {
+            region: data["total_score"] / data["count"]
+            for region, data in region_data.items()
+        }
+
+        labels = list(region_averages.keys())
+        sizes = list(region_averages.values())
+        colors = plt.cm.Set3(range(len(labels)))
+
+        wedges, texts, autotexts = ax.pie(
+            sizes,
+            labels=labels,
+            autopct='%1.1f%%',
+            startangle=90,
+            colors=colors,
+            textprops={'fontsize': 11, 'weight': 'bold'}
+        )
+
+        ax.set_title('Bölgesel Performans Dağılımı', fontsize=14, fontweight='bold', pad=20)
+
+        plt.tight_layout()
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', dpi=300, bbox_inches='tight')
+        buffer.seek(0)
+        plt.close(fig)
+        return buffer
+      ]]></Code>
+    </Step>
+
+    <Step order="4">
+      <Title>PowerPoint Builder</Title>
+      <File>PythonServices/ppt_generator/generators/ppt_builder.py</File>
+      <Code><![CDATA[
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from models import ReportData
+from .chart_generator import ChartGenerator
+import io
+
+class PowerPointBuilder:
+    def __init__(self):
+        self.prs = Presentation()
+        self.prs.slide_width = Inches(10)
+        self.prs.slide_height = Inches(7.5)
+        self.chart_gen = ChartGenerator()
+
+    def create_title_slide(self, title: str, subtitle: str, date_range: str):
+        """Kapak slaytı"""
+        slide = self.prs.slides.add_slide(self.prs.slide_layouts[6])  # Blank layout
+
+        # Başlık
+        title_box = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(8), Inches(1.5))
+        title_frame = title_box.text_frame
+        title_frame.text = title
+        title_frame.paragraphs[0].font.size = Pt(44)
+        title_frame.paragraphs[0].font.bold = True
+        title_frame.paragraphs[0].font.color.rgb = RGBColor(31, 78, 120)
+        title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+        # Alt başlık
+        subtitle_box = slide.shapes.add_textbox(Inches(1), Inches(4), Inches(8), Inches(1))
+        subtitle_frame = subtitle_box.text_frame
+        subtitle_frame.text = subtitle
+        subtitle_frame.paragraphs[0].font.size = Pt(24)
+        subtitle_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+        # Tarih aralığı
+        date_box = slide.shapes.add_textbox(Inches(1), Inches(5.5), Inches(8), Inches(0.5))
+        date_frame = date_box.text_frame
+        date_frame.text = date_range
+        date_frame.paragraphs[0].font.size = Pt(16)
+        date_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+        date_frame.paragraphs[0].font.italic = True
+
+    def create_summary_slide(self, total_evaluations: int, average_score: float):
+        """Özet slaytı"""
+        slide = self.prs.slides.add_slide(self.prs.slide_layouts[5])  # Title only
+
+        title = slide.shapes.title
+        title.text = "Genel Özet"
+
+        # KPI kutuları
+        left = Inches(2)
+        top = Inches(2.5)
+        width = Inches(3)
+        height = Inches(2)
+
+        # Toplam değerlendirme
+        eval_box = slide.shapes.add_textbox(left, top, width, height)
+        eval_frame = eval_box.text_frame
+        eval_frame.text = f"{total_evaluations}\n\nToplam Değerlendirme"
+        eval_frame.paragraphs[0].font.size = Pt(48)
+        eval_frame.paragraphs[0].font.bold = True
+        eval_frame.paragraphs[0].font.color.rgb = RGBColor(46, 134, 193)
+        eval_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+        # Ortalama puan
+        score_box = slide.shapes.add_textbox(left + Inches(3.5), top, width, height)
+        score_frame = score_box.text_frame
+        score_frame.text = f"{average_score:.1f}%\n\nOrtalama Puan"
+        score_frame.paragraphs[0].font.size = Pt(48)
+        score_frame.paragraphs[0].font.bold = True
+        score_frame.paragraphs[0].font.color.rgb = RGBColor(46, 204, 113)
+        score_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    def add_chart_slide(self, title: str, chart_image: io.BytesIO):
+        """Grafik slaytı"""
+        slide = self.prs.slides.add_slide(self.prs.slide_layouts[5])
+
+        slide_title = slide.shapes.title
+        slide_title.text = title
+
+        # Grafiği ekle
+        left = Inches(0.5)
+        top = Inches(1.5)
+        width = Inches(9)
+        height = Inches(5.5)
+
+        slide.shapes.add_picture(chart_image, left, top, width=width, height=height)
+
+    def build(self, data: ReportData) -> io.BytesIO:
+        """Tüm raporu oluştur"""
+        # 1. Kapak slaytı
+        self.create_title_slide(data.title, data.subtitle, data.date_range)
+
+        # 2. Özet slaytı
+        self.create_summary_slide(data.total_evaluations, data.average_score)
+
+        # 3. Aylık trend grafiği
+        if data.monthly_trends:
+            trend_chart = self.chart_gen.generate_monthly_trend_chart(data.monthly_trends)
+            self.add_chart_slide("Aylık Performans Trendi", trend_chart)
+
+        # 4. Top/Bottom şubeler
+        if data.top_branches and data.bottom_branches:
+            top_bottom_chart = self.chart_gen.generate_top_bottom_chart(
+                data.top_branches, data.bottom_branches
+            )
+            self.add_chart_slide("En İyi ve En Kötü Performans", top_bottom_chart)
+
+        # 5. Şube karşılaştırması
+        if data.branch_comparisons:
+            comparison_chart = self.chart_gen.generate_branch_comparison_chart(data.branch_comparisons)
+            self.add_chart_slide("Şube Karşılaştırması", comparison_chart)
+
+        # 6. Bölgesel analiz
+        if data.branch_comparisons:
+            regional_chart = self.chart_gen.generate_regional_comparison_chart(data.branch_comparisons)
+            self.add_chart_slide("Bölgesel Performans Dağılımı", regional_chart)
+
+        # BytesIO'ya kaydet
+        ppt_buffer = io.BytesIO()
+        self.prs.save(ppt_buffer)
+        ppt_buffer.seek(0)
+        return ppt_buffer
+      ]]></Code>
+    </Step>
+
+    <Step order="5">
+      <Title>FastAPI Main Application</Title>
+      <File>PythonServices/ppt_generator/main.py</File>
+      <Code><![CDATA[
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
+from models import ReportData
+from generators.ppt_builder import PowerPointBuilder
+import logging
+
+app = FastAPI(title="PowerPoint Report Generator")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "ppt-generator"}
+
+@app.post("/generate-report")
+async def generate_report(data: ReportData):
+    """
+    PowerPoint raporu oluştur
+    """
+    try:
+        logger.info(f"Generating report: {data.title}")
+
+        builder = PowerPointBuilder()
+        ppt_buffer = builder.build(data)
+
+        filename = f"report_{data.filters.start_date or 'all'}.pptx"
+
+        return StreamingResponse(
+            ppt_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        logger.error(f"Report generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
+      ]]></Code>
+    </Step>
+
+    <Step order="6">
+      <Title>Dockerfile</Title>
+      <File>PythonServices/ppt_generator/Dockerfile</File>
+      <Code><![CDATA[
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY . .
+
+EXPOSE 8001
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+      ]]></Code>
+    </Step>
+
+    <Step order="7">
+      <Title>C# ReportService - Python Servis Entegrasyonu</Title>
+      <File>Backend/SecretCustomer.Services/Services/ReportService.cs</File>
+      <Code><![CDATA[
+using System.Net.Http.Json;
+
+// YENİ METOD
+public async Task<byte[]> GeneratePowerPointReportAsync(ReportFilterDto filter)
+{
+    // Dashboard'dan veri al
+    var dashboardService = new DashboardService(_evaluationRepository);
+    var stats = await dashboardService.GetAdminDashboardAsync(
+        filter.StartDate,
+        filter.EndDate
+    );
+
+    // Python servisi için payload hazırla
+    var reportData = new
+    {
+        title = "Gizli Müşteri Değerlendirme Raporu",
+        subtitle = "Performans Analizi ve Şube Karşılaştırması",
+        date_range = $"{filter.StartDate?.ToString("dd/MM/yyyy") ?? "Başlangıç"} - {filter.EndDate?.ToString("dd/MM/yyyy") ?? "Bitiş"}",
+        total_evaluations = stats.TotalEvaluations,
+        average_score = (double)stats.AverageScore,
+        top_branches = stats.TopBranches.Select(b => new
+        {
+            branch_name = b.BranchName,
+            average_score = (double)b.AverageScore,
+            evaluation_count = b.EvaluationCount,
+            region = ""
+        }).ToList(),
+        bottom_branches = stats.BottomBranches.Select(b => new
+        {
+            branch_name = b.BranchName,
+            average_score = (double)b.AverageScore,
+            evaluation_count = b.EvaluationCount,
+            region = ""
+        }).ToList(),
+        monthly_trends = stats.MonthlyTrends.Select(t => new
+        {
+            year = t.Year,
+            month = t.Month,
+            month_name = t.MonthName,
+            average_score = (double)t.AverageScore,
+            evaluation_count = t.EvaluationCount
+        }).ToList(),
+        branch_comparisons = stats.BranchComparisons.Select(b => new
+        {
+            branch_name = b.BranchName,
+            average_score = (double)b.AverageScore,
+            evaluation_count = b.EvaluationCount,
+            region = b.Region
+        }).ToList(),
+        filters = filter
+    };
+
+    // Python mikro servisini çağır
+    var pythonServiceUrl = _configuration["PythonServices:PptGenerator:Url"] ?? "http://localhost:8001";
+    using var httpClient = new HttpClient();
+    httpClient.Timeout = TimeSpan.FromMinutes(5);  // Büyük raporlar için timeout artır
+
+    var response = await httpClient.PostAsJsonAsync(
+        $"{pythonServiceUrl}/generate-report",
+        reportData
+    );
+
+    if (!response.IsSuccessStatusCode)
+    {
+        var error = await response.Content.ReadAsStringAsync();
+        throw new Exception($"PowerPoint generation failed: {error}");
+    }
+
+    return await response.Content.ReadAsByteArrayAsync();
+}
+      ]]></Code>
+    </Step>
+
+    <Step order="8">
+      <Title>API Controller Endpoint</Title>
+      <File>Backend/SecretCustomer.API/Controllers/Api/ReportsApiController.cs</File>
+      <Code><![CDATA[
+[HttpPost("powerpoint")]
+public async Task<IActionResult> GeneratePowerPointReport([FromBody] ReportFilterDto filter)
+{
+    try
+    {
+        var pptBytes = await _reportService.GeneratePowerPointReportAsync(filter);
+
+        var fileName = $"report_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pptx";
+
+        return File(
+            pptBytes,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            fileName
+        );
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { message = ex.Message });
+    }
+}
+      ]]></Code>
+    </Step>
+
+    <Step order="9">
+      <Title>appsettings.json Configuration</Title>
+      <File>Backend/SecretCustomer.API/appsettings.json</File>
+      <Code><![CDATA[
+{
+  "PythonServices": {
+    "PptGenerator": {
+      "Url": "http://ppt-generator:8001",
+      "Timeout": 300000
+    }
+  }
+}
+      ]]></Code>
+    </Step>
+
+    <Step order="10">
+      <Title>docker-compose.yml Güncelleme</Title>
+      <File>docker-compose.yml</File>
+      <Code><![CDATA[
+services:
+  backend:
+    # ... mevcut backend config ...
+    depends_on:
+      - ppt-generator
+
+  ppt-generator:
+    build:
+      context: ./PythonServices/ppt_generator
+      dockerfile: Dockerfile
+    container_name: ppt-generator
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+      ]]></Code>
+    </Step>
+  </Implementation>
+
+  <Testing>
+    <TestCase id="1">
+      <Title>Python Servisi Health Check</Title>
+      <Request>GET http://localhost:8001/health</Request>
+      <ExpectedResult>{"status": "healthy", "service": "ppt-generator"}</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="2">
+      <Title>PowerPoint Rapor Oluşturma - Basit</Title>
+      <Request>POST /api/reports/powerpoint</Request>
+      <Payload><![CDATA[
+{
+  "startDate": "2025-01-01",
+  "endDate": "2025-12-31"
+}
+      ]]></Payload>
+      <ExpectedResult>PPTX dosyası indirilmeli (200 OK)</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="3">
+      <Title>PowerPoint Açma ve Kontrol</Title>
+      <Steps>
+        <Step>İndirilen PPTX dosyasını PowerPoint ile aç</Step>
+        <Step>6 slayt olduğunu doğrula (kapak, özet, 4 grafik)</Step>
+        <Step>Grafiklerin düzgün render edildiğini kontrol et</Step>
+      </Steps>
+    </TestCase>
+
+    <TestCase id="4">
+      <Title>Büyük Veri Seti (1000+ Evaluation)</Title>
+      <Steps>
+        <Step>Büyük veri seti ile rapor oluştur</Step>
+        <Step>Timeout olmadığını kontrol et (5 dakika limit)</Step>
+        <Step>Dosya boyutunu kontrol et (max 50MB)</Step>
+      </Steps>
+    </TestCase>
+
+    <TestCase id="5">
+      <Title>Python Servisi Çökerse</Title>
+      <Steps>
+        <Step>Python container'ını durdur</Step>
+        <Step>Rapor oluşturmayı dene</Step>
+      </Steps>
+      <ExpectedResult>500 Internal Server Error, hata mesajı net</ExpectedResult>
+    </TestCase>
+  </Testing>
+
+  <PerformanceOptimization>
+    <Optimization>
+      <Title>Grafik Önbellekleme</Title>
+      <Description>Aynı veriler için grafik tekrar oluşturma</Description>
+      <Solution>Redis cache ile grafik PNG'lerini sakla (5 dakika TTL)</Solution>
+    </Optimization>
+    <Optimization>
+      <Title>Arka Plan İşleme</Title>
+      <Description>Büyük raporlar senkron oluşturulursa timeout riski</Description>
+      <Solution>
+        Background job (Hangfire/Celery) ile async rapor oluştur,
+        hazır olunca email ile gönder veya download link sağla
+      </Solution>
+    </Optimization>
+    <Optimization>
+      <Title>Paralel Grafik Üretimi</Title>
+      <Description>4 grafik sırayla oluşturulursa yavaş</Description>
+      <Solution>asyncio.gather() ile paralel oluştur (4 grafik aynı anda)</Solution>
+    </Optimization>
+  </PerformanceOptimization>
+
+  <FrontendConsiderations>
+    <UI>
+      <Component>Reports Page</Component>
+      <Changes>
+        <Change>"PowerPoint Rapor İndir" butonu ekle</Change>
+        <Change>Filtreleme formu (tarih aralığı, proje, şube)</Change>
+        <Change>Loading spinner (rapor oluşturulurken)</Change>
+        <Change>Progress bar (opsiyonel, WebSocket ile)</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Dashboard</Component>
+      <Changes>
+        <Change>Her grafik üzerinde "Rapora Ekle" checkbox</Change>
+        <Change>Seçili grafikleri customize et, sonra export et</Change>
+      </Changes>
+    </UI>
+  </FrontendConsiderations>
+
+  <FutureEnhancements>
+    <Enhancement>Özel template yükleme (kurumsal kimlik)</Enhancement>
+    <Enhancement>Excel rapor desteği (python-openpyxl)</Enhancement>
+    <Enhancement>PDF rapor desteği (reportlab)</Enhancement>
+    <Enhancement>Scheduled reports (her hafta otomatik mail)</Enhancement>
+    <Enhancement>Interaktif grafik (Plotly ile HTML export)</Enhancement>
+    <Enhancement>Multi-language support (EN, TR rapor)</Enhancement>
+  </FutureEnhancements>
+
+  <TroubleshootingGuide>
+    <Issue>
+      <Problem>Python container başlamıyor</Problem>
+      <Solution>docker logs ppt-generator ile hata log'una bak. requirements.txt dependencies kontrol et.</Solution>
+    </Issue>
+    <Issue>
+      <Problem>Grafiklerde Türkçe karakterler bozuk</Problem>
+      <Solution>matplotlib rcParams'ta font family ayarla. DejaVu Sans veya Arial Unicode MS kullan.</Solution>
+    </Issue>
+    <Issue>
+      <Problem>PPTX dosyası bozuk açılıyor</Problem>
+      <Solution>python-pptx versiyonunu kontrol et. Template slide layout indeksi doğru mu?</Solution>
+    </Issue>
+    <Issue>
+      <Problem>Rapor oluşturma çok yavaş (30+ saniye)</Problem>
+      <Solution>Grafik resolution azalt (dpi=150). Veri setini filtrele (son 12 ay). Caching ekle.</Solution>
+    </Issue>
+  </TroubleshootingGuide>
+
+  <RollbackPlan>
+    <Step>Python container'ını docker-compose'dan kaldır</Step>
+    <Step>ReportService'ten PowerPoint metodunu kaldır</Step>
+    <Step>API controller endpoint'ini kaldır</Step>
+    <Step>Frontend'den buton kaldır</Step>
+    <Note>Hiçbir veritabanı değişikliği yok, kolayca geri alınabilir</Note>
+  </RollbackPlan>
+</ImplementationGuide>

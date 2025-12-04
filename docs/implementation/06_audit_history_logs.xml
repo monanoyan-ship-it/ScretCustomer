@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide>
+  <Feature>
+    <Name>Form Doldurma Logları ve Audit Trail</Name>
+    <Priority>Orta</Priority>
+    <EstimatedTime>2.5 saat</EstimatedTime>
+    <Complexity>Orta</Complexity>
+  </Feature>
+
+  <Purpose>
+    <Description>
+      Form kim tarafından, ne zaman dolduruldu bilgisinin loglanması.
+      Admin tüm form işlemlerini (create, update, submit) tarihsel olarak görebilir.
+      Değişiklik takibi (change tracking) ve audit trail.
+    </Description>
+    <XmlReference>is_kapsam.xml, satır 265: "Inspect/History: Form kim tarafından ne zaman dolduruldu logları"</XmlReference>
+  </Purpose>
+
+  <AffectedFiles>
+    <File>
+      <Path>Backend/SecretCustomer.Core/Entities/EvaluationHistory.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>Yeni entity: Form doldurma geçmişi</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Core/Entities/AuditLog.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>Genel audit log entity</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Data/ApplicationDbContext.cs</Path>
+      <Action>Modify</Action>
+      <Changes>
+        <Change>SaveChangesAsync override ile otomatik audit</Change>
+      </Changes>
+    </File>
+  </AffectedFiles>
+
+  <Implementation>
+    <Step order="1">
+      <Title>AuditLog Entity Oluşturma</Title>
+      <File>Backend/SecretCustomer.Core/Entities/AuditLog.cs</File>
+      <Code><![CDATA[
+namespace SecretCustomer.Core.Entities;
+
+public class AuditLog : BaseEntity
+{
+    public string EntityName { get; set; } = string.Empty;  // "Evaluation", "Assignment", vb.
+    public Guid EntityId { get; set; }                      // İlgili entity'nin ID'si
+    public string Action { get; set; } = string.Empty;      // "Create", "Update", "Delete", "Submit"
+    public string? UserId { get; set; }                     // İşlemi yapan kullanıcı
+    public string? UserName { get; set; }                   // Kullanıcı adı (cache)
+    public string? IpAddress { get; set; }                  // İstek IP adresi
+    public string? UserAgent { get; set; }                  // Browser/device bilgisi
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    // Değişiklik detayları (JSON)
+    public string? OldValues { get; set; }  // Önceki değerler (Update için)
+    public string? NewValues { get; set; }  // Yeni değerler
+}
+]]></Code>
+    </Step>
+
+    <Step order="2">
+      <Title>EvaluationHistory Entity</Title>
+      <File>Backend/SecretCustomer.Core/Entities/EvaluationHistory.cs</File>
+      <Code><![CDATA[
+using SecretCustomer.Core.Enums;
+
+namespace SecretCustomer.Core.Entities;
+
+public class EvaluationHistory : BaseEntity
+{
+    public Guid EvaluationId { get; set; }
+    public Evaluation Evaluation { get; set; } = null!;
+
+    public EvaluationStatus Status { get; set; }
+    public string Action { get; set; } = string.Empty;  // "Started", "Paused", "Resumed", "Submitted"
+
+    public Guid? UserId { get; set; }
+    public User? User { get; set; }
+
+    public string? IpAddress { get; set; }
+    public DateTime ActionDate { get; set; } = DateTime.UtcNow;
+
+    // Snapshot - O anki durum
+    public decimal? ScoreSnapshot { get; set; }
+    public string? NotesSnapshot { get; set; }
+    public int? AnsweredQuestionsCount { get; set; }
+    public int? TotalQuestionsCount { get; set; }
+}
+]]></Code>
+    </Step>
+
+    <Step order="3">
+      <Title>ApplicationDbContext - DbSet Ekleme</Title>
+      <File>Backend/SecretCustomer.Data/ApplicationDbContext.cs</File>
+      <Code><![CDATA[
+public class ApplicationDbContext : DbContext
+{
+    // ... mevcut DbSet'ler ...
+
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<EvaluationHistory> EvaluationHistories { get; set; }
+
+    // ...
+}
+]]></Code>
+    </Step>
+
+    <Step order="4">
+      <Title>SaveChangesAsync Override - Otomatik Audit</Title>
+      <File>Backend/SecretCustomer.Data/ApplicationDbContext.cs</File>
+      <Code><![CDATA[
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+{
+    var auditEntries = new List<AuditLog>();
+    var entries = ChangeTracker.Entries()
+        .Where(e => e.Entity is not AuditLog && e.Entity is not EvaluationHistory)
+        .Where(e => e.State == EntityState.Added ||
+                    e.State == EntityState.Modified ||
+                    e.State == EntityState.Deleted)
+        .ToList();
+
+    foreach (var entry in entries)
+    {
+        var auditLog = CreateAuditLog(entry);
+        if (auditLog != null)
+            auditEntries.Add(auditLog);
+    }
+
+    var result = await base.SaveChangesAsync(cancellationToken);
+
+    // Audit log'ları kaydet
+    if (auditEntries.Any())
+    {
+        await AuditLogs.AddRangeAsync(auditEntries, cancellationToken);
+        await base.SaveChangesAsync(cancellationToken);
+    }
+
+    return result;
+}
+
+private AuditLog? CreateAuditLog(EntityEntry entry)
+{
+    var entity = entry.Entity as BaseEntity;
+    if (entity == null) return null;
+
+    var auditLog = new AuditLog
+    {
+        EntityName = entry.Entity.GetType().Name,
+        EntityId = entity.Id,
+        Action = entry.State.ToString(),
+        Timestamp = DateTime.UtcNow
+    };
+
+    if (entry.State == EntityState.Modified)
+    {
+        var oldValues = new Dictionary<string, object?>();
+        var newValues = new Dictionary<string, object?>();
+
+        foreach (var property in entry.OriginalValues.Properties)
+        {
+            var originalValue = entry.OriginalValues[property];
+            var currentValue = entry.CurrentValues[property];
+
+            if (!Equals(originalValue, currentValue))
+            {
+                oldValues[property.Name] = originalValue;
+                newValues[property.Name] = currentValue;
+            }
+        }
+
+        auditLog.OldValues = JsonSerializer.Serialize(oldValues);
+        auditLog.NewValues = JsonSerializer.Serialize(newValues);
+    }
+    else if (entry.State == EntityState.Added)
+    {
+        var newValues = entry.CurrentValues.Properties
+            .ToDictionary(p => p.Name, p => entry.CurrentValues[p]);
+        auditLog.NewValues = JsonSerializer.Serialize(newValues);
+    }
+
+    return auditLog;
+}
+]]></Code>
+    </Step>
+
+    <Step order="5">
+      <Title>EvaluationService - History Kayıt</Title>
+      <File>Backend/SecretCustomer.Services/Services/EvaluationService.cs</File>
+      <Code><![CDATA[
+public async Task<EvaluationDto> StartEvaluationAsync(Guid assignmentId, Guid? evaluatorId)
+{
+    // ... mevcut kod ...
+
+    var evaluation = new Evaluation
+    {
+        AssignmentId = assignmentId,
+        EvaluatorId = evaluatorId,
+        Status = EvaluationStatus.InProgress,
+        StartedAt = DateTime.UtcNow
+    };
+
+    var created = await _evaluationRepository.CreateAsync(evaluation);
+
+    // YENİ: History kaydı
+    await _context.EvaluationHistories.AddAsync(new EvaluationHistory
+    {
+        EvaluationId = created.Id,
+        UserId = evaluatorId,
+        Status = EvaluationStatus.InProgress,
+        Action = "Started",
+        ActionDate = DateTime.UtcNow
+    });
+    await _context.SaveChangesAsync();
+
+    return MapToDto(created);
+}
+
+public async Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto)
+{
+    // ... mevcut submission kodu ...
+
+    evaluation.Status = EvaluationStatus.Completed;
+    evaluation.CompletedAt = DateTime.UtcNow;
+
+    // YENİ: History kaydı
+    await _context.EvaluationHistories.AddAsync(new EvaluationHistory
+    {
+        EvaluationId = evaluation.Id,
+        UserId = evaluation.EvaluatorId,
+        Status = EvaluationStatus.Completed,
+        Action = "Submitted",
+        ActionDate = DateTime.UtcNow,
+        ScoreSnapshot = evaluation.TotalScore,
+        AnsweredQuestionsCount = dto.Answers.Count,
+        TotalQuestionsCount = allQuestions.Count
+    });
+
+    // ... devam ...
+}
+]]></Code>
+    </Step>
+
+    <Step order="6">
+      <Title>History Repository ve Service</Title>
+      <File>Backend/SecretCustomer.Core/Interfaces/Repositories/IAuditLogRepository.cs</File>
+      <Code><![CDATA[
+public interface IAuditLogRepository
+{
+    Task<List<AuditLog>> GetByEntityAsync(string entityName, Guid entityId);
+    Task<List<AuditLog>> GetByUserAsync(string userId, DateTime? startDate = null, DateTime? endDate = null);
+    Task<List<AuditLog>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+}
+]]></Code>
+    </Step>
+
+    <Step order="7">
+      <Title>API Controller - History Endpoint</Title>
+      <File>Backend/SecretCustomer.API/Controllers/Api/EvaluationsApiController.cs</File>
+      <Code><![CDATA[
+[HttpGet("{id}/history")]
+public async Task<ActionResult<List<EvaluationHistoryDto>>> GetEvaluationHistory(Guid id)
+{
+    var history = await _context.EvaluationHistories
+        .Include(h => h.User)
+        .Where(h => h.EvaluationId == id)
+        .OrderByDescending(h => h.ActionDate)
+        .ToListAsync();
+
+    var result = history.Select(h => new EvaluationHistoryDto
+    {
+        Id = h.Id,
+        Action = h.Action,
+        Status = h.Status.ToString(),
+        UserName = h.User != null ? $"{h.User.FirstName} {h.User.LastName}" : "External User",
+        ActionDate = h.ActionDate,
+        ScoreSnapshot = h.ScoreSnapshot,
+        AnsweredQuestionsCount = h.AnsweredQuestionsCount,
+        TotalQuestionsCount = h.TotalQuestionsCount
+    }).ToList();
+
+    return Ok(result);
+}
+
+[HttpGet("audit-logs")]
+[Authorize(Roles = "Admin")]
+public async Task<ActionResult<List<AuditLogDto>>> GetAuditLogs(
+    [FromQuery] string? entityName = null,
+    [FromQuery] DateTime? startDate = null,
+    [FromQuery] DateTime? endDate = null)
+{
+    var query = _context.AuditLogs.AsQueryable();
+
+    if (!string.IsNullOrEmpty(entityName))
+        query = query.Where(a => a.EntityName == entityName);
+
+    if (startDate.HasValue)
+        query = query.Where(a => a.Timestamp >= startDate.Value);
+
+    if (endDate.HasValue)
+        query = query.Where(a => a.Timestamp <= endDate.Value);
+
+    var logs = await query
+        .OrderByDescending(a => a.Timestamp)
+        .Take(1000)  // Limit
+        .ToListAsync();
+
+    return Ok(logs);
+}
+]]></Code>
+    </Step>
+
+    <Step order="8">
+      <Title>Database Migration</Title>
+      <Command>
+        <![CDATA[
+cd Backend/SecretCustomer.Data
+dotnet ef migrations add AddAuditLogsAndHistory --project ../SecretCustomer.Data --startup-project ../SecretCustomer.API
+dotnet ef database update --project ../SecretCustomer.API
+        ]]>
+      </Command>
+    </Step>
+  </Implementation>
+
+  <Testing>
+    <TestCase id="1">
+      <Title>Evaluation Başlatma - History Kaydı</Title>
+      <Steps>
+        <Step>POST /api/evaluations/start endpoint'ini çağır</Step>
+        <Step>GET /api/evaluations/{id}/history endpoint'ini çağır</Step>
+      </Steps>
+      <ExpectedResult>
+        History'de "Started" action'ı görülmeli
+        ActionDate set edilmeli
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="2">
+      <Title>Evaluation Submit - History Kaydı</Title>
+      <Steps>
+        <Step>Evaluation başlat</Step>
+        <Step>Formu doldur ve submit et</Step>
+        <Step>History'yi kontrol et</Step>
+      </Steps>
+      <ExpectedResult>
+        2 history kaydı olmalı: "Started" ve "Submitted"
+        Score snapshot kaydedilmeli
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="3">
+      <Title>Assignment Update - Audit Log</Title>
+      <Steps>
+        <Step>Bir assignment oluştur</Step>
+        <Step>DueDate'i güncelle</Step>
+        <Step>Audit log'u kontrol et</Step>
+      </Steps>
+      <ExpectedResult>
+        AuditLog'da "Modified" action olmalı
+        OldValues ve NewValues JSON'da DueDate görülmeli
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="4">
+      <Title>Audit Logs Filtreleme</Title>
+      <Request>GET /api/evaluations/audit-logs?entityName=Evaluation&startDate=2025-01-01</Request>
+      <ExpectedResult>Sadece Evaluation entity'si için 2025 sonrası loglar dönmeli</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="5">
+      <Title>Timeline View</Title>
+      <Steps>
+        <Step>Bir evaluation için tüm history'yi çek</Step>
+        <Step>Kronolojik sırayla timeline göster</Step>
+      </Steps>
+      <ExpectedResult>
+        Started → In Progress → Submitted şeklinde timeline görünmeli
+      </ExpectedResult>
+    </TestCase>
+  </Testing>
+
+  <Migration>
+    <Required>true</Required>
+    <Command>dotnet ef database update</Command>
+    <Note>Yeni tablolar: AuditLogs, EvaluationHistories</Note>
+    <PerformanceConsideration>
+      AuditLogs tablosu hızla büyüyebilir.
+      Index ekle: (EntityName, EntityId), (Timestamp)
+      Arşivleme stratejisi düşün (90 gün sonrası arşiv tablosuna taşı)
+    </PerformanceConsideration>
+  </Migration>
+
+  <IndexOptimization>
+    <Index>
+      <Table>AuditLogs</Table>
+      <Columns>EntityName, EntityId</Columns>
+      <Reason>Belirli bir entity'nin geçmişini hızlı bul</Reason>
+    </Index>
+    <Index>
+      <Table>AuditLogs</Table>
+      <Columns>Timestamp DESC</Columns>
+      <Reason>Son logları hızlı getir</Reason>
+    </Index>
+    <Index>
+      <Table>EvaluationHistories</Table>
+      <Columns>EvaluationId, ActionDate DESC</Columns>
+      <Reason>Evaluation timeline sorgusu</Reason>
+    </Index>
+  </IndexOptimization>
+
+  <FrontendConsiderations>
+    <UI>
+      <Component>Evaluation Detail Page</Component>
+      <Changes>
+        <Change>"Geçmiş" (History) tab'ı ekle</Change>
+        <Change>Timeline view: vertical timeline ile tüm aksiyonları göster</Change>
+        <Change>Her action için icon (▶️ Started, ✅ Submitted)</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Admin Panel - Audit Logs</Component>
+      <Changes>
+        <Change>Filtreleme: Entity type, date range, user</Change>
+        <Change>Sayfalama (pagination)</Change>
+        <Change>Export CSV butonu</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Change Diff View</Component>
+      <Changes>
+        <Change>OldValues vs NewValues karşılaştırmalı göster</Change>
+        <Change>Değişen field'ları highlight et</Change>
+      </Changes>
+    </UI>
+  </FrontendConsiderations>
+
+  <DataRetentionPolicy>
+    <Policy>
+      <Duration>90 gün</Duration>
+      <Action>Son 90 gün hot storage'da, eski kayıtlar arşiv tablosuna taşı</Action>
+    </Policy>
+    <ArchivedTableStructure>
+      AuditLogsArchive (aynı şema, farklı tablo)
+      6 ay sonra tamamen sil veya cold storage'a taşı
+    </ArchivedTableStructure>
+  </DataRetentionPolicy>
+
+  <SecurityConsiderations>
+    <Consideration>
+      <Title>Sensitive Data Masking</Title>
+      <Description>Audit log'da hassas bilgiler (şifre, kredi kartı) loglanmamalı</Description>
+      <Mitigation>Attribute: [AuditIgnore] ile exclude et</Mitigation>
+    </Consideration>
+    <Consideration>
+      <Title>GDPR Right to be Forgotten</Title>
+      <Description>Kullanıcı silindiğinde audit log'da ne olacak?</Description>
+      <Mitigation>UserId yerine UserName (snapshot) kullan, ID null yap</Mitigation>
+    </Consideration>
+  </SecurityConsiderations>
+
+  <FutureEnhancements>
+    <Enhancement>IP Geolocation (ülke/şehir bilgisi)</Enhancement>
+    <Enhancement>Device fingerprinting</Enhancement>
+    <Enhancement>Change notification (önemli değişikliklerde email)</Enhancement>
+    <Enhancement>Rollback functionality (eski versiyona dön)</Enhancement>
+    <Enhancement>Suspicious activity detection (anomaly detection)</Enhancement>
+  </FutureEnhancements>
+
+  <RollbackPlan>
+    <Step>Migration'ı geri al: AuditLogs ve EvaluationHistories tabloları silinir</Step>
+    <Step>SaveChangesAsync override'ı kaldır</Step>
+    <Step>Service'lerden history kayıt kodunu kaldır</Step>
+    <Step>Controller endpoint'lerini kaldır</Step>
+    <Note>Mevcut evaluation/assignment verileri etkilenmez</Note>
+  </RollbackPlan>
+</ImplementationGuide>
