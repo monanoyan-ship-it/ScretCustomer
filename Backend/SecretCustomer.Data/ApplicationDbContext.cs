@@ -21,6 +21,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Evaluation> Evaluations { get; set; }
     public DbSet<Answer> Answers { get; set; }
     public DbSet<FieldWorker> FieldWorkers { get; set; }
+    public DbSet<ExcelTemplate> ExcelTemplates { get; set; }
+    public DbSet<ExcelColumn> ExcelColumns { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +42,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Evaluation>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Answer>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<FieldWorker>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ExcelTemplate>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ExcelColumn>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -75,6 +75,7 @@ builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 builder.Services.AddScoped<IFieldWorkerRepository, FieldWorkerRepository>();
+builder.Services.AddScoped<IExcelTemplateRepository, ExcelTemplateRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
@@ -87,6 +88,14 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
+builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
+
+// HttpClient for Python Services
+builder.Services.AddHttpClient("ExcelProcessor", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("PythonServices:ExcelProcessorUrl") ?? "http://localhost:8002");
+    client.Timeout = TimeSpan.FromMinutes(5);
+});
 
 // CORS Configuration
 builder.Services.AddCors(options =>

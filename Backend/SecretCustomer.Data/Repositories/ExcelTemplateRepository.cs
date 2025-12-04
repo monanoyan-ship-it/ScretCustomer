@@ -1,0 +1,160 @@
+using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Interfaces.Repositories;
+
+namespace SecretCustomer.Data.Repositories;
+
+public class ExcelTemplateRepository : IExcelTemplateRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public ExcelTemplateRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ExcelTemplate?> GetByIdAsync(Guid id, bool includeColumns = false)
+    {
+        var query = _context.ExcelTemplates.AsQueryable();
+
+        if (includeColumns)
+        {
+            query = query.Include(t => t.Columns.OrderBy(c => c.Order));
+        }
+
+        return await query.FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public async Task<IEnumerable<ExcelTemplate>> GetAllAsync(bool includeInactive = false)
+    {
+        var query = _context.ExcelTemplates
+            .Include(t => t.Columns.OrderBy(c => c.Order))
+            .AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(t => t.IsActive);
+        }
+
+        return await query
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<ExcelTemplate>> GetByEntityTypeAsync(string entityType)
+    {
+        return await _context.ExcelTemplates
+            .Include(t => t.Columns.OrderBy(c => c.Order))
+            .Where(t => t.EntityType == entityType && t.IsActive)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<ExcelTemplate> CreateAsync(ExcelTemplate template)
+    {
+        template.CreatedAt = DateTime.UtcNow;
+        template.UpdatedAt = DateTime.UtcNow;
+
+        // Set CreatedAt for columns as well
+        foreach (var column in template.Columns)
+        {
+            column.CreatedAt = DateTime.UtcNow;
+            column.UpdatedAt = DateTime.UtcNow;
+        }
+
+        _context.ExcelTemplates.Add(template);
+        await _context.SaveChangesAsync();
+
+        return template;
+    }
+
+    public async Task<ExcelTemplate> UpdateAsync(ExcelTemplate template)
+    {
+        template.UpdatedAt = DateTime.UtcNow;
+
+        // Get existing template with columns
+        var existingTemplate = await _context.ExcelTemplates
+            .Include(t => t.Columns)
+            .FirstOrDefaultAsync(t => t.Id == template.Id);
+
+        if (existingTemplate == null)
+        {
+            throw new InvalidOperationException($"ExcelTemplate with id {template.Id} not found");
+        }
+
+        // Update template properties
+        existingTemplate.Name = template.Name;
+        existingTemplate.Description = template.Description;
+        existingTemplate.EntityType = template.EntityType;
+        existingTemplate.IsActive = template.IsActive;
+        existingTemplate.SheetName = template.SheetName;
+        existingTemplate.HasHeader = template.HasHeader;
+        existingTemplate.UpdatedAt = template.UpdatedAt;
+
+        // Remove columns that are no longer present
+        var columnsToRemove = existingTemplate.Columns
+            .Where(ec => !template.Columns.Any(c => c.Id == ec.Id))
+            .ToList();
+
+        foreach (var column in columnsToRemove)
+        {
+            _context.ExcelColumns.Remove(column);
+        }
+
+        // Update or add columns
+        foreach (var column in template.Columns)
+        {
+            var existingColumn = existingTemplate.Columns.FirstOrDefault(c => c.Id == column.Id);
+
+            if (existingColumn != null)
+            {
+                // Update existing column
+                existingColumn.ColumnName = column.ColumnName;
+                existingColumn.PropertyName = column.PropertyName;
+                existingColumn.ColumnType = column.ColumnType;
+                existingColumn.Order = column.Order;
+                existingColumn.IsRequired = column.IsRequired;
+                existingColumn.ValidationRules = column.ValidationRules;
+                existingColumn.DropdownOptions = column.DropdownOptions;
+                existingColumn.SampleValue = column.SampleValue;
+                existingColumn.Description = column.Description;
+                existingColumn.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // Add new column
+                column.ExcelTemplateId = template.Id;
+                column.CreatedAt = DateTime.UtcNow;
+                column.UpdatedAt = DateTime.UtcNow;
+                existingTemplate.Columns.Add(column);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return existingTemplate;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var template = await _context.ExcelTemplates.FindAsync(id);
+
+        if (template == null)
+        {
+            return false;
+        }
+
+        // Soft delete
+        template.IsDeleted = true;
+        template.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> ExistsAsync(Guid id)
+    {
+        return await _context.ExcelTemplates.AnyAsync(t => t.Id == id);
+    }
+}
