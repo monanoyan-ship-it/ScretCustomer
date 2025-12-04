@@ -24,7 +24,7 @@ function ExcelTemplatesViewModel() {
         template.sheetName = ko.observable(data ? data.sheetName : 'Sheet1');
         template.hasHeader = ko.observable(data ? data.hasHeader : true);
         template.isActive = ko.observable(data ? data.isActive : true);
-        template.columns = ko.observableArray(data && data.columns ? data.columns.map(c => new Column(c)) : []);
+        template.columns = ko.observableArray(data && data.columns ? data.columns.map(c => new Column(c, template)) : []);
 
         template.addColumn = function() {
             if (!template.entityType()) {
@@ -32,7 +32,7 @@ function ExcelTemplatesViewModel() {
                 return;
             }
             var order = template.columns().length + 1;
-            template.columns.push(new Column({ order: order }));
+            template.columns.push(new Column({ order: order }, template));
         };
 
         template.removeColumn = function(column) {
@@ -45,7 +45,7 @@ function ExcelTemplatesViewModel() {
     }
 
     // Column Model
-    function Column(data) {
+    function Column(data, parentTemplate) {
         var column = this;
         column.id = ko.observable(data ? data.id : null);
         column.columnName = ko.observable(data ? data.columnName : '');
@@ -58,6 +58,51 @@ function ExcelTemplatesViewModel() {
         column.dropdownOptionsStr = ko.observable(
             data && data.dropdownOptions ? data.dropdownOptions.join(', ') : ''
         );
+
+        // Auto-detect column type from property type
+        column.propertyName.subscribe(function(newPropertyName) {
+            if (!newPropertyName || !parentTemplate) return;
+
+            var entityType = parentTemplate.entityType();
+            if (!entityType) return;
+
+            var entity = self.entityTypes().find(e => e.entityName === entityType);
+            if (!entity) return;
+
+            var property = entity.properties.find(p => p.propertyName === newPropertyName);
+            if (!property) return;
+
+            // Map database type to Excel column type
+            var typeMapping = {
+                'string': 'Text',
+                'int': 'Number',
+                'long': 'Number',
+                'decimal': 'Number',
+                'double': 'Number',
+                'bool': 'Boolean',
+                'DateTime': 'Date',
+                'Guid': 'Text'
+            };
+
+            var excelType = typeMapping[property.propertyType] || 'Text';
+
+            // Special case for email detection
+            if (property.propertyType === 'string' &&
+                (newPropertyName.toLowerCase().includes('email') ||
+                 newPropertyName.toLowerCase().includes('mail'))) {
+                excelType = 'Email';
+            }
+
+            // Special case for phone detection
+            if (property.propertyType === 'string' &&
+                (newPropertyName.toLowerCase().includes('phone') ||
+                 newPropertyName.toLowerCase().includes('tel') ||
+                 newPropertyName.toLowerCase().includes('telefon'))) {
+                excelType = 'Phone';
+            }
+
+            column.columnType(excelType);
+        });
     }
 
     // Helper function to get properties for entity
