@@ -106,8 +106,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Varlık Tipi (Tablo) <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: entityType, options: $parent.entityTypes, optionsText: 'entityName', optionsValue: 'entityName', optionsCaption: 'Seçiniz...'"></select>
-                            <small class="text-muted">Excel ile hangi tablo için veri yüklenecek?</small>
+                            <select class="form-select" data-bind="value: entityType, options: $parent.entityTypes, optionsText: 'entityName', optionsValue: 'entityName', optionsCaption: 'Seçiniz...', disable: columns().length > 0"></select>
+                            <small class="text-muted" data-bind="visible: columns().length === 0">Excel ile hangi tablo için veri yüklenecek?</small>
+                            <small class="text-muted text-warning" data-bind="visible: columns().length > 0">
+                                <i class="bi bi-lock me-1"></i>
+                                Tablo değiştirmek için önce tüm kolonları silin
+                            </small>
                         </div>
                     </div>
 
