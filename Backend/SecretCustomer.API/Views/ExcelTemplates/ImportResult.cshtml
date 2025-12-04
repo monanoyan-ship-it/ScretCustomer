@@ -1,0 +1,193 @@
+@model SecretCustomer.Core.Interfaces.Services.ExcelParseResult
+
+@{
+    ViewData["Title"] = "Excel İçe Aktarma Sonucu";
+    var templateId = ViewBag.TemplateId;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-check-circle me-2"></i>
+            Excel İçe Aktarma Sonucu
+        </h2>
+        <div>
+            <a href="@Url.Action("Import", new { id = templateId })" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Geri Dön
+            </a>
+            <a href="@Url.Action("Index")" class="btn btn-primary">
+                <i class="bi bi-list me-1"></i>
+                Şablonlar Listesi
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">Toplam Satır</h6>
+                    <h2 class="mb-0">@Model.TotalRows</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Geçerli Satır</h6>
+                    <h2 class="mb-0">@Model.ValidRows</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h6 class="card-title">Hatalı Satır</h6>
+                    <h2 class="mb-0">@Model.InvalidRows</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ValidRows == Model.TotalRows)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>Tebrikler!</strong> Tüm satırlar başarıyla doğrulandı. Veriler veritabanına kaydedilebilir.
+        </div>
+    }
+    else if (Model.InvalidRows > 0)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Dikkat!</strong> @Model.InvalidRows satırda hata bulundu. Lütfen hataları düzeltin ve tekrar yükleyin.
+        </div>
+    }
+
+    <!-- Detailed Results -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Detaylı Sonuçlar</h5>
+        </div>
+        <div class="card-body">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                @if (Model.ValidRows > 0)
+                {
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="valid-tab" data-bs-toggle="tab"
+                                data-bs-target="#valid" type="button" role="tab">
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            Geçerli Satırlar (@Model.ValidRows)
+                        </button>
+                    </li>
+                }
+                @if (Model.InvalidRows > 0)
+                {
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(Model.ValidRows == 0 ? "active" : "")" id="invalid-tab"
+                                data-bs-toggle="tab" data-bs-target="#invalid" type="button" role="tab">
+                            <i class="bi bi-exclamation-triangle text-danger me-1"></i>
+                            Hatalı Satırlar (@Model.InvalidRows)
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Valid Rows Tab -->
+                @if (Model.ValidRows > 0)
+                {
+                    <div class="tab-pane fade show active" id="valid" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Satır No</th>
+                                        <th>Veri</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in Model.Rows.Where(r => r.IsValid))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-success">@row.RowNumber</span>
+                                            </td>
+                                            <td>
+                                                <code>@System.Text.Json.JsonSerializer.Serialize(row.Data)</code>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Invalid Rows Tab -->
+                @if (Model.InvalidRows > 0)
+                {
+                    <div class="tab-pane fade @(Model.ValidRows == 0 ? "show active" : "")" id="invalid" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Satır No</th>
+                                        <th>Hatalar</th>
+                                        <th>Veri</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in Model.Rows.Where(r => !r.IsValid))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-danger">@row.RowNumber</span>
+                                            </td>
+                                            <td>
+                                                <ul class="list-unstyled mb-0">
+                                                    @foreach (var error in row.Errors)
+                                                    {
+                                                        <li class="text-danger">
+                                                            <i class="bi bi-x-circle me-1"></i>@error
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <small><code>@System.Text.Json.JsonSerializer.Serialize(row.Data)</code></small>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ValidRows > 0)
+    {
+        <div class="mt-4 text-end">
+            <button class="btn btn-success btn-lg" onclick="saveToDatabase()">
+                <i class="bi bi-database me-1"></i>
+                Veritabanına Kaydet (@Model.ValidRows satır)
+            </button>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function saveToDatabase() {
+            // TODO: Implement database save functionality
+            alert('Bu özellik henüz implement edilmedi. Geçerli @Model.ValidRows satır veritabanına kaydedilecek.');
+        }
+    </script>
+}

@@ -1,0 +1,151 @@
+@model SecretCustomer.Core.Entities.ExcelTemplate
+
+@{
+    ViewData["Title"] = "Excel Dosyası Yükle";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-upload me-2"></i>
+            Excel Dosyası Yükle
+        </h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Geri Dön
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Şablon: @Model.Name</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">@Model.Description</p>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Not:</strong> Excel dosyanız aşağıdaki kolonları içermelidir:
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Sıra</th>
+                                    <th>Kolon Adı</th>
+                                    <th>Tip</th>
+                                    <th>Zorunlu</th>
+                                    <th>Açıklama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var column in Model.Columns.OrderBy(c => c.Order))
+                                {
+                                    <tr>
+                                        <td>@column.Order</td>
+                                        <td><strong>@column.ColumnName</strong></td>
+                                        <td>
+                                            <span class="badge bg-secondary">@column.ColumnType</span>
+                                        </td>
+                                        <td>
+                                            @if (column.IsRequired)
+                                            {
+                                                <span class="badge bg-danger">Zorunlu</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">İsteğe Bağlı</span>
+                                            }
+                                        </td>
+                                        <td>@(column.Description ?? "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <form method="post" action="@Url.Action("ProcessImport", new { id = Model.Id })" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                                Excel Dosyası Seçin
+                            </label>
+                            <input class="form-control" type="file" id="file" name="file"
+                                   accept=".xlsx,.xls" required>
+                            <small class="text-muted">
+                                Sadece .xlsx ve .xls dosyaları desteklenir
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Export", new { id = Model.Id })" class="btn btn-outline-primary">
+                                <i class="bi bi-download me-1"></i>
+                                Örnek Excel İndir
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload me-1"></i>
+                                Dosyayı Yükle ve İşle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb me-1"></i>
+                        Yardım
+                    </h6>
+                    <ul class="small">
+                        <li>Önce "Örnek Excel İndir" butonuna tıklayarak şablon dosyasını indirin</li>
+                        <li>İndirilen dosyayı açın ve verilerinizi girin</li>
+                        <li>Başlık satırını değiştirmeyin</li>
+                        <li>Zorunlu alanları boş bırakmayın</li>
+                        <li>Her kolon için belirtilen veri tipine uygun değerler girin</li>
+                        <li>Dosyayı kaydedin ve bu sayfadan yükleyin</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="card-title">Veri Tipleri</h6>
+                    <dl class="small">
+                        <dt>Metin</dt>
+                        <dd>Herhangi bir metin değer</dd>
+
+                        <dt>Sayı</dt>
+                        <dd>Tam sayı veya ondalık sayı</dd>
+
+                        <dt>Tarih</dt>
+                        <dd>YYYY-MM-DD formatında tarih</dd>
+
+                        <dt>E-posta</dt>
+                        <dd>Geçerli bir e-posta adresi</dd>
+
+                        <dt>Telefon</dt>
+                        <dd>Telefon numarası (formatlanabilir)</dd>
+
+                        <dt>Evet/Hayır</dt>
+                        <dd>true, false, yes, no, 1, 0</dd>
+
+                        <dt>Seçim Listesi</dt>
+                        <dd>Tanımlanmış seçeneklerden biri</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
