@@ -276,6 +276,57 @@ public class ExcelTemplatesApiController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get available entities and their properties for template creation
+    /// </summary>
+    [HttpGet("schema")]
+    public IActionResult GetEntitySchema()
+    {
+        var entityTypes = new[]
+        {
+            typeof(Core.Entities.User),
+            typeof(Core.Entities.Branch),
+            typeof(Core.Entities.FieldWorker),
+            typeof(Core.Entities.Project),
+            typeof(Core.Entities.Assignment),
+            typeof(Core.Entities.Checklist),
+            typeof(Core.Entities.Question),
+            typeof(Core.Entities.Section),
+            typeof(Core.Entities.Evaluation),
+            typeof(Core.Entities.Answer)
+        };
+
+        var schema = entityTypes.Select(type => new
+        {
+            entityName = type.Name,
+            properties = type.GetProperties()
+                .Where(p => p.CanWrite && !p.PropertyType.IsGenericType) // Exclude collections
+                .Select(p => new
+                {
+                    propertyName = p.Name,
+                    propertyType = GetSimpleTypeName(p.PropertyType)
+                })
+                .OrderBy(p => p.propertyName)
+                .ToList()
+        }).OrderBy(e => e.entityName).ToList();
+
+        return Ok(schema);
+    }
+
+    private string GetSimpleTypeName(Type type)
+    {
+        if (type == typeof(string)) return "string";
+        if (type == typeof(int) || type == typeof(int?)) return "int";
+        if (type == typeof(long) || type == typeof(long?)) return "long";
+        if (type == typeof(decimal) || type == typeof(decimal?)) return "decimal";
+        if (type == typeof(double) || type == typeof(double?)) return "double";
+        if (type == typeof(bool) || type == typeof(bool?)) return "bool";
+        if (type == typeof(DateTime) || type == typeof(DateTime?)) return "DateTime";
+        if (type == typeof(Guid) || type == typeof(Guid?)) return "Guid";
+        if (type.IsEnum) return "enum";
+        return type.Name;
+    }
+
     private ExcelTemplateDto MapToDto(ExcelTemplate template)
     {
         return new ExcelTemplateDto

@@ -1,54 +1,49 @@
-@model IEnumerable<SecretCustomer.Core.Entities.ExcelTemplate>
-
 @{
     ViewData["Title"] = "Excel Şablonları";
 }
 
-<div class="container-fluid">
+<div id="excel-templates-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            <i class="bi bi-file-earmark-spreadsheet me-2"></i>
-            Excel Şablonları
-        </h2>
-        <a href="@Url.Action("Create")" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>
-            Yeni Şablon Oluştur
-        </a>
+        <h2><i class="bi bi-file-earmark-spreadsheet me-2"></i> Excel Şablonları</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Şablon
+        </button>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>
-            Henüz hiç Excel şablonu oluşturulmamış. Yeni bir şablon oluşturmak için yukarıdaki butona tıklayın.
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Templates List -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: templates().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz Excel şablonu bulunmamaktadır.
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="card">
+
+        <!-- Templates Table -->
+        <div data-bind="visible: templates().length > 0" class="card">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Şablon Adı</th>
-                                <th>Açıklama</th>
                                 <th>Varlık Tipi</th>
                                 <th>Kolon Sayısı</th>
                                 <th>Durum</th>
@@ -56,96 +51,228 @@
                                 <th style="width: 250px;">İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach (var template in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <strong>@template.Name</strong>
-                                    </td>
-                                    <td>@template.Description</td>
-                                    <td>
-                                        <span class="badge bg-secondary">@template.EntityType</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">@template.Columns.Count kolon</span>
-                                    </td>
-                                    <td>
-                                        @if (template.IsActive)
-                                        {
-                                            <span class="badge bg-success">Aktif</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Pasif</span>
-                                        }
-                                    </td>
-                                    <td>@template.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="@Url.Action("Export", new { id = template.Id })"
-                                               class="btn btn-sm btn-success"
-                                               title="Örnek Excel İndir">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                            <a href="@Url.Action("Import", new { id = template.Id })"
-                                               class="btn btn-sm btn-info"
-                                               title="Excel Yükle">
-                                                <i class="bi bi-upload"></i>
-                                            </a>
-                                            <a href="@Url.Action("Edit", new { id = template.Id })"
-                                               class="btn btn-sm btn-primary"
-                                               title="Düzenle">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="confirmDelete('@template.Id', '@template.Name')"
-                                                    title="Sil">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
+                        <tbody data-bind="foreach: templates">
+                            <tr>
+                                <td>
+                                    <strong data-bind="text: name"></strong>
+                                    <br><small class="text-muted" data-bind="text: description"></small>
+                                </td>
+                                <td><span class="badge bg-secondary" data-bind="text: entityType"></span></td>
+                                <td><span class="badge bg-info" data-bind="text: (columns && columns.length) || 0"></span> kolon</td>
+                                <td>
+                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                </td>
+                                <td data-bind="text: new Date(createdAt).toLocaleDateString('tr-TR')"></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-success" data-bind="click: $parent.exportTemplate" title="Örnek Excel İndir">
+                                            <i class="bi bi-download"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info" data-bind="click: $parent.showImportModal" title="Excel Yükle">
+                                            <i class="bi bi-upload"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-bind="click: $parent.editTemplate" title="Düzenle">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteTemplate" title="Sil">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    }
-</div>
+    </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Şablonu Sil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong id="templateName"></strong> şablonunu silmek istediğinizden emin misiniz?</p>
-                <p class="text-muted">Bu işlem geri alınamaz.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <form id="deleteForm" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Sil</button>
-                </form>
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: editingTemplate">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id()">Yeni Excel Şablonu</span>
+                        <span data-bind="visible: id()">Excel Şablonu Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Şablon Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: Kullanıcı İçe Aktarma" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Varlık Tipi (Tablo) <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: entityType, options: $parent.entityTypes, optionsText: 'entityName', optionsValue: 'entityName', optionsCaption: 'Seçiniz...'"></select>
+                            <small class="text-muted">Excel ile hangi tablo için veri yüklenecek?</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" data-bind="value: description" rows="2" placeholder="Şablon hakkında kısa açıklama..."></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Sheet Adı</label>
+                            <input type="text" class="form-control" data-bind="value: sheetName" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" data-bind="checked: hasHeader" id="hasHeader" />
+                                <label class="form-check-label" for="hasHeader">Başlık satırı var</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end" data-bind="visible: id()">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" data-bind="checked: isActive" id="isActive" />
+                                <label class="form-check-label" for="isActive">Aktif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Kolonlar</h5>
+                        <button type="button" class="btn btn-sm btn-primary" data-bind="click: addColumn, enable: entityType()">
+                            <i class="bi bi-plus-circle"></i> Kolon Ekle
+                        </button>
+                    </div>
+
+                    <!-- Columns List -->
+                    <div data-bind="foreach: columns">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Kolon #<span data-bind="text: $index() + 1"></span></h6>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parent.removeColumn">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Excel Kolon Adı *</label>
+                                        <input type="text" class="form-control" data-bind="value: columnName" placeholder="Örn: Ad Soyad, E-posta" />
+                                        <small class="text-muted">Excel'de görünecek başlık</small>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Veritabanı Alanı *</label>
+                                        <select class="form-control" data-bind="value: propertyName, options: $parents[1].getPropertiesForEntity($parent.entityType()), optionsText: function(item) { return item.propertyName + ' (' + item.propertyType + ')'; }, optionsValue: 'propertyName', optionsCaption: 'Seçiniz...'"></select>
+                                        <small class="text-muted">Hangi alana kaydedilecek?</small>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Tip *</label>
+                                        <select class="form-select" data-bind="value: columnType">
+                                            <option value="Text">Metin</option>
+                                            <option value="Number">Sayı</option>
+                                            <option value="Date">Tarih</option>
+                                            <option value="Boolean">Evet/Hayır</option>
+                                            <option value="Email">E-posta</option>
+                                            <option value="Phone">Telefon</option>
+                                            <option value="Dropdown">Seçim Listesi</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Sıra *</label>
+                                        <input type="number" class="form-control" data-bind="value: order" min="1" />
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Örnek Değer</label>
+                                        <input type="text" class="form-control" data-bind="value: sampleValue" />
+                                    </div>
+                                    <div class="col-md-4 mb-2 d-flex align-items-end">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" data-bind="checked: isRequired" />
+                                            <label class="form-check-label">Zorunlu</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Açıklama</label>
+                                    <input type="text" class="form-control" data-bind="value: description" />
+                                </div>
+
+                                <div class="mb-2" data-bind="visible: columnType() === 'Dropdown'">
+                                    <label class="form-label">Seçim Listesi Değerleri (virgülle ayırın)</label>
+                                    <input type="text" class="form-control" data-bind="value: dropdownOptionsStr" placeholder="Seçenek1, Seçenek2, Seçenek3" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div data-bind="visible: columns().length === 0" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Henüz kolon eklenmedi. Yukarıdaki "Kolon Ekle" butonunu kullanın.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveTemplate, enable: name() && entityType() && columns().length > 0">
+                        <i class="bi bi-save"></i>
+                        <span data-bind="visible: !id()">Oluştur</span>
+                        <span data-bind="visible: id()">Güncelle</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade" data-bind="visible: isModalOpen, css: { show: isModalOpen }"></div>
+
+    <!-- Import Modal -->
+    <div class="modal fade" data-bind="css: { show: isImportModalOpen }, style: { display: isImportModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: importingTemplate">
+                <div class="modal-header">
+                    <h5 class="modal-title">Excel Dosyası Yükle: <span data-bind="text: name"></span></h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeImportModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Not:</strong> Excel dosyanız şablon yapısına uygun olmalıdır. Önce "Örnek Excel İndir" butonunu kullanarak şablonu indirin.
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="excelFile" class="form-label">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                            Excel Dosyası Seçin
+                        </label>
+                        <input class="form-control" type="file" id="excelFile" accept=".xlsx,.xls" data-bind="event: { change: $parent.handleFileSelect }" />
+                        <small class="text-muted">Sadece .xlsx ve .xls dosyaları desteklenir</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.exportTemplate($data); }">
+                            <i class="bi bi-download me-1"></i>
+                            Örnek Excel İndir
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeImportModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.processImport, enable: $parent.selectedFile">
+                        <i class="bi bi-upload"></i> Dosyayı Yükle ve İşle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal Backdrop -->
+    <div class="modal-backdrop fade" data-bind="visible: isImportModalOpen, css: { show: isImportModalOpen }"></div>
 </div>
 
 @section Scripts {
-    <script>
-        function confirmDelete(id, name) {
-            document.getElementById('templateName').textContent = name;
-            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + id;
-
-            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-    </script>
+    <script src="~/js/ExcelTemplates/index.js"></script>
 }
