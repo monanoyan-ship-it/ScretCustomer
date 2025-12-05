@@ -5,6 +5,7 @@ function ExcelTemplatesViewModel() {
     // Observables
     self.templates = ko.observableArray([]);
     self.entityTypes = ko.observableArray([]);
+    self.entityAttributesCache = {}; // Cache for attribute data
     self.isLoading = ko.observable(false);
     self.isModalOpen = ko.observable(false);
     self.isImportModalOpen = ko.observable(false);
@@ -25,6 +26,18 @@ function ExcelTemplatesViewModel() {
         template.hasHeader = ko.observable(data ? data.hasHeader : true);
         template.isActive = ko.observable(data ? data.isActive : true);
         template.columns = ko.observableArray(data && data.columns ? data.columns.map(c => new Column(c, template)) : []);
+
+        // Load attributes when entity type changes
+        template.entityType.subscribe(function(newEntityType) {
+            if (newEntityType) {
+                self.loadEntityAttributes(newEntityType);
+            }
+        });
+
+        // Load attributes immediately if we have an entity type
+        if (template.entityType()) {
+            self.loadEntityAttributes(template.entityType());
+        }
 
         template.addColumn = function() {
             if (!template.entityType()) {
@@ -59,13 +72,32 @@ function ExcelTemplatesViewModel() {
             data && data.dropdownOptions ? data.dropdownOptions.join(', ') : ''
         );
 
-        // Auto-detect column type from property type
+        // Auto-detect column type and other fields from property type or attributes
         column.propertyName.subscribe(function(newPropertyName) {
             if (!newPropertyName || !parentTemplate) return;
 
             var entityType = parentTemplate.entityType();
             if (!entityType) return;
 
+            // First, try to get attribute data
+            var attributeData = self.entityAttributesCache[entityType];
+            if (attributeData) {
+                var attributeColumn = attributeData.find(a => a.propertyName === newPropertyName);
+                if (attributeColumn) {
+                    // Fill all fields from attribute - always update regardless of value
+                    column.columnName(attributeColumn.columnName || '');
+                    column.columnType(attributeColumn.columnType || 'Text');
+                    column.isRequired(attributeColumn.isRequired || false);
+                    column.description(attributeColumn.description || '');
+                    column.sampleValue(attributeColumn.sampleValue || '');
+                    column.dropdownOptionsStr(
+                        attributeColumn.dropdownOptions ? attributeColumn.dropdownOptions.join(', ') : ''
+                    );
+                    return; // Exit early if we found attribute data
+                }
+            }
+
+            // Fallback to old behavior if no attribute data
             var entity = self.entityTypes().find(e => e.entityName === entityType);
             if (!entity) return;
 
@@ -102,6 +134,13 @@ function ExcelTemplatesViewModel() {
             }
 
             column.columnType(excelType);
+
+            // Always set a friendly column name from property name
+            var friendlyName = newPropertyName
+                .replace(/([A-Z])/g, ' $1')
+                .trim()
+                .replace(/^./, str => str.toUpperCase());
+            column.columnName(friendlyName);
         });
     }
 
@@ -110,6 +149,36 @@ function ExcelTemplatesViewModel() {
         if (!entityName) return [];
         var entity = self.entityTypes().find(e => e.entityName === entityName);
         return entity ? entity.properties : [];
+    };
+
+    // Load entity attributes from backend
+    self.loadEntityAttributes = function(entityType) {
+        if (!entityType) return;
+
+        // Check if already cached
+        if (self.entityAttributesCache[entityType]) {
+            return;
+        }
+
+        // Try to fetch attribute data for this entity
+        fetch(`/api/excel-templates/attributes/${entityType}`)
+            .then(res => {
+                if (!res.ok) {
+                    // No attributes defined, that's okay
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    self.entityAttributesCache[entityType] = data;
+                    console.log(`Loaded attributes for ${entityType}:`, data);
+                }
+            })
+            .catch(err => {
+                // Silently fail - attributes are optional
+                console.log(`No attributes found for ${entityType}`);
+            });
     };
 
     // Load Templates

@@ -1,8 +1,10 @@
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Core.Attributes;
 using System.Text;
 using System.Text.Json;
+using System.Reflection;
 using Microsoft.Extensions.Http;
 
 namespace SecretCustomer.Services.Services;
@@ -205,5 +207,61 @@ public class ExcelTemplateService : IExcelTemplateService
         }
 
         return result;
+    }
+
+    public List<ExcelColumn> GetColumnsFromAttributes<T>() where T : class
+    {
+        var type = typeof(T);
+        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var columns = new List<ExcelColumn>();
+
+        foreach (var property in properties)
+        {
+            var attribute = property.GetCustomAttribute<ExcelColumnAttribute>();
+            if (attribute == null)
+                continue;
+
+            var column = new ExcelColumn
+            {
+                ColumnName = attribute.ColumnName,
+                PropertyName = property.Name,
+                Order = attribute.Order,
+                IsRequired = attribute.IsRequired,
+                ColumnType = attribute.ColumnType,
+                Description = attribute.Description,
+                SampleValue = attribute.SampleValue,
+                ValidationRules = attribute.ValidationRules,
+                DropdownOptions = attribute.DropdownOptions
+            };
+
+            columns.Add(column);
+        }
+
+        return columns.OrderBy(c => c.Order).ToList();
+    }
+
+    public async Task<ExcelTemplate> CreateFromAttributesAsync<T>(string templateName, string? description = null) where T : class
+    {
+        var type = typeof(T);
+        var entityTypeName = type.Name;
+
+        var columns = GetColumnsFromAttributes<T>();
+
+        if (!columns.Any())
+        {
+            throw new InvalidOperationException($"No ExcelColumn attributes found on type {entityTypeName}");
+        }
+
+        var template = new ExcelTemplate
+        {
+            Name = templateName,
+            Description = description ?? $"Excel template for {entityTypeName}",
+            EntityType = entityTypeName,
+            SheetName = entityTypeName,
+            HasHeader = true,
+            Columns = columns
+        };
+
+        return await CreateAsync(template);
     }
 }

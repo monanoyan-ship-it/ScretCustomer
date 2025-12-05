@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.API.DTOs;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
+using System.Reflection;
 using System.Text.Json;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -277,30 +278,175 @@ public class ExcelTemplatesApiController : ControllerBase
     }
 
     /// <summary>
+    /// Create template from entity attributes
+    /// </summary>
+    [HttpPost("from-attributes")]
+    public async Task<ActionResult<ExcelTemplateDto>> CreateFromAttributes(
+        [FromBody] CreateFromAttributesDto dto)
+    {
+        try
+        {
+            ExcelTemplate template;
+
+            switch (dto.EntityType.ToLower())
+            {
+                case "user":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.User>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "branch":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Branch>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "fieldworker":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.FieldWorker>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "project":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Project>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "assignment":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Assignment>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "checklist":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Checklist>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "section":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Section>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "question":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Question>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "evaluation":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Evaluation>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                case "answer":
+                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Answer>(
+                        dto.TemplateName, dto.Description);
+                    break;
+                default:
+                    return BadRequest(new { message = $"Entity type '{dto.EntityType}' is not supported for attribute-based template creation" });
+            }
+
+            var resultDto = MapToDto(template);
+
+            return CreatedAtAction(nameof(GetById), new { id = template.Id }, resultDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Preview columns from entity attributes without creating template
+    /// </summary>
+    [HttpGet("attributes/{entityType}")]
+    public ActionResult<List<ExcelColumnDto>> GetColumnsFromAttributes(string entityType)
+    {
+        try
+        {
+            List<ExcelColumn> columns;
+
+            switch (entityType.ToLower())
+            {
+                case "user":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.User>();
+                    break;
+                case "branch":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Branch>();
+                    break;
+                case "fieldworker":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.FieldWorker>();
+                    break;
+                case "project":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Project>();
+                    break;
+                case "assignment":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Assignment>();
+                    break;
+                case "checklist":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Checklist>();
+                    break;
+                case "section":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Section>();
+                    break;
+                case "question":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Question>();
+                    break;
+                case "evaluation":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Evaluation>();
+                    break;
+                case "answer":
+                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Answer>();
+                    break;
+                default:
+                    return BadRequest(new { message = $"Entity type '{entityType}' is not supported for attribute-based template creation" });
+            }
+
+            if (!columns.Any())
+            {
+                return NotFound(new { message = $"No ExcelColumn attributes found on {entityType}" });
+            }
+
+            var dtos = columns.Select(c => new ExcelColumnDto
+            {
+                ColumnName = c.ColumnName,
+                PropertyName = c.PropertyName,
+                ColumnType = c.ColumnType,
+                Order = c.Order,
+                IsRequired = c.IsRequired,
+                ValidationRules = string.IsNullOrWhiteSpace(c.ValidationRules)
+                    ? null
+                    : JsonSerializer.Deserialize<Dictionary<string, object>>(c.ValidationRules),
+                DropdownOptions = string.IsNullOrWhiteSpace(c.DropdownOptions)
+                    ? null
+                    : JsonSerializer.Deserialize<List<string>>(c.DropdownOptions),
+                SampleValue = c.SampleValue,
+                Description = c.Description
+            }).ToList();
+
+            return Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get available entities and their properties for template creation
+    /// Automatically discovers entities marked with ExcelTemplateAttribute
     /// </summary>
     [HttpGet("schema")]
     public IActionResult GetEntitySchema()
     {
-        var entityTypes = new[]
-        {
-            typeof(Core.Entities.User),
-            typeof(Core.Entities.Branch),
-            typeof(Core.Entities.FieldWorker),
-            typeof(Core.Entities.Project),
-            typeof(Core.Entities.Assignment),
-            typeof(Core.Entities.Checklist),
-            typeof(Core.Entities.Question),
-            typeof(Core.Entities.Section),
-            typeof(Core.Entities.Evaluation),
-            typeof(Core.Entities.Answer)
-        };
+        // Automatically discover all entities with ExcelTemplateAttribute
+        var assembly = typeof(Core.Entities.User).Assembly;
+        var entityTypes = assembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == "SecretCustomer.Core.Entities")
+            .Select(t => new
+            {
+                Type = t,
+                Attribute = t.GetCustomAttribute<Core.Attributes.ExcelTemplateAttribute>()
+            })
+            .Where(x => x.Attribute != null && x.Attribute.IsAvailable)
+            .OrderBy(x => x.Attribute!.DisplayName)
+            .ToList();
 
-        var schema = entityTypes.Select(type => new
+        var schema = entityTypes.Select(item => new
         {
-            entityName = type.Name,
-            properties = type.GetProperties()
-                .Where(p => p.CanWrite && !p.PropertyType.IsGenericType) // Exclude collections
+            entityName = item.Type.Name,
+            displayName = item.Attribute!.DisplayName,
+            description = item.Attribute.Description,
+            properties = item.Type.GetProperties()
+                .Where(p => p.GetCustomAttribute<Core.Attributes.ExcelColumnAttribute>() != null) // Only properties with ExcelColumn attribute
                 .Select(p => new
                 {
                     propertyName = p.Name,
@@ -308,7 +454,7 @@ public class ExcelTemplatesApiController : ControllerBase
                 })
                 .OrderBy(p => p.propertyName)
                 .ToList()
-        }).OrderBy(e => e.entityName).ToList();
+        }).ToList();
 
         return Ok(schema);
     }

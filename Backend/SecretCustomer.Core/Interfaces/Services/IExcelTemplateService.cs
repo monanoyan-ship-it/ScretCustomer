@@ -13,6 +13,8 @@ public interface IExcelTemplateService
     Task<bool> ExistsAsync(Guid id);
     Task<byte[]> GenerateTemplateExcelAsync(Guid templateId);
     Task<ExcelParseResult> ParseExcelAsync(Guid templateId, byte[] fileContent);
+    Task<ExcelTemplate> CreateFromAttributesAsync<T>(string templateName, string? description = null) where T : class;
+    List<ExcelColumn> GetColumnsFromAttributes<T>() where T : class;
 }
 
 public class ExcelParseResult

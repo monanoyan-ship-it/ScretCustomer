@@ -36,6 +36,13 @@ public class CreateExcelTemplateDto
     public List<CreateExcelColumnDto> Columns { get; set; } = new();
 }
 
+public class CreateFromAttributesDto
+{
+    public string EntityType { get; set; } = string.Empty;
+    public string TemplateName { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
 public class UpdateExcelTemplateDto
 {
     public string Name { get; set; } = string.Empty;

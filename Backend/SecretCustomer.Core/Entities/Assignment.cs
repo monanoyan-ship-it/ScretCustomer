@@ -1,5 +1,9 @@
+using SecretCustomer.Core.Attributes;
+using SecretCustomer.Core.Enums;
+
 namespace SecretCustomer.Core.Entities;
 
+[ExcelTemplate("Atama", Description = "Görev atamaları için Excel import/export", IsAvailable = false)]
 public class Assignment : BaseEntity
 {
     public Guid ProjectId { get; set; }
@@ -14,12 +18,28 @@ public class Assignment : BaseEntity
     public Guid? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 
-    public string? ExternalEmail { get; set; } // Dış müşteri için email
-    public string? ExternalName { get; set; }   // Dış müşteri için isim
+    [ExcelColumn("Dış Müşteri E-postası", 1, ColumnType = ExcelColumnType.Email,
+        Description = "Dış müşteri için e-posta adresi", SampleValue = "musteri@example.com")]
+    public string? ExternalEmail { get; set; }
 
+    [ExcelColumn("Dış Müşteri Adı", 2, ColumnType = ExcelColumnType.Text,
+        Description = "Dış müşteri için ad soyad", SampleValue = "Ayşe Yıldız")]
+    public string? ExternalName { get; set; }
+
+    [ExcelColumn("Benzersiz Link", 3, ColumnType = ExcelColumnType.Text,
+        Description = "Atama için benzersiz link")]
     public string UniqueLink { get; set; } = Guid.NewGuid().ToString();
+
+    [ExcelColumn("Teslim Tarihi", 4, IsRequired = true, ColumnType = ExcelColumnType.Date,
+        Description = "Atamanın teslim tarihi", SampleValue = "2024-12-31")]
     public DateTime DueDate { get; set; }
+
+    [ExcelColumn("Tamamlandı", 5, ColumnType = ExcelColumnType.Boolean,
+        Description = "Atama tamamlandı mı?", SampleValue = "false")]
     public bool IsCompleted { get; set; } = false;
+
+    [ExcelColumn("Tamamlanma Tarihi", 6, ColumnType = ExcelColumnType.Date,
+        Description = "Atamanın tamamlanma tarihi")]
     public DateTime? CompletedAt { get; set; }
 
     // Navigation properties
