@@ -76,6 +76,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 builder.Services.AddScoped<IFieldWorkerRepository, FieldWorkerRepository>();
 builder.Services.AddScoped<IExcelTemplateRepository, ExcelTemplateRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerPersonnelRepository, CustomerPersonnelRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
@@ -89,6 +91,8 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerPersonnelService, CustomerPersonnelService>();
 
 // HttpClient for Python Services
 builder.Services.AddHttpClient("ExcelProcessor", client =>

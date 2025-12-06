@@ -23,6 +23,13 @@ public class ApplicationDbContext : DbContext
     public DbSet<FieldWorker> FieldWorkers { get; set; }
     public DbSet<ExcelTemplate> ExcelTemplates { get; set; }
     public DbSet<ExcelColumn> ExcelColumns { get; set; }
+    
+    // Customer Management DbSets
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<CustomerPersonnel> CustomerPersonnel { get; set; }
+    public DbSet<CustomerTaskList> CustomerTaskLists { get; set; }
+    public DbSet<CustomerPersonnelTaskAssignment> CustomerPersonnelTaskAssignments { get; set; }
+    public DbSet<CustomerPersonnelPermission> CustomerPersonnelPermissions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +51,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<FieldWorker>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ExcelTemplate>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ExcelColumn>().HasQueryFilter(e => !e.IsDeleted);
+        
+        // Customer Management Entities
+        modelBuilder.Entity<Customer>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerPersonnel>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerTaskList>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerPersonnelTaskAssignment>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerPersonnelPermission>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -65,3 +79,5 @@ public class ApplicationDbContext : DbContext
         return base.SaveChangesAsync(cancellationToken);
     }
 }
+
+

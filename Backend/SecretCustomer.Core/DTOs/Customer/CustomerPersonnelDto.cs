@@ -1,0 +1,112 @@
+using System.ComponentModel.DataAnnotations;
+using SecretCustomer.Core.Enums;
+
+namespace SecretCustomer.Core.DTOs.Customer;
+
+public class CustomerPersonnelDto
+{
+    public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string? Department { get; set; }
+    public string? Title { get; set; }
+    public CustomerPersonnelRole Role { get; set; }
+    public string RoleName { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public string? Notes { get; set; }
+    public int TaskAssignmentCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateCustomerPersonnelDto
+{
+    [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
+    public Guid CustomerId { get; set; }
+
+    [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
+    [StringLength(100)]
+    public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "E-posta zorunludur")]
+    [StringLength(255)]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Şifre zorunludur")]
+    [StringLength(100, MinimumLength = 6)]
+    public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Ad zorunludur")]
+    [StringLength(100)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Soyad zorunludur")]
+    [StringLength(100)]
+    public string LastName { get; set; } = string.Empty;
+
+    [StringLength(20)]
+    [Phone]
+    public string? PhoneNumber { get; set; }
+
+    [StringLength(100)]
+    public string? Department { get; set; }
+
+    [StringLength(100)]
+    public string? Title { get; set; }
+
+    [Required(ErrorMessage = "Rol seçimi zorunludur")]
+    public CustomerPersonnelRole Role { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    [StringLength(2000)]
+    public string? Notes { get; set; }
+}
+
+public class UpdateCustomerPersonnelDto
+{
+    [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
+    [StringLength(100)]
+    public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "E-posta zorunludur")]
+    [StringLength(255)]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [StringLength(100, MinimumLength = 6)]
+    public string? Password { get; set; }
+
+    [Required(ErrorMessage = "Ad zorunludur")]
+    [StringLength(100)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Soyad zorunludur")]
+    [StringLength(100)]
+    public string LastName { get; set; } = string.Empty;
+
+    [StringLength(20)]
+    [Phone]
+    public string? PhoneNumber { get; set; }
+
+    [StringLength(100)]
+    public string? Department { get; set; }
+
+    [StringLength(100)]
+    public string? Title { get; set; }
+
+    [Required(ErrorMessage = "Rol seçimi zorunludur")]
+    public CustomerPersonnelRole Role { get; set; }
+
+    public bool IsActive { get; set; }
+
+    [StringLength(2000)]
+    public string? Notes { get; set; }
+}

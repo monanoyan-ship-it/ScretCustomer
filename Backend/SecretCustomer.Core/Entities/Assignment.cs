@@ -18,6 +18,12 @@ public class Assignment : BaseEntity
     public Guid? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 
+    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public CustomerPersonnel? AssignedCustomerPersonnel { get; set; }
+
+    public Guid? AssignedFieldWorkerId { get; set; }
+    public FieldWorker? AssignedFieldWorker { get; set; }
+
     [ExcelColumn("Dış Müşteri E-postası", 1, ColumnType = ExcelColumnType.Email,
         Description = "Dış müşteri için e-posta adresi", SampleValue = "musteri@example.com")]
     public string? ExternalEmail { get; set; }

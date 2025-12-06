@@ -41,5 +41,15 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
             .WithMany(u => u.Assignments)
             .HasForeignKey(a => a.AssignedUserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(a => a.AssignedCustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(a => a.AssignedCustomerPersonnelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(a => a.AssignedFieldWorker)
+            .WithMany()
+            .HasForeignKey(a => a.AssignedFieldWorkerId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -285,7 +285,7 @@ public static class SeedData
                 Name = "2025 Q1 Restaurant Evaluation",
                 Description = "2025 yılı 1. çeyrek restaurant değerlendirme projesi",
                 ChecklistId = checklist.Id,
-                AssignmentType = AssignmentType.Internal,
+                AssignmentType = AssignmentType.InternalBranch,
                 StartDate = DateTime.UtcNow,
                 EndDate = DateTime.UtcNow.AddMonths(3),
                 IsActive = true,
@@ -335,12 +335,249 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Assignments created");
 
+            // 8. Sample Customers
+            var customer1 = new Customer
+            {
+                Id = Guid.NewGuid(),
+                CompanyName = "ABC Perakende A.Ş.",
+                TaxNumber = "1234567890",
+                Phone = "0212 123 4567",
+                Email = "info@abc.com",
+                Address = "Maslak Mahallesi, Büyükdere Caddesi No:123",
+                City = "İstanbul",
+                IsActive = true,
+                ContractStartDate = DateTime.UtcNow.AddMonths(-6),
+                ContractEndDate = DateTime.UtcNow.AddMonths(18),
+                Notes = "Perakende sektöründe faaliyet gösteren büyük zincir",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var customer2 = new Customer
+            {
+                Id = Guid.NewGuid(),
+                CompanyName = "XYZ Restaurant Grubu Ltd.",
+                TaxNumber = "9876543210",
+                Phone = "0216 456 7890",
+                Email = "contact@xyz.com",
+                Address = "Kadıköy, Moda Caddesi No:45",
+                City = "İstanbul",
+                IsActive = true,
+                ContractStartDate = DateTime.UtcNow.AddMonths(-3),
+                ContractEndDate = DateTime.UtcNow.AddMonths(21),
+                Notes = "Restoran zinciri - 15 şubesi var",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var customer3 = new Customer
+            {
+                Id = Guid.NewGuid(),
+                CompanyName = "Otel Zincirleri A.Ş.",
+                TaxNumber = "5555666677",
+                Phone = "0242 111 2233",
+                Email = "info@otelzinciri.com",
+                Address = "Konyaaltı, Sahil Yolu No:88",
+                City = "Antalya",
+                IsActive = true,
+                ContractStartDate = DateTime.UtcNow.AddMonths(-12),
+                ContractEndDate = DateTime.UtcNow.AddMonths(12),
+                Notes = "5 yıldızlı otel zinciri",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Customers.AddRange(customer1, customer2, customer3);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Customers created");
+
+            // 9. Sample Customer Personnel
+            var personnel1 = new CustomerPersonnel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer1.Id,
+                Username = "ahmet.yilmaz",
+                Email = "ahmet.yilmaz@abc.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                FirstName = "Ahmet",
+                LastName = "Yılmaz",
+                PhoneNumber = "0532 111 2233",
+                Department = "Kalite Kontrol",
+                Title = "Kalite Müdürü",
+                Role = CustomerPersonnelRole.CustomerManager,
+                IsActive = true,
+                Notes = "ABC Perakende kalite müdürü - tüm yetkilere sahip",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var personnel2 = new CustomerPersonnel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer1.Id,
+                Username = "ayse.demir",
+                Email = "ayse.demir@abc.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                FirstName = "Ayşe",
+                LastName = "Demir",
+                PhoneNumber = "0533 444 5566",
+                Department = "Kalite Kontrol",
+                Title = "Kalite Uzmanı",
+                Role = CustomerPersonnelRole.CustomerSupervisor,
+                IsActive = true,
+                Notes = "Şube denetimlerinden sorumlu",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var personnel3 = new CustomerPersonnel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer2.Id,
+                Username = "mehmet.kaya",
+                Email = "mehmet.kaya@xyz.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                FirstName = "Mehmet",
+                LastName = "Kaya",
+                PhoneNumber = "0534 777 8899",
+                Department = "İşletme",
+                Title = "İşletme Müdürü",
+                Role = CustomerPersonnelRole.CustomerManager,
+                IsActive = true,
+                Notes = "XYZ Restaurant Grubu işletme müdürü",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var personnel4 = new CustomerPersonnel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer2.Id,
+                Username = "fatma.ozturk",
+                Email = "fatma.ozturk@xyz.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                FirstName = "Fatma",
+                LastName = "Öztürk",
+                PhoneNumber = "0535 222 3344",
+                Department = "Mutfak",
+                Title = "Mutfak Şefi",
+                Role = CustomerPersonnelRole.CustomerOperator,
+                IsActive = true,
+                Notes = "Mutfak operasyonları sorumlusu",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var personnel5 = new CustomerPersonnel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer3.Id,
+                Username = "can.arslan",
+                Email = "can.arslan@otelzinciri.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                FirstName = "Can",
+                LastName = "Arslan",
+                PhoneNumber = "0536 999 0011",
+                Department = "Yönetim",
+                Title = "Genel Müdür",
+                Role = CustomerPersonnelRole.CustomerManager,
+                IsActive = true,
+                Notes = "Otel zinciri genel müdürü",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.CustomerPersonnel.AddRange(personnel1, personnel2, personnel3, personnel4, personnel5);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Customer Personnel created");
+
+            // 10. Sample Customer Task Lists
+            var taskList1 = new CustomerTaskList
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer1.Id,
+                Name = "Ocak 2025 Şube Denetimleri",
+                Description = "Ocak ayı için tüm şubelerin kalite denetimi",
+                TaskType = CustomerTaskType.Inspection,
+                Priority = TaskPriority.High,
+                StartDate = DateTime.UtcNow.AddDays(-5),
+                EndDate = DateTime.UtcNow.AddDays(25),
+                Status = SecretCustomer.Core.Enums.TaskStatus.InProgress,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var taskList2 = new CustomerTaskList
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customer2.Id,
+                Name = "Hijyen ve Temizlik Kontrolü",
+                Description = "Restaurant şubelerinin hijyen standartları kontrolü",
+                TaskType = CustomerTaskType.Audit,
+                Priority = TaskPriority.Critical,
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(14),
+                Status = SecretCustomer.Core.Enums.TaskStatus.NotStarted,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.CustomerTaskLists.AddRange(taskList1, taskList2);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Customer Task Lists created");
+
+            // 11. Sample Customer Personnel Task Assignments
+            var taskAssignment1 = new CustomerPersonnelTaskAssignment
+            {
+                Id = Guid.NewGuid(),
+                PersonnelId = personnel2.Id,
+                TaskListId = taskList1.Id,
+                AssignmentRole = TaskAssignmentRole.Owner,
+                AssignedDate = DateTime.UtcNow.AddDays(-5),
+                Notes = "Şube denetimlerinin koordinasyonundan sorumlu",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var taskAssignment2 = new CustomerPersonnelTaskAssignment
+            {
+                Id = Guid.NewGuid(),
+                PersonnelId = personnel3.Id,
+                TaskListId = taskList2.Id,
+                AssignmentRole = TaskAssignmentRole.Owner,
+                AssignedDate = DateTime.UtcNow,
+                Notes = "Hijyen kontrollerinin takibi",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var taskAssignment3 = new CustomerPersonnelTaskAssignment
+            {
+                Id = Guid.NewGuid(),
+                PersonnelId = personnel4.Id,
+                TaskListId = taskList2.Id,
+                AssignmentRole = TaskAssignmentRole.Assistant,
+                AssignedDate = DateTime.UtcNow,
+                Notes = "Mutfak hijyeni kontrolü desteği",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.CustomerPersonnelTaskAssignments.AddRange(taskAssignment1, taskAssignment2, taskAssignment3);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Customer Personnel Task Assignments created");
+
+            // 12. Link some branches and projects to customers
+            branch1.CustomerId = customer1.Id;
+            branch2.CustomerId = customer2.Id;
+            project.CustomerId = customer1.Id;
+            await context.SaveChangesAsync();
+            logger.LogInformation("Linked branches and projects to customers");
+
             logger.LogInformation("Database seed completed successfully!");
             logger.LogInformation("Test users:");
             logger.LogInformation("  Admin: admin / Admin@123");
             logger.LogInformation("  TeamLeader: teamleader / Leader@123");
             logger.LogInformation("  Evaluator1: evaluator1 / Eval@123");
             logger.LogInformation("  Evaluator2: evaluator2 / Eval@123");
+            logger.LogInformation("Customer Personnel:");
+            logger.LogInformation("  Customer Manager (ABC): ahmet.yilmaz / Customer@123");
+            logger.LogInformation("  Customer Supervisor (ABC): ayse.demir / Customer@123");
+            logger.LogInformation("  Customer Manager (XYZ): mehmet.kaya / Customer@123");
+            logger.LogInformation("  Customer Operator (XYZ): fatma.ozturk / Customer@123");
+            logger.LogInformation("  Customer Manager (Otel): can.arslan / Customer@123");
         }
         catch (Exception ex)
         {

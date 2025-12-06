@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = "Müşteriler";
+}
+
+<div id="customers-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Müşteriler</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Müşteri
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Customers Table -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: customers().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz müşteri bulunmamaktadır.
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div data-bind="visible: customers().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Şirket Adı</th>
+                            <th>Vergi Numarası</th>
+                            <th>Telefon</th>
+                            <th>E-posta</th>
+                            <th>Şehir</th>
+                            <th>Personel</th>
+                            <th>Şube</th>
+                            <th>Proje</th>
+                            <th>Sözleşme</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: customers">
+                        <tr>
+                            <td data-bind="text: companyName"></td>
+                            <td><span class="badge bg-secondary" data-bind="text: taxNumber || '-'"></span></td>
+                            <td data-bind="text: phone || '-'"></td>
+                            <td data-bind="text: email || '-'"></td>
+                            <td data-bind="text: city || '-'"></td>
+                            <td><span class="badge bg-info" data-bind="text: personnelCount"></span></td>
+                            <td><span class="badge bg-info" data-bind="text: branchCount"></span></td>
+                            <td><span class="badge bg-info" data-bind="text: projectCount"></span></td>
+                            <td>
+                                <small data-bind="visible: contractStartDate">
+                                    <span data-bind="text: formatDate(contractStartDate)"></span> -
+                                    <span data-bind="text: formatDate(contractEndDate)"></span>
+                                </small>
+                                <span data-bind="visible: !contractStartDate">-</span>
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editCustomer">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteCustomer">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: editingCustomer">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Müşteri</span>
+                        <span data-bind="visible: id">Müşteri Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şirket Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: companyName" placeholder="ABC Şirketi Ltd. Şti." />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vergi Numarası</label>
+                            <input type="text" class="form-control" data-bind="value: taxNumber" placeholder="1234567890" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" data-bind="value: phone" placeholder="+90 555 123 45 67" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="info@sirket.com" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şehir</label>
+                            <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Adres</label>
+                            <input type="text" class="form-control" data-bind="value: address" placeholder="Merkez Mahallesi..." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Sözleşme Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" data-bind="value: contractStartDate" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Sözleşme Bitiş Tarihi</label>
+                            <input type="date" class="form-control" data-bind="value: contractEndDate" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notlar</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="4" placeholder="Müşteri hakkında notlar..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveCustomer, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of customers-app -->
+
+@section Scripts {
+    <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/customer.api.service.js"></script>
+    <script src="~/js/Customers/customers.js"></script>
+}

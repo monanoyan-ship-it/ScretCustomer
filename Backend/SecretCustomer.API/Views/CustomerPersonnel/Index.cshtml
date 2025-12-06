@@ -1,0 +1,194 @@
+@{
+    ViewData["Title"] = "Müşteri Personeli";
+}
+
+<div id="customer-personnel-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Müşteri Personeli</h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> Yeni Personel
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Personnel Table -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: personnel().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Henüz müşteri personeli bulunmamaktadır.
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div data-bind="visible: personnel().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Müşteri</th>
+                            <th>Ad Soyad</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>E-posta</th>
+                            <th>Telefon</th>
+                            <th>Rol</th>
+                            <th>Görev Sayısı</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: personnel">
+                        <tr>
+                            <td data-bind="text: customerName"></td>
+                            <td data-bind="text: fullName"></td>
+                            <td><span class="badge bg-secondary" data-bind="text: username"></span></td>
+                            <td data-bind="text: email"></td>
+                            <td data-bind="text: phoneNumber || '-'"></td>
+                            <td><span class="badge bg-primary" data-bind="text: roleName"></span></td>
+                            <td><span class="badge bg-info" data-bind="text: taskAssignmentCount"></span></td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editPersonnel">
+                                    <i class="bi bi-pencil"></i> Düzenle
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deletePersonnel">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: editingPersonnel">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Müşteri Personeli</span>
+                        <span data-bind="visible: id">Müşteri Personeli Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Müşteri *</label>
+                            <select class="form-select" data-bind="value: customerId, options: $parent.availableCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: 'Seçiniz...', enable: !id">
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kullanıcı Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: username" placeholder="ali.veli" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="ali.veli@example.com" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <span data-bind="visible: !id">Şifre *</span>
+                                <span data-bind="visible: id">Şifre (Değiştirmek için doldurun)</span>
+                            </label>
+                            <input type="password" class="form-control" data-bind="value: password" placeholder="••••••••" />
+                            <small class="text-muted" data-bind="visible: id">Boş bırakırsanız mevcut şifre değişmez</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ali" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Veli" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="0555 123 4567" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rol *</label>
+                            <select class="form-select" data-bind="value: role">
+                                <option value="">Seçiniz...</option>
+                                <option value="1">Müşteri Yöneticisi</option>
+                                <option value="2">Müşteri Süpervizörü</option>
+                                <option value="3">Müşteri Operatörü</option>
+                                <option value="4">Müşteri Görüntüleyici</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Departman</label>
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="Kalite Kontrol" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ünvan</label>
+                            <input type="text" class="form-control" data-bind="value: title" placeholder="Kalite Müdürü" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notlar</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="3" placeholder="Personel hakkında notlar..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.savePersonnel, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+</div> <!-- End of customer-personnel-app -->
+
+@section Scripts {
+    <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/customer.api.service.js"></script>
+    <script src="~/js/CustomerPersonnel/customer-personnel.js"></script>
+}

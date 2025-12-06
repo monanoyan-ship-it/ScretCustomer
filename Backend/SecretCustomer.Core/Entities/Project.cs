@@ -19,7 +19,7 @@ public class Project : BaseEntity
 
     [ExcelColumn("Atama Tipi", 3, IsRequired = true, ColumnType = ExcelColumnType.Dropdown,
         Description = "Atama tipi",
-        DropdownOptions = "[\"InternalBranch\", \"InternalUser\", \"ExternalCustomer\"]",
+        DropdownOptions = "[\"InternalBranch\", \"InternalUser\", \"ExternalCustomer\", \"CustomerPersonnel\", \"FieldWorker\"]",
         SampleValue = "InternalBranch")]
     public AssignmentType AssignmentType { get; set; }
 
@@ -37,4 +37,7 @@ public class Project : BaseEntity
 
     // Navigation properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+
+    public Guid? CustomerId { get; set; }
+    public Customer? Customer { get; set; }
 }

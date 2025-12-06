@@ -33,4 +33,7 @@ public class Branch : BaseEntity
     // Navigation properties
     public ICollection<User> Users { get; set; } = new List<User>();
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+
+    public Guid? CustomerId { get; set; }
+    public Customer? Customer { get; set; }
 }
