@@ -154,8 +154,11 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
+    <partial name="_DeleteConfirmationModal" />
+
 </div> <!-- End of projects-app -->
 
 @section Scripts {
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/Projects/Index.js"></script>
 }

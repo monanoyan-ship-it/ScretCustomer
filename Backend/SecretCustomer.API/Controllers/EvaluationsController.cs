@@ -10,10 +10,4 @@ public class EvaluationsController : Controller
     {
         return View();
     }
-
-    [AllowAnonymous]
-    public IActionResult Evaluate(Guid id)
-    {
-        return View();
-    }
 }

@@ -120,7 +120,7 @@ function BranchesViewModel() {
 
     // Delete branch
     self.deleteBranch = function(branch) {
-        if (!confirm('Bu şubeyi silmek istediğinizden emin misiniz?')) return;
+        deleteConfirmation.show('Bu şubeyi silmek istediğinizden emin misiniz?', function() {
 
         fetch('/api/branches/' + branch.id, {
             method: 'DELETE',
@@ -134,6 +134,7 @@ function BranchesViewModel() {
         .catch(error => {
             console.error('Error:', error);
             self.errorMessage('Şube silinirken bir hata oluştu.');
+        });
         });
     };
 

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SecretCustomer.Core.DTOs.Assignment;
 
-public class CreateAssignmentDto
+public class UpdateAssignmentDto
 {
     [Required]
     public Guid ProjectId { get; set; }
@@ -23,26 +23,5 @@ public class CreateAssignmentDto
     public string? ExternalName { get; set; }
 
     [Required]
-    public DateTime DueDate { get; set; }
-}
-
-public class BulkAssignmentDto
-{
-    [Required]
-    public Guid ProjectId { get; set; }
-
-    [Required]
-    public Guid ChecklistId { get; set; }
-
-    [Required]
-    public List<AssignmentItemDto> Assignments { get; set; } = new();
-}
-
-public class AssignmentItemDto
-{
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
-    public string? ExternalEmail { get; set; }
-    public string? ExternalName { get; set; }
     public DateTime DueDate { get; set; }
 }

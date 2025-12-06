@@ -5,6 +5,7 @@ function EvaluationsListViewModel() {
     self.isLoading = ko.observable(true);
     self.errorMessage = ko.observable('');
     self.evaluations = ko.observableArray([]);
+    self.selectedEvaluation = ko.observable(null);
 
     self.loadEvaluations = function() {
         self.isLoading(true);
@@ -27,6 +28,12 @@ function EvaluationsListViewModel() {
         .finally(() => {
             self.isLoading(false);
         });
+    };
+
+    self.openEvaluation = function(evaluation) {
+        self.selectedEvaluation(evaluation);
+        var modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+        modal.show();
     };
 
     self.loadEvaluations();

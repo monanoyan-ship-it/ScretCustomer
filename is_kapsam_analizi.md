@@ -1,3 +1,7 @@
+
+Get-Process -Name dotnet -ErrorAction SilentlyContinue | Where-Object {$_.Path -like "*dotnet.exe"} | Stop-Process -Force
+
+
 # İş Kapsam Belgesi Analizi - Gizli Müşteri/Değerlendirme Platformu
 
 ## Genel Bakış

@@ -27,7 +27,7 @@
         <!-- Evaluations Grid -->
         <div class="row" data-bind="foreach: evaluations">
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100" style="cursor: pointer;" data-bind="click: $parent.openEvaluation">
                     <div class="card-body">
                         <h5 class="card-title" data-bind="text: projectName || 'Proje'"></h5>
                         <p class="text-muted">
@@ -54,6 +54,27 @@
                         <span class="badge" data-bind="css: status === 'Completed' ? 'bg-success' : 'bg-warning', text: status === 'Completed' ? 'Tamamlandı' : 'Bekliyor'"></span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evaluation Modal -->
+<div class="modal fade" id="evaluationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Değerlendirme Formu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div data-bind="if: selectedEvaluation">
+                    <p class="text-muted">Değerlendirme formu burada gösterilecek.</p>
+                    <p>ID: <span data-bind="text: selectedEvaluation().id"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
             </div>
         </div>
     </div>

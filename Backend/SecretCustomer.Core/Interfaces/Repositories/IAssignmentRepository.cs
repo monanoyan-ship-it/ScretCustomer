@@ -5,6 +5,7 @@ namespace SecretCustomer.Core.Interfaces.Repositories;
 public interface IAssignmentRepository
 {
     Task<Assignment?> GetByIdAsync(Guid id, bool includeDetails = false);
+    Task<IEnumerable<Assignment>> GetAllAsync();
     Task<Assignment?> GetByUniqueLinkAsync(string uniqueLink, bool includeDetails = false);
     Task<IEnumerable<Assignment>> GetByProjectIdAsync(Guid projectId);
     Task<IEnumerable<Assignment>> GetByUserIdAsync(Guid userId);

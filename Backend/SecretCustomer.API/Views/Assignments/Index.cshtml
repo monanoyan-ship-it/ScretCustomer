@@ -64,9 +64,9 @@
                                 <span class="badge" data-bind="css: isCompleted ? 'bg-success' : 'bg-warning', text: isCompleted ? 'Tamamlandı' : 'Bekliyor'"></span>
                             </td>
                             <td>
-                                <a data-bind="attr: { href: '/Evaluations/Evaluate?id=' + id }, visible: !isCompleted" class="btn btn-sm btn-primary">
+                                <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parent.openEvaluation, visible: !isCompleted">
                                     <i class="bi bi-pencil-square"></i> Değerlendir
-                                </a>
+                                </button>
                                 <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parent.deleteAssignment">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -130,8 +130,56 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
+    <!-- Evaluation Modal -->
+    <div class="modal fade" id="evaluationModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Değerlendirme Formu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="with: $root.selectedEvaluation">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Proje:</strong> <span data-bind="text: projectName"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Şube:</strong> <span data-bind="text: branchName || 'Belirtilmemiş'"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Kontrol Listesi:</strong> <span data-bind="text: checklistName"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Durum:</strong> 
+                                <span class="badge" data-bind="css: isCompleted ? 'bg-success' : 'bg-warning', text: isCompleted ? 'Tamamlandı' : 'Bekliyor'"></span>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="text-muted">Değerlendirme formu detayları burada gösterilecek.</p>
+                    </div>
+                    <div data-bind="ifnot: $root.selectedEvaluation" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Yükleniyor...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-primary" data-bind="visible: $root.selectedEvaluation && $root.selectedEvaluation() && !$root.selectedEvaluation().isCompleted">
+                        <i class="bi bi-check-circle"></i> Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="_DeleteConfirmationModal" />
+
 </div> <!-- End of assignments-app -->
 
 @section Scripts {
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/Assignments/Index.js"></script>
 }

@@ -188,9 +188,7 @@ function CustomerPersonnelViewModel(customerId) {
 
     // Delete personnel
     self.deletePersonnel = function(personnel) {
-        if (!confirm('Bu personeli silmek istediğinizden emin misiniz?\n\n' + personnel.fullName)) {
-            return;
-        }
+        deleteConfirmation.show('Bu personeli silmek istediğinizden emin misiniz?\n\n' + personnel.fullName, function() {
 
         customerApiService.deletePersonnel(personnel.id)
             .then(function() {

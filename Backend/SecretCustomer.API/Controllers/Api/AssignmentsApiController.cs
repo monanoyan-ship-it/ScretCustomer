@@ -30,14 +30,13 @@ public class AssignmentsApiController : ControllerBase
             {
                 assignments = await _assignmentService.GetByProjectIdAsync(projectId.Value);
             }
-            else if (branchId.HasValue)
+            else if (branchId.HasValue && branchId != Guid.Empty)
             {
                 assignments = await _assignmentService.GetByBranchIdAsync(branchId.Value);
             }
             else
             {
-                // Return empty for now - you might want to add GetAllAsync to service
-                return Ok(new List<AssignmentDto>());
+                assignments = await _assignmentService.GetAllAsync();
             }
 
             return Ok(assignments);
@@ -66,6 +65,38 @@ public class AssignmentsApiController : ControllerBase
         {
             _logger.LogError(ex, "Error loading assignment {Id}", id);
             return StatusCode(500, new { message = "Atama yüklenirken bir hata oluştu." });
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Create([FromBody] CreateAssignmentDto dto)
+    {
+        try
+        {
+            var assignment = await _assignmentService.CreateAsync(dto);
+            return Ok(assignment);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating assignment");
+            return StatusCode(500, new { message = "Atama oluşturulurken bir hata oluştu: " + ex.Message });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAssignmentDto dto)
+    {
+        try
+        {
+            await _assignmentService.UpdateAsync(id, dto);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating assignment {Id}", id);
+            return StatusCode(500, new { message = "Atama güncellenirken bir hata oluştu: " + ex.Message });
         }
     }
 

@@ -179,7 +179,7 @@ function UsersViewModel() {
 
     // Delete user
     self.deleteUser = function(user) {
-        if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) return;
+        deleteConfirmation.show('Bu kullanıcıyı silmek istediğinizden emin misiniz?', function() {
 
         fetch('/api/users/' + user.id, {
             method: 'DELETE',
@@ -193,6 +193,7 @@ function UsersViewModel() {
         .catch(error => {
             console.error('Error:', error);
             self.errorMessage('Kullanıcı silinirken bir hata oluştu.');
+        });
         });
     };
 

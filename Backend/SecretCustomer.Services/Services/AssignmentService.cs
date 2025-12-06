@@ -27,6 +27,12 @@ public class AssignmentService : IAssignmentService
         return assignment == null ? null : MapToDto(assignment);
     }
 
+    public async Task<IEnumerable<AssignmentDto>> GetAllAsync()
+    {
+        var assignments = await _assignmentRepository.GetAllAsync();
+        return assignments.Select(MapToDto);
+    }
+
     public async Task<AssignmentDto?> GetByUniqueLinkAsync(string uniqueLink)
     {
         var assignment = await _assignmentRepository.GetByUniqueLinkAsync(uniqueLink, includeDetails: true);
@@ -69,10 +75,11 @@ public class AssignmentService : IAssignmentService
             ChecklistId = dto.ChecklistId,
             BranchId = dto.BranchId,
             AssignedUserId = dto.AssignedUserId,
+            AssignedFieldWorkerId = dto.AssignedFieldWorkerId,
             ExternalEmail = dto.ExternalEmail,
             ExternalName = dto.ExternalName,
             UniqueLink = Guid.NewGuid().ToString(),
-            DueDate = dto.DueDate,
+            DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
             IsCompleted = false
         };
 
@@ -111,6 +118,24 @@ public class AssignmentService : IAssignmentService
     public async Task<bool> DeleteAsync(Guid id)
     {
         return await _assignmentRepository.DeleteAsync(id);
+    }
+
+    public async Task UpdateAsync(Guid id, UpdateAssignmentDto dto)
+    {
+        var assignment = await _assignmentRepository.GetByIdAsync(id);
+        if (assignment == null)
+            throw new KeyNotFoundException($"Assignment with ID {id} not found");
+
+        assignment.ProjectId = dto.ProjectId;
+        assignment.ChecklistId = dto.ChecklistId;
+        assignment.BranchId = dto.BranchId;
+        assignment.AssignedUserId = dto.AssignedUserId;
+        assignment.AssignedFieldWorkerId = dto.AssignedFieldWorkerId;
+        assignment.ExternalEmail = dto.ExternalEmail;
+        assignment.ExternalName = dto.ExternalName;
+        assignment.DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc);
+
+        await _assignmentRepository.UpdateAsync(assignment);
     }
 
     public async Task<AssignmentDto> CompleteAssignmentAsync(Guid id)

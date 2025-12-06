@@ -275,8 +275,11 @@
 
     <!-- Import Modal Backdrop -->
     <div class="modal-backdrop fade" data-bind="visible: isImportModalOpen, css: { show: isImportModalOpen }"></div>
+
+    <partial name="_DeleteConfirmationModal" />
 </div>
 
 @section Scripts {
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/ExcelTemplates/index.js"></script>
 }

@@ -140,8 +140,11 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
+    <partial name="_DeleteConfirmationModal" />
+
 </div> <!-- End of fieldworkers-app -->
 
 @section Scripts {
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/FieldWorkers/Index.js"></script>
 }

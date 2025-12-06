@@ -287,9 +287,7 @@ function ExcelTemplatesViewModel() {
 
     // Delete Template
     self.deleteTemplate = function(template) {
-        if (!confirm(`"${template.name}" şablonunu silmek istediğinizden emin misiniz?`)) {
-            return;
-        }
+        deleteConfirmation.show(`"${template.name}" şablonunu silmek istediğinizden emin misiniz?`, function() {
 
         fetch(`/api/excel-templates/${template.id}`, {
             method: 'DELETE'
@@ -301,7 +299,8 @@ function ExcelTemplatesViewModel() {
         })
         .catch(err => {
             console.error('Error deleting template:', err);
-            self.errorMessage('Şablon silinirken hata oluştu');
+            self.errorMessage('Şablon silinirken bir hata oluştu.');
+        });
         });
     };
 

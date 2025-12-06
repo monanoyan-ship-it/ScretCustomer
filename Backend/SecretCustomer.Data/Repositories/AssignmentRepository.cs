@@ -29,6 +29,19 @@ public class AssignmentRepository : IAssignmentRepository
         return await query.FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<IEnumerable<Assignment>> GetAllAsync()
+    {
+        return await _context.Assignments
+            .Include(a => a.Project)
+            .Include(a => a.Checklist)
+            .Include(a => a.Branch)
+            .Include(a => a.AssignedUser)
+            .Include(a => a.AssignedFieldWorker)
+            .Where(a => !a.IsDeleted)
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<Assignment?> GetByUniqueLinkAsync(string uniqueLink, bool includeDetails = false)
     {
         var query = _context.Assignments.AsQueryable();

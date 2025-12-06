@@ -40,6 +40,7 @@ function AssignmentsViewModel() {
 
     // Modal state
     self.isModalOpen = ko.observable(false);
+    self.selectedEvaluation = ko.observable(null);
 
     // Load assignments
     self.loadAssignments = function() {
@@ -163,7 +164,7 @@ function AssignmentsViewModel() {
 
     // Delete assignment
     self.deleteAssignment = function(assignment) {
-        if (!confirm('Bu atamayı silmek istediğinizden emin misiniz?')) return;
+        deleteConfirmation.show('Bu atamayı silmek istediğinizden emin misiniz?', function() {
 
         fetch('/api/assignments/' + assignment.id, {
             method: 'DELETE',
@@ -178,12 +179,23 @@ function AssignmentsViewModel() {
             console.error('Error:', error);
             self.errorMessage('Atama silinirken bir hata oluştu.');
         });
+        });
     };
 
     // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingAssignment(null);
+    };
+
+    // Open evaluation modal
+    self.openEvaluation = function(assignment) {
+        // Set assignment data directly
+        self.selectedEvaluation(assignment);
+        
+        // Show modal
+        var modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+        modal.show();
     };
 
     // Initialize

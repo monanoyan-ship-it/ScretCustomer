@@ -186,7 +186,7 @@ function ProjectsViewModel() {
 
     // Delete project
     self.deleteProject = function(project) {
-        if (!confirm('Bu projeyi silmek istediğinizden emin misiniz?')) return;
+        deleteConfirmation.show('Bu projeyi silmek istediğinizden emin misiniz?', function() {
 
         fetch('/api/projects/' + project.id, {
             method: 'DELETE',
@@ -200,6 +200,7 @@ function ProjectsViewModel() {
         .catch(error => {
             console.error('Error:', error);
             self.errorMessage('Proje silinirken bir hata oluştu.');
+        });
         });
     };
 

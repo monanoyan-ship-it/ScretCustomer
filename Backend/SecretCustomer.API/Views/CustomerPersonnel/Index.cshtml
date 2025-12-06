@@ -227,10 +227,13 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }"></div>
 
+    <partial name="_DeleteConfirmationModal" />
+
 </div> <!-- End of customer-personnel-app -->
 
 @section Scripts {
     <script src="~/js/Shared/api.service.js"></script>
     <script src="~/js/Shared/customer.api.service.js"></script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/CustomerPersonnel/customer-personnel.js"></script>
 }

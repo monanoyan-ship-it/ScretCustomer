@@ -132,7 +132,7 @@ function FieldWorkersViewModel() {
 
     // Delete field worker
     self.deleteFieldWorker = function(fieldWorker) {
-        if (!confirm('Bu saha çalışanını silmek istediğinizden emin misiniz?')) return;
+        deleteConfirmation.show('Bu saha çalışanını silmek istediğinizden emin misiniz?', function() {
 
         fetch('/api/fieldworkers/' + fieldWorker.id, {
             method: 'DELETE',
@@ -146,6 +146,7 @@ function FieldWorkersViewModel() {
         .catch(error => {
             console.error('Error:', error);
             self.errorMessage('Saha çalışanı silinirken bir hata oluştu.');
+        });
         });
     };
 
