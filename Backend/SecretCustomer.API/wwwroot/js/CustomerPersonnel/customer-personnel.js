@@ -6,28 +6,24 @@ function CustomerPersonnelViewModel(customerId) {
     self.customerId = ko.observable(customerId);
     self.customer = ko.observable(null);
     self.personnel = ko.observableArray([]);
+    self.availableCustomers = ko.observableArray([]);
     self.isLoading = ko.observable(false);
+    self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
     self.showInactive = ko.observable(false);
 
-    // Form observables
-    self.isEditing = ko.observable(false);
-    self.showForm = ko.observable(false);
-    self.currentPersonnel = ko.observable({
-        id: null,
-        customerId: customerId,
-        username: '',
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
-        department: '',
-        title: '',
-        role: 1, // CustomerManager
-        isActive: true,
-        notes: ''
+    // Modal
+    self.isModalOpen = ko.observable(false);
+    self.editingPersonnel = ko.observable(null);
+
+    // Change password modal
+    self.showChangePasswordModal = ko.observable(false);
+    self.selectedPersonnelForPassword = ko.observable(null);
+    self.passwordData = ko.observable({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
     });
 
     // Personnel roles
@@ -37,21 +33,6 @@ function CustomerPersonnelViewModel(customerId) {
         { value: 3, text: 'Müşteri Operatörü' },
         { value: 4, text: 'Müşteri Görüntüleyici' }
     ];
-
-    // Task assignment roles
-    self.taskRoles = [
-        { value: 1, text: 'Görev Sahibi' },
-        { value: 2, text: 'Görev Yardımcısı' },
-        { value: 3, text: 'Gözlemci' },
-        { value: 4, text: 'Onaylayıcı' }
-    ];
-
-    // Available tasks for assignment
-    self.availableTasks = ko.observableArray([]);
-    self.selectedPersonnelForTask = ko.observable(null);
-    self.showTaskAssignmentModal = ko.observable(false);
-    self.selectedTask = ko.observable(null);
-    self.selectedTaskRole = ko.observable(1);
 
     // Computed
     self.filteredPersonnel = ko.computed(function() {
@@ -80,14 +61,27 @@ function CustomerPersonnelViewModel(customerId) {
             });
     };
 
+    // Load all customers (for dropdown)
+    self.loadCustomers = function() {
+        customerApiService.getActiveCustomers()
+            .then(function(data) {
+                self.availableCustomers(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading customers:', error);
+            });
+    };
+
     // Load personnel
     self.loadPersonnel = function() {
-        if (!customerId) return;
-
         self.isLoading(true);
         self.errorMessage('');
 
-        customerApiService.getPersonnelByCustomerId(customerId, self.showInactive())
+        var promise = customerId 
+            ? customerApiService.getPersonnelByCustomerId(customerId, self.showInactive())
+            : customerApiService.getAllPersonnel(self.showInactive());
+
+        promise
             .then(function(data) {
                 self.personnel(data || []);
             })
@@ -100,12 +94,11 @@ function CustomerPersonnelViewModel(customerId) {
             });
     };
 
-    // Show create form
-    self.showCreateForm = function() {
-        self.isEditing(false);
-        self.currentPersonnel({
+    // Create new personnel
+    self.createNew = function() {
+        self.editingPersonnel({
             id: null,
-            customerId: customerId,
+            customerId: customerId || '',
             username: '',
             email: '',
             password: '',
@@ -118,18 +111,17 @@ function CustomerPersonnelViewModel(customerId) {
             isActive: true,
             notes: ''
         });
-        self.showForm(true);
+        self.isModalOpen(true);
     };
 
-    // Show edit form
+    // Edit personnel
     self.editPersonnel = function(personnel) {
-        self.isEditing(true);
-        self.currentPersonnel({
+        self.editingPersonnel({
             id: personnel.id,
             customerId: personnel.customerId,
             username: personnel.username,
             email: personnel.email,
-            password: '', // Don't populate password
+            password: '',
             firstName: personnel.firstName,
             lastName: personnel.lastName,
             phoneNumber: personnel.phoneNumber || '',
@@ -139,7 +131,7 @@ function CustomerPersonnelViewModel(customerId) {
             isActive: personnel.isActive,
             notes: personnel.notes || ''
         });
-        self.showForm(true);
+        self.isModalOpen(true);
     };
 
     // Save personnel
@@ -147,40 +139,51 @@ function CustomerPersonnelViewModel(customerId) {
         self.errorMessage('');
         self.successMessage('');
 
-        var personnel = self.currentPersonnel();
+        var personnel = self.editingPersonnel();
+        if (!personnel) return;
 
         // Validation
+        if (!personnel.customerId) {
+            self.errorMessage('Müşteri seçimi zorunludur.');
+            return;
+        }
+
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
             self.errorMessage('Kullanıcı adı, e-posta, ad ve soyad zorunludur.');
             return;
         }
 
-        if (!self.isEditing() && !personnel.password) {
+        if (!personnel.id && !personnel.password) {
             self.errorMessage('Yeni personel için şifre zorunludur.');
             return;
         }
 
-        var promise = self.isEditing() 
+        self.isSaving(true);
+
+        var promise = personnel.id 
             ? customerApiService.updatePersonnel(personnel.id, personnel)
             : customerApiService.createPersonnel(personnel);
 
         promise
             .then(function() {
-                self.successMessage(self.isEditing() ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
-                self.showForm(false);
+                self.successMessage(personnel.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
+                self.isModalOpen(false);
                 self.loadPersonnel();
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
                 self.errorMessage('Personel kaydedilirken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isSaving(false);
             });
     };
 
-    // Cancel form
-    self.cancelForm = function() {
-        self.showForm(false);
+    // Close modal
+    self.closeModal = function() {
+        self.isModalOpen(false);
+        self.editingPersonnel(null);
         self.errorMessage('');
-        self.successMessage('');
     };
 
     // Delete personnel
@@ -200,19 +203,69 @@ function CustomerPersonnelViewModel(customerId) {
             });
     };
 
-    // Show task assignment modal
-    self.showTaskAssignment = function(personnel) {
-        self.selectedPersonnelForTask(personnel);
-        self.showTaskAssignmentModal(true);
-        // Load available tasks for this customer
-        // TODO: Implement task loading when task API is ready
+    // Show change password modal
+    self.showChangePassword = function(personnel) {
+        self.selectedPersonnelForPassword(personnel);
+        self.passwordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        });
+        self.showChangePasswordModal(true);
+        self.errorMessage('');
+        self.successMessage('');
     };
 
-    // Assign task to personnel
-    self.assignTask = function() {
-        // TODO: Implement task assignment when task API is ready
-        self.successMessage('Görev atama özelliği yakında eklenecek.');
-        self.showTaskAssignmentModal(false);
+    // Change password
+    self.changePassword = function() {
+        self.errorMessage('');
+        self.successMessage('');
+
+        var data = self.passwordData();
+
+        if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+            self.errorMessage('Tüm alanlar zorunludur.');
+            return;
+        }
+
+        if (data.newPassword.length < 6) {
+            self.errorMessage('Yeni şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+
+        if (data.newPassword !== data.confirmPassword) {
+            self.errorMessage('Yeni şifre ve onay eşleşmiyor.');
+            return;
+        }
+
+        var personnelId = self.selectedPersonnelForPassword().id;
+
+        customerApiService.changePersonnelPassword(personnelId, data)
+            .then(function(response) {
+                self.successMessage(response.message || 'Şifre başarıyla değiştirildi.');
+                self.showChangePasswordModal(false);
+                self.passwordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                });
+            })
+            .catch(function(error) {
+                console.error('Error changing password:', error);
+                self.errorMessage('Şifre değiştirilirken bir hata oluştu: ' + (error.message || ''));
+            });
+    };
+
+    // Cancel change password
+    self.cancelChangePassword = function() {
+        self.showChangePasswordModal(false);
+        self.passwordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        });
+        self.errorMessage('');
+        self.successMessage('');
     };
 
     // Toggle inactive personnel
@@ -221,12 +274,17 @@ function CustomerPersonnelViewModel(customerId) {
         self.loadPersonnel();
     };
 
-    // Go back to customers list
-    self.goBack = function() {
-        window.location.hash = '#/customers';
-    };
-
     // Initialize
     self.loadCustomer();
+    self.loadCustomers();
     self.loadPersonnel();
+}
+
+// Apply bindings when DOM is ready
+if (typeof ko !== 'undefined') {
+    var customerPersonnelApp = document.getElementById('customer-personnel-app');
+    if (customerPersonnelApp) {
+        var customerId = customerPersonnelApp.getAttribute('data-customer-id') || null;
+        ko.applyBindings(new CustomerPersonnelViewModel(customerId), customerPersonnelApp);
+    }
 }

@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Customer;
+using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
@@ -144,6 +145,27 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         }
 
         await _personnelRepository.DeleteAsync(id);
+    }
+
+    public async Task ChangePasswordAsync(Guid personnelId, ChangePasswordDto changePasswordDto)
+    {
+        var personnel = await _personnelRepository.GetByIdAsync(personnelId);
+        if (personnel == null)
+        {
+            throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelId})");
+        }
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, personnel.PasswordHash))
+        {
+            throw new InvalidOperationException("Mevcut şifre yanlış.");
+        }
+
+        // Update password
+        personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+        personnel.UpdatedAt = DateTime.UtcNow;
+
+        await _personnelRepository.UpdateAsync(personnel);
     }
 
     private static CustomerPersonnelDto MapToDto(CustomerPersonnel personnel)

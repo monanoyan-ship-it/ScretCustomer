@@ -15,7 +15,9 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<Customer?> GetByIdAsync(Guid id, bool includeDetails = false)
     {
-        var query = _context.Customers.AsQueryable();
+        var query = _context.Customers
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
 
         if (includeDetails)
         {
@@ -32,6 +34,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<IEnumerable<Customer>> GetAllAsync(bool includeInactive = false)
     {
         var query = _context.Customers
+            .Where(c => !c.IsDeleted)
             .Include(c => c.Personnel)
             .Include(c => c.Branches)
             .Include(c => c.Projects)
@@ -50,10 +53,10 @@ public class CustomerRepository : ICustomerRepository
     public async Task<IEnumerable<Customer>> GetActiveAsync()
     {
         return await _context.Customers
+            .Where(c => !c.IsDeleted && c.IsActive)
             .Include(c => c.Personnel)
             .Include(c => c.Branches)
             .Include(c => c.Projects)
-            .Where(c => c.IsActive)
             .OrderBy(c => c.CompanyName)
             .ToListAsync();
     }
@@ -61,6 +64,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<Customer?> GetByTaxNumberAsync(string taxNumber)
     {
         return await _context.Customers
+            .Where(c => !c.IsDeleted)
             .Include(c => c.Personnel)
             .FirstOrDefaultAsync(c => c.TaxNumber == taxNumber);
     }
@@ -68,6 +72,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<Customer?> GetByEmailAsync(string email)
     {
         return await _context.Customers
+            .Where(c => !c.IsDeleted)
             .Include(c => c.Personnel)
             .FirstOrDefaultAsync(c => c.Email == email);
     }
@@ -99,7 +104,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task<bool> ExistsByTaxNumberAsync(string taxNumber, Guid? excludeId = null)
     {
         return await _context.Customers
-            .AnyAsync(c => c.TaxNumber == taxNumber && (excludeId == null || c.Id != excludeId));
+            .AnyAsync(c => !c.IsDeleted && c.TaxNumber == taxNumber && (excludeId == null || c.Id != excludeId));
     }
 
     public async Task<bool> ExistsByEmailAsync(string email, Guid? excludeId = null)
@@ -107,6 +112,6 @@ public class CustomerRepository : ICustomerRepository
         if (string.IsNullOrEmpty(email)) return false;
 
         return await _context.Customers
-            .AnyAsync(c => c.Email == email && (excludeId == null || c.Id != excludeId));
+            .AnyAsync(c => !c.IsDeleted && c.Email == email && (excludeId == null || c.Id != excludeId));
     }
 }

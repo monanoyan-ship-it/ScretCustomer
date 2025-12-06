@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Customer;
+using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -148,6 +149,37 @@ public class CustomerPersonnelApiController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting personnel {Id}", id);
             return StatusCode(500, new { message = "Personel silinirken bir hata oluştu." });
+        }
+    }
+
+    [HttpPost("{id}/change-password")]
+    [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await _personnelService.ChangePasswordAsync(id, dto);
+            return Ok(new { message = "Şifre başarıyla değiştirildi." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid password change attempt for personnel {Id}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password for personnel {Id}", id);
+            return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
         }
     }
 }

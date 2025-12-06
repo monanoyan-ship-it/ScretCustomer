@@ -51,6 +51,10 @@ var customerApiService = (function() {
 
         deletePersonnel: function(id) {
             return apiService.delete('/customer-personnel/' + id);
+        },
+
+        changePersonnelPassword: function(id, passwordData) {
+            return apiService.post('/customer-personnel/' + id + '/change-password', passwordData);
         }
     };
 })();

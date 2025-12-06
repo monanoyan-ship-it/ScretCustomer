@@ -67,8 +67,8 @@
                             <td><span class="badge bg-info" data-bind="text: projectCount"></span></td>
                             <td>
                                 <small data-bind="visible: contractStartDate">
-                                    <span data-bind="text: formatDate(contractStartDate)"></span> -
-                                    <span data-bind="text: formatDate(contractEndDate)"></span>
+                                    <span data-bind="text: $parent.formatDate(contractStartDate)"></span> -
+                                    <span data-bind="text: $parent.formatDate(contractEndDate)"></span>
                                 </small>
                                 <span data-bind="visible: !contractStartDate">-</span>
                             </td>
@@ -76,6 +76,9 @@
                                 <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
                             </td>
                             <td>
+                                <button class="btn btn-sm btn-info me-1" data-bind="click: $parent.showPersonnel">
+                                    <i class="bi bi-people"></i> Personeller
+                                </button>
                                 <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editCustomer">
                                     <i class="bi bi-pencil"></i> Düzenle
                                 </button>
@@ -173,10 +176,219 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
+    <!-- Personnel Management Modal -->
+    <div class="modal fade" data-bind="css: { show: showPersonnelModal }, style: { display: showPersonnelModal() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-people"></i> Müşteri Personelleri
+                        <span data-bind="if: selectedCustomerForPersonnel">
+                            - <span data-bind="text: selectedCustomerForPersonnel().companyName"></span>
+                        </span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Personnel Actions -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="input-group w-50">
+                            <input type="text" class="form-control" placeholder="Personel ara..." data-bind="value: personnelSearchText, valueUpdate: 'input'" />
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        </div>
+                        <button class="btn btn-primary" data-bind="click: createNewPersonnel">
+                            <i class="bi bi-plus-circle"></i> Yeni Personel
+                        </button>
+                    </div>
+
+                    <!-- Personnel Loading -->
+                    <div data-bind="visible: isLoadingPersonnel" class="text-center py-3">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Personnel Table -->
+                    <div data-bind="visible: !isLoadingPersonnel()">
+                        <div data-bind="visible: filteredPersonnel().length === 0" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Bu müşteriye ait personel bulunmamaktadır.
+                        </div>
+
+                        <div data-bind="visible: filteredPersonnel().length > 0">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Ad Soyad</th>
+                                        <th>Kullanıcı Adı</th>
+                                        <th>E-posta</th>
+                                        <th>Rol</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: filteredPersonnel">
+                                    <tr>
+                                        <td data-bind="text: fullName"></td>
+                                        <td><span class="badge bg-secondary" data-bind="text: username"></span></td>
+                                        <td data-bind="text: email"></td>
+                                        <td><span class="badge bg-primary" data-bind="text: roleName"></span></td>
+                                        <td>
+                                            <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editPersonnel">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-info me-1" data-bind="click: $parent.showChangePasswordForPersonnel">
+                                                <i class="bi bi-key"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" data-bind="click: $parent.deletePersonnel">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closePersonnelModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: showPersonnelModal }, style: { display: showPersonnelModal() ? 'block' : 'none' }"></div>
+
+    <!-- Personnel Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: showPersonnelFormModal }, style: { display: showPersonnelFormModal() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingPersonnel">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !id">Yeni Personel</span>
+                        <span data-bind="visible: id">Personel Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closePersonnelFormModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kullanıcı Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: username" placeholder="ali.veli" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="ali.veli@example.com" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ali" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Veli" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <span data-bind="visible: !id">Şifre *</span>
+                                <span data-bind="visible: id">Şifre (Değiştirmek için doldurun)</span>
+                            </label>
+                            <input type="password" class="form-control" data-bind="value: password" placeholder="••••••••" />
+                            <small class="text-muted" data-bind="visible: id">Boş bırakırsanız mevcut şifre değişmez</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rol *</label>
+                            <select class="form-select" data-bind="value: role">
+                                <option value="1">Müşteri Yöneticisi</option>
+                                <option value="2">Müşteri Süpervizörü</option>
+                                <option value="3">Müşteri Operatörü</option>
+                                <option value="4">Müşteri Görüntüleyici</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="0555 123 4567" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Departman</label>
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="Kalite Kontrol" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ünvan</label>
+                        <input type="text" class="form-control" data-bind="value: title" placeholder="Kalite Müdürü" />
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="personnelIsActive" />
+                        <label class="form-check-label" for="personnelIsActive">Aktif</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closePersonnelFormModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.savePersonnel, disable: $parent.isSavingPersonnel">
+                        <span data-bind="visible: !$parent.isSavingPersonnel()">
+                            <i class="bi bi-save"></i> Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSavingPersonnel">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: showPersonnelFormModal }, style: { display: showPersonnelFormModal() ? 'block' : 'none' }"></div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-key"></i> Şifre Değiştir
+                        <span data-bind="if: selectedPersonnelForPassword">
+                            - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
+                        </span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: cancelChangePassword"></button>
+                </div>
+                <div class="modal-body" data-bind="with: passwordData">
+                    <div class="mb-3">
+                        <label class="form-label">Mevcut Şifre *</label>
+                        <input type="password" class="form-control" data-bind="value: currentPassword" placeholder="Mevcut şifre" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Şifre *</label>
+                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter" />
+                        <small class="text-muted">En az 6 karakter olmalıdır</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Şifre (Tekrar) *</label>
+                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="Yeni şifreyi tekrar girin" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: changePassword">
+                        <i class="bi bi-key"></i> Şifre Değiştir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }"></div>
+
 </div> <!-- End of customers-app -->
 
 @section Scripts {
     <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/Shared/customer.api.service.js"></script>
     <script src="~/js/Customers/customers.js"></script>
 }

@@ -2,7 +2,7 @@
 var apiService = (function() {
     'use strict';
 
-    const BASE_URL = 'https://localhost:7001/api';
+    const BASE_URL = '/api';
 
     function getHeaders(includeAuth = true) {
         const headers = {

@@ -5,25 +5,34 @@ function CustomersViewModel() {
     // Observables
     self.customers = ko.observableArray([]);
     self.isLoading = ko.observable(false);
+    self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
     self.showInactive = ko.observable(false);
 
-    // Form observables
-    self.isEditing = ko.observable(false);
-    self.showForm = ko.observable(false);
-    self.currentCustomer = ko.observable({
-        id: null,
-        companyName: '',
-        taxNumber: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        isActive: true,
-        contractStartDate: null,
-        contractEndDate: null,
-        notes: ''
+    // Modal
+    self.isModalOpen = ko.observable(false);
+    self.editingCustomer = ko.observable(null);
+
+    // Personnel Management
+    self.showPersonnelModal = ko.observable(false);
+    self.selectedCustomerForPersonnel = ko.observable(null);
+    self.personnel = ko.observableArray([]);
+    self.isLoadingPersonnel = ko.observable(false);
+    self.personnelSearchText = ko.observable('');
+    
+    // Personnel Form
+    self.showPersonnelFormModal = ko.observable(false);
+    self.editingPersonnel = ko.observable(null);
+    self.isSavingPersonnel = ko.observable(false);
+    
+    // Change Password
+    self.showChangePasswordModal = ko.observable(false);
+    self.selectedPersonnelForPassword = ko.observable(null);
+    self.passwordData = ko.observable({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
     });
 
     // Computed
@@ -33,6 +42,24 @@ function CustomersViewModel() {
         }
         return self.customers().filter(function(c) { return c.isActive; });
     });
+
+    self.filteredPersonnel = ko.computed(function() {
+        var search = self.personnelSearchText().toLowerCase();
+        if (!search) return self.personnel();
+        
+        return self.personnel().filter(function(p) {
+            return (p.fullName && p.fullName.toLowerCase().indexOf(search) >= 0) ||
+                   (p.username && p.username.toLowerCase().indexOf(search) >= 0) ||
+                   (p.email && p.email.toLowerCase().indexOf(search) >= 0);
+        });
+    });
+
+    // Utility functions
+    self.formatDate = function(dateString) {
+        if (!dateString) return '-';
+        var date = new Date(dateString);
+        return date.toLocaleDateString('tr-TR');
+    };
 
     // Load customers
     self.loadCustomers = function() {
@@ -52,10 +79,9 @@ function CustomersViewModel() {
             });
     };
 
-    // Show create form
-    self.showCreateForm = function() {
-        self.isEditing(false);
-        self.currentCustomer({
+    // Create new customer
+    self.createNew = function() {
+        self.editingCustomer({
             id: null,
             companyName: '',
             taxNumber: '',
@@ -68,16 +94,15 @@ function CustomersViewModel() {
             contractEndDate: null,
             notes: ''
         });
-        self.showForm(true);
+        self.isModalOpen(true);
     };
 
-    // Show edit form
+    // Edit customer
     self.editCustomer = function(customer) {
-        self.isEditing(true);
-        self.currentCustomer({
+        self.editingCustomer({
             id: customer.id,
             companyName: customer.companyName,
-            taxNumber: customer.taxNumber,
+            taxNumber: customer.taxNumber || '',
             phone: customer.phone || '',
             email: customer.email || '',
             address: customer.address || '',
@@ -87,7 +112,7 @@ function CustomersViewModel() {
             contractEndDate: customer.contractEndDate,
             notes: customer.notes || ''
         });
-        self.showForm(true);
+        self.isModalOpen(true);
     };
 
     // Save customer
@@ -95,57 +120,259 @@ function CustomersViewModel() {
         self.errorMessage('');
         self.successMessage('');
 
-        var customer = self.currentCustomer();
+        var customer = self.editingCustomer();
+        if (!customer) return;
 
         // Validation
-        if (!customer.companyName || !customer.taxNumber) {
-            self.errorMessage('Firma adı ve vergi numarası zorunludur.');
+        if (!customer.companyName) {
+            self.errorMessage('Şirket adı zorunludur.');
             return;
         }
 
-        var promise = self.isEditing() 
+        self.isSaving(true);
+
+        var promise = customer.id 
             ? customerApiService.updateCustomer(customer.id, customer)
             : customerApiService.createCustomer(customer);
 
         promise
             .then(function() {
-                self.successMessage(self.isEditing() ? 'Müşteri başarıyla güncellendi.' : 'Müşteri başarıyla oluşturuldu.');
-                self.showForm(false);
+                self.successMessage(customer.id ? 'Müşteri başarıyla güncellendi.' : 'Müşteri başarıyla oluşturuldu.');
+                self.isModalOpen(false);
                 self.loadCustomers();
             })
             .catch(function(error) {
                 console.error('Error saving customer:', error);
                 self.errorMessage('Müşteri kaydedilirken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isSaving(false);
             });
     };
 
-    // Cancel form
-    self.cancelForm = function() {
-        self.showForm(false);
+    // Close modal
+    self.closeModal = function() {
+        self.isModalOpen(false);
+        self.editingCustomer(null);
         self.errorMessage('');
-        self.successMessage('');
     };
 
     // Delete customer
     self.deleteCustomer = function(customer) {
-        if (!confirm('Bu müşteriyi silmek istediğinizden emin misiniz?\n\n' + customer.companyName)) {
-            return;
-        }
+        deleteConfirmation.show(
+            '"' + customer.companyName + '" müşterisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            function() {
+                customerApiService.deleteCustomer(customer.id)
+                    .then(function() {
+                        self.successMessage('Müşteri başarıyla silindi.');
+                        self.loadCustomers();
+                    })
+                    .catch(function(error) {
+                        console.error('Error deleting customer:', error);
+                        self.errorMessage('Müşteri silinirken bir hata oluştu: ' + (error.message || ''));
+                    });
+            }
+        );
+    };
 
-        customerApiService.deleteCustomer(customer.id)
-            .then(function() {
-                self.successMessage('Müşteri başarıyla silindi.');
-                self.loadCustomers();
+    // ========== PERSONNEL MANAGEMENT ==========
+    
+    // Show personnel modal
+    self.showPersonnel = function(customer) {
+        self.selectedCustomerForPersonnel(customer);
+        self.personnelSearchText('');
+        self.showPersonnelModal(true);
+        self.loadPersonnel(customer.id);
+    };
+
+    // Load personnel for customer
+    self.loadPersonnel = function(customerId) {
+        self.isLoadingPersonnel(true);
+        self.errorMessage('');
+
+        customerApiService.getPersonnelByCustomerId(customerId, false)
+            .then(function(data) {
+                self.personnel(data || []);
             })
             .catch(function(error) {
-                console.error('Error deleting customer:', error);
-                self.errorMessage('Müşteri silinirken bir hata oluştu: ' + (error.message || ''));
+                console.error('Error loading personnel:', error);
+                self.errorMessage('Personeller yüklenirken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isLoadingPersonnel(false);
             });
     };
 
-    // View customer details (navigate to personnel management)
-    self.viewCustomerDetails = function(customer) {
-        window.location.hash = '#/customers/' + customer.id + '/personnel';
+    // Close personnel modal
+    self.closePersonnelModal = function() {
+        self.showPersonnelModal(false);
+        self.selectedCustomerForPersonnel(null);
+        self.personnel([]);
+        self.personnelSearchText('');
+    };
+
+    // Create new personnel
+    self.createNewPersonnel = function() {
+        var customer = self.selectedCustomerForPersonnel();
+        if (!customer) return;
+
+        self.editingPersonnel({
+            id: null,
+            customerId: customer.id,
+            username: '',
+            email: '',
+            password: '',
+            firstName: '',
+            lastName: '',
+            phoneNumber: '',
+            department: '',
+            title: '',
+            role: 1,
+            isActive: true
+        });
+        self.showPersonnelFormModal(true);
+    };
+
+    // Edit personnel
+    self.editPersonnel = function(personnel) {
+        self.editingPersonnel({
+            id: personnel.id,
+            customerId: personnel.customerId,
+            username: personnel.username,
+            email: personnel.email,
+            password: '',
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            phoneNumber: personnel.phoneNumber || '',
+            department: personnel.department || '',
+            title: personnel.title || '',
+            role: personnel.role,
+            isActive: personnel.isActive
+        });
+        self.showPersonnelFormModal(true);
+    };
+
+    // Save personnel
+    self.savePersonnel = function() {
+        self.errorMessage('');
+        self.successMessage('');
+
+        var personnel = self.editingPersonnel();
+        if (!personnel) return;
+
+        // Validation
+        if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
+            self.errorMessage('Kullanıcı adı, e-posta, ad ve soyad zorunludur.');
+            return;
+        }
+
+        if (!personnel.id && !personnel.password) {
+            self.errorMessage('Yeni personel için şifre zorunludur.');
+            return;
+        }
+
+        self.isSavingPersonnel(true);
+
+        var promise = personnel.id 
+            ? customerApiService.updatePersonnel(personnel.id, personnel)
+            : customerApiService.createPersonnel(personnel);
+
+        promise
+            .then(function() {
+                self.successMessage(personnel.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
+                self.showPersonnelFormModal(false);
+                self.loadPersonnel(self.selectedCustomerForPersonnel().id);
+                self.loadCustomers(); // Refresh personnel count
+            })
+            .catch(function(error) {
+                console.error('Error saving personnel:', error);
+                self.errorMessage('Personel kaydedilirken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isSavingPersonnel(false);
+            });
+    };
+
+    // Close personnel form modal
+    self.closePersonnelFormModal = function() {
+        self.showPersonnelFormModal(false);
+        self.editingPersonnel(null);
+    };
+
+    // Delete personnel
+    self.deletePersonnel = function(personnel) {
+        deleteConfirmation.show(
+            '"' + personnel.fullName + '" personelini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            function() {
+                customerApiService.deletePersonnel(personnel.id)
+                    .then(function() {
+                        self.successMessage('Personel başarıyla silindi.');
+                        self.loadPersonnel(self.selectedCustomerForPersonnel().id);
+                        self.loadCustomers(); // Refresh personnel count
+                    })
+                    .catch(function(error) {
+                        console.error('Error deleting personnel:', error);
+                        self.errorMessage('Personel silinirken bir hata oluştu: ' + (error.message || ''));
+                    });
+            }
+        );
+    };
+
+    // Show change password modal
+    self.showChangePasswordForPersonnel = function(personnel) {
+        self.selectedPersonnelForPassword(personnel);
+        self.passwordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        });
+        self.showChangePasswordModal(true);
+    };
+
+    // Change password
+    self.changePassword = function() {
+        self.errorMessage('');
+        self.successMessage('');
+
+        var data = self.passwordData();
+
+        if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+            self.errorMessage('Tüm alanlar zorunludur.');
+            return;
+        }
+
+        if (data.newPassword.length < 6) {
+            self.errorMessage('Yeni şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+
+        if (data.newPassword !== data.confirmPassword) {
+            self.errorMessage('Yeni şifre ve onay eşleşmiyor.');
+            return;
+        }
+
+        var personnelId = self.selectedPersonnelForPassword().id;
+
+        customerApiService.changePersonnelPassword(personnelId, data)
+            .then(function(response) {
+                self.successMessage(response.message || 'Şifre başarıyla değiştirildi.');
+                self.showChangePasswordModal(false);
+            })
+            .catch(function(error) {
+                console.error('Error changing password:', error);
+                self.errorMessage('Şifre değiştirilirken bir hata oluştu: ' + (error.message || ''));
+            });
+    };
+
+    // Cancel change password
+    self.cancelChangePassword = function() {
+        self.showChangePasswordModal(false);
+        self.selectedPersonnelForPassword(null);
+        self.passwordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        });
     };
 
     // Toggle inactive customers
@@ -156,4 +383,9 @@ function CustomersViewModel() {
 
     // Initialize
     self.loadCustomers();
+}
+
+// Apply bindings when DOM is ready
+if (typeof ko !== 'undefined') {
+    ko.applyBindings(new CustomersViewModel(), document.getElementById('customers-app'));
 }
