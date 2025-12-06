@@ -559,7 +559,117 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Customer Personnel Task Assignments created");
 
-            // 12. Link some branches and projects to customers
+            // 12. Sample Field Workers (Saha Çalışanları)
+            var fieldWorker1 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Ali",
+                LastName = "Veli",
+                Email = "ali.veli@sahacalisani.com",
+                PhoneNumber = "0542 111 2233",
+                Address = "Beşiktaş, İstanbul",
+                Notes = "Deneyimli saha çalışanı, restaurant değerlendirmelerinde uzman",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker2 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Zeynep",
+                LastName = "Yıldız",
+                Email = "zeynep.yildiz@sahacalisani.com",
+                PhoneNumber = "0533 444 5566",
+                Address = "Çankaya, Ankara",
+                Notes = "Perakende ve hizmet sektöründe geniş deneyim, 5 yıllık tecrübe",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker3 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Murat",
+                LastName = "Koç",
+                Email = "murat.koc@sahacalisani.com",
+                PhoneNumber = "0544 777 8899",
+                Address = "Karşıyaka, İzmir",
+                Notes = "İzmir bölgesinde aktif çalışan, otel değerlendirmelerinde deneyimli",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker4 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Elif",
+                LastName = "Şahin",
+                Email = "elif.sahin@sahacalisani.com",
+                PhoneNumber = "0535 222 3344",
+                Address = "Bornova, İzmir",
+                Notes = "Part-time çalışan, hafta sonları uygun",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker5 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Burak",
+                LastName = "Tekin",
+                Email = "burak.tekin@sahacalisani.com",
+                PhoneNumber = "0536 999 0011",
+                Address = "Keçiören, Ankara",
+                Notes = "Yüksek lisans mezunu, detaylı analiz yapabiliyor, 6 yıllık deneyim",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker6 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Selin",
+                LastName = "Aydın",
+                Email = "selin.aydin@sahacalisani.com",
+                PhoneNumber = "0537 333 4455",
+                Address = "Beşiktaş, İstanbul",
+                Notes = "Restaurant ve cafe değerlendirmelerinde uzman",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker7 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Emre",
+                LastName = "Çelik",
+                Email = "emre.celik@sahacalisani.com",
+                PhoneNumber = "0538 666 7788",
+                Address = "Kadıköy, İstanbul",
+                Notes = "Hızlı ve güvenilir raporlama yapan çalışan",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorker8 = new FieldWorker
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Ayşe",
+                LastName = "Kara",
+                Email = "ayse.kara@sahacalisani.com",
+                PhoneNumber = "0539 888 9900",
+                Address = "Kızılay, Ankara",
+                Notes = "Müşteri hizmetleri değerlendirmelerinde deneyimli",
+                IsActive = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.FieldWorkers.AddRange(fieldWorker1, fieldWorker2, fieldWorker3, fieldWorker4, 
+                fieldWorker5, fieldWorker6, fieldWorker7, fieldWorker8);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Field Workers created");
+
+            // 13. Link some branches and projects to customers
             branch1.CustomerId = customer1.Id;
             branch2.CustomerId = customer2.Id;
             project.CustomerId = customer1.Id;
@@ -578,6 +688,8 @@ public static class SeedData
             logger.LogInformation("  Customer Manager (XYZ): mehmet.kaya / Customer@123");
             logger.LogInformation("  Customer Operator (XYZ): fatma.ozturk / Customer@123");
             logger.LogInformation("  Customer Manager (Otel): can.arslan / Customer@123");
+            logger.LogInformation("Field Workers:");
+            logger.LogInformation("  8 field workers created (Ali Veli, Zeynep Yıldız, Murat Koç, Elif Şahin, Burak Tekin, Selin Aydın, Emre Çelik, Ayşe Kara)");
         }
         catch (Exception ex)
         {
