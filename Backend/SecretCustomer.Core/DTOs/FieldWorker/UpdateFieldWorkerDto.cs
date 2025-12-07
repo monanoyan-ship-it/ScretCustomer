@@ -27,6 +27,10 @@ public class UpdateFieldWorkerDto
     [MaxLength(255, ErrorMessage = "E-posta en fazla 255 karakter olabilir.")]
     public string? Email { get; set; }
 
+    [Required(ErrorMessage = "Kullanıcı adı zorunludur.")]
+    [MaxLength(50, ErrorMessage = "Kullanıcı adı en fazla 50 karakter olabilir.")]
+    public string Username { get; set; } = string.Empty;
+
     public bool IsActive { get; set; }
 
     [MaxLength(1000, ErrorMessage = "Notlar en fazla 1000 karakter olabilir.")]

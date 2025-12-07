@@ -5,6 +5,8 @@ function FieldWorkerEditViewModel(data) {
     self.id = data.id || null;
     self.firstName = ko.observable(data.firstName || '');
     self.lastName = ko.observable(data.lastName || '');
+    self.username = ko.observable(data.username || '');
+    self.password = ko.observable('');
     self.phoneNumber = ko.observable(data.phoneNumber || '');
     self.email = ko.observable(data.email || '');
     self.address = ko.observable(data.address || '');
@@ -77,6 +79,21 @@ function FieldWorkersViewModel() {
             return;
         }
 
+        if (!fw.username() || fw.username().trim() === '') {
+            alert('Kullanıcı adı zorunludur!');
+            return;
+        }
+
+        if (!fw.id && (!fw.password() || fw.password().trim() === '')) {
+            alert('Şifre zorunludur!');
+            return;
+        }
+
+        if (!fw.id && fw.password().length < 6) {
+            alert('Şifre en az 6 karakter olmalıdır!');
+            return;
+        }
+
         if (!fw.phoneNumber() || fw.phoneNumber().trim() === '') {
             alert('Telefon numarası zorunludur!');
             return;
@@ -91,12 +108,18 @@ function FieldWorkersViewModel() {
         var dto = {
             firstName: fw.firstName(),
             lastName: fw.lastName(),
+            username: fw.username(),
             phoneNumber: fw.phoneNumber(),
             email: fw.email() || null,
             address: fw.address(),
             notes: fw.notes() || null,
             isActive: fw.isActive()
         };
+
+        // Add password for create operation
+        if (!fw.id) {
+            dto.password = fw.password();
+        }
 
         self.isSaving(true);
         var endpoint = fw.id ? '/api/fieldworkers/' + fw.id : '/api/fieldworkers';

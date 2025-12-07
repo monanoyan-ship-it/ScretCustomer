@@ -25,6 +25,15 @@ public class CreateFieldWorkerDto
     [MaxLength(255, ErrorMessage = "E-posta en fazla 255 karakter olabilir.")]
     public string? Email { get; set; }
 
+    [Required(ErrorMessage = "Kullanıcı adı zorunludur.")]
+    [MaxLength(50, ErrorMessage = "Kullanıcı adı en fazla 50 karakter olabilir.")]
+    public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Şifre zorunludur.")]
+    [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
+    [MaxLength(100, ErrorMessage = "Şifre en fazla 100 karakter olabilir.")]
+    public string Password { get; set; } = string.Empty;
+
     public bool IsActive { get; set; } = true;
 
     [MaxLength(1000, ErrorMessage = "Notlar en fazla 1000 karakter olabilir.")]

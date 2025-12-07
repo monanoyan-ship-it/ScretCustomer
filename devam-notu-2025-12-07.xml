@@ -1,85 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DevamNotu Tarih="2025-12-07">
   <Özet>
-    Secret Customer projesinde UI/UX iyileştirmeleri ve modal yapılandırmaları yapıldı.
-    Tüm confirm() dialog'ları modern Bootstrap modal'a dönüştürüldü.
-    Evaluations sayfası separate page yerine modal-based yapıya çevrildi.
+    Secret Customer projesinde saha çalışanları sisteme entegre edildi.
+    FieldWorker'lar artık User olarak sisteme login olup kendi görevlerini görebiliyor.
+    Admin tüm kullanıcıların şifrelerini değiştirebiliyor.
+    Saha çalışanı kaydedilirken otomatik User kaydı oluşturuluyor.
   </Özet>
 
   <Tamamlananİşler>
     <İş No="1">
-      <Açıklama>Field Workers (Saha Çalışanları) için seed data eklendi</Açıklama>
-      <Dosya>Backend/SecretCustomer.Data/SeedData.cs</Dosya>
-      <Detay>8 adet field worker kaydı (Ali Veli, Zeynep Yıldız, Murat Koç, Elif Şahin, Burak Tekin, Selin Aydın, Emre Çelik, Ayşe Kara)</Detay>
+      <Açıklama>FieldWorker - User İlişkisi Kuruldu</Açıklama>
+      <Dosyalar>
+        <Dosya>Backend/SecretCustomer.Core/Entities/FieldWorker.cs - UserId ve User navigation property eklendi</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/Enums/UserRole.cs - FieldWorker = 5 rolü eklendi</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/DTOs/FieldWorker/FieldWorkerDto.cs - UserId ve Username eklendi</Dosya>
+      </Dosyalar>
+      <Detay>Her FieldWorker kaydı bir User hesabıyla ilişkilendirildi</Detay>
     </İş>
 
     <İş No="2">
-      <Açıklama>Assignments API POST ve PUT endpoint'leri eklendi</Açıklama>
+      <Açıklama>Saha Çalışanı Otomatik User Oluşturma</Açıklama>
       <Dosyalar>
-        <Dosya>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</Dosya>
-        <Dosya>Backend/SecretCustomer.Core/DTOs/Assignment/CreateAssignmentDto.cs</Dosya>
-        <Dosya>Backend/SecretCustomer.Core/DTOs/Assignment/UpdateAssignmentDto.cs (YENİ)</Dosya>
-        <Dosya>Backend/SecretCustomer.Services/Services/AssignmentService.cs</Dosya>
-        <Dosya>Backend/SecretCustomer.Data/Repositories/AssignmentRepository.cs</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/DTOs/FieldWorker/CreateFieldWorkerDto.cs - Username ve Password alanları</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/DTOs/FieldWorker/UpdateFieldWorkerDto.cs - Username alanı</Dosya>
+        <Dosya>Backend/SecretCustomer.Services/Services/FieldWorkerService.cs - User otomatik oluşturma</Dosya>
       </Dosyalar>
-      <Detay>GetAllAsync, CreateAsync, UpdateAsync metodları eklendi. PostgreSQL için DateTime.SpecifyKind(date, DateTimeKind.Utc) pattern'i uygulandı.</Detay>
+      <Detay>
+        - FieldWorker Create: Otomatik User kaydı oluşturuluyor (FieldWorker rolünde)
+        - FieldWorker Update: Hem FieldWorker hem ilişkili User güncelleniyor
+        - Username ve Email uniqueness kontrolü yapılıyor
+      </Detay>
     </İş>
 
     <İş No="3">
-      <Açıklama>Evaluations sayfası ayrı sayfa yerine modal-based yapıya dönüştürüldü</Açıklama>
+      <Açıklama>Admin Şifre Yönetimi</Açıklama>
       <Dosyalar>
-        <Dosya>Backend/SecretCustomer.API/Controllers/EvaluationsController.cs - Evaluate action SİLİNDİ</Dosya>
-        <Dosya>Backend/SecretCustomer.API/Views/Evaluations/Index.cshtml - Modal eklendi</Dosya>
-        <Dosya>Backend/SecretCustomer.API/wwwroot/js/Evaluations/Index.js - openEvaluation() fonksiyonu eklendi</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/DTOs/User/ChangePasswordDto.cs (YENİ)</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/DTOs/Customer/CustomerPersonnelChangePasswordDto.cs (YENİ)</Dosya>
+        <Dosya>Backend/SecretCustomer.Services/Services/UserService.cs</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Controllers/Api/UsersApiController.cs</Dosya>
       </Dosyalar>
-      <Detay>Kartlara click binding eklendi, Bootstrap modal ile değerlendirme gösterimi</Detay>
+      <Detay>
+        - AdminChangePasswordAsync: Admin herkesin şifresini değiştirebilir (mevcut şifre gerekmez)
+        - POST /api/users/{id}/change-password endpoint eklendi
+        - ChangePasswordDto: Sadece UserId + NewPassword (admin için)
+        - CustomerPersonnelChangePasswordDto: CurrentPassword + NewPassword (kendi şifresini değiştirmek için)
+      </Detay>
     </İş>
 
     <İş No="4">
-      <Açıklama>Assignments sayfasındaki orphaned link düzeltildi ve değerlendirme modal'ı eklendi</Açıklama>
+      <Açıklama>MyAssignments - Saha Çalışanı Görev Ekranı</Açıklama>
       <Dosyalar>
-        <Dosya>Backend/SecretCustomer.API/Views/Assignments/Index.cshtml</Dosya>
-        <Dosya>Backend/SecretCustomer.API/wwwroot/js/Assignments/Index.js</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Controllers/MyAssignmentsController.cs (YENİ)</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Views/MyAssignments/Index.cshtml (YENİ)</Dosya>
+        <Dosya>Backend/SecretCustomer.API/wwwroot/js/MyAssignments/Index.js (YENİ)</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</Dosya>
       </Dosyalar>
       <Detay>
-        - Değerlendir butonu href yerine click event ile modal açıyor
-        - evaluationModal eklendi
-        - openEvaluation() fonksiyonu assignment bilgilerini modal'da gösteriyor
-        - with binding kullanılarak context düzenlendi
+        - FieldWorker rolündeki kullanıcılar sadece kendi atamalarını görebilir
+        - GET /api/assignments/my-assignments endpoint (FieldWorker rolü için)
+        - Atamalar kart görünümünde: tamamlanma durumu, gecikme badge'i, due date
+        - Sidebar'da "Görevlerim" menüsü (sadece FieldWorker rolünde görünür)
       </Detay>
     </İş>
 
     <İş No="5">
-      <Açıklama>Tüm projede confirm() dialog'ları modern modal'a dönüştürüldü</Açıklama>
+      <Açıklama>Repository Layer - User Include ve FieldWorker Metodları</Açıklama>
       <Dosyalar>
-        <Dosya>Backend/SecretCustomer.API/Views/Shared/_DeleteConfirmationModal.cshtml (YENİ PARTIAL)</Dosya>
-        <Dosya>Backend/SecretCustomer.API/wwwroot/js/Shared/delete-confirmation.js (REFACTOR)</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/Interfaces/Repositories/IFieldWorkerRepository.cs</Dosya>
+        <Dosya>Backend/SecretCustomer.Data/Repositories/FieldWorkerRepository.cs</Dosya>
+        <Dosya>Backend/SecretCustomer.Core/Interfaces/Repositories/IAssignmentRepository.cs</Dosya>
+        <Dosya>Backend/SecretCustomer.Data/Repositories/AssignmentRepository.cs</Dosya>
       </Dosyalar>
-      <DüzeltilenSayfalar>
-        <Sayfa>Branches/Index.cshtml</Sayfa>
-        <Sayfa>Projects/Index.cshtml</Sayfa>
-        <Sayfa>Users/Index.cshtml</Sayfa>
-        <Sayfa>FieldWorkers/Index.cshtml</Sayfa>
-        <Sayfa>Assignments/Index.cshtml</Sayfa>
-        <Sayfa>CustomerPersonnel/Index.cshtml</Sayfa>
-        <Sayfa>ExcelTemplates/Index.cshtml</Sayfa>
-        <Sayfa>Checklists/Index.cshtml (zaten doğruydu)</Sayfa>
-        <Sayfa>Customers/Index.cshtml (zaten doğruydu)</Sayfa>
-      </DüzeltilenSayfalar>
-      <DüzeltilenJSDosyaları>
-        <JS>Branches/Index.js</JS>
-        <JS>Projects/Index.js</JS>
-        <JS>Users/Index.js</JS>
-        <JS>FieldWorkers/Index.js</JS>
-        <JS>Assignments/Index.js</JS>
-        <JS>CustomerPersonnel/customer-personnel.js</JS>
-        <JS>ExcelTemplates/index.js</JS>
-      </DüzeltilenJSDosyaları>
       <Detay>
-        - Modal HTML JavaScript içinden çıkarıldı, partial view'a taşındı
-        - Tüm sayfalara &lt;partial name="_DeleteConfirmationModal" /&gt; eklendi
-        - Tüm sayfalara delete-confirmation.js script referansı eklendi
-        - if (!confirm(...)) return; pattern'i deleteConfirmation.show('...', function() { ... }); pattern'ine dönüştürüldü
+        - GetByUserIdAsync: UserId'ye göre FieldWorker bulma
+        - GetByFieldWorkerIdAsync: FieldWorkerId'ye göre Assignment'ları getirme
+        - Tüm FieldWorker query'lerine .Include(fw => fw.User) eklendi
+      </Detay>
+    </İş>
+
+    <İş No="6">
+      <Açıklama>UI Güncellemeleri - Şifre Yönetimi ve FieldWorker Form</Açıklama>
+      <Dosyalar>
+        <Dosya>Backend/SecretCustomer.API/Views/FieldWorkers/Index.cshtml - Username ve Password alanları</Dosya>
+        <Dosya>Backend/SecretCustomer.API/wwwroot/js/FieldWorkers/Index.js - Validasyon</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Views/Users/Index.cshtml - Şifre değiştir butonu ve modal</Dosya>
+        <Dosya>Backend/SecretCustomer.API/wwwroot/js/Users/Index.js - PasswordChangeViewModel</Dosya>
+        <Dosya>Backend/SecretCustomer.API/Views/Shared/_Sidebar.cshtml - FieldWorker menu item</Dosya>
+      </Dosyalar>
+      <Detay>
+        - FieldWorker create formunda username ve password zorunlu (min 6 karakter)
+        - Users sayfasında her kullanıcı için "Şifre" butonu
+        - Şifre değiştirme modal'ı: şifre doğrulama ile
+        - isFieldWorker computed property sidebar'da
+      </Detay>
+    </İş>
+
+    <İş No="7">
+      <Açıklama>Seed Data - FieldWorker User Kayıtları</Açıklama>
+      <Dosya>Backend/SecretCustomer.Data/SeedData.cs</Dosya>
+      <Detay>
+        - 8 adet FieldWorker için User kayıtları oluşturuldu
+        - Username: ali.veli, zeynep.yildiz, murat.koc, elif.sahin, burak.tekin, selin.aydin, emre.celik, ayse.kara
+        - Tüm şifreler: Field@123
+        - Role: FieldWorker (5)
+        - FieldWorker kayıtlarına UserId bağlantısı eklendi
       </Detay>
     </İş>
   </Tamamlananİşler>
@@ -108,18 +133,41 @@
       <Kullanım>data-bind="with: $root.selectedEvaluation"</Kullanım>
       <Açıklama>Observable içeriğini context olarak kullanmak için with binding tercih ediliyor</Açıklama>
     </Pattern>
+
+    <Pattern>
+      <Ad>FieldWorker Auto User Creation</Ad>
+      <Kullanım>FieldWorkerService.CreateAsync() içinde User otomatik oluşturma</Kullanım>
+      <Açıklama>FieldWorker kaydedilirken UserId ile bağlantılı User entity otomatik oluşturuluyor</Açıklama>
+    </Pattern>
+
+    <Pattern>
+      <Ad>Role-based Navigation</Ad>
+      <Kullanım>data-bind="visible: isFieldWorker" (Sidebar'da)</Kullanım>
+      <Açıklama>Kullanıcı rolüne göre menu itemları gösterme/gizleme (computed properties)</Açıklama>
+    </Pattern>
+
+    <Pattern>
+      <Ad>Repository Include Pattern</Ad>
+      <Kullanım>.Include(fw => fw.User) tüm FieldWorker query'lerinde</Kullanım>
+      <Açıklama>Navigation property'leri eager loading ile yüklemek için Include kullanılıyor</Açıklama>
+    </Pattern>
   </ÖnemliPattern'ler>
 
   <SonDurum>
     <AktifBranch>hatakontrolleri</AktifBranch>
-    <SonDüzeltme>Assignments/Index modal binding hatası düzeltildi - with binding kullanıldı</SonDüzeltme>
-    <ÇalışırDurum>Evet - Tüm modal'lar çalışıyor, confirm dialog'ları modern modal'a dönüştü</ÇalışırDurum>
+    <SonDüzeltme>CustomerPersonnelChangePasswordDto oluşturuldu - CurrentPassword gereken durum için ayrı DTO</SonDüzeltme>
+    <ÇalışırDurum>Evet - Tüm compile hataları çözüldü, FieldWorker-User entegrasyonu tamamlandı</ÇalışırDurum>
+    <TestDurumu>Migration bekleniyor - FieldWorker tablosuna UserId kolonu eklenecek</TestDurumu>
   </SonDurum>
 
   <SıradakiAdımlar>
-    <Adım Öncelik="1">Değerlendirme formunun içeriğini modal'da doldurmak (checklist items, scoring)</Adım>
-    <Adım Öncelik="2">Değerlendirme kaydetme işlevselliği</Adım>
-    <Adım Öncelik="3">Dashboard ve raporlama modülü</Adım>
+    <Adım Öncelik="1">EF Core Migration: FieldWorker tablosuna UserId kolonu (nullable Guid)</Adım>
+    <Adım Öncelik="2">Migration çalıştırma ve seed data test</Adım>
+    <Adım Öncelik="3">Saha çalışanı login testi ve MyAssignments ekranı test</Adım>
+    <Adım Öncelik="4">Admin şifre değiştirme fonksiyonu test</Adım>
+    <Adım Öncelik="5">Değerlendirme formunun içeriğini modal'da doldurmak (checklist items, scoring)</Adım>
+    <Adım Öncelik="6">Değerlendirme kaydetme işlevselliği</Adım>
+    <Adım Öncelik="7">Dashboard ve raporlama modülü</Adım>
   </SıradakiAdımlar>
 
   <TeknikNotlar>
@@ -129,5 +177,37 @@
     <Not>KnockoutJS 3.5.1 MVVM pattern ile frontend state management</Not>
     <Not>Bootstrap 5.3.0 ile UI components</Not>
     <Not>.NET Core 9.0 + PostgreSQL 15+ + EF Core</Not>
+    <Not>FieldWorker - User ilişkisi: One-to-One (FieldWorker.UserId -> User.Id)</Not>
+    <Not>Password hashing: BCrypt.Net.BCrypt</Not>
+    <Not>ChangePasswordDto: Admin için (mevcut şifre gerektirmez)</Not>
+    <Not>CustomerPersonnelChangePasswordDto: Kendi şifresini değiştirmek için (mevcut şifre gerekir)</Not>
   </TeknikNotlar>
+
+  <TestKullanıcıları>
+    <Kullanıcı>
+      <Rol>Admin</Rol>
+      <Username>admin</Username>
+      <Şifre>Admin@123</Şifre>
+    </Kullanıcı>
+    <Kullanıcı>
+      <Rol>TeamLeader</Rol>
+      <Username>teamleader</Username>
+      <Şifre>Leader@123</Şifre>
+    </Kullanıcı>
+    <Kullanıcı>
+      <Rol>Evaluator</Rol>
+      <Username>evaluator1</Username>
+      <Şifre>Eval@123</Şifre>
+    </Kullanıcı>
+    <Kullanıcı>
+      <Rol>FieldWorker</Rol>
+      <Username>ali.veli</Username>
+      <Şifre>Field@123</Şifre>
+    </Kullanıcı>
+    <Kullanıcı>
+      <Rol>FieldWorker</Rol>
+      <Username>zeynep.yildiz</Username>
+      <Şifre>Field@123</Şifre>
+    </Kullanıcı>
+  </TestKullanıcıları>
 </DevamNotu>

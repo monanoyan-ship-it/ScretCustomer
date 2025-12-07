@@ -72,6 +72,14 @@
                 </a>
             </li>
 
+            <!-- Field Worker Menu -->
+            <li data-bind="visible: isFieldWorker">
+                <a href="/MyAssignments/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-list-task me-2"></i>
+                    Görevlerim
+                </a>
+            </li>
+
             <li data-bind="visible: isEvaluator || isAdmin">
                 <a href="/Evaluations/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-pencil-square me-2"></i>
@@ -96,6 +104,10 @@
 
         self.isEvaluator = ko.computed(function() {
             return self.userRole() === 'Evaluator' || self.userRole() === 'CustomerRepresentative';
+        });
+
+        self.isFieldWorker = ko.computed(function() {
+            return self.userRole() === 'FieldWorker';
         });
 
         // Toggle sidebar

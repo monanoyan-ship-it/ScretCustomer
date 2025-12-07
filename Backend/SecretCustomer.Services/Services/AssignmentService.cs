@@ -57,6 +57,12 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(Guid fieldWorkerId)
+    {
+        var assignments = await _assignmentRepository.GetByFieldWorkerIdAsync(fieldWorkerId);
+        return assignments.Select(MapToDto);
+    }
+
     public async Task<AssignmentDto> CreateAsync(CreateAssignmentDto dto)
     {
         await ValidateAsync(dto);

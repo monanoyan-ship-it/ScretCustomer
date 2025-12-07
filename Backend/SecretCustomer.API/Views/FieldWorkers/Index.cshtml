@@ -99,6 +99,17 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="form-label">Kullanıcı Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: username" placeholder="ahmet.yilmaz" />
+                        </div>
+                        <div class="col-md-6 mb-3" data-bind="visible: !id">
+                            <label class="form-label">Şifre *</label>
+                            <input type="password" class="form-control" data-bind="value: password" placeholder="En az 6 karakter" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Telefon *</label>
                             <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="+90 555 123 45 67" />
                         </div>

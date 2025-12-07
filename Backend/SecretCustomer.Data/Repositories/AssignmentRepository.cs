@@ -90,6 +90,18 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Assignment>> GetByFieldWorkerIdAsync(Guid fieldWorkerId)
+    {
+        return await _context.Assignments
+            .Include(a => a.Project)
+            .Include(a => a.Checklist)
+            .Include(a => a.Branch)
+            .Include(a => a.AssignedFieldWorker)
+            .Where(a => a.AssignedFieldWorkerId == fieldWorkerId)
+            .OrderBy(a => a.DueDate)
+            .ToListAsync();
+    }
+
     public async Task<Assignment> CreateAsync(Assignment assignment)
     {
         _context.Assignments.Add(assignment);

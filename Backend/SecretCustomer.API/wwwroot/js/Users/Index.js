@@ -13,6 +13,15 @@ function UserEditViewModel(data) {
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
 }
 
+function PasswordChangeViewModel(user) {
+    var self = this;
+    
+    self.userId = user.id;
+    self.username = user.username;
+    self.newPassword = ko.observable('');
+    self.newPasswordConfirm = ko.observable('');
+}
+
 function UsersViewModel() {
     var self = this;
 
@@ -26,9 +35,11 @@ function UsersViewModel() {
     self.users = ko.observableArray([]);
     self.branches = ko.observableArray([]);
     self.editingUser = ko.observable(null);
+    self.passwordChangeUser = ko.observable(null);
 
     // Modal state
     self.isModalOpen = ko.observable(false);
+    self.isPasswordModalOpen = ko.observable(false);
 
     // Role display helpers
     self.getRoleDisplayName = function(role) {
@@ -195,6 +206,73 @@ function UsersViewModel() {
             self.errorMessage('Kullanıcı silinirken bir hata oluştu.');
         });
         });
+    };
+
+    // Change password
+    self.changePassword = function(user) {
+        self.passwordChangeUser(new PasswordChangeViewModel(user));
+        self.isPasswordModalOpen(true);
+    };
+
+    // Save password
+    self.savePassword = function() {
+        var pwdUser = self.passwordChangeUser();
+        
+        // Validation
+        if (!pwdUser.newPassword() || pwdUser.newPassword().trim() === '') {
+            alert('Yeni şifre boş olamaz!');
+            return;
+        }
+        
+        if (pwdUser.newPassword().length < 6) {
+            alert('Şifre en az 6 karakter olmalıdır!');
+            return;
+        }
+        
+        if (pwdUser.newPassword() !== pwdUser.newPasswordConfirm()) {
+            alert('Şifreler eşleşmiyor!');
+            return;
+        }
+        
+        self.isSaving(true);
+        self.errorMessage('');
+        
+        const dto = {
+            userId: pwdUser.userId,
+            newPassword: pwdUser.newPassword()
+        };
+        
+        fetch('/api/users/' + pwdUser.userId + '/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || 'Şifre değiştirilemedi');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            self.successMessage('Şifre başarıyla değiştirildi.');
+            self.closePasswordModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            self.errorMessage(error.message || 'Şifre değiştirilirken bir hata oluştu.');
+        })
+        .finally(() => {
+            self.isSaving(false);
+        });
+    };
+
+    // Close password modal
+    self.closePasswordModal = function() {
+        self.isPasswordModalOpen(false);
+        self.passwordChangeUser(null);
     };
 
     // Close modal

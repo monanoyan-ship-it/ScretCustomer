@@ -159,4 +159,39 @@ public class UsersApiController : ControllerBase
             return StatusCode(500, new { message = "Kullanıcı silinirken bir hata oluştu." });
         }
     }
+
+    [HttpPost("{id}/change-password")]
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (id != dto.UserId)
+        {
+            return BadRequest(new { message = "User ID mismatch." });
+        }
+
+        try
+        {
+            var result = await _userService.AdminChangePasswordAsync(id, dto.NewPassword);
+            if (result)
+            {
+                return Ok(new { message = "Şifre başarıyla değiştirildi." });
+            }
+
+            return BadRequest(new { message = "Şifre değiştirilemedi." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User {Id} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password for user {Id}", id);
+            return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
+        }
+    }
 }

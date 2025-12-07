@@ -115,7 +115,7 @@ public class UserService : IUserService
         await _userRepository.DeleteAsync(id);
     }
 
-    public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto changePasswordDto)
+    public async Task<bool> ChangePasswordAsync(Guid userId, string newPassword)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -123,16 +123,25 @@ public class UserService : IUserService
             throw new KeyNotFoundException($"User with ID {userId} not found");
         }
 
-        // Verify current password
-        if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.PasswordHash))
+        // Hash new password
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+        // Update password
+        return await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
+    }
+
+    public async Task<bool> AdminChangePasswordAsync(Guid userId, string newPassword)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
         {
-            throw new UnauthorizedAccessException("Current password is incorrect");
+            throw new KeyNotFoundException($"User with ID {userId} not found");
         }
 
         // Hash new password
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
-        // Update password
+        // Update password (admin doesn't need current password)
         return await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
     }
 

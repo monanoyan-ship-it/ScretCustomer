@@ -1,5 +1,4 @@
 using SecretCustomer.Core.DTOs.Customer;
-using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
@@ -147,7 +146,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         await _personnelRepository.DeleteAsync(id);
     }
 
-    public async Task ChangePasswordAsync(Guid personnelId, ChangePasswordDto changePasswordDto)
+    public async Task ChangePasswordAsync(Guid personnelId, CustomerPersonnelChangePasswordDto changePasswordDto)
     {
         var personnel = await _personnelRepository.GetByIdAsync(personnelId);
         if (personnel == null)

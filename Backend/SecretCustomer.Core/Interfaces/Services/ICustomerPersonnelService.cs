@@ -1,5 +1,4 @@
 using SecretCustomer.Core.DTOs.Customer;
-using SecretCustomer.Core.DTOs.User;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -12,5 +11,5 @@ public interface ICustomerPersonnelService
     Task<CustomerPersonnelDto> CreateAsync(CreateCustomerPersonnelDto createDto);
     Task<CustomerPersonnelDto> UpdateAsync(Guid id, UpdateCustomerPersonnelDto updateDto);
     Task DeleteAsync(Guid id);
-    Task ChangePasswordAsync(Guid personnelId, ChangePasswordDto changePasswordDto);
+    Task ChangePasswordAsync(Guid personnelId, CustomerPersonnelChangePasswordDto changePasswordDto);
 }

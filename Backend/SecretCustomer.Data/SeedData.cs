@@ -81,6 +81,116 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Users created");
 
+            // 1b. Field Worker Users - Saha çalışanları için sistem kullanıcıları
+            var fieldWorkerUser1 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "ali.veli",
+                Email = "ali.veli@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Ali",
+                LastName = "Veli",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser2 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "zeynep.yildiz",
+                Email = "zeynep.yildiz@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Zeynep",
+                LastName = "Yıldız",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser3 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "murat.koc",
+                Email = "murat.koc@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Murat",
+                LastName = "Koç",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser4 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "elif.sahin",
+                Email = "elif.sahin@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Elif",
+                LastName = "Şahin",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser5 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "burak.tekin",
+                Email = "burak.tekin@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Burak",
+                LastName = "Tekin",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser6 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "selin.aydin",
+                Email = "selin.aydin@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Selin",
+                LastName = "Aydın",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser7 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "emre.celik",
+                Email = "emre.celik@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Emre",
+                LastName = "Çelik",
+                Role = UserRole.FieldWorker,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var fieldWorkerUser8 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "ayse.kara",
+                Email = "ayse.kara@sahacalisani.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
+                FirstName = "Ayşe",
+                LastName = "Kara",
+                Role = UserRole.FieldWorker,
+                IsActive = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Users.AddRange(fieldWorkerUser1, fieldWorkerUser2, fieldWorkerUser3, 
+                fieldWorkerUser4, fieldWorkerUser5, fieldWorkerUser6, fieldWorkerUser7, fieldWorkerUser8);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Field Worker Users created");
+
             // 2. Branches
             var branch1 = new Branch
             {
@@ -563,6 +673,7 @@ public static class SeedData
             var fieldWorker1 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser1.Id,
                 FirstName = "Ali",
                 LastName = "Veli",
                 Email = "ali.veli@sahacalisani.com",
@@ -576,6 +687,7 @@ public static class SeedData
             var fieldWorker2 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser2.Id,
                 FirstName = "Zeynep",
                 LastName = "Yıldız",
                 Email = "zeynep.yildiz@sahacalisani.com",
@@ -589,6 +701,7 @@ public static class SeedData
             var fieldWorker3 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser3.Id,
                 FirstName = "Murat",
                 LastName = "Koç",
                 Email = "murat.koc@sahacalisani.com",
@@ -602,6 +715,7 @@ public static class SeedData
             var fieldWorker4 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser4.Id,
                 FirstName = "Elif",
                 LastName = "Şahin",
                 Email = "elif.sahin@sahacalisani.com",
@@ -615,6 +729,7 @@ public static class SeedData
             var fieldWorker5 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser5.Id,
                 FirstName = "Burak",
                 LastName = "Tekin",
                 Email = "burak.tekin@sahacalisani.com",
@@ -628,6 +743,7 @@ public static class SeedData
             var fieldWorker6 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser6.Id,
                 FirstName = "Selin",
                 LastName = "Aydın",
                 Email = "selin.aydin@sahacalisani.com",
@@ -641,6 +757,7 @@ public static class SeedData
             var fieldWorker7 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser7.Id,
                 FirstName = "Emre",
                 LastName = "Çelik",
                 Email = "emre.celik@sahacalisani.com",
@@ -654,6 +771,7 @@ public static class SeedData
             var fieldWorker8 = new FieldWorker
             {
                 Id = Guid.NewGuid(),
+                UserId = fieldWorkerUser8.Id,
                 FirstName = "Ayşe",
                 LastName = "Kara",
                 Email = "ayse.kara@sahacalisani.com",
@@ -689,7 +807,14 @@ public static class SeedData
             logger.LogInformation("  Customer Operator (XYZ): fatma.ozturk / Customer@123");
             logger.LogInformation("  Customer Manager (Otel): can.arslan / Customer@123");
             logger.LogInformation("Field Workers:");
-            logger.LogInformation("  8 field workers created (Ali Veli, Zeynep Yıldız, Murat Koç, Elif Şahin, Burak Tekin, Selin Aydın, Emre Çelik, Ayşe Kara)");
+            logger.LogInformation("  Ali Veli: ali.veli / Field@123");
+            logger.LogInformation("  Zeynep Yıldız: zeynep.yildiz / Field@123");
+            logger.LogInformation("  Murat Koç: murat.koc / Field@123");
+            logger.LogInformation("  Elif Şahin: elif.sahin / Field@123");
+            logger.LogInformation("  Burak Tekin: burak.tekin / Field@123");
+            logger.LogInformation("  Selin Aydın: selin.aydin / Field@123");
+            logger.LogInformation("  Emre Çelik: emre.celik / Field@123");
+            logger.LogInformation("  Ayşe Kara (inactive): ayse.kara / Field@123");
         }
         catch (Exception ex)
         {

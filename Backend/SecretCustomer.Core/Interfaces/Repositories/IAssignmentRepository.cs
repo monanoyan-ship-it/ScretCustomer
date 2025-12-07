@@ -10,6 +10,7 @@ public interface IAssignmentRepository
     Task<IEnumerable<Assignment>> GetByProjectIdAsync(Guid projectId);
     Task<IEnumerable<Assignment>> GetByUserIdAsync(Guid userId);
     Task<IEnumerable<Assignment>> GetByBranchIdAsync(Guid branchId);
+    Task<IEnumerable<Assignment>> GetByFieldWorkerIdAsync(Guid fieldWorkerId);
     Task<Assignment> CreateAsync(Assignment assignment);
     Task<IEnumerable<Assignment>> CreateBulkAsync(IEnumerable<Assignment> assignments);
     Task<Assignment> UpdateAsync(Assignment assignment);

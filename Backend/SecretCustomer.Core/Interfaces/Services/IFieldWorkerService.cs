@@ -5,6 +5,7 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IFieldWorkerService
 {
     Task<FieldWorkerDto?> GetByIdAsync(Guid id);
+    Task<FieldWorkerDto?> GetByUserIdAsync(Guid userId);
     Task<IEnumerable<FieldWorkerDto>> GetAllAsync(bool includeInactive = false);
     Task<IEnumerable<FieldWorkerDto>> GetActiveAsync();
     Task<FieldWorkerDto> CreateAsync(CreateFieldWorkerDto createDto);

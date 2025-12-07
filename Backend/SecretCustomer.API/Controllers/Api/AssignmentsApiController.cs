@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Assignment;
 using SecretCustomer.Core.Interfaces.Services;
+using System.Security.Claims;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -118,6 +119,28 @@ public class AssignmentsApiController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting assignment {Id}", id);
             return StatusCode(500, new { message = "Atama silinirken bir hata oluştu." });
+        }
+    }
+
+    [HttpGet("my-assignments")]
+    [Authorize(Roles = "FieldWorker")]
+    public async Task<IActionResult> GetMyAssignments()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+            }
+
+            var assignments = await _assignmentService.GetByUserIdAsync(userId);
+            return Ok(assignments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading user assignments");
+            return StatusCode(500, new { message = "Atamalar yüklenirken bir hata oluştu." });
         }
     }
 }

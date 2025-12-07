@@ -13,7 +13,8 @@ public interface IUserService
     Task<UserDto> CreateAsync(CreateUserDto createUserDto);
     Task<UserDto> UpdateAsync(Guid id, UpdateUserDto updateUserDto);
     Task DeleteAsync(Guid id);
-    Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto changePasswordDto);
+    Task<bool> ChangePasswordAsync(Guid userId, string newPassword);
+    Task<bool> AdminChangePasswordAsync(Guid userId, string newPassword);
 
     // Branch assignment
     Task<UserDto> AssignToBranchAsync(Guid userId, Guid branchId);

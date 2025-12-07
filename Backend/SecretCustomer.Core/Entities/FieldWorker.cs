@@ -33,4 +33,11 @@ public class FieldWorker : BaseEntity
     [ExcelColumn("Notlar", 7, ColumnType = ExcelColumnType.Text,
         Description = "Saha çalışanı hakkında ek notlar", SampleValue = "Tecrübeli, güvenilir")]
     public string? Notes { get; set; }
+
+    // User relationship - saha çalışanı aynı zamanda sistem kullanıcısıdır
+    public Guid? UserId { get; set; }
+    public User? User { get; set; }
+
+    // Navigation properties
+    public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 }
