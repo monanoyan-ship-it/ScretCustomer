@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Customer;
-using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -154,7 +153,7 @@ public class CustomerPersonnelApiController : ControllerBase
 
     [HttpPost("{id}/change-password")]
     [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
-    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] CustomerPersonnelChangePasswordDto dto)
     {
         if (!ModelState.IsValid)
         {
