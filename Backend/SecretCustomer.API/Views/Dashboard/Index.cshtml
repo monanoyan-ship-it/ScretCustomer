@@ -2,124 +2,360 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<h2 class="mb-4">Dashboard</h2>
+<div id="dashboard-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+        <div class="d-flex gap-2 align-items-center">
+            <!-- Date Range Filter -->
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                <input type="date" class="form-control" data-bind="value: startDate" style="max-width: 140px;">
+                <span class="input-group-text">-</span>
+                <input type="date" class="form-control" data-bind="value: endDate" style="max-width: 140px;">
+            </div>
+            <button class="btn btn-sm btn-primary" data-bind="click: loadDashboard">
+                <i class="bi bi-arrow-clockwise"></i> Yenile
+            </button>
+        </div>
+    </div>
 
-<!-- Stats Cards Component -->
-<div id="dashboard-stats-component">
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
     </div>
 
     <!-- Error -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger">
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
         <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row" data-bind="visible: !isLoading()">
-        <div class="col-md-4 mb-4">
-            <div class="card bg-primary text-white shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50">Toplam Değerlendirme</h6>
-                            <h3 data-bind="text: totalEvaluations"></h3>
+    <!-- Dashboard Content -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Scorecard & Announcements Row -->
+        <div class="row mb-4">
+            <!-- Scorecard -->
+            <div class="col-xl-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Kişisel Performans Kartı</h5>
+                        <span class="badge bg-light text-primary" data-bind="text: scorecard().userName"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Bu Ay -->
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar-month"></i> Bu Ay</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3 class="mb-0" data-bind="text: scorecard().currentMonthEvaluations"></h3>
+                                            <small class="text-muted">Değerlendirme</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <h3 class="mb-0"><span data-bind="text: scorecard().currentMonthAverage.toFixed(1)"></span>%</h3>
+                                            <small class="text-muted">Ortalama</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Geçen Ay -->
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar"></i> Geçen Ay</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3 class="mb-0" data-bind="text: scorecard().lastMonthEvaluations"></h3>
+                                            <small class="text-muted">Değerlendirme</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <h3 class="mb-0"><span data-bind="text: scorecard().lastMonthAverage.toFixed(1)"></span>%</h3>
+                                            <small class="text-muted">Ortalama</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Toplam & Sıralama -->
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-muted mb-2"><i class="bi bi-trophy"></i> Toplam</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3 class="mb-0" data-bind="text: scorecard().totalEvaluations"></h3>
+                                            <small class="text-muted">Değerlendirme</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <h3 class="mb-0"><span data-bind="text: scorecard().userRank"></span>/<span data-bind="text: scorecard().totalUsers"></span></h3>
+                                            <small class="text-muted">Sıralama</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <i class="bi bi-clipboard-check fs-1"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card bg-success text-white shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50">Ortalama Puan</h6>
-                            <h3 data-bind="text: averageScore().toFixed(1)"></h3>
+                        <!-- Performans Karşılaştırması -->
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="flex-grow-1">
+                                        <small class="text-muted">Sizin Ortalamanız</small>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar bg-primary" role="progressbar"
+                                                 data-bind="style: { width: scorecard().totalAverage + '%' }">
+                                                <span data-bind="text: scorecard().totalAverage.toFixed(1) + '%'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <small class="text-muted">Şirket Ortalaması</small>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar bg-secondary" role="progressbar"
+                                                 data-bind="style: { width: scorecard().companyAverage + '%' }">
+                                                <span data-bind="text: scorecard().companyAverage.toFixed(1) + '%'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center" style="min-width: 80px;">
+                                        <span class="badge fs-6" data-bind="css: scorecard().monthlyChange >= 0 ? 'bg-success' : 'bg-danger'">
+                                            <i data-bind="css: scorecard().monthlyChange >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+                                            <span data-bind="text: Math.abs(scorecard().monthlyChange).toFixed(1)"></span>%
+                                        </span>
+                                        <small class="d-block text-muted">Aylık Değişim</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <i class="bi bi-star-fill fs-1"></i>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card bg-info text-white shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50">Değişim</h6>
-                            <h3>
-                                <span data-bind="text: percentageChange().toFixed(1)"></span>%
-                                <i data-bind="css: percentageChange() >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
-                            </h3>
+            <!-- Duyurular -->
+            <div class="col-xl-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-megaphone"></i> Duyurular</h5>
+                        <span class="badge bg-light text-info" data-bind="text: announcements().length"></span>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                        <div data-bind="visible: announcements().length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Yeni duyuru bulunmamaktadır.</p>
                         </div>
-                        <i class="bi bi-graph-up fs-1"></i>
+                        <div class="list-group list-group-flush" data-bind="foreach: announcements">
+                            <a href="#" class="list-group-item list-group-item-action py-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <!-- ko if: isPinned -->
+                                            <i class="bi bi-pin-fill text-primary" title="Sabitlenmiş"></i>
+                                            <!-- /ko -->
+                                            <strong data-bind="text: title"></strong>
+                                        </div>
+                                        <small class="text-muted" data-bind="text: summary"></small>
+                                    </div>
+                                    <div class="text-end ms-2">
+                                        <span class="badge" data-bind="css: $parent.getAnnouncementTypeClass(type), text: $parent.getAnnouncementTypeName(type)"></span>
+                                        <small class="d-block text-muted mt-1" data-bind="text: $parent.formatDate(publishDate)"></small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Top Branches Component -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div id="dashboard-top-branches-component">
-            <div class="card shadow">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">En İyi 5 Şube</h5>
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Toplam Değerlendirme</h6>
+                                <h2 class="mb-0" data-bind="text: stats().totalEvaluations"></h2>
+                            </div>
+                            <i class="bi bi-clipboard-check fs-1 opacity-50"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <!-- Loading -->
-                    <div data-bind="visible: isLoading" class="text-center">
-                        <div class="spinner-border spinner-border-sm"></div>
-                    </div>
+            </div>
 
-                    <!-- Empty State -->
-                    <div data-bind="visible: !isLoading() && topBranches().length === 0" class="text-center text-muted">
-                        Henüz veri bulunmamaktadır.
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-success text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Ortalama Puan</h6>
+                                <h2 class="mb-0">
+                                    <span data-bind="text: stats().averageScore.toFixed(1)"></span>%
+                                </h2>
+                            </div>
+                            <i class="bi bi-star-fill fs-1 opacity-50"></i>
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Branches List -->
-                    <ul class="list-group list-group-flush" data-bind="foreach: topBranches, visible: !isLoading()">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span data-bind="text: branchName"></span>
-                            <span class="badge bg-success rounded-pill" data-bind="text: averageScore.toFixed(1)"></span>
-                        </li>
-                    </ul>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card shadow h-100" data-bind="css: { 'bg-info text-white': stats().percentageChange >= 0, 'bg-warning text-dark': stats().percentageChange < 0 }">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1" data-bind="css: { 'text-white-50': stats().percentageChange >= 0, 'text-dark-50': stats().percentageChange < 0 }">Aylık Değişim</h6>
+                                <h2 class="mb-0">
+                                    <i data-bind="css: stats().percentageChange >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+                                    <span data-bind="text: Math.abs(stats().percentageChange).toFixed(1)"></span>%
+                                </h2>
+                            </div>
+                            <i class="bi bi-graph-up fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-secondary text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Aktif Şube</h6>
+                                <h2 class="mb-0" data-bind="text: stats().branchComparisons.length"></h2>
+                            </div>
+                            <i class="bi bi-building fs-1 opacity-50"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 mb-4">
-        <div id="dashboard-bottom-branches-component">
-            <div class="card shadow">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Geliştirilmesi Gereken 5 Şube</h5>
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <!-- Monthly Trend Chart -->
+            <div class="col-xl-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Aylık Performans Trendi</h5>
+                        <span class="badge bg-primary" data-bind="text: 'Son ' + stats().monthlyTrends.length + ' ay'"></span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyTrendChart" style="max-height: 300px;"></canvas>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <!-- Loading -->
-                    <div data-bind="visible: isLoading" class="text-center">
-                        <div class="spinner-border spinner-border-sm"></div>
-                    </div>
+            </div>
 
-                    <!-- Empty State -->
-                    <div data-bind="visible: !isLoading() && bottomBranches().length === 0" class="text-center text-muted">
-                        Henüz veri bulunmamaktadır.
+            <!-- Branch Comparison Chart -->
+            <div class="col-xl-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Şube Karşılaştırması</h5>
                     </div>
+                    <div class="card-body">
+                        <canvas id="branchComparisonChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Branches List -->
-                    <ul class="list-group list-group-flush" data-bind="foreach: bottomBranches, visible: !isLoading()">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span data-bind="text: branchName"></span>
-                            <span class="badge bg-warning rounded-pill" data-bind="text: averageScore.toFixed(1)"></span>
-                        </li>
-                    </ul>
+        <!-- Top & Bottom Branches -->
+        <div class="row">
+            <!-- Top 5 Branches -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> En İyi 5 Şube</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div data-bind="visible: stats().topBranches.length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                        </div>
+                        <ul class="list-group list-group-flush" data-bind="foreach: stats().topBranches">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-success me-2" data-bind="text: $index() + 1"></span>
+                                    <span data-bind="text: branchName"></span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark me-2" data-bind="text: evaluationCount + ' değerlendirme'"></span>
+                                    <span class="badge bg-success rounded-pill" data-bind="text: averageScore.toFixed(1) + '%'"></span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom 5 Branches -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Geliştirilmesi Gereken 5 Şube</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div data-bind="visible: stats().bottomBranches.length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                        </div>
+                        <ul class="list-group list-group-flush" data-bind="foreach: stats().bottomBranches">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-warning text-dark me-2" data-bind="text: $index() + 1"></span>
+                                    <span data-bind="text: branchName"></span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark me-2" data-bind="text: evaluationCount + ' değerlendirme'"></span>
+                                    <span class="badge bg-warning text-dark rounded-pill" data-bind="text: averageScore.toFixed(1) + '%'"></span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Branch Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-table"></i> Tüm Şubeler</h5>
+                <div class="input-group input-group-sm" style="max-width: 250px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Şube ara..." data-bind="value: branchSearchTerm, valueUpdate: 'afterkeydown'">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Şube</th>
+                                <th>Bölge</th>
+                                <th>Değerlendirme</th>
+                                <th>Ortalama Puan</th>
+                                <th>Performans</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: filteredBranches">
+                            <tr>
+                                <td data-bind="text: branchName"></td>
+                                <td data-bind="text: region"></td>
+                                <td data-bind="text: evaluationCount"></td>
+                                <td>
+                                    <strong data-bind="text: averageScore.toFixed(1) + '%'"></strong>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px; min-width: 100px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             data-bind="style: { width: averageScore + '%' },
+                                                        css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning' : 'bg-danger')">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

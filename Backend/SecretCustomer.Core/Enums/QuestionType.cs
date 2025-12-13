@@ -5,5 +5,6 @@ public enum QuestionType
     MultipleChoice = 1,
     Likert = 2,
     Star = 3,
-    Text = 4
+    Text = 4,
+    YesNo = 5
 }

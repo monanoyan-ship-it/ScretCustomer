@@ -26,14 +26,12 @@ function CustomersViewModel() {
     self.editingPersonnel = ko.observable(null);
     self.isSavingPersonnel = ko.observable(false);
     
-    // Change Password
+    // Reset Password (Admin)
     self.showChangePasswordModal = ko.observable(false);
     self.selectedPersonnelForPassword = ko.observable(null);
-    self.passwordData = ko.observable({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    });
+    self.isResettingPassword = ko.observable(false);
+    self.newPassword = ko.observable('');
+    self.confirmPassword = ko.observable('');
 
     // Computed
     self.filteredCustomers = ko.computed(function() {
@@ -318,61 +316,63 @@ function CustomersViewModel() {
         );
     };
 
-    // Show change password modal
+    // Show reset password modal (Admin)
     self.showChangePasswordForPersonnel = function(personnel) {
         self.selectedPersonnelForPassword(personnel);
-        self.passwordData({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-        });
+        self.newPassword('');
+        self.confirmPassword('');
         self.showChangePasswordModal(true);
     };
 
-    // Change password
-    self.changePassword = function() {
+    // Reset password (Admin)
+    self.resetPassword = function() {
         self.errorMessage('');
         self.successMessage('');
 
-        var data = self.passwordData();
+        var newPass = self.newPassword();
+        var confirmPass = self.confirmPassword();
 
-        if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+        if (!newPass || !confirmPass) {
             self.errorMessage('Tüm alanlar zorunludur.');
             return;
         }
 
-        if (data.newPassword.length < 6) {
+        if (newPass.length < 6) {
             self.errorMessage('Yeni şifre en az 6 karakter olmalıdır.');
             return;
         }
 
-        if (data.newPassword !== data.confirmPassword) {
+        if (newPass !== confirmPass) {
             self.errorMessage('Yeni şifre ve onay eşleşmiyor.');
             return;
         }
 
         var personnelId = self.selectedPersonnelForPassword().id;
 
-        customerApiService.changePersonnelPassword(personnelId, data)
+        self.isResettingPassword(true);
+
+        customerApiService.resetPersonnelPassword(personnelId, newPass)
             .then(function(response) {
-                self.successMessage(response.message || 'Şifre başarıyla değiştirildi.');
+                self.successMessage(response.message || 'Şifre başarıyla sıfırlandı.');
                 self.showChangePasswordModal(false);
+                self.newPassword('');
+                self.confirmPassword('');
             })
             .catch(function(error) {
-                console.error('Error changing password:', error);
-                self.errorMessage('Şifre değiştirilirken bir hata oluştu: ' + (error.message || ''));
+                console.error('Error resetting password:', error);
+                self.errorMessage('Şifre sıfırlanırken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isResettingPassword(false);
             });
     };
 
-    // Cancel change password
+    // Cancel reset password
     self.cancelChangePassword = function() {
         self.showChangePasswordModal(false);
         self.selectedPersonnelForPassword(null);
-        self.passwordData({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-        });
+        self.newPassword('');
+        self.confirmPassword('');
     };
 
     // Toggle inactive customers

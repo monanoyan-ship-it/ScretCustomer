@@ -2,26 +2,187 @@
     ViewData["Title"] = "Atamalar";
 }
 
+<style>
+    /* Dropdown menünün container tarafından kesilmesini önle */
+    #assignments-app .card,
+    #assignments-app .card-body,
+    #assignments-app .table-responsive {
+        overflow: visible !important;
+    }
+    /* Dropdown menüyü sabit pozisyonla (viewport'a göre) */
+    #assignments-app .dropdown-menu {
+        position: absolute;
+        z-index: 1050;
+    }
+    /* Son satırlardaki dropdown'ların yukarı açılması */
+    #assignments-app tbody tr:nth-last-child(-n+3) .dropdown-menu {
+        top: auto !important;
+        bottom: 100% !important;
+        transform: none !important;
+    }
+</style>
+
 <div id="assignments-app">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Atamalar</h2>
-        <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle"></i> Yeni Atama
-        </button>
+        <h2><i class="bi bi-clipboard-check"></i> Atamalar</h2>
+        <div class="btn-group">
+            <button class="btn btn-primary" data-bind="click: createNew">
+                <i class="bi bi-plus-circle"></i> Yeni Atama
+            </button>
+            <button class="btn btn-outline-primary" data-bind="click: openBulkAssignmentModal">
+                <i class="bi bi-collection"></i> Toplu Atama
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Toplam</h6>
+                            <h4 class="mb-0" data-bind="text: totalAssignments"></h4>
+                        </div>
+                        <i class="bi bi-clipboard-data fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Bekleyen</h6>
+                            <h4 class="mb-0" data-bind="text: pendingCount"></h4>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Devam Eden</h6>
+                            <h4 class="mb-0" data-bind="text: inProgressCount"></h4>
+                        </div>
+                        <i class="bi bi-play-circle fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Tamamlanan</h6>
+                            <h4 class="mb-0" data-bind="text: completedCount"></h4>
+                        </div>
+                        <i class="bi bi-check-circle fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Süresi Dolan</h6>
+                            <h4 class="mb-0" data-bind="text: expiredCount"></h4>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-4 col-6 mb-2">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 small">Ort. Puan</h6>
+                            <h4 class="mb-0" data-bind="text: averageScore ? averageScore.toFixed(1) + '%' : '-'"></h4>
+                        </div>
+                        <i class="bi bi-bar-chart fs-3 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Proje</label>
+                    <select class="form-select form-select-sm" data-bind="value: filterProjectId, options: availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Projeler'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Durum</label>
+                    <select class="form-select form-select-sm" data-bind="value: filterStatus">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Pending">Bekleyen</option>
+                        <option value="InProgress">Devam Eden</option>
+                        <option value="Completed">Tamamlanan</option>
+                        <option value="Expired">Süresi Dolan</option>
+                        <option value="Cancelled">İptal Edilen</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Atanan Kişi</label>
+                    <select class="form-select form-select-sm" data-bind="value: filterAssignedUserId, options: allAssignableUsers, optionsValue: 'id', optionsText: 'displayName', optionsCaption: 'Tüm Kişiler'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Son Tarih (Başlangıç)</label>
+                    <input type="date" class="form-control form-control-sm" data-bind="value: filterDueDateFrom">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Son Tarih (Bitiş)</label>
+                    <input type="date" class="form-control form-control-sm" data-bind="value: filterDueDateTo">
+                </div>
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Ara..." data-bind="value: filterSearchTerm, valueUpdate: 'afterkeydown'">
+                    </div>
+                </div>
+                <div class="col-md-8 text-end">
+                    <button class="btn btn-sm btn-outline-secondary me-2" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> Filtreleri Temizle
+                    </button>
+                    <button class="btn btn-sm btn-primary" data-bind="click: applyFilters">
+                        <i class="bi bi-funnel"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Yükleniyor...</p>
     </div>
 
     <!-- Messages -->
     <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i>
         <span data-bind="text: successMessage"></span>
         <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
     </div>
 
     <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
         <span data-bind="text: errorMessage"></span>
         <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
     </div>
@@ -30,98 +191,231 @@
     <div data-bind="visible: !isLoading()">
         <!-- Empty State -->
         <div data-bind="visible: assignments().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Henüz atama bulunmamaktadır.
+            <i class="bi bi-info-circle"></i> Henüz atama bulunmamaktadır veya filtrelere uygun sonuç yoktur.
         </div>
 
         <!-- Assignments Table -->
         <div data-bind="visible: assignments().length > 0" class="card shadow">
-            <div class="card-body">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Proje</th>
-                            <th>Kontrol Listesi</th>
-                            <th>Şube</th>
-                            <th>Atanan</th>
-                            <th>Son Tarih</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="foreach: assignments">
-                        <tr>
-                            <td data-bind="text: projectName"></td>
-                            <td data-bind="text: checklistName"></td>
-                            <td data-bind="text: branchName || 'N/A'"></td>
-                            <td>
-                                <span data-bind="visible: assignedUserName, text: assignedUserName"></span>
-                                <span data-bind="visible: externalEmail">
-                                    <i class="bi bi-envelope"></i> <span data-bind="text: externalEmail"></span>
-                                </span>
-                            </td>
-                            <td data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : 'Yok'"></td>
-                            <td>
-                                <span class="badge" data-bind="css: isCompleted ? 'bg-success' : 'bg-warning', text: isCompleted ? 'Tamamlandı' : 'Bekliyor'"></span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parent.openEvaluation, visible: !isCompleted">
-                                    <i class="bi bi-pencil-square"></i> Değerlendir
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parent.deleteAssignment">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Proje</th>
+                                <th>Şube</th>
+                                <th>Kontrol Listesi</th>
+                                <th>Atanan</th>
+                                <th>Son Tarih</th>
+                                <th>Durum</th>
+                                <th>Puan</th>
+                                <th class="text-center">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: assignments">
+                            <tr data-bind="css: { 'table-danger': status === 'Expired', 'table-warning': status === 'Cancelled' }">
+                                <td>
+                                    <span data-bind="text: projectName"></span>
+                                    <small class="text-muted d-block" data-bind="text: projectCode"></small>
+                                </td>
+                                <td>
+                                    <span data-bind="text: branchName || '-'"></span>
+                                    <small class="text-muted d-block" data-bind="visible: branchCode, text: branchCode"></small>
+                                </td>
+                                <td data-bind="text: checklistName"></td>
+                                <td>
+                                    <span data-bind="text: assigneeName"></span>
+                                    <small class="text-muted d-block" data-bind="text: assigneeType === 'FieldWorker' ? 'Saha Çalışanı' : assigneeType === 'External' ? 'Harici' : assigneeType === 'CustomerPersonnel' ? 'Müşteri Temsilcisi' : ''"></small>
+                                </td>
+                                <td>
+                                    <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                    <small class="d-block" data-bind="visible: daysRemaining !== undefined, css: { 'text-danger': daysRemaining < 0, 'text-warning': daysRemaining >= 0 && daysRemaining <= 3, 'text-muted': daysRemaining > 3 }">
+                                        <span data-bind="visible: daysRemaining < 0">(<span data-bind="text: Math.abs(daysRemaining)"></span> gün geçti)</span>
+                                        <span data-bind="visible: daysRemaining === 0">Bugün!</span>
+                                        <span data-bind="visible: daysRemaining > 0">(<span data-bind="text: daysRemaining"></span> gün kaldı)</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
+                                </td>
+                                <td>
+                                    <span data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
+                                        <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
+                                        <span data-bind="visible: yellowCardCount > 0 || redCardCount > 0" class="ms-1">
+                                            <span data-bind="visible: yellowCardCount > 0" class="badge bg-warning text-dark" title="Sarı Kart">
+                                                <i class="bi bi-card-text"></i> <span data-bind="text: yellowCardCount"></span>
+                                            </span>
+                                            <span data-bind="visible: redCardCount > 0" class="badge bg-danger" title="Kırmızı Kart">
+                                                <i class="bi bi-card-text"></i> <span data-bind="text: redCardCount"></span>
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span data-bind="visible: evaluationScore === null || evaluationScore === undefined" class="text-muted">-</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- Evaluate Button -->
+                                        <button type="button" class="btn btn-outline-primary"
+                                                data-bind="click: $parent.openEvaluation, visible: status !== 'Completed' && status !== 'Cancelled'"
+                                                title="Değerlendir">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <!-- View Button -->
+                                        <button type="button" class="btn btn-outline-info"
+                                                data-bind="click: $parent.viewDetail"
+                                                title="Detay">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <!-- QR Code Button -->
+                                        <button type="button" class="btn btn-outline-secondary"
+                                                data-bind="click: $parent.showQRCode"
+                                                title="QR Kod">
+                                            <i class="bi bi-qr-code"></i>
+                                        </button>
+                                        <!-- More Actions Dropdown -->
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Daha Fazla">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
+                                                    <a class="dropdown-item" href="#" data-bind="click: $parent.openReassignModal">
+                                                        <i class="bi bi-person-fill-gear"></i> Yeniden Ata
+                                                    </a>
+                                                </li>
+                                                <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
+                                                    <a class="dropdown-item text-warning" href="#" data-bind="click: $parent.cancelAssignment">
+                                                        <i class="bi bi-x-circle"></i> İptal Et
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bind="click: $parent.copyLink">
+                                                        <i class="bi bi-link-45deg"></i> Link Kopyala
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" data-bind="click: $parent.deleteAssignment">
+                                                        <i class="bi bi-trash"></i> Sil
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Create Modal -->
+    <!-- Create/Edit Modal -->
     <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" data-bind="with: editingAssignment">
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Atama Oluştur</h5>
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-plus"></i>
+                        <span data-bind="text: $parent.isEditing() ? 'Atamayı Düzenle' : 'Yeni Atama Oluştur'"></span>
+                    </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Proje *</label>
-                        <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Proje <span class="text-danger">*</span></label>
+                                <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...', event: { change: $parent.onProjectChange }"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Şube</label>
+                                <select class="form-select" data-bind="value: branchId, options: $parent.projectBranches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz (İsteğe bağlı)...'"></select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Şube *</label>
-                        <select class="form-select" data-bind="value: branchId, options: $parent.availableBranches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">Kontrol Listesi <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: checklistId, options: $parent.projectChecklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Kontrol Listesi *</label>
-                        <select class="form-select" data-bind="value: checklistId, options: $parent.availableChecklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="bi bi-person"></i> Atanacak Kişi
+                        </div>
+                        <div class="card-body">
+                            <!-- Assignment Type Selection -->
+                            <div class="mb-3">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeUser" value="user" data-bind="checked: assignmentType">
+                                    <label class="btn btn-outline-primary" for="assignTypeUser">Kullanıcı</label>
+
+                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeFieldWorker" value="fieldworker" data-bind="checked: assignmentType">
+                                    <label class="btn btn-outline-primary" for="assignTypeFieldWorker">Saha Çalışanı</label>
+
+                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeExternal" value="external" data-bind="checked: assignmentType">
+                                    <label class="btn btn-outline-primary" for="assignTypeExternal">Harici</label>
+                                </div>
+                            </div>
+
+                            <!-- User Selection -->
+                            <div data-bind="visible: assignmentType() === 'user'">
+                                <label class="form-label">Kullanıcı</label>
+                                <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                            </div>
+
+                            <!-- Field Worker Selection -->
+                            <div data-bind="visible: assignmentType() === 'fieldworker'">
+                                <label class="form-label">Saha Çalışanı</label>
+                                <select class="form-select" data-bind="value: assignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                            </div>
+
+                            <!-- External Email -->
+                            <div data-bind="visible: assignmentType() === 'external'">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">E-posta</label>
+                                        <input type="email" class="form-control" placeholder="ornek@email.com" data-bind="value: externalEmail">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ad Soyad</label>
+                                        <input type="text" class="form-control" placeholder="Adı Soyadı" data-bind="value: externalName">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Değerlendirici</label>
-                        <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz (İsteğe bağlı)...'"></select>
-                        <small class="text-muted">Boş bırakılırsa harici değerlendirici için link oluşturulur</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Son Tarih *</label>
-                        <input type="date" class="form-control" data-bind="value: dueDate" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Son Tarih <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" data-bind="value: dueDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Notlar</label>
+                                <textarea class="form-control" rows="2" placeholder="İsteğe bağlı notlar..." data-bind="value: notes"></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">
+                        <i class="bi bi-x"></i> İptal
+                    </button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveAssignment, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-save"></i> Oluştur
+                            <i class="bi bi-save"></i> <span data-bind="text: $parent.isEditing() ? 'Güncelle' : 'Oluştur'"></span>
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Oluşturuluyor...
+                            Kaydediliyor...
                         </span>
                     </button>
                 </div>
@@ -130,35 +424,238 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
+    <!-- Bulk Assignment Modal -->
+    <div class="modal fade" id="bulkAssignmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-collection"></i> Toplu Atama Oluştur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: bulkAssignment">
+                    <div class="mb-3">
+                        <label class="form-label">Proje <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...', event: { change: $parent.onBulkProjectChange }"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Son Tarih <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" data-bind="value: dueDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Her Şube için Atama Sayısı</label>
+                        <input type="number" class="form-control" min="1" max="10" data-bind="value: assignmentsPerBranch">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Atanacak Kullanıcı (İsteğe bağlı)</label>
+                        <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Tüm takıma eşit dağıt...'"></select>
+                        <small class="text-muted">Boş bırakılırsa proje takımına eşit dağıtılır</small>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <span data-bind="visible: $parent.bulkBranchCount() > 0">
+                            Seçilen projede <strong data-bind="text: $parent.bulkBranchCount"></strong> şube bulunmaktadır.
+                            Toplam <strong data-bind="text: $parent.bulkBranchCount() * (assignmentsPerBranch() || 1)"></strong> atama oluşturulacaktır.
+                        </span>
+                        <span data-bind="visible: $parent.bulkBranchCount() === 0">Lütfen bir proje seçin.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: createBulkAssignments, disable: isSaving">
+                        <span data-bind="visible: !isSaving()">
+                            <i class="bi bi-check-circle"></i> Oluştur
+                        </span>
+                        <span data-bind="visible: isSaving">
+                            <span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reassign Modal -->
+    <div class="modal fade" id="reassignModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-fill-gear"></i> Yeniden Ata</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: reassignData">
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Atanan Kişi Türü</label>
+                        <select class="form-select" data-bind="value: newAssigneeType">
+                            <option value="user">Kullanıcı</option>
+                            <option value="fieldworker">Saha Çalışanı</option>
+                            <option value="external">Harici</option>
+                        </select>
+                    </div>
+                    <div data-bind="visible: newAssigneeType() === 'user'" class="mb-3">
+                        <label class="form-label">Kullanıcı</label>
+                        <select class="form-select" data-bind="value: newAssignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                    </div>
+                    <div data-bind="visible: newAssigneeType() === 'fieldworker'" class="mb-3">
+                        <label class="form-label">Saha Çalışanı</label>
+                        <select class="form-select" data-bind="value: newAssignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                    </div>
+                    <div data-bind="visible: newAssigneeType() === 'external'">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-posta</label>
+                                <input type="email" class="form-control" data-bind="value: newExternalEmail">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ad Soyad</label>
+                                <input type="text" class="form-control" data-bind="value: newExternalName">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Son Tarih (İsteğe bağlı)</label>
+                        <input type="date" class="form-control" data-bind="value: newDueDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sebep</label>
+                        <textarea class="form-control" rows="2" placeholder="Yeniden atama sebebi..." data-bind="value: reason"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveReassign, disable: isSaving">
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> Kaydet</span>
+                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Atama Detayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: selectedDetail">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Proje:</strong> <span data-bind="text: projectName"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Şube:</strong> <span data-bind="text: branchName || 'Belirtilmemiş'"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Kontrol Listesi:</strong> <span data-bind="text: checklistName"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Atanan:</strong> <span data-bind="text: assigneeName"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Son Tarih:</strong> <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Durum:</strong> <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3" data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
+                        <div class="col-md-4">
+                            <strong>Puan:</strong> <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Sarı Kart:</strong> <span data-bind="text: yellowCardCount || 0"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Kırmızı Kart:</strong> <span data-bind="text: redCardCount || 0"></span>
+                        </div>
+                    </div>
+                    <div data-bind="visible: evaluatorName" class="mb-3">
+                        <strong>Değerlendiren:</strong> <span data-bind="text: evaluatorName"></span>
+                        <span data-bind="visible: evaluationDate">
+                            - <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleString('tr-TR') : ''"></span>
+                        </span>
+                    </div>
+                    <div data-bind="visible: history && history.length > 0">
+                        <h6><i class="bi bi-clock-history"></i> Geçmiş</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>İşlem</th>
+                                    <th>Yapan</th>
+                                    <th>Not</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: history">
+                                <tr>
+                                    <td data-bind="text: new Date(timestamp).toLocaleString('tr-TR')"></td>
+                                    <td data-bind="text: action"></td>
+                                    <td data-bind="text: performedBy || '-'"></td>
+                                    <td data-bind="text: notes || '-'"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrCodeModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-qr-code"></i> QR Kod</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img data-bind="attr: { src: qrCodeImage }" class="img-fluid mb-3" style="max-width: 200px;">
+                    <p class="small text-muted" data-bind="text: qrCodeLink"></p>
+                    <button class="btn btn-sm btn-outline-primary" data-bind="click: copyQRLink">
+                        <i class="bi bi-clipboard"></i> Linki Kopyala
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Evaluation Modal -->
     <div class="modal fade" id="evaluationModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Değerlendirme Formu</h5>
+                    <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> Değerlendirme Formu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div data-bind="with: $root.selectedEvaluation">
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <strong>Proje:</strong> <span data-bind="text: projectName"></span>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <strong>Şube:</strong> <span data-bind="text: branchName || 'Belirtilmemiş'"></span>
                             </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <strong>Kontrol Listesi:</strong> <span data-bind="text: checklistName"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Durum:</strong> 
-                                <span class="badge" data-bind="css: isCompleted ? 'bg-success' : 'bg-warning', text: isCompleted ? 'Tamamlandı' : 'Bekliyor'"></span>
                             </div>
                         </div>
                         <hr>
-                        <p class="text-muted">Değerlendirme formu detayları burada gösterilecek.</p>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Değerlendirme formu için <a data-bind="attr: { href: '/form/' + uniqueLink }" target="_blank">bu linki</a> kullanabilir veya QR kodu taratabilirsiniz.
+                        </div>
                     </div>
                     <div data-bind="ifnot: $root.selectedEvaluation" class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
@@ -167,9 +664,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                    <button type="button" class="btn btn-primary" data-bind="visible: $root.selectedEvaluation && $root.selectedEvaluation() && !$root.selectedEvaluation().isCompleted">
-                        <i class="bi bi-check-circle"></i> Kaydet
-                    </button>
+                    <a class="btn btn-primary" data-bind="attr: { href: selectedEvaluation() ? '/form/' + selectedEvaluation().uniqueLink : '#' }" target="_blank">
+                        <i class="bi bi-box-arrow-up-right"></i> Formu Aç
+                    </a>
                 </div>
             </div>
         </div>

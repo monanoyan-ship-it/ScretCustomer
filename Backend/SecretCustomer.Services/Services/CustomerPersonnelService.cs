@@ -167,6 +167,21 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         await _personnelRepository.UpdateAsync(personnel);
     }
 
+    public async Task ResetPasswordAsync(Guid personnelId, AdminResetPasswordDto resetPasswordDto)
+    {
+        var personnel = await _personnelRepository.GetByIdAsync(personnelId);
+        if (personnel == null)
+        {
+            throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelId})");
+        }
+
+        // Admin reset - no old password verification needed
+        personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
+        personnel.UpdatedAt = DateTime.UtcNow;
+
+        await _personnelRepository.UpdateAsync(personnel);
+    }
+
     private static CustomerPersonnelDto MapToDto(CustomerPersonnel personnel)
     {
         return new CustomerPersonnelDto

@@ -1,0 +1,276 @@
+@{
+    ViewData["Title"] = "Vekalet Yönetimi";
+}
+
+<div id="delegations-app">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-arrow-left-right me-2"></i>Vekalet Yönetimi
+        </h2>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle me-1"></i>Yeni Vekalet
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" placeholder="Başlık, kullanıcı adı..."
+                           data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Vekalet Tipi</label>
+                    <select class="form-select" data-bind="value: filter.delegationType">
+                        <option value="">Tümü</option>
+                        <option value="0">Tam Yetki</option>
+                        <option value="1">Salt Okuma</option>
+                        <option value="2">Sadece Onay</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Onay Durumu</label>
+                    <select class="form-select" data-bind="value: filter.isApproved">
+                        <option value="">Tümü</option>
+                        <option value="true">Onaylı</option>
+                        <option value="false">Onay Bekliyor</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.isCurrent">
+                        <option value="">Tümü</option>
+                        <option value="true">Aktif (Şu an geçerli)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary" data-bind="click: loadDelegations">
+                        <i class="bi bi-search me-1"></i>Filtrele
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-lg me-1"></i>Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Vekaletler yükleniyor...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Delegations Table -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">
+                        Toplam <strong data-bind="text: paginationInfo().totalCount"></strong> vekalet
+                    </span>
+                </div>
+
+                <!-- Empty State -->
+                <div data-bind="visible: delegations().length === 0" class="text-center py-5">
+                    <i class="bi bi-arrow-left-right text-muted" style="font-size: 3rem;"></i>
+                    <p class="mt-3 text-muted">Henüz vekalet kaydı bulunmamaktadır.</p>
+                </div>
+
+                <!-- Table -->
+                <div data-bind="visible: delegations().length > 0" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Başlık</th>
+                                <th>Vekalet Veren</th>
+                                <th>Vekalet Alan</th>
+                                <th>Tarih Aralığı</th>
+                                <th>Tip</th>
+                                <th>Sebep</th>
+                                <th>Durum</th>
+                                <th style="width: 150px;">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: delegations">
+                            <tr>
+                                <td>
+                                    <div class="fw-medium" data-bind="text: title || 'Vekalet'"></div>
+                                    <small class="text-muted" data-bind="text: description || ''"></small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="bi bi-person text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <div data-bind="text: delegatorUserName"></div>
+                                            <small class="text-muted" data-bind="text: delegatorOrganizationUnitName || ''"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="bi bi-person-check text-success"></i>
+                                        </div>
+                                        <div>
+                                            <div data-bind="text: delegateeUserName"></div>
+                                            <small class="text-muted" data-bind="text: delegateeOrganizationUnitName || ''"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div data-bind="text: formatDate(startDate)"></div>
+                                    <small class="text-muted" data-bind="text: endDate ? '- ' + formatDate(endDate) : 'Süresiz'"></small>
+                                </td>
+                                <td><span class="badge bg-primary" data-bind="text: delegationTypeName"></span></td>
+                                <td><span class="badge bg-secondary" data-bind="text: reasonName"></span></td>
+                                <td>
+                                    <span class="badge" data-bind="css: getStatusClass(status), text: status"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-success" title="Onayla" data-bind="visible: !isApproved, click: $parent.approveDelegation">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary" title="Düzenle" data-bind="click: $parent.editDelegation">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Sil" data-bind="click: $parent.deleteDelegation">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div data-bind="visible: paginationInfo().totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted">
+                        Sayfa <span data-bind="text: filter.page"></span> / <span data-bind="text: paginationInfo().totalPages"></span>
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasPreviousPage }">
+                                <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                            </li>
+                            <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasNextPage }">
+                                <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="delegationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingDelegation">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-left-right me-2"></i>
+                        <span data-bind="visible: !id">Yeni Vekalet</span>
+                        <span data-bind="visible: id">Vekalet Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Vekalet Başlığı</label>
+                            <input type="text" class="form-control" data-bind="value: title" placeholder="Örn: Yıllık İzin Vekaleti">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vekalet Tipi</label>
+                            <select class="form-select" data-bind="value: delegationType">
+                                <option value="0">Tam Yetki</option>
+                                <option value="1">Salt Okuma</option>
+                                <option value="2">Sadece Onay</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <textarea class="form-control" rows="2" data-bind="value: description" placeholder="Vekalet açıklaması..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vekalet Veren <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: delegatorUserId, options: $parent.users, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vekalet Alan <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: delegateeUserId, options: $parent.users, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Başlangıç Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: startDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" data-bind="value: endDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sebep</label>
+                            <select class="form-select" data-bind="value: reason">
+                                <option value="0">Yıllık İzin</option>
+                                <option value="1">Hastalık İzni</option>
+                                <option value="2">İş Seyahati</option>
+                                <option value="3">Eğitim</option>
+                                <option value="4">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Durum</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" class="form-check-input" id="delegationIsActive" data-bind="checked: isActive">
+                                <label class="form-check-label" for="delegationIsActive">Aktif</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notlar</label>
+                            <textarea class="form-control" rows="2" data-bind="value: notes" placeholder="Ek notlar..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveDelegation, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-check-lg me-1"></i>Kaydet
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Organization/Delegations.js"></script>
+}

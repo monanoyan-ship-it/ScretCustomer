@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
+    <!-- Create/Edit Modal - 4 Adımlı Wizard -->
 <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content" data-bind="with: editingChecklist">
@@ -84,116 +84,390 @@
                 <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-9 mb-3">
-                        <label class="form-label">Kontrol Listesi Adı *</label>
-                        <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: Restoran Hijyen Kontrol Listesi" />
+                <!-- Wizard Steps -->
+                <ul class="nav nav-pills nav-justified mb-4" data-bind="with: $parent">
+                    <li class="nav-item">
+                        <a class="nav-link" data-bind="css: { active: wizardStep() === 1 }, click: function() { wizardStep(1); }">
+                            <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': wizardStep() === 1, 'bg-secondary': wizardStep() !== 1 }">1</span>
+                            Genel Bilgiler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bind="css: { active: wizardStep() === 2 }, click: function() { wizardStep(2); }">
+                            <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': wizardStep() === 2, 'bg-secondary': wizardStep() !== 2 }">2</span>
+                            Kontrol Listesi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bind="css: { active: wizardStep() === 3 }, click: function() { wizardStep(3); }">
+                            <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': wizardStep() === 3, 'bg-secondary': wizardStep() !== 3 }">3</span>
+                            Denetim Ayarları
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bind="css: { active: wizardStep() === 4 }, click: function() { wizardStep(4); }">
+                            <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': wizardStep() === 4, 'bg-secondary': wizardStep() !== 4 }">4</span>
+                            Özet
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Step 1: Genel Bilgiler -->
+                <div data-bind="visible: $parent.wizardStep() === 1">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-info-circle"></i> Genel Bilgiler</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kontrol Listesi Adı *</label>
+                            <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: Çağrı Performans Değerlendirmesi" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">K.L. Kodu</label>
+                            <input type="text" class="form-control" data-bind="value: code" placeholder="KL-001" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Versiyon</label>
+                            <input type="number" class="form-control" data-bind="value: version" min="1" />
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Versiyon</label>
-                        <input type="number" class="form-control" data-bind="value: version" min="1" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Şablon Adı</label>
+                            <input type="text" class="form-control" data-bind="value: templateName" placeholder="Çağrı Performans" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">K.L. Tipi</label>
+                            <select class="form-select" data-bind="value: checklistType">
+                                <option value="CallPerformance">Çağrı Performans</option>
+                                <option value="PhysicalAudit">Fiziksel Denetim</option>
+                                <option value="MysteryShopping">Gizli Müşteri</option>
+                                <option value="OnlineEvaluation">Online Değerlendirme</option>
+                                <option value="Survey">Anket</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Puanlama Yöntemi</label>
+                            <select class="form-select" data-bind="value: scoringMethod">
+                                <option value="Maximum">Maksimum</option>
+                                <option value="Average">Ortalama</option>
+                                <option value="WeightedAverage">Ağırlıklı Ortalama</option>
+                                <option value="Sum">Toplam</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Açıklama</label>
-                    <textarea class="form-control" data-bind="value: description" rows="2" placeholder="Kontrol listesi hakkında kısa açıklama..."></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" data-bind="value: description" rows="2" placeholder="Kontrol listesi hakkında kısa açıklama..."></textarea>
+                    </div>
 
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
-                    <label class="form-check-label" for="isActive">Aktif</label>
-                </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Maks. Toplam Puan</label>
+                            <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tahmini Süre (dk)</label>
+                            <input type="number" class="form-control" data-bind="value: estimatedDurationMinutes" min="0" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Geçerlilik Başlangıç</label>
+                            <input type="date" class="form-control" data-bind="value: validFrom" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Geçerlilik Bitiş</label>
+                            <input type="date" class="form-control" data-bind="value: validUntil" />
+                        </div>
+                    </div>
 
-                <hr>
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6>Bölümler ve Sorular</h6>
-                    <button type="button" class="btn btn-sm btn-success" data-bind="click: $parent.addSection">
-                        <i class="bi bi-plus-circle"></i> Bölüm Ekle
-                    </button>
-                </div>
-
-                <!-- Sections -->
-                <div data-bind="foreach: sections">
-                    <div class="card mb-3">
-                        <div class="card-header bg-light">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <input type="text" class="form-control form-control-sm w-50" data-bind="value: name" placeholder="Bölüm adı" />
-                                <div>
-                                    <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parents[1].addQuestion">
-                                        <i class="bi bi-plus"></i> Soru Ekle
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parents[1].removeSection">
-                                        <i class="bi bi-trash"></i> Sil
-                                    </button>
-                                </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" data-bind="checked: isScored" id="isScored" />
+                                <label class="form-check-label" for="isScored">Puanlı</label>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div data-bind="visible: questions().length === 0" class="text-muted text-center py-3">
-                                Bu bölümde henüz soru bulunmamaktadır.
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
+                                <label class="form-check-label" for="isActive">Aktif</label>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Questions -->
-                            <div data-bind="foreach: questions">
-                                <div class="border rounded p-3 mb-2">
-                                    <div class="row">
-                                        <div class="col-md-8 mb-2">
-                                            <label class="form-label">Soru Metni</label>
-                                            <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="Soru metni" />
-                                        </div>
-                                        <div class="col-md-2 mb-2">
-                                            <label class="form-label">Puan</label>
-                                            <input type="number" class="form-control form-control-sm" data-bind="value: points" min="0" />
-                                        </div>
-                                        <div class="col-md-2 mb-2">
-                                            <label class="form-label">Sıra</label>
-                                            <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
-                                        </div>
+                <!-- Step 2: Kontrol Listesi (Bölümler ve Sorular) -->
+                <div data-bind="visible: $parent.wizardStep() === 2">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="border-bottom pb-2 mb-0"><i class="bi bi-list-check"></i> Kontrol Grupları ve Sorular</h6>
+                        <button type="button" class="btn btn-sm btn-success" data-bind="click: $parent.addSection">
+                            <i class="bi bi-plus-circle"></i> Grup Ekle
+                        </button>
+                    </div>
+
+                    <!-- Sections -->
+                    <div data-bind="foreach: sections">
+                        <div class="card mb-3">
+                            <div class="card-header" data-bind="css: { 'bg-light': groupType() === 'Scored', 'bg-warning': groupType() === 'Penalty', 'bg-secondary text-white': groupType() === 'Unscored' }">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control form-control-sm" data-bind="value: name" placeholder="Grup adı" />
                                     </div>
+                                    <div class="col-md-2">
+                                        <select class="form-select form-select-sm" data-bind="value: groupType">
+                                            <option value="Scored">Puanlı</option>
+                                            <option value="Unscored">Puansız</option>
+                                            <option value="Penalty">Cezalı</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" placeholder="Ağırlık" title="Ağırlık Puanı" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" placeholder="Maks" title="Maks Puan" />
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parents[1].addQuestion">
+                                            <i class="bi bi-plus"></i> Soru
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parents[1].removeSection">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div data-bind="visible: questions().length === 0" class="text-muted text-center py-3">
+                                    Bu grupta henüz soru bulunmamaktadır.
+                                </div>
 
-                                    <div class="row">
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label">Tip</label>
-                                            <select class="form-select form-select-sm" data-bind="value: type">
-                                                <option value="YesNo">Evet/Hayır</option>
-                                                <option value="Rating">Puanlama (1-5)</option>
-                                                <option value="Text">Metin</option>
-                                                <option value="MultipleChoice">Çoktan Seçmeli</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-2" data-bind="visible: type() === 'MultipleChoice'">
-                                            <label class="form-label">Seçenekler (virgülle ayırın)</label>
-                                            <input type="text" class="form-control form-control-sm" data-bind="value: options" placeholder="Seçenek1, Seçenek2" />
-                                        </div>
-                                        <div class="col-md-2 mb-2">
-                                            <label class="form-label d-block">&nbsp;</label>
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input" data-bind="checked: allowNA, attr: { id: 'na-' + $index() }" />
-                                                <label class="form-check-label" data-bind="attr: { for: 'na-' + $index() }">N/A İzin Ver</label>
+                                <!-- Questions -->
+                                <div data-bind="foreach: questions">
+                                    <div class="border rounded p-3 mb-2" data-bind="css: { 'border-warning': penaltyType() === 'YellowCard', 'border-danger': penaltyType() === 'RedCard' }">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Soru Metni</label>
+                                                <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="Soru metni" />
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Tip</label>
+                                                <select class="form-select form-select-sm" data-bind="value: type">
+                                                    <option value="Likert">Likert (1-5)</option>
+                                                    <option value="Star">Yıldız (1-5)</option>
+                                                    <option value="MultipleChoice">Çoktan Seçmeli</option>
+                                                    <option value="Text">Metin</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Puanlama</label>
+                                                <select class="form-select form-select-sm" data-bind="value: scoringType">
+                                                    <option value="Scored">Puanlı</option>
+                                                    <option value="Unscored">Puansız</option>
+                                                    <option value="Penalty">Cezalı</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
+                                                <label class="form-label">Ceza Tipi</label>
+                                                <select class="form-select form-select-sm" data-bind="value: penaltyType">
+                                                    <option value="None">Yok</option>
+                                                    <option value="YellowCard">Sarı Kart</option>
+                                                    <option value="RedCard">Kırmızı Kart</option>
+                                                </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2 mb-2">
-                                            <label class="form-label d-block">&nbsp;</label>
-                                            <button type="button" class="btn btn-sm btn-danger w-100" data-bind="click: $parents[2].removeQuestion">
-                                                <i class="bi bi-trash"></i> Sil
-                                            </button>
+
+                                        <div class="row">
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Ağırlık</label>
+                                                <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" />
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Maks Puan</label>
+                                                <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" min="0" />
+                                            </div>
+                                            <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
+                                                <label class="form-label">Ceza Değeri</label>
+                                                <input type="number" class="form-control form-control-sm" data-bind="value: penaltyValue" min="0" />
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label">Sıra</label>
+                                                <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label d-block">&nbsp;</label>
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" data-bind="checked: allowNA" />
+                                                    <label class="form-check-label">N/A</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2 mb-2">
+                                                <label class="form-label d-block">&nbsp;</label>
+                                                <button type="button" class="btn btn-sm btn-danger w-100" data-bind="click: $parents[2].removeQuestion">
+                                                    <i class="bi bi-trash"></i> Sil
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Önerilen Açıklama</label>
+                                                <input type="text" class="form-control form-control-sm" data-bind="value: recommendedNote" placeholder="Değerlendirici için öneri" />
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Yardımcı Metin</label>
+                                                <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="Soru hakkında ipucu" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Dosya Ekleri -->
+                                        <div class="row mt-2" data-bind="visible: id">
+                                            <div class="col-12">
+                                                <label class="form-label"><i class="bi bi-paperclip"></i> Dosya Ekleri</label>
+
+                                                <!-- Mevcut Dosyalar -->
+                                                <div class="mb-2" data-bind="visible: attachments && attachments().length > 0">
+                                                    <div class="list-group list-group-flush" data-bind="foreach: attachments">
+                                                        <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
+                                                            <div>
+                                                                <i class="bi bi-file-earmark me-1"></i>
+                                                                <a data-bind="attr: { href: downloadUrl || ('/api/question-attachments/' + id + '/download') }, text: fileName" target="_blank" class="text-decoration-none"></a>
+                                                                <small class="text-muted ms-2" data-bind="text: fileSizeFormatted || ''"></small>
+                                                            </div>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger py-0" data-bind="click: function() { $parents[3].removeQuestionAttachment($data, $parent); }">
+                                                                <i class="bi bi-x"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Dosya Yükleme -->
+                                                <div class="input-group input-group-sm">
+                                                    <input type="file" class="form-control form-control-sm" data-bind="attr: { id: 'file-' + (id || 'new') }, event: { change: function(data, event) { $parents[2].uploadQuestionAttachment($data, event.target); } }" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+                                                    <span class="input-group-text" data-bind="visible: isUploadingFile && isUploadingFile()">
+                                                        <span class="spinner-border spinner-border-sm"></span>
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">Maks 10MB. İzin verilen: jpg, png, gif, pdf, doc, docx, xls, xlsx, txt</small>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2" data-bind="visible: !id">
+                                            <div class="col-12">
+                                                <small class="text-muted"><i class="bi bi-info-circle"></i> Dosya eklemek için önce kontrol listesini kaydedin.</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div data-bind="visible: sections().length === 0" class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Henüz grup eklenmemiş. Lütfen en az bir grup ve soru ekleyin.
+                    </div>
                 </div>
 
-                <div data-bind="visible: sections().length === 0" class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle"></i> Henüz bölüm eklenmemiş. Lütfen en az bir bölüm ve soru ekleyin.
+                <!-- Step 3: Denetim Ayarları -->
+                <div data-bind="visible: $parent.wizardStep() === 3">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-gear"></i> Denetim Ayarları</h6>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Denetim ayarları, değerlendirme sırasında kullanılacak ek yapılandırmaları içerir.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> Sarı Kart Kriterleri
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Sarı kart verilmesi gereken durumlar kontrol grubunda "Cezalı" tip ile tanımlanır.</p>
+                                    <ul class="list-unstyled" data-bind="foreach: sections">
+                                        <!-- ko foreach: questions -->
+                                        <!-- ko if: penaltyType() === 'YellowCard' -->
+                                        <li><i class="bi bi-check text-warning"></i> <span data-bind="text: text"></span></li>
+                                        <!-- /ko -->
+                                        <!-- /ko -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-danger text-white">
+                                    <i class="bi bi-x-circle"></i> Kırmızı Kart Kriterleri
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Kırmızı kart verilmesi gereken durumlar kontrol grubunda "Cezalı" tip ile tanımlanır.</p>
+                                    <ul class="list-unstyled" data-bind="foreach: sections">
+                                        <!-- ko foreach: questions -->
+                                        <!-- ko if: penaltyType() === 'RedCard' -->
+                                        <li><i class="bi bi-x text-danger"></i> <span data-bind="text: text"></span></li>
+                                        <!-- /ko -->
+                                        <!-- /ko -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Özet -->
+                <div data-bind="visible: $parent.wizardStep() === 4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-clipboard-check"></i> Özet Bilgiler</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr><th>Kontrol Listesi Adı:</th><td data-bind="text: name"></td></tr>
+                                <tr><th>Kod:</th><td data-bind="text: code || '-'"></td></tr>
+                                <tr><th>Şablon:</th><td data-bind="text: templateName || '-'"></td></tr>
+                                <tr><th>Tip:</th><td data-bind="text: checklistType"></td></tr>
+                                <tr><th>Puanlama Yöntemi:</th><td data-bind="text: scoringMethod"></td></tr>
+                                <tr><th>Maks. Puan:</th><td data-bind="text: maxTotalPoints"></td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr><th>Toplam Grup:</th><td data-bind="text: sections().length"></td></tr>
+                                <tr><th>Toplam Soru:</th><td data-bind="text: $parent.getTotalQuestions()"></td></tr>
+                                <tr><th>Sarı Kart Sorusu:</th><td data-bind="text: $parent.getYellowCardCount()"></td></tr>
+                                <tr><th>Kırmızı Kart Sorusu:</th><td data-bind="text: $parent.getRedCardCount()"></td></tr>
+                                <tr><th>Tahmini Süre:</th><td><span data-bind="text: estimatedDurationMinutes || '-'"></span> dk</td></tr>
+                                <tr><th>Durum:</th><td><span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4">Grup ve Soru Özeti</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Grup Adı</th>
+                                    <th>Tip</th>
+                                    <th>Ağırlık</th>
+                                    <th>Soru Sayısı</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: sections">
+                                <tr>
+                                    <td data-bind="text: name"></td>
+                                    <td><span class="badge" data-bind="css: { 'bg-success': groupType() === 'Scored', 'bg-warning': groupType() === 'Penalty', 'bg-secondary': groupType() === 'Unscored' }, text: groupType"></span></td>
+                                    <td data-bind="text: weightPoints"></td>
+                                    <td data-bind="text: questions().length"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
-                <button type="button" class="btn btn-primary" data-bind="click: $parent.saveChecklist, disable: $parent.isSaving">
+                <button type="button" class="btn btn-outline-primary" data-bind="visible: $parent.wizardStep() > 1, click: $parent.prevStep">
+                    <i class="bi bi-arrow-left"></i> Geri
+                </button>
+                <button type="button" class="btn btn-primary" data-bind="visible: $parent.wizardStep() < 4, click: $parent.nextStep">
+                    İleri <i class="bi bi-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-success" data-bind="visible: $parent.wizardStep() === 4, click: $parent.saveChecklist, disable: $parent.isSaving">
                     <span data-bind="visible: !$parent.isSaving()">
                         <i class="bi bi-save"></i> Kaydet
                     </span>

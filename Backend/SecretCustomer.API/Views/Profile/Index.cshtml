@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div id="profile-app">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-person-circle me-2"></i>Profilim
+        </h2>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Profil yükleniyor...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Profile Content -->
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Profile Info Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <h4 data-bind="text: profile().fullName" class="mb-1"></h4>
+                    <p class="text-muted mb-2" data-bind="text: profile().username"></p>
+                    <span class="badge bg-primary" data-bind="text: getRoleText(profile().role)"></span>
+
+                    <hr class="my-4">
+
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">E-posta</small>
+                            <span data-bind="text: profile().email || '-'"></span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Telefon</small>
+                            <span data-bind="text: profile().phoneNumber || '-'"></span>
+                        </div>
+                        <div class="mb-3" data-bind="visible: profile().branchName">
+                            <small class="text-muted d-block">Şube</small>
+                            <span data-bind="text: profile().branchName"></span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Kayıt Tarihi</small>
+                            <span data-bind="text: formatDate(profile().createdAt)"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile & Change Password -->
+        <div class="col-lg-8">
+            <!-- Edit Profile Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>Profil Bilgilerini Düzenle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form data-bind="submit: updateProfile">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ad <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: editForm.firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Soyad <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: editForm.lastName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-posta</label>
+                                <input type="email" class="form-control" data-bind="value: editForm.email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" data-bind="value: editForm.phoneNumber" placeholder="0532 123 45 67">
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary" data-bind="disable: isSaving">
+                                <span data-bind="visible: !isSaving()">
+                                    <i class="bi bi-check-lg me-1"></i>Kaydet
+                                </span>
+                                <span data-bind="visible: isSaving">
+                                    <span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key me-2"></i>Şifre Değiştir
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form data-bind="submit: changePassword">
+                        <div class="mb-3">
+                            <label class="form-label">Mevcut Şifre <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: passwordForm.currentPassword, attr: { type: showCurrentPassword() ? 'text' : 'password' }" required>
+                                <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showCurrentPassword(!showCurrentPassword()); }">
+                                    <i data-bind="css: showCurrentPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Yeni Şifre <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: passwordForm.newPassword, attr: { type: showNewPassword() ? 'text' : 'password' }" required minlength="6">
+                                <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showNewPassword(!showNewPassword()); }">
+                                    <i data-bind="css: showNewPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">En az 6 karakter</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Yeni Şifre (Tekrar) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: passwordForm.confirmPassword, attr: { type: showConfirmPassword() ? 'text' : 'password' }" required>
+                                <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showConfirmPassword(!showConfirmPassword()); }">
+                                    <i data-bind="css: showConfirmPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                </button>
+                            </div>
+                            <small class="text-danger" data-bind="visible: passwordForm.newPassword() && passwordForm.confirmPassword() && passwordForm.newPassword() !== passwordForm.confirmPassword()">
+                                Şifreler eşleşmiyor
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-warning" data-bind="disable: isChangingPassword() || (passwordForm.newPassword() !== passwordForm.confirmPassword())">
+                                <span data-bind="visible: !isChangingPassword()">
+                                    <i class="bi bi-key me-1"></i>Şifreyi Değiştir
+                                </span>
+                                <span data-bind="visible: isChangingPassword">
+                                    <span class="spinner-border spinner-border-sm me-1"></span>Değiştiriliyor...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Profile/Index.js"></script>
+}

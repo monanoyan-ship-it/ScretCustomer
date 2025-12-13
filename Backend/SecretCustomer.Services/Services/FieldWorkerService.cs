@@ -93,7 +93,10 @@ public class FieldWorkerService : IFieldWorkerService
         };
 
         var createdFieldWorker = await _fieldWorkerRepository.CreateAsync(fieldWorker);
-        return MapToDto(createdFieldWorker);
+
+        // Reload with User navigation property
+        var reloadedFieldWorker = await _fieldWorkerRepository.GetByIdAsync(createdFieldWorker.Id);
+        return MapToDto(reloadedFieldWorker!);
     }
 
     public async Task<FieldWorkerDto> UpdateAsync(Guid id, UpdateFieldWorkerDto updateDto)
@@ -150,8 +153,11 @@ public class FieldWorkerService : IFieldWorkerService
             }
         }
 
-        var updatedFieldWorker = await _fieldWorkerRepository.UpdateAsync(fieldWorker);
-        return MapToDto(updatedFieldWorker);
+        await _fieldWorkerRepository.UpdateAsync(fieldWorker);
+
+        // Reload with User navigation property
+        var reloadedFieldWorker = await _fieldWorkerRepository.GetByIdAsync(id);
+        return MapToDto(reloadedFieldWorker!);
     }
 
     public async Task DeleteAsync(Guid id)

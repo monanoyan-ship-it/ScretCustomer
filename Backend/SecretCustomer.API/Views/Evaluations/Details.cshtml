@@ -1,0 +1,400 @@
+@{
+    ViewData["Title"] = "Degerlendirme Detayi";
+    var evaluationId = ViewBag.EvaluationId as Guid?;
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+}
+
+<div id="evaluation-details-app">
+    <!-- Loading State -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yukleniyor...</span>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span data-bind="text: errorMessage"></span>
+    </div>
+
+    <!-- Main Content -->
+    <div data-bind="visible: !isLoading() && evaluation()">
+        <!-- Header -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span data-bind="text: evaluation().checklistName || 'Degerlendirme'"></span>
+                        </h4>
+                        <small data-bind="text: (evaluation().projectName || '') + ' - ' + (evaluation().branchName || '')"></small>
+                    </div>
+                    <div>
+                        <a href="/Evaluations" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-left"></i> Geri
+                        </a>
+                        <button class="btn btn-light btn-sm ms-2" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Yazdir
+                        </button>
+                        @if (isAdmin)
+                        {
+                            <!-- Admin: Taslaga Al Butonu -->
+                            <button class="btn btn-warning btn-sm ms-2"
+                                    data-bind="visible: evaluation() && evaluation().status !== 'Draft', click: showRevertModal">
+                                <i class="bi bi-arrow-counterclockwise"></i> Taslaga Al
+                            </button>
+                            <!-- Admin: Iptal Et Butonu -->
+                            <button class="btn btn-danger btn-sm ms-2"
+                                    data-bind="visible: evaluation() && evaluation().status !== 'Cancelled', click: showCancelModal">
+                                <i class="bi bi-x-circle"></i> Iptal Et
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="mb-0" data-bind="text: (evaluation().scorePercentage || 0).toFixed(1) + '%', css: evaluation().scorePercentage >= 70 ? 'text-success' : (evaluation().scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                        <small class="text-muted">Toplam Puan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="mb-0 text-primary" data-bind="text: (evaluation().totalScore || 0).toFixed(1) + ' / ' + (evaluation().maxScore || 0).toFixed(1)"></h2>
+                        <small class="text-muted">Ham Puan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-warning">
+                    <div class="card-body">
+                        <h2 class="mb-0" data-bind="text: evaluation().yellowCardCount || 0"></h2>
+                        <small>Sari Kart</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-danger text-white">
+                    <div class="card-body">
+                        <h2 class="mb-0" data-bind="text: evaluation().redCardCount || 0"></h2>
+                        <small>Kirmizi Kart</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="bi bi-telephone"></i> Cagri Bilgileri</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tr>
+                                <th style="width: 40%;">Cagri ID</th>
+                                <td data-bind="text: evaluation().callId || '-'"></td>
+                            </tr>
+                            <tr>
+                                <th>Cagri Tarihi</th>
+                                <td data-bind="text: evaluation().callDate ? new Date(evaluation().callDate).toLocaleDateString('tr-TR') : '-'"></td>
+                            </tr>
+                            <tr>
+                                <th>Sure</th>
+                                <td><span data-bind="text: evaluation().durationMinutes || '-'"></span> dakika</td>
+                            </tr>
+                            <tr>
+                                <th>Kontrol Saati</th>
+                                <td data-bind="text: evaluation().controlTime || '-'"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="bi bi-person"></i> Degerlendirme Bilgileri</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tr>
+                                <th style="width: 40%;">Degerlendiren</th>
+                                <td data-bind="text: evaluation().evaluatorName || '-'"></td>
+                            </tr>
+                            <tr>
+                                <th>Degerlendirilen</th>
+                                <td data-bind="text: evaluation().evaluatedPersonnelName || evaluation().evaluatedUnknownPersonnel || '-'"></td>
+                            </tr>
+                            <tr>
+                                <th>Tamamlanma</th>
+                                <td data-bind="text: evaluation().completedAt ? new Date(evaluation().completedAt).toLocaleString('tr-TR') : '-'"></td>
+                            </tr>
+                            <tr>
+                                <th>Durum</th>
+                                <td><span class="badge bg-success" data-bind="text: evaluation().status"></span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Comment -->
+        <div class="card mb-4" data-bind="visible: evaluation().evaluationComment">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-chat-quote"></i> Denetim Yorumu</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0" data-bind="text: evaluation().evaluationComment"></p>
+            </div>
+        </div>
+
+        <!-- Answers -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="bi bi-list-check"></i> Cevaplar</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 45%;">Soru</th>
+                            <th style="width: 20%;">Cevap</th>
+                            <th style="width: 15%;">Puan</th>
+                            <th style="width: 15%;">Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: evaluation().answers">
+                        <tr>
+                            <td>
+                                <span data-bind="text: (sectionOrder || 1) + '.' + (questionOrder || 1)"></span>
+                            </td>
+                            <td>
+                                <strong data-bind="text: questionText"></strong>
+                                <!-- ko if: notes -->
+                                <br><small class="text-muted"><i class="bi bi-sticky"></i> <span data-bind="text: notes"></span></small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: isNA -->
+                                <span class="badge bg-secondary">N/A</span>
+                                <!-- /ko -->
+                                <!-- ko if: !isNA && answerNumeric -->
+                                <span class="badge bg-primary" data-bind="text: answerNumeric + '/5'"></span>
+                                <!-- /ko -->
+                                <!-- ko if: !isNA && answerText -->
+                                <span data-bind="text: answerText"></span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: !isNA -->
+                                <span data-bind="text: (givenPoints || earnedPoints || 0).toFixed(1)"></span>
+                                / <span data-bind="text: (maxPoints || 0).toFixed(1)"></span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: isPenaltyApplied -->
+                                <span class="badge" data-bind="css: appliedPenaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: appliedPenaltyType === 'YellowCard' ? 'Sari Kart' : 'Kirmizi Kart'"></span>
+                                <!-- /ko -->
+                                <!-- ko if: !isPenaltyApplied && !isNA -->
+                                <i class="bi bi-check-circle text-success"></i>
+                                <!-- /ko -->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Taslaga Al Modal -->
+<div class="modal fade" id="revertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-arrow-counterclockwise"></i> Taslaga Al</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bu degerlendirmeyi taslaga almak istediginizden emin misiniz?</p>
+                <p class="text-muted small">Taslaga alinan degerlendirme yeniden duzenlenebilir ve kapatilabilir.</p>
+                <div class="mb-3">
+                    <label class="form-label">Neden (istege bagli)</label>
+                    <textarea class="form-control" id="revertReason" rows="2" placeholder="Taslaga alma nedeninizi yazin..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgec</button>
+                <button type="button" class="btn btn-warning" data-bind="click: revertToDraft">
+                    <i class="bi bi-arrow-counterclockwise"></i> Taslaga Al
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Iptal Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Degerlendirmeyi Iptal Et</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bu degerlendirmeyi iptal etmek istediginizden emin misiniz?</p>
+                <p class="text-danger small"><strong>Uyari:</strong> Iptal edilen degerlendirmeler geri alinamaz.</p>
+                <div class="mb-3">
+                    <label class="form-label">Iptal nedeni <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="cancelReason" rows="2" placeholder="Iptal nedeninizi yazin..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgec</button>
+                <button type="button" class="btn btn-danger" data-bind="click: cancelEvaluation">
+                    <i class="bi bi-x-circle"></i> Iptal Et
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var evaluationId = '@(evaluationId?.ToString() ?? "")';
+        var isAdmin = @(isAdmin.ToString().ToLower());
+
+        function EvaluationDetailsViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.errorMessage = ko.observable('');
+            self.evaluation = ko.observable(null);
+            self.revertModal = null;
+            self.cancelModal = null;
+
+            self.loadEvaluation = function() {
+                if (!evaluationId) {
+                    self.errorMessage('Degerlendirme ID bulunamadi.');
+                    self.isLoading(false);
+                    return;
+                }
+
+                fetch('/api/evaluations/' + evaluationId, { credentials: 'include' })
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Degerlendirme bulunamadi');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        self.evaluation(data);
+                    })
+                    .catch(function(error) {
+                        console.error('Load error:', error);
+                        self.errorMessage('Degerlendirme yuklenirken bir hata olustu.');
+                    })
+                    .finally(function() {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Modal acma fonksiyonlari
+            self.showRevertModal = function() {
+                if (!self.revertModal) {
+                    self.revertModal = new bootstrap.Modal(document.getElementById('revertModal'));
+                }
+                document.getElementById('revertReason').value = '';
+                self.revertModal.show();
+            };
+
+            self.showCancelModal = function() {
+                if (!self.cancelModal) {
+                    self.cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+                }
+                document.getElementById('cancelReason').value = '';
+                self.cancelModal.show();
+            };
+
+            // Taslaga Al
+            self.revertToDraft = function() {
+                var reason = document.getElementById('revertReason').value;
+
+                fetch('/api/evaluations/' + evaluationId + '/revert-to-draft', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ reason: reason })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.message || 'Bir hata olustu');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.revertModal.hide();
+                    alert('Degerlendirme basariyla taslaga alindi.');
+                    self.evaluation(data.evaluation);
+                })
+                .catch(function(error) {
+                    console.error('Revert error:', error);
+                    alert('Hata: ' + error.message);
+                });
+            };
+
+            // Iptal Et
+            self.cancelEvaluation = function() {
+                var reason = document.getElementById('cancelReason').value;
+
+                if (!reason || reason.trim() === '') {
+                    alert('Lutfen iptal nedenini yazin.');
+                    return;
+                }
+
+                fetch('/api/evaluations/' + evaluationId + '/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ reason: reason })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.message || 'Bir hata olustu');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.cancelModal.hide();
+                    alert('Degerlendirme basariyla iptal edildi.');
+                    self.evaluation(data.evaluation);
+                })
+                .catch(function(error) {
+                    console.error('Cancel error:', error);
+                    alert('Hata: ' + error.message);
+                });
+            };
+
+            self.loadEvaluation();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ko.applyBindings(new EvaluationDetailsViewModel(), document.getElementById('evaluation-details-app'));
+        });
+    </script>
+}

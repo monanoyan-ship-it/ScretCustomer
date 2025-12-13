@@ -190,8 +190,45 @@
                     <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Password Reset Form (Inline) -->
+                    <div data-bind="visible: showChangePasswordModal" class="card border-primary mb-3">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="bi bi-key me-2"></i>Şifre Sıfırla
+                                <span data-bind="if: selectedPersonnelForPassword">
+                                    - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
+                                </span>
+                            </span>
+                            <button type="button" class="btn-close btn-close-white" data-bind="click: cancelChangePassword"></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Yeni Şifre *</label>
+                                    <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter" />
+                                    <small class="text-muted">En az 6 karakter olmalıdır</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Yeni Şifre (Tekrar) *</label>
+                                    <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="Yeni şifreyi tekrar girin" />
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" data-bind="click: resetPassword, disable: isResettingPassword">
+                                    <span data-bind="visible: !isResettingPassword()">
+                                        <i class="bi bi-check-circle me-1"></i>Şifre Sıfırla
+                                    </span>
+                                    <span data-bind="visible: isResettingPassword">
+                                        <span class="spinner-border spinner-border-sm me-1"></span>Sıfırlanıyor...
+                                    </span>
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">İptal</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Personnel Actions -->
-                    <div class="d-flex justify-content-between mb-3">
+                    <div data-bind="visible: !showChangePasswordModal()" class="d-flex justify-content-between mb-3">
                         <div class="input-group w-50">
                             <input type="text" class="form-control" placeholder="Personel ara..." data-bind="value: personnelSearchText, valueUpdate: 'input'" />
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -202,12 +239,12 @@
                     </div>
 
                     <!-- Personnel Loading -->
-                    <div data-bind="visible: isLoadingPersonnel" class="text-center py-3">
+                    <div data-bind="visible: isLoadingPersonnel() && !showChangePasswordModal()" class="text-center py-3">
                         <div class="spinner-border text-primary"></div>
                     </div>
 
                     <!-- Personnel Table -->
-                    <div data-bind="visible: !isLoadingPersonnel()">
+                    <div data-bind="visible: !isLoadingPersonnel() && !showChangePasswordModal()">
                         <div data-bind="visible: filteredPersonnel().length === 0" class="alert alert-info">
                             <i class="bi bi-info-circle"></i> Bu müşteriye ait personel bulunmamaktadır.
                         </div>
@@ -251,7 +288,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: closePersonnelModal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closePersonnelModal, visible: !showChangePasswordModal()">Kapat</button>
                 </div>
             </div>
         </div>
@@ -344,45 +381,6 @@
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: showPersonnelFormModal }, style: { display: showPersonnelFormModal() ? 'block' : 'none' }"></div>
-
-    <!-- Change Password Modal -->
-    <div class="modal fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-key"></i> Şifre Değiştir
-                        <span data-bind="if: selectedPersonnelForPassword">
-                            - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
-                        </span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bind="click: cancelChangePassword"></button>
-                </div>
-                <div class="modal-body" data-bind="with: passwordData">
-                    <div class="mb-3">
-                        <label class="form-label">Mevcut Şifre *</label>
-                        <input type="password" class="form-control" data-bind="value: currentPassword" placeholder="Mevcut şifre" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Yeni Şifre *</label>
-                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter" />
-                        <small class="text-muted">En az 6 karakter olmalıdır</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Yeni Şifre (Tekrar) *</label>
-                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="Yeni şifreyi tekrar girin" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">İptal</button>
-                    <button type="button" class="btn btn-primary" data-bind="click: changePassword">
-                        <i class="bi bi-key"></i> Şifre Değiştir
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }"></div>
 
     <partial name="_DeleteConfirmationModal" />
 

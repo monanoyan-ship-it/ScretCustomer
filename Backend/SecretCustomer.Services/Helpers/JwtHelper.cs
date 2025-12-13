@@ -45,4 +45,39 @@ public class JwtHelper
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    /// <summary>
+    /// Impersonation token olusturur - orijinal kullanici bilgilerini korur
+    /// </summary>
+    public string GenerateImpersonationToken(User originalUser, Guid customerId, string customerName)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, originalUser.Id.ToString()),
+            new Claim(ClaimTypes.Name, originalUser.Username),
+            new Claim(ClaimTypes.Email, originalUser.Email),
+            new Claim(ClaimTypes.Role, originalUser.Role.ToString()),
+            new Claim("BranchId", originalUser.BranchId?.ToString() ?? ""),
+            // Impersonation claims
+            new Claim("IsImpersonating", "true"),
+            new Claim("ImpersonatedCustomerId", customerId.ToString()),
+            new Claim("ImpersonatedCustomerName", customerName),
+            new Claim("OriginalUserId", originalUser.Id.ToString()),
+            new Claim("OriginalUserName", $"{originalUser.FirstName} {originalUser.LastName}"),
+            new Claim("OriginalRole", originalUser.Role.ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_expirationMinutes),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

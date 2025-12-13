@@ -181,4 +181,33 @@ public class CustomerPersonnelApiController : ControllerBase
             return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
         }
     }
+
+    /// <summary>
+    /// Admin tarafından şifre sıfırlama - eski şifre gerektirmez
+    /// </summary>
+    [HttpPost("{id}/reset-password")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] AdminResetPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await _personnelService.ResetPasswordAsync(id, dto);
+            return Ok(new { message = "Şifre başarıyla sıfırlandı." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting password for personnel {Id}", id);
+            return StatusCode(500, new { message = "Şifre sıfırlanırken bir hata oluştu." });
+        }
+    }
 }

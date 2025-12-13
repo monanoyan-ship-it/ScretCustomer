@@ -1,39 +1,138 @@
 @{
-    ViewData["Title"] = "Değerlendirmelerim";
+    ViewData["Title"] = "Cagri Denetleme";
 }
 
-<h2 class="mb-4">Değerlendirmelerim</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-clipboard-check"></i> Cagri Denetleme</h2>
+</div>
 
-<!-- Evaluations List Component -->
-<div id="evaluations-list-component">
-    <!-- Loading -->
+<div id="evaluations-app">
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filterStatus">
+                        <option value="">Tumu</option>
+                        <option value="Pending">Bekleyen</option>
+                        <option value="InProgress">Devam Eden</option>
+                        <option value="Draft">Taslak</option>
+                        <option value="Completed">Tamamlanan</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" data-bind="value: searchTerm, valueUpdate: 'afterkeydown'" placeholder="Proje, sube ara...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-outline-primary d-block" data-bind="click: loadEvaluations">
+                        <i class="bi bi-arrow-clockwise"></i> Yenile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
     <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yukleniyor...</span>
+        </div>
     </div>
 
-    <!-- Error -->
+    <!-- Error State -->
     <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
         <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
     </div>
 
-    <!-- Evaluations -->
-    <div data-bind="visible: !isLoading()">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'pending' }, click: function() { activeTab('pending'); }" href="#">
+                <i class="bi bi-hourglass-split"></i> Bekleyen Atamalar
+                <span class="badge bg-primary" data-bind="text: pendingAssignments().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'completed' }, click: function() { activeTab('completed'); }" href="#">
+                <i class="bi bi-check-circle"></i> Tamamlanan
+                <span class="badge bg-success" data-bind="text: completedEvaluations().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'drafts' }, click: function() { activeTab('drafts'); }" href="#">
+                <i class="bi bi-file-earmark"></i> Taslaklar
+                <span class="badge bg-warning text-dark" data-bind="text: draftEvaluations().length"></span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Pending Assignments Tab -->
+    <div data-bind="visible: activeTab() === 'pending' && !isLoading()">
         <!-- Empty State -->
-        <div data-bind="visible: evaluations().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Henüz değerlendirme bulunmamaktadır.
+        <div data-bind="visible: pendingAssignments().length === 0" class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Bekleyen atama bulunmamaktadir.
+        </div>
+
+        <!-- Assignments Grid -->
+        <div class="row" data-bind="foreach: pendingAssignments">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong data-bind="text: projectName || 'Proje'"></strong>
+                            <span class="badge bg-primary">Bekliyor</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-building"></i> <span data-bind="text: branchName || 'N/A'"></span>
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-list-check"></i> <span data-bind="text: checklistName || 'Kontrol Listesi'"></span>
+                        </p>
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-calendar"></i> Son Tarih:
+                            <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemis'"></span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a class="btn btn-primary w-100" data-bind="attr: { href: '/Evaluations/Evaluate?assignmentId=' + id }">
+                            <i class="bi bi-play-fill"></i> Degerlendirmeyi Baslat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Evaluations Tab -->
+    <div data-bind="visible: activeTab() === 'completed' && !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: completedEvaluations().length === 0" class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Tamamlanan degerlendirme bulunmamaktadir.
         </div>
 
         <!-- Evaluations Grid -->
-        <div class="row" data-bind="foreach: evaluations">
+        <div class="row" data-bind="foreach: completedEvaluations">
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm h-100" style="cursor: pointer;" data-bind="click: $parent.openEvaluation">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-success text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong data-bind="text: projectName || 'Proje'"></strong>
+                            <span class="badge bg-white text-success">Tamamlandi</span>
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title" data-bind="text: projectName || 'Proje'"></h5>
-                        <p class="text-muted">
+                        <p class="text-muted mb-2">
                             <i class="bi bi-building"></i> <span data-bind="text: branchName || 'N/A'"></span>
                         </p>
 
+                        <!-- Score -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span>Puan</span>
@@ -46,35 +145,80 @@
                             </div>
                         </div>
 
-                        <p class="text-muted small">
-                            <i class="bi bi-calendar"></i>
-                            <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : 'Tarih yok'"></span>
+                        <!-- Cards -->
+                        <div class="mb-2" data-bind="visible: yellowCardCount > 0 || redCardCount > 0">
+                            <!-- ko if: yellowCardCount > 0 -->
+                            <span class="badge bg-warning text-dark me-1">
+                                <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span> Sari
+                            </span>
+                            <!-- /ko -->
+                            <!-- ko if: redCardCount > 0 -->
+                            <span class="badge bg-danger">
+                                <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span> Kirmizi
+                            </span>
+                            <!-- /ko -->
+                        </div>
+
+                        <!-- Evaluated Personnel -->
+                        <p class="text-muted small mb-2" data-bind="visible: evaluatedPersonnelName || evaluatedUnknownPersonnel">
+                            <i class="bi bi-person"></i>
+                            <span data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel"></span>
                         </p>
 
-                        <span class="badge" data-bind="css: status === 'Completed' ? 'bg-success' : 'bg-warning', text: status === 'Completed' ? 'Tamamlandı' : 'Bekliyor'"></span>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-calendar-check"></i>
+                            <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : ''"></span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a class="btn btn-outline-primary w-100" data-bind="attr: { href: '/Evaluations/Details?id=' + id }">
+                            <i class="bi bi-eye"></i> Detay Gor
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Evaluation Modal -->
-<div class="modal fade" id="evaluationModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Değerlendirme Formu</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div data-bind="if: selectedEvaluation">
-                    <p class="text-muted">Değerlendirme formu burada gösterilecek.</p>
-                    <p>ID: <span data-bind="text: selectedEvaluation().id"></span></p>
+    <!-- Draft Evaluations Tab -->
+    <div data-bind="visible: activeTab() === 'drafts' && !isLoading()">
+        <!-- Empty State -->
+        <div data-bind="visible: draftEvaluations().length === 0" class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Taslak degerlendirme bulunmamaktadir.
+        </div>
+
+        <!-- Drafts Grid -->
+        <div class="row" data-bind="foreach: draftEvaluations">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong data-bind="text: projectName || 'Proje'"></strong>
+                            <span class="badge bg-dark">Taslak</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-building"></i> <span data-bind="text: branchName || 'N/A'"></span>
+                        </p>
+
+                        <!-- Partial Score -->
+                        <div class="mb-3" data-bind="visible: totalScore !== null">
+                            <small class="text-muted">Gecici Puan:</small>
+                            <strong data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></strong>
+                        </div>
+
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-clock"></i> Son guncelleme:
+                            <span data-bind="text: startedAt ? new Date(startedAt).toLocaleDateString('tr-TR') : ''"></span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a class="btn btn-warning w-100" data-bind="attr: { href: '/Evaluations/Evaluate?evaluationId=' + id }">
+                            <i class="bi bi-pencil"></i> Devam Et
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,333 @@
+@{
+    ViewData["Title"] = "Temsilci Karnesi";
+    var selectedPersonnelId = ViewBag.SelectedPersonnelId as Guid?;
+}
+
+<div id="personnel-report-card-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-badge"></i> Temsilci Karnesi</h2>
+        <div class="btn-group" data-bind="visible: report()">
+            <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
+                <span data-bind="visible: !isExporting()">
+                    <i class="bi bi-file-earmark-excel"></i> Excel Indir
+                </span>
+                <span data-bind="visible: isExporting">
+                    <span class="spinner-border spinner-border-sm"></span> Indiriliyor...
+                </span>
+            </button>
+            <button class="btn btn-danger" data-bind="click: printReport">
+                <i class="bi bi-file-pdf"></i> PDF Yazdir
+            </button>
+        </div>
+    </div>
+
+    <!-- Personnel Selection -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-person-check"></i> Temsilci Secimi</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Temsilci</label>
+                    <select class="form-select" data-bind="value: selectedPersonnelId, options: personnelList, optionsValue: 'id', optionsText: function(item) { return item.name + (item.branchName ? ' (' + item.branchName + ')' : ''); }, optionsCaption: 'Temsilci Secin...'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Baslangic Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.startDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitis Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.endDate">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" data-bind="click: loadReport, disable: !selectedPersonnelId()">
+                        <i class="bi bi-search"></i> Rapor Getir
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yukleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Karne yukleniyor...</p>
+    </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Report Content (printable area) -->
+    <div id="printable-report" data-bind="visible: report() && !isLoading()">
+        <!-- Personnel Info Header -->
+        <div class="card shadow-sm mb-4" data-bind="with: report">
+            <div class="card-header bg-dark text-white">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4 class="mb-0">
+                            <i class="bi bi-person-circle"></i>
+                            <span data-bind="text: personnelName"></span>
+                        </h4>
+                        <small>
+                            <span data-bind="text: title || ''"></span>
+                            <span data-bind="visible: branchName"> | <span data-bind="text: branchName"></span></span>
+                            <span data-bind="visible: region"> | <span data-bind="text: region"></span></span>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="badge bg-light text-dark fs-5" data-bind="text: totalEvaluations + ' Degerlendirme'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4" data-bind="with: report">
+            <div class="col-md-2">
+                <div class="card text-center h-100">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                        <small class="text-muted">Ortalama Puan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center h-100 bg-success text-white">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0" data-bind="text: bestScore.toFixed(1) + '%'"></h2>
+                        <small>En Yuksek</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center h-100 bg-danger text-white">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0" data-bind="text: worstScore.toFixed(1) + '%'"></h2>
+                        <small>En Dusuk</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center h-100">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0 text-primary" data-bind="text: totalEvaluations"></h2>
+                        <small class="text-muted">Toplam</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center h-100 bg-warning">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0" data-bind="text: totalYellowCards"></h2>
+                        <small>Sari Kart</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center h-100 bg-danger text-white">
+                    <div class="card-body py-3">
+                        <h2 class="mb-0" data-bind="text: totalRedCards"></h2>
+                        <small>Kirmizi Kart</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trend Chart -->
+        <div class="row mb-4" data-bind="visible: report() && report().monthlyTrend.length > 0">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="bi bi-graph-up"></i> Aylik Performans Trendi</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Donem</th>
+                                        <th class="text-center">Degerlendirme</th>
+                                        <th class="text-center">Ort. Puan</th>
+                                        <th class="text-center">Sari Kart</th>
+                                        <th class="text-center">Kirmizi Kart</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: report().monthlyTrend">
+                                    <tr>
+                                        <td data-bind="text: monthName"></td>
+                                        <td class="text-center" data-bind="text: evaluationCount"></td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                        </td>
+                                        <td class="text-center" data-bind="text: yellowCards"></td>
+                                        <td class="text-center" data-bind="text: redCards"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Performance & Strengths/Weaknesses -->
+        <div class="row mb-4">
+            <!-- Section Performance -->
+            <div class="col-md-6" data-bind="visible: report() && report().sectionPerformances.length > 0">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="bi bi-list-task"></i> Bolum Performansi</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Bolum</th>
+                                    <th class="text-center">Basari %</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: report().sectionPerformances">
+                                <tr>
+                                    <td data-bind="text: sectionName"></td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                 data-bind="style: { width: percentageScore + '%' },
+                                                            css: percentageScore >= 70 ? 'bg-success' : (percentageScore >= 50 ? 'bg-warning' : 'bg-danger'),
+                                                            text: percentageScore.toFixed(1) + '%'">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strengths & Weaknesses -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Guclu ve Zayif Yonler</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Strengths -->
+                        <div class="p-2 bg-success bg-opacity-10" data-bind="visible: report() && report().strengths.length > 0">
+                            <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle"></i> Guclu Yonler</small>
+                        </div>
+                        <ul class="list-group list-group-flush" data-bind="foreach: report().strengths">
+                            <li class="list-group-item py-1 small">
+                                <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                <span data-bind="text: questionText"></span>
+                            </li>
+                        </ul>
+
+                        <!-- Weaknesses -->
+                        <div class="p-2 bg-danger bg-opacity-10" data-bind="visible: report() && report().weaknesses.length > 0">
+                            <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> Gelistirilmesi Gereken</small>
+                        </div>
+                        <ul class="list-group list-group-flush" data-bind="foreach: report().weaknesses">
+                            <li class="list-group-item py-1 small">
+                                <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                <span data-bind="text: questionText"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Evaluations -->
+        <div class="card shadow-sm" data-bind="visible: report() && report().recentEvaluations.length > 0">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Son Degerlendirmeler</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Proje</th>
+                                <th>Kontrol Listesi</th>
+                                <th>Degerlendirici</th>
+                                <th class="text-center">Puan</th>
+                                <th class="text-center">Kartlar</th>
+                                <th class="text-center">Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: report().recentEvaluations">
+                            <tr>
+                                <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                <td data-bind="text: projectName"></td>
+                                <td data-bind="text: checklistName"></td>
+                                <td data-bind="text: evaluatorName || '-'"></td>
+                                <td class="text-center">
+                                    <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
+                                    <span data-bind="visible: redCards > 0" class="badge bg-danger" data-bind="text: redCards"></span>
+                                    <span data-bind="visible: yellowCards === 0 && redCards === 0">-</span>
+                                </td>
+                                <td class="text-center">
+                                    <a data-bind="attr: { href: '/Evaluations/Details/' + evaluationId }" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div data-bind="visible: !report() && !isLoading() && selectedPersonnelId()" class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1"></i>
+        <p class="mt-2">Bu temsilci icin degerlendirme bulunamadi.</p>
+    </div>
+
+    <!-- Initial State -->
+    <div data-bind="visible: !report() && !isLoading() && !selectedPersonnelId()" class="text-center text-muted py-5">
+        <i class="bi bi-person-badge fs-1"></i>
+        <p class="mt-2">Karne gormek icin bir temsilci secin.</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Reports/PersonnelReportCard.js"></script>
+    <script>
+        var initialPersonnelId = '@(selectedPersonnelId?.ToString() ?? "")';
+    </script>
+}
+
+<style>
+    @@media print {
+        .card-header.bg-primary { background-color: #0d6efd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .card-header.bg-dark { background-color: #212529 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .card-header.bg-info { background-color: #0dcaf0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .card-header.bg-secondary { background-color: #6c757d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bg-success { background-color: #198754 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bg-warning { background-color: #ffc107 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bg-danger { background-color: #dc3545 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .text-white { color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .progress-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>

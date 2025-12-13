@@ -75,4 +75,28 @@ public class DashboardApiController : ControllerBase
             return StatusCode(500, new { message = "Dashboard verileri yüklenirken bir hata oluştu." });
         }
     }
+
+    /// <summary>
+    /// Kişisel performans kartı (Scorecard)
+    /// </summary>
+    [HttpGet("scorecard")]
+    public async Task<IActionResult> GetScorecard()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+            }
+
+            var scorecard = await _dashboardService.GetScorecardAsync(userId);
+            return Ok(scorecard);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading scorecard");
+            return StatusCode(500, new { message = "Scorecard verileri yüklenirken bir hata oluştu." });
+        }
+    }
 }

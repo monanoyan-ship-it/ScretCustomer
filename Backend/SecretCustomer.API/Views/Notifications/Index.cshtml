@@ -1,0 +1,192 @@
+@{
+    ViewData["Title"] = "Bildirimler";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Bildirimler</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item active">Bildirimler</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary me-2" data-bind="click: markAllAsRead, visible: summary().unreadCount > 0">
+                <i class="fas fa-check-double me-2"></i>Tümünü Okundu İşaretle
+            </button>
+            <a href="/Notifications/Settings" class="btn btn-outline-secondary">
+                <i class="fas fa-cog me-2"></i>Ayarlar
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: totalNotifications">0</h3>
+                    <small>Toplam</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: unreadCount">0</h3>
+                    <small>Okunmamış</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: todayCount">0</h3>
+                    <small>Bugün</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: totalNotifications - unreadCount">0</h3>
+                    <small>Okunan</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Tip</label>
+                    <select class="form-select" data-bind="value: filter.notificationType">
+                        <option value="">Tümü</option>
+                        <option value="Info">Bilgi</option>
+                        <option value="Success">Başarılı</option>
+                        <option value="Warning">Uyarı</option>
+                        <option value="Error">Hata</option>
+                        <option value="ApprovalRequest">Onay Talebi</option>
+                        <option value="Assignment">Atama</option>
+                        <option value="MeetingInvite">Toplantı Daveti</option>
+                        <option value="TrainingInvite">Eğitim Daveti</option>
+                        <option value="Reminder">Hatırlatma</option>
+                        <option value="System">Sistem</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Öncelik</label>
+                    <select class="form-select" data-bind="value: filter.priority">
+                        <option value="">Tümü</option>
+                        <option value="Low">Düşük</option>
+                        <option value="Normal">Normal</option>
+                        <option value="High">Yüksek</option>
+                        <option value="Urgent">Acil</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.isRead">
+                        <option value="">Tümü</option>
+                        <option value="false">Okunmamış</option>
+                        <option value="true">Okunmuş</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" placeholder="Başlık, mesaj..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
+                        <i class="fas fa-times me-2"></i>Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Bildirimler</h5>
+            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush" data-bind="foreach: notifications">
+                <div class="list-group-item list-group-item-action" data-bind="css: { 'bg-light': !isRead }">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <span class="badge rounded-circle p-2" data-bind="css: $parent.getNotificationTypeIconClass(notificationType)">
+                                    <i data-bind="css: $parent.getNotificationTypeIcon(notificationType)"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" data-bind="text: title, css: { 'fw-bold': !isRead }"></h6>
+                                <p class="mb-1 text-muted" data-bind="text: message"></p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span data-bind="text: $parent.formatDate(createdAt)"></span>
+                                    <span class="badge ms-2" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <!-- ko if: !isRead -->
+                            <button class="btn btn-outline-success" data-bind="click: $parent.markAsRead" title="Okundu İşaretle">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <!-- /ko -->
+                            <!-- ko if: actionUrl -->
+                            <a class="btn btn-outline-primary" data-bind="attr: { href: actionUrl }" title="Görüntüle">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            <!-- /ko -->
+                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteNotification" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" data-bind="visible: notifications().length === 0">
+                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Henüz bildirim bulunmamaktadır.</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" data-bind="visible: totalPages() > 1">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                    </li>
+                    <!-- ko foreach: visiblePages -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Notifications/index.js"></script>
+}

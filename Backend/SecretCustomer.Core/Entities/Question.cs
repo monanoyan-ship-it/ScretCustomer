@@ -39,6 +39,62 @@ public class Question : BaseEntity
         Description = "Çoktan seçmeli sorular için seçenekler (JSON formatında)")]
     public string? OptionsJson { get; set; }
 
+    // ===== YENİ ALANLAR - Kontrol Listesi Geliştirmeleri =====
+
+    /// <summary>
+    /// Puanlama tipi (Puanlı, Puansız, Cezalı)
+    /// </summary>
+    [ExcelColumn("Puanlama Tipi", 8, ColumnType = ExcelColumnType.Dropdown,
+        Description = "Sorunun puanlama tipi",
+        DropdownOptions = "[\"Scored\", \"Unscored\", \"Penalty\"]",
+        SampleValue = "Scored")]
+    public ScoringType ScoringType { get; set; } = ScoringType.Scored;
+
+    /// <summary>
+    /// Ağırlık puanı - Sorunun toplam skora etkisi
+    /// </summary>
+    [ExcelColumn("Ağırlık Puanı", 9, ColumnType = ExcelColumnType.Number,
+        Description = "Sorunun ağırlık puanı", SampleValue = "10")]
+    public decimal WeightPoints { get; set; } = 1;
+
+    /// <summary>
+    /// Maksimum alınabilecek puan
+    /// </summary>
+    [ExcelColumn("Maks Puan", 10, ColumnType = ExcelColumnType.Number,
+        Description = "Alınabilecek maksimum puan", SampleValue = "100")]
+    public decimal MaxPoints { get; set; } = 100;
+
+    /// <summary>
+    /// Ceza tipi (Sarı Kart / Kırmızı Kart) - ScoringType=Penalty olduğunda kullanılır
+    /// </summary>
+    [ExcelColumn("Ceza Tipi", 11, ColumnType = ExcelColumnType.Dropdown,
+        Description = "Ceza tipi (Cezalı sorular için)",
+        DropdownOptions = "[\"None\", \"YellowCard\", \"RedCard\"]",
+        SampleValue = "None")]
+    public PenaltyType PenaltyType { get; set; } = PenaltyType.None;
+
+    /// <summary>
+    /// Önerilen açıklama / Öneri notu
+    /// </summary>
+    [ExcelColumn("Önerilen Açıklama", 12, ColumnType = ExcelColumnType.Text,
+        Description = "Bu soru için önerilen açıklama/öneri")]
+    public string? RecommendedNote { get; set; }
+
+    /// <summary>
+    /// Soru için yardımcı metin / ipucu
+    /// </summary>
+    [ExcelColumn("Yardımcı Metin", 13, ColumnType = ExcelColumnType.Text,
+        Description = "Değerlendirici için yardımcı metin")]
+    public string? HelpText { get; set; }
+
+    /// <summary>
+    /// Cezalı sorularda ceza değeri (puan düşürme miktarı)
+    /// </summary>
+    [ExcelColumn("Ceza Değeri", 14, ColumnType = ExcelColumnType.Number,
+        Description = "Ceza durumunda düşürülecek puan", SampleValue = "0")]
+    public decimal PenaltyValue { get; set; } = 0;
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
+    public ICollection<QuestionAttachment> Attachments { get; set; } = new List<QuestionAttachment>();
 }

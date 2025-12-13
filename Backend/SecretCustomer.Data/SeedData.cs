@@ -782,10 +782,141 @@ public static class SeedData
                 CreatedAt = DateTime.UtcNow
             };
 
-            context.FieldWorkers.AddRange(fieldWorker1, fieldWorker2, fieldWorker3, fieldWorker4, 
+            context.FieldWorkers.AddRange(fieldWorker1, fieldWorker2, fieldWorker3, fieldWorker4,
                 fieldWorker5, fieldWorker6, fieldWorker7, fieldWorker8);
             await context.SaveChangesAsync();
             logger.LogInformation("Field Workers created");
+
+            // 13. Sample Personnel (Şube Personeli - Değerlendirilen Kişiler)
+            var branchPersonnel1 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Mehmet",
+                LastName = "Özkan",
+                TcKimlikNo = "11122233344",
+                ErpNo = "ERP001",
+                SicilNo = "SCL001",
+                Title = "Müşteri Temsilcisi",
+                Gender = Gender.Male,
+                BirthDate = new DateTime(1990, 5, 15, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2020, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                Email = "mehmet.ozkan@sube.com",
+                PhoneNumber = "0532 111 2233",
+                Department = "Müşteri Hizmetleri",
+                IsActive = true,
+                BranchId = branch1.Id,
+                CustomerId = customer1.Id,
+                Notes = "Deneyimli müşteri temsilcisi"
+            };
+
+            var branchPersonnel2 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Fatma",
+                LastName = "Yıldırım",
+                TcKimlikNo = "22233344455",
+                ErpNo = "ERP002",
+                SicilNo = "SCL002",
+                Title = "Kasa Görevlisi",
+                Gender = Gender.Female,
+                BirthDate = new DateTime(1995, 8, 20, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2021, 6, 15, 0, 0, 0, DateTimeKind.Utc),
+                Email = "fatma.yildirim@sube.com",
+                PhoneNumber = "0533 222 3344",
+                Department = "Kasa",
+                IsActive = true,
+                BranchId = branch1.Id,
+                CustomerId = customer1.Id,
+                Notes = "Kasa operasyonlarında uzman"
+            };
+
+            var branchPersonnel3 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Ali",
+                LastName = "Kaya",
+                TcKimlikNo = "33344455566",
+                ErpNo = "ERP003",
+                SicilNo = "SCL003",
+                Title = "Şube Müdürü",
+                Gender = Gender.Male,
+                BirthDate = new DateTime(1985, 12, 10, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Email = "ali.kaya@sube.com",
+                PhoneNumber = "0534 333 4455",
+                Department = "Yönetim",
+                IsActive = true,
+                BranchId = branch2.Id,
+                CustomerId = customer1.Id,
+                Notes = "10 yıllık deneyimli şube müdürü"
+            };
+
+            var branchPersonnel4 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Selin",
+                LastName = "Aydın",
+                TcKimlikNo = "44455566677",
+                ErpNo = "ERP004",
+                SicilNo = "SCL004",
+                Title = "Garson",
+                Gender = Gender.Female,
+                BirthDate = new DateTime(1998, 3, 25, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2022, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                Email = "selin.aydin@sube.com",
+                PhoneNumber = "0535 444 5566",
+                Department = "Servis",
+                IsActive = true,
+                BranchId = branch3.Id,
+                CustomerId = customer2.Id,
+                Notes = "Yeni başlayan garson"
+            };
+
+            var branchPersonnel5 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Mustafa",
+                LastName = "Çelik",
+                TcKimlikNo = "55566677788",
+                ErpNo = "ERP005",
+                SicilNo = "SCL005",
+                Title = "Aşçı",
+                Gender = Gender.Male,
+                BirthDate = new DateTime(1988, 7, 5, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2018, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+                Email = "mustafa.celik@sube.com",
+                PhoneNumber = "0536 555 6677",
+                Department = "Mutfak",
+                IsActive = true,
+                BranchId = branch2.Id,
+                CustomerId = customer2.Id,
+                Notes = "Deneyimli şef"
+            };
+
+            var branchPersonnel6 = new Personnel
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Zehra",
+                LastName = "Arslan",
+                TcKimlikNo = "66677788899",
+                ErpNo = "ERP006",
+                SicilNo = "SCL006",
+                Title = "Resepsiyonist",
+                Gender = Gender.Female,
+                BirthDate = new DateTime(1992, 11, 30, 0, 0, 0, DateTimeKind.Utc),
+                HireDate = new DateTime(2019, 2, 1, 0, 0, 0, DateTimeKind.Utc),
+                Email = "zehra.arslan@sube.com",
+                PhoneNumber = "0537 666 7788",
+                Department = "Resepsiyon",
+                IsActive = true,
+                BranchId = branch3.Id,
+                CustomerId = customer3.Id,
+                Notes = "İngilizce ve Almanca biliyor"
+            };
+
+            context.Personnel.AddRange(branchPersonnel1, branchPersonnel2, branchPersonnel3, branchPersonnel4, branchPersonnel5, branchPersonnel6);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Branch Personnel created");
 
             // 13. Link some branches and projects to customers
             branch1.CustomerId = customer1.Id;

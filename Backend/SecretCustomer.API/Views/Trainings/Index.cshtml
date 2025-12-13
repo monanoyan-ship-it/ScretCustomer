@@ -1,0 +1,812 @@
+@{
+    ViewData["Title"] = "Eğitim Yönetimi";
+}
+
+<div id="trainings-app" class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Eğitim Yönetimi</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item active">Eğitimler</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle me-2"></i>Yeni Eğitim
+        </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: totalTrainings">0</h4>
+                    <small>Toplam</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: plannedTrainings">0</h4>
+                    <small>Planlandı</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: inProgressTrainings">0</h4>
+                    <small>Devam Eden</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: completedTrainings">0</h4>
+                    <small>Tamamlanan</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: totalParticipants">0</h4>
+                    <small>Katılımcı</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: certificatesIssued">0</h4>
+                    <small>Sertifika</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Proje</label>
+                    <select class="form-select" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: filter.projectId, optionsCaption: 'Tümü'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tip</label>
+                    <select class="form-select" data-bind="value: filter.trainingType">
+                        <option value="">Tümü</option>
+                        <option value="InPerson">Yüz Yüze</option>
+                        <option value="Online">Online</option>
+                        <option value="Hybrid">Hibrit</option>
+                        <option value="SelfPaced">Kendi Kendine</option>
+                        <option value="OnTheJob">İş Başı</option>
+                        <option value="Workshop">Workshop</option>
+                        <option value="Seminar">Seminer</option>
+                        <option value="Certification">Sertifika</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.status">
+                        <option value="">Tümü</option>
+                        <option value="Draft">Taslak</option>
+                        <option value="Planned">Planlandı</option>
+                        <option value="Approved">Onaylandı</option>
+                        <option value="InProgress">Devam Ediyor</option>
+                        <option value="Completed">Tamamlandı</option>
+                        <option value="Cancelled">İptal</option>
+                        <option value="Postponed">Ertelendi</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kategori</label>
+                    <select class="form-select" data-bind="value: filter.category">
+                        <option value="">Tümü</option>
+                        <option value="General">Genel</option>
+                        <option value="Technical">Teknik</option>
+                        <option value="Sales">Satış</option>
+                        <option value="CustomerService">Müşteri Hizmetleri</option>
+                        <option value="Management">Yönetim</option>
+                        <option value="Communication">İletişim</option>
+                        <option value="Product">Ürün</option>
+                        <option value="Process">Süreç</option>
+                        <option value="Safety">Güvenlik</option>
+                        <option value="Compliance">Uyum</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" placeholder="Başlık, kod..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error/Success Messages -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Trainings Table -->
+    <div data-bind="visible: !isLoading()" class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Eğitimler</h5>
+            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+        </div>
+        <div class="card-body p-0">
+            <!-- Empty State -->
+            <div data-bind="visible: trainings().length === 0" class="text-center py-5">
+                <i class="bi bi-mortarboard fs-1 text-muted"></i>
+                <p class="text-muted mt-2">Henüz eğitim kaydı bulunmamaktadır.</p>
+            </div>
+
+            <!-- Table -->
+            <div data-bind="visible: trainings().length > 0" class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kod</th>
+                            <th>Başlık</th>
+                            <th>Tip</th>
+                            <th>Kategori</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>Eğitmen</th>
+                            <th>Katılımcı</th>
+                            <th class="text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: trainings">
+                        <tr>
+                            <td>
+                                <a href="#" data-bind="text: code, click: function() { $parent.showDetail($data); }"></a>
+                                <!-- ko if: isMandatory -->
+                                <span class="badge bg-danger ms-1">Zorunlu</span>
+                                <!-- /ko -->
+                            </td>
+                            <td data-bind="text: title"></td>
+                            <td><span class="badge" data-bind="text: $parent.getTrainingTypeText(trainingType), css: $parent.getTrainingTypeBadgeClass(trainingType)"></span></td>
+                            <td data-bind="text: $parent.getCategoryText(category)"></td>
+                            <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span></td>
+                            <td data-bind="text: startDate ? new Date(startDate).toLocaleDateString('tr-TR') : '-'"></td>
+                            <td data-bind="text: trainerName || '-'"></td>
+                            <td>
+                                <span data-bind="text: currentParticipants"></span>
+                                <!-- ko if: maxParticipants -->
+                                <span class="text-muted" data-bind="text: '/' + maxParticipants"></span>
+                                <!-- /ko -->
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }" title="Detay">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editTraining($data); }" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <!-- ko if: status === 'Draft' || status === 'Planned' || status === 'Approved' -->
+                                    <button class="btn btn-outline-success" data-bind="click: function() { $parent.startTraining($data); }" title="Başlat">
+                                        <i class="bi bi-play"></i>
+                                    </button>
+                                    <!-- /ko -->
+                                    <!-- ko if: status === 'InProgress' -->
+                                    <button class="btn btn-outline-info" data-bind="click: function() { $parent.completeTraining($data); }" title="Tamamla">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    <!-- /ko -->
+                                    <button class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteTraining($data); }" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" data-bind="visible: totalPages() > 1">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                    </li>
+                    <!-- ko foreach: visiblePages -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- ==================== CREATE/EDIT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isFormModalOpen }, style: { display: isFormModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: editingTraining">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-mortarboard me-2"></i>
+                        <span data-bind="visible: !id()">Yeni Eğitim</span>
+                        <span data-bind="visible: id()">Eğitim Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeFormModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-8">
+                            <!-- Eğitim Bilgileri -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Eğitim Bilgileri</strong></div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Başlık *</label>
+                                            <input type="text" class="form-control" data-bind="value: title" required />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Tip</label>
+                                            <select class="form-select" data-bind="value: trainingType">
+                                                <option value="InPerson">Yüz Yüze</option>
+                                                <option value="Online">Online</option>
+                                                <option value="Hybrid">Hibrit</option>
+                                                <option value="SelfPaced">Kendi Kendine</option>
+                                                <option value="OnTheJob">İş Başı</option>
+                                                <option value="Workshop">Workshop</option>
+                                                <option value="Seminar">Seminer</option>
+                                                <option value="Certification">Sertifika</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4" data-bind="visible: id()">
+                                            <label class="form-label">Durum</label>
+                                            <select class="form-select" data-bind="value: status">
+                                                <option value="Draft">Taslak</option>
+                                                <option value="Planned">Planlandı</option>
+                                                <option value="Approved">Onaylandı</option>
+                                                <option value="InProgress">Devam Ediyor</option>
+                                                <option value="Completed">Tamamlandı</option>
+                                                <option value="Cancelled">İptal</option>
+                                                <option value="Postponed">Ertelendi</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Kategori</label>
+                                            <select class="form-select" data-bind="value: category">
+                                                <option value="General">Genel</option>
+                                                <option value="Technical">Teknik</option>
+                                                <option value="Sales">Satış</option>
+                                                <option value="CustomerService">Müşteri Hizmetleri</option>
+                                                <option value="Management">Yönetim</option>
+                                                <option value="Communication">İletişim</option>
+                                                <option value="Product">Ürün</option>
+                                                <option value="Process">Süreç</option>
+                                                <option value="Safety">Güvenlik</option>
+                                                <option value="Compliance">Uyum</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Süre (dakika)</label>
+                                            <input type="number" class="form-control" data-bind="value: durationMinutes" />
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Açıklama</label>
+                                            <textarea class="form-control" rows="2" data-bind="value: description"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tarih ve Konum -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Tarih ve Konum</strong></div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Başlangıç Tarihi</label>
+                                            <input type="datetime-local" class="form-control" data-bind="value: startDate" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Bitiş Tarihi</label>
+                                            <input type="datetime-local" class="form-control" data-bind="value: endDate" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Konum</label>
+                                            <input type="text" class="form-control" data-bind="value: location" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Online Link</label>
+                                            <input type="url" class="form-control" data-bind="value: onlineLink" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- İçerik -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>İçerik</strong></div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Müfredat</label>
+                                            <textarea class="form-control" rows="3" data-bind="value: curriculum"></textarea>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Hedefler</label>
+                                            <textarea class="form-control" rows="2" data-bind="value: objectives"></textarea>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Ön Koşullar</label>
+                                            <input type="text" class="form-control" data-bind="value: prerequisites" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Eğitmen -->
+                            <div class="card">
+                                <div class="card-header py-2"><strong>Eğitmen</strong></div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Dahili Eğitmen</label>
+                                            <select class="form-select" data-bind="options: $parent.users, optionsText: 'fullName', optionsValue: 'id', value: trainerId, optionsCaption: 'Seçiniz...'"></select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Harici Eğitmen Adı</label>
+                                            <input type="text" class="form-control" data-bind="value: externalTrainerName" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Harici Eğitmen Kurum</label>
+                                            <input type="text" class="form-control" data-bind="value: externalTrainerCompany" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="col-md-4">
+                            <!-- Ayarlar -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Ayarlar</strong></div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Maks. Katılımcı</label>
+                                        <input type="number" class="form-control" data-bind="value: maxParticipants" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: isMandatory">
+                                        <label class="form-check-label">Zorunlu Eğitim</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: hasCertificate">
+                                        <label class="form-check-label">Sertifika Verilir</label>
+                                    </div>
+                                    <div class="mb-3" data-bind="visible: hasCertificate">
+                                        <label class="form-label">Geçme Notu (%)</label>
+                                        <input type="number" class="form-control" min="0" max="100" data-bind="value: passingScore" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- İlişkiler -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>İlişkiler</strong></div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Proje</label>
+                                        <select class="form-select" data-bind="options: $parent.projects, optionsText: 'name', optionsValue: 'id', value: projectId, optionsCaption: 'Seçiniz...'"></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Müşteri</label>
+                                        <select class="form-select" data-bind="options: $parent.customers, optionsText: 'companyName', optionsValue: 'id', value: customerId, optionsCaption: 'Seçiniz...'"></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Maliyet -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Maliyet</strong></div>
+                                <div class="card-body">
+                                    <div class="row g-2">
+                                        <div class="col-8">
+                                            <label class="form-label">Maliyet</label>
+                                            <input type="number" class="form-control" step="0.01" data-bind="value: cost" />
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label">Para Birimi</label>
+                                            <select class="form-select" data-bind="value: currency">
+                                                <option value="TRY">TRY</option>
+                                                <option value="USD">USD</option>
+                                                <option value="EUR">EUR</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Etiketler -->
+                            <div class="card">
+                                <div class="card-header py-2"><strong>Etiketler</strong></div>
+                                <div class="card-body">
+                                    <input type="text" class="form-control" placeholder="Virgülle ayırın" data-bind="value: tags" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeFormModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveTraining, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()"><i class="bi bi-save me-1"></i>Kaydet</span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isFormModalOpen }, style: { display: isFormModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: viewingTraining">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-mortarboard me-2"></i>
+                        <span data-bind="text: code"></span> - <span data-bind="text: title"></span>
+                        <span class="badge ms-2" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-8">
+                            <!-- Eğitim Bilgileri -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Eğitim Bilgileri</strong></div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Kod:</th><td data-bind="text: code"></td></tr>
+                                                <tr><th>Tip:</th><td><span class="badge" data-bind="text: $parent.getTrainingTypeText(trainingType), css: $parent.getTrainingTypeBadgeClass(trainingType)"></span></td></tr>
+                                                <tr><th>Kategori:</th><td data-bind="text: $parent.getCategoryText(category)"></td></tr>
+                                                <tr><th>Süre:</th><td data-bind="text: durationFormatted || '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Başlangıç:</th><td data-bind="text: startDate ? new Date(startDate).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>Bitiş:</th><td data-bind="text: endDate ? new Date(endDate).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>Konum:</th><td data-bind="text: location || '-'"></td></tr>
+                                                <tr><th>Eğitmen:</th><td data-bind="text: trainerName || externalTrainerName || '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <!-- ko if: description -->
+                                    <div class="mt-3 pt-3 border-top">
+                                        <strong>Açıklama:</strong>
+                                        <p class="mb-0" data-bind="text: description"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Katılımcılar -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                    <strong>Katılımcılar</strong>
+                                    <button class="btn btn-sm btn-primary" data-bind="click: function() { $parent.showAddParticipantModal($data); }">
+                                        <i class="bi bi-plus me-1"></i>Ekle
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <!-- ko if: participants && participants.length > 0 -->
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Katılımcı</th>
+                                                    <th>Durum</th>
+                                                    <th>Puan</th>
+                                                    <th>Sertifika</th>
+                                                    <th class="text-center">İşlemler</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody data-bind="foreach: participants">
+                                                <tr>
+                                                    <td>
+                                                        <div data-bind="text: participantName"></div>
+                                                        <small class="text-muted" data-bind="text: externalEmail"></small>
+                                                    </td>
+                                                    <td><span class="badge" data-bind="text: $parents[1].getParticipantStatusText(status), css: $parents[1].getParticipantStatusBadgeClass(status)"></span></td>
+                                                    <td data-bind="text: score || '-'"></td>
+                                                    <td>
+                                                        <!-- ko if: certificateIssued --><span class="badge bg-success">Verildi</span><!-- /ko -->
+                                                        <!-- ko ifnot: certificateIssued --><span class="text-muted">-</span><!-- /ko -->
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button class="btn btn-outline-primary" data-bind="click: function() { $parents[1].showUpdateParticipantModal($parent, $data); }" title="Güncelle"><i class="bi bi-pencil"></i></button>
+                                                            <!-- ko if: !certificateIssued && $parent.hasCertificate -->
+                                                            <button class="btn btn-outline-success" data-bind="click: function() { $parents[1].issueCertificate($parent, $data); }" title="Sertifika Ver"><i class="bi bi-award"></i></button>
+                                                            <!-- /ko -->
+                                                            <button class="btn btn-outline-danger" data-bind="click: function() { $parents[1].removeParticipant($parent, $data); }" title="Kaldır"><i class="bi bi-trash"></i></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: !participants || participants.length === 0 -->
+                                    <p class="text-muted text-center py-3 mb-0">Henüz katılımcı yok.</p>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Materyaller -->
+                            <div class="card">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                    <strong>Materyaller</strong>
+                                    <button class="btn btn-sm btn-primary" data-bind="click: function() { $parent.showAddMaterialModal($data); }">
+                                        <i class="bi bi-upload me-1"></i>Yükle
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <!-- ko if: materials && materials.length > 0 -->
+                                    <div class="list-group list-group-flush">
+                                        <!-- ko foreach: materials -->
+                                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <i class="bi bi-file-earmark me-2"></i>
+                                                <span data-bind="text: name"></span>
+                                                <!-- ko if: isRequired --><span class="badge bg-danger ms-2">Zorunlu</span><!-- /ko -->
+                                                <small class="text-muted d-block" data-bind="text: description"></small>
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <!-- ko if: fileName -->
+                                                <a class="btn btn-outline-primary" data-bind="attr: { href: downloadUrl }" download><i class="bi bi-download"></i></a>
+                                                <!-- /ko -->
+                                                <!-- ko if: externalUrl -->
+                                                <a class="btn btn-outline-info" data-bind="attr: { href: externalUrl }" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a>
+                                                <!-- /ko -->
+                                                <button class="btn btn-outline-danger" data-bind="click: function() { $parents[1].deleteMaterial($parent, $data); }"><i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </div>
+                                        <!-- /ko -->
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: !materials || materials.length === 0 -->
+                                    <p class="text-muted text-center mb-0">Henüz materyal yok.</p>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="col-md-4">
+                            <!-- Ayarlar -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Ayarlar</strong></div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr><th>Maks. Katılımcı:</th><td data-bind="text: maxParticipants || 'Sınırsız'"></td></tr>
+                                        <tr><th>Mevcut:</th><td data-bind="text: currentParticipants"></td></tr>
+                                        <tr><th>Zorunlu:</th><td><!-- ko if: isMandatory --><span class="badge bg-danger">Evet</span><!-- /ko --><!-- ko ifnot: isMandatory --><span class="badge bg-secondary">Hayır</span><!-- /ko --></td></tr>
+                                        <tr><th>Sertifika:</th><td><!-- ko if: hasCertificate --><span class="badge bg-success">Evet</span><!-- /ko --><!-- ko ifnot: hasCertificate --><span class="badge bg-secondary">Hayır</span><!-- /ko --></td></tr>
+                                        <!-- ko if: passingScore --><tr><th>Geçme Notu:</th><td data-bind="text: passingScore + '%'"></td></tr><!-- /ko -->
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- İlişkiler -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>İlişkiler</strong></div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr><th>Proje:</th><td data-bind="text: projectName || '-'"></td></tr>
+                                        <tr><th>Müşteri:</th><td data-bind="text: customerName || '-'"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Maliyet -->
+                            <div class="card" data-bind="visible: cost">
+                                <div class="card-header py-2"><strong>Maliyet</strong></div>
+                                <div class="card-body">
+                                    <h4 class="mb-0"><span data-bind="text: cost"></span> <span data-bind="text: currency || 'TRY'"></span></h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- ko if: status === 'Draft' || status === 'Planned' || status === 'Approved' -->
+                    <button class="btn btn-success" data-bind="click: function() { $parent.startTraining($data); }"><i class="bi bi-play me-1"></i>Başlat</button>
+                    <!-- /ko -->
+                    <!-- ko if: status === 'InProgress' -->
+                    <button class="btn btn-info" data-bind="click: function() { $parent.completeTraining($data); }"><i class="bi bi-check me-1"></i>Tamamla</button>
+                    <!-- /ko -->
+                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editTraining($data); $parent.closeDetailModal(); }"><i class="bi bi-pencil me-1"></i>Düzenle</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== ADD PARTICIPANT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isParticipantModalOpen }, style: { display: isParticipantModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Katılımcı Ekle</h5>
+                    <button type="button" class="btn-close" data-bind="click: closeParticipantModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: newParticipant">
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#internalTab">Dahili Kullanıcı</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#externalTab">Harici Katılımcı</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="internalTab">
+                            <div class="mb-3">
+                                <label class="form-label">Kullanıcı</label>
+                                <select class="form-select" data-bind="options: $parent.users, optionsText: 'fullName', optionsValue: 'id', value: userId, optionsCaption: 'Seçiniz...'"></select>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="externalTab">
+                            <div class="mb-3">
+                                <label class="form-label">Ad Soyad</label>
+                                <input type="text" class="form-control" data-bind="value: externalName" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">E-posta</label>
+                                <input type="email" class="form-control" data-bind="value: externalEmail" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" data-bind="value: externalPhone" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeParticipantModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: addParticipant">Ekle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isParticipantModalOpen }, style: { display: isParticipantModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== UPDATE PARTICIPANT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isUpdateParticipantModalOpen }, style: { display: isUpdateParticipantModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Katılımcı Güncelle</h5>
+                    <button type="button" class="btn-close" data-bind="click: closeUpdateParticipantModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: updateParticipant">
+                    <div class="mb-3">
+                        <label class="form-label">Durum</label>
+                        <select class="form-select" data-bind="value: status">
+                            <option value="Invited">Davetli</option>
+                            <option value="Accepted">Kabul Etti</option>
+                            <option value="Declined">Reddetti</option>
+                            <option value="Attended">Katıldı</option>
+                            <option value="NotAttended">Katılmadı</option>
+                            <option value="Completed">Tamamladı</option>
+                            <option value="Failed">Başarısız</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Puan</label>
+                        <input type="number" class="form-control" min="0" max="100" data-bind="value: score" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Geri Bildirim</label>
+                        <textarea class="form-control" rows="2" data-bind="value: feedback"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Değerlendirme (1-5)</label>
+                        <input type="number" class="form-control" min="1" max="5" data-bind="value: rating" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notlar</label>
+                        <textarea class="form-control" rows="2" data-bind="value: notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeUpdateParticipantModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: updateParticipantStatus">Güncelle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isUpdateParticipantModalOpen }, style: { display: isUpdateParticipantModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== ADD MATERIAL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isMaterialModalOpen }, style: { display: isMaterialModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-plus me-2"></i>Materyal Ekle</h5>
+                    <button type="button" class="btn-close" data-bind="click: closeMaterialModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: newMaterial">
+                    <div class="mb-3">
+                        <label class="form-label">Ad *</label>
+                        <input type="text" class="form-control" data-bind="value: name" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <input type="text" class="form-control" data-bind="value: description" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dosya</label>
+                        <input type="file" class="form-control" id="materialFileInput" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">veya Harici Link</label>
+                        <input type="url" class="form-control" data-bind="value: externalUrl" />
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" data-bind="checked: isRequired">
+                        <label class="form-check-label">Zorunlu Materyal</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeMaterialModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: addMaterial">Ekle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isMaterialModalOpen }, style: { display: isMaterialModalOpen() ? 'block' : 'none' }"></div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/Trainings/Index.js"></script>
+}

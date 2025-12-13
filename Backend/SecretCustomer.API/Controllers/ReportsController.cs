@@ -1,0 +1,35 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace SecretCustomer.API.Controllers;
+
+[Authorize(Roles = "Admin,TeamLeader")]
+public class ReportsController : Controller
+{
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    public IActionResult Penalties()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi - Personnel Report Card
+    /// </summary>
+    public IActionResult PersonnelReportCard(Guid? personnelId = null)
+    {
+        ViewBag.SelectedPersonnelId = personnelId;
+        return View();
+    }
+
+    /// <summary>
+    /// Öneriler Raporu - Suggestions Report
+    /// </summary>
+    public IActionResult Suggestions()
+    {
+        return View();
+    }
+}

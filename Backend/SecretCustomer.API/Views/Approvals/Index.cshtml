@@ -1,0 +1,380 @@
+@{
+    ViewData["Title"] = "Onay Yönetimi";
+}
+
+<div id="approvals-app" class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Onay Yönetimi</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item active">Onaylar</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: totalApprovals">0</h3>
+                    <small>Toplam</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: pendingApprovals">0</h3>
+                    <small>Bekleyen</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: approvedCount">0</h3>
+                    <small>Onaylanan</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: rejectedCount">0</h3>
+                    <small>Reddedilen</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: overdueCount">0</h3>
+                    <small>Gecikmiş</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: todayApprovals">0</h3>
+                    <small>Bugün</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Pending Approvals -->
+    <div class="card mb-4" data-bind="visible: myPendingApprovals().length > 0">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Onayımı Bekleyen Talepler</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Referans</th>
+                            <th>Tip</th>
+                            <th>Başlık</th>
+                            <th>Talep Eden</th>
+                            <th>Tarih</th>
+                            <th>Öncelik</th>
+                            <th class="text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: myPendingApprovals">
+                        <tr data-bind="css: { 'table-danger': isOverdue }">
+                            <td data-bind="text: referenceNumber"></td>
+                            <td><span class="badge bg-info" data-bind="text: $parent.getApprovalTypeText(approvalType)"></span></td>
+                            <td data-bind="text: title"></td>
+                            <td data-bind="text: requestedByUserName"></td>
+                            <td data-bind="text: new Date(requestedAt).toLocaleDateString('tr-TR')"></td>
+                            <td><span class="badge" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span></td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-success" data-bind="click: function() { $parent.approveRequest($data); }" title="Onayla">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger" data-bind="click: function() { $parent.rejectRequest($data); }" title="Reddet">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }" title="Detay">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Tip</label>
+                    <select class="form-select" data-bind="value: filter.approvalType">
+                        <option value="">Tümü</option>
+                        <option value="Evaluation">Değerlendirme</option>
+                        <option value="Assignment">Atama</option>
+                        <option value="Project">Proje</option>
+                        <option value="Meeting">Toplantı</option>
+                        <option value="Training">Eğitim</option>
+                        <option value="Delegation">Vekalet</option>
+                        <option value="General">Genel</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.status">
+                        <option value="">Tümü</option>
+                        <option value="Pending">Beklemede</option>
+                        <option value="Approved">Onaylandı</option>
+                        <option value="Rejected">Reddedildi</option>
+                        <option value="Cancelled">İptal</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Öncelik</label>
+                    <select class="form-select" data-bind="value: filter.priority">
+                        <option value="">Tümü</option>
+                        <option value="Low">Düşük</option>
+                        <option value="Normal">Normal</option>
+                        <option value="High">Yüksek</option>
+                        <option value="Urgent">Acil</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" placeholder="Referans, başlık..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
+                        <i class="fas fa-times me-2"></i>Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approvals Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Tüm Onaylar</h5>
+            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Referans</th>
+                            <th>Tip</th>
+                            <th>Durum</th>
+                            <th>Başlık</th>
+                            <th>Talep Eden</th>
+                            <th>Tarih</th>
+                            <th>Öncelik</th>
+                            <th class="text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: approvals">
+                        <tr>
+                            <td>
+                                <a href="#" data-bind="text: referenceNumber, click: function() { $parent.showDetail($data); }" class="text-decoration-none"></a>
+                            </td>
+                            <td><span class="badge bg-info" data-bind="text: $parent.getApprovalTypeText(approvalType)"></span></td>
+                            <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span></td>
+                            <td data-bind="text: title"></td>
+                            <td data-bind="text: requestedByUserName"></td>
+                            <td data-bind="text: new Date(requestedAt).toLocaleDateString('tr-TR')"></td>
+                            <td><span class="badge" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span></td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" data-bind="visible: approvals().length === 0">
+                <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Henüz onay kaydı bulunmamaktadır.</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" data-bind="visible: totalPages() > 1">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                    </li>
+                    <!-- ko foreach: visiblePages -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- ==================== DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: viewingApproval">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-clipboard-check me-2"></i>Onay Detayı
+                        <span class="badge ms-2" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Approval Info -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Onay Bilgileri</strong></div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <strong>Referans:</strong>
+                                            <span data-bind="text: referenceNumber"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Tip:</strong>
+                                            <span class="badge bg-info" data-bind="text: $parent.getApprovalTypeText(approvalType)"></span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Başlık:</strong>
+                                        <p class="mb-0" data-bind="text: title"></p>
+                                    </div>
+                                    <div class="mb-2" data-bind="visible: description">
+                                        <strong>Açıklama:</strong>
+                                        <p class="mb-0" data-bind="text: description"></p>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <strong>Öncelik:</strong>
+                                            <span class="badge" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Seviye:</strong>
+                                            <span data-bind="text: approvalLevel + ' / ' + requiredApprovalLevels"></span>
+                                        </div>
+                                    </div>
+                                    <!-- ko if: responseNote -->
+                                    <div class="alert alert-info mb-0 mt-3">
+                                        <strong>Yanıt Notu:</strong>
+                                        <span data-bind="text: responseNote"></span>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                            <!-- Action Section for Pending -->
+                            <!-- ko if: status === 'Pending' && $parent.canRespondToApproval($data) -->
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark py-2"><strong>Onay İşlemi</strong></div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Yanıt Notu (Opsiyonel)</label>
+                                        <textarea class="form-control" rows="2" data-bind="value: $parent.responseNote" placeholder="Yanıtınızla ilgili not ekleyebilirsiniz..."></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-success" data-bind="click: function() { $parent.approveFromDetail($data); }">
+                                            <i class="fas fa-check me-2"></i>Onayla
+                                        </button>
+                                        <button class="btn btn-danger" data-bind="click: function() { $parent.rejectFromDetail($data); }">
+                                            <i class="fas fa-times me-2"></i>Reddet
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                        <div class="col-md-4">
+                            <!-- People -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong>Kişiler</strong></div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="text-muted small">Talep Eden</label>
+                                        <p class="mb-0"><i class="fas fa-user me-2"></i><span data-bind="text: requestedByUserName"></span></p>
+                                    </div>
+                                    <!-- ko if: approverUserName -->
+                                    <div class="mb-2">
+                                        <label class="text-muted small">Onaylayıcı</label>
+                                        <p class="mb-0"><i class="fas fa-user-check me-2"></i><span data-bind="text: approverUserName"></span></p>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: approvedByUserName -->
+                                    <div>
+                                        <label class="text-muted small">Yanıtlayan</label>
+                                        <p class="mb-0"><i class="fas fa-user-edit me-2"></i><span data-bind="text: approvedByUserName"></span></p>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                            <!-- Dates -->
+                            <div class="card">
+                                <div class="card-header py-2"><strong>Tarihler</strong></div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="text-muted small">Talep Tarihi</label>
+                                        <p class="mb-0" data-bind="text: $parent.formatDate(requestedAt)"></p>
+                                    </div>
+                                    <!-- ko if: dueDate -->
+                                    <div class="mb-2">
+                                        <label class="text-muted small">Son Tarih</label>
+                                        <p class="mb-0" data-bind="text: $parent.formatDate(dueDate), css: { 'text-danger': $parent.isOverdue($data) }"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: respondedAt -->
+                                    <div>
+                                        <label class="text-muted small">Yanıt Tarihi</label>
+                                        <p class="mb-0" data-bind="text: $parent.formatDate(respondedAt)"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- ko if: status === 'Pending' && $parent.canCancelApproval($data) -->
+                    <button class="btn btn-outline-danger" data-bind="click: function() { $parent.cancelApproval($data); }">
+                        <i class="fas fa-ban me-2"></i>Talebi İptal Et
+                    </button>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/Approvals/Index.js"></script>
+}

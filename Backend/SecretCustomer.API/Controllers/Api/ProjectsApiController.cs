@@ -19,16 +19,18 @@ public class ProjectsApiController : ControllerBase
         _logger = logger;
     }
 
+    #region CRUD Operations
+
     /// <summary>
-    /// Get all projects - Only Admin and TeamLeader can access
+    /// Tüm projeleri getir
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
         try
         {
-            var projects = await _projectService.GetAllAsync();
+            var projects = await _projectService.GetAllAsync(includeInactive);
             return Ok(projects);
         }
         catch (Exception ex)
@@ -39,7 +41,26 @@ public class ProjectsApiController : ControllerBase
     }
 
     /// <summary>
-    /// Get project by ID - Only Admin and TeamLeader can access
+    /// Proje özetlerini getir (Dashboard için)
+    /// </summary>
+    [HttpGet("summaries")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetSummaries()
+    {
+        try
+        {
+            var summaries = await _projectService.GetSummariesAsync();
+            return Ok(summaries);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading project summaries");
+            return StatusCode(500, new { message = "Proje özetleri yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Proje ID ile getir
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
@@ -47,32 +68,46 @@ public class ProjectsApiController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Loading project {Id}", id);
             var project = await _projectService.GetByIdAsync(id);
-
             if (project == null)
             {
-                _logger.LogWarning("Project {Id} not found", id);
                 return NotFound(new { message = "Proje bulunamadı." });
             }
-
-            _logger.LogInformation("Successfully loaded project {Id}", id);
             return Ok(project);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project {Id}. Exception: {Message}", id, ex.Message);
-
-            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-
-            return StatusCode(500, new {
-                message = "Proje yüklenirken bir hata oluştu.",
-                error = isDevelopment ? ex.Message : null,
-                details = isDevelopment ? ex.StackTrace : null
-            });
+            _logger.LogError(ex, "Error loading project {Id}", id);
+            return StatusCode(500, new { message = "Proje yüklenirken bir hata oluştu." });
         }
     }
 
+    /// <summary>
+    /// Proje detaylarını getir (Şubeler ve Takım üyeleri dahil)
+    /// </summary>
+    [HttpGet("{id}/detail")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetDetail(Guid id)
+    {
+        try
+        {
+            var project = await _projectService.GetDetailByIdAsync(id);
+            if (project == null)
+            {
+                return NotFound(new { message = "Proje bulunamadı." });
+            }
+            return Ok(project);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading project detail {Id}", id);
+            return StatusCode(500, new { message = "Proje detayları yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Yeni proje oluştur
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateProjectDto dto)
@@ -90,10 +125,13 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating project");
-            return StatusCode(500, new { message = "Proje oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = "Proje oluşturulurken bir hata oluştu.", error = ex.Message });
         }
     }
 
+    /// <summary>
+    /// Proje güncelle
+    /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateProjectDto dto)
@@ -110,16 +148,18 @@ public class ProjectsApiController : ControllerBase
             {
                 return NotFound(new { message = "Proje bulunamadı." });
             }
-
             return Ok(project);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating project {Id}", id);
-            return StatusCode(500, new { message = "Proje güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = "Proje güncellenirken bir hata oluştu.", error = ex.Message });
         }
     }
 
+    /// <summary>
+    /// Proje sil
+    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
@@ -131,7 +171,6 @@ public class ProjectsApiController : ControllerBase
             {
                 return NotFound(new { message = "Proje bulunamadı." });
             }
-
             return NoContent();
         }
         catch (Exception ex)
@@ -140,4 +179,367 @@ public class ProjectsApiController : ControllerBase
             return StatusCode(500, new { message = "Proje silinirken bir hata oluştu." });
         }
     }
+
+    #endregion
+
+    #region Status Management
+
+    /// <summary>
+    /// Proje durumunu güncelle
+    /// </summary>
+    [HttpPost("{id}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateProjectStatusDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var project = await _projectService.UpdateStatusAsync(id, dto);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating project status {Id}", id);
+            return StatusCode(500, new { message = "Proje durumu güncellenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Projeyi başlat
+    /// </summary>
+    [HttpPost("{id}/start")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> StartProject(Guid id)
+    {
+        try
+        {
+            var project = await _projectService.StartProjectAsync(id);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error starting project {Id}", id);
+            return StatusCode(500, new { message = "Proje başlatılırken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Projeyi duraklat
+    /// </summary>
+    [HttpPost("{id}/pause")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> PauseProject(Guid id)
+    {
+        try
+        {
+            var project = await _projectService.PauseProjectAsync(id);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pausing project {Id}", id);
+            return StatusCode(500, new { message = "Proje duraklatılırken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Projeyi tamamla
+    /// </summary>
+    [HttpPost("{id}/complete")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CompleteProject(Guid id)
+    {
+        try
+        {
+            var project = await _projectService.CompleteProjectAsync(id);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error completing project {Id}", id);
+            return StatusCode(500, new { message = "Proje tamamlanırken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Projeyi iptal et
+    /// </summary>
+    [HttpPost("{id}/cancel")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CancelProject(Guid id, [FromBody] CancelProjectDto? dto = null)
+    {
+        try
+        {
+            var project = await _projectService.CancelProjectAsync(id, dto?.Reason);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error canceling project {Id}", id);
+            return StatusCode(500, new { message = "Proje iptal edilirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Projeyi kapat (eski endpoint - geriye uyumluluk için)
+    /// </summary>
+    [HttpPost("{id}/close")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CloseProject(Guid id)
+    {
+        try
+        {
+            var project = await _projectService.CloseProjectAsync(id);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error closing project {Id}", id);
+            return StatusCode(500, new { message = "Proje kapatılırken bir hata oluştu." });
+        }
+    }
+
+    #endregion
+
+    #region Team Management
+
+    /// <summary>
+    /// Proje takımını yönet (ekle/çıkar)
+    /// </summary>
+    [HttpPost("{id}/team")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ManageTeam(Guid id, [FromBody] ManageProjectTeamDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var project = await _projectService.ManageTeamAsync(id, dto);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error managing project team {Id}", id);
+            return StatusCode(500, new { message = "Proje takımı güncellenirken bir hata oluştu." });
+        }
+    }
+
+    #endregion
+
+    #region Branch Management
+
+    /// <summary>
+    /// Proje şubelerini yönet (ekle/çıkar)
+    /// </summary>
+    [HttpPost("{id}/branches")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ManageBranches(Guid id, [FromBody] ManageProjectBranchesDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var project = await _projectService.ManageBranchesAsync(id, dto);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error managing project branches {Id}", id);
+            return StatusCode(500, new { message = "Proje şubeleri güncellenirken bir hata oluştu." });
+        }
+    }
+
+    #endregion
+
+    #region Statistics & Queries
+
+    /// <summary>
+    /// Proje istatistiklerini getir
+    /// </summary>
+    [HttpGet("{id}/statistics")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetStatistics(Guid id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var project = await _projectService.GetStatisticsAsync(id, startDate, endDate);
+            if (project == null)
+            {
+                return NotFound(new { message = "Proje bulunamadı." });
+            }
+            return Ok(project);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading project statistics {Id}", id);
+            return StatusCode(500, new { message = "Proje istatistikleri yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Müşteri bazlı projeleri getir
+    /// </summary>
+    [HttpGet("by-customer/{customerId}")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetByCustomer(Guid customerId)
+    {
+        try
+        {
+            var projects = await _projectService.GetByCustomerIdAsync(customerId);
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading projects by customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Müşteri projeleri yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Proje yöneticisi bazlı projeleri getir
+    /// </summary>
+    [HttpGet("by-manager/{managerId}")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetByManager(Guid managerId)
+    {
+        try
+        {
+            var projects = await _projectService.GetByManagerIdAsync(managerId);
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading projects by manager {ManagerId}", managerId);
+            return StatusCode(500, new { message = "Yönetici projeleri yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Aktif projeleri getir
+    /// </summary>
+    [HttpGet("active")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetActiveProjects()
+    {
+        try
+        {
+            var projects = await _projectService.GetActiveProjectsAsync();
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading active projects");
+            return StatusCode(500, new { message = "Aktif projeler yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Yaklaşan bitiş tarihli projeleri getir
+    /// </summary>
+    [HttpGet("upcoming-deadlines")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> GetUpcomingDeadlines([FromQuery] int daysAhead = 7)
+    {
+        try
+        {
+            var projects = await _projectService.GetUpcomingDeadlinesAsync(daysAhead);
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading upcoming deadline projects");
+            return StatusCode(500, new { message = "Yaklaşan tarihli projeler yüklenirken bir hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Yeni proje kodu oluştur
+    /// </summary>
+    [HttpGet("generate-code")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GenerateCode()
+    {
+        try
+        {
+            var code = await _projectService.GenerateProjectCodeAsync();
+            return Ok(new { code });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating project code");
+            return StatusCode(500, new { message = "Proje kodu oluşturulurken bir hata oluştu." });
+        }
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Proje iptal için DTO
+/// </summary>
+public class CancelProjectDto
+{
+    public string? Reason { get; set; }
 }

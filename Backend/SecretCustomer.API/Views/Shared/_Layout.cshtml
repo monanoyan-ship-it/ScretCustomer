@@ -30,6 +30,18 @@
 
             <!-- Main Content -->
             <div class="flex-grow-1 d-flex flex-column" style="margin-left: 280px;">
+                <!-- Impersonation Banner -->
+                <div id="impersonation-banner" class="alert alert-warning alert-dismissible mb-0 rounded-0 d-flex align-items-center justify-content-between py-2" style="display: none !important;">
+                    <div>
+                        <i class="bi bi-person-badge-fill me-2"></i>
+                        <strong id="impersonation-customer-name"></strong> olarak goruntuluyor
+                        <small class="text-muted ms-2">(<span id="impersonation-original-user"></span>)</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="endImpersonation()">
+                        <i class="bi bi-x-circle"></i> Cikis
+                    </button>
+                </div>
+
                 <!-- Top Navigation Bar -->
                 <partial name="_TopNav" />
 
@@ -37,6 +49,37 @@
                 <main class="flex-grow-1 p-4" style="background-color: #f8f9fa;">
                     @RenderBody()
                 </main>
+            </div>
+        </div>
+
+        <!-- Impersonation Modal -->
+        <div class="modal fade" id="impersonationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="bi bi-person-badge"></i> Firma Olarak Goruntule</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Musteri Secin</label>
+                            <select id="impersonation-customer-select" class="form-select">
+                                <option value="">Musteri Secin...</option>
+                            </select>
+                        </div>
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            Bu ozellik, secilen musterinin gorunumune gecmenizi saglar.
+                            Gerceklestirdiginiz islemler kayit altina alinir.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgec</button>
+                        <button type="button" class="btn btn-info text-white" onclick="startImpersonation()">
+                            <i class="bi bi-play-fill"></i> Goruntulumeyi Baslat
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -50,8 +93,150 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Custom JS -->
     <script src="~/js/sidebar.js"></script>
+
+    <!-- Impersonation JS -->
+    <script>
+        // Check impersonation status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkImpersonationStatus();
+        });
+
+        function checkImpersonationStatus() {
+            fetch('/api/auth/impersonation/status', { credentials: 'include' })
+                .then(function(response) {
+                    if (!response.ok) return;
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data && data.isImpersonating) {
+                        showImpersonationBanner(data);
+                    } else {
+                        hideImpersonationBanner();
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Impersonation status check error:', error);
+                });
+        }
+
+        function showImpersonationBanner(data) {
+            var banner = document.getElementById('impersonation-banner');
+            var customerName = document.getElementById('impersonation-customer-name');
+            var originalUser = document.getElementById('impersonation-original-user');
+
+            if (banner && customerName && originalUser) {
+                customerName.textContent = data.customerName || 'Musteri';
+                originalUser.textContent = data.originalUserName || 'Admin';
+                banner.style.display = 'flex !important';
+                banner.classList.remove('d-none');
+                banner.style.cssText = 'display: flex !important;';
+            }
+        }
+
+        function hideImpersonationBanner() {
+            var banner = document.getElementById('impersonation-banner');
+            if (banner) {
+                banner.style.cssText = 'display: none !important;';
+            }
+        }
+
+        function openImpersonationModal() {
+            // Load customers
+            fetch('/api/auth/impersonation/customers', { credentials: 'include' })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Musteriler yuklenemedi');
+                    return response.json();
+                })
+                .then(function(customers) {
+                    var select = document.getElementById('impersonation-customer-select');
+                    select.innerHTML = '<option value="">Musteri Secin...</option>';
+                    customers.forEach(function(c) {
+                        var option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = c.companyName + (c.taxNumber ? ' (' + c.taxNumber + ')' : '');
+                        select.appendChild(option);
+                    });
+
+                    var modal = new bootstrap.Modal(document.getElementById('impersonationModal'));
+                    modal.show();
+                })
+                .catch(function(error) {
+                    console.error('Error loading customers:', error);
+                    alert('Musteri listesi yuklenemedi.');
+                });
+        }
+
+        function startImpersonation() {
+            var customerId = document.getElementById('impersonation-customer-select').value;
+            if (!customerId) {
+                alert('Lutfen bir musteri secin.');
+                return;
+            }
+
+            fetch('/api/auth/impersonation/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ customerId: customerId })
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.message || 'Bir hata olustu');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success && data.token) {
+                    // Token'i localStorage'a kaydet
+                    localStorage.setItem('auth_token', data.token);
+
+                    // Modal'i kapat
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('impersonationModal'));
+                    if (modal) modal.hide();
+
+                    // Sayfayi yenile
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Bir hata olustu');
+                }
+            })
+            .catch(function(error) {
+                console.error('Impersonation error:', error);
+                alert('Hata: ' + error.message);
+            });
+        }
+
+        function endImpersonation() {
+            fetch('/api/auth/impersonation/end', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Bir hata olustu');
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success && data.token) {
+                    // Token'i guncelle
+                    localStorage.setItem('auth_token', data.token);
+
+                    // Sayfayi yenile
+                    window.location.reload();
+                }
+            })
+            .catch(function(error) {
+                console.error('End impersonation error:', error);
+                alert('Hata: ' + error.message);
+            });
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

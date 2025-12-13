@@ -1,126 +1,362 @@
-// ViewModel Constructor
+// ===== ViewModels =====
+
+// Assignment Edit ViewModel
 function AssignmentEditViewModel(data) {
     var self = this;
     data = data || {};
 
+    self.id = ko.observable(data.id || null);
     self.projectId = ko.observable(data.projectId || '');
     self.branchId = ko.observable(data.branchId || '');
     self.checklistId = ko.observable(data.checklistId || '');
     self.assignedUserId = ko.observable(data.assignedUserId || '');
+    self.assignedFieldWorkerId = ko.observable(data.assignedFieldWorkerId || '');
+    self.assignedCustomerPersonnelId = ko.observable(data.assignedCustomerPersonnelId || '');
+    self.externalEmail = ko.observable(data.externalEmail || '');
+    self.externalName = ko.observable(data.externalName || '');
     self.dueDate = ko.observable(data.dueDate ? data.dueDate.split('T')[0] : '');
+    self.notes = ko.observable(data.notes || '');
+
+    // Assignment type (user, fieldworker, external)
+    self.assignmentType = ko.observable(
+        data.assignedFieldWorkerId ? 'fieldworker' :
+        data.externalEmail ? 'external' : 'user'
+    );
 
     self.toDTO = function() {
-        return {
+        var dto = {
             projectId: self.projectId(),
-            branchId: self.branchId(),
             checklistId: self.checklistId(),
-            assignedUserId: self.assignedUserId() || null,
-            dueDate: self.dueDate()
+            branchId: self.branchId() || null,
+            dueDate: self.dueDate(),
+            notes: self.notes() || null
         };
+
+        // Clear all assignee fields first
+        dto.assignedUserId = null;
+        dto.assignedFieldWorkerId = null;
+        dto.assignedCustomerPersonnelId = null;
+        dto.externalEmail = null;
+        dto.externalName = null;
+
+        // Set only the relevant assignee field
+        if (self.assignmentType() === 'user' && self.assignedUserId()) {
+            dto.assignedUserId = self.assignedUserId();
+        } else if (self.assignmentType() === 'fieldworker' && self.assignedFieldWorkerId()) {
+            dto.assignedFieldWorkerId = self.assignedFieldWorkerId();
+        } else if (self.assignmentType() === 'external') {
+            dto.externalEmail = self.externalEmail() || null;
+            dto.externalName = self.externalName() || null;
+        }
+
+        return dto;
     };
 }
 
-// Main ViewModel
+// Bulk Assignment ViewModel
+function BulkAssignmentViewModel() {
+    var self = this;
+
+    self.projectId = ko.observable('');
+    self.dueDate = ko.observable('');
+    self.assignmentsPerBranch = ko.observable(1);
+    self.assignedUserId = ko.observable('');
+
+    self.reset = function() {
+        self.projectId('');
+        self.dueDate('');
+        self.assignmentsPerBranch(1);
+        self.assignedUserId('');
+    };
+}
+
+// Reassign ViewModel
+function ReassignViewModel() {
+    var self = this;
+
+    self.assignmentId = ko.observable(null);
+    self.newAssigneeType = ko.observable('user');
+    self.newAssignedUserId = ko.observable('');
+    self.newAssignedFieldWorkerId = ko.observable('');
+    self.newExternalEmail = ko.observable('');
+    self.newExternalName = ko.observable('');
+    self.newDueDate = ko.observable('');
+    self.reason = ko.observable('');
+
+    self.reset = function() {
+        self.assignmentId(null);
+        self.newAssigneeType('user');
+        self.newAssignedUserId('');
+        self.newAssignedFieldWorkerId('');
+        self.newExternalEmail('');
+        self.newExternalName('');
+        self.newDueDate('');
+        self.reason('');
+    };
+
+    self.toDTO = function() {
+        var dto = {
+            reason: self.reason() || null,
+            newDueDate: self.newDueDate() || null
+        };
+
+        if (self.newAssigneeType() === 'user' && self.newAssignedUserId()) {
+            dto.newAssignedUserId = self.newAssignedUserId();
+        } else if (self.newAssigneeType() === 'fieldworker' && self.newAssignedFieldWorkerId()) {
+            dto.newAssignedFieldWorkerId = self.newAssignedFieldWorkerId();
+        } else if (self.newAssigneeType() === 'external') {
+            dto.newExternalEmail = self.newExternalEmail() || null;
+            dto.newExternalName = self.newExternalName() || null;
+        }
+
+        return dto;
+    };
+}
+
+// ===== Main ViewModel =====
 function AssignmentsViewModel() {
     var self = this;
 
-    // State
+    // ===== State =====
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.isEditing = ko.observable(false);
 
-    // Data
+    // ===== Data =====
     self.assignments = ko.observableArray([]);
     self.availableProjects = ko.observableArray([]);
     self.availableBranches = ko.observableArray([]);
     self.availableChecklists = ko.observableArray([]);
     self.availableEvaluators = ko.observableArray([]);
-    self.editingAssignment = ko.observable(null);
+    self.availableFieldWorkers = ko.observableArray([]);
+    self.projectBranches = ko.observableArray([]);
+    self.projectChecklists = ko.observableArray([]);
 
-    // Modal state
+    // Summary
+    self.summary = ko.observable({
+        totalAssignments: 0,
+        pendingCount: 0,
+        inProgressCount: 0,
+        completedCount: 0,
+        expiredCount: 0,
+        cancelledCount: 0,
+        completionRate: 0,
+        averageScore: 0
+    });
+
+    // ===== Filters =====
+    self.filterProjectId = ko.observable('');
+    self.filterStatus = ko.observable('');
+    self.filterAssignedUserId = ko.observable('');
+    self.filterDueDateFrom = ko.observable('');
+    self.filterDueDateTo = ko.observable('');
+    self.filterSearchTerm = ko.observable('');
+
+    // All assignable users (for filter)
+    self.allAssignableUsers = ko.computed(function() {
+        var users = [];
+        self.availableEvaluators().forEach(function(u) {
+            users.push({ id: u.id, displayName: u.fullName + ' (Kullanıcı)' });
+        });
+        self.availableFieldWorkers().forEach(function(fw) {
+            users.push({ id: fw.id, displayName: fw.fullName + ' (Saha Çalışanı)' });
+        });
+        return users;
+    });
+
+    // ===== Modal State =====
     self.isModalOpen = ko.observable(false);
+    self.editingAssignment = ko.observable(null);
     self.selectedEvaluation = ko.observable(null);
+    self.selectedDetail = ko.observable(null);
 
-    // Load assignments
+    // Bulk Assignment
+    self.bulkAssignment = ko.observable(new BulkAssignmentViewModel());
+    self.bulkBranchCount = ko.observable(0);
+
+    // Reassign
+    self.reassignData = ko.observable(new ReassignViewModel());
+
+    // QR Code
+    self.qrCodeImage = ko.observable('');
+    self.qrCodeLink = ko.observable('');
+
+    // ===== Load Data =====
     self.loadAssignments = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        fetch('/api/assignments?projectId=00000000-0000-0000-0000-000000000000', {
-            credentials: 'include'
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Yükleme başarısız');
-            return res.json();
-        })
-        .then(data => {
-            self.assignments(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.errorMessage('Atamalar yüklenirken bir hata oluştu.');
-        })
-        .finally(() => {
-            self.isLoading(false);
-        });
+        fetch('/api/assignments', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Yükleme başarısız');
+                return res.json();
+            })
+            .then(function(data) {
+                self.assignments(data);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Atamalar yüklenirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
     };
 
-    // Load available data
+    self.loadSummary = function(projectId) {
+        var url = '/api/assignments/summary';
+        if (projectId) {
+            url += '?projectId=' + projectId;
+        }
+
+        fetch(url, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.summary(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading summary:', error);
+            });
+    };
+
     self.loadProjects = function() {
         fetch('/api/projects', { credentials: 'include' })
-            .then(res => res.json())
-            .then(data => {
-                self.availableProjects(data.filter(p => p.isActive));
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.availableProjects(data.filter(function(p) { return p.isActive; }));
             })
-            .catch(error => console.error('Error loading projects:', error));
+            .catch(function(error) { console.error('Error loading projects:', error); });
     };
 
     self.loadBranches = function() {
         fetch('/api/branches', { credentials: 'include' })
-            .then(res => res.json())
-            .then(data => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 self.availableBranches(data);
             })
-            .catch(error => console.error('Error loading branches:', error));
+            .catch(function(error) { console.error('Error loading branches:', error); });
     };
 
     self.loadChecklists = function() {
         fetch('/api/checklists', { credentials: 'include' })
-            .then(res => res.json())
-            .then(data => {
-                self.availableChecklists(data.filter(c => c.isActive));
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.availableChecklists(data.filter(function(c) { return c.isActive; }));
             })
-            .catch(error => console.error('Error loading checklists:', error));
+            .catch(function(error) { console.error('Error loading checklists:', error); });
     };
 
     self.loadEvaluators = function() {
         fetch('/api/users/role/3', { credentials: 'include' })
-            .then(res => res.json())
-            .then(data => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 self.availableEvaluators(data);
             })
-            .catch(error => console.error('Error loading evaluators:', error));
+            .catch(function(error) { console.error('Error loading evaluators:', error); });
     };
 
-    // Create new assignment
+    self.loadFieldWorkers = function() {
+        fetch('/api/fieldworkers', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.availableFieldWorkers(data);
+            })
+            .catch(function(error) { console.error('Error loading field workers:', error); });
+    };
+
+    // ===== Filter Methods =====
+    self.applyFilters = function() {
+        self.isLoading(true);
+        self.errorMessage('');
+
+        var filter = {
+            projectId: self.filterProjectId() || null,
+            status: self.filterStatus() || null,
+            assignedUserId: self.filterAssignedUserId() || null,
+            dueDateFrom: self.filterDueDateFrom() || null,
+            dueDateTo: self.filterDueDateTo() || null,
+            searchTerm: self.filterSearchTerm() || null
+        };
+
+        fetch('/api/assignments/filter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(filter)
+        })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Filtreleme başarısız');
+                return res.json();
+            })
+            .then(function(data) {
+                self.assignments(data);
+                self.loadSummary(self.filterProjectId());
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Atamalar filtrelenirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
+    };
+
+    self.clearFilters = function() {
+        self.filterProjectId('');
+        self.filterStatus('');
+        self.filterAssignedUserId('');
+        self.filterDueDateFrom('');
+        self.filterDueDateTo('');
+        self.filterSearchTerm('');
+        self.loadAssignments();
+        self.loadSummary();
+    };
+
+    // ===== CRUD Methods =====
     self.createNew = function() {
+        self.isEditing(false);
         self.editingAssignment(new AssignmentEditViewModel());
+        self.projectBranches([]);
+        self.projectChecklists([]);
         self.isModalOpen(true);
     };
 
-    // Save assignment
+    self.onProjectChange = function() {
+        var assignment = self.editingAssignment();
+        if (!assignment) return;
+
+        var projectId = assignment.projectId();
+        if (!projectId) {
+            self.projectBranches([]);
+            self.projectChecklists([]);
+            return;
+        }
+
+        // Load branches for the project
+        fetch('/api/projects/' + projectId + '/branches', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.projectBranches(data);
+            })
+            .catch(function(error) { console.error('Error loading project branches:', error); });
+
+        // Load checklists for the project
+        fetch('/api/checklists?projectId=' + projectId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.projectChecklists(data.filter(function(c) { return c.isActive; }));
+            })
+            .catch(function(error) { console.error('Error loading project checklists:', error); });
+    };
+
     self.saveAssignment = function() {
         var assignment = self.editingAssignment();
 
         // Validation
         if (!assignment.projectId()) {
             alert('Proje seçmelisiniz!');
-            return;
-        }
-
-        if (!assignment.branchId()) {
-            alert('Şube seçmelisiniz!');
             return;
         }
 
@@ -135,78 +371,302 @@ function AssignmentsViewModel() {
         }
 
         var dto = assignment.toDTO();
+        var isEdit = self.isEditing();
+        var url = isEdit ? '/api/assignments/' + assignment.id() : '/api/assignments';
+        var method = isEdit ? 'PUT' : 'POST';
 
         self.isSaving(true);
 
-        fetch('/api/assignments', {
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Kayıt başarısız');
+                return isEdit ? null : response.json();
+            })
+            .then(function(data) {
+                self.successMessage(isEdit ? 'Atama başarıyla güncellendi.' : 'Atama başarıyla oluşturuldu.');
+                self.closeModal();
+                self.loadAssignments();
+                self.loadSummary();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Atama kaydedilirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isSaving(false);
+            });
+    };
+
+    self.deleteAssignment = function(assignment) {
+        deleteConfirmation.show('Bu atamayı silmek istediğinizden emin misiniz?', function() {
+            fetch('/api/assignments/' + assignment.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Silme başarısız');
+                    self.successMessage('Atama başarıyla silindi.');
+                    self.assignments.remove(assignment);
+                    self.loadSummary();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    self.errorMessage('Atama silinirken bir hata oluştu.');
+                });
+        });
+    };
+
+    self.closeModal = function() {
+        self.isModalOpen(false);
+        self.editingAssignment(null);
+        self.isEditing(false);
+    };
+
+    // ===== Bulk Assignment =====
+    self.openBulkAssignmentModal = function() {
+        self.bulkAssignment().reset();
+        self.bulkBranchCount(0);
+        var modal = new bootstrap.Modal(document.getElementById('bulkAssignmentModal'));
+        modal.show();
+    };
+
+    self.onBulkProjectChange = function() {
+        var projectId = self.bulkAssignment().projectId();
+        if (!projectId) {
+            self.bulkBranchCount(0);
+            return;
+        }
+
+        fetch('/api/projects/' + projectId + '/branches', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.bulkBranchCount(data.length);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.bulkBranchCount(0);
+            });
+    };
+
+    self.createBulkAssignments = function() {
+        var bulk = self.bulkAssignment();
+
+        if (!bulk.projectId()) {
+            alert('Proje seçmelisiniz!');
+            return;
+        }
+
+        if (!bulk.dueDate()) {
+            alert('Son tarih zorunludur!');
+            return;
+        }
+
+        var dto = {
+            projectId: bulk.projectId(),
+            dueDate: bulk.dueDate(),
+            assignmentsPerBranch: parseInt(bulk.assignmentsPerBranch()) || 1,
+            assignedUserId: bulk.assignedUserId() || null
+        };
+
+        self.isSaving(true);
+
+        fetch('/api/assignments/project-bulk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(dto)
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Kayıt başarısız');
-            return response.json();
-        })
-        .then(data => {
-            self.successMessage('Atama başarıyla oluşturuldu.');
-            self.closeModal();
-            self.loadAssignments();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.errorMessage('Atama oluşturulurken bir hata oluştu.');
-        })
-        .finally(() => {
-            self.isSaving(false);
-        });
+            .then(function(res) {
+                if (!res.ok) throw new Error('Toplu atama başarısız');
+                return res.json();
+            })
+            .then(function(data) {
+                self.successMessage(data.message);
+                bootstrap.Modal.getInstance(document.getElementById('bulkAssignmentModal')).hide();
+                self.loadAssignments();
+                self.loadSummary();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Toplu atama oluşturulurken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isSaving(false);
+            });
     };
 
-    // Delete assignment
-    self.deleteAssignment = function(assignment) {
-        deleteConfirmation.show('Bu atamayı silmek istediğinizden emin misiniz?', function() {
-
-        fetch('/api/assignments/' + assignment.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Silme başarısız');
-            self.successMessage('Atama başarıyla silindi.');
-            self.assignments.remove(assignment);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.errorMessage('Atama silinirken bir hata oluştu.');
-        });
-        });
+    // ===== Reassign =====
+    self.openReassignModal = function(assignment) {
+        self.reassignData().reset();
+        self.reassignData().assignmentId(assignment.id);
+        var modal = new bootstrap.Modal(document.getElementById('reassignModal'));
+        modal.show();
     };
 
-    // Close modal
-    self.closeModal = function() {
-        self.isModalOpen(false);
-        self.editingAssignment(null);
+    self.saveReassign = function() {
+        var data = self.reassignData();
+        var assignmentId = data.assignmentId();
+
+        if (!assignmentId) {
+            self.errorMessage('Atama bulunamadı.');
+            return;
+        }
+
+        var dto = data.toDTO();
+
+        self.isSaving(true);
+
+        fetch('/api/assignments/' + assignmentId + '/reassign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Yeniden atama başarısız');
+                return res.json();
+            })
+            .then(function(result) {
+                self.successMessage('Atama başarıyla yeniden atandı.');
+                bootstrap.Modal.getInstance(document.getElementById('reassignModal')).hide();
+                self.loadAssignments();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Yeniden atama yapılırken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isSaving(false);
+            });
     };
 
-    // Open evaluation modal
+    // ===== Cancel Assignment =====
+    self.cancelAssignment = function(assignment) {
+        var reason = prompt('İptal sebebini giriniz (İsteğe bağlı):');
+        if (reason === null) return; // User cancelled
+
+        fetch('/api/assignments/' + assignment.id + '/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason: reason || null })
+        })
+            .then(function(res) {
+                if (!res.ok) throw new Error('İptal başarısız');
+                return res.json();
+            })
+            .then(function(result) {
+                self.successMessage('Atama başarıyla iptal edildi.');
+                self.loadAssignments();
+                self.loadSummary();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Atama iptal edilirken bir hata oluştu.');
+            });
+    };
+
+    // ===== View Detail =====
+    self.viewDetail = function(assignment) {
+        fetch('/api/assignments/' + assignment.id + '/detail', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.selectedDetail(data);
+                var modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                modal.show();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Detay yüklenirken bir hata oluştu.');
+            });
+    };
+
+    // ===== Evaluation Modal =====
     self.openEvaluation = function(assignment) {
-        // Set assignment data directly
         self.selectedEvaluation(assignment);
-        
-        // Show modal
         var modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
         modal.show();
     };
 
-    // Initialize
+    // ===== QR Code =====
+    self.showQRCode = function(assignment) {
+        var baseUrl = window.location.origin;
+        var link = baseUrl + '/form/' + assignment.uniqueLink;
+
+        self.qrCodeLink(link);
+
+        fetch('/api/assignments/' + assignment.id + '/qr-code/base64', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.qrCodeImage(data.qrCode);
+                var modal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+                modal.show();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('QR kod oluşturulurken bir hata oluştu.');
+            });
+    };
+
+    self.copyQRLink = function() {
+        navigator.clipboard.writeText(self.qrCodeLink()).then(function() {
+            alert('Link kopyalandı!');
+        }).catch(function(error) {
+            console.error('Error copying link:', error);
+        });
+    };
+
+    self.copyLink = function(assignment) {
+        var baseUrl = window.location.origin;
+        var link = baseUrl + '/form/' + assignment.uniqueLink;
+
+        navigator.clipboard.writeText(link).then(function() {
+            self.successMessage('Link panoya kopyalandı!');
+        }).catch(function(error) {
+            console.error('Error copying link:', error);
+            self.errorMessage('Link kopyalanırken bir hata oluştu.');
+        });
+    };
+
+    // ===== Status Helpers =====
+    self.getStatusBadgeClass = function(status) {
+        switch (status) {
+            case 'Pending': return 'bg-warning text-dark';
+            case 'InProgress': return 'bg-info';
+            case 'Completed': return 'bg-success';
+            case 'Expired': return 'bg-danger';
+            case 'Cancelled': return 'bg-secondary';
+            default: return 'bg-light text-dark';
+        }
+    };
+
+    self.getStatusText = function(status) {
+        switch (status) {
+            case 'Pending': return 'Bekleyen';
+            case 'InProgress': return 'Devam Eden';
+            case 'Completed': return 'Tamamlandı';
+            case 'Expired': return 'Süresi Doldu';
+            case 'Cancelled': return 'İptal Edildi';
+            default: return status || 'Bilinmiyor';
+        }
+    };
+
+    // ===== Initialize =====
     self.loadAssignments();
+    self.loadSummary();
     self.loadProjects();
     self.loadBranches();
     self.loadChecklists();
     self.loadEvaluators();
+    self.loadFieldWorkers();
 }
 
-// Apply bindings
+// ===== Apply Bindings =====
 $(document).ready(function() {
     ko.applyBindings(new AssignmentsViewModel(), document.getElementById('assignments-app'));
 });

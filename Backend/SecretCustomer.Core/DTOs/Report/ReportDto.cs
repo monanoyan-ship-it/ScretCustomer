@@ -1,76 +1,480 @@
 namespace SecretCustomer.Core.DTOs.Report;
 
+/// <summary>
+/// Rapor filtre DTO
+/// </summary>
+public class ReportFilterDto
+{
+    public Guid? ProjectId { get; set; }
+    public Guid? BranchId { get; set; }
+    public Guid? EvaluatorId { get; set; }
+    public Guid? ChecklistId { get; set; }
+    public string? Region { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public string? Status { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Değerlendirme rapor satırı
+/// </summary>
 public class EvaluationReportDto
 {
     public Guid EvaluationId { get; set; }
     public Guid AssignmentId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string BranchCity { get; set; } = string.Empty;
-    public string EvaluatorName { get; set; } = string.Empty;
-    public DateTime CompletedAt { get; set; }
-    public int TotalScore { get; set; }
-    public int MaxScore { get; set; }
-    public double PercentageScore { get; set; }
-    public List<SectionScoreDto> SectionScores { get; set; } = new();
+
+    // Project
+    public string ProjectName { get; set; } = string.Empty;
+    public string? ProjectCode { get; set; }
+
+    // Branch
+    public string? BranchName { get; set; }
+    public string? BranchCode { get; set; }
+    public string? Region { get; set; }
+
+    // Checklist
+    public string ChecklistName { get; set; } = string.Empty;
+
+    // Evaluator
+    public string? EvaluatorName { get; set; }
+
+    // Personnel
+    public string? EvaluatedPersonnelName { get; set; }
+
+    // Dates
+    public DateTime? EvaluationDate { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public DateTime DueDate { get; set; }
+
+    // Scores
+    public decimal? TotalScore { get; set; }
+    public decimal? MaxScore { get; set; }
+    public decimal? ScorePercentage { get; set; }
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+
+    // Status
+    public string Status { get; set; } = string.Empty;
+
+    // Call Info
+    public string? CallId { get; set; }
+    public DateTime? CallDate { get; set; }
+    public int? DurationMinutes { get; set; }
+
+    // Comment
+    public string? Comment { get; set; }
 }
 
-public class SectionScoreDto
+/// <summary>
+/// Sayfalanmış rapor sonucu
+/// </summary>
+public class PagedReportResult<T>
+{
+    public List<T> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    public bool HasNextPage => Page < TotalPages;
+    public bool HasPreviousPage => Page > 1;
+}
+
+/// <summary>
+/// Değerlendirme detay raporu - soru cevaplarıyla birlikte
+/// </summary>
+public class EvaluationDetailReportDto : EvaluationReportDto
+{
+    public List<SectionReportDto> Sections { get; set; } = new();
+}
+
+/// <summary>
+/// Bölüm rapor DTO
+/// </summary>
+public class SectionReportDto
 {
     public string SectionName { get; set; } = string.Empty;
-    public int Score { get; set; }
-    public int MaxScore { get; set; }
-    public double Percentage { get; set; }
+    public int Order { get; set; }
+    public decimal? SectionScore { get; set; }
+    public decimal? SectionMaxScore { get; set; }
+    public List<QuestionAnswerReportDto> Questions { get; set; } = new();
 }
 
-public class BranchPerformanceReportDto
+/// <summary>
+/// Soru-cevap rapor DTO
+/// </summary>
+public class QuestionAnswerReportDto
 {
-    public Guid BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string Region { get; set; } = string.Empty;
+    public string QuestionText { get; set; } = string.Empty;
+    public int Order { get; set; }
+    public string? AnswerText { get; set; }
+    public decimal? AnswerNumeric { get; set; }
+    public bool IsNA { get; set; }
+    public decimal? GivenPoints { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public string? PenaltyType { get; set; }
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// Özet rapor DTO
+/// </summary>
+public class SummaryReportDto
+{
     public int TotalEvaluations { get; set; }
-    public double AverageScore { get; set; }
-    public double MinScore { get; set; }
-    public double MaxScore { get; set; }
-    public List<EvaluationSummaryDto> RecentEvaluations { get; set; } = new();
+    public int CompletedEvaluations { get; set; }
+    public int PendingEvaluations { get; set; }
+    public decimal AverageScore { get; set; }
+    public decimal MinScore { get; set; }
+    public decimal MaxScore { get; set; }
+    public int TotalYellowCards { get; set; }
+    public int TotalRedCards { get; set; }
+
+    public List<ProjectSummaryReportDto> ProjectSummaries { get; set; } = new();
+    public List<BranchSummaryReportDto> BranchSummaries { get; set; } = new();
+    public List<EvaluatorSummaryReportDto> EvaluatorSummaries { get; set; } = new();
 }
 
-public class EvaluationSummaryDto
-{
-    public Guid EvaluationId { get; set; }
-    public DateTime CompletedAt { get; set; }
-    public int Score { get; set; }
-    public int MaxScore { get; set; }
-    public string EvaluatorName { get; set; } = string.Empty;
-}
-
-public class ProjectReportDto
+public class ProjectSummaryReportDto
 {
     public Guid ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public int TotalAssignments { get; set; }
-    public int CompletedAssignments { get; set; }
-    public int PendingAssignments { get; set; }
-    public double CompletionRate { get; set; }
-    public double AverageScore { get; set; }
-    public List<BranchScoreSummaryDto> BranchScores { get; set; } = new();
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
 }
 
-public class BranchScoreSummaryDto
+public class BranchSummaryReportDto
 {
     public Guid BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
+    public string? Region { get; set; }
     public int EvaluationCount { get; set; }
-    public double AverageScore { get; set; }
+    public decimal AverageScore { get; set; }
 }
 
-public class ReportFilterDto
+public class EvaluatorSummaryReportDto
 {
+    public Guid EvaluatorId { get; set; }
+    public string EvaluatorName { get; set; } = string.Empty;
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
+}
+
+/// <summary>
+/// Excel export için raw data DTO
+/// </summary>
+public class ExcelExportDto
+{
+    public string FileName { get; set; } = string.Empty;
+    public byte[] FileContent { get; set; } = Array.Empty<byte>();
+    public string ContentType { get; set; } = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+}
+
+// ===== CEZALI KL RAPORU DTO'LARI =====
+
+/// <summary>
+/// Cezalı KL raporu filtre DTO
+/// </summary>
+public class PenaltyFilterDto
+{
+    public Guid? ProjectId { get; set; }
+    public Guid? BranchId { get; set; }
+    public string? PenaltyType { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public Guid? BranchId { get; set; }
+}
+
+/// <summary>
+/// Cezalı KL raporu ana sonuç DTO
+/// </summary>
+public class PenaltyReportResultDto
+{
+    public PenaltySummaryDto Summary { get; set; } = new();
+    public List<PenaltyDetailDto> Penalties { get; set; } = new();
+    public List<PenaltyQuestionDto> TopPenaltyQuestions { get; set; } = new();
+    public List<PenaltyBranchDto> TopPenaltyBranches { get; set; } = new();
+    public List<PenaltyMonthlyTrendDto> MonthlyTrend { get; set; } = new();
+}
+
+/// <summary>
+/// Cezalı KL raporu özet
+/// </summary>
+public class PenaltySummaryDto
+{
+    public int TotalPenalties { get; set; }
+    public int TotalYellowCards { get; set; }
+    public int TotalRedCards { get; set; }
+    public int AffectedEvaluations { get; set; }
+}
+
+/// <summary>
+/// Cezalı değerlendirme detay satırı
+/// </summary>
+public class PenaltyDetailDto
+{
+    public Guid EvaluationId { get; set; }
+    public Guid AnswerId { get; set; }
+    public Guid QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public string PenaltyType { get; set; } = string.Empty;
+    public string ProjectName { get; set; } = string.Empty;
+    public string? BranchName { get; set; }
+    public string? Region { get; set; }
+    public string? EvaluatorName { get; set; }
+    public string? EvaluatedPersonnelName { get; set; }
+    public DateTime? EvaluationDate { get; set; }
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// En çok ceza alan soru
+/// </summary>
+public class PenaltyQuestionDto
+{
+    public Guid QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int TotalPenalties { get; set; }
+}
+
+/// <summary>
+/// En çok ceza alan şube
+/// </summary>
+public class PenaltyBranchDto
+{
+    public Guid BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
+    public string? Region { get; set; }
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int TotalPenalties { get; set; }
+}
+
+/// <summary>
+/// Aylık ceza trendi
+/// </summary>
+public class PenaltyMonthlyTrendDto
+{
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public string MonthName { get; set; } = string.Empty;
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int TotalPenalties { get; set; }
+}
+
+// ===== TEMSİLCİ KARNESİ DTO'LARI (Video 4) =====
+
+/// <summary>
+/// Temsilci Karnesi filtre DTO
+/// </summary>
+public class PersonnelReportCardFilterDto
+{
+    public Guid PersonnelId { get; set; }
     public Guid? ProjectId { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+
+/// <summary>
+/// Temsilci Karnesi ana sonuç DTO
+/// </summary>
+public class PersonnelReportCardDto
+{
+    // Personel bilgileri
+    public Guid PersonnelId { get; set; }
+    public string PersonnelName { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? Department { get; set; }
+    public string? BranchName { get; set; }
+    public string? Region { get; set; }
+
+    // Özet istatistikler
+    public int TotalEvaluations { get; set; }
+    public decimal AverageScore { get; set; }
+    public decimal BestScore { get; set; }
+    public decimal WorstScore { get; set; }
+    public int TotalYellowCards { get; set; }
+    public int TotalRedCards { get; set; }
+
+    // Performans trendi
+    public List<PersonnelMonthlyTrendDto> MonthlyTrend { get; set; } = new();
+
+    // Bölüm bazlı performans
+    public List<PersonnelSectionPerformanceDto> SectionPerformances { get; set; } = new();
+
+    // Son değerlendirmeler listesi
+    public List<PersonnelEvaluationSummaryDto> RecentEvaluations { get; set; } = new();
+
+    // Güçlü ve zayıf yönler
+    public List<PersonnelStrengthWeaknessDto> Strengths { get; set; } = new();
+    public List<PersonnelStrengthWeaknessDto> Weaknesses { get; set; } = new();
+}
+
+/// <summary>
+/// Aylık performans trendi
+/// </summary>
+public class PersonnelMonthlyTrendDto
+{
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public string MonthName { get; set; } = string.Empty;
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
+    public int YellowCards { get; set; }
+    public int RedCards { get; set; }
+}
+
+/// <summary>
+/// Bölüm bazlı performans
+/// </summary>
+public class PersonnelSectionPerformanceDto
+{
+    public string SectionName { get; set; } = string.Empty;
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
+    public decimal MaxPossibleScore { get; set; }
+    public decimal PercentageScore { get; set; }
+}
+
+/// <summary>
+/// Değerlendirme özeti
+/// </summary>
+public class PersonnelEvaluationSummaryDto
+{
+    public Guid EvaluationId { get; set; }
+    public DateTime? EvaluationDate { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+    public string? EvaluatorName { get; set; }
+    public decimal ScorePercentage { get; set; }
+    public int YellowCards { get; set; }
+    public int RedCards { get; set; }
+    public string Status { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Güçlü/Zayıf yön analizi
+/// </summary>
+public class PersonnelStrengthWeaknessDto
+{
+    public string QuestionText { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public decimal AverageScore { get; set; }
+    public decimal MaxScore { get; set; }
+    public decimal PercentageScore { get; set; }
+    public int EvaluationCount { get; set; }
+}
+
+/// <summary>
+/// Personel listesi (seçim için)
+/// </summary>
+public class PersonnelListItemDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? BranchName { get; set; }
+}
+
+// ===== ÖNERİLER RAPORU DTO'LARI (Video 5-6) =====
+
+/// <summary>
+/// Öneriler Raporu filtre DTO
+/// </summary>
+public class SuggestionsFilterDto
+{
+    public Guid? ProjectId { get; set; }
+    public Guid? BranchId { get; set; }
+    public Guid? ChecklistId { get; set; }
     public Guid? EvaluatorId { get; set; }
+    public Guid? PersonnelId { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public string? SearchText { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Öneriler Raporu ana sonuç DTO
+/// </summary>
+public class SuggestionsReportResultDto
+{
+    public SuggestionsSummaryDto Summary { get; set; } = new();
+    public List<SuggestionDetailDto> Suggestions { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+}
+
+/// <summary>
+/// Öneriler raporu özet
+/// </summary>
+public class SuggestionsSummaryDto
+{
+    public int TotalSuggestions { get; set; }
+    public int TotalEvaluationsWithSuggestions { get; set; }
+    public int UniqueEvaluators { get; set; }
+    public int UniquePersonnel { get; set; }
+}
+
+/// <summary>
+/// Öneri detay satırı
+/// </summary>
+public class SuggestionDetailDto
+{
+    public Guid EvaluationId { get; set; }
+    public Guid AnswerId { get; set; }
+    public Guid QuestionId { get; set; }
+
+    // Soru bilgileri
+    public string QuestionText { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+
+    // Öneri/Not içeriği
+    public string? Notes { get; set; }
+    public string? RecommendationNotes { get; set; }
+
+    // Puan bilgisi
+    public decimal? GivenPoints { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public decimal? PercentageScore { get; set; }
+
+    // Proje ve şube
+    public string ProjectName { get; set; } = string.Empty;
+    public string? BranchName { get; set; }
+    public string? Region { get; set; }
+
+    // Değerlendirici ve personel
+    public string? EvaluatorName { get; set; }
+    public string? EvaluatedPersonnelName { get; set; }
+
+    // Tarih
+    public DateTime? EvaluationDate { get; set; }
+
+    // Ek bilgiler
+    public string? CallId { get; set; }
+    public bool IsPenaltyApplied { get; set; }
+    public string? PenaltyType { get; set; }
+}
+
+/// <summary>
+/// Soru bazlı öneri özeti (en çok öneri yazılan sorular)
+/// </summary>
+public class QuestionSuggestionSummaryDto
+{
+    public Guid QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+    public int SuggestionCount { get; set; }
+    public decimal AverageScore { get; set; }
 }

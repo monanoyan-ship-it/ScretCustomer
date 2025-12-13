@@ -27,6 +27,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="post" action="/Account/Logout">
+                                @Html.AntiForgeryToken()
                                 <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; cursor: pointer; width: 100%; text-align: left;">
                                     <i class="bi bi-box-arrow-right me-2"></i>
                                     Çıkış Yap

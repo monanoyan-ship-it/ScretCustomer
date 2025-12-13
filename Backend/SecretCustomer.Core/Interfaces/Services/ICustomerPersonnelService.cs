@@ -12,4 +12,5 @@ public interface ICustomerPersonnelService
     Task<CustomerPersonnelDto> UpdateAsync(Guid id, UpdateCustomerPersonnelDto updateDto);
     Task DeleteAsync(Guid id);
     Task ChangePasswordAsync(Guid personnelId, CustomerPersonnelChangePasswordDto changePasswordDto);
+    Task ResetPasswordAsync(Guid personnelId, AdminResetPasswordDto resetPasswordDto);
 }

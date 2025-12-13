@@ -1,24 +1,108 @@
-// ViewModel Constructor
+// Projects Index ViewModel - Consolidated
+// Pattern: Single Index.cshtml + Index.js with modals
+
+// Team Member ViewModel
+function TeamMemberViewModel(data) {
+    var self = this;
+    data = data || {};
+    self.userId = ko.observable(data.userId || '');
+    self.role = ko.observable(data.role || 'Evaluator');
+}
+
+// Branch ViewModel
+function BranchViewModel(data) {
+    var self = this;
+    data = data || {};
+    self.branchId = ko.observable(data.branchId || '');
+    self.targetCount = ko.observable(data.targetCount || null);
+    self.priority = ko.observable(data.priority || 0);
+}
+
+// Project Edit ViewModel
 function ProjectEditViewModel(data) {
     var self = this;
     data = data || {};
 
     self.id = data.id || null;
+    self.code = ko.observable(data.code || '');
     self.name = ko.observable(data.name || '');
     self.description = ko.observable(data.description || '');
     self.checklistId = ko.observable(data.checklistId || '');
+    self.projectType = ko.observable(data.projectType || 'MysteryShopping');
+    self.assignmentType = ko.observable(data.assignmentType || 'InternalBranch');
     self.startDate = ko.observable(data.startDate ? data.startDate.split('T')[0] : '');
     self.endDate = ko.observable(data.endDate ? data.endDate.split('T')[0] : '');
-    self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+    self.customerId = ko.observable(data.customerId || '');
+    self.projectManagerId = ko.observable(data.projectManagerId || '');
+
+    // Targets
+    self.targetCount = ko.observable(data.targetCount || null);
+    self.dailyQuota = ko.observable(data.dailyQuota || null);
+    self.weeklyQuota = ko.observable(data.weeklyQuota || null);
+    self.monthlyQuota = ko.observable(data.monthlyQuota || null);
+
+    // Budget
+    self.estimatedBudget = ko.observable(data.estimatedBudget || null);
+    self.costPerEvaluation = ko.observable(data.costPerEvaluation || null);
+
+    // Reporting
+    self.reportingFrequencyDays = ko.observable(data.reportingFrequencyDays || null);
+    self.autoGenerateReports = ko.observable(data.autoGenerateReports || false);
+    self.minimumScoreThreshold = ko.observable(data.minimumScoreThreshold || null);
+
+    // Other
+    self.priority = ko.observable(data.priority || '');
+    self.tags = ko.observable(data.tags || '');
+    self.notes = ko.observable(data.notes || '');
+
+    // Team & Branches
+    self.teamMembers = ko.observableArray([]);
+    self.branches = ko.observableArray([]);
+
+    // Load team members
+    if (data.teamMembers && data.teamMembers.length > 0) {
+        data.teamMembers.forEach(function(tm) {
+            self.teamMembers.push(new TeamMemberViewModel({ userId: tm.userId, role: tm.role }));
+        });
+    }
+
+    // Load branches
+    if (data.branches && data.branches.length > 0) {
+        data.branches.forEach(function(b) {
+            self.branches.push(new BranchViewModel({ branchId: b.branchId, targetCount: b.targetCount, priority: b.priority }));
+        });
+    }
 
     self.toDTO = function() {
         return {
+            code: self.code() || null,
             name: self.name(),
-            description: self.description(),
+            description: self.description() || null,
             checklistId: self.checklistId(),
+            projectType: self.projectType(),
+            assignmentType: self.assignmentType(),
             startDate: self.startDate(),
             endDate: self.endDate(),
-            isActive: self.isActive()
+            customerId: self.customerId() || null,
+            projectManagerId: self.projectManagerId() || null,
+            targetCount: self.targetCount() || null,
+            dailyQuota: self.dailyQuota() || null,
+            weeklyQuota: self.weeklyQuota() || null,
+            monthlyQuota: self.monthlyQuota() || null,
+            estimatedBudget: self.estimatedBudget() || null,
+            costPerEvaluation: self.costPerEvaluation() || null,
+            reportingFrequencyDays: self.reportingFrequencyDays() || null,
+            autoGenerateReports: self.autoGenerateReports(),
+            minimumScoreThreshold: self.minimumScoreThreshold() || null,
+            priority: self.priority() || null,
+            tags: self.tags() || null,
+            notes: self.notes() || null,
+            teamMembers: self.teamMembers().map(function(tm) {
+                return { userId: tm.userId(), role: tm.role() };
+            }).filter(function(tm) { return tm.userId; }),
+            branches: self.branches().map(function(b) {
+                return { branchId: b.branchId(), targetCount: b.targetCount() || null, priority: b.priority() || 0 };
+            }).filter(function(b) { return b.branchId; })
         };
     };
 }
@@ -32,131 +116,303 @@ function ProjectsViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
-    self.includeInactive = ko.observable(false);
 
     // Data
     self.projects = ko.observableArray([]);
-    self.availableChecklists = ko.observableArray([]);
-    self.editingProject = ko.observable(null);
+    self.stats = ko.observable({ total: 0, active: 0, upcoming: 0, completed: 0 });
 
-    // Modal state
-    self.isModalOpen = ko.observable(false);
+    // Dropdown data (loaded via API)
+    self.checklists = ko.observableArray([]);
+    self.customers = ko.observableArray([]);
+    self.users = ko.observableArray([]);
+    self.branches = ko.observableArray([]);
+
+    // Filters
+    self.searchTerm = ko.observable('');
+    self.statusFilter = ko.observable('');
+    self.projectTypeFilter = ko.observable('');
+    self.viewMode = ko.observable('table');
+
+    // Modals
+    self.isEditModalOpen = ko.observable(false);
+    self.isDetailModalOpen = ko.observable(false);
+    self.editingProject = ko.observable(null);
+    self.viewingProject = ko.observable(null);
+
+    // Text mappings
+    self.statusTexts = {
+        'Draft': 'Taslak', 'Planned': 'Planlandı', 'Active': 'Aktif',
+        'Paused': 'Duraklatıldı', 'Completed': 'Tamamlandı', 'Cancelled': 'İptal Edildi'
+    };
+    self.statusBadges = {
+        'Draft': 'bg-secondary', 'Planned': 'bg-info', 'Active': 'bg-success',
+        'Paused': 'bg-warning text-dark', 'Completed': 'bg-primary', 'Cancelled': 'bg-danger'
+    };
+    self.projectTypeTexts = {
+        'MysteryShopping': 'Gizli Müşteri', 'CallAuditing': 'Çağrı Denetimi',
+        'PhysicalAudit': 'Fiziksel Denetim', 'OnlineSurvey': 'Online Anket',
+        'CustomerSatisfaction': 'Müşteri Memnuniyeti', 'TrainingEvaluation': 'Eğitim Değerlendirme',
+        'QualityControl': 'Kalite Kontrol'
+    };
+    self.projectTypeBadges = {
+        'MysteryShopping': 'bg-primary', 'CallAuditing': 'bg-info',
+        'PhysicalAudit': 'bg-secondary', 'OnlineSurvey': 'bg-success',
+        'CustomerSatisfaction': 'bg-warning text-dark', 'TrainingEvaluation': 'bg-dark',
+        'QualityControl': 'bg-danger'
+    };
+    self.roleTexts = { 'Evaluator': 'Değerlendirici', 'Manager': 'Yönetici', 'Observer': 'Gözlemci' };
+
+    // Helpers
+    self.getStatusText = function(status) { return self.statusTexts[status] || status; };
+    self.getStatusBadge = function(status) { return self.statusBadges[status] || 'bg-secondary'; };
+    self.getProjectTypeText = function(type) { return self.projectTypeTexts[type] || type; };
+    self.getProjectTypeBadge = function(type) { return self.projectTypeBadges[type] || 'bg-secondary'; };
+    self.getRoleText = function(role) { return self.roleTexts[role] || role; };
+    self.formatDate = function(dateStr) {
+        if (!dateStr) return '-';
+        return new Date(dateStr).toLocaleDateString('tr-TR');
+    };
+    self.formatCurrency = function(value) {
+        if (!value) return '-';
+        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+    };
+
+    // Filtered projects
+    self.filteredProjects = ko.computed(function() {
+        var result = self.projects();
+        var term = self.searchTerm().toLowerCase();
+        if (term) {
+            result = result.filter(function(p) {
+                return (p.name && p.name.toLowerCase().indexOf(term) >= 0) ||
+                       (p.code && p.code.toLowerCase().indexOf(term) >= 0) ||
+                       (p.description && p.description.toLowerCase().indexOf(term) >= 0) ||
+                       (p.customerName && p.customerName.toLowerCase().indexOf(term) >= 0);
+            });
+        }
+        if (self.statusFilter()) {
+            result = result.filter(function(p) { return p.status === self.statusFilter(); });
+        }
+        if (self.projectTypeFilter()) {
+            result = result.filter(function(p) { return p.projectType === self.projectTypeFilter(); });
+        }
+        return result;
+    });
+
+    self.resetFilters = function() {
+        self.searchTerm('');
+        self.statusFilter('');
+        self.projectTypeFilter('');
+    };
+
+    // Load dropdown data
+    self.loadDropdownData = function() {
+        // Load checklists
+        fetch('/api/checklists', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.checklists(data || []); })
+            .catch(function() { console.error('Checklists could not be loaded'); });
+
+        // Load customers
+        fetch('/api/customers', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.customers(data || []); })
+            .catch(function() { console.error('Customers could not be loaded'); });
+
+        // Load users
+        fetch('/api/users', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.users(data || []); })
+            .catch(function() { console.error('Users could not be loaded'); });
+
+        // Load branches
+        fetch('/api/branches', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.branches(data || []); })
+            .catch(function() { console.error('Branches could not be loaded'); });
+    };
 
     // Load projects
     self.loadProjects = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        var url = '/api/projects';
-        if (self.includeInactive()) {
-            url += '?includeInactive=true';
-        }
-
-        fetch(url, { credentials: 'include' })
-            .then(res => {
+        fetch('/api/projects?includeInactive=true', { credentials: 'include' })
+            .then(function(res) {
                 if (!res.ok) throw new Error('Yükleme başarısız');
                 return res.json();
             })
-            .then(data => {
-                data.forEach(function(project) {
-                    project.completionPercentage = ko.computed(function() {
-                        var total = project.totalAssignments || 0;
-                        var completed = project.completedAssignments || 0;
-                        return total > 0 ? (completed * 100.0 / total).toFixed(0) : 0;
-                    });
-                });
+            .then(function(data) {
                 self.projects(data);
+                self.calculateStats(data);
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error('Error:', error);
                 self.errorMessage('Projeler yüklenirken bir hata oluştu.');
             })
-            .finally(() => {
+            .finally(function() {
                 self.isLoading(false);
             });
     };
 
-    // Load available checklists
-    self.loadChecklists = function() {
-        fetch('/api/checklists', { credentials: 'include' })
-            .then(res => res.json())
-            .then(data => {
-                self.availableChecklists(data.filter(c => c.isActive));
+    self.calculateStats = function(projects) {
+        var total = projects.length;
+        var active = projects.filter(function(p) { return p.status === 'Active'; }).length;
+        var completed = projects.filter(function(p) { return p.status === 'Completed'; }).length;
+        var now = new Date();
+        var weekLater = new Date();
+        weekLater.setDate(weekLater.getDate() + 7);
+        var upcoming = projects.filter(function(p) {
+            if (p.status !== 'Active') return false;
+            var endDate = new Date(p.endDate);
+            return endDate >= now && endDate <= weekLater;
+        }).length;
+        self.stats({ total: total, active: active, upcoming: upcoming, completed: completed });
+    };
+
+    // Open create modal
+    self.openCreateModal = function() {
+        self.editingProject(new ProjectEditViewModel());
+        self.isEditModalOpen(true);
+    };
+
+    // Open edit modal
+    self.openEditModal = function(project) {
+        self.isLoading(true);
+        fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Proje yüklenemedi');
+                return res.json();
             })
-            .catch(error => {
-                console.error('Error loading checklists:', error);
+            .then(function(data) {
+                self.editingProject(new ProjectEditViewModel(data));
+                self.isDetailModalOpen(false);
+                self.isEditModalOpen(true);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Proje yüklenirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
             });
     };
 
-    // Create new project
-    self.createNew = function() {
-        self.editingProject(new ProjectEditViewModel());
-        self.isModalOpen(true);
+    // Close edit modal
+    self.closeEditModal = function() {
+        self.isEditModalOpen(false);
+        self.editingProject(null);
     };
 
-    // Edit existing project
-    self.editProject = function(project) {
-        console.log('Fetching project:', project.id);
+    // Open detail modal
+    self.openDetailModal = function(project) {
+        self.isLoading(true);
+        fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Proje yüklenemedi');
+                return res.json();
+            })
+            .then(function(data) {
+                self.viewingProject(data);
+                self.isDetailModalOpen(true);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage('Proje detayı yüklenirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
+    };
 
-        fetch('/api/projects/' + project.id, { credentials: 'include' })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Error response (raw):', text);
+    // Close detail modal
+    self.closeDetailModal = function() {
+        self.isDetailModalOpen(false);
+        self.viewingProject(null);
+    };
 
-                        try {
-                            const errorData = JSON.parse(text);
-                            console.error('Error response (parsed):', errorData);
+    // Add team member
+    self.addTeamMember = function() {
+        if (self.editingProject()) {
+            self.editingProject().teamMembers.push(new TeamMemberViewModel());
+        }
+    };
 
-                            if (errorData.error) {
-                                console.error('Exception:', errorData.error);
-                                console.error('Stack trace:', errorData.details);
-                            }
+    // Remove team member
+    self.removeTeamMember = function(member) {
+        if (self.editingProject()) {
+            self.editingProject().teamMembers.remove(member);
+        }
+    };
 
-                            throw new Error(errorData.error || errorData.message || 'API Error: ' + response.status);
-                        } catch (jsonError) {
-                            console.error('Could not parse JSON, using text:', text);
-                            throw new Error('API Error: ' + response.status);
-                        }
-                    });
+    // Add branch
+    self.addBranch = function() {
+        if (self.editingProject()) {
+            self.editingProject().branches.push(new BranchViewModel());
+        }
+    };
+
+    // Remove branch
+    self.removeBranch = function(branch) {
+        if (self.editingProject()) {
+            self.editingProject().branches.remove(branch);
+        }
+    };
+
+    // Add all branches
+    self.addAllBranches = function() {
+        if (!self.editingProject() || self.branches().length === 0) {
+            toastr.warning('Eklenecek şube bulunamadı.');
+            return;
+        }
+        var existingIds = self.editingProject().branches().map(function(b) { return b.branchId(); });
+        self.branches().forEach(function(branch) {
+            if (existingIds.indexOf(branch.id) === -1) {
+                self.editingProject().branches.push(new BranchViewModel({ branchId: branch.id }));
+            }
+        });
+    };
+
+    // Generate code
+    self.generateCode = function() {
+        fetch('/api/projects/generate-code', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Kod oluşturulamadı');
+                return res.json();
+            })
+            .then(function(data) {
+                if (self.editingProject()) {
+                    self.editingProject().code(data.code);
                 }
-                return response.json();
             })
-            .then(data => {
-                console.log('Project data:', data);
-                self.editingProject(new ProjectEditViewModel(data));
-                self.isModalOpen(true);
-            })
-            .catch(error => {
-                console.error('Edit error:', error);
-                self.errorMessage('Proje yüklenirken bir hata oluştu: ' + error.message);
+            .catch(function(error) {
+                console.error('Error:', error);
+                toastr.error('Proje kodu oluşturulurken bir hata oluştu.');
             });
     };
 
     // Save project
     self.saveProject = function() {
         var project = self.editingProject();
+        if (!project) return;
 
         // Validation
         if (!project.name() || project.name().trim() === '') {
-            alert('Proje adı zorunludur!');
+            toastr.error('Proje adı zorunludur!');
             return;
         }
-
         if (!project.checklistId()) {
-            alert('Kontrol listesi seçmelisiniz!');
+            toastr.error('Kontrol listesi seçmelisiniz!');
             return;
         }
-
         if (!project.startDate() || !project.endDate()) {
-            alert('Başlangıç ve bitiş tarihleri zorunludur!');
+            toastr.error('Başlangıç ve bitiş tarihleri zorunludur!');
             return;
         }
 
         var dto = project.toDTO();
-
         self.isSaving(true);
+        self.errorMessage('');
+
         var endpoint = project.id ? '/api/projects/' + project.id : '/api/projects';
         var method = project.id ? 'PUT' : 'POST';
 
@@ -166,53 +422,158 @@ function ProjectsViewModel() {
             credentials: 'include',
             body: JSON.stringify(dto)
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Kayıt başarısız');
-            return response.json();
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(data) {
+                    throw new Error(data.message || data.error || 'Kayıt başarısız');
+                });
+            }
+            return res.json();
         })
-        .then(data => {
-            self.successMessage('Proje başarıyla kaydedildi.');
-            self.closeModal();
+        .then(function(data) {
+            toastr.success(project.id ? 'Proje güncellendi.' : 'Proje oluşturuldu.');
+            self.closeEditModal();
             self.loadProjects();
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Error:', error);
-            self.errorMessage('Proje kaydedilirken bir hata oluştu.');
+            toastr.error('Proje kaydedilirken bir hata oluştu: ' + error.message);
         })
-        .finally(() => {
+        .finally(function() {
             self.isSaving(false);
+        });
+    };
+
+    // Start project
+    self.startProject = function(project) {
+        if (!confirm('Projeyi başlatmak istediğinizden emin misiniz?')) return;
+
+        fetch('/api/projects/' + project.id + '/start', {
+            method: 'POST',
+            credentials: 'include'
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+            return res.json();
+        })
+        .then(function(data) {
+            toastr.success('Proje başlatıldı.');
+            self.loadProjects();
+            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                self.openDetailModal(project);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            toastr.error(error.message || 'Proje başlatılırken bir hata oluştu.');
+        });
+    };
+
+    // Pause project
+    self.pauseProject = function(project) {
+        if (!confirm('Projeyi duraklatmak istediğinizden emin misiniz?')) return;
+
+        fetch('/api/projects/' + project.id + '/pause', {
+            method: 'POST',
+            credentials: 'include'
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+            return res.json();
+        })
+        .then(function(data) {
+            toastr.success('Proje duraklatıldı.');
+            self.loadProjects();
+            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                self.openDetailModal(project);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            toastr.error(error.message || 'Proje duraklatılırken bir hata oluştu.');
+        });
+    };
+
+    // Complete project
+    self.completeProject = function(project) {
+        if (!confirm('Projeyi tamamlamak istediğinizden emin misiniz?')) return;
+
+        fetch('/api/projects/' + project.id + '/complete', {
+            method: 'POST',
+            credentials: 'include'
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+            return res.json();
+        })
+        .then(function(data) {
+            toastr.success('Proje tamamlandı.');
+            self.loadProjects();
+            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                self.openDetailModal(project);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            toastr.error(error.message || 'Proje tamamlanırken bir hata oluştu.');
+        });
+    };
+
+    // Cancel project
+    self.cancelProject = function(project) {
+        var reason = prompt('İptal nedeni (opsiyonel):');
+        if (reason === null) return;
+
+        fetch('/api/projects/' + project.id + '/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason: reason || null })
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+            return res.json();
+        })
+        .then(function(data) {
+            toastr.success('Proje iptal edildi.');
+            self.loadProjects();
+            if (self.isDetailModalOpen()) {
+                self.closeDetailModal();
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            toastr.error(error.message || 'Proje iptal edilirken bir hata oluştu.');
         });
     };
 
     // Delete project
     self.deleteProject = function(project) {
         deleteConfirmation.show('Bu projeyi silmek istediğinizden emin misiniz?', function() {
-
-        fetch('/api/projects/' + project.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Silme başarısız');
-            self.successMessage('Proje başarıyla silindi.');
-            self.projects.remove(project);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.errorMessage('Proje silinirken bir hata oluştu.');
+            fetch('/api/projects/' + project.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Silme başarısız');
+                toastr.success('Proje başarıyla silindi.');
+                self.projects.remove(project);
+                self.calculateStats(self.projects());
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                toastr.error('Proje silinirken bir hata oluştu.');
+            });
         });
-        });
-    };
-
-    // Close modal
-    self.closeModal = function() {
-        self.isModalOpen(false);
-        self.editingProject(null);
     };
 
     // Initialize
-    self.loadProjects();
-    self.loadChecklists();
+    self.init = function() {
+        self.loadDropdownData();
+        self.loadProjects();
+    };
+
+    self.init();
 }
 
 // Apply bindings

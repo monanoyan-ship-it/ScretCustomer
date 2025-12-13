@@ -1,0 +1,106 @@
+namespace SecretCustomer.Core.DTOs.Approval;
+
+/// <summary>
+/// Onay DTO
+/// </summary>
+public class ApprovalDto
+{
+    public Guid Id { get; set; }
+    public string ReferenceNumber { get; set; } = string.Empty;
+    public string ApprovalType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public Guid? RelatedEntityId { get; set; }
+    public string? RelatedEntityType { get; set; }
+    public Guid RequestedByUserId { get; set; }
+    public string? RequestedByUserName { get; set; }
+    public Guid? ApproverUserId { get; set; }
+    public string? ApproverUserName { get; set; }
+    public Guid? ApprovedByUserId { get; set; }
+    public string? ApprovedByUserName { get; set; }
+    public DateTime RequestedAt { get; set; }
+    public DateTime? DueDate { get; set; }
+    public DateTime? RespondedAt { get; set; }
+    public string? ResponseNote { get; set; }
+    public string Priority { get; set; } = string.Empty;
+    public int ApprovalLevel { get; set; }
+    public int RequiredApprovalLevels { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status == "Pending";
+}
+
+/// <summary>
+/// Onay listesi DTO
+/// </summary>
+public class ApprovalListDto
+{
+    public Guid Id { get; set; }
+    public string ReferenceNumber { get; set; } = string.Empty;
+    public string ApprovalType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? RequestedByUserName { get; set; }
+    public DateTime RequestedAt { get; set; }
+    public DateTime? DueDate { get; set; }
+    public string Priority { get; set; } = string.Empty;
+    public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status == "Pending";
+}
+
+/// <summary>
+/// Onay talebi oluşturma DTO
+/// </summary>
+public class CreateApprovalDto
+{
+    public string ApprovalType { get; set; } = "General";
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public Guid? RelatedEntityId { get; set; }
+    public string? RelatedEntityType { get; set; }
+    public Guid? ApproverUserId { get; set; }
+    public DateTime? DueDate { get; set; }
+    public string Priority { get; set; } = "Normal";
+    public int? AutoApproveHours { get; set; }
+    public int RequiredApprovalLevels { get; set; } = 1;
+}
+
+/// <summary>
+/// Onay yanıtı DTO
+/// </summary>
+public class ApprovalResponseDto
+{
+    public bool Approved { get; set; }
+    public string? Note { get; set; }
+}
+
+/// <summary>
+/// Onay filtre DTO
+/// </summary>
+public class ApprovalFilterDto
+{
+    public string? ApprovalType { get; set; }
+    public string? Status { get; set; }
+    public string? Priority { get; set; }
+    public Guid? RequestedByUserId { get; set; }
+    public Guid? ApproverUserId { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public bool? IsOverdue { get; set; }
+    public string? SearchTerm { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+}
+
+/// <summary>
+/// Onay özeti DTO
+/// </summary>
+public class ApprovalSummaryDto
+{
+    public int TotalApprovals { get; set; }
+    public int PendingApprovals { get; set; }
+    public int ApprovedCount { get; set; }
+    public int RejectedCount { get; set; }
+    public int OverdueCount { get; set; }
+    public int TodayApprovals { get; set; }
+    public List<ApprovalListDto> RecentApprovals { get; set; } = new();
+}

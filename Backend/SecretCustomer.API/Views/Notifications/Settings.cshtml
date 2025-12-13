@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "Bildirim Ayarları";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Bildirim Ayarları</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/Notifications">Bildirimler</a></li>
+                    <li class="breadcrumb-item active">Ayarlar</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="/Notifications" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Geri
+            </a>
+        </div>
+    </div>
+
+    <!-- Settings Card -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Bildirim Tercihleri</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-4">Her bildirim türü için hangi kanallardan bildirim almak istediğinizi seçin.</p>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 30%">Bildirim Türü</th>
+                            <th class="text-center">Uygulama İçi</th>
+                            <th class="text-center">E-posta</th>
+                            <th class="text-center">SMS</th>
+                            <th class="text-center">Push</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: settings">
+                        <tr>
+                            <td>
+                                <span data-bind="text: $parent.getNotificationTypeText(notificationType)"></span>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" data-bind="checked: inAppEnabled, event: { change: $parent.updateSetting.bind($parent, $data) }">
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" data-bind="checked: emailEnabled, event: { change: $parent.updateSetting.bind($parent, $data) }">
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" data-bind="checked: smsEnabled, event: { change: $parent.updateSetting.bind($parent, $data) }">
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" data-bind="checked: pushEnabled, event: { change: $parent.updateSetting.bind($parent, $data) }">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-4" data-bind="visible: settings().length === 0 && !loading()">
+                <p class="text-muted">Henüz bildirim ayarı bulunmamaktadır.</p>
+                <button class="btn btn-primary" data-bind="click: initializeSettings">
+                    <i class="fas fa-plus me-2"></i>Varsayılan Ayarları Oluştur
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="text-center py-4" data-bind="visible: loading()">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Bilgi</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Bildirim Kanalları</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-desktop text-primary me-2"></i><strong>Uygulama İçi:</strong> Sistemde oturum açtığınızda gösterilir</li>
+                        <li><i class="fas fa-envelope text-info me-2"></i><strong>E-posta:</strong> Kayıtlı e-posta adresinize gönderilir</li>
+                        <li><i class="fas fa-sms text-success me-2"></i><strong>SMS:</strong> Kayıtlı telefon numaranıza gönderilir</li>
+                        <li><i class="fas fa-mobile-alt text-warning me-2"></i><strong>Push:</strong> Mobil cihazınıza anlık bildirim gönderilir</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Önemli Notlar</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Değişiklikler otomatik olarak kaydedilir</li>
+                        <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Acil öncelikli bildirimler her durumda gönderilir</li>
+                        <li><i class="fas fa-shield-alt text-secondary me-2"></i>Sistem bildirimleri devre dışı bırakılamaz</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Notifications/settings.js"></script>
+}

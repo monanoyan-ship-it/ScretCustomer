@@ -55,6 +55,11 @@ var customerApiService = (function() {
 
         changePersonnelPassword: function(id, passwordData) {
             return apiService.post('/customer-personnel/' + id + '/change-password', passwordData);
+        },
+
+        // Admin tarafından şifre sıfırlama - eski şifre gerektirmez
+        resetPersonnelPassword: function(id, newPassword) {
+            return apiService.post('/customer-personnel/' + id + '/reset-password', { newPassword: newPassword });
         }
     };
 })();

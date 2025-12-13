@@ -37,11 +37,25 @@ public class ChecklistService : IChecklistService
             IsScored = dto.IsScored,
             IsActive = true,
             Version = 1,
+            // Yeni alanlar
+            ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance,
+            ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum,
+            MaxTotalPoints = dto.MaxTotalPoints,
+            Code = dto.Code,
+            TemplateName = dto.TemplateName,
+            ValidFrom = dto.ValidFrom,
+            ValidUntil = dto.ValidUntil,
+            EstimatedDurationMinutes = dto.EstimatedDurationMinutes,
             Sections = dto.Sections.Select(s => new Section
             {
                 Name = s.Name,
                 Description = s.Description,
                 Order = s.Order,
+                // Yeni alanlar
+                GroupType = Enum.TryParse<ScoringType>(s.GroupType, out var gType) ? gType : ScoringType.Scored,
+                WeightPoints = s.WeightPoints,
+                MaxPoints = s.MaxPoints,
+                IsActive = s.IsActive,
                 Questions = s.Questions.Select(q => new Question
                 {
                     Text = q.Text,
@@ -50,7 +64,15 @@ public class ChecklistService : IChecklistService
                     Points = q.Points,
                     AllowNA = q.AllowNA,
                     IsRequired = q.IsRequired,
-                    OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null
+                    OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null,
+                    // Yeni alanlar
+                    ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                    WeightPoints = q.WeightPoints,
+                    MaxPoints = q.MaxPoints,
+                    PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                    RecommendedNote = q.RecommendedNote,
+                    HelpText = q.HelpText,
+                    PenaltyValue = q.PenaltyValue
                 }).ToList()
             }).ToList()
         };
@@ -69,6 +91,15 @@ public class ChecklistService : IChecklistService
         existing.Description = dto.Description;
         existing.IsScored = dto.IsScored;
         existing.IsActive = dto.IsActive;
+        // Yeni alanlar
+        existing.ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance;
+        existing.ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum;
+        existing.MaxTotalPoints = dto.MaxTotalPoints;
+        existing.Code = dto.Code;
+        existing.TemplateName = dto.TemplateName;
+        existing.ValidFrom = dto.ValidFrom;
+        existing.ValidUntil = dto.ValidUntil;
+        existing.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
 
         // Update sections
         var existingSectionIds = existing.Sections.Select(s => s.Id).ToHashSet();
@@ -93,6 +124,11 @@ public class ChecklistService : IChecklistService
                     section.Name = sectionDto.Name;
                     section.Description = sectionDto.Description;
                     section.Order = sectionDto.Order;
+                    // Yeni alanlar
+                    section.GroupType = Enum.TryParse<ScoringType>(sectionDto.GroupType, out var gType) ? gType : ScoringType.Scored;
+                    section.WeightPoints = sectionDto.WeightPoints;
+                    section.MaxPoints = sectionDto.MaxPoints;
+                    section.IsActive = sectionDto.IsActive;
 
                     UpdateQuestions(section, sectionDto.Questions);
                 }
@@ -105,6 +141,11 @@ public class ChecklistService : IChecklistService
                     Name = sectionDto.Name,
                     Description = sectionDto.Description,
                     Order = sectionDto.Order,
+                    // Yeni alanlar
+                    GroupType = Enum.TryParse<ScoringType>(sectionDto.GroupType, out var gType) ? gType : ScoringType.Scored,
+                    WeightPoints = sectionDto.WeightPoints,
+                    MaxPoints = sectionDto.MaxPoints,
+                    IsActive = sectionDto.IsActive,
                     Questions = sectionDto.Questions.Select(q => new Question
                     {
                         Text = q.Text,
@@ -113,7 +154,15 @@ public class ChecklistService : IChecklistService
                         Points = q.Points,
                         AllowNA = q.AllowNA,
                         IsRequired = q.IsRequired,
-                        OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null
+                        OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null,
+                        // Yeni alanlar
+                        ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                        WeightPoints = q.WeightPoints,
+                        MaxPoints = q.MaxPoints,
+                        PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                        RecommendedNote = q.RecommendedNote,
+                        HelpText = q.HelpText,
+                        PenaltyValue = q.PenaltyValue
                     }).ToList()
                 });
             }
@@ -193,6 +242,14 @@ public class ChecklistService : IChecklistService
                     question.AllowNA = questionDto.AllowNA;
                     question.IsRequired = questionDto.IsRequired;
                     question.OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null;
+                    // Yeni alanlar
+                    question.ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored;
+                    question.WeightPoints = questionDto.WeightPoints;
+                    question.MaxPoints = questionDto.MaxPoints;
+                    question.PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None;
+                    question.RecommendedNote = questionDto.RecommendedNote;
+                    question.HelpText = questionDto.HelpText;
+                    question.PenaltyValue = questionDto.PenaltyValue;
                 }
             }
             else
@@ -206,7 +263,15 @@ public class ChecklistService : IChecklistService
                     Points = questionDto.Points,
                     AllowNA = questionDto.AllowNA,
                     IsRequired = questionDto.IsRequired,
-                    OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null
+                    OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null,
+                    // Yeni alanlar
+                    ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                    WeightPoints = questionDto.WeightPoints,
+                    MaxPoints = questionDto.MaxPoints,
+                    PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                    RecommendedNote = questionDto.RecommendedNote,
+                    HelpText = questionDto.HelpText,
+                    PenaltyValue = questionDto.PenaltyValue
                 });
             }
         }
@@ -241,12 +306,29 @@ public class ChecklistService : IChecklistService
             IsActive = checklist.IsActive,
             Version = checklist.Version,
             CreatedAt = checklist.CreatedAt,
+            // Yeni alanlar
+            ChecklistType = checklist.ChecklistType.ToString(),
+            ChecklistTypeName = GetChecklistTypeName(checklist.ChecklistType),
+            ScoringMethod = checklist.ScoringMethod.ToString(),
+            ScoringMethodName = GetScoringMethodName(checklist.ScoringMethod),
+            MaxTotalPoints = checklist.MaxTotalPoints,
+            Code = checklist.Code,
+            TemplateName = checklist.TemplateName,
+            ValidFrom = checklist.ValidFrom,
+            ValidUntil = checklist.ValidUntil,
+            EstimatedDurationMinutes = checklist.EstimatedDurationMinutes,
             Sections = checklist.Sections.OrderBy(s => s.Order).Select(s => new SectionDto
             {
                 Id = s.Id,
                 Name = s.Name,
                 Description = s.Description,
                 Order = s.Order,
+                // Yeni alanlar
+                GroupType = s.GroupType.ToString(),
+                GroupTypeName = GetScoringTypeName(s.GroupType),
+                WeightPoints = s.WeightPoints,
+                MaxPoints = s.MaxPoints,
+                IsActive = s.IsActive,
                 Questions = s.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto
                 {
                     Id = q.Id,
@@ -256,9 +338,54 @@ public class ChecklistService : IChecklistService
                     Points = q.Points,
                     AllowNA = q.AllowNA,
                     IsRequired = q.IsRequired,
-                    Options = ParseQuestionOptions(q.OptionsJson)
+                    Options = ParseQuestionOptions(q.OptionsJson),
+                    // Yeni alanlar
+                    ScoringType = q.ScoringType.ToString(),
+                    ScoringTypeName = GetScoringTypeName(q.ScoringType),
+                    WeightPoints = q.WeightPoints,
+                    MaxPoints = q.MaxPoints,
+                    PenaltyType = q.PenaltyType.ToString(),
+                    PenaltyTypeName = GetPenaltyTypeName(q.PenaltyType),
+                    RecommendedNote = q.RecommendedNote,
+                    HelpText = q.HelpText,
+                    PenaltyValue = q.PenaltyValue
                 }).ToList()
             }).ToList()
         };
     }
+
+    private static string GetChecklistTypeName(ChecklistType type) => type switch
+    {
+        ChecklistType.CallPerformance => "Çağrı Performans",
+        ChecklistType.PhysicalAudit => "Fiziksel Denetim",
+        ChecklistType.MysteryShopping => "Gizli Müşteri",
+        ChecklistType.OnlineEvaluation => "Online Değerlendirme",
+        ChecklistType.Survey => "Anket",
+        _ => type.ToString()
+    };
+
+    private static string GetScoringMethodName(ScoringMethod method) => method switch
+    {
+        ScoringMethod.Maximum => "Maksimum",
+        ScoringMethod.Average => "Ortalama",
+        ScoringMethod.WeightedAverage => "Ağırlıklı Ortalama",
+        ScoringMethod.Sum => "Toplam",
+        _ => method.ToString()
+    };
+
+    private static string GetScoringTypeName(ScoringType type) => type switch
+    {
+        ScoringType.Scored => "Puanlı",
+        ScoringType.Unscored => "Puansız",
+        ScoringType.Penalty => "Cezalı",
+        _ => type.ToString()
+    };
+
+    private static string GetPenaltyTypeName(PenaltyType type) => type switch
+    {
+        PenaltyType.None => "Yok",
+        PenaltyType.YellowCard => "Sarı Kart",
+        PenaltyType.RedCard => "Kırmızı Kart",
+        _ => type.ToString()
+    };
 }

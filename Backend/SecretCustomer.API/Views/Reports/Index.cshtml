@@ -1,0 +1,361 @@
+@{
+    ViewData["Title"] = "Raporlar";
+}
+
+<div id="reports-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-bar-graph"></i> Raporlar</h2>
+        <div class="btn-group">
+            <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
+                <span data-bind="visible: !isExporting()">
+                    <i class="bi bi-file-earmark-excel"></i> Excel İndir
+                </span>
+                <span data-bind="visible: isExporting">
+                    <span class="spinner-border spinner-border-sm"></span> İndiriliyor...
+                </span>
+            </button>
+            <button class="btn btn-outline-success" data-bind="click: exportDetailedToExcel, disable: isExporting">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Detaylı Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Proje</label>
+                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Projeler'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Şube</label>
+                    <select class="form-select" data-bind="value: filter.branchId, options: branches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Şubeler'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Değerlendirici</label>
+                    <select class="form-select" data-bind="value: filter.evaluatorId, options: evaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Tüm Değerlendiriciler'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kontrol Listesi</label>
+                    <select class="form-select" data-bind="value: filter.checklistId, options: checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Listeler'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bölge</label>
+                    <select class="form-select" data-bind="value: filter.region, options: regions, optionsCaption: 'Tüm Bölgeler'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.status">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Completed">Tamamlandı</option>
+                        <option value="Draft">Taslak</option>
+                        <option value="InProgress">Devam Eden</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.startDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.endDate">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-primary" data-bind="click: applyFilters">
+                            <i class="bi bi-search"></i> Ara
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
+                            <i class="bi bi-x-circle"></i> Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-white-50 mb-0">Toplam</h6>
+                    <h3 class="mb-0" data-bind="text: totalEvaluations"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-white-50 mb-0">Tamamlanan</h6>
+                    <h3 class="mb-0" data-bind="text: completedEvaluations"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-dark-50 mb-0">Bekleyen</h6>
+                    <h3 class="mb-0" data-bind="text: pendingEvaluations"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-white-50 mb-0">Ort. Puan</h6>
+                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%'"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-white-50 mb-0">Sarı Kart</h6>
+                    <h3 class="mb-0" data-bind="text: totalYellowCards"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body py-2">
+                    <h6 class="text-white-50 mb-0">Kırmızı Kart</h6>
+                    <h3 class="mb-0" data-bind="text: totalRedCards"></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+    </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Results Table -->
+    <div data-bind="visible: !isLoading()" class="card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span>
+                <strong data-bind="text: paginationInfo().totalCount"></strong> sonuç bulundu
+                <span class="text-muted" data-bind="visible: paginationInfo().totalPages > 1">
+                    (Sayfa <span data-bind="text: filter.page"></span> / <span data-bind="text: paginationInfo().totalPages"></span>)
+                </span>
+            </span>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" data-bind="click: previousPage, disable: !paginationInfo().hasPreviousPage">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-secondary" data-bind="click: nextPage, disable: !paginationInfo().hasNextPage">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <!-- Empty State -->
+            <div data-bind="visible: evaluations().length === 0" class="text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2">Sonuç bulunamadı.</p>
+            </div>
+
+            <!-- Table -->
+            <div data-bind="visible: evaluations().length > 0" class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Proje</th>
+                            <th>Şube</th>
+                            <th>Değerlendirici</th>
+                            <th>Tarih</th>
+                            <th>Puan</th>
+                            <th>Kartlar</th>
+                            <th>Durum</th>
+                            <th class="text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: evaluations">
+                        <tr>
+                            <td>
+                                <span data-bind="text: projectName"></span>
+                                <small class="text-muted d-block" data-bind="text: checklistName"></small>
+                            </td>
+                            <td>
+                                <span data-bind="text: branchName || '-'"></span>
+                                <small class="text-muted d-block" data-bind="text: region || ''"></small>
+                            </td>
+                            <td>
+                                <span data-bind="text: evaluatorName || '-'"></span>
+                                <small class="text-muted d-block" data-bind="visible: evaluatedPersonnelName, text: 'Denetlenen: ' + (evaluatedPersonnelName || '')"></small>
+                            </td>
+                            <td>
+                                <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : '-'"></span>
+                                <small class="text-muted d-block" data-bind="text: completedAt ? new Date(completedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''"></small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 20px; min-width: 80px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             data-bind="style: { width: (scorePercentage || 0) + '%' },
+                                                        css: (scorePercentage || 0) >= 70 ? 'bg-success' : ((scorePercentage || 0) >= 50 ? 'bg-warning' : 'bg-danger')">
+                                        </div>
+                                    </div>
+                                    <strong data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span data-bind="visible: yellowCardCount > 0" class="badge bg-warning text-dark me-1">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span>
+                                </span>
+                                <span data-bind="visible: redCardCount > 0" class="badge bg-danger">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span>
+                                </span>
+                                <span data-bind="visible: yellowCardCount === 0 && redCardCount === 0" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.viewDetail" title="Detay">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-white" data-bind="visible: paginationInfo().totalPages > 1">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasPreviousPage }">
+                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                    </li>
+                    <!-- ko foreach: pageNumbers -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.filter.page() }">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasNextPage }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> Değerlendirme Detayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: selectedDetail">
+                    <!-- Header Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2">Genel Bilgiler</h6>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Proje:</dt>
+                                <dd class="col-sm-8" data-bind="text: projectName"></dd>
+                                <dt class="col-sm-4">Şube:</dt>
+                                <dd class="col-sm-8" data-bind="text: branchName || '-'"></dd>
+                                <dt class="col-sm-4">Kontrol Listesi:</dt>
+                                <dd class="col-sm-8" data-bind="text: checklistName"></dd>
+                                <dt class="col-sm-4">Değerlendirici:</dt>
+                                <dd class="col-sm-8" data-bind="text: evaluatorName || '-'"></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="border-bottom pb-2">Puanlama</h6>
+                            <div class="row text-center">
+                                <div class="col">
+                                    <h2 class="mb-0 text-primary" data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></h2>
+                                    <small class="text-muted">Puan</small>
+                                </div>
+                                <div class="col">
+                                    <h2 class="mb-0 text-warning" data-bind="text: yellowCardCount"></h2>
+                                    <small class="text-muted">Sarı Kart</small>
+                                </div>
+                                <div class="col">
+                                    <h2 class="mb-0 text-danger" data-bind="text: redCardCount"></h2>
+                                    <small class="text-muted">Kırmızı Kart</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sections -->
+                    <div data-bind="foreach: sections">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <span data-bind="text: order"></span>. <span data-bind="text: sectionName"></span>
+                                    <span class="float-end badge bg-primary" data-bind="text: (sectionScore || 0).toFixed(1) + '/' + (sectionMaxScore || 0).toFixed(1)"></span>
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50%;">Soru</th>
+                                            <th>Cevap</th>
+                                            <th>Puan</th>
+                                            <th>Not</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: questions">
+                                        <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
+                                            <td>
+                                                <small><span data-bind="text: order"></span>.</small>
+                                                <span data-bind="text: questionText"></span>
+                                            </td>
+                                            <td>
+                                                <span data-bind="visible: isNA" class="badge bg-secondary">N/A</span>
+                                                <span data-bind="visible: !isNA && answerText, text: answerText"></span>
+                                                <span data-bind="visible: !isNA && answerNumeric, text: answerNumeric"></span>
+                                            </td>
+                                            <td>
+                                                <span data-bind="text: (givenPoints || 0).toFixed(1) + '/' + (maxPoints || 0).toFixed(1)"></span>
+                                            </td>
+                                            <td>
+                                                <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">Sarı Kart</span>
+                                                <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">Kırmızı Kart</span>
+                                                <small data-bind="text: notes" class="d-block text-muted"></small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comment -->
+                    <div data-bind="visible: comment" class="alert alert-info">
+                        <strong>Genel Yorum:</strong> <span data-bind="text: comment"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Reports/Index.js"></script>
+}

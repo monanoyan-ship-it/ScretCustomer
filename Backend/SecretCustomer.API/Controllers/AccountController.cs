@@ -113,4 +113,114 @@ public class AccountController : Controller
     {
         return View();
     }
+
+    // Şifremi Unuttum
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var result = await _authService.ForgotPasswordAsync(model);
+
+            if (result.Success)
+            {
+                // Development ortamında token'ı göster
+                if (!string.IsNullOrEmpty(result.ResetToken))
+                {
+                    TempData["ResetToken"] = result.ResetToken;
+                    TempData["Email"] = model.Email;
+                }
+
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction("ForgotPasswordConfirmation");
+            }
+
+            ModelState.AddModelError(string.Empty, result.Message);
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during forgot password for email {Email}", model.Email);
+            ModelState.AddModelError(string.Empty, "İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            return View(model);
+        }
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ForgotPasswordConfirmation()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ResetPassword(string? token = null, string? email = null)
+    {
+        if (string.IsNullOrEmpty(token) && TempData["ResetToken"] != null)
+        {
+            token = TempData["ResetToken"]?.ToString();
+            email = TempData["Email"]?.ToString();
+        }
+
+        var model = new ResetPasswordDto
+        {
+            Token = token ?? string.Empty,
+            Email = email ?? string.Empty
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var result = await _authService.ResetPasswordAsync(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction("ResetPasswordConfirmation");
+            }
+
+            ModelState.AddModelError(string.Empty, result.Message);
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset for email {Email}", model.Email);
+            ModelState.AddModelError(string.Empty, "İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            return View(model);
+        }
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ResetPasswordConfirmation()
+    {
+        return View();
+    }
 }

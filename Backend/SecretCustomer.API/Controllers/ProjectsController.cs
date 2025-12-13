@@ -3,9 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecretCustomer.API.Controllers;
 
-[Authorize(Roles = "Admin")]
+/// <summary>
+/// Proje yönetimi MVC controller
+/// </summary>
+[Authorize(Roles = "Admin,TeamLeader")]
 public class ProjectsController : Controller
 {
+    /// <summary>
+    /// Proje yönetimi sayfası (Liste + Create/Edit/Detail modalleri)
+    /// </summary>
     public IActionResult Index()
     {
         return View();

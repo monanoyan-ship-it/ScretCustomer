@@ -1,0 +1,63 @@
+Modül No;Modül Adı;Alt Özellik;Açıklama;Durum;Notlar
+1;KONTROL LİSTESİ YÖNETİMİ;4 Adımlı Wizard;Genel Bilgiler → Kontrol Listesi → Denetim Yorumu → Özet Bilgiler;TAMAMLANDI;ChecklistsController
+1;KONTROL LİSTESİ YÖNETİMİ;Kontrol Grupları;Çağrı Standartlarına Uyum, Aktif Dinleme, Ses Tonu, İş Bilgisi, Konuşma Tarzı vb.;TAMAMLANDI;
+1;KONTROL LİSTESİ YÖNETİMİ;Soru Tipleri;Puanlı, Puansız, Cezalı (Sarı Kart / Kırmızı Kart);TAMAMLANDI;
+1;KONTROL LİSTESİ YÖNETİMİ;Puanlama;Ağırlık Puanı, Maks Puan, Verilen Puan, N/A seçeneği;TAMAMLANDI;
+1;KONTROL LİSTESİ YÖNETİMİ;Öneriler;Her soru için öneri açıklaması;TAMAMLANDI;
+1;KONTROL LİSTESİ YÖNETİMİ;Dosya Ekleme;Sorulara dosya/belge ekleme;TAMAMLANDI;QuestionAttachmentsApiController
+1;KONTROL LİSTESİ YÖNETİMİ;Soru Notlarını Yapıştır;Toplu not yapıştırma butonu;TAMAMLANDI;
+2;ÇAĞRI DENETLEME (Evaluation);Denetim Formu;Değerlendirme yapan, Kontrol Tipi, Kontrol Listesi seçimi;TAMAMLANDI;EvaluationsController
+2;ÇAĞRI DENETLEME (Evaluation);Değerlendirilen;Tanımlı Personel veya Tanımsız Personel;TAMAMLANDI;
+2;ÇAĞRI DENETLEME (Evaluation);Denetlenen Çağrı;Çağrı ID/numarası;TAMAMLANDI;
+2;ÇAĞRI DENETLEME (Evaluation);K.L. Saati / Süresi;Kontrol listesi doldurma süresi;TAMAMLANDI;
+2;ÇAĞRI DENETLEME (Evaluation);Durum Yönetimi;İşlemde, Taslak, Tamamlandı, İptal;TAMAMLANDI;
+2;ÇAĞRI DENETLEME (Evaluation);Form İşlemleri;Kaydet ve Çık, Formu İptal Et, Formu Kapat, Geri Dön;TAMAMLANDI;
+3;PROJE YÖNETİMİ;Proje Bilgileri;Müşteri, Talep Tarihi, Plan Başlangıç/Bitiş, Açıklama;TAMAMLANDI;ProjectsController
+3;PROJE YÖNETİMİ;Proje Yöneticisi;Atanmış yönetici;TAMAMLANDI;
+3;PROJE YÖNETİMİ;KL Şablonu;Kullanılacak Kontrol Listesi şablonu;TAMAMLANDI;
+3;PROJE YÖNETİMİ;Yüklenici;Proje yüklenicisi;TAMAMLANDI;
+3;PROJE YÖNETİMİ;Belge;Proje belgeleri;TAMAMLANDI;
+4;RAPORLAMA SİSTEMİ;ÇD Raporu;Çağrı Denetleme Raporu - Genel ve Detay sekmeleri;TAMAMLANDI;ReportsController
+4;RAPORLAMA SİSTEMİ;Cezalı KL Raporu;Sarı Kart / Kırmızı Kart alan değerlendirmeler;TAMAMLANDI;
+4;RAPORLAMA SİSTEMİ;Süreç Analizi;Müşteri temsilcisi bazlı, Kontrol sorusu bazlı, Ortalama puan, Hata sayısı;TAMAMLANDI;
+4;RAPORLAMA SİSTEMİ;Periyodik Raporlar;Aylık/dönemsel proje performansları;TAMAMLANDI;
+4;RAPORLAMA SİSTEMİ;Grafik Analizleri;Dashboard'da görsel grafikler (pasta grafik vb.);TAMAMLANDI;
+4;RAPORLAMA SİSTEMİ;PowerPoint Export;Otomatik PowerPoint rapor oluşturma;BEKLIYOR;İsteğe bağlı
+5;ORGANİZASYON YÖNETİMİ;Hiyerarşi Yönetimi;Organizasyon ağacı;TAMAMLANDI;OrganizationController
+5;ORGANİZASYON YÖNETİMİ;Hiyerarşi Kontrol;Yetki kontrolleri;TAMAMLANDI;
+5;ORGANİZASYON YÖNETİMİ;Organizasyon Raporu;Organizasyon raporları;TAMAMLANDI;
+5;ORGANİZASYON YÖNETİMİ;Organizasyon Şeması;Görsel şema;TAMAMLANDI;
+5;ORGANİZASYON YÖNETİMİ;Vekalet Yönetimi;Vekalet atamaları;TAMAMLANDI;DelegationsApiController
+5;ORGANİZASYON YÖNETİMİ;Lokasyon;Lokasyon/şube yönetimi;TAMAMLANDI;BranchesController
+6;PERSONEL YÖNETİMİ;Personel Listesi;Aktif/Pasif filtreleme;TAMAMLANDI;PersonnelController
+6;PERSONEL YÖNETİMİ;Personel Bilgileri;Ad Soyad, TC Kimlik, ERP No, Sicil No, Unvan, Cinsiyet, Doğum Tarihi, İşe Başlama;TAMAMLANDI;
+6;PERSONEL YÖNETİMİ;Firma Bazlı;Personel firma ataması;TAMAMLANDI;
+6;PERSONEL YÖNETİMİ;Email/Telefon;İletişim bilgileri;TAMAMLANDI;
+6;PERSONEL YÖNETİMİ;Müşteri Personeli;Müşteri firmaların personel yüklemesi;TAMAMLANDI;CustomerPersonnelController
+7;ERİŞİM YÖNETİMİ;Unvan Bazlı İzinler;Unvana göre yetki atama;TAMAMLANDI;PermissionsController
+7;ERİŞİM YÖNETİMİ;Unvan Tipi Bazlı İzinler;Unvan tipine göre yetki;TAMAMLANDI;
+7;ERİŞİM YÖNETİMİ;Kişi Bazlı İzinler;Bireysel yetki atama;TAMAMLANDI;
+7;ERİŞİM YÖNETİMİ;İzinleri Göster;Mevcut yetkileri listeleme;TAMAMLANDI;
+8;MÜŞTERİ/BAYİ YÖNETİMİ;Müşteri/Bayi Listesi;Müşteri kayıtları;TAMAMLANDI;CustomersController
+8;MÜŞTERİ/BAYİ YÖNETİMİ;Şube Yönetimi;Müşteri şubeleri;TAMAMLANDI;BranchesController
+8;MÜŞTERİ/BAYİ YÖNETİMİ;Müşteri Pers. Yükleme;Excel ile toplu personel yükleme;TAMAMLANDI;
+8;MÜŞTERİ/BAYİ YÖNETİMİ;Müşteri Ziyareti;Ziyaret kayıtları;TAMAMLANDI;CustomerVisitsApiController
+9;DENETİM DÜZENLEME MODÜLÜ;Toplantı Yönetimi;Toplantı planlama;TAMAMLANDI;MeetingsController
+9;DENETİM DÜZENLEME MODÜLÜ;Çağrı Yönetimi;Çağrı kayıtları;TAMAMLANDI;CallsController
+9;DENETİM DÜZENLEME MODÜLÜ;Eğitim;Eğitim modülü;TAMAMLANDI;TrainingsController
+9;DENETİM DÜZENLEME MODÜLÜ;Onay & Bildirim;Onay süreçleri ve bildirimler;TAMAMLANDI;ApprovalsController, NotificationsController
+9;DENETİM DÜZENLEME MODÜLÜ;Uzaktan Eğitim Yönetimi;Online eğitim modülü;BEKLIYOR;TrainingsController içinde olabilir
+9;DENETİM DÜZENLEME MODÜLÜ;İçerik Yönetimi;İçerik/döküman yönetimi;BEKLIYOR;
+9;DENETİM DÜZENLEME MODÜLÜ;Ekipman Yönetimi;Ekipman takibi;BEKLIYOR;
+9;DENETİM DÜZENLEME MODÜLÜ;Alt Yüklenici Yönetimi;Tedarikçi yönetimi;BEKLIYOR;
+9;DENETİM DÜZENLEME MODÜLÜ;GBF;Gizli Banka Formu;BEKLIYOR;
+9;DENETİM DÜZENLEME MODÜLÜ;Destek Yönetimi;Destek talepleri;BEKLIYOR;
+9;DENETİM DÜZENLEME MODÜLÜ;Formları Taslağa Al;Toplu taslak oluşturma;BEKLIYOR;
+10;DASHBOARD / ANA SAYFA;Skorkar;Kişisel performans kartı;TAMAMLANDI;DashboardController
+10;DASHBOARD / ANA SAYFA;Haberler & Duyurular;Duyuru paneli;TAMAMLANDI;AnnouncementsApiController
+10;DASHBOARD / ANA SAYFA;Grafik Analizleri;Performans grafikleri;TAMAMLANDI;
+10;DASHBOARD / ANA SAYFA;Toplantı Sayısı;Bekleyen toplantılar;TAMAMLANDI;
+10;DASHBOARD / ANA SAYFA;Mobil Uygulama;Mobil uygulama desteği bildirimi;BEKLIYOR;
+11;GİRİŞ/KİMLİK DOĞRULAMA;Email/Şifre Girişi;Standart login;TAMAMLANDI;AuthController
+11;GİRİŞ/KİMLİK DOĞRULAMA;Şifremi Unuttum;Şifre sıfırlama;TAMAMLANDI;
+11;GİRİŞ/KİMLİK DOĞRULAMA;Dil Seçimi;TR/EN desteği;BEKLIYOR;

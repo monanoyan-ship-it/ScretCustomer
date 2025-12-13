@@ -1,0 +1,65 @@
+using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Interfaces.Repositories;
+
+namespace SecretCustomer.Data.Repositories;
+
+public class AnswerRepository : IAnswerRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public AnswerRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Answer?> GetByIdAsync(Guid id)
+    {
+        return await _context.Answers
+            .Include(a => a.Question)
+            .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+    }
+
+    public async Task<IEnumerable<Answer>> GetByEvaluationIdAsync(Guid evaluationId)
+    {
+        return await _context.Answers
+            .Include(a => a.Question)
+            .Where(a => a.EvaluationId == evaluationId && !a.IsDeleted)
+            .OrderBy(a => a.Question.Order)
+            .ToListAsync();
+    }
+
+    public async Task<Answer> CreateAsync(Answer answer)
+    {
+        _context.Answers.Add(answer);
+        await _context.SaveChangesAsync();
+        return answer;
+    }
+
+    public async Task<Answer> UpdateAsync(Answer answer)
+    {
+        answer.UpdatedAt = DateTime.UtcNow;
+        _context.Answers.Update(answer);
+        await _context.SaveChangesAsync();
+        return answer;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var answer = await _context.Answers.FindAsync(id);
+        if (answer == null) return false;
+
+        answer.IsDeleted = true;
+        answer.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(Guid questionId)
+    {
+        return await _context.Answers
+            .Include(a => a.Evaluation)
+            .Where(a => a.QuestionId == questionId && !a.IsDeleted)
+            .ToListAsync();
+    }
+}

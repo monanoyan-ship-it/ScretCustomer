@@ -1,0 +1,358 @@
+// Approvals Index ViewModel - Consolidated
+// Pattern: Single Index.cshtml + Index.js with modals
+
+function ApprovalsViewModel() {
+    var self = this;
+
+    // State
+    self.approvals = ko.observableArray([]);
+    self.myPendingApprovals = ko.observableArray([]);
+    self.viewingApproval = ko.observable(null);
+    self.isDetailModalOpen = ko.observable(false);
+    self.responseNote = ko.observable('');
+    self.isLoading = ko.observable(false);
+
+    // Summary
+    self.summary = {
+        totalApprovals: ko.observable(0),
+        pendingApprovals: ko.observable(0),
+        approvedCount: ko.observable(0),
+        rejectedCount: ko.observable(0),
+        overdueCount: ko.observable(0),
+        todayApprovals: ko.observable(0)
+    };
+
+    // Filters
+    self.filter = {
+        approvalType: ko.observable(''),
+        status: ko.observable(''),
+        priority: ko.observable(''),
+        searchTerm: ko.observable('')
+    };
+
+    // Pagination
+    self.currentPage = ko.observable(1);
+    self.pageSize = ko.observable(20);
+    self.totalCount = ko.observable(0);
+
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / self.pageSize()) || 1;
+    });
+
+    self.visiblePages = ko.computed(function() {
+        var pages = [];
+        var total = self.totalPages();
+        var current = self.currentPage();
+        var start = Math.max(1, current - 2);
+        var end = Math.min(total, current + 2);
+        for (var i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        return pages;
+    });
+
+    // Filter subscriptions
+    self.filter.approvalType.subscribe(function() { self.loadApprovals(); });
+    self.filter.status.subscribe(function() { self.loadApprovals(); });
+    self.filter.priority.subscribe(function() { self.loadApprovals(); });
+    self.filter.searchTerm.subscribe(function() {
+        clearTimeout(self.searchTimeout);
+        self.searchTimeout = setTimeout(function() {
+            self.loadApprovals();
+        }, 300);
+    });
+
+    // Load approvals
+    self.loadApprovals = function() {
+        self.isLoading(true);
+        var params = new URLSearchParams({
+            page: self.currentPage(),
+            pageSize: self.pageSize()
+        });
+        if (self.filter.approvalType()) params.append('approvalType', self.filter.approvalType());
+        if (self.filter.status()) params.append('status', self.filter.status());
+        if (self.filter.priority()) params.append('priority', self.filter.priority());
+        if (self.filter.searchTerm()) params.append('search', self.filter.searchTerm());
+
+        $.get('/api/approvals?' + params.toString())
+            .done(function(response) {
+                self.approvals(response.items || []);
+                self.totalCount(response.totalCount || 0);
+            })
+            .fail(function(xhr) {
+                toastr.error('Onaylar yüklenirken hata oluştu');
+            })
+            .always(function() {
+                self.isLoading(false);
+            });
+    };
+
+    // Load my pending approvals
+    self.loadMyPendingApprovals = function() {
+        $.get('/api/approvals/my-pending')
+            .done(function(response) {
+                self.myPendingApprovals(response || []);
+            })
+            .fail(function() {
+                console.error('My pending approvals could not be loaded');
+            });
+    };
+
+    // Load summary
+    self.loadSummary = function() {
+        $.get('/api/approvals/summary')
+            .done(function(response) {
+                self.summary.totalApprovals(response.totalApprovals || 0);
+                self.summary.pendingApprovals(response.pendingApprovals || 0);
+                self.summary.approvedCount(response.approvedCount || 0);
+                self.summary.rejectedCount(response.rejectedCount || 0);
+                self.summary.overdueCount(response.overdueCount || 0);
+                self.summary.todayApprovals(response.todayApprovals || 0);
+            })
+            .fail(function() {
+                console.error('Summary could not be loaded');
+            });
+    };
+
+    // Clear filters
+    self.clearFilters = function() {
+        self.filter.approvalType('');
+        self.filter.status('');
+        self.filter.priority('');
+        self.filter.searchTerm('');
+    };
+
+    // Pagination
+    self.previousPage = function() {
+        if (self.currentPage() > 1) {
+            self.currentPage(self.currentPage() - 1);
+            self.loadApprovals();
+        }
+    };
+
+    self.nextPage = function() {
+        if (self.currentPage() < self.totalPages()) {
+            self.currentPage(self.currentPage() + 1);
+            self.loadApprovals();
+        }
+    };
+
+    self.goToPage = function(page) {
+        if (page >= 1 && page <= self.totalPages()) {
+            self.currentPage(page);
+            self.loadApprovals();
+        }
+    };
+
+    // Show detail modal
+    self.showDetail = function(approval) {
+        $.get('/api/approvals/' + approval.id)
+            .done(function(response) {
+                self.viewingApproval(response);
+                self.responseNote('');
+                self.isDetailModalOpen(true);
+            })
+            .fail(function() {
+                toastr.error('Onay detayı yüklenemedi');
+            });
+    };
+
+    // Close detail modal
+    self.closeDetailModal = function() {
+        self.isDetailModalOpen(false);
+        self.viewingApproval(null);
+        self.responseNote('');
+    };
+
+    // Approve request (quick action from list)
+    self.approveRequest = function(approval) {
+        if (!confirm('Bu onay talebini onaylamak istediğinizden emin misiniz?')) return;
+
+        $.ajax({
+            url: '/api/approvals/' + approval.id + '/approve',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ note: '' })
+        })
+        .done(function() {
+            toastr.success('Onay işlemi başarıyla tamamlandı');
+            self.refreshAll();
+        })
+        .fail(function(xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Onay işlemi başarısız');
+        });
+    };
+
+    // Reject request (quick action from list)
+    self.rejectRequest = function(approval) {
+        var note = prompt('Red sebebi (opsiyonel):');
+        if (note === null) return; // User cancelled
+
+        $.ajax({
+            url: '/api/approvals/' + approval.id + '/reject',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ note: note })
+        })
+        .done(function() {
+            toastr.success('Red işlemi başarıyla tamamlandı');
+            self.refreshAll();
+        })
+        .fail(function(xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Red işlemi başarısız');
+        });
+    };
+
+    // Approve from detail modal
+    self.approveFromDetail = function(approval) {
+        if (!confirm('Bu onay talebini onaylamak istediğinizden emin misiniz?')) return;
+
+        $.ajax({
+            url: '/api/approvals/' + approval.id + '/approve',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ note: self.responseNote() })
+        })
+        .done(function() {
+            toastr.success('Onay işlemi başarıyla tamamlandı');
+            self.closeDetailModal();
+            self.refreshAll();
+        })
+        .fail(function(xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Onay işlemi başarısız');
+        });
+    };
+
+    // Reject from detail modal
+    self.rejectFromDetail = function(approval) {
+        if (!confirm('Bu onay talebini reddetmek istediğinizden emin misiniz?')) return;
+
+        $.ajax({
+            url: '/api/approvals/' + approval.id + '/reject',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ note: self.responseNote() })
+        })
+        .done(function() {
+            toastr.success('Red işlemi başarıyla tamamlandı');
+            self.closeDetailModal();
+            self.refreshAll();
+        })
+        .fail(function(xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Red işlemi başarısız');
+        });
+    };
+
+    // Cancel approval (by requester)
+    self.cancelApproval = function(approval) {
+        if (!confirm('Onay talebinizi iptal etmek istediğinizden emin misiniz?')) return;
+
+        $.ajax({
+            url: '/api/approvals/' + approval.id + '/cancel',
+            type: 'POST'
+        })
+        .done(function() {
+            toastr.success('Onay talebi iptal edildi');
+            self.closeDetailModal();
+            self.refreshAll();
+        })
+        .fail(function(xhr) {
+            toastr.error(xhr.responseJSON?.message || 'İptal işlemi başarısız');
+        });
+    };
+
+    // Permission checks
+    self.canRespondToApproval = function(approval) {
+        // This would check if current user is the approver
+        return approval && approval.status === 'Pending';
+    };
+
+    self.canCancelApproval = function(approval) {
+        // This would check if current user is the requester
+        return approval && approval.status === 'Pending';
+    };
+
+    // Helper functions
+    self.getApprovalTypeText = function(type) {
+        var types = {
+            'Evaluation': 'Değerlendirme',
+            'Assignment': 'Atama',
+            'Project': 'Proje',
+            'Meeting': 'Toplantı',
+            'Training': 'Eğitim',
+            'Delegation': 'Vekalet',
+            'General': 'Genel'
+        };
+        return types[type] || type;
+    };
+
+    self.getStatusText = function(status) {
+        var statuses = {
+            'Pending': 'Beklemede',
+            'Approved': 'Onaylandı',
+            'Rejected': 'Reddedildi',
+            'Cancelled': 'İptal'
+        };
+        return statuses[status] || status;
+    };
+
+    self.getStatusBadgeClass = function(status) {
+        var classes = {
+            'Pending': 'bg-warning text-dark',
+            'Approved': 'bg-success',
+            'Rejected': 'bg-danger',
+            'Cancelled': 'bg-secondary'
+        };
+        return classes[status] || 'bg-secondary';
+    };
+
+    self.getPriorityText = function(priority) {
+        var priorities = {
+            'Low': 'Düşük',
+            'Normal': 'Normal',
+            'High': 'Yüksek',
+            'Urgent': 'Acil'
+        };
+        return priorities[priority] || priority;
+    };
+
+    self.getPriorityBadgeClass = function(priority) {
+        var classes = {
+            'Low': 'bg-secondary',
+            'Normal': 'bg-info',
+            'High': 'bg-warning text-dark',
+            'Urgent': 'bg-danger'
+        };
+        return classes[priority] || 'bg-secondary';
+    };
+
+    self.formatDate = function(dateStr) {
+        if (!dateStr) return '-';
+        var date = new Date(dateStr);
+        return date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    self.isOverdue = function(approval) {
+        if (!approval.dueDate || approval.status !== 'Pending') return false;
+        return new Date(approval.dueDate) < new Date();
+    };
+
+    // Refresh all data
+    self.refreshAll = function() {
+        self.loadApprovals();
+        self.loadMyPendingApprovals();
+        self.loadSummary();
+    };
+
+    // Initialize
+    self.init = function() {
+        self.refreshAll();
+    };
+
+    self.init();
+}
+
+// Initialize ViewModel
+$(document).ready(function() {
+    ko.applyBindings(new ApprovalsViewModel(), document.getElementById('approvals-app'));
+});

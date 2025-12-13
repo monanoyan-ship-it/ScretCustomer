@@ -70,7 +70,7 @@
                                     <i class="bi bi-pencil"></i> Düzenle
                                 </button>
                                 <button class="btn btn-sm btn-info me-1" data-bind="click: $parent.showChangePassword">
-                                    <i class="bi bi-key"></i> Şifre Değiştir
+                                    <i class="bi bi-key"></i> Şifre Sıfırla
                                 </button>
                                 <button class="btn btn-sm btn-danger" data-bind="click: $parent.deletePersonnel">
                                     <i class="bi bi-trash"></i> Sil
@@ -188,23 +188,23 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
-    <!-- Change Password Modal -->
+    <!-- Reset Password Modal (Admin) -->
     <div class="modal fade" data-bind="css: { show: showChangePasswordModal }, style: { display: showChangePasswordModal() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-key"></i> Şifre Değiştir
+                        <i class="bi bi-key"></i> Şifre Sıfırla
                         <span data-bind="if: selectedPersonnelForPassword">
                             - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
                         </span>
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: cancelChangePassword"></button>
                 </div>
-                <div class="modal-body" data-bind="with: passwordData">
-                    <div class="mb-3">
-                        <label class="form-label">Mevcut Şifre *</label>
-                        <input type="password" class="form-control" data-bind="value: currentPassword" placeholder="Mevcut şifreniz" />
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Admin olarak personelin şifresini sıfırlayabilirsiniz.
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Yeni Şifre *</label>
@@ -218,8 +218,13 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">İptal</button>
-                    <button type="button" class="btn btn-primary" data-bind="click: changePassword">
-                        <i class="bi bi-key"></i> Şifre Değiştir
+                    <button type="button" class="btn btn-primary" data-bind="click: resetPassword, disable: isResettingPassword">
+                        <span data-bind="visible: !isResettingPassword()">
+                            <i class="bi bi-key"></i> Şifre Sıfırla
+                        </span>
+                        <span data-bind="visible: isResettingPassword">
+                            <span class="spinner-border spinner-border-sm me-2"></span>Sıfırlanıyor...
+                        </span>
                     </button>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Dashboard;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using System.Globalization;
@@ -10,10 +11,12 @@ namespace SecretCustomer.Services.Services;
 public class DashboardService : IDashboardService
 {
     private readonly IEvaluationRepository _evaluationRepository;
+    private readonly IUserRepository _userRepository;
 
-    public DashboardService(IEvaluationRepository evaluationRepository)
+    public DashboardService(IEvaluationRepository evaluationRepository, IUserRepository userRepository)
     {
         _evaluationRepository = evaluationRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<DashboardStatsDto> GetAdminDashboardAsync(DateTime? startDate = null, DateTime? endDate = null)
@@ -179,5 +182,108 @@ public class DashboardService : IDashboardService
                 CompletedAt = e.CompletedAt
             })
             .ToList();
+    }
+
+    public async Task<ScorecardDto> GetScorecardAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return new ScorecardDto();
+        }
+
+        var now = DateTime.UtcNow;
+        var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var lastMonthStart = currentMonthStart.AddMonths(-1);
+        var lastMonthEnd = currentMonthStart.AddDays(-1);
+
+        // Kullanıcının değerlendirmeleri
+        var userEvaluations = await _evaluationRepository.GetByEvaluatorIdAsync(userId);
+        var completedEvaluations = userEvaluations.Where(e => e.ScorePercentage.HasValue).ToList();
+
+        // Bu ay
+        var currentMonthEvals = completedEvaluations
+            .Where(e => e.CompletedAt >= currentMonthStart)
+            .ToList();
+        var currentMonthCount = currentMonthEvals.Count;
+        var currentMonthAverage = currentMonthEvals.Any()
+            ? currentMonthEvals.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Geçen ay
+        var lastMonthEvals = completedEvaluations
+            .Where(e => e.CompletedAt >= lastMonthStart && e.CompletedAt < currentMonthStart)
+            .ToList();
+        var lastMonthCount = lastMonthEvals.Count;
+        var lastMonthAverage = lastMonthEvals.Any()
+            ? lastMonthEvals.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Toplam
+        var totalCount = completedEvaluations.Count;
+        var totalAverage = completedEvaluations.Any()
+            ? completedEvaluations.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Değişim
+        var monthlyChange = currentMonthAverage - lastMonthAverage;
+
+        // Şirket ortalaması
+        var allEvaluations = await _evaluationRepository.GetAllAsync(null, null);
+        var allCompletedEvals = allEvaluations.Where(e => e.ScorePercentage.HasValue).ToList();
+        var companyAverage = allCompletedEvals.Any()
+            ? allCompletedEvals.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Takım ortalaması (aynı branch'teki kullanıcılar)
+        var teamAverage = companyAverage; // Basitleştirilmiş - kullanıcının branch'ine göre düzenlenebilir
+
+        // Kullanıcı sıralaması (toplam ortalamaya göre)
+        var userAverages = allCompletedEvals
+            .Where(e => e.EvaluatorId.HasValue)
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                Average = g.Average(e => e.ScorePercentage ?? 0)
+            })
+            .OrderByDescending(u => u.Average)
+            .ToList();
+
+        var userRank = userAverages.FindIndex(u => u.UserId == userId) + 1;
+        var totalUsers = userAverages.Count;
+
+        // Son 5 değerlendirme
+        var recentEvaluations = completedEvaluations
+            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .Take(5)
+            .Select(e => new RecentEvaluationDto
+            {
+                Id = e.Id,
+                ProjectName = e.Assignment?.Project?.Name ?? "",
+                BranchName = e.Assignment?.Branch?.Name ?? "",
+                ScorePercentage = e.ScorePercentage,
+                EvaluationDate = e.CompletedAt ?? e.CreatedAt,
+                Status = e.Status.ToString()
+            })
+            .ToList();
+
+        return new ScorecardDto
+        {
+            UserName = $"{user.FirstName} {user.LastName}",
+            Role = user.Role.ToString(),
+            CurrentMonthEvaluations = currentMonthCount,
+            CurrentMonthAverage = Math.Round(currentMonthAverage, 2),
+            LastMonthEvaluations = lastMonthCount,
+            LastMonthAverage = Math.Round(lastMonthAverage, 2),
+            TotalEvaluations = totalCount,
+            TotalAverage = Math.Round(totalAverage, 2),
+            MonthlyChange = Math.Round(monthlyChange, 2),
+            TeamAverage = Math.Round(teamAverage, 2),
+            CompanyAverage = Math.Round(companyAverage, 2),
+            UserRank = userRank > 0 ? userRank : totalUsers,
+            TotalUsers = totalUsers > 0 ? totalUsers : 1,
+            RecentEvaluations = recentEvaluations
+        };
     }
 }

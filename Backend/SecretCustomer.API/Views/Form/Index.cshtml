@@ -1,0 +1,331 @@
+@{
+    Layout = null;
+    var uniqueLink = ViewBag.UniqueLink;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Değerlendirme Formu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f8f9fa; }
+        .form-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .question-card { margin-bottom: 15px; }
+        .section-header { background-color: #e9ecef; padding: 10px 15px; border-radius: 5px; margin: 20px 0 10px; }
+        .required-mark { color: red; }
+        .score-display { font-size: 1.2em; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="form-app" class="form-container">
+        <!-- Loading -->
+        <div data-bind="visible: isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3">Form yükleniyor...</p>
+        </div>
+
+        <!-- Error -->
+        <div data-bind="visible: errorMessage" class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span data-bind="text: errorMessage"></span>
+        </div>
+
+        <!-- Success -->
+        <div data-bind="visible: successMessage" class="alert alert-success text-center">
+            <i class="bi bi-check-circle fs-1 d-block mb-3"></i>
+            <h4>Teşekkürler!</h4>
+            <p data-bind="text: successMessage"></p>
+        </div>
+
+        <!-- Form Content -->
+        <div data-bind="visible: !isLoading() && !errorMessage() && !successMessage() && assignment()">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title" data-bind="text: assignment().projectName"></h4>
+                    <p class="text-muted mb-2" data-bind="text: assignment().branchName"></p>
+                    <span class="badge bg-primary" data-bind="text: assignment().checklistName"></span>
+                </div>
+            </div>
+
+            <!-- Assignment Info -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <small class="text-muted">Planlanan Tarih</small>
+                            <div data-bind="text: formatDate(assignment().plannedDate)"></div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Durum</small>
+                            <div><span class="badge" data-bind="text: getStatusText(assignment().status), css: getStatusBadge(assignment().status)"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Already Completed Message -->
+            <div data-bind="visible: assignment().status === 'Completed' || assignment().status === 'Approved'" class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Bu değerlendirme zaten tamamlanmış.
+            </div>
+
+            <!-- Checklist Sections -->
+            <div data-bind="visible: assignment().status !== 'Completed' && assignment().status !== 'Approved'">
+                <form data-bind="submit: submitForm">
+                    <!-- ko foreach: checklist().sections -->
+                    <div class="section-header">
+                        <h5 class="mb-0" data-bind="text: name"></h5>
+                        <small class="text-muted" data-bind="text: description, visible: description"></small>
+                    </div>
+
+                    <!-- ko foreach: questions -->
+                    <div class="card question-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <label class="form-label mb-0">
+                                    <span data-bind="text: text"></span>
+                                    <span class="required-mark" data-bind="visible: isRequired">*</span>
+                                </label>
+                                <span class="badge bg-secondary" data-bind="text: maxScore + ' puan', visible: maxScore > 0"></span>
+                            </div>
+
+                            <!-- Yes/No Question -->
+                            <div data-bind="visible: questionType === 'YesNo'">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_yes' }, checked: $parents[1].getAnswer(id), checkedValue: 'yes'">
+                                    <label class="btn btn-outline-success" data-bind="attr: { for: 'q_' + id + '_yes' }">Evet</label>
+                                    <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_no' }, checked: $parents[1].getAnswer(id), checkedValue: 'no'">
+                                    <label class="btn btn-outline-danger" data-bind="attr: { for: 'q_' + id + '_no' }">Hayır</label>
+                                    <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_na' }, checked: $parents[1].getAnswer(id), checkedValue: 'na'">
+                                    <label class="btn btn-outline-secondary" data-bind="attr: { for: 'q_' + id + '_na' }">N/A</label>
+                                </div>
+                            </div>
+
+                            <!-- Rating Question -->
+                            <div data-bind="visible: questionType === 'Rating'">
+                                <div class="btn-group" role="group">
+                                    <!-- ko foreach: [1,2,3,4,5] -->
+                                    <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + $parent.id, id: 'q_' + $parent.id + '_' + $data }, checked: $parents[2].getAnswer($parent.id), checkedValue: $data">
+                                    <label class="btn btn-outline-primary" data-bind="attr: { for: 'q_' + $parent.id + '_' + $data }, text: $data"></label>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Text Question -->
+                            <div data-bind="visible: questionType === 'Text' || questionType === 'LongText'">
+                                <textarea class="form-control" rows="3" data-bind="value: $parents[1].getAnswer(id), attr: { placeholder: 'Cevabınızı yazın...' }"></textarea>
+                            </div>
+
+                            <!-- Number Question -->
+                            <div data-bind="visible: questionType === 'Number'">
+                                <input type="number" class="form-control" data-bind="value: $parents[1].getAnswer(id), attr: { min: minValue, max: maxValue }">
+                            </div>
+
+                            <!-- Single Choice Question -->
+                            <div data-bind="visible: questionType === 'SingleChoice'">
+                                <!-- ko foreach: options -->
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" data-bind="attr: { name: 'q_' + $parent.id, id: 'q_' + $parent.id + '_' + $index() }, checked: $parents[2].getAnswer($parent.id), checkedValue: text">
+                                    <label class="form-check-label" data-bind="attr: { for: 'q_' + $parent.id + '_' + $index() }, text: text"></label>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+
+                            <!-- Multiple Choice Question -->
+                            <div data-bind="visible: questionType === 'MultipleChoice'">
+                                <!-- ko foreach: options -->
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" data-bind="attr: { id: 'q_' + $parent.id + '_' + $index() }, checked: $parents[2].isOptionSelected($parent.id, text)">
+                                    <label class="form-check-label" data-bind="attr: { for: 'q_' + $parent.id + '_' + $index() }, text: text"></label>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+
+                            <!-- Note -->
+                            <div class="mt-2">
+                                <input type="text" class="form-control form-control-sm" placeholder="Not ekle (opsiyonel)" data-bind="value: $parents[1].getNote(id)">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- /ko -->
+
+                    <!-- General Notes -->
+                    <div class="card mb-4">
+                        <div class="card-header">Genel Notlar</div>
+                        <div class="card-body">
+                            <textarea class="form-control" rows="3" placeholder="Değerlendirme hakkında genel notlarınız..." data-bind="value: generalNotes"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" data-bind="disable: isSubmitting">
+                            <span data-bind="visible: !isSubmitting()"><i class="bi bi-check-circle me-2"></i>Değerlendirmeyi Gönder</span>
+                            <span data-bind="visible: isSubmitting"><span class="spinner-border spinner-border-sm me-2"></span>Gönderiliyor...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/knockout@3.5.1/build/output/knockout-latest.min.js"></script>
+    <script>
+        var uniqueLink = '@uniqueLink';
+
+        function FormViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.isSubmitting = ko.observable(false);
+            self.errorMessage = ko.observable('');
+            self.successMessage = ko.observable('');
+            self.assignment = ko.observable(null);
+            self.checklist = ko.observable({ sections: [] });
+            self.answers = {};
+            self.notes = {};
+            self.generalNotes = ko.observable('');
+
+            self.statusTexts = {
+                'Pending': 'Beklemede', 'InProgress': 'Devam Ediyor', 'Completed': 'Tamamlandı',
+                'Approved': 'Onaylandı', 'Rejected': 'Reddedildi', 'Cancelled': 'İptal'
+            };
+            self.statusBadges = {
+                'Pending': 'bg-warning', 'InProgress': 'bg-info', 'Completed': 'bg-success',
+                'Approved': 'bg-primary', 'Rejected': 'bg-danger', 'Cancelled': 'bg-secondary'
+            };
+
+            self.getStatusText = function(status) { return self.statusTexts[status] || status; };
+            self.getStatusBadge = function(status) { return self.statusBadges[status] || 'bg-secondary'; };
+            self.formatDate = function(dateStr) {
+                if (!dateStr) return '-';
+                return new Date(dateStr).toLocaleDateString('tr-TR');
+            };
+
+            self.getAnswer = function(questionId) {
+                if (!self.answers[questionId]) {
+                    self.answers[questionId] = ko.observable('');
+                }
+                return self.answers[questionId];
+            };
+
+            self.getNote = function(questionId) {
+                if (!self.notes[questionId]) {
+                    self.notes[questionId] = ko.observable('');
+                }
+                return self.notes[questionId];
+            };
+
+            self.isOptionSelected = function(questionId, optionText) {
+                var answer = self.getAnswer(questionId);
+                return ko.computed({
+                    read: function() {
+                        var val = answer();
+                        if (!val) return false;
+                        var arr = val.split(',');
+                        return arr.indexOf(optionText) >= 0;
+                    },
+                    write: function(checked) {
+                        var val = answer() || '';
+                        var arr = val ? val.split(',') : [];
+                        if (checked) {
+                            if (arr.indexOf(optionText) < 0) arr.push(optionText);
+                        } else {
+                            arr = arr.filter(function(x) { return x !== optionText; });
+                        }
+                        answer(arr.join(','));
+                    }
+                });
+            };
+
+            self.loadAssignment = function() {
+                fetch('/api/assignments/by-link/' + uniqueLink)
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Atama bulunamadı');
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        self.assignment(data);
+                        if (data.checklistId) {
+                            self.loadChecklist(data.checklistId);
+                        } else {
+                            self.isLoading(false);
+                        }
+                    })
+                    .catch(function(error) {
+                        self.errorMessage('Bu form bulunamadı veya artık geçerli değil.');
+                        self.isLoading(false);
+                    });
+            };
+
+            self.loadChecklist = function(checklistId) {
+                fetch('/api/checklists/' + checklistId)
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Checklist yüklenemedi');
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        self.checklist(data);
+                    })
+                    .catch(function(error) {
+                        console.error('Checklist error:', error);
+                    })
+                    .finally(function() {
+                        self.isLoading(false);
+                    });
+            };
+
+            self.submitForm = function() {
+                self.isSubmitting(true);
+                self.errorMessage('');
+
+                var answersArray = [];
+                for (var qId in self.answers) {
+                    var val = self.answers[qId]();
+                    if (val) {
+                        answersArray.push({
+                            questionId: qId,
+                            value: val,
+                            note: self.notes[qId] ? self.notes[qId]() : null
+                        });
+                    }
+                }
+
+                var submitData = {
+                    assignmentId: self.assignment().id,
+                    answers: answersArray,
+                    generalNotes: self.generalNotes()
+                };
+
+                fetch('/api/evaluations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(submitData)
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(d) { throw new Error(d.message || 'Gönderim başarısız'); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    self.successMessage('Değerlendirmeniz başarıyla kaydedildi.');
+                })
+                .catch(function(error) {
+                    self.errorMessage('Değerlendirme gönderilirken bir hata oluştu: ' + error.message);
+                })
+                .finally(function() {
+                    self.isSubmitting(false);
+                });
+            };
+
+            self.loadAssignment();
+        }
+
+        ko.applyBindings(new FormViewModel(), document.getElementById('form-app'));
+    </script>
+</body>
+</html>

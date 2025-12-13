@@ -7,6 +7,7 @@ public interface IDashboardService
     Task<DashboardStatsDto> GetAdminDashboardAsync(DateTime? startDate = null, DateTime? endDate = null);
     Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(Guid branchId, DateTime? startDate = null, DateTime? endDate = null);
     Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(Guid userId);
+    Task<ScorecardDto> GetScorecardAsync(Guid userId);
 }
 
 public class RepresentativeEvaluationDto

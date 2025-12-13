@@ -1,0 +1,265 @@
+@{
+    ViewData["Title"] = "Cezalı KL Raporu";
+}
+
+<div id="penalties-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-card-checklist text-danger"></i> Cezalı KL Raporu</h2>
+        <div class="btn-group">
+            <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
+                <span data-bind="visible: !isExporting()">
+                    <i class="bi bi-file-earmark-excel"></i> Excel İndir
+                </span>
+                <span data-bind="visible: isExporting">
+                    <span class="spinner-border spinner-border-sm"></span> İndiriliyor...
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Proje</label>
+                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Projeler'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Şube</label>
+                    <select class="form-select" data-bind="value: filter.branchId, options: branches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Şubeler'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Ceza Tipi</label>
+                    <select class="form-select" data-bind="value: filter.penaltyType">
+                        <option value="">Tümü</option>
+                        <option value="YellowCard">Sarı Kart</option>
+                        <option value="RedCard">Kırmızı Kart</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Başlangıç</label>
+                    <input type="date" class="form-control" data-bind="value: filter.startDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitiş</label>
+                    <input type="date" class="form-control" data-bind="value: filter.endDate">
+                </div>
+                <div class="col-md-12 d-flex justify-content-end">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: applyFilters">
+                            <i class="bi bi-search"></i> Ara
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
+                            <i class="bi bi-x-circle"></i> Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Toplam Cezalı</h6>
+                            <h2 class="mb-0" data-bind="text: summary().totalPenalties"></h2>
+                        </div>
+                        <i class="bi bi-card-fill fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-dark-50 mb-1">Sarı Kart</h6>
+                            <h2 class="mb-0" data-bind="text: summary().totalYellowCards"></h2>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white h-100">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Kırmızı Kart</h6>
+                            <h2 class="mb-0" data-bind="text: summary().totalRedCards"></h2>
+                        </div>
+                        <i class="bi bi-x-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Etkilenen Değerlendirme</h6>
+                            <h2 class="mb-0" data-bind="text: summary().affectedEvaluations"></h2>
+                        </div>
+                        <i class="bi bi-clipboard-x fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+    </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Top Penalty Questions -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> En Çok Ceza Alan Sorular</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: topPenaltyQuestions().length === 0" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                    </div>
+                    <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyQuestions">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" data-bind="text: questionText"></div>
+                                <small class="text-muted" data-bind="text: checklistName + ' - ' + sectionName"></small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span>
+                                </span>
+                                <span class="badge bg-danger" data-bind="visible: redCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Penalty Branches -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> En Çok Ceza Alan Şubeler</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: topPenaltyBranches().length === 0" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                    </div>
+                    <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyBranches">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span data-bind="text: branchName"></span>
+                                <small class="text-muted d-block" data-bind="text: region"></small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning text-dark me-1" data-bind="text: yellowCardCount + ' Sarı'"></span>
+                                <span class="badge bg-danger" data-bind="text: redCardCount + ' Kırmızı'"></span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trend Chart -->
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Aylık Ceza Trendi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="penaltyTrendChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Penalty List -->
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Cezalı Değerlendirmeler</h5>
+                    <span class="badge bg-danger" data-bind="text: penalties().length + ' kayıt'"></span>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: penalties().length === 0" class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">Cezalı değerlendirme bulunamadı.</p>
+                    </div>
+                    <div data-bind="visible: penalties().length > 0" class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Proje / Şube</th>
+                                    <th>Soru</th>
+                                    <th>Ceza Tipi</th>
+                                    <th>Değerlendirici</th>
+                                    <th>Denetlenen</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: penalties">
+                                <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
+                                    <td>
+                                        <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                    </td>
+                                    <td>
+                                        <span data-bind="text: projectName"></span>
+                                        <small class="text-muted d-block" data-bind="text: branchName"></small>
+                                    </td>
+                                    <td>
+                                        <span data-bind="text: questionText"></span>
+                                        <small class="text-muted d-block" data-bind="text: sectionName"></small>
+                                    </td>
+                                    <td>
+                                        <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">
+                                            <i class="bi bi-card-fill"></i> Sarı Kart
+                                        </span>
+                                        <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">
+                                            <i class="bi bi-card-fill"></i> Kırmızı Kart
+                                        </span>
+                                    </td>
+                                    <td data-bind="text: evaluatorName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Reports/Penalties.js"></script>
+}
