@@ -7,6 +7,25 @@
     <ToplamUyum>%95</ToplamUyum>
     <TranskriptAnalizi>17 video analiz edildi</TranskriptAnalizi>
     <SonGuncelleme>2025-12-14</SonGuncelleme>
+    <KaldigiYer>
+      <Tarih>2025-12-14 Gece</Tarih>
+      <TamamlananSonIs>
+        - Admin şifre sıfırlama (eski şifre gerektirmez)
+        - Logout 400 hatası düzeltildi
+        - Müşteri personel şifre sıfırlama inline form
+        - XML dosyaları konsolide edildi
+        - Personnel seed data eklendi
+      </TamamlananSonIs>
+      <SiradakiIs>
+        - Müşteri Portalı (CustomerPersonnel login + dashboard)
+        - Veya şifre sıfırlamayı admin user ile test et
+      </SiradakiIs>
+      <TestEdilecek>
+        - /Customers/Index → Personeller → Şifre Sıfırla (inline form çalışıyor mu?)
+        - Logout butonu çalışıyor mu?
+        - /Personnel/Index liste dolu mu?
+      </TestEdilecek>
+    </KaldigiYer>
   </Ozet>
 
   <TeknolojiStack>
