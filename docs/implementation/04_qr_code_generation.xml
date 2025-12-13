@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide>
+  <Feature>
+    <Name>QR Kod Üretimi</Name>
+    <Priority>Yüksek</Priority>
+    <EstimatedTime>2 saat</EstimatedTime>
+    <Complexity>Orta</Complexity>
+  </Feature>
+
+  <Purpose>
+    <Description>
+      Dış müşteri anketleri için QR kod üretilmesi.
+      Müşteriler QR kodu tarayarak doğrudan form doldurma sayfasına yönlendirilir.
+      QR kod fiziksel mekanlara (şube, mağaza) yerleştirilebilir.
+    </Description>
+    <XmlReference>is_kapsam.xml, satır 109: "QR kod"</XmlReference>
+  </Purpose>
+
+  <Dependencies>
+    <NuGetPackage>
+      <Name>QRCoder</Name>
+      <Version>1.4.3</Version>
+      <Reason>Açık kaynak, .NET native, dependency yok</Reason>
+    </NuGetPackage>
+  </Dependencies>
+
+  <AffectedFiles>
+    <File>
+      <Path>Backend/SecretCustomer.Services/SecretCustomer.Services.csproj</Path>
+      <Action>Modify</Action>
+      <Changes>
+        <Change>QRCoder NuGet package referansı ekle</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Core/Interfaces/Services/IQRCodeService.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>Yeni interface oluştur</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Services/Services/QRCodeService.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>QR kod üretme servisi</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</Path>
+      <Action>Modify</Action>
+      <Changes>
+        <Change>GET /api/assignments/{id}/qr-code endpoint ekle</Change>
+      </Changes>
+    </File>
+  </AffectedFiles>
+
+  <Implementation>
+    <Step order="1">
+      <Title>QRCoder NuGet Package Kurulumu</Title>
+      <Command>
+        <![CDATA[
+cd Backend/SecretCustomer.Services
+dotnet add package QRCoder --version 1.4.3
+        ]]>
+      </Command>
+    </Step>
+
+    <Step order="2">
+      <Title>IQRCodeService Interface Oluşturma</Title>
+      <File>Backend/SecretCustomer.Core/Interfaces/Services/IQRCodeService.cs</File>
+      <Code><![CDATA[
+namespace SecretCustomer.Core.Interfaces.Services;
+
+public interface IQRCodeService
+{
+    /// <summary>
+    /// URL için QR kod PNG olarak üretir
+    /// </summary>
+    byte[] GenerateQRCode(string url, int pixelPerModule = 10);
+
+    /// <summary>
+    /// Assignment için QR kod üretir (frontend URL ile)
+    /// </summary>
+    byte[] GenerateAssignmentQRCode(string uniqueLink, string baseUrl);
+
+    /// <summary>
+    /// Base64 encoded QR kod string döner (HTML'de göstermek için)
+    /// </summary>
+    string GenerateQRCodeBase64(string url, int pixelPerModule = 10);
+}
+]]></Code>
+    </Step>
+
+    <Step order="3">
+      <Title>QRCodeService Implementasyonu</Title>
+      <File>Backend/SecretCustomer.Services/Services/QRCodeService.cs</File>
+      <Code><![CDATA[
+using QRCoder;
+using SecretCustomer.Core.Interfaces.Services;
+
+namespace SecretCustomer.Services.Services;
+
+public class QRCodeService : IQRCodeService
+{
+    public byte[] GenerateQRCode(string url, int pixelPerModule = 10)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            throw new ArgumentException("URL cannot be empty", nameof(url));
+
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+        using var qrCode = new PngByteQRCode(qrCodeData);
+
+        return qrCode.GetGraphic(pixelPerModule);
+    }
+
+    public byte[] GenerateAssignmentQRCode(string uniqueLink, string baseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(uniqueLink))
+            throw new ArgumentException("Unique link cannot be empty", nameof(uniqueLink));
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            throw new ArgumentException("Base URL cannot be empty", nameof(baseUrl));
+
+        // Frontend form URL'ini oluştur
+        var fullUrl = $"{baseUrl.TrimEnd('/')}/form/{uniqueLink}";
+
+        return GenerateQRCode(fullUrl, pixelPerModule: 10);
+    }
+
+    public string GenerateQRCodeBase64(string url, int pixelPerModule = 10)
+    {
+        var qrBytes = GenerateQRCode(url, pixelPerModule);
+        return Convert.ToBase64String(qrBytes);
+    }
+}
+]]></Code>
+    </Step>
+
+    <Step order="4">
+      <Title>Dependency Injection Kaydı</Title>
+      <File>Backend/SecretCustomer.API/Program.cs</File>
+      <Code><![CDATA[
+// ... mevcut servisler ...
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+]]></Code>
+    </Step>
+
+    <Step order="5">
+      <Title>AssignmentsApiController - QR Kod Endpoint</Title>
+      <File>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</File>
+      <Code><![CDATA[
+[HttpGet("{id}/qr-code")]
+public async Task<IActionResult> GetQRCode(Guid id)
+{
+    var assignment = await _assignmentService.GetByIdAsync(id);
+    if (assignment == null)
+        return NotFound();
+
+    // appsettings.json'dan base URL al veya request'ten çıkar
+    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+    var qrBytes = _qrCodeService.GenerateAssignmentQRCode(
+        assignment.UniqueLink,
+        baseUrl);
+
+    return File(qrBytes, "image/png", $"assignment-{id}-qr.png");
+}
+
+[HttpGet("{id}/qr-code/base64")]
+public async Task<ActionResult<string>> GetQRCodeBase64(Guid id)
+{
+    var assignment = await _assignmentService.GetByIdAsync(id);
+    if (assignment == null)
+        return NotFound();
+
+    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+    var qrBase64 = _qrCodeService.GenerateQRCodeBase64(
+        $"{baseUrl}/form/{assignment.UniqueLink}");
+
+    return Ok(new { qrCode = $"data:image/png;base64,{qrBase64}" });
+}
+]]></Code>
+    </Step>
+
+    <Step order="6">
+      <Title>Controller Constructor Güncelleme</Title>
+      <File>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</File>
+      <Code><![CDATA[
+private readonly IAssignmentService _assignmentService;
+private readonly IQRCodeService _qrCodeService;  // YENİ
+
+public AssignmentsApiController(
+    IAssignmentService assignmentService,
+    IQRCodeService qrCodeService)  // YENİ
+{
+    _assignmentService = assignmentService;
+    _qrCodeService = qrCodeService;
+}
+]]></Code>
+    </Step>
+
+    <Step order="7">
+      <Title>Configuration - Base URL (Opsiyonel)</Title>
+      <File>Backend/SecretCustomer.API/appsettings.json</File>
+      <Code><![CDATA[
+{
+  "ApplicationSettings": {
+    "FrontendBaseUrl": "https://yourdomain.com",
+    "QRCodeSettings": {
+      "PixelPerModule": 10,
+      "IncludeLogo": false
+    }
+  }
+}
+]]></Code>
+    </Step>
+  </Implementation>
+
+  <Testing>
+    <TestCase id="1">
+      <Title>QR Kod PNG İndirme</Title>
+      <Request>GET /api/assignments/{assignmentId}/qr-code</Request>
+      <Steps>
+        <Step>Mevcut bir assignment ID'si ile endpoint'i çağır</Step>
+        <Step>Response'un image/png content-type olduğunu doğrula</Step>
+        <Step>İndirilen dosyayı QR tarayıcı ile tara</Step>
+      </Steps>
+      <ExpectedResult>
+        QR kod PNG dosyası indirilmeli.
+        Tarandığında form URL'sine yönlendirmeli.
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="2">
+      <Title>QR Kod Base64 Format</Title>
+      <Request>GET /api/assignments/{assignmentId}/qr-code/base64</Request>
+      <ExpectedResult>
+        JSON response: { "qrCode": "data:image/png;base64,..." }
+        Frontend'de doğrudan img tag'inde kullanılabilir.
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="3">
+      <Title>Geçersiz Assignment ID</Title>
+      <Request>GET /api/assignments/{invalidId}/qr-code</Request>
+      <ExpectedResult>404 Not Found</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="4">
+      <Title>QR Kod Tarama - Gerçek Cihaz</Title>
+      <Steps>
+        <Step>Mobil cihaz kamerasıyla QR kodu tara</Step>
+        <Step>URL'nin doğru form sayfasına yönlendirdiğini kontrol et</Step>
+        <Step>UniqueLink'in çalıştığını doğrula</Step>
+      </Steps>
+      <ExpectedResult>Form doldurma sayfası açılmalı</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="5">
+      <Title>Performans - Çoklu QR Kod Üretimi</Title>
+      <Steps>
+        <Step>100 assignment için QR kod üret</Step>
+        <Step>Her birinin 1 saniyeden hızlı oluşturulduğunu kontrol et</Step>
+      </Steps>
+      <ExpectedResult>QRCoder library hızlıdır, performans sorunu olmamalı</ExpectedResult>
+    </TestCase>
+  </Testing>
+
+  <Migration>
+    <Required>false</Required>
+    <Reason>Sadece servis ekleniyor, veritabanı değişikliği yok</Reason>
+  </Migration>
+
+  <FrontendConsiderations>
+    <UI>
+      <Component>Assignment Detail Page</Component>
+      <Changes>
+        <Change>"QR Kod İndir" butonu ekle</Change>
+        <Change>Buton tıklanınca /api/assignments/{id}/qr-code endpoint'ini çağır</Change>
+        <Change>PNG dosyasını indir</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Assignment List - Bulk Actions</Component>
+      <Changes>
+        <Change>Çoklu assignment için QR kodları ZIP olarak indir</Change>
+        <Change>Her QR kod dosya adı: "assignment-{branchName}-{date}.png"</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>QR Kod Preview Modal</Component>
+      <Changes>
+        <Change>Base64 endpoint'ini kullanarak QR'ı modal içinde göster</Change>
+        <Change>Print butonu ekle (yazdırılabilir format)</Change>
+        <Change>Share butonu (WhatsApp, Email)</Change>
+      </Changes>
+    </UI>
+  </FrontendConsiderations>
+
+  <UseCaseExamples>
+    <Example>
+      <Scenario>Restoran Masası</Scenario>
+      <Description>Her masaya QR kod etiketi yapıştırılır. Müşteriler servis sonrası QR kodu tarayarak memnuniyet anketini doldurur.</Description>
+    </Example>
+    <Example>
+      <Scenario>Banka Şubesi</Scenario>
+      <Description>Müşteri danışma bölümüne QR kod standı konur. İşlem sonrası müşteriler hizmet kalitesi değerlendirmesi yapar.</Description>
+    </Example>
+    <Example>
+      <Scenario>Etkinlik Check-in</Scenario>
+      <Description>Etkinlik girişinde QR kod taranır, katılımcı değerlendirme formu doldurur.</Description>
+    </Example>
+  </UseCaseExamples>
+
+  <SecurityConsiderations>
+    <Consideration>
+      <Title>URL Doğrulama</Title>
+      <Description>QR kodda gömülü URL'nin valid olduğunu kontrol et</Description>
+      <Mitigation>Regex ile URL validasyonu yap</Mitigation>
+    </Consideration>
+    <Consideration>
+      <Title>Rate Limiting</Title>
+      <Description>QR kod endpoint'i spam'lenebilir</Description>
+      <Mitigation>Rate limiting middleware ekle (örn: 10 request/dakika)</Mitigation>
+    </Consideration>
+  </SecurityConsiderations>
+
+  <FutureEnhancements>
+    <Enhancement>QR kodun ortasına logo ekleme (CustomLogoQRCode)</Enhancement>
+    <Enhancement>Renkli QR kodlar (marka kimliği)</Enhancement>
+    <Enhancement>QR kod analitikleri (kaç kez tarandı)</Enhancement>
+    <Enhancement>Dinamik QR kodlar (URL güncelleme)</Enhancement>
+  </FutureEnhancements>
+
+  <RollbackPlan>
+    <Step>QRCoder package'ını kaldır: dotnet remove package QRCoder</Step>
+    <Step>IQRCodeService ve QRCodeService'i sil</Step>
+    <Step>Controller endpoint'lerini kaldır</Step>
+    <Step>DI kaydını kaldır</Step>
+    <Note>Hiçbir veri kaybı yok, sadece özellik kaldırılıyor</Note>
+  </RollbackPlan>
+</ImplementationGuide>

@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide>
+  <Feature>
+    <Name>SMS Entegrasyonu</Name>
+    <Priority>Orta</Priority>
+    <EstimatedTime>3 saat</EstimatedTime>
+    <Complexity>Orta</Complexity>
+  </Feature>
+
+  <Purpose>
+    <Description>
+      Dış müşterilere form linkinin SMS ile gönderilebilmesi.
+      Müşteri telefon numarasına kısa link içeren SMS gönderilir.
+    </Description>
+    <XmlReference>is_kapsam.xml, satır 108: "SMS"</XmlReference>
+  </Purpose>
+
+  <ProviderOptions>
+    <Provider recommended="true">
+      <Name>Netgsm</Name>
+      <Reason>Türkiye'de yaygın kullanılan, API basit</Reason>
+      <Website>https://www.netgsm.com.tr</Website>
+      <Pricing>Toplu SMS paketleri (ör: 1000 SMS = 100 TL)</Pricing>
+    </Provider>
+    <Provider>
+      <Name>Twilio</Name>
+      <Reason>Global provider, güçlü API, türkçe karakter desteği</Reason>
+      <Website>https://www.twilio.com</Website>
+      <Pricing>Pay-as-you-go (SMS başına ~$0.05)</Pricing>
+    </Provider>
+    <Provider>
+      <Name>İleti Merkezi</Name>
+      <Reason>Yerli alternatif, uygun fiyat</Reason>
+      <Website>https://www.iletimerkezi.com</Website>
+    </Provider>
+  </ProviderOptions>
+
+  <Dependencies>
+    <NuGetPackage>
+      <Name>Twilio (opsiyonel)</Name>
+      <Version>6.x</Version>
+      <Reason>Eğer Twilio kullanılacaksa</Reason>
+    </NuGetPackage>
+    <Note>Netgsm için HttpClient ile REST API kullanılabilir (package gerekmez)</Note>
+  </Dependencies>
+
+  <AffectedFiles>
+    <File>
+      <Path>Backend/SecretCustomer.Core/Interfaces/Services/ISmsService.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>SMS gönderme interface'i</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Services/Services/NetgsmSmsService.cs</Path>
+      <Action>Create</Action>
+      <Changes>
+        <Change>Netgsm API implementasyonu</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.Core/Entities/Assignment.cs</Path>
+      <Action>Modify</Action>
+      <Changes>
+        <Change>ExternalPhone field ekle</Change>
+      </Changes>
+    </File>
+    <File>
+      <Path>Backend/SecretCustomer.API/appsettings.json</Path>
+      <Action>Modify</Action>
+      <Changes>
+        <Change>SMS provider ayarları</Change>
+      </Changes>
+    </File>
+  </AffectedFiles>
+
+  <Implementation>
+    <Step order="1">
+      <Title>Assignment Entity - Phone Field Ekleme</Title>
+      <File>Backend/SecretCustomer.Core/Entities/Assignment.cs</File>
+      <Code><![CDATA[
+public class Assignment : BaseEntity
+{
+    // ... mevcut fieldlar ...
+
+    public string? ExternalEmail { get; set; }
+    public string? ExternalName { get; set; }
+    public string? ExternalPhone { get; set; }  // YENİ: +905551234567 formatında
+
+    // ...
+}
+]]></Code>
+    </Step>
+
+    <Step order="2">
+      <Title>Database Migration</Title>
+      <Command>
+        <![CDATA[
+cd Backend/SecretCustomer.Data
+dotnet ef migrations add AddExternalPhoneToAssignment --project ../SecretCustomer.Data --startup-project ../SecretCustomer.API
+dotnet ef database update --project ../SecretCustomer.API
+        ]]>
+      </Command>
+    </Step>
+
+    <Step order="3">
+      <Title>ISmsService Interface</Title>
+      <File>Backend/SecretCustomer.Core/Interfaces/Services/ISmsService.cs</File>
+      <Code><![CDATA[
+namespace SecretCustomer.Core.Interfaces.Services;
+
+public interface ISmsService
+{
+    /// <summary>
+    /// Tekil SMS gönderimi
+    /// </summary>
+    Task<bool> SendSmsAsync(string phoneNumber, string message);
+
+    /// <summary>
+    /// Toplu SMS gönderimi
+    /// </summary>
+    Task<int> SendBulkSmsAsync(List<(string phoneNumber, string message)> messages);
+
+    /// <summary>
+    /// Assignment için form linki SMS'i gönder
+    /// </summary>
+    Task<bool> SendFormLinkSmsAsync(string phoneNumber, string recipientName, string formLink);
+
+    /// <summary>
+    /// SMS bakiye kontrolü (provider'a göre)
+    /// </summary>
+    Task<decimal?> GetCreditBalanceAsync();
+}
+]]></Code>
+    </Step>
+
+    <Step order="4">
+      <Title>NetgsmSmsService Implementasyonu</Title>
+      <File>Backend/SecretCustomer.Services/Services/NetgsmSmsService.cs</File>
+      <Code><![CDATA[
+using System.Text;
+using System.Web;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using SecretCustomer.Core.Interfaces.Services;
+
+namespace SecretCustomer.Services.Services;
+
+public class NetgsmSmsService : ISmsService
+{
+    private readonly HttpClient _httpClient;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<NetgsmSmsService> _logger;
+
+    private string Username => _configuration["SmsSettings:Netgsm:Username"] ?? "";
+    private string Password => _configuration["SmsSettings:Netgsm:Password"] ?? "";
+    private string Header => _configuration["SmsSettings:Netgsm:Header"] ?? "GIZLIMUSTERI";
+    private string ApiUrl => "https://api.netgsm.com.tr/sms/send/get";
+
+    public NetgsmSmsService(
+        HttpClient httpClient,
+        IConfiguration configuration,
+        ILogger<NetgsmSmsService> logger)
+    {
+        _httpClient = httpClient;
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    public async Task<bool> SendSmsAsync(string phoneNumber, string message)
+    {
+        try
+        {
+            // Telefon numarasını temizle (başındaki 0 veya +90'ı kaldır)
+            var cleanedPhone = CleanPhoneNumber(phoneNumber);
+
+            var url = $"{ApiUrl}?" +
+                      $"usercode={Username}&" +
+                      $"password={Password}&" +
+                      $"gsmno={cleanedPhone}&" +
+                      $"message={HttpUtility.UrlEncode(message, Encoding.GetEncoding("ISO-8859-9"))}&" +
+                      $"msgheader={Header}&" +
+                      $"dil=TR";
+
+            var response = await _httpClient.GetAsync(url);
+            var result = await response.Content.ReadAsStringAsync();
+
+            // Netgsm response format: "00 [messageId]" = başarılı
+            if (result.StartsWith("00"))
+            {
+                _logger.LogInformation($"SMS sent successfully to {phoneNumber}. Response: {result}");
+                return true;
+            }
+
+            _logger.LogWarning($"SMS send failed to {phoneNumber}. Response: {result}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"SMS send error to {phoneNumber}");
+            return false;
+        }
+    }
+
+    public async Task<int> SendBulkSmsAsync(List<(string phoneNumber, string message)> messages)
+    {
+        int successCount = 0;
+        foreach (var (phoneNumber, message) in messages)
+        {
+            var success = await SendSmsAsync(phoneNumber, message);
+            if (success) successCount++;
+
+            // Rate limiting - SMS provider'ları saniyede max 10-20 SMS kabul eder
+            await Task.Delay(100);
+        }
+
+        return successCount;
+    }
+
+    public async Task<bool> SendFormLinkSmsAsync(string phoneNumber, string recipientName, string formLink)
+    {
+        // SMS mesaj şablonu
+        var message = $"Sayin {recipientName},\n" +
+                      $"Lutfen asagidaki linke tiklayarak degerlendirme formunu doldurunuz:\n" +
+                      $"{formLink}\n" +
+                      $"Tesekkur ederiz.";
+
+        return await SendSmsAsync(phoneNumber, message);
+    }
+
+    public async Task<decimal?> GetCreditBalanceAsync()
+    {
+        try
+        {
+            var url = $"https://api.netgsm.com.tr/balance/list/get?" +
+                      $"usercode={Username}&" +
+                      $"password={Password}";
+
+            var response = await _httpClient.GetAsync(url);
+            var result = await response.Content.ReadAsStringAsync();
+
+            // Response: "00 1234.56" (kredi miktarı)
+            if (result.StartsWith("00"))
+            {
+                var parts = result.Split(' ');
+                if (parts.Length > 1 && decimal.TryParse(parts[1], out var balance))
+                {
+                    return balance;
+                }
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get SMS credit balance");
+            return null;
+        }
+    }
+
+    private string CleanPhoneNumber(string phoneNumber)
+    {
+        // +905551234567 -> 5551234567
+        // 905551234567  -> 5551234567
+        // 05551234567   -> 5551234567
+
+        var cleaned = phoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "");
+
+        if (cleaned.StartsWith("90"))
+            cleaned = cleaned.Substring(2);
+
+        if (cleaned.StartsWith("0"))
+            cleaned = cleaned.Substring(1);
+
+        return cleaned;
+    }
+}
+]]></Code>
+    </Step>
+
+    <Step order="5">
+      <Title>Configuration Ayarları</Title>
+      <File>Backend/SecretCustomer.API/appsettings.json</File>
+      <Code><![CDATA[
+{
+  "SmsSettings": {
+    "Provider": "Netgsm",
+    "Netgsm": {
+      "Username": "YOUR_USERNAME",
+      "Password": "YOUR_PASSWORD",
+      "Header": "GIZLIMUSTERI"
+    },
+    "Twilio": {
+      "AccountSid": "",
+      "AuthToken": "",
+      "FromNumber": ""
+    }
+  }
+}
+]]></Code>
+    </Step>
+
+    <Step order="6">
+      <Title>.env Dosyası (Güvenlik)</Title>
+      <File>.env</File>
+      <Code><![CDATA[
+NETGSM_USERNAME=your_netgsm_username
+NETGSM_PASSWORD=your_netgsm_password
+NETGSM_HEADER=GIZLIMUSTERI
+]]></Code>
+      <Note>appsettings.json yerine .env kullanmak daha güvenli</Note>
+    </Step>
+
+    <Step order="7">
+      <Title>Dependency Injection Kaydı</Title>
+      <File>Backend/SecretCustomer.API/Program.cs</File>
+      <Code><![CDATA[
+// HttpClient for SMS service
+builder.Services.AddHttpClient<ISmsService, NetgsmSmsService>();
+]]></Code>
+    </Step>
+
+    <Step order="8">
+      <Title>AssignmentService - SMS Gönderimi</Title>
+      <File>Backend/SecretCustomer.Services/Services/AssignmentService.cs</File>
+      <Code><![CDATA[
+private readonly ISmsService _smsService;  // YENİ
+
+public AssignmentService(
+    IAssignmentRepository assignmentRepository,
+    IProjectRepository projectRepository,
+    IChecklistRepository checklistRepository,
+    ISmsService smsService)  // YENİ
+{
+    _assignmentRepository = assignmentRepository;
+    _projectRepository = projectRepository;
+    _checklistRepository = checklistRepository;
+    _smsService = smsService;
+}
+
+public async Task<AssignmentDto> CreateAsync(CreateAssignmentDto dto)
+{
+    await ValidateAsync(dto);
+
+    var assignment = new Assignment
+    {
+        ProjectId = dto.ProjectId,
+        ChecklistId = dto.ChecklistId,
+        BranchId = dto.BranchId,
+        AssignedUserId = dto.AssignedUserId,
+        ExternalEmail = dto.ExternalEmail,
+        ExternalName = dto.ExternalName,
+        ExternalPhone = dto.ExternalPhone,  // YENİ
+        UniqueLink = Guid.NewGuid().ToString(),
+        DueDate = dto.DueDate,
+        IsCompleted = false
+    };
+
+    var created = await _assignmentRepository.CreateAsync(assignment);
+
+    // SMS gönderimi (eğer telefon varsa)
+    if (!string.IsNullOrEmpty(dto.ExternalPhone) && dto.SendSms)
+    {
+        var formLink = $"https://yourdomain.com/form/{created.UniqueLink}";
+        await _smsService.SendFormLinkSmsAsync(
+            dto.ExternalPhone,
+            dto.ExternalName ?? "Değerli Müşterimiz",
+            formLink);
+    }
+
+    return MapToDto(created);
+}
+]]></Code>
+    </Step>
+
+    <Step order="9">
+      <Title>API Controller - SMS Gönderme Endpoint</Title>
+      <File>Backend/SecretCustomer.API/Controllers/Api/AssignmentsApiController.cs</File>
+      <Code><![CDATA[
+[HttpPost("{id}/send-sms")]
+public async Task<IActionResult> SendFormSms(Guid id)
+{
+    var assignment = await _assignmentService.GetByIdAsync(id);
+    if (assignment == null)
+        return NotFound();
+
+    if (string.IsNullOrEmpty(assignment.ExternalPhone))
+        return BadRequest("Assignment does not have a phone number");
+
+    var formLink = $"{Request.Scheme}://{Request.Host}/form/{assignment.UniqueLink}";
+
+    var success = await _smsService.SendFormLinkSmsAsync(
+        assignment.ExternalPhone,
+        assignment.ExternalName ?? "Değerli Müşterimiz",
+        formLink);
+
+    if (success)
+        return Ok(new { message = "SMS sent successfully" });
+
+    return StatusCode(500, new { message = "SMS send failed" });
+}
+
+[HttpGet("sms/balance")]
+public async Task<ActionResult<decimal?>> GetSmsBalance()
+{
+    var balance = await _smsService.GetCreditBalanceAsync();
+    return Ok(new { balance, currency = "TL" });
+}
+]]></Code>
+    </Step>
+  </Implementation>
+
+  <Testing>
+    <TestCase id="1">
+      <Title>SMS Gönderimi - Tek Müşteri</Title>
+      <Request>POST /api/assignments</Request>
+      <Payload><![CDATA[
+{
+  "projectId": "...",
+  "checklistId": "...",
+  "externalName": "Ahmet Yılmaz",
+  "externalPhone": "+905551234567",
+  "externalEmail": "ahmet@example.com",
+  "sendSms": true
+}
+      ]]></Payload>
+      <ExpectedResult>
+        Assignment oluşturulmalı ve otomatik SMS gönderilmeli.
+        Netgsm loglarında "00" success kodu görülmeli.
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="2">
+      <Title>Manuel SMS Gönderimi</Title>
+      <Request>POST /api/assignments/{id}/send-sms</Request>
+      <ExpectedResult>Form linki içeren SMS müşteriye ulaşmalı</ExpectedResult>
+    </TestCase>
+
+    <TestCase id="3">
+      <Title>SMS Bakiye Kontrolü</Title>
+      <Request>GET /api/assignments/sms/balance</Request>
+      <ExpectedResult>
+        { "balance": 123.45, "currency": "TL" }
+      </ExpectedResult>
+    </TestCase>
+
+    <TestCase id="4">
+      <Title>Toplu SMS Gönderimi</Title>
+      <Steps>
+        <Step>100 assignment için bulk create yap</Step>
+        <Step>Her birine otomatik SMS gönderilmeli</Step>
+        <Step>Rate limiting kontrolü (saniyede 10 SMS)</Step>
+      </Steps>
+    </TestCase>
+
+    <TestCase id="5">
+      <Title>Hatalı Telefon Numarası</Title>
+      <Payload>{ "externalPhone": "invalid" }</Payload>
+      <ExpectedResult>Validation hatası veya SMS gönderimi başarısız</ExpectedResult>
+    </TestCase>
+  </Testing>
+
+  <Migration>
+    <Required>true</Required>
+    <Command>dotnet ef database update</Command>
+    <Note>ExternalPhone field'ı nullable olduğu için mevcut veriler etkilenmez</Note>
+  </Migration>
+
+  <SecurityConsiderations>
+    <Consideration>
+      <Title>Kimlik Bilgilerinin Güvenliği</Title>
+      <Description>SMS provider username/password açıkta kalmamalı</Description>
+      <Mitigation>Azure Key Vault, AWS Secrets Manager veya .env kullan</Mitigation>
+    </Consideration>
+    <Consideration>
+      <Title>SMS Spam Koruması</Title>
+      <Description>Aynı numaraya çok fazla SMS gönderimi engelleneli</Description>
+      <Mitigation>Rate limiting: Aynı numaraya 5 dakikada 1 SMS</Mitigation>
+    </Consideration>
+    <Consideration>
+      <Title>GDPR/KVKK Uyumu</Title>
+      <Description>Telefon numarası kişisel veri, izin alınmalı</Description>
+      <Mitigation>Consent checkbox, SMS gönderim izni kaydet</Mitigation>
+    </Consideration>
+  </SecurityConsiderations>
+
+  <CostEstimation>
+    <Provider name="Netgsm">
+      <PackageOption>1000 SMS = ~100 TL (~0.10 TL/SMS)</PackageOption>
+      <PackageOption>5000 SMS = ~400 TL (~0.08 TL/SMS)</PackageOption>
+      <PackageOption>10000 SMS = ~700 TL (~0.07 TL/SMS)</PackageOption>
+    </Provider>
+    <MonthlyEstimate>
+      <Scenario>Aylık 1000 form gönderimi</Scenario>
+      <Cost>~100 TL/ay</Cost>
+    </MonthlyEstimate>
+  </CostEstimation>
+
+  <FrontendConsiderations>
+    <UI>
+      <Component>Assignment Create Form</Component>
+      <Changes>
+        <Change>ExternalPhone input field ekle (phone format mask)</Change>
+        <Change>"SMS Gönder" checkbox ekle (sendSms)</Change>
+        <Change>SMS preview göster</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Assignment Detail</Component>
+      <Changes>
+        <Change>"SMS Gönder" butonu ekle</Change>
+        <Change>SMS gönderim geçmişi göster (future enhancement)</Change>
+      </Changes>
+    </UI>
+    <UI>
+      <Component>Admin Dashboard</Component>
+      <Changes>
+        <Change>SMS kredisi widget'ı ekle</Change>
+        <Change>Düşük bakiye uyarısı</Change>
+      </Changes>
+    </UI>
+  </FrontendConsiderations>
+
+  <FutureEnhancements>
+    <Enhancement>SMS template yönetimi (admin tarafından düzenlenebilir)</Enhancement>
+    <Enhancement>SMS gönderim logları (SmsLog entity)</Enhancement>
+    <Enhancement>SMS delivery status tracking (Netgsm callback)</Enhancement>
+    <Enhancement>Çoklu dil desteği (TR, EN SMS şablonları)</Enhancement>
+    <Enhancement>Scheduled SMS (belirli tarih/saatte gönder)</Enhancement>
+  </FutureEnhancements>
+
+  <RollbackPlan>
+    <Step>Migration'ı geri al (ExternalPhone field'ını kaldır)</Step>
+    <Step>ISmsService ve NetgsmSmsService'i sil</Step>
+    <Step>AssignmentService'ten SMS kodunu kaldır</Step>
+    <Step>Controller endpoint'lerini kaldır</Step>
+    <Note>SMS gönderilmiş müşteriler etkilenmez, sadece özellik kaldırılır</Note>
+  </RollbackPlan>
+</ImplementationGuide>

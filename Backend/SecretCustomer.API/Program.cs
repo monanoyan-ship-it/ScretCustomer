@@ -144,6 +144,7 @@ builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerPersonnelService, CustomerPersonnelService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 
 // HttpClient for Python Services
 builder.Services.AddHttpClient("ExcelProcessor", client =>
