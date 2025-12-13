@@ -7,8 +7,7 @@
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5003",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ANTHROPIC_API_KEY": "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"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {
@@ -17,8 +16,7 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:5004;http://localhost:5003",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ANTHROPIC_API_KEY": "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"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

@@ -12,15 +12,24 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AssignmentsApiController : ControllerBase
 {
     private readonly IAssignmentService _assignmentService;
+    private readonly IFieldWorkerService _fieldWorkerService;
     private readonly ILogger<AssignmentsApiController> _logger;
 
-    public AssignmentsApiController(IAssignmentService assignmentService, ILogger<AssignmentsApiController> logger)
+    public AssignmentsApiController(
+        IAssignmentService assignmentService,
+        IFieldWorkerService fieldWorkerService,
+        ILogger<AssignmentsApiController> logger)
     {
         _assignmentService = assignmentService;
+        _fieldWorkerService = fieldWorkerService;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all assignments - Only Admin and TeamLeader can access
+    /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Admin,TeamLeader")]
     public async Task<IActionResult> GetAll([FromQuery] Guid? projectId = null, [FromQuery] Guid? branchId = null)
     {
         try
@@ -49,6 +58,9 @@ public class AssignmentsApiController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get assignment by ID - Users can only access their own assignments (except Admin/TeamLeader)
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
@@ -58,6 +70,31 @@ public class AssignmentsApiController : ControllerBase
             if (assignment == null)
             {
                 return NotFound(new { message = "Atama bulunamadı." });
+            }
+
+            // Resource-based authorization: Check ownership
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            // Admin ve TeamLeader her şeyi görebilir
+            if (userRole != "Admin" && userRole != "TeamLeader")
+            {
+                // FieldWorker ise sadece kendi assignment'ını görebilir
+                if (userRole == "FieldWorker")
+                {
+                    var fieldWorker = await _fieldWorkerService.GetByUserIdAsync(userId);
+                    if (fieldWorker == null || assignment.AssignedFieldWorkerId != fieldWorker.Id)
+                    {
+                        _logger.LogWarning("FieldWorker {UserId} attempted to access unauthorized assignment {AssignmentId}", userId, id);
+                        return Forbid(); // 403 Forbidden
+                    }
+                }
+                // Evaluator veya CustomerRepresentative ise sadece kendine atanmış assignment'ları görebilir
+                else if (assignment.AssignedUserId != userId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to access unauthorized assignment {AssignmentId}", userId, id);
+                    return Forbid(); // 403 Forbidden
+                }
             }
 
             return Ok(assignment);

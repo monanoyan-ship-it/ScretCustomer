@@ -187,6 +187,14 @@ public class AssignmentService : IAssignmentService
             AssignedUserName = assignment.AssignedUser != null
                 ? $"{assignment.AssignedUser.FirstName} {assignment.AssignedUser.LastName}"
                 : null,
+            AssignedFieldWorkerId = assignment.AssignedFieldWorkerId,
+            AssignedFieldWorkerName = assignment.AssignedFieldWorker != null
+                ? $"{assignment.AssignedFieldWorker.FirstName} {assignment.AssignedFieldWorker.LastName}"
+                : null,
+            AssignedCustomerPersonnelId = assignment.AssignedCustomerPersonnelId,
+            AssignedCustomerPersonnelName = assignment.AssignedCustomerPersonnel != null
+                ? $"{assignment.AssignedCustomerPersonnel.FirstName} {assignment.AssignedCustomerPersonnel.LastName}"
+                : null,
             ExternalEmail = assignment.ExternalEmail,
             ExternalName = assignment.ExternalName,
             UniqueLink = assignment.UniqueLink,

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SecretCustomer.Core.Interfaces.Repositories;
@@ -57,7 +58,53 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization();
+// Authorization Handler
+builder.Services.AddScoped<IAuthorizationHandler, SecretCustomer.API.Authorization.PermissionHandler>();
+
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    // Legacy Role-based policies (backward compatibility)
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
+
+    options.AddPolicy("TeamManagement", policy =>
+        policy.RequireRole("Admin", "TeamLeader"));
+
+    options.AddPolicy("CanEvaluate", policy =>
+        policy.RequireRole("Admin", "TeamLeader", "Evaluator"));
+
+    options.AddPolicy("FieldWorkerAccess", policy =>
+        policy.RequireRole("Admin", "TeamLeader", "FieldWorker"));
+
+    options.AddPolicy("Authenticated", policy =>
+        policy.RequireAuthenticatedUser());
+
+    // NEW: Dynamic Permission-based policies
+    options.AddPolicy("ViewProjects", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Projects.View")));
+
+    options.AddPolicy("ManageProjects", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Projects.Manage")));
+
+    options.AddPolicy("ViewAssignments", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Assignments.View")));
+
+    options.AddPolicy("ManageAssignments", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Assignments.Manage")));
+
+    options.AddPolicy("ViewUsers", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Users.View")));
+
+    options.AddPolicy("ManageUsers", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Users.Manage")));
+
+    options.AddPolicy("ViewReports", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Reports.View")));
+
+    options.AddPolicy("ManagePermissions", policy =>
+        policy.Requirements.Add(new SecretCustomer.API.Authorization.PermissionRequirement("Permissions.Manage")));
+});
 
 // Session support for MVC
 builder.Services.AddSession(options =>
@@ -78,6 +125,9 @@ builder.Services.AddScoped<IFieldWorkerRepository, FieldWorkerRepository>();
 builder.Services.AddScoped<IExcelTemplateRepository, ExcelTemplateRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerPersonnelRepository, CustomerPersonnelRepository>();
+builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+builder.Services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
@@ -93,6 +143,7 @@ builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerPersonnelService, CustomerPersonnelService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 // HttpClient for Python Services
 builder.Services.AddHttpClient("ExcelProcessor", client =>

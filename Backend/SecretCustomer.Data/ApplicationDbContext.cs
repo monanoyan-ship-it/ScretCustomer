@@ -31,6 +31,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomerPersonnelTaskAssignment> CustomerPersonnelTaskAssignments { get; set; }
     public DbSet<CustomerPersonnelPermission> CustomerPersonnelPermissions { get; set; }
 
+    // Permission Management DbSets
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<UserPermission> UserPermissions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -58,6 +63,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CustomerTaskList>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelTaskAssignment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelPermission>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Permission Management Entities
+        modelBuilder.Entity<Permission>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<RolePermission>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<UserPermission>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

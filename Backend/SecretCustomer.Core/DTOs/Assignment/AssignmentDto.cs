@@ -11,6 +11,10 @@ public class AssignmentDto
     public string? BranchName { get; set; }
     public Guid? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
+    public Guid? AssignedFieldWorkerId { get; set; }
+    public string? AssignedFieldWorkerName { get; set; }
+    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public string? AssignedCustomerPersonnelName { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalName { get; set; }
     public string UniqueLink { get; set; } = string.Empty;

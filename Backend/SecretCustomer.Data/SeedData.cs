@@ -794,6 +794,9 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Linked branches and projects to customers");
 
+            // 14. Permissions - RBAC System
+            await SeedPermissionsAsync(context, logger);
+
             logger.LogInformation("Database seed completed successfully!");
             logger.LogInformation("Test users:");
             logger.LogInformation("  Admin: admin / Admin@123");
@@ -821,5 +824,142 @@ public static class SeedData
             logger.LogError(ex, "An error occurred while seeding the database");
             throw;
         }
+    }
+
+    private static async Task SeedPermissionsAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Permissions.AnyAsync())
+        {
+            logger.LogInformation("Permissions already seeded");
+            return;
+        }
+
+        logger.LogInformation("Seeding permissions...");
+
+        var permissions = new List<Permission>
+        {
+            // Users Management
+            new Permission { Id = Guid.NewGuid(), Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", Category = PermissionCategory.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", Category = PermissionCategory.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", Category = PermissionCategory.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Users.Delete", DisplayName = "Kullanıcı Sil", Category = PermissionCategory.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", Category = PermissionCategory.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
+
+            // Projects
+            new Permission { Id = Guid.NewGuid(), Code = "Projects.View", DisplayName = "Projeleri Görüntüle", Category = PermissionCategory.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Projects.Create", DisplayName = "Proje Oluştur", Category = PermissionCategory.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Projects.Edit", DisplayName = "Proje Düzenle", Category = PermissionCategory.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Projects.Delete", DisplayName = "Proje Sil", Category = PermissionCategory.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", Category = PermissionCategory.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
+
+            // Assignments
+            new Permission { Id = Guid.NewGuid(), Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", Category = PermissionCategory.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Create", DisplayName = "Atama Oluştur", Category = PermissionCategory.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Edit", DisplayName = "Atama Düzenle", Category = PermissionCategory.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Delete", DisplayName = "Atama Sil", Category = PermissionCategory.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", Category = PermissionCategory.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
+
+            // Checklists
+            new Permission { Id = Guid.NewGuid(), Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", Category = PermissionCategory.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", Category = PermissionCategory.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", Category = PermissionCategory.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", Category = PermissionCategory.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
+
+            // Reports
+            new Permission { Id = Guid.NewGuid(), Code = "Reports.View", DisplayName = "Raporları Görüntüle", Category = PermissionCategory.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", Category = PermissionCategory.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Reports.Create", DisplayName = "Rapor Oluştur", Category = PermissionCategory.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
+
+            // Dashboard
+            new Permission { Id = Guid.NewGuid(), Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", Category = PermissionCategory.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
+
+            // Permissions Management
+            new Permission { Id = Guid.NewGuid(), Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", Category = PermissionCategory.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
+            new Permission { Id = Guid.NewGuid(), Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", Category = PermissionCategory.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
+        };
+
+        context.Permissions.AddRange(permissions);
+        await context.SaveChangesAsync();
+        logger.LogInformation($"Created {permissions.Count} permissions");
+
+        // Role-Permission mappings - Admin gets everything
+        var adminRole = UserRole.Admin;
+        foreach (var permission in permissions)
+        {
+            context.RolePermissions.Add(new RolePermission
+            {
+                Id = Guid.NewGuid(),
+                Role = adminRole,
+                PermissionId = permission.Id,
+                IsGranted = true,
+                Scope = PermissionScope.All,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        // TeamLeader permissions
+        var teamLeaderPermissions = permissions.Where(p =>
+            p.Code.StartsWith("Projects.") ||
+            p.Code.StartsWith("Assignments.") ||
+            p.Code.StartsWith("Checklists.View") ||
+            p.Code.StartsWith("Reports.") ||
+            p.Code.StartsWith("Dashboard.")).ToList();
+
+        foreach (var permission in teamLeaderPermissions)
+        {
+            context.RolePermissions.Add(new RolePermission
+            {
+                Id = Guid.NewGuid(),
+                Role = UserRole.TeamLeader,
+                PermissionId = permission.Id,
+                IsGranted = true,
+                Scope = PermissionScope.Branch,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        // Evaluator permissions
+        var evaluatorPermissions = permissions.Where(p =>
+            p.Code == "Checklists.View" ||
+            p.Code == "Assignments.View" ||
+            p.Code == "Dashboard.View").ToList();
+
+        foreach (var permission in evaluatorPermissions)
+        {
+            context.RolePermissions.Add(new RolePermission
+            {
+                Id = Guid.NewGuid(),
+                Role = UserRole.Evaluator,
+                PermissionId = permission.Id,
+                IsGranted = true,
+                Scope = PermissionScope.Own,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        // FieldWorker permissions
+        var fieldWorkerPermissions = permissions.Where(p =>
+            p.Code == "Assignments.View" ||
+            p.Code == "Dashboard.View").ToList();
+
+        foreach (var permission in fieldWorkerPermissions)
+        {
+            context.RolePermissions.Add(new RolePermission
+            {
+                Id = Guid.NewGuid(),
+                Role = UserRole.FieldWorker,
+                PermissionId = permission.Id,
+                IsGranted = true,
+                Scope = PermissionScope.Own,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await context.SaveChangesAsync();
+        logger.LogInformation("Role-Permission mappings created");
+        logger.LogInformation("  - Admin: Full access to all permissions");
+        logger.LogInformation("  - TeamLeader: Project, Assignment, Report management");
+        logger.LogInformation("  - Evaluator: View checklists and own assignments");
+        logger.LogInformation("  - FieldWorker: View own assignments only");
     }
 }

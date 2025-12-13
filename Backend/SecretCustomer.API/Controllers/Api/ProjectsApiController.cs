@@ -19,7 +19,11 @@ public class ProjectsApiController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all projects - Only Admin and TeamLeader can access
+    /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Admin,TeamLeader")]
     public async Task<IActionResult> GetAll()
     {
         try
@@ -34,7 +38,11 @@ public class ProjectsApiController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get project by ID - Only Admin and TeamLeader can access
+    /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,TeamLeader")]
     public async Task<IActionResult> GetById(Guid id)
     {
         try

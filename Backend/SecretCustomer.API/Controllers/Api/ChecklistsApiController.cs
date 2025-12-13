@@ -19,7 +19,11 @@ public class ChecklistsApiController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all checklists - Admin, TeamLeader, and Evaluator can access
+    /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Admin,TeamLeader,Evaluator")]
     public async Task<IActionResult> GetAll()
     {
         try
@@ -34,7 +38,11 @@ public class ChecklistsApiController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get checklist by ID - Admin, TeamLeader, and Evaluator can access
+    /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,TeamLeader,Evaluator")]
     public async Task<IActionResult> GetById(Guid id)
     {
         try
