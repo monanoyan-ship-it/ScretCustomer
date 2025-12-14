@@ -139,6 +139,11 @@ public class CustomerVisit : BaseEntity
 
     // Navigation properties
     public ICollection<CustomerVisitAttachment> Attachments { get; set; } = new List<CustomerVisitAttachment>();
+
+    /// <summary>
+    /// Banka ziyareti detayları (GBF için)
+    /// </summary>
+    public BankVisitDetails? BankVisitDetails { get; set; }
 }
 
 /// <summary>

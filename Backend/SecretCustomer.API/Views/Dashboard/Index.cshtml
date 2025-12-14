@@ -1,11 +1,11 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = Html.T("Dashboard.Title", "Dashboard").ToString();
 }
 
 <div id="dashboard-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+        <h2><i class="bi bi-speedometer2"></i> @Html.T("Dashboard.Title", "Dashboard")</h2>
         <div class="d-flex gap-2 align-items-center">
             <!-- Date Range Filter -->
             <div class="input-group input-group-sm">
@@ -15,7 +15,7 @@
                 <input type="date" class="form-control" data-bind="value: endDate" style="max-width: 140px;">
             </div>
             <button class="btn btn-sm btn-primary" data-bind="click: loadDashboard">
-                <i class="bi bi-arrow-clockwise"></i> Yenile
+                <i class="bi bi-arrow-clockwise"></i> @Html.T("Common.Refresh", "Yenile")
             </button>
         </div>
     </div>
@@ -23,7 +23,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
     </div>
 
     <!-- Error -->
@@ -41,7 +41,7 @@
             <div class="col-xl-8 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Kişisel Performans Kartı</h5>
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> @Html.T("Dashboard.PersonalScorecard", "Kişisel Performans Kartı")</h5>
                         <span class="badge bg-light text-primary" data-bind="text: scorecard().userName"></span>
                     </div>
                     <div class="card-body">
@@ -49,15 +49,15 @@
                             <!-- Bu Ay -->
                             <div class="col-md-4 mb-3">
                                 <div class="border rounded p-3 h-100">
-                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar-month"></i> Bu Ay</h6>
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar-month"></i> @Html.T("Dashboard.ThisMonth", "Bu Ay")</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3 class="mb-0" data-bind="text: scorecard().currentMonthEvaluations"></h3>
-                                            <small class="text-muted">Değerlendirme</small>
+                                            <small class="text-muted">@Html.T("Dashboard.Evaluation", "Değerlendirme")</small>
                                         </div>
                                         <div class="text-end">
                                             <h3 class="mb-0"><span data-bind="text: scorecard().currentMonthAverage.toFixed(1)"></span>%</h3>
-                                            <small class="text-muted">Ortalama</small>
+                                            <small class="text-muted">@Html.T("Common.Average", "Ortalama")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -65,15 +65,15 @@
                             <!-- Geçen Ay -->
                             <div class="col-md-4 mb-3">
                                 <div class="border rounded p-3 h-100">
-                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar"></i> Geçen Ay</h6>
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar"></i> @Html.T("Dashboard.LastMonth", "Geçen Ay")</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3 class="mb-0" data-bind="text: scorecard().lastMonthEvaluations"></h3>
-                                            <small class="text-muted">Değerlendirme</small>
+                                            <small class="text-muted">@Html.T("Dashboard.Evaluation", "Değerlendirme")</small>
                                         </div>
                                         <div class="text-end">
                                             <h3 class="mb-0"><span data-bind="text: scorecard().lastMonthAverage.toFixed(1)"></span>%</h3>
-                                            <small class="text-muted">Ortalama</small>
+                                            <small class="text-muted">@Html.T("Common.Average", "Ortalama")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -81,15 +81,15 @@
                             <!-- Toplam & Sıralama -->
                             <div class="col-md-4 mb-3">
                                 <div class="border rounded p-3 h-100">
-                                    <h6 class="text-muted mb-2"><i class="bi bi-trophy"></i> Toplam</h6>
+                                    <h6 class="text-muted mb-2"><i class="bi bi-trophy"></i> @Html.T("Common.Total", "Toplam")</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3 class="mb-0" data-bind="text: scorecard().totalEvaluations"></h3>
-                                            <small class="text-muted">Değerlendirme</small>
+                                            <small class="text-muted">@Html.T("Dashboard.Evaluation", "Değerlendirme")</small>
                                         </div>
                                         <div class="text-end">
                                             <h3 class="mb-0"><span data-bind="text: scorecard().userRank"></span>/<span data-bind="text: scorecard().totalUsers"></span></h3>
-                                            <small class="text-muted">Sıralama</small>
+                                            <small class="text-muted">@Html.T("Dashboard.Ranking", "Sıralama")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -100,7 +100,7 @@
                             <div class="col-12">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="flex-grow-1">
-                                        <small class="text-muted">Sizin Ortalamanız</small>
+                                        <small class="text-muted">@Html.T("Dashboard.YourAverage", "Sizin Ortalamanız")</small>
                                         <div class="progress" style="height: 25px;">
                                             <div class="progress-bar bg-primary" role="progressbar"
                                                  data-bind="style: { width: scorecard().totalAverage + '%' }">
@@ -109,7 +109,7 @@
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <small class="text-muted">Şirket Ortalaması</small>
+                                        <small class="text-muted">@Html.T("Dashboard.CompanyAverage", "Şirket Ortalaması")</small>
                                         <div class="progress" style="height: 25px;">
                                             <div class="progress-bar bg-secondary" role="progressbar"
                                                  data-bind="style: { width: scorecard().companyAverage + '%' }">
@@ -122,7 +122,7 @@
                                             <i data-bind="css: scorecard().monthlyChange >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
                                             <span data-bind="text: Math.abs(scorecard().monthlyChange).toFixed(1)"></span>%
                                         </span>
-                                        <small class="d-block text-muted">Aylık Değişim</small>
+                                        <small class="d-block text-muted">@Html.T("Dashboard.MonthlyChange", "Aylık Değişim")</small>
                                     </div>
                                 </div>
                             </div>
@@ -135,13 +135,13 @@
             <div class="col-xl-4 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-gradient bg-info text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-megaphone"></i> Duyurular</h5>
+                        <h5 class="mb-0"><i class="bi bi-megaphone"></i> @Html.T("Menu.Announcements", "Duyurular")</h5>
                         <span class="badge bg-light text-info" data-bind="text: announcements().length"></span>
                     </div>
                     <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
                         <div data-bind="visible: announcements().length === 0" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">Yeni duyuru bulunmamaktadır.</p>
+                            <p class="mt-2">@Html.T("Dashboard.NoAnnouncements", "Yeni duyuru bulunmamaktadır.")</p>
                         </div>
                         <div class="list-group list-group-flush" data-bind="foreach: announcements">
                             <a href="#" class="list-group-item list-group-item-action py-3">
@@ -167,14 +167,15 @@
             </div>
         </div>
 
-        <!-- KPI Cards -->
+        <!-- KPI Cards - Admin Only -->
+        <div data-bind="visible: hasAdminAccess">
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card bg-primary text-white shadow h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">Toplam Değerlendirme</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.TotalEvaluations", "Toplam Değerlendirme")</h6>
                                 <h2 class="mb-0" data-bind="text: stats().totalEvaluations"></h2>
                             </div>
                             <i class="bi bi-clipboard-check fs-1 opacity-50"></i>
@@ -188,7 +189,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">Ortalama Puan</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.AverageScore", "Ortalama Puan")</h6>
                                 <h2 class="mb-0">
                                     <span data-bind="text: stats().averageScore.toFixed(1)"></span>%
                                 </h2>
@@ -204,7 +205,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1" data-bind="css: { 'text-white-50': stats().percentageChange >= 0, 'text-dark-50': stats().percentageChange < 0 }">Aylık Değişim</h6>
+                                <h6 class="mb-1" data-bind="css: { 'text-white-50': stats().percentageChange >= 0, 'text-dark-50': stats().percentageChange < 0 }">@Html.T("Dashboard.MonthlyChange", "Aylık Değişim")</h6>
                                 <h2 class="mb-0">
                                     <i data-bind="css: stats().percentageChange >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
                                     <span data-bind="text: Math.abs(stats().percentageChange).toFixed(1)"></span>%
@@ -221,7 +222,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">Aktif Şube</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ActiveBranches", "Aktif Şube")</h6>
                                 <h2 class="mb-0" data-bind="text: stats().branchComparisons.length"></h2>
                             </div>
                             <i class="bi bi-building fs-1 opacity-50"></i>
@@ -230,14 +231,16 @@
                 </div>
             </div>
         </div>
+        </div>
 
-        <!-- Charts Row -->
+        <!-- Charts Row - Admin Only -->
+        <div data-bind="visible: hasAdminAccess">
         <div class="row mb-4">
             <!-- Monthly Trend Chart -->
             <div class="col-xl-8 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Aylık Performans Trendi</h5>
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> @Html.T("Dashboard.MonthlyTrend", "Aylık Performans Trendi")</h5>
                         <span class="badge bg-primary" data-bind="text: 'Son ' + stats().monthlyTrends.length + ' ay'"></span>
                     </div>
                     <div class="card-body">
@@ -250,7 +253,7 @@
             <div class="col-xl-4 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Şube Karşılaştırması</h5>
+                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> @Html.T("Dashboard.BranchComparison", "Şube Karşılaştırması")</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="branchComparisonChart" style="max-height: 300px;"></canvas>
@@ -265,12 +268,12 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="bi bi-trophy"></i> En İyi 5 Şube</h5>
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> @Html.T("Dashboard.TopBranches", "En İyi 5 Şube")</h5>
                     </div>
                     <div class="card-body p-0">
                         <div data-bind="visible: stats().topBranches.length === 0" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
                         </div>
                         <ul class="list-group list-group-flush" data-bind="foreach: stats().topBranches">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -292,12 +295,12 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Geliştirilmesi Gereken 5 Şube</h5>
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> @Html.T("Dashboard.NeedsImprovement", "Geliştirilmesi Gereken 5 Şube")</h5>
                     </div>
                     <div class="card-body p-0">
                         <div data-bind="visible: stats().bottomBranches.length === 0" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">Henüz veri bulunmamaktadır.</p>
+                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
                         </div>
                         <ul class="list-group list-group-flush" data-bind="foreach: stats().bottomBranches">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -319,10 +322,10 @@
         <!-- Detailed Branch Table -->
         <div class="card shadow mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-table"></i> Tüm Şubeler</h5>
+                <h5 class="mb-0"><i class="bi bi-table"></i> @Html.T("Dashboard.AllBranches", "Tüm Şubeler")</h5>
                 <div class="input-group input-group-sm" style="max-width: 250px;">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Şube ara..." data-bind="value: branchSearchTerm, valueUpdate: 'afterkeydown'">
+                    <input type="text" class="form-control" placeholder="@Html.T("Dashboard.SearchBranch", "Şube ara...")" data-bind="value: branchSearchTerm, valueUpdate: 'afterkeydown'">
                 </div>
             </div>
             <div class="card-body p-0">
@@ -330,11 +333,11 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Şube</th>
-                                <th>Bölge</th>
-                                <th>Değerlendirme</th>
-                                <th>Ortalama Puan</th>
-                                <th>Performans</th>
+                                <th>@Html.T("Branch.BranchName", "Şube")</th>
+                                <th>@Html.T("Branch.Region", "Bölge")</th>
+                                <th>@Html.T("Dashboard.Evaluation", "Değerlendirme")</th>
+                                <th>@Html.T("Dashboard.AverageScore", "Ortalama Puan")</th>
+                                <th>@Html.T("Report.Performance", "Performans")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: filteredBranches">
@@ -358,6 +361,15 @@
                     </table>
                 </div>
             </div>
+        </div>
+        </div>
+
+        <!-- Non-Admin Message -->
+        <div data-bind="visible: !hasAdminAccess()">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            @Html.T("Dashboard.WelcomeMessage", "Hoş geldiniz! Atamalarınızı görmek için soldaki menüden <strong>Görevlerim</strong> seçeneğine tıklayabilirsiniz.")
+        </div>
         </div>
     </div>
 </div>

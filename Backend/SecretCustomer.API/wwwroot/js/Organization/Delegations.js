@@ -213,60 +213,63 @@ function DelegationsViewModel() {
 
     // Approve delegation
     self.approveDelegation = function(delegation) {
-        if (!confirm('Bu vekaleti onaylamak istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        fetch('/api/delegations/' + delegation.id + '/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ isApproved: true, notes: '' })
-        })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.message || 'Onay işlemi başarısız');
+        showConfirmModal({
+            title: 'Vekalet Onayı',
+            message: 'Bu vekaleti onaylamak istediğinizden emin misiniz?',
+            type: 'success',
+            confirmText: 'Onayla',
+            confirmIcon: 'bi-check-circle',
+            onConfirm: function() {
+                fetch('/api/delegations/' + delegation.id + '/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ isApproved: true, notes: '' })
+                })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            return response.json().then(function(err) {
+                                throw new Error(err.message || 'Onay işlemi başarısız');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        self.successMessage('Vekalet başarıyla onaylandı.');
+                        self.loadDelegations();
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        self.errorMessage(error.message || 'Vekalet onaylanırken bir hata oluştu.');
                     });
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                self.successMessage('Vekalet başarıyla onaylandı.');
-                self.loadDelegations();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.errorMessage(error.message || 'Vekalet onaylanırken bir hata oluştu.');
-            });
+            }
+        });
     };
 
     // Delete delegation
     self.deleteDelegation = function(delegation) {
-        if (!confirm('Bu vekaleti silmek istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        fetch('/api/delegations/' + delegation.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.message || 'Silme işlemi başarısız');
-                    });
-                }
-                return response.json();
+        showDeleteConfirm('Bu vekalet', function() {
+            fetch('/api/delegations/' + delegation.id, {
+                method: 'DELETE',
+                credentials: 'include'
             })
-            .then(function(data) {
-                self.successMessage('Vekalet başarıyla silindi.');
-                self.loadDelegations();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.errorMessage(error.message || 'Vekalet silinirken bir hata oluştu.');
-            });
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.message || 'Silme işlemi başarısız');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.successMessage('Vekalet başarıyla silindi.');
+                    self.loadDelegations();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    self.errorMessage(error.message || 'Vekalet silinirken bir hata oluştu.');
+                });
+        });
     };
 
     // Modal helpers

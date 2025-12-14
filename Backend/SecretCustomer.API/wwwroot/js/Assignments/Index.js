@@ -158,10 +158,10 @@ function AssignmentsViewModel() {
     self.allAssignableUsers = ko.computed(function() {
         var users = [];
         self.availableEvaluators().forEach(function(u) {
-            users.push({ id: u.id, displayName: u.fullName + ' (Kullanıcı)' });
+            users.push({ id: u.id, displayName: u.fullName + ' (' + T('User.Title', 'Kullanıcı') + ')' });
         });
         self.availableFieldWorkers().forEach(function(fw) {
-            users.push({ id: fw.id, displayName: fw.fullName + ' (Saha Çalışanı)' });
+            users.push({ id: fw.id, displayName: fw.fullName + ' (' + T('Role.FieldWorker', 'Saha Çalışanı') + ')' });
         });
         return users;
     });
@@ -190,7 +190,7 @@ function AssignmentsViewModel() {
 
         fetch('/api/assignments', { credentials: 'include' })
             .then(function(res) {
-                if (!res.ok) throw new Error('Yükleme başarısız');
+                if (!res.ok) throw new Error(T('Message.LoadError', 'Yükleme başarısız'));
                 return res.json();
             })
             .then(function(data) {
@@ -198,7 +198,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Atamalar yüklenirken bir hata oluştu.');
+                self.errorMessage(T('Assignment.LoadError', 'Atamalar yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -287,7 +287,7 @@ function AssignmentsViewModel() {
             body: JSON.stringify(filter)
         })
             .then(function(res) {
-                if (!res.ok) throw new Error('Filtreleme başarısız');
+                if (!res.ok) throw new Error(T('Message.FilterError', 'Filtreleme başarısız'));
                 return res.json();
             })
             .then(function(data) {
@@ -296,7 +296,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Atamalar filtrelenirken bir hata oluştu.');
+                self.errorMessage(T('Assignment.FilterError', 'Atamalar filtrelenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -356,17 +356,17 @@ function AssignmentsViewModel() {
 
         // Validation
         if (!assignment.projectId()) {
-            alert('Proje seçmelisiniz!');
+            toastr.warning(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
             return;
         }
 
         if (!assignment.checklistId()) {
-            alert('Kontrol listesi seçmelisiniz!');
+            toastr.warning(T('Assignment.SelectChecklist', 'Kontrol listesi seçmelisiniz!'));
             return;
         }
 
         if (!assignment.dueDate()) {
-            alert('Son tarih zorunludur!');
+            toastr.warning(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
             return;
         }
 
@@ -384,18 +384,18 @@ function AssignmentsViewModel() {
             body: JSON.stringify(dto)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error('Kayıt başarısız');
+                if (!response.ok) throw new Error(T('Message.SaveError', 'Kayıt başarısız'));
                 return isEdit ? null : response.json();
             })
             .then(function(data) {
-                self.successMessage(isEdit ? 'Atama başarıyla güncellendi.' : 'Atama başarıyla oluşturuldu.');
+                self.successMessage(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
                 self.closeModal();
                 self.loadAssignments();
                 self.loadSummary();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Atama kaydedilirken bir hata oluştu.');
+                self.errorMessage(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -403,20 +403,20 @@ function AssignmentsViewModel() {
     };
 
     self.deleteAssignment = function(assignment) {
-        deleteConfirmation.show('Bu atamayı silmek istediğinizden emin misiniz?', function() {
+        showDeleteConfirm(T('Assignment.ThisAssignment', 'Bu atama'), function() {
             fetch('/api/assignments/' + assignment.id, {
                 method: 'DELETE',
                 credentials: 'include'
             })
                 .then(function(response) {
-                    if (!response.ok) throw new Error('Silme başarısız');
-                    self.successMessage('Atama başarıyla silindi.');
+                    if (!response.ok) throw new Error(T('Message.DeleteError', 'Silme başarısız'));
+                    toastr.success(T('Assignment.DeleteSuccess', 'Atama başarıyla silindi.'));
                     self.assignments.remove(assignment);
                     self.loadSummary();
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
-                    self.errorMessage('Atama silinirken bir hata oluştu.');
+                    toastr.error(T('Assignment.DeleteError', 'Atama silinirken bir hata oluştu.'));
                 });
         });
     };
@@ -457,12 +457,12 @@ function AssignmentsViewModel() {
         var bulk = self.bulkAssignment();
 
         if (!bulk.projectId()) {
-            alert('Proje seçmelisiniz!');
+            toastr.warning(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
             return;
         }
 
         if (!bulk.dueDate()) {
-            alert('Son tarih zorunludur!');
+            toastr.warning(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
             return;
         }
 
@@ -482,7 +482,7 @@ function AssignmentsViewModel() {
             body: JSON.stringify(dto)
         })
             .then(function(res) {
-                if (!res.ok) throw new Error('Toplu atama başarısız');
+                if (!res.ok) throw new Error(T('Assignment.BulkAssignmentError', 'Toplu atama başarısız'));
                 return res.json();
             })
             .then(function(data) {
@@ -493,7 +493,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Toplu atama oluşturulurken bir hata oluştu.');
+                self.errorMessage(T('Assignment.BulkCreateError', 'Toplu atama oluşturulurken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -513,7 +513,7 @@ function AssignmentsViewModel() {
         var assignmentId = data.assignmentId();
 
         if (!assignmentId) {
-            self.errorMessage('Atama bulunamadı.');
+            self.errorMessage(T('Assignment.NotFound', 'Atama bulunamadı.'));
             return;
         }
 
@@ -528,17 +528,17 @@ function AssignmentsViewModel() {
             body: JSON.stringify(dto)
         })
             .then(function(res) {
-                if (!res.ok) throw new Error('Yeniden atama başarısız');
+                if (!res.ok) throw new Error(T('Assignment.ReassignError', 'Yeniden atama başarısız'));
                 return res.json();
             })
             .then(function(result) {
-                self.successMessage('Atama başarıyla yeniden atandı.');
+                self.successMessage(T('Assignment.ReassignSuccess', 'Atama başarıyla yeniden atandı.'));
                 bootstrap.Modal.getInstance(document.getElementById('reassignModal')).hide();
                 self.loadAssignments();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Yeniden atama yapılırken bir hata oluştu.');
+                self.errorMessage(T('Assignment.ReassignProcessError', 'Yeniden atama yapılırken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -547,28 +547,34 @@ function AssignmentsViewModel() {
 
     // ===== Cancel Assignment =====
     self.cancelAssignment = function(assignment) {
-        var reason = prompt('İptal sebebini giriniz (İsteğe bağlı):');
-        if (reason === null) return; // User cancelled
-
-        fetch('/api/assignments/' + assignment.id + '/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ reason: reason || null })
-        })
-            .then(function(res) {
-                if (!res.ok) throw new Error('İptal başarısız');
-                return res.json();
-            })
-            .then(function(result) {
-                self.successMessage('Atama başarıyla iptal edildi.');
-                self.loadAssignments();
-                self.loadSummary();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.errorMessage('Atama iptal edilirken bir hata oluştu.');
-            });
+        showConfirmModal({
+            title: T('Assignment.CancelTitle', 'Atama İptali'),
+            message: T('Assignment.CancelConfirm', 'Bu atamayı iptal etmek istediğinizden emin misiniz?'),
+            type: 'danger',
+            confirmText: T('Button.Cancel', 'İptal Et'),
+            confirmIcon: 'bi-x-circle',
+            onConfirm: function() {
+                fetch('/api/assignments/' + assignment.id + '/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ reason: null })
+                })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error(T('Assignment.CancelError', 'İptal başarısız'));
+                        return res.json();
+                    })
+                    .then(function(result) {
+                        toastr.success(T('Assignment.CancelSuccess', 'Atama başarıyla iptal edildi.'));
+                        self.loadAssignments();
+                        self.loadSummary();
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        toastr.error(T('Assignment.CancelProcessError', 'Atama iptal edilirken bir hata oluştu.'));
+                    });
+            }
+        });
     };
 
     // ===== View Detail =====
@@ -582,7 +588,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Detay yüklenirken bir hata oluştu.');
+                self.errorMessage(T('Assignment.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
             });
     };
 
@@ -609,15 +615,16 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('QR kod oluşturulurken bir hata oluştu.');
+                self.errorMessage(T('Assignment.QRCodeError', 'QR kod oluşturulurken bir hata oluştu.'));
             });
     };
 
     self.copyQRLink = function() {
         navigator.clipboard.writeText(self.qrCodeLink()).then(function() {
-            alert('Link kopyalandı!');
+            toastr.success(T('Message.LinkCopied', 'Link kopyalandı!'));
         }).catch(function(error) {
             console.error('Error copying link:', error);
+            toastr.error(T('Message.LinkCopyError', 'Link kopyalanırken hata oluştu.'));
         });
     };
 
@@ -626,10 +633,10 @@ function AssignmentsViewModel() {
         var link = baseUrl + '/form/' + assignment.uniqueLink;
 
         navigator.clipboard.writeText(link).then(function() {
-            self.successMessage('Link panoya kopyalandı!');
+            self.successMessage(T('Message.LinkCopiedToClipboard', 'Link panoya kopyalandı!'));
         }).catch(function(error) {
             console.error('Error copying link:', error);
-            self.errorMessage('Link kopyalanırken bir hata oluştu.');
+            self.errorMessage(T('Message.LinkCopyError', 'Link kopyalanırken bir hata oluştu.'));
         });
     };
 
@@ -647,12 +654,12 @@ function AssignmentsViewModel() {
 
     self.getStatusText = function(status) {
         switch (status) {
-            case 'Pending': return 'Bekleyen';
-            case 'InProgress': return 'Devam Eden';
-            case 'Completed': return 'Tamamlandı';
-            case 'Expired': return 'Süresi Doldu';
-            case 'Cancelled': return 'İptal Edildi';
-            default: return status || 'Bilinmiyor';
+            case 'Pending': return T('Status.Pending', 'Bekleyen');
+            case 'InProgress': return T('Status.InProgress', 'Devam Eden');
+            case 'Completed': return T('Status.Completed', 'Tamamlandı');
+            case 'Expired': return T('Status.Expired', 'Süresi Doldu');
+            case 'Cancelled': return T('Status.Cancelled', 'İptal Edildi');
+            default: return status || T('Status.Unknown', 'Bilinmiyor');
         }
     };
 

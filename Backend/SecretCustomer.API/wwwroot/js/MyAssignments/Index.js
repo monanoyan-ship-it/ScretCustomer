@@ -64,7 +64,7 @@
             if (!assignment) return;
 
             // TODO: Implement save logic
-            alert('Değerlendirme kaydetme fonksiyonu geliştirilecek.');
+            toastr.info('Değerlendirme kaydetme fonksiyonu geliştirilecek.');
         };
 
         // Load assignments

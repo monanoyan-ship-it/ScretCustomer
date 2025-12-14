@@ -34,7 +34,7 @@ function BranchesViewModel() {
 
         fetch('/api/branches', { credentials: 'include' })
             .then(response => {
-                if (!response.ok) throw new Error('Yükleme başarısız');
+                if (!response.ok) throw new Error(T('Message.LoadError', 'Yükleme başarısız'));
                 return response.json();
             })
             .then(data => {
@@ -42,7 +42,7 @@ function BranchesViewModel() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                self.errorMessage('Şubeler yüklenirken bir hata oluştu.');
+                self.errorMessage(T('Branch.LoadError', 'Şubeler yüklenirken bir hata oluştu.'));
             })
             .finally(() => {
                 self.isLoading(false);
@@ -67,12 +67,12 @@ function BranchesViewModel() {
 
         // Validation
         if (!br.name() || br.name().trim() === '') {
-            alert('Şube adı zorunludur!');
+            toastr.warning(T('Branch.NameRequired', 'Şube adı zorunludur!'));
             return;
         }
 
         if (!br.code() || br.code().trim() === '') {
-            alert('Şube kodu zorunludur!');
+            toastr.warning(T('Branch.CodeRequired', 'Şube kodu zorunludur!'));
             return;
         }
 
@@ -99,19 +99,19 @@ function BranchesViewModel() {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(err => {
-                    throw new Error(err.message || 'Kayıt başarısız');
+                    throw new Error(err.message || T('Message.SaveError', 'Kayıt başarısız'));
                 });
             }
             return response.json();
         })
         .then(data => {
-            self.successMessage('Şube başarıyla kaydedildi.');
+            self.successMessage(T('Branch.SaveSuccess', 'Şube başarıyla kaydedildi.'));
             self.closeModal();
             self.loadBranches();
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Şube kaydedilirken bir hata oluştu.');
+            self.errorMessage(error.message || T('Branch.SaveError', 'Şube kaydedilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);
@@ -120,20 +120,20 @@ function BranchesViewModel() {
 
     // Delete branch
     self.deleteBranch = function(branch) {
-        deleteConfirmation.show('Bu şubeyi silmek istediğinizden emin misiniz?', function() {
+        deleteConfirmation.show(T('Branch.DeleteConfirm', 'Bu şubeyi silmek istediğinizden emin misiniz?'), function() {
 
         fetch('/api/branches/' + branch.id, {
             method: 'DELETE',
             credentials: 'include'
         })
         .then(response => {
-            if (!response.ok) throw new Error('Silme başarısız');
-            self.successMessage('Şube başarıyla silindi.');
+            if (!response.ok) throw new Error(T('Message.DeleteError', 'Silme başarısız'));
+            self.successMessage(T('Branch.DeleteSuccess', 'Şube başarıyla silindi.'));
             self.branches.remove(branch);
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage('Şube silinirken bir hata oluştu.');
+            self.errorMessage(T('Branch.DeleteError', 'Şube silinirken bir hata oluştu.'));
         });
         });
     };

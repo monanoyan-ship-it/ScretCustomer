@@ -64,6 +64,9 @@ function DashboardViewModel() {
     var monthlyTrendChart = null;
     var branchComparisonChart = null;
 
+    // Flag to track if user has admin access
+    self.hasAdminAccess = ko.observable(true);
+
     // Load dashboard data
     self.loadDashboard = function() {
         self.isLoading(true);
@@ -86,17 +89,23 @@ function DashboardViewModel() {
         fetch(url, { credentials: 'include' })
             .then(function(response) {
                 if (!response.ok) {
-                    throw new Error('Dashboard verileri yüklenemedi');
+                    // Any non-OK response from admin endpoint means no admin access
+                    console.log('Dashboard admin API status:', response.status);
+                    self.hasAdminAccess(false);
+                    return null;
                 }
                 return response.json();
             })
             .then(function(data) {
-                self.stats(data);
-                self.updateCharts(data);
+                if (data) {
+                    self.stats(data);
+                    self.updateCharts(data);
+                }
             })
             .catch(function(error) {
                 console.error('Dashboard error:', error);
-                self.errorMessage(error.message || 'Dashboard verileri yüklenirken bir hata oluştu.');
+                // Don't show error - just hide admin sections
+                self.hasAdminAccess(false);
             })
             .finally(function() {
                 self.isLoading(false);
@@ -129,7 +138,7 @@ function DashboardViewModel() {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Ortalama Puan (%)',
+                        label: T('Dashboard.AverageScore', 'Ortalama Puan (%)'),
                         data: scores,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
@@ -138,7 +147,7 @@ function DashboardViewModel() {
                         yAxisID: 'y'
                     },
                     {
-                        label: 'Değerlendirme Sayısı',
+                        label: T('Dashboard.EvaluationCount', 'Değerlendirme Sayısı'),
                         data: counts,
                         borderColor: 'rgb(54, 162, 235)',
                         backgroundColor: 'rgba(54, 162, 235, 0.1)',
@@ -179,7 +188,7 @@ function DashboardViewModel() {
                         position: 'left',
                         title: {
                             display: true,
-                            text: 'Puan (%)'
+                            text: T('Dashboard.Score', 'Puan (%)')
                         },
                         min: 0,
                         max: 100
@@ -190,7 +199,7 @@ function DashboardViewModel() {
                         position: 'right',
                         title: {
                             display: true,
-                            text: 'Değerlendirme'
+                            text: T('Dashboard.Evaluation', 'Değerlendirme')
                         },
                         grid: {
                             drawOnChartArea: false
@@ -232,7 +241,7 @@ function DashboardViewModel() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Ortalama Puan (%)',
+                    label: T('Dashboard.AverageScore', 'Ortalama Puan (%)'),
                     data: scores,
                     backgroundColor: backgroundColors,
                     borderColor: borderColors,
@@ -250,7 +259,7 @@ function DashboardViewModel() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Puan: ' + context.raw.toFixed(1) + '%';
+                                return T('Dashboard.Score', 'Puan') + ': ' + context.raw.toFixed(1) + '%';
                             }
                         }
                     }
@@ -261,7 +270,7 @@ function DashboardViewModel() {
                         max: 100,
                         title: {
                             display: true,
-                            text: 'Puan (%)'
+                            text: T('Dashboard.Score', 'Puan (%)')
                         }
                     }
                 }
@@ -273,7 +282,25 @@ function DashboardViewModel() {
     self.loadScorecard = function() {
         fetch('/api/dashboard/scorecard', { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Scorecard yüklenemedi');
+                if (!response.ok) {
+                    // Return empty scorecard on error
+                    return {
+                        userName: T('Dashboard.User', 'Kullanıcı'),
+                        role: '',
+                        currentMonthEvaluations: 0,
+                        currentMonthAverage: 0,
+                        lastMonthEvaluations: 0,
+                        lastMonthAverage: 0,
+                        totalEvaluations: 0,
+                        totalAverage: 0,
+                        monthlyChange: 0,
+                        teamAverage: 0,
+                        companyAverage: 0,
+                        userRank: 0,
+                        totalUsers: 0,
+                        recentEvaluations: []
+                    };
+                }
                 return response.json();
             })
             .then(function(data) {
@@ -288,7 +315,7 @@ function DashboardViewModel() {
     self.loadAnnouncements = function() {
         fetch('/api/announcements/dashboard?count=5', { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Duyurular yüklenemedi');
+                if (!response.ok) throw new Error(T('Dashboard.AnnouncementsLoadError', 'Duyurular yüklenemedi'));
                 return response.json();
             })
             .then(function(data) {
@@ -314,12 +341,12 @@ function DashboardViewModel() {
     // Get announcement type name
     self.getAnnouncementTypeName = function(type) {
         switch (type) {
-            case 1: return 'Uyarı';
-            case 2: return 'Başarı';
-            case 3: return 'Önemli';
-            case 4: return 'Haber';
-            case 5: return 'Sistem';
-            default: return 'Bilgi';
+            case 1: return T('Common.Warning', 'Uyarı');
+            case 2: return T('Common.Success', 'Başarı');
+            case 3: return T('Common.Important', 'Önemli');
+            case 4: return T('Common.News', 'Haber');
+            case 5: return T('Common.System', 'Sistem');
+            default: return T('Common.Info', 'Bilgi');
         }
     };
 

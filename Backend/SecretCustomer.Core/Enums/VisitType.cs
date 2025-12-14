@@ -46,6 +46,11 @@ public enum VisitType
     MysteryShop = 7,
 
     /// <summary>
+    /// Banka gizli müşteri ziyareti (GBF)
+    /// </summary>
+    BankMysteryShop = 8,
+
+    /// <summary>
     /// Diğer
     /// </summary>
     Other = 99

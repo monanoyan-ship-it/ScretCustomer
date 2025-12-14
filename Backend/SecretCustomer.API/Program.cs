@@ -149,6 +149,13 @@ builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
+builder.Services.AddScoped<IBankVisitService, BankVisitService>();
+
+// Localization Service
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 
 // HttpClient for Python Services
 builder.Services.AddHttpClient("ExcelProcessor", client =>

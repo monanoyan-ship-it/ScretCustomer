@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SecretCustomer Localization Resources - English -->
+<!-- Import to database: POST /api/localization/import/{languageId}/default -->
+<Language Name="English" LanguageCulture="en-US" UniqueSeoCode="en">
+  <LocaleResource Name="Common.Save">
+    <Value>Save</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Cancel">
+    <Value>Cancel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Delete">
+    <Value>Delete</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DeleteConfirmation">
+    <Value>Delete Confirmation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DeleteConfirmationMessage">
+    <Value>Are you sure you want to delete this record?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.YesDelete">
+    <Value>Yes, Delete</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Edit">
+    <Value>Edit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Add">
+    <Value>Add</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Create">
+    <Value>Create</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Update">
+    <Value>Update</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Search">
+    <Value>Search</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Filter">
+    <Value>Filter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Clear">
+    <Value>Clear</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Close">
+    <Value>Close</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Back">
+    <Value>Back</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Next">
+    <Value>Next</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Previous">
+    <Value>Previous</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Yes">
+    <Value>Yes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.No">
+    <Value>No</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OK">
+    <Value>OK</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Confirm">
+    <Value>Confirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Loading">
+    <Value>Loading...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NoData">
+    <Value>No data found</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Actions">
+    <Value>Actions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Status">
+    <Value>Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Active">
+    <Value>Active</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Inactive">
+    <Value>Inactive</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.All">
+    <Value>All</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Select">
+    <Value>Select</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectAll">
+    <Value>Select All</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Export">
+    <Value>Export</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Import">
+    <Value>Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Download">
+    <Value>Download</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Upload">
+    <Value>Upload</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Print">
+    <Value>Print</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Refresh">
+    <Value>Refresh</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Required">
+    <Value>Required field</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.InvalidEmail">
+    <Value>Invalid email address</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Success">
+    <Value>Success</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Error">
+    <Value>Error</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Warning">
+    <Value>Warning</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Info">
+    <Value>Info</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Name">
+    <Value>Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Description">
+    <Value>Description</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Date">
+    <Value>Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.StartDate">
+    <Value>Start Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.EndDate">
+    <Value>End Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.CreatedAt">
+    <Value>Created At</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.UpdatedAt">
+    <Value>Updated At</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.CreatedBy">
+    <Value>Created By</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Total">
+    <Value>Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Average">
+    <Value>Average</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Min">
+    <Value>Minimum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Max">
+    <Value>Maximum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Count">
+    <Value>Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Percent">
+    <Value>Percent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Score">
+    <Value>Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AppName">
+    <Value>Mystery Shopper</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ViewAsCustomer">
+    <Value>View as Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Logout">
+    <Value>Logout</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Phone">
+    <Value>Phone</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FirstName">
+    <Value>First Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastName">
+    <Value>Last Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Saving">
+    <Value>Saving...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Total">
+    <Value>Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Average">
+    <Value>Average</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Refresh">
+    <Value>Refresh</Value>
+  </LocaleResource>
+
+  <!-- Profile -->
+  <LocaleResource Name="Profile.Title">
+    <Value>My Profile</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Loading">
+    <Value>Loading profile...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.RegistrationDate">
+    <Value>Registration Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.EditProfile">
+    <Value>Edit Profile</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.ChangePassword">
+    <Value>Change Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.CurrentPassword">
+    <Value>Current Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordsNotMatch">
+    <Value>Passwords do not match</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.ChangingPassword">
+    <Value>Changing...</Value>
+  </LocaleResource>
+
+  <!-- Account -->
+  <LocaleResource Name="Account.Login">
+    <Value>Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.Username">
+    <Value>Username</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.Password">
+    <Value>Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.UsernamePlaceholder">
+    <Value>Enter your username</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordPlaceholder">
+    <Value>Enter your password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ForgotPassword">
+    <Value>Forgot Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ForgotPasswordTitle">
+    <Value>Forgot Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ForgotPasswordDescription">
+    <Value>Enter your email address and we'll send you a password reset link.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.SendResetLink">
+    <Value>Send Reset Link</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.BackToLogin">
+    <Value>Back to Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ResetPassword">
+    <Value>Reset Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.NewPassword">
+    <Value>New Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ConfirmNewPassword">
+    <Value>Confirm New Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ResetPasswordButton">
+    <Value>Reset Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ResetPasswordSuccess">
+    <Value>Your password has been successfully reset. You can now login.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ForgotPasswordConfirmation">
+    <Value>Password reset link has been sent to your email address.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ForgotPasswordConfirmationTitle">
+    <Value>Password Reset Code Sent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.EmailSent">
+    <Value>Email Sent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.GoToResetPassword">
+    <Value>Go to Reset Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.SetNewPassword">
+    <Value>Set New Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.MinChars">
+    <Value>At least 6 characters</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ConfirmPasswordPlaceholder">
+    <Value>Enter your password again</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChanged">
+    <Value>Password Changed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChangedTitle">
+    <Value>Your Password Has Been Changed</Value>
+  </LocaleResource>
+
+  <!-- Login (Legacy) -->
+  <LocaleResource Name="Login.Title">
+    <Value>Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.Email">
+    <Value>Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.Password">
+    <Value>Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.RememberMe">
+    <Value>Remember Me</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.ForgotPassword">
+    <Value>Forgot Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.LoginButton">
+    <Value>Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.InvalidCredentials">
+    <Value>Invalid email or password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.AccountLocked">
+    <Value>Your account has been locked. Please contact administrator.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.Welcome">
+    <Value>Welcome</Value>
+  </LocaleResource>
+  <LocaleResource Name="Login.Logout">
+    <Value>Logout</Value>
+  </LocaleResource>
+
+  <!-- Menu -->
+  <LocaleResource Name="Menu.Dashboard">
+    <Value>Dashboard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Customers">
+    <Value>Customers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Projects">
+    <Value>Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Branches">
+    <Value>Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Personnel">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Checklists">
+    <Value>Checklists</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Evaluations">
+    <Value>Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Reports">
+    <Value>Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Settings">
+    <Value>Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Users">
+    <Value>Users</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Permissions">
+    <Value>Permissions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Organization">
+    <Value>Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Announcements">
+    <Value>Announcements</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Meetings">
+    <Value>Meetings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Trainings">
+    <Value>Trainings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Calls">
+    <Value>Calls</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Visits">
+    <Value>Visits</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Approvals">
+    <Value>Approvals</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Languages">
+    <Value>Languages</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.SystemSettings">
+    <Value>System Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.FieldWorkers">
+    <Value>Field Workers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.CustomerPersonnel">
+    <Value>Customer Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.ExcelTemplates">
+    <Value>Excel Templates</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Delegations">
+    <Value>Delegations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.MyAssignments">
+    <Value>My Assignments</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.MyTasks">
+    <Value>My Tasks</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Notifications">
+    <Value>Notifications</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.PenaltyReport">
+    <Value>Penalty Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.PersonnelReportCard">
+    <Value>Personnel Report Card</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.SuggestionsReport">
+    <Value>Suggestions Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.MyProfile">
+    <Value>My Profile</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Definitions">
+    <Value>Definitions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.UserManagement">
+    <Value>User Management</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.OrganizationMenu">
+    <Value>Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Operations">
+    <Value>Operations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Activities">
+    <Value>Activities</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.ReportsMenu">
+    <Value>Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.SystemMenu">
+    <Value>System</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.BankVisits">
+    <Value>Bank Visits</Value>
+  </LocaleResource>
+
+  <!-- Dashboard -->
+  <LocaleResource Name="Dashboard.Title">
+    <Value>Dashboard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Welcome">
+    <Value>Welcome</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TotalEvaluations">
+    <Value>Total Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.AverageScore">
+    <Value>Average Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.ActiveProjects">
+    <Value>Active Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TotalBranches">
+    <Value>Total Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.MonthlyTrend">
+    <Value>Monthly Evaluation Trend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.ScoreDistribution">
+    <Value>Score Distribution</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.RecentEvaluations">
+    <Value>Recent Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TopPerformers">
+    <Value>Top Performers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.NeedsImprovement">
+    <Value>Bottom 5 Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.PersonalScorecard">
+    <Value>Personal Performance Card</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.ThisMonth">
+    <Value>This Month</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.LastMonth">
+    <Value>Last Month</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Evaluation">
+    <Value>Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Ranking">
+    <Value>Ranking</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.YourAverage">
+    <Value>Your Average</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.CompanyAverage">
+    <Value>Company Average</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.MonthlyChange">
+    <Value>Monthly Change</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.NoAnnouncements">
+    <Value>No announcements found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.ActiveBranches">
+    <Value>Active Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.BranchComparison">
+    <Value>Branch Comparison</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TopBranches">
+    <Value>Top 5 Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.AllBranches">
+    <Value>All Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.SearchBranch">
+    <Value>Search branch...</Value>
+  </LocaleResource>
+
+  <!-- Customers -->
+  <LocaleResource Name="Customer.Title">
+    <Value>Customers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewCustomer">
+    <Value>New Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.EditCustomer">
+    <Value>Edit Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CustomerName">
+    <Value>Customer Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ContactPerson">
+    <Value>Contact Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Phone">
+    <Value>Phone</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Email">
+    <Value>Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Address">
+    <Value>Address</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.TaxNumber">
+    <Value>Tax Number</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteConfirm">
+    <Value>Are you sure you want to delete this customer?</Value>
+  </LocaleResource>
+
+  <!-- Projects -->
+  <LocaleResource Name="Project.Title">
+    <Value>Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NewProject">
+    <Value>New Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.EditProject">
+    <Value>Edit Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectName">
+    <Value>Project Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Customer">
+    <Value>Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.StartDate">
+    <Value>Start Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.EndDate">
+    <Value>End Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status">
+    <Value>Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Active">
+    <Value>Active</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Completed">
+    <Value>Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+
+  <!-- Branches -->
+  <LocaleResource Name="Branch.Title">
+    <Value>Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.NewBranch">
+    <Value>New Branch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.EditBranch">
+    <Value>Edit Branch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.BranchName">
+    <Value>Branch Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.BranchCode">
+    <Value>Branch Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.City">
+    <Value>City</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.District">
+    <Value>District</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.Region">
+    <Value>Region</Value>
+  </LocaleResource>
+
+  <!-- Checklists -->
+  <LocaleResource Name="Checklist.Title">
+    <Value>Checklists</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NewChecklist">
+    <Value>New Checklist</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.EditChecklist">
+    <Value>Edit Checklist</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ChecklistName">
+    <Value>Checklist Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Sections">
+    <Value>Sections</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Questions">
+    <Value>Questions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.TotalWeight">
+    <Value>Total Weight</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AddSection">
+    <Value>Add Section</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AddQuestion">
+    <Value>Add Question</Value>
+  </LocaleResource>
+
+  <!-- Evaluations -->
+  <LocaleResource Name="Evaluation.Title">
+    <Value>Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewEvaluation">
+    <Value>New Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EditEvaluation">
+    <Value>Edit Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ViewEvaluation">
+    <Value>Evaluation Details</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Score">
+    <Value>Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Branch">
+    <Value>Branch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Personnel">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Date">
+    <Value>Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Status">
+    <Value>Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Draft">
+    <Value>Draft</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Completed">
+    <Value>Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Cancelled">
+    <Value>Cancelled</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Notes">
+    <Value>Notes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Suggestions">
+    <Value>Suggestions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SaveAsDraft">
+    <Value>Save as Draft</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Complete">
+    <Value>Complete</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertToDraft">
+    <Value>Revert to Draft</Value>
+  </LocaleResource>
+
+  <!-- Reports -->
+  <LocaleResource Name="Report.Title">
+    <Value>Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DateRange">
+    <Value>Date Range</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GenerateReport">
+    <Value>Generate Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportExcel">
+    <Value>Export to Excel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportPDF">
+    <Value>Export to PDF</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Summary">
+    <Value>Summary</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Detailed">
+    <Value>Detailed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ByBranch">
+    <Value>By Branch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ByPersonnel">
+    <Value>By Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ByQuestion">
+    <Value>By Question</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Trend">
+    <Value>Trend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Performance">
+    <Value>Performance</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Penalties">
+    <Value>Penalty Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Suggestions">
+    <Value>Suggestions Report</Value>
+  </LocaleResource>
+
+  <!-- Users -->
+  <LocaleResource Name="User.Title">
+    <Value>Users</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.NewUser">
+    <Value>New User</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.EditUser">
+    <Value>Edit User</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FullName">
+    <Value>Full Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Email">
+    <Value>Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Role">
+    <Value>Role</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Password">
+    <Value>Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.ConfirmPassword">
+    <Value>Confirm Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.ChangePassword">
+    <Value>Change Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastLogin">
+    <Value>Last Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Admin">
+    <Value>Administrator</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Manager">
+    <Value>Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Evaluator">
+    <Value>Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Viewer">
+    <Value>Viewer</Value>
+  </LocaleResource>
+
+  <!-- Pagination -->
+  <LocaleResource Name="Pagination.First">
+    <Value>First</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Last">
+    <Value>Last</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Previous">
+    <Value>Previous</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Next">
+    <Value>Next</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Showing">
+    <Value>Showing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Of">
+    <Value>of</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.Records">
+    <Value>records</Value>
+  </LocaleResource>
+  <LocaleResource Name="Pagination.PerPage">
+    <Value>Per page</Value>
+  </LocaleResource>
+
+  <!-- Validation Messages -->
+  <LocaleResource Name="Validation.Required">
+    <Value>This field is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.Email">
+    <Value>Please enter a valid email address</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.MinLength">
+    <Value>Must be at least {0} characters</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.MaxLength">
+    <Value>Cannot exceed {0} characters</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.PasswordMismatch">
+    <Value>Passwords do not match</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.InvalidFormat">
+    <Value>Invalid format</Value>
+  </LocaleResource>
+
+  <!-- Messages -->
+  <LocaleResource Name="Message.SaveSuccess">
+    <Value>Record created successfully</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.UpdateSuccess">
+    <Value>Record updated successfully</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.DeleteSuccess">
+    <Value>Record deleted successfully</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.DeleteConfirm">
+    <Value>Are you sure you want to delete this record?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.Error">
+    <Value>An error occurred</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.UnexpectedError">
+    <Value>An unexpected error occurred. Please try again.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.AccessDenied">
+    <Value>You do not have permission to access this page</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.NotFound">
+    <Value>Record not found</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.SessionExpired">
+    <Value>Your session has expired. Please log in again.</Value>
+  </LocaleResource>
+
+  <!-- Settings -->
+  <LocaleResource Name="Settings.Title">
+    <Value>System Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.General">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.Security">
+    <Value>Security</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.Notifications">
+    <Value>Notifications</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.Email">
+    <Value>Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.Language">
+    <Value>Language</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.Theme">
+    <Value>Theme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Settings.DemoMode">
+    <Value>Demo Mode</Value>
+  </LocaleResource>
+
+  <!-- Languages -->
+  <LocaleResource Name="Language.Title">
+    <Value>Languages</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NewLanguage">
+    <Value>New Language</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.EditLanguage">
+    <Value>Edit Language</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Name">
+    <Value>Language Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Culture">
+    <Value>Culture Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeoCode">
+    <Value>SEO Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.IsDefault">
+    <Value>Default</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.RTL">
+    <Value>Right to Left</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DisplayOrder">
+    <Value>Display Order</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportResources">
+    <Value>Import Resources</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ExportResources">
+    <Value>Export Resources</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Resources">
+    <Value>Language Resources</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceName">
+    <Value>Resource Key</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceValue">
+    <Value>Translation</Value>
+  </LocaleResource>
+
+  <!-- Customer Portal -->
+  <LocaleResource Name="CustomerPortal.Title">
+    <Value>Customer Portal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Welcome">
+    <Value>Welcome to Customer Portal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyEvaluations">
+    <Value>My Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyBranches">
+    <Value>My Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyReports">
+    <Value>My Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.LoginTitle">
+    <Value>Customer Portal - Login</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.LoggingIn">
+    <Value>Logging in...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.CompanyLogin">
+    <Value>Company representative login</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.AdminLogin">
+    <Value>Admin Login</Value>
+  </LocaleResource>
+
+  <!-- Menu Extra -->
+  <LocaleResource Name="Menu.Assignments">
+    <Value>Assignments</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Approvals">
+    <Value>Approvals</Value>
+  </LocaleResource>
+
+  <!-- Approvals -->
+  <LocaleResource Name="Approval.Title">
+    <Value>Approval Management</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.AllApprovals">
+    <Value>All Approvals</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.MyPendingRequests">
+    <Value>Requests Awaiting My Approval</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Reference">
+    <Value>Reference</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RequestedBy">
+    <Value>Requested By</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Priority">
+    <Value>Priority</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Approved">
+    <Value>Approved</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Rejected">
+    <Value>Rejected</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.NoRecords">
+    <Value>No approval records found yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Detail">
+    <Value>Approval Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Info">
+    <Value>Approval Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Level">
+    <Value>Level</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ResponseNote">
+    <Value>Response Note</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Action">
+    <Value>Approval Action</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ResponseNoteOptional">
+    <Value>Response Note (Optional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ResponseNotePlaceholder">
+    <Value>You can add a note about your response...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Approve">
+    <Value>Approve</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Reject">
+    <Value>Reject</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.People">
+    <Value>People</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Approver">
+    <Value>Approver</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RespondedBy">
+    <Value>Responded By</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RequestDate">
+    <Value>Request Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.DueDate">
+    <Value>Due Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ResponseDate">
+    <Value>Response Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.CancelRequest">
+    <Value>Cancel Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.SearchPlaceholder">
+    <Value>Reference, title...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.LoadError">
+    <Value>Error loading approvals</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.DetailLoadError">
+    <Value>Could not load approval detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ConfirmApprove">
+    <Value>Are you sure you want to approve this request?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ApproveSuccess">
+    <Value>Approval completed successfully</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ApproveError">
+    <Value>Approval failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ConfirmReject">
+    <Value>Are you sure you want to reject this request?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RejectSuccess">
+    <Value>Rejection completed successfully</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RejectError">
+    <Value>Rejection failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.ConfirmCancel">
+    <Value>Are you sure you want to cancel your request?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.CancelSuccess">
+    <Value>Request cancelled</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.CancelError">
+    <Value>Cancellation failed</Value>
+  </LocaleResource>
+
+  <!-- Approval Types -->
+  <LocaleResource Name="Approval.Type.Evaluation">
+    <Value>Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.Assignment">
+    <Value>Assignment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.Project">
+    <Value>Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.Meeting">
+    <Value>Meeting</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.Training">
+    <Value>Training</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.Delegation">
+    <Value>Delegation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Type.General">
+    <Value>General</Value>
+  </LocaleResource>
+
+  <!-- Approval Status -->
+  <LocaleResource Name="Approval.Status.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Status.Approved">
+    <Value>Approved</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Status.Rejected">
+    <Value>Rejected</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.Status.Cancelled">
+    <Value>Cancelled</Value>
+  </LocaleResource>
+
+  <!-- Priority -->
+  <LocaleResource Name="Priority.Low">
+    <Value>Low</Value>
+  </LocaleResource>
+  <LocaleResource Name="Priority.Normal">
+    <Value>Normal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Priority.High">
+    <Value>High</Value>
+  </LocaleResource>
+  <LocaleResource Name="Priority.Urgent">
+    <Value>Urgent</Value>
+  </LocaleResource>
+
+  <!-- Common extras -->
+  <LocaleResource Name="Common.Filters">
+    <Value>Filters</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Today">
+    <Value>Today</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Dates">
+    <Value>Dates</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Home">
+    <Value>Home</Value>
+  </LocaleResource>
+</Language>

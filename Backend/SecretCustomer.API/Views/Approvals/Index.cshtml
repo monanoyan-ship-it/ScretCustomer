@@ -1,16 +1,16 @@
 @{
-    ViewData["Title"] = "Onay Yönetimi";
+    ViewData["Title"] = Html.T("Approval.Title", "Onay Yönetimi").ToString();
 }
 
 <div id="approvals-app" class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Onay Yönetimi</h1>
+            <h1 class="h3 mb-0">@Html.T("Approval.Title", "Onay Yönetimi")</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
-                    <li class="breadcrumb-item active">Onaylar</li>
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Menu.Approvals", "Onaylar")</li>
                 </ol>
             </nav>
         </div>
@@ -22,7 +22,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: totalApprovals">0</h3>
-                    <small>Toplam</small>
+                    <small>@Html.T("Common.Total", "Toplam")</small>
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: pendingApprovals">0</h3>
-                    <small>Bekleyen</small>
+                    <small>@Html.T("Status.Pending", "Bekleyen")</small>
                 </div>
             </div>
         </div>
@@ -38,7 +38,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: approvedCount">0</h3>
-                    <small>Onaylanan</small>
+                    <small>@Html.T("Approval.Approved", "Onaylanan")</small>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: rejectedCount">0</h3>
-                    <small>Reddedilen</small>
+                    <small>@Html.T("Approval.Rejected", "Reddedilen")</small>
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
             <div class="card bg-secondary text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: overdueCount">0</h3>
-                    <small>Gecikmiş</small>
+                    <small>@Html.T("Status.Overdue", "Gecikmiş")</small>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: todayApprovals">0</h3>
-                    <small>Bugün</small>
+                    <small>@Html.T("Common.Today", "Bugün")</small>
                 </div>
             </div>
         </div>
@@ -71,20 +71,20 @@
     <!-- My Pending Approvals -->
     <div class="card mb-4" data-bind="visible: myPendingApprovals().length > 0">
         <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Onayımı Bekleyen Talepler</h5>
+            <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>@Html.T("Approval.MyPendingRequests", "Onayımı Bekleyen Talepler")</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Referans</th>
-                            <th>Tip</th>
-                            <th>Başlık</th>
-                            <th>Talep Eden</th>
-                            <th>Tarih</th>
-                            <th>Öncelik</th>
-                            <th class="text-center">İşlemler</th>
+                            <th>@Html.T("Approval.Reference", "Referans")</th>
+                            <th>@Html.T("Common.Type", "Tip")</th>
+                            <th>@Html.T("Common.Title", "Başlık")</th>
+                            <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
+                            <th>@Html.T("Common.Date", "Tarih")</th>
+                            <th>@Html.T("Approval.Priority", "Öncelik")</th>
+                            <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: myPendingApprovals">
@@ -118,50 +118,50 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtreler</h5>
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Tip</label>
+                    <label class="form-label">@Html.T("Common.Type", "Tip")</label>
                     <select class="form-select" data-bind="value: filter.approvalType">
-                        <option value="">Tümü</option>
-                        <option value="Evaluation">Değerlendirme</option>
-                        <option value="Assignment">Atama</option>
-                        <option value="Project">Proje</option>
-                        <option value="Meeting">Toplantı</option>
-                        <option value="Training">Eğitim</option>
-                        <option value="Delegation">Vekalet</option>
-                        <option value="General">Genel</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Evaluation">@Html.T("Approval.Type.Evaluation", "Değerlendirme")</option>
+                        <option value="Assignment">@Html.T("Approval.Type.Assignment", "Atama")</option>
+                        <option value="Project">@Html.T("Approval.Type.Project", "Proje")</option>
+                        <option value="Meeting">@Html.T("Approval.Type.Meeting", "Toplantı")</option>
+                        <option value="Training">@Html.T("Approval.Type.Training", "Eğitim")</option>
+                        <option value="Delegation">@Html.T("Approval.Type.Delegation", "Vekalet")</option>
+                        <option value="General">@Html.T("Approval.Type.General", "Genel")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Durum</label>
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filter.status">
-                        <option value="">Tümü</option>
-                        <option value="Pending">Beklemede</option>
-                        <option value="Approved">Onaylandı</option>
-                        <option value="Rejected">Reddedildi</option>
-                        <option value="Cancelled">İptal</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Pending">@Html.T("Approval.Status.Pending", "Beklemede")</option>
+                        <option value="Approved">@Html.T("Approval.Status.Approved", "Onaylandı")</option>
+                        <option value="Rejected">@Html.T("Approval.Status.Rejected", "Reddedildi")</option>
+                        <option value="Cancelled">@Html.T("Approval.Status.Cancelled", "İptal")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Öncelik</label>
+                    <label class="form-label">@Html.T("Approval.Priority", "Öncelik")</label>
                     <select class="form-select" data-bind="value: filter.priority">
-                        <option value="">Tümü</option>
-                        <option value="Low">Düşük</option>
-                        <option value="Normal">Normal</option>
-                        <option value="High">Yüksek</option>
-                        <option value="Urgent">Acil</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Low">@Html.T("Priority.Low", "Düşük")</option>
+                        <option value="Normal">@Html.T("Priority.Normal", "Normal")</option>
+                        <option value="High">@Html.T("Priority.High", "Yüksek")</option>
+                        <option value="Urgent">@Html.T("Priority.Urgent", "Acil")</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Arama</label>
-                    <input type="text" class="form-control" placeholder="Referans, başlık..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Approval.SearchPlaceholder", "Referans, başlık...")" data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
-                        <i class="fas fa-times me-2"></i>Temizle
+                        <i class="fas fa-times me-2"></i>@Html.T("Common.Clear", "Temizle")
                     </button>
                 </div>
             </div>
@@ -171,22 +171,22 @@
     <!-- Approvals Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Tüm Onaylar</h5>
-            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+            <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>@Html.T("Approval.AllApprovals", "Tüm Onaylar")</h5>
+            <span class="badge bg-primary" data-bind="text: totalCountText()"></span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Referans</th>
-                            <th>Tip</th>
-                            <th>Durum</th>
-                            <th>Başlık</th>
-                            <th>Talep Eden</th>
-                            <th>Tarih</th>
-                            <th>Öncelik</th>
-                            <th class="text-center">İşlemler</th>
+                            <th>@Html.T("Approval.Reference", "Referans")</th>
+                            <th>@Html.T("Common.Type", "Tip")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Common.Title", "Başlık")</th>
+                            <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
+                            <th>@Html.T("Common.Date", "Tarih")</th>
+                            <th>@Html.T("Approval.Priority", "Öncelik")</th>
+                            <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: approvals">
@@ -213,7 +213,7 @@
             <!-- Empty State -->
             <div class="text-center py-5" data-bind="visible: approvals().length === 0">
                 <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
-                <p class="text-muted">Henüz onay kaydı bulunmamaktadır.</p>
+                <p class="text-muted">@Html.T("Approval.NoRecords", "Henüz onay kaydı bulunmamaktadır.")</p>
             </div>
         </div>
 
@@ -222,7 +222,7 @@
             <nav>
                 <ul class="pagination justify-content-center mb-0">
                     <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
-                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Common.Previous", "Önceki")</a>
                     </li>
                     <!-- ko foreach: visiblePages -->
                     <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
@@ -230,7 +230,7 @@
                     </li>
                     <!-- /ko -->
                     <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
-                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                        <a class="page-link" href="#" data-bind="click: nextPage">@Html.T("Common.Next", "Sonraki")</a>
                     </li>
                 </ul>
             </nav>
@@ -243,7 +243,7 @@
             <div class="modal-content" data-bind="with: viewingApproval">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="fas fa-clipboard-check me-2"></i>Onay Detayı
+                        <i class="fas fa-clipboard-check me-2"></i>@Html.T("Approval.Detail", "Onay Detayı")
                         <span class="badge ms-2" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span>
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeDetailModal"></button>
@@ -253,39 +253,39 @@
                         <div class="col-md-8">
                             <!-- Approval Info -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>Onay Bilgileri</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Approval.Info", "Onay Bilgileri")</strong></div>
                                 <div class="card-body">
                                     <div class="row mb-2">
                                         <div class="col-md-6">
-                                            <strong>Referans:</strong>
+                                            <strong>@Html.T("Approval.Reference", "Referans"):</strong>
                                             <span data-bind="text: referenceNumber"></span>
                                         </div>
                                         <div class="col-md-6">
-                                            <strong>Tip:</strong>
+                                            <strong>@Html.T("Common.Type", "Tip"):</strong>
                                             <span class="badge bg-info" data-bind="text: $parent.getApprovalTypeText(approvalType)"></span>
                                         </div>
                                     </div>
                                     <div class="mb-2">
-                                        <strong>Başlık:</strong>
+                                        <strong>@Html.T("Common.Title", "Başlık"):</strong>
                                         <p class="mb-0" data-bind="text: title"></p>
                                     </div>
                                     <div class="mb-2" data-bind="visible: description">
-                                        <strong>Açıklama:</strong>
+                                        <strong>@Html.T("Common.Description", "Açıklama"):</strong>
                                         <p class="mb-0" data-bind="text: description"></p>
                                     </div>
                                     <div class="row mb-2">
                                         <div class="col-md-6">
-                                            <strong>Öncelik:</strong>
+                                            <strong>@Html.T("Approval.Priority", "Öncelik"):</strong>
                                             <span class="badge" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span>
                                         </div>
                                         <div class="col-md-6">
-                                            <strong>Seviye:</strong>
+                                            <strong>@Html.T("Approval.Level", "Seviye"):</strong>
                                             <span data-bind="text: approvalLevel + ' / ' + requiredApprovalLevels"></span>
                                         </div>
                                     </div>
                                     <!-- ko if: responseNote -->
                                     <div class="alert alert-info mb-0 mt-3">
-                                        <strong>Yanıt Notu:</strong>
+                                        <strong>@Html.T("Approval.ResponseNote", "Yanıt Notu"):</strong>
                                         <span data-bind="text: responseNote"></span>
                                     </div>
                                     <!-- /ko -->
@@ -294,18 +294,18 @@
                             <!-- Action Section for Pending -->
                             <!-- ko if: status === 'Pending' && $parent.canRespondToApproval($data) -->
                             <div class="card">
-                                <div class="card-header bg-warning text-dark py-2"><strong>Onay İşlemi</strong></div>
+                                <div class="card-header bg-warning text-dark py-2"><strong>@Html.T("Approval.Action", "Onay İşlemi")</strong></div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Yanıt Notu (Opsiyonel)</label>
-                                        <textarea class="form-control" rows="2" data-bind="value: $parent.responseNote" placeholder="Yanıtınızla ilgili not ekleyebilirsiniz..."></textarea>
+                                        <label class="form-label">@Html.T("Approval.ResponseNoteOptional", "Yanıt Notu (Opsiyonel)")</label>
+                                        <textarea class="form-control" rows="2" data-bind="value: $parent.responseNote" placeholder="@Html.T("Approval.ResponseNotePlaceholder", "Yanıtınızla ilgili not ekleyebilirsiniz...")"></textarea>
                                     </div>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-success" data-bind="click: function() { $parent.approveFromDetail($data); }">
-                                            <i class="fas fa-check me-2"></i>Onayla
+                                            <i class="fas fa-check me-2"></i>@Html.T("Approval.Approve", "Onayla")
                                         </button>
                                         <button class="btn btn-danger" data-bind="click: function() { $parent.rejectFromDetail($data); }">
-                                            <i class="fas fa-times me-2"></i>Reddet
+                                            <i class="fas fa-times me-2"></i>@Html.T("Approval.Reject", "Reddet")
                                         </button>
                                     </div>
                                 </div>
@@ -315,21 +315,21 @@
                         <div class="col-md-4">
                             <!-- People -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>Kişiler</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Approval.People", "Kişiler")</strong></div>
                                 <div class="card-body">
                                     <div class="mb-2">
-                                        <label class="text-muted small">Talep Eden</label>
+                                        <label class="text-muted small">@Html.T("Approval.RequestedBy", "Talep Eden")</label>
                                         <p class="mb-0"><i class="fas fa-user me-2"></i><span data-bind="text: requestedByUserName"></span></p>
                                     </div>
                                     <!-- ko if: approverUserName -->
                                     <div class="mb-2">
-                                        <label class="text-muted small">Onaylayıcı</label>
+                                        <label class="text-muted small">@Html.T("Approval.Approver", "Onaylayıcı")</label>
                                         <p class="mb-0"><i class="fas fa-user-check me-2"></i><span data-bind="text: approverUserName"></span></p>
                                     </div>
                                     <!-- /ko -->
                                     <!-- ko if: approvedByUserName -->
                                     <div>
-                                        <label class="text-muted small">Yanıtlayan</label>
+                                        <label class="text-muted small">@Html.T("Approval.RespondedBy", "Yanıtlayan")</label>
                                         <p class="mb-0"><i class="fas fa-user-edit me-2"></i><span data-bind="text: approvedByUserName"></span></p>
                                     </div>
                                     <!-- /ko -->
@@ -337,21 +337,21 @@
                             </div>
                             <!-- Dates -->
                             <div class="card">
-                                <div class="card-header py-2"><strong>Tarihler</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Common.Dates", "Tarihler")</strong></div>
                                 <div class="card-body">
                                     <div class="mb-2">
-                                        <label class="text-muted small">Talep Tarihi</label>
+                                        <label class="text-muted small">@Html.T("Approval.RequestDate", "Talep Tarihi")</label>
                                         <p class="mb-0" data-bind="text: $parent.formatDate(requestedAt)"></p>
                                     </div>
                                     <!-- ko if: dueDate -->
                                     <div class="mb-2">
-                                        <label class="text-muted small">Son Tarih</label>
+                                        <label class="text-muted small">@Html.T("Approval.DueDate", "Son Tarih")</label>
                                         <p class="mb-0" data-bind="text: $parent.formatDate(dueDate), css: { 'text-danger': $parent.isOverdue($data) }"></p>
                                     </div>
                                     <!-- /ko -->
                                     <!-- ko if: respondedAt -->
                                     <div>
-                                        <label class="text-muted small">Yanıt Tarihi</label>
+                                        <label class="text-muted small">@Html.T("Approval.ResponseDate", "Yanıt Tarihi")</label>
                                         <p class="mb-0" data-bind="text: $parent.formatDate(respondedAt)"></p>
                                     </div>
                                     <!-- /ko -->
@@ -363,10 +363,10 @@
                 <div class="modal-footer">
                     <!-- ko if: status === 'Pending' && $parent.canCancelApproval($data) -->
                     <button class="btn btn-outline-danger" data-bind="click: function() { $parent.cancelApproval($data); }">
-                        <i class="fas fa-ban me-2"></i>Talebi İptal Et
+                        <i class="fas fa-ban me-2"></i>@Html.T("Approval.CancelRequest", "Talebi İptal Et")
                     </button>
                     <!-- /ko -->
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>

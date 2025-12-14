@@ -1,6 +1,6 @@
 @model LoginViewModel
 @{
-    ViewData["Title"] = "Giriş Yap";
+    ViewData["Title"] = Html.T("Account.Login", "Giriş Yap").ToString();
     Layout = "_Layout";
 }
 
@@ -10,33 +10,33 @@
             <div class="card-body p-4">
                 <h3 class="card-title text-center mb-4">
                     <i class="bi bi-clipboard-check fs-1 text-primary"></i>
-                    <div>Gizli Müşteri Sistemi</div>
+                    <div>@Html.T("Common.AppName", "Gizli Müşteri Sistemi")</div>
                 </h3>
 
                 <form asp-controller="Account" asp-action="Login" method="post">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                     <div class="mb-3">
-                        <label asp-for="Username" class="form-label"></label>
-                        <input asp-for="Username" class="form-control" />
+                        <label asp-for="Username" class="form-label">@Html.T("Account.Username", "Kullanıcı Adı")</label>
+                        <input asp-for="Username" class="form-control" placeholder="@Html.T("Account.UsernamePlaceholder", "Kullanıcı adınızı girin")" />
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" type="password" />
+                        <label asp-for="Password" class="form-label">@Html.T("Account.Password", "Şifre")</label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="@Html.T("Account.PasswordPlaceholder", "Şifrenizi girin")" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <input type="hidden" asp-for="ReturnUrl" />
 
                     <button type="submit" class="btn btn-primary w-100 mb-3">
-                        <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        <i class="bi bi-box-arrow-in-right"></i> @Html.T("Account.Login", "Giriş Yap")
                     </button>
 
                     <div class="text-center">
                         <a asp-action="ForgotPassword" class="text-decoration-none">
-                            <i class="bi bi-key me-1"></i>Şifremi Unuttum
+                            <i class="bi bi-key me-1"></i>@Html.T("Account.ForgotPassword", "Şifremi Unuttum")
                         </a>
                     </div>
                 </form>

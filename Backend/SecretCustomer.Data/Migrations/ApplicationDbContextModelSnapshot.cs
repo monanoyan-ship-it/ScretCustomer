@@ -156,6 +156,53 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("Answers");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.AppSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ValueType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppSettings");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Approval", b =>
                 {
                     b.Property<Guid>("Id")
@@ -331,6 +378,173 @@ namespace SecretCustomer.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Assignments");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.BankVisitDetails", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("AirConditioningRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AtmAreaRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AtmCleanlinessRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AtmCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AtmUsabilityRating")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("BrochuresAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("BusyCountersCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CleanlinessRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CounterAreaRating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("CrossSellOffered")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CustomerVisitId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("DisabledAccessAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("EntranceAreaRating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EntryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("FarewellReceived")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("GreetingReceived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ImprovementAreas")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("LightingRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ManagerAreaRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OverallSatisfactionRating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProductOffered")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QueueNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("QueueSystemAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("QueueTicketTaken")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("QueueWaitMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RecommendationScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Scenario")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ScenarioCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ScenarioDescription")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("SecurityPersonnelPresent")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("ServiceDurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SignageRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StaffAppearanceRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StaffAttentivenessRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StaffCommunicationRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StaffCountObserved")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("StaffHasNameTag")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("StaffKnowledgeRating")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StaffName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Strengths")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TotalCountersCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("WaitingAreaRating")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WorkingAtmCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("WouldVisitAgain")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerVisitId")
+                        .IsUnique();
+
+                    b.ToTable("BankVisitDetails");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
@@ -1471,6 +1685,93 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("FieldWorkers");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FlagImageFileName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LanguageCulture")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("Rtl")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UniqueSeoCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("UniqueSeoCode")
+                        .IsUnique();
+
+                    b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.LocaleStringResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResourceName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ResourceValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResourceName");
+
+                    b.HasIndex("LanguageId", "ResourceName")
+                        .IsUnique();
+
+                    b.ToTable("LocaleStringResources");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Meeting", b =>
@@ -2949,6 +3250,17 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.BankVisitDetails", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerVisit", "CustomerVisit")
+                        .WithOne("BankVisitDetails")
+                        .HasForeignKey("SecretCustomer.Core.Entities.BankVisitDetails", "CustomerVisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerVisit");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
@@ -3206,6 +3518,17 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.LocaleStringResource", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.Language", "Language")
+                        .WithMany("LocaleStringResources")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Meeting", b =>
@@ -3592,6 +3915,8 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerVisit", b =>
                 {
                     b.Navigation("Attachments");
+
+                    b.Navigation("BankVisitDetails");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
@@ -3607,6 +3932,11 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.FieldWorker", b =>
                 {
                     b.Navigation("Assignments");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>
+                {
+                    b.Navigation("LocaleStringResources");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Meeting", b =>

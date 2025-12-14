@@ -41,23 +41,39 @@ function UsersViewModel() {
     self.isModalOpen = ko.observable(false);
     self.isPasswordModalOpen = ko.observable(false);
 
-    // Role display helpers
+    // Role display helpers - handle both numeric and string enum values
     self.getRoleDisplayName = function(role) {
         const roleNames = {
-            1: 'Admin',
-            2: 'Team Leader',
-            3: 'Evaluator',
-            4: 'Customer Representative'
+            // Numeric values
+            1: T('Role.Admin', 'Admin'),
+            2: T('Role.TeamLeader', 'Takım Lideri'),
+            3: T('Role.Evaluator', 'Değerlendirici'),
+            4: T('Role.CustomerRepresentative', 'Müşteri Temsilcisi'),
+            5: T('Role.FieldWorker', 'Saha Çalışanı'),
+            // String values (enum names)
+            'Admin': T('Role.Admin', 'Admin'),
+            'TeamLeader': T('Role.TeamLeader', 'Takım Lideri'),
+            'Evaluator': T('Role.Evaluator', 'Değerlendirici'),
+            'CustomerRepresentative': T('Role.CustomerRepresentative', 'Müşteri Temsilcisi'),
+            'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı')
         };
-        return roleNames[role] || 'Unknown';
+        return roleNames[role] || T('Common.Unknown', 'Bilinmiyor');
     };
 
     self.getRoleBadgeClass = function(role) {
         const roleClasses = {
+            // Numeric values
             1: 'bg-danger',
             2: 'bg-primary',
             3: 'bg-success',
-            4: 'bg-info'
+            4: 'bg-info',
+            5: 'bg-warning text-dark',
+            // String values (enum names)
+            'Admin': 'bg-danger',
+            'TeamLeader': 'bg-primary',
+            'Evaluator': 'bg-success',
+            'CustomerRepresentative': 'bg-info',
+            'FieldWorker': 'bg-warning text-dark'
         };
         return roleClasses[role] || 'bg-secondary';
     };
@@ -69,7 +85,7 @@ function UsersViewModel() {
 
         fetch('/api/users', { credentials: 'include' })
             .then(response => {
-                if (!response.ok) throw new Error('Yükleme başarısız');
+                if (!response.ok) throw new Error(T('Message.LoadError', 'Yükleme başarısız'));
                 return response.json();
             })
             .then(data => {
@@ -77,7 +93,7 @@ function UsersViewModel() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                self.errorMessage('Kullanıcılar yüklenirken bir hata oluştu.');
+                self.errorMessage(T('User.LoadError', 'Kullanıcılar yüklenirken bir hata oluştu.'));
             })
             .finally(() => {
                 self.isLoading(false);
@@ -117,27 +133,27 @@ function UsersViewModel() {
 
         // Validation
         if (!u.id && (!u.username() || u.username().trim() === '')) {
-            alert('Kullanıcı adı zorunludur!');
+            toastr.warning(T('User.UsernameRequired', 'Kullanıcı adı zorunludur!'));
             return;
         }
 
         if (!u.firstName() || u.firstName().trim() === '') {
-            alert('Ad alanı zorunludur!');
+            toastr.warning(T('User.FirstNameRequired', 'Ad alanı zorunludur!'));
             return;
         }
 
         if (!u.lastName() || u.lastName().trim() === '') {
-            alert('Soyad alanı zorunludur!');
+            toastr.warning(T('User.LastNameRequired', 'Soyad alanı zorunludur!'));
             return;
         }
 
         if (!u.email() || u.email().trim() === '') {
-            alert('E-posta alanı zorunludur!');
+            toastr.warning(T('User.EmailRequired', 'E-posta alanı zorunludur!'));
             return;
         }
 
         if (!u.id && (!u.password() || u.password().trim().length < 6)) {
-            alert('Şifre en az 6 karakter olmalıdır!');
+            toastr.warning(T('User.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır!'));
             return;
         }
 
@@ -175,13 +191,13 @@ function UsersViewModel() {
             return response.json();
         })
         .then(data => {
-            self.successMessage('Kullanıcı başarıyla kaydedildi.');
+            self.successMessage(T('User.SaveSuccess', 'Kullanıcı başarıyla kaydedildi.'));
             self.closeModal();
             self.loadUsers();
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Kullanıcı kaydedilirken bir hata oluştu.');
+            self.errorMessage(error.message || T('User.SaveError', 'Kullanıcı kaydedilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);
@@ -190,21 +206,20 @@ function UsersViewModel() {
 
     // Delete user
     self.deleteUser = function(user) {
-        deleteConfirmation.show('Bu kullanıcıyı silmek istediğinizden emin misiniz?', function() {
-
-        fetch('/api/users/' + user.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Silme başarısız');
-            self.successMessage('Kullanıcı başarıyla silindi.');
-            self.users.remove(user);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.errorMessage('Kullanıcı silinirken bir hata oluştu.');
-        });
+        showDeleteConfirm(user.firstName + ' ' + user.lastName, function() {
+            fetch('/api/users/' + user.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(T('Message.DeleteError', 'Silme başarısız'));
+                self.successMessage(T('User.DeleteSuccess', 'Kullanıcı başarıyla silindi.'));
+                self.users.remove(user);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                self.errorMessage(T('User.DeleteError', 'Kullanıcı silinirken bir hata oluştu.'));
+            });
         });
     };
 
@@ -217,20 +232,20 @@ function UsersViewModel() {
     // Save password
     self.savePassword = function() {
         var pwdUser = self.passwordChangeUser();
-        
+
         // Validation
         if (!pwdUser.newPassword() || pwdUser.newPassword().trim() === '') {
-            alert('Yeni şifre boş olamaz!');
+            toastr.warning(T('Validation.Required', 'Yeni şifre boş olamaz!'));
             return;
         }
-        
+
         if (pwdUser.newPassword().length < 6) {
-            alert('Şifre en az 6 karakter olmalıdır!');
+            toastr.warning(T('User.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır!'));
             return;
         }
-        
+
         if (pwdUser.newPassword() !== pwdUser.newPasswordConfirm()) {
-            alert('Şifreler eşleşmiyor!');
+            toastr.warning(T('Validation.PasswordMismatch', 'Şifreler eşleşmiyor!'));
             return;
         }
         
@@ -257,12 +272,12 @@ function UsersViewModel() {
             return response.json();
         })
         .then(data => {
-            self.successMessage('Şifre başarıyla değiştirildi.');
+            self.successMessage(T('Account.PasswordChanged', 'Şifre başarıyla değiştirildi.'));
             self.closePasswordModal();
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Şifre değiştirilirken bir hata oluştu.');
+            self.errorMessage(error.message || T('Account.PasswordChangeError', 'Şifre değiştirilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);

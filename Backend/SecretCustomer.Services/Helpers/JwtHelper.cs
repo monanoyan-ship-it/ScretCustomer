@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Services.Helpers;
 
@@ -65,6 +66,37 @@ public class JwtHelper
             new Claim("OriginalUserId", originalUser.Id.ToString()),
             new Claim("OriginalUserName", $"{originalUser.FirstName} {originalUser.LastName}"),
             new Claim("OriginalRole", originalUser.Role.ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_expirationMinutes),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>
+    /// CustomerPersonnel için token oluşturur
+    /// </summary>
+    public string GenerateCustomerPersonnelToken(CustomerPersonnel personnel)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, personnel.Id.ToString()),
+            new Claim(ClaimTypes.Name, personnel.Username),
+            new Claim(ClaimTypes.Email, personnel.Email),
+            new Claim(ClaimTypes.Role, personnel.Role.ToString()),
+            new Claim("CustomerId", personnel.CustomerId.ToString()),
+            new Claim("CustomerName", personnel.Customer?.CompanyName ?? ""),
+            new Claim("FullName", personnel.FullName),
+            new Claim("UserType", "CustomerPersonnel")
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

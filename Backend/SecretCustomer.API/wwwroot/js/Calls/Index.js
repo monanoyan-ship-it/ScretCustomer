@@ -412,19 +412,18 @@
         };
 
         self.deleteCall = function(call) {
-            if (confirm('Bu çağrıyı silmek istediğinizden emin misiniz?')) {
+            showDeleteConfirm('Bu çağrı', function() {
                 fetch('/api/calls/' + call.id, { method: 'DELETE' })
                     .then(function(response) {
                         if (response.ok) {
                             self.loadCalls();
                             self.loadSummary();
-                            self.successMessage('Çağrı silindi.');
-                            setTimeout(function() { self.successMessage(''); }, 3000);
+                            toastr.success('Çağrı silindi.');
                         } else {
-                            self.errorMessage('Silme işlemi başarısız.');
+                            toastr.error('Silme işlemi başarısız.');
                         }
                     });
-            }
+            });
         };
 
         // ==================== PAGINATION ====================

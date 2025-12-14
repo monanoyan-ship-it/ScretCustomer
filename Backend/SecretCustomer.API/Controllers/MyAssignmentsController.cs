@@ -28,28 +28,32 @@ public class MyAssignmentsController : Controller
         try
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            
+            var userName = User.FindFirstValue(ClaimTypes.Name) ?? "Kullanıcı";
+
             // Get field worker by user id
             var fieldWorker = await _fieldWorkerService.GetByUserIdAsync(userId);
-            
+
             if (fieldWorker == null)
             {
                 _logger.LogWarning("Field worker not found for user {UserId}", userId);
-                return RedirectToAction("AccessDenied", "Account");
+                // Show empty list with informative message instead of redirecting
+                ViewData["FieldWorkerName"] = userName;
+                TempData["ErrorMessage"] = "Saha çalışanı kaydınız bulunamadı. Lütfen sistem yöneticisi ile iletişime geçin.";
+                return View(new List<Core.DTOs.Assignment.AssignmentDto>());
             }
 
             // Get assignments for this field worker
             var assignments = await _assignmentService.GetByFieldWorkerIdAsync(fieldWorker.Id);
-            
+
             ViewData["FieldWorkerName"] = $"{fieldWorker.FirstName} {fieldWorker.LastName}";
-            
+
             return View(assignments);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading my assignments");
             TempData["ErrorMessage"] = "Atamalar yüklenirken bir hata oluştu.";
-            return View(new List<Core.Entities.Assignment>());
+            return View(new List<Core.DTOs.Assignment.AssignmentDto>());
         }
     }
 }

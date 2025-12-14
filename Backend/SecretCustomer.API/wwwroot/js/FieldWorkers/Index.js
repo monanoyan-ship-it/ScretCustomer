@@ -70,37 +70,37 @@ function FieldWorkersViewModel() {
 
         // Validation
         if (!fw.firstName() || fw.firstName().trim() === '') {
-            alert('Ad alanı zorunludur!');
+            toastr.warning('Ad alanı zorunludur!');
             return;
         }
 
         if (!fw.lastName() || fw.lastName().trim() === '') {
-            alert('Soyad alanı zorunludur!');
+            toastr.warning('Soyad alanı zorunludur!');
             return;
         }
 
         if (!fw.username() || fw.username().trim() === '') {
-            alert('Kullanıcı adı zorunludur!');
+            toastr.warning('Kullanıcı adı zorunludur!');
             return;
         }
 
         if (!fw.id && (!fw.password() || fw.password().trim() === '')) {
-            alert('Şifre zorunludur!');
+            toastr.warning('Şifre zorunludur!');
             return;
         }
 
         if (!fw.id && fw.password().length < 6) {
-            alert('Şifre en az 6 karakter olmalıdır!');
+            toastr.warning('Şifre en az 6 karakter olmalıdır!');
             return;
         }
 
         if (!fw.phoneNumber() || fw.phoneNumber().trim() === '') {
-            alert('Telefon numarası zorunludur!');
+            toastr.warning('Telefon numarası zorunludur!');
             return;
         }
 
         if (!fw.address() || fw.address().trim() === '') {
-            alert('Adres alanı zorunludur!');
+            toastr.warning('Adres alanı zorunludur!');
             return;
         }
 
@@ -155,9 +155,8 @@ function FieldWorkersViewModel() {
 
     // Delete field worker
     self.deleteFieldWorker = function(fieldWorker) {
-        deleteConfirmation.show('Bu saha çalışanını silmek istediğinizden emin misiniz?', function() {
-
-        fetch('/api/fieldworkers/' + fieldWorker.id, {
+        showDeleteConfirm(fieldWorker.firstName + ' ' + fieldWorker.lastName, function() {
+            fetch('/api/fieldworkers/' + fieldWorker.id, {
             method: 'DELETE',
             credentials: 'include'
         })

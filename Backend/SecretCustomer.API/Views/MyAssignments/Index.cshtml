@@ -1,21 +1,21 @@
-@model IEnumerable<SecretCustomer.Core.Entities.Assignment>
+@model IEnumerable<SecretCustomer.Core.DTOs.Assignment.AssignmentDto>
 @{
-    ViewData["Title"] = "Atamalarım";
-    var fieldWorkerName = ViewData["FieldWorkerName"] as string ?? "Saha Çalışanı";
+    ViewData["Title"] = @Html.T("Menu.MyTasks", "Görevlerim");
+    var fieldWorkerName = ViewData["FieldWorkerName"] as string ?? Html.T("Role.FieldWorker", "Saha Çalışanı").ToString();
 }
 
-<div class="container-fluid">
+<div class="container-fluid" id="myassignments-app">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>
-                <i class="bi bi-list-check"></i> Atamalarım
+                <i class="bi bi-list-check"></i> @Html.T("Menu.MyTasks", "Görevlerim")
             </h2>
-            <p class="text-muted">Hoş geldiniz, <strong>@fieldWorkerName</strong></p>
+            <p class="text-muted">@Html.T("Login.Welcome", "Hoş geldiniz"), <strong>@fieldWorkerName</strong></p>
         </div>
         <div>
-            <span class="badge bg-primary fs-6">Toplam: @Model.Count()</span>
-            <span class="badge bg-success fs-6">Tamamlanan: @Model.Count(a => a.IsCompleted)</span>
-            <span class="badge bg-warning fs-6">Bekleyen: @Model.Count(a => !a.IsCompleted)</span>
+            <span class="badge bg-primary fs-6">@Html.T("Common.Total", "Toplam"): @Model.Count()</span>
+            <span class="badge bg-success fs-6">@Html.T("Status.Completed", "Tamamlanan"): @Model.Count(a => a.IsCompleted)</span>
+            <span class="badge bg-warning fs-6">@Html.T("Status.Pending", "Bekleyen"): @Model.Count(a => !a.IsCompleted)</span>
         </div>
     </div>
 
@@ -38,114 +38,76 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Henüz size atanmış bir görev bulunmuyor.
+            <i class="bi bi-info-circle"></i> @Html.T("Assignment.NoTasks", "Henüz size atanmış bir görev bulunmuyor.")
         </div>
     }
     else
     {
-        <div class="row" data-bind="foreach: assignments">
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm" data-bind="css: { 'border-success': IsCompleted, 'border-warning': !IsCompleted && isOverdue(), 'border-primary': !IsCompleted && !isOverdue() }">
-                    <div class="card-header" data-bind="css: { 'bg-success text-white': IsCompleted, 'bg-warning': !IsCompleted && isOverdue(), 'bg-primary text-white': !IsCompleted && !isOverdue() }">
-                        <h5 class="mb-0" data-bind="text: Project?.Name"></h5>
-                    </div>
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">
-                            <i class="bi bi-clipboard-check"></i> 
-                            <span data-bind="text: Checklist?.Name"></span>
-                        </h6>
-                        
-                        <div class="mb-2">
-                            <i class="bi bi-building"></i>
-                            <strong>Şube:</strong> 
-                            <span data-bind="text: Branch?.Name || 'Tüm Şubeler'"></span>
-                        </div>
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                var isExpired = !item.IsCompleted && item.DueDate < DateTime.UtcNow;
+                var borderClass = item.IsCompleted ? "border-success" : (isExpired ? "border-warning" : "border-primary");
+                var headerClass = item.IsCompleted ? "bg-success text-white" : (isExpired ? "bg-warning" : "bg-primary text-white");
 
-                        <div class="mb-2">
-                            <i class="bi bi-calendar-event"></i>
-                            <strong>Teslim Tarihi:</strong> 
-                            <span data-bind="text: formatDate(DueDate)"></span>
-                            <!-- ko if: !IsCompleted && isOverdue() -->
-                            <span class="badge bg-danger ms-2">GECİKMİŞ</span>
-                            <!-- /ko -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm @borderClass">
+                        <div class="card-header @headerClass">
+                            <h5 class="mb-0">@item.ProjectName</h5>
                         </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <i class="bi bi-clipboard-check"></i> @item.ChecklistName
+                            </h6>
 
-                        <!-- ko if: IsCompleted -->
-                        <div class="mb-2 text-success">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <strong>Tamamlandı:</strong> 
-                            <span data-bind="text: formatDate(CompletedAt)"></span>
-                        </div>
-                        <!-- /ko -->
+                            <div class="mb-2">
+                                <i class="bi bi-building"></i>
+                                <strong>@Html.T("Branch.Title", "Şube"):</strong> @(item.BranchName ?? Html.T("Common.AllBranches", "Tüm Şubeler").ToString())
+                            </div>
 
-                        <!-- ko if: !IsCompleted -->
-                        <div class="mb-2">
-                            <i class="bi bi-clock"></i>
-                            <strong>Durum:</strong> 
-                            <span class="badge bg-warning">Bekliyor</span>
+                            <div class="mb-2">
+                                <i class="bi bi-calendar-event"></i>
+                                <strong>@Html.T("Assignment.DueDate", "Teslim Tarihi"):</strong> @item.DueDate.ToString("dd.MM.yyyy HH:mm")
+                                @if (isExpired)
+                                {
+                                    <span class="badge bg-danger ms-2">@Html.T("Status.Overdue", "GECİKMİŞ")</span>
+                                }
+                            </div>
+
+                            @if (item.IsCompleted)
+                            {
+                                <div class="mb-2 text-success">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <strong>@Html.T("Status.Completed", "Tamamlandı"):</strong> @item.CompletedAt?.ToString("dd.MM.yyyy HH:mm")
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-2">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>@Html.T("Common.Status", "Durum"):</strong>
+                                    <span class="badge bg-warning">@Html.T("Status.Waiting", "Bekliyor")</span>
+                                </div>
+                            }
                         </div>
-                        <!-- /ko -->
-                    </div>
-                    <div class="card-footer">
-                        <!-- ko if: !IsCompleted -->
-                        <button class="btn btn-primary btn-sm w-100" data-bind="click: $root.startEvaluation">
-                            <i class="bi bi-play-circle"></i> Değerlendirmeyi Başlat
-                        </button>
-                        <!-- /ko -->
-                        <!-- ko if: IsCompleted -->
-                        <button class="btn btn-outline-secondary btn-sm w-100" data-bind="click: $root.viewEvaluation">
-                            <i class="bi bi-eye"></i> Değerlendirmeyi Görüntüle
-                        </button>
-                        <!-- /ko -->
+                        <div class="card-footer">
+                            @if (!item.IsCompleted)
+                            {
+                                <a href="/Evaluation/Start/@item.UniqueLink" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-play-circle"></i> @Html.T("Evaluation.StartEvaluation", "Değerlendirmeyi Başlat")
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/Evaluation/View/@item.EvaluationId" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="bi bi-eye"></i> @Html.T("Evaluation.ViewEvaluation", "Değerlendirmeyi Görüntüle")
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     }
 </div>
 
-<!-- Evaluation Modal -->
-<div class="modal fade" id="evaluationModal" tabindex="-1" aria-labelledby="evaluationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content" data-bind="with: selectedAssignment">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="evaluationModalLabel">
-                    <i class="bi bi-clipboard-check"></i> 
-                    Değerlendirme Formu
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6><i class="bi bi-building"></i> Proje</h6>
-                        <p class="text-muted" data-bind="text: Project?.Name"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="bi bi-geo-alt"></i> Şube</h6>
-                        <p class="text-muted" data-bind="text: Branch?.Name || 'Tüm Şubeler'"></p>
-                    </div>
-                </div>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> 
-                    Değerlendirme formu burada gösterilecek. 
-                    Checklist soruları ve cevaplama alanları geliştirilecek.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Kapat
-                </button>
-                <!-- ko if: !IsCompleted -->
-                <button type="button" class="btn btn-success" data-bind="click: $root.saveEvaluation">
-                    <i class="bi bi-save"></i> Kaydet
-                </button>
-                <!-- /ko -->
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script src="~/js/MyAssignments/Index.js"></script>
-}

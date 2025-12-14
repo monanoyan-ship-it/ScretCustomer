@@ -130,7 +130,7 @@ function PersonnelReportCardViewModel() {
             })
             .catch(function(error) {
                 console.error('Export error:', error);
-                alert('Excel dosyasi olusturulurken bir hata olustu.');
+                toastr.error('Excel dosyası oluşturulurken bir hata oluştu.');
             })
             .finally(function() {
                 self.isExporting(false);

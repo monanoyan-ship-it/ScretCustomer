@@ -6,7 +6,7 @@ namespace SecretCustomer.API.Controllers;
 /// <summary>
 /// Çağrı yönetimi MVC controller
 /// </summary>
-[Authorize]
+[Authorize(Roles = "Admin,TeamLeader")]
 public class CallsController : Controller
 {
     /// <summary>

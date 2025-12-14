@@ -1,21 +1,21 @@
 @{
-    ViewData["Title"] = "Profilim";
+    ViewData["Title"] = Html.T("Profile.Title", "Profilim").ToString();
 }
 
 <div id="profile-app">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">
-            <i class="bi bi-person-circle me-2"></i>Profilim
+            <i class="bi bi-person-circle me-2"></i>@Html.T("Profile.Title", "Profilim")
         </h2>
     </div>
 
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
-        <p class="mt-2 text-muted">Profil yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Profile.Loading", "Profil yükleniyor...")</p>
     </div>
 
     <!-- Error Message -->
@@ -51,19 +51,19 @@
 
                     <div class="text-start">
                         <div class="mb-3">
-                            <small class="text-muted d-block">E-posta</small>
+                            <small class="text-muted d-block">@Html.T("Login.Email", "E-posta")</small>
                             <span data-bind="text: profile().email || '-'"></span>
                         </div>
                         <div class="mb-3">
-                            <small class="text-muted d-block">Telefon</small>
+                            <small class="text-muted d-block">@Html.T("Common.Phone", "Telefon")</small>
                             <span data-bind="text: profile().phoneNumber || '-'"></span>
                         </div>
                         <div class="mb-3" data-bind="visible: profile().branchName">
-                            <small class="text-muted d-block">Şube</small>
+                            <small class="text-muted d-block">@Html.T("Branch.BranchName", "Şube")</small>
                             <span data-bind="text: profile().branchName"></span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Kayıt Tarihi</small>
+                            <small class="text-muted d-block">@Html.T("Profile.RegistrationDate", "Kayıt Tarihi")</small>
                             <span data-bind="text: formatDate(profile().createdAt)"></span>
                         </div>
                     </div>
@@ -77,38 +77,38 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-pencil me-2"></i>Profil Bilgilerini Düzenle
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Profile.EditProfile", "Profil Bilgilerini Düzenle")
                     </h5>
                 </div>
                 <div class="card-body">
                     <form data-bind="submit: updateProfile">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Ad <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.FirstName", "Ad") <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" data-bind="value: editForm.firstName" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Soyad <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" data-bind="value: editForm.lastName" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">E-posta</label>
+                                <label class="form-label">@Html.T("Login.Email", "E-posta")</label>
                                 <input type="email" class="form-control" data-bind="value: editForm.email">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Telefon</label>
+                                <label class="form-label">@Html.T("Common.Phone", "Telefon")</label>
                                 <input type="tel" class="form-control" data-bind="value: editForm.phoneNumber" placeholder="0532 123 45 67">
                             </div>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary" data-bind="disable: isSaving">
                                 <span data-bind="visible: !isSaving()">
-                                    <i class="bi bi-check-lg me-1"></i>Kaydet
+                                    <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Save", "Kaydet")
                                 </span>
                                 <span data-bind="visible: isSaving">
-                                    <span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...
+                                    <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")
                                 </span>
                             </button>
                         </div>
@@ -120,13 +120,13 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-key me-2"></i>Şifre Değiştir
+                        <i class="bi bi-key me-2"></i>@Html.T("Profile.ChangePassword", "Şifre Değiştir")
                     </h5>
                 </div>
                 <div class="card-body">
                     <form data-bind="submit: changePassword">
                         <div class="mb-3">
-                            <label class="form-label">Mevcut Şifre <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Profile.CurrentPassword", "Mevcut Şifre") <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="password" class="form-control" data-bind="value: passwordForm.currentPassword, attr: { type: showCurrentPassword() ? 'text' : 'password' }" required>
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showCurrentPassword(!showCurrentPassword()); }">
@@ -135,17 +135,17 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Yeni Şifre <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Account.NewPassword", "Yeni Şifre") <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="password" class="form-control" data-bind="value: passwordForm.newPassword, attr: { type: showNewPassword() ? 'text' : 'password' }" required minlength="6">
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showNewPassword(!showNewPassword()); }">
                                     <i data-bind="css: showNewPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                                 </button>
                             </div>
-                            <small class="text-muted">En az 6 karakter</small>
+                            <small class="text-muted">@Html.T("Account.MinChars", "En az 6 karakter")</small>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Yeni Şifre (Tekrar) <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Account.ConfirmNewPassword", "Yeni Şifre (Tekrar)") <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="password" class="form-control" data-bind="value: passwordForm.confirmPassword, attr: { type: showConfirmPassword() ? 'text' : 'password' }" required>
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { showConfirmPassword(!showConfirmPassword()); }">
@@ -153,16 +153,16 @@
                                 </button>
                             </div>
                             <small class="text-danger" data-bind="visible: passwordForm.newPassword() && passwordForm.confirmPassword() && passwordForm.newPassword() !== passwordForm.confirmPassword()">
-                                Şifreler eşleşmiyor
+                                @Html.T("Profile.PasswordsNotMatch", "Şifreler eşleşmiyor")
                             </small>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-warning" data-bind="disable: isChangingPassword() || (passwordForm.newPassword() !== passwordForm.confirmPassword())">
                                 <span data-bind="visible: !isChangingPassword()">
-                                    <i class="bi bi-key me-1"></i>Şifreyi Değiştir
+                                    <i class="bi bi-key me-1"></i>@Html.T("Account.ResetPasswordButton", "Şifreyi Değiştir")
                                 </span>
                                 <span data-bind="visible: isChangingPassword">
-                                    <span class="spinner-border spinner-border-sm me-1"></span>Değiştiriliyor...
+                                    <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Profile.ChangingPassword", "Değiştiriliyor...")
                                 </span>
                             </button>
                         </div>

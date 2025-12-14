@@ -243,11 +243,8 @@ function OrganizationViewModel() {
 
     // Delete unit
     self.deleteUnit = function(unit) {
-        if (!confirm(unit.name + ' birimini silmek istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        fetch('/api/organizationunits/' + unit.id, {
+        showDeleteConfirm(unit.name + ' birimi', function() {
+            fetch('/api/organizationunits/' + unit.id, {
             method: 'DELETE',
             credentials: 'include'
         })
@@ -271,6 +268,7 @@ function OrganizationViewModel() {
                 console.error('Error:', error);
                 self.errorMessage(error.message || 'Birim silinirken bir hata oluştu.');
             });
+        });
     };
 
     // Modal helpers

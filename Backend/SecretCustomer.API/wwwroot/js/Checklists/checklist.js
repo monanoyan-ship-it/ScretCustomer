@@ -226,7 +226,7 @@ function ChecklistViewModel() {
     self.uploadQuestionAttachment = function(question, fileInput) {
         if (!fileInput.files || fileInput.files.length === 0) return;
         if (!question.id) {
-            alert('Dosya eklemek için önce soruyu kaydetmeniz gerekiyor.');
+            toastr.warning('Dosya eklemek için önce soruyu kaydetmeniz gerekiyor.');
             return;
         }
 
@@ -261,20 +261,20 @@ function ChecklistViewModel() {
     };
 
     self.removeQuestionAttachment = function(attachment, question) {
-        if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
-
-        fetch('/api/question-attachments/' + attachment.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(response) { return response.json(); })
-        .then(function(result) {
-            question.attachments.remove(attachment);
-            self.successMessage('Dosya silindi.');
-        })
-        .catch(function(error) {
-            console.error('Delete error:', error);
-            self.errorMessage('Dosya silinirken bir hata oluştu.');
+        showDeleteConfirm('Bu dosya', function() {
+            fetch('/api/question-attachments/' + attachment.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                question.attachments.remove(attachment);
+                self.successMessage('Dosya silindi.');
+            })
+            .catch(function(error) {
+                console.error('Delete error:', error);
+                self.errorMessage('Dosya silinirken bir hata oluştu.');
+            });
         });
     };
 
@@ -298,20 +298,17 @@ function ChecklistViewModel() {
     };
 
     self.deleteChecklist = function(checklist) {
-        deleteConfirmation.show(
-            'Bu kontrol listesini silmek istediginizden emin misiniz? Bu islem geri alinamaz.',
-            function() {
-                apiService.delete('/checklists/' + checklist.id)
-                    .then(function() {
-                        self.checklists.remove(checklist);
-                        self.successMessage('Kontrol listesi basariyla silindi.');
-                    })
-                    .catch(function(error) {
-                        console.error('Delete error:', error);
-                        self.errorMessage('Kontrol listesi silinirken bir hata olustu.');
-                    });
-            }
-        );
+        showDeleteConfirm(checklist.name() + ' kontrol listesi', function() {
+            apiService.delete('/checklists/' + checklist.id)
+                .then(function() {
+                    self.checklists.remove(checklist);
+                    self.successMessage('Kontrol listesi basariyla silindi.');
+                })
+                .catch(function(error) {
+                    console.error('Delete error:', error);
+                    self.errorMessage('Kontrol listesi silinirken bir hata olustu.');
+                });
+        });
     };
 
     // Wizard navigation

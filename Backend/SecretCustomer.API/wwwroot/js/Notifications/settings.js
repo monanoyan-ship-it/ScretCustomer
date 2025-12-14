@@ -31,7 +31,7 @@ function NotificationsSettingsViewModel() {
             self.settings(observableSettings);
             self.loading(false);
         }).fail(function() {
-            toastr.error('Ayarlar yüklenemedi');
+            toastr.error(T('Notification.SettingsLoadError', 'Ayarlar yüklenemedi'));
             self.loading(false);
         });
     };
@@ -55,10 +55,10 @@ function NotificationsSettingsViewModel() {
         });
 
         Promise.all(promises).then(function() {
-            toastr.success('Varsayılan ayarlar oluşturuldu');
+            toastr.success(T('Notification.SettingsCreated', 'Varsayılan ayarlar oluşturuldu'));
             self.loadSettings();
         }).catch(function() {
-            toastr.error('Ayarlar oluşturulamadı');
+            toastr.error(T('Notification.SettingsCreateError', 'Ayarlar oluşturulamadı'));
             self.loading(false);
         });
     };
@@ -80,7 +80,7 @@ function NotificationsSettingsViewModel() {
                 // Silent success - no toast for each change
             },
             error: function() {
-                toastr.error('Ayar kaydedilemedi');
+                toastr.error(T('Notification.SettingsSaveError', 'Ayar kaydedilemedi'));
             }
         });
     };
@@ -88,16 +88,16 @@ function NotificationsSettingsViewModel() {
     // Helper functions
     self.getNotificationTypeText = function(type) {
         var types = {
-            'Info': 'Bilgi',
-            'Success': 'Başarılı İşlem',
-            'Warning': 'Uyarı',
-            'Error': 'Hata',
-            'ApprovalRequest': 'Onay Talebi',
-            'Assignment': 'Görev Ataması',
-            'MeetingInvite': 'Toplantı Daveti',
-            'TrainingInvite': 'Eğitim Daveti',
-            'Reminder': 'Hatırlatma',
-            'System': 'Sistem Bildirimi'
+            'Info': T('Notification.Type.Info', 'Bilgi'),
+            'Success': T('Notification.Type.Success', 'Başarılı İşlem'),
+            'Warning': T('Notification.Type.Warning', 'Uyarı'),
+            'Error': T('Notification.Type.Error', 'Hata'),
+            'ApprovalRequest': T('Notification.Type.ApprovalRequest', 'Onay Talebi'),
+            'Assignment': T('Notification.Type.Assignment', 'Görev Ataması'),
+            'MeetingInvite': T('Notification.Type.MeetingInvite', 'Toplantı Daveti'),
+            'TrainingInvite': T('Notification.Type.TrainingInvite', 'Eğitim Daveti'),
+            'Reminder': T('Notification.Type.Reminder', 'Hatırlatma'),
+            'System': T('Notification.Type.System', 'Sistem Bildirimi')
         };
         return types[type] || type;
     };

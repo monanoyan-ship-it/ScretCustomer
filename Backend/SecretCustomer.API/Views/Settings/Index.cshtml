@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "Sistem Ayarları";
+}
+
+<div id="settings-app">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Sistem Ayarları</h4>
+        <button class="btn btn-primary" data-bind="click: openCreateModal">
+            <i class="bi bi-plus-lg me-1"></i> Yeni Ayar
+        </button>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">Kategori:</span>
+                <button class="btn btn-sm"
+                        data-bind="click: function() { selectedCategory(null); loadSettings(); },
+                                   css: { 'btn-primary': !selectedCategory(), 'btn-outline-secondary': selectedCategory() }">
+                    Tümü
+                </button>
+                <!-- ko foreach: categories -->
+                <button class="btn btn-sm"
+                        data-bind="text: $data,
+                                   click: function() { $parent.selectedCategory($data); $parent.loadSettings(); },
+                                   css: { 'btn-primary': $data === $parent.selectedCategory(), 'btn-outline-secondary': $data !== $parent.selectedCategory() }">
+                </button>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Settings Table -->
+    <div data-bind="visible: !isLoading()" class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div data-bind="visible: settings().length === 0" class="text-center py-5 text-muted">
+                <i class="bi bi-gear fs-1"></i>
+                <p class="mt-2">Ayar bulunamadı.</p>
+            </div>
+            <div data-bind="visible: settings().length > 0" class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Anahtar</th>
+                            <th>Değer</th>
+                            <th>Tip</th>
+                            <th>Kategori</th>
+                            <th>Açıklama</th>
+                            <th width="100"></th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: settings">
+                        <tr>
+                            <td>
+                                <code data-bind="text: key"></code>
+                                <!-- ko if: isSystem -->
+                                <span class="badge bg-secondary ms-1">Sistem</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: valueType === 1 -->
+                                <span class="badge" data-bind="text: value === 'true' ? 'Evet' : 'Hayır',
+                                      css: { 'bg-success': value === 'true', 'bg-danger': value !== 'true' }"></span>
+                                <!-- /ko -->
+                                <!-- ko if: valueType !== 1 -->
+                                <span data-bind="text: value.length > 50 ? value.substring(0, 50) + '...' : value"></span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span class="badge bg-info" data-bind="text: $parent.getValueTypeName(valueType)"></span>
+                            </td>
+                            <td data-bind="text: category"></td>
+                            <td class="text-muted small" data-bind="text: description || '-'"></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <!-- ko if: !isSystem -->
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteSetting" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <!-- /ko -->
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="settingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-bind="text: isEditing() ? 'Ayar Düzenle' : 'Yeni Ayar'"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Anahtar <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: form.key, disable: isEditing" placeholder="General.MySetting" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Değer Tipi</label>
+                        <select class="form-select" data-bind="value: form.valueType">
+                            <option value="0">String</option>
+                            <option value="1">Boolean</option>
+                            <option value="2">Integer</option>
+                            <option value="3">Decimal</option>
+                            <option value="4">JSON</option>
+                            <option value="5">DateTime</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Değer</label>
+                        <!-- ko if: form.valueType() == '1' -->
+                        <select class="form-select" data-bind="value: form.value">
+                            <option value="true">Evet (true)</option>
+                            <option value="false">Hayır (false)</option>
+                        </select>
+                        <!-- /ko -->
+                        <!-- ko if: form.valueType() != '1' -->
+                        <input type="text" class="form-control" data-bind="value: form.value" />
+                        <!-- /ko -->
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori</label>
+                        <input type="text" class="form-control" data-bind="value: form.category" placeholder="General" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" rows="2" data-bind="value: form.description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveSetting, disable: isSaving">
+                        <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Settings/index.js"></script>
+}

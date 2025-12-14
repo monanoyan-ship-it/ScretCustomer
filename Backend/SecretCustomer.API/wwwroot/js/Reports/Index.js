@@ -94,7 +94,7 @@ function ReportsViewModel() {
             body: JSON.stringify(filterDto)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error('Veriler yüklenemedi');
+                if (!response.ok) throw new Error(T('Report.LoadError', 'Veriler yüklenemedi'));
                 return response.json();
             })
             .then(function(data) {
@@ -108,7 +108,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Veriler yüklenirken bir hata oluştu.');
+                self.errorMessage(error.message || T('Report.LoadErrorMessage', 'Veriler yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -225,7 +225,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Detay yüklenirken bir hata oluştu.');
+                self.errorMessage(T('Report.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
             });
     };
 
@@ -244,14 +244,14 @@ function ReportsViewModel() {
             body: JSON.stringify(filterDto)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error('Export başarısız');
+                if (!response.ok) throw new Error(T('Report.ExportError', 'Export başarısız'));
                 return response.blob();
             })
             .then(function(blob) {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'Degerlendirmeler_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+                a.download = T('File.Evaluations', 'Degerlendirmeler') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -259,7 +259,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Excel dosyası indirilemedi.');
+                self.errorMessage(T('Report.ExcelDownloadError', 'Excel dosyası indirilemedi.'));
             })
             .finally(function() {
                 self.isExporting(false);
@@ -279,14 +279,14 @@ function ReportsViewModel() {
             body: JSON.stringify(filterDto)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error('Export başarısız');
+                if (!response.ok) throw new Error(T('Report.ExportError', 'Export başarısız'));
                 return response.blob();
             })
             .then(function(blob) {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'Detayli_Degerlendirmeler_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+                a.download = T('File.DetailedEvaluations', 'Detayli_Degerlendirmeler') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -294,7 +294,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Detaylı Excel dosyası indirilemedi.');
+                self.errorMessage(T('Report.DetailedExcelDownloadError', 'Detaylı Excel dosyası indirilemedi.'));
             })
             .finally(function() {
                 self.isExporting(false);
@@ -313,10 +313,10 @@ function ReportsViewModel() {
 
     self.getStatusText = function(status) {
         switch (status) {
-            case 'Completed': return 'Tamamlandı';
-            case 'Draft': return 'Taslak';
-            case 'InProgress': return 'Devam Ediyor';
-            default: return status || 'Bilinmiyor';
+            case 'Completed': return T('Status.Completed', 'Tamamlandı');
+            case 'Draft': return T('Status.Draft', 'Taslak');
+            case 'InProgress': return T('Status.InProgress', 'Devam Ediyor');
+            default: return status || T('Common.Unknown', 'Bilinmiyor');
         }
     };
 

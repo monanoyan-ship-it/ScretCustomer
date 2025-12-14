@@ -1,0 +1,331 @@
+@{
+    ViewData["Title"] = "Dil Yönetimi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="languages-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-globe me-2"></i>@Html.T("Language.Title", "Dil Yönetimi")
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Menu.Dashboard", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Language.Title", "Diller")</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bind="click: showCreateModal">
+            <i class="bi bi-plus me-1"></i> @Html.T("Language.NewLanguage", "Yeni Dil")
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+    </div>
+
+    <!-- Languages Table -->
+    <div class="card" data-bind="visible: !isLoading()">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">Sıra</th>
+                            <th>Bayrak</th>
+                            <th>@Html.T("Language.Name", "Dil Adı")</th>
+                            <th>@Html.T("Language.Culture", "Kültür Kodu")</th>
+                            <th>@Html.T("Language.SeoCode", "SEO Kodu")</th>
+                            <th>@Html.T("Language.IsDefault", "Varsayılan")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>Kaynak Sayısı</th>
+                            <th style="width: 200px;">@Html.T("Common.Actions", "İşlemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: languages">
+                        <tr>
+                            <td data-bind="text: displayOrder"></td>
+                            <td>
+                                <span data-bind="visible: flagImageFileName">
+                                    <span class="flag-icon" data-bind="class: 'flag-icon-' + (flagImageFileName || 'un')"></span>
+                                </span>
+                                <span data-bind="visible: !flagImageFileName">
+                                    <i class="bi bi-flag text-muted"></i>
+                                </span>
+                            </td>
+                            <td>
+                                <strong data-bind="text: name"></strong>
+                                <span class="badge bg-info ms-1" data-bind="visible: rtl">RTL</span>
+                            </td>
+                            <td><code data-bind="text: languageCulture"></code></td>
+                            <td><code data-bind="text: uniqueSeoCode"></code></td>
+                            <td>
+                                <span class="badge bg-success" data-bind="visible: isDefault">
+                                    <i class="fas fa-check"></i> Varsayılan
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" data-bind="text: resourceCount || 0"></span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" data-bind="click: $parent.setAsDefault, visible: !isDefault" title="Varsayılan Yap">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.importResources" title="XML'den İçe Aktar">
+                                        <i class="bi bi-file-earmark-arrow-down"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" data-bind="click: $parent.exportResources" title="XML'e Dışa Aktar">
+                                        <i class="bi bi-file-earmark-arrow-up"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.showResourcesModal" title="Kaynakları Görüntüle">
+                                        <i class="bi bi-list-ul"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" data-bind="click: $parent.showEditModal" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteLanguage, visible: !isDefault" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- No Data -->
+            <div data-bind="visible: languages().length === 0" class="text-center py-4 text-muted">
+                <i class="bi bi-globe fa-3x mb-3" style="font-size: 3rem;"></i>
+                <p>Henüz dil eklenmemiş.</p>
+                <button class="btn btn-success" data-bind="click: seedDefaultLanguages, disable: isSeeding">
+                    <span data-bind="visible: isSeeding"><i class="bi bi-arrow-repeat spin me-2"></i></span>
+                    <span data-bind="visible: !isSeeding()"><i class="bi bi-plus-circle me-2"></i></span>
+                    <span data-bind="text: isSeeding() ? 'Oluşturuluyor...' : 'Varsayılan Dilleri Oluştur (TR, EN, ES, DE)'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available XML Files -->
+    <div class="card mt-4" data-bind="visible: availableXmlFiles().length > 0">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>Mevcut XML Dosyaları</h6>
+        </div>
+        <div class="card-body">
+            <div class="row" data-bind="foreach: availableXmlFiles">
+                <div class="col-md-3 mb-2">
+                    <div class="border rounded p-2 d-flex align-items-center">
+                        <i class="bi bi-file-earmark-code text-warning me-2"></i>
+                        <span data-bind="text: fileName"></span>
+                        <span class="badge bg-secondary ms-auto" data-bind="text: languageCode"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="languageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-bind="text: isEditing() ? '@Html.T("Language.EditLanguage", "Dil Düzenle")' : '@Html.T("Language.NewLanguage", "Yeni Dil")'"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="languageForm">
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Language.Name", "Dil Adı") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: form.name" placeholder="Örn: Türkçe, English" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">@Html.T("Language.Culture", "Kültür Kodu") <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: form.languageCulture" placeholder="Örn: tr-TR, en-US" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">@Html.T("Language.SeoCode", "SEO Kodu") <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: form.uniqueSeoCode" placeholder="Örn: tr, en" maxlength="10" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bayrak İkonu</label>
+                                <input type="text" class="form-control" data-bind="value: form.flagImageFileName" placeholder="Örn: tr, gb, de">
+                                <small class="text-muted">flag-icon-css kullanılır</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">@Html.T("Language.DisplayOrder", "Sıralama")</label>
+                                <input type="number" class="form-control" data-bind="value: form.displayOrder" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="isDefault" data-bind="checked: form.isDefault">
+                                    <label class="form-check-label" for="isDefault">@Html.T("Language.IsDefault", "Varsayılan")</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="isActive" data-bind="checked: form.isActive">
+                                    <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="rtl" data-bind="checked: form.rtl">
+                                    <label class="form-check-label" for="rtl">@Html.T("Language.RTL", "Sağdan Sola")</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveLanguage, disable: isSaving">
+                        <span data-bind="visible: isSaving"><i class="bi bi-arrow-repeat spin me-1"></i></span>
+                        @Html.T("Common.Save", "Kaydet")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources Modal -->
+    <div class="modal fade" id="resourcesModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-list-ul me-2"></i>@Html.T("Language.Resources", "Çeviri Kaynakları")
+                        <span class="badge bg-primary ms-2" data-bind="text: selectedLanguage()?.name"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Search -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Kaynak adı ara..." data-bind="value: resourceSearch, valueUpdate: 'afterkeydown'">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" data-bind="value: resourcePrefix">
+                                <option value="">Tüm Önekler</option>
+                                <option value="Common.">Common.</option>
+                                <option value="Login.">Login.</option>
+                                <option value="Menu.">Menu.</option>
+                                <option value="Dashboard.">Dashboard.</option>
+                                <option value="Customer.">Customer.</option>
+                                <option value="Project.">Project.</option>
+                                <option value="Branch.">Branch.</option>
+                                <option value="Checklist.">Checklist.</option>
+                                <option value="Evaluation.">Evaluation.</option>
+                                <option value="Report.">Report.</option>
+                                <option value="User.">User.</option>
+                                <option value="Settings.">Settings.</option>
+                                <option value="Language.">Language.</option>
+                                <option value="Pagination.">Pagination.</option>
+                                <option value="Validation.">Validation.</option>
+                                <option value="Message.">Message.</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-success btn-sm" data-bind="click: showAddResourceModal">
+                                <i class="bi bi-plus me-1"></i> Yeni Kaynak
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resources Table -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th style="width: 40%;">@Html.T("Language.ResourceName", "Kaynak Anahtarı")</th>
+                                    <th>@Html.T("Language.ResourceValue", "Çeviri")</th>
+                                    <th style="width: 100px;">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: filteredResources">
+                                <tr>
+                                    <td><code data-bind="text: resourceName"></code></td>
+                                    <td data-bind="text: resourceValue"></td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary btn-sm" data-bind="click: $parent.editResource" title="Düzenle">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.deleteResource" title="Sil">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div data-bind="visible: filteredResources().length === 0" class="text-center py-3 text-muted">
+                        Kaynak bulunamadı.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="text-muted me-auto">
+                        Toplam: <strong data-bind="text: resources().length"></strong> kaynak
+                    </span>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Resource Modal -->
+    <div class="modal fade" id="resourceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-bind="text: editingResourceId() ? 'Kaynak Düzenle' : 'Yeni Kaynak'"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kaynak Anahtarı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: resourceForm.name, disable: editingResourceId()" placeholder="Örn: Common.Save">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Çeviri <span class="text-danger">*</span></label>
+                        <textarea class="form-control" rows="3" data-bind="value: resourceForm.value" placeholder="Çeviri değeri"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveResource">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @@keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/Languages/index.js"></script>
+}

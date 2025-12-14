@@ -33,6 +33,21 @@ function CustomersViewModel() {
     self.newPassword = ko.observable('');
     self.confirmPassword = ko.observable('');
 
+    // Show personnel actions (hide when password reset is open)
+    self.showPersonnelActions = ko.computed(function() {
+        return !self.showChangePasswordModal();
+    });
+
+    // Show personnel loading
+    self.showPersonnelLoading = ko.computed(function() {
+        return self.isLoadingPersonnel() && !self.showChangePasswordModal();
+    });
+
+    // Show personnel table
+    self.showPersonnelTable = ko.computed(function() {
+        return !self.isLoadingPersonnel() && !self.showChangePasswordModal();
+    });
+
     // Computed
     self.filteredCustomers = ko.computed(function() {
         if (self.showInactive()) {
@@ -70,7 +85,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading customers:', error);
-                self.errorMessage('Müşteriler yüklenirken bir hata oluştu: ' + (error.message || ''));
+                self.errorMessage(T('Customer.LoadError', 'Müşteriler yüklenirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -123,7 +138,7 @@ function CustomersViewModel() {
 
         // Validation
         if (!customer.companyName) {
-            self.errorMessage('Şirket adı zorunludur.');
+            self.errorMessage(T('Customer.CompanyNameRequired', 'Şirket adı zorunludur.'));
             return;
         }
 
@@ -135,13 +150,13 @@ function CustomersViewModel() {
 
         promise
             .then(function() {
-                self.successMessage(customer.id ? 'Müşteri başarıyla güncellendi.' : 'Müşteri başarıyla oluşturuldu.');
+                self.successMessage(customer.id ? T('Customer.UpdateSuccess', 'Müşteri başarıyla güncellendi.') : T('Customer.SaveSuccess', 'Müşteri başarıyla oluşturuldu.'));
                 self.isModalOpen(false);
                 self.loadCustomers();
             })
             .catch(function(error) {
                 console.error('Error saving customer:', error);
-                self.errorMessage('Müşteri kaydedilirken bir hata oluştu: ' + (error.message || ''));
+                self.errorMessage(T('Customer.SaveError', 'Müşteri kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -158,16 +173,16 @@ function CustomersViewModel() {
     // Delete customer
     self.deleteCustomer = function(customer) {
         deleteConfirmation.show(
-            '"' + customer.companyName + '" müşterisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            '"' + customer.companyName + '" ' + T('Customer.DeleteConfirm', 'Bu müşteriyi silmek istediğinizden emin misiniz?'),
             function() {
                 customerApiService.deleteCustomer(customer.id)
                     .then(function() {
-                        self.successMessage('Müşteri başarıyla silindi.');
+                        self.successMessage(T('Customer.DeleteSuccess', 'Müşteri başarıyla silindi.'));
                         self.loadCustomers();
                     })
                     .catch(function(error) {
                         console.error('Error deleting customer:', error);
-                        self.errorMessage('Müşteri silinirken bir hata oluştu: ' + (error.message || ''));
+                        self.errorMessage(T('Customer.DeleteError', 'Müşteri silinirken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -194,7 +209,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading personnel:', error);
-                self.errorMessage('Personeller yüklenirken bir hata oluştu: ' + (error.message || ''));
+                self.errorMessage(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isLoadingPersonnel(false);
@@ -260,12 +275,12 @@ function CustomersViewModel() {
 
         // Validation
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
-            self.errorMessage('Kullanıcı adı, e-posta, ad ve soyad zorunludur.');
+            self.errorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
         if (!personnel.id && !personnel.password) {
-            self.errorMessage('Yeni personel için şifre zorunludur.');
+            self.errorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
 
@@ -277,14 +292,14 @@ function CustomersViewModel() {
 
         promise
             .then(function() {
-                self.successMessage(personnel.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
+                self.successMessage(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.showPersonnelFormModal(false);
                 self.loadPersonnel(self.selectedCustomerForPersonnel().id);
                 self.loadCustomers(); // Refresh personnel count
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
-                self.errorMessage('Personel kaydedilirken bir hata oluştu: ' + (error.message || ''));
+                self.errorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSavingPersonnel(false);
@@ -300,17 +315,17 @@ function CustomersViewModel() {
     // Delete personnel
     self.deletePersonnel = function(personnel) {
         deleteConfirmation.show(
-            '"' + personnel.fullName + '" personelini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            '"' + personnel.fullName + '" ' + T('Personnel.DeleteConfirm', 'Bu personeli silmek istediğinizden emin misiniz?'),
             function() {
                 customerApiService.deletePersonnel(personnel.id)
                     .then(function() {
-                        self.successMessage('Personel başarıyla silindi.');
+                        self.successMessage(T('Personnel.DeleteSuccess', 'Personel başarıyla silindi.'));
                         self.loadPersonnel(self.selectedCustomerForPersonnel().id);
                         self.loadCustomers(); // Refresh personnel count
                     })
                     .catch(function(error) {
                         console.error('Error deleting personnel:', error);
-                        self.errorMessage('Personel silinirken bir hata oluştu: ' + (error.message || ''));
+                        self.errorMessage(T('Personnel.DeleteError', 'Personel silinirken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -333,17 +348,17 @@ function CustomersViewModel() {
         var confirmPass = self.confirmPassword();
 
         if (!newPass || !confirmPass) {
-            self.errorMessage('Tüm alanlar zorunludur.');
+            self.errorMessage(T('Common.AllFieldsRequired', 'Tüm alanlar zorunludur.'));
             return;
         }
 
         if (newPass.length < 6) {
-            self.errorMessage('Yeni şifre en az 6 karakter olmalıdır.');
+            self.errorMessage(T('Password.MinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
         if (newPass !== confirmPass) {
-            self.errorMessage('Yeni şifre ve onay eşleşmiyor.');
+            self.errorMessage(T('Password.Mismatch', 'Yeni şifre ve onay eşleşmiyor.'));
             return;
         }
 
@@ -353,14 +368,14 @@ function CustomersViewModel() {
 
         customerApiService.resetPersonnelPassword(personnelId, newPass)
             .then(function(response) {
-                self.successMessage(response.message || 'Şifre başarıyla sıfırlandı.');
+                self.successMessage(response.message || T('Password.ResetSuccess', 'Şifre başarıyla sıfırlandı.'));
                 self.showChangePasswordModal(false);
                 self.newPassword('');
                 self.confirmPassword('');
             })
             .catch(function(error) {
                 console.error('Error resetting password:', error);
-                self.errorMessage('Şifre sıfırlanırken bir hata oluştu: ' + (error.message || ''));
+                self.errorMessage(T('Password.ResetError', 'Şifre sıfırlanırken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isResettingPassword(false);

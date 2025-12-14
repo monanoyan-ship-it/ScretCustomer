@@ -41,7 +41,7 @@ function ExcelTemplatesViewModel() {
 
         template.addColumn = function() {
             if (!template.entityType()) {
-                alert('Lütfen önce Varlık Tipi seçin');
+                toastr.warning('Lütfen önce Varlık Tipi seçin');
                 return;
             }
             var order = template.columns().length + 1;
@@ -287,20 +287,19 @@ function ExcelTemplatesViewModel() {
 
     // Delete Template
     self.deleteTemplate = function(template) {
-        deleteConfirmation.show(`"${template.name}" şablonunu silmek istediğinizden emin misiniz?`, function() {
-
-        fetch(`/api/excel-templates/${template.id}`, {
-            method: 'DELETE'
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Silme işlemi başarısız');
-            self.successMessage('Şablon silindi');
-            self.loadTemplates();
-        })
-        .catch(err => {
-            console.error('Error deleting template:', err);
-            self.errorMessage('Şablon silinirken bir hata oluştu.');
-        });
+        showDeleteConfirm(template.name + ' şablonu', function() {
+            fetch(`/api/excel-templates/${template.id}`, {
+                method: 'DELETE'
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Silme işlemi başarısız');
+                self.successMessage('Şablon silindi');
+                self.loadTemplates();
+            })
+            .catch(err => {
+                console.error('Error deleting template:', err);
+                self.errorMessage('Şablon silinirken bir hata oluştu.');
+            });
         });
     };
 
@@ -343,22 +342,22 @@ function ExcelTemplatesViewModel() {
         .then(result => {
             self.closeImportModal();
 
-            // Show results in a modal or alert
-            var message = `Toplam ${result.totalRows} satır\n`;
-            message += `Geçerli: ${result.validRows}\n`;
-            message += `Hatalı: ${result.invalidRows}`;
-
+            // Show results via toastr
             if (result.invalidRows > 0) {
-                message += '\n\nHatalı satırlar:\n';
-                result.rows.filter(r => !r.isValid).forEach(r => {
-                    message += `Satır ${r.rowNumber}: ${r.errors.join(', ')}\n`;
+                var errorMessage = 'Hatalı satırlar: ';
+                result.rows.filter(r => !r.isValid).slice(0, 3).forEach(r => {
+                    errorMessage += `Satır ${r.rowNumber}: ${r.errors.join(', ')}; `;
                 });
+                if (result.invalidRows > 3) {
+                    errorMessage += `ve ${result.invalidRows - 3} hata daha...`;
+                }
+                toastr.warning(errorMessage, `${result.invalidRows} hatalı satır`);
             }
 
-            alert(message);
-
             if (result.validRows > 0) {
-                self.successMessage(`${result.validRows} satır başarıyla işlendi`);
+                toastr.success(`Toplam ${result.totalRows} satırdan ${result.validRows} tanesi başarıyla işlendi`);
+            } else {
+                toastr.error('Hiçbir satır işlenemedi');
             }
         })
         .catch(err => {

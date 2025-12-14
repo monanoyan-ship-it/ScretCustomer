@@ -249,26 +249,24 @@ function PersonnelViewModel() {
 
     // Delete personnel
     self.deletePersonnel = function(personnel) {
-        if (!confirm(personnel.fullName + ' adlı personeli silmek istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        fetch('/api/personnel/' + personnel.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Silme işlemi başarısız');
-                return response.json();
+        showDeleteConfirm(personnel.fullName, function() {
+            fetch('/api/personnel/' + personnel.id, {
+                method: 'DELETE',
+                credentials: 'include'
             })
-            .then(function(data) {
-                self.successMessage('Personel başarıyla silindi.');
-                self.loadPersonnel();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.errorMessage(error.message || 'Personel silinirken bir hata oluştu.');
-            });
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Silme işlemi başarısız');
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.successMessage('Personel başarıyla silindi.');
+                    self.loadPersonnel();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    self.errorMessage(error.message || 'Personel silinirken bir hata oluştu.');
+                });
+        });
     };
 
     // Modal helpers

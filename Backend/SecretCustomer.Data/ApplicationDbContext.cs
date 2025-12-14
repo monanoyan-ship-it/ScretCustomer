@@ -76,6 +76,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<NotificationSetting> NotificationSettings { get; set; }
 
+    // App Settings (tek satırlık ayar tablosu)
+    public DbSet<AppSettings> AppSettings { get; set; }
+
+    // Localization - Çoklu Dil Desteği
+    public DbSet<Language> Languages { get; set; }
+    public DbSet<LocaleStringResource> LocaleStringResources { get; set; }
+
+    // Bank Visit Details (GBF - Gizli Banka Formu)
+    public DbSet<BankVisitDetails> BankVisitDetails { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -148,6 +158,16 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Approval>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<NotificationSetting>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Bank Visit Details (GBF)
+        modelBuilder.Entity<BankVisitDetails>().HasQueryFilter(e => !e.IsDeleted);
+
+        // BankVisitDetails - CustomerVisit one-to-one relationship
+        modelBuilder.Entity<BankVisitDetails>()
+            .HasOne(b => b.CustomerVisit)
+            .WithOne(c => c.BankVisitDetails)
+            .HasForeignKey<BankVisitDetails>(b => b.CustomerVisitId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Delegation relationships configuration
         modelBuilder.Entity<Delegation>()

@@ -427,7 +427,7 @@
         };
 
         self.deleteTraining = function(training) {
-            if (confirm('Bu eğitimi silmek istediğinizden emin misiniz?')) {
+            showDeleteConfirm(training.title, function() {
                 fetch('/api/trainings/' + training.id, { method: 'DELETE' })
                     .then(function(response) {
                         if (response.ok) {
@@ -436,7 +436,7 @@
                             toastr.success('Eğitim silindi');
                         }
                     });
-            }
+            });
         };
 
         // ========== PARTICIPANTS ==========
@@ -532,7 +532,7 @@
         };
 
         self.removeParticipant = function(training, participant) {
-            if (confirm('Bu katılımcıyı kaldırmak istediğinizden emin misiniz?')) {
+            showDeleteConfirm('Bu katılımcı', function() {
                 fetch('/api/trainings/' + training.id + '/participants/' + participant.id, {
                     method: 'DELETE'
                 })
@@ -542,7 +542,7 @@
                         toastr.success('Katılımcı kaldırıldı');
                     }
                 });
-            }
+            });
         };
 
         // ========== MATERIALS ==========
@@ -593,7 +593,7 @@
         };
 
         self.deleteMaterial = function(training, material) {
-            if (confirm('Bu materyali silmek istediğinizden emin misiniz?')) {
+            showDeleteConfirm(material.name + ' materyali', function() {
                 fetch('/api/trainings/' + training.id + '/materials/' + material.id, {
                     method: 'DELETE'
                 })
@@ -603,7 +603,7 @@
                         toastr.success('Materyal silindi');
                     }
                 });
-            }
+            });
         };
 
         // ========== PAGINATION ==========

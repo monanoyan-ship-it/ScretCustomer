@@ -133,7 +133,7 @@ function SuggestionsViewModel() {
         })
         .catch(function(error) {
             console.error('Suggestions report error:', error);
-            self.errorMessage(error.message || 'Rapor yüklenirken bir hata oluştu.');
+            self.errorMessage(error.message || T('Report.LoadErrorMessage', 'Rapor yüklenirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isLoading(false);
@@ -186,14 +186,14 @@ function SuggestionsViewModel() {
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Export başarısız');
+                if (!response.ok) throw new Error(T('Report.ExportError', 'Export başarısız'));
                 return response.blob();
             })
             .then(function(blob) {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'OnerilerRaporu_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                a.download = T('File.SuggestionsReport', 'OnerilerRaporu') + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -201,7 +201,7 @@ function SuggestionsViewModel() {
             })
             .catch(function(error) {
                 console.error('Export error:', error);
-                self.errorMessage('Excel export başarısız: ' + error.message);
+                self.errorMessage(T('Report.ExcelExportError', 'Excel export başarısız') + ': ' + error.message);
             })
             .finally(function() {
                 self.isExporting(false);

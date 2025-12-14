@@ -8,6 +8,12 @@ public class DashboardController : Controller
 {
     public IActionResult Index()
     {
+        // FieldWorker kullanıcılarını Görevlerim sayfasına yönlendir
+        if (User.IsInRole("FieldWorker"))
+        {
+            return RedirectToAction("Index", "MyAssignments");
+        }
+
         return View();
     }
 }

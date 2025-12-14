@@ -65,14 +65,14 @@ function EvaluationFormViewModel() {
         } else if (initialEvaluationId) {
             url = '/api/evaluations/form/edit/' + initialEvaluationId;
         } else {
-            self.errorMessage('Gecersiz parametreler');
+            self.errorMessage(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
             self.isLoading(false);
             return;
         }
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Form yuklenemedi');
+                if (!response.ok) throw new Error(T('Evaluation.FormLoadError', 'Form yüklenemedi'));
                 return response.json();
             })
             .then(function(data) {
@@ -114,7 +114,7 @@ function EvaluationFormViewModel() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                self.errorMessage('Form yuklenirken bir hata olustu.');
+                self.errorMessage(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -230,15 +230,15 @@ function EvaluationFormViewModel() {
             body: JSON.stringify(data)
         })
         .then(function(response) {
-            if (!response.ok) throw new Error('Taslak kaydedilemedi');
+            if (!response.ok) throw new Error(T('Evaluation.DraftSaveError', 'Taslak kaydedilemedi'));
             return response.json();
         })
         .then(function(result) {
-            self.successMessage('Taslak basariyla kaydedildi.');
+            self.successMessage(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
         })
         .catch(function(error) {
             console.error('Draft save error:', error);
-            self.errorMessage('Taslak kaydedilirken bir hata olustu.');
+            self.errorMessage(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSaving(false);
@@ -268,7 +268,7 @@ function EvaluationFormViewModel() {
         });
 
         if (hasError) {
-            self.errorMessage('Lutfen tum zorunlu sorulari cevaplayin.');
+            self.errorMessage(T('Evaluation.AnswerAllRequired', 'Lütfen tüm zorunlu soruları cevaplayın.'));
             return;
         }
 
@@ -285,11 +285,11 @@ function EvaluationFormViewModel() {
             body: JSON.stringify(data)
         })
         .then(function(response) {
-            if (!response.ok) throw new Error('Degerlendirme gonderilemedi');
+            if (!response.ok) throw new Error(T('Evaluation.SubmitError', 'Değerlendirme gönderilemedi'));
             return response.json();
         })
         .then(function(result) {
-            self.successMessage('Degerlendirme basariyla tamamlandi.');
+            self.successMessage(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
             // Redirect after 2 seconds
             setTimeout(function() {
                 window.location.href = '/Evaluations';
@@ -297,7 +297,7 @@ function EvaluationFormViewModel() {
         })
         .catch(function(error) {
             console.error('Submit error:', error);
-            self.errorMessage('Degerlendirme gonderilirken bir hata olustu.');
+            self.errorMessage(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSaving(false);

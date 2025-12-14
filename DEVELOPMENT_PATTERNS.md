@@ -318,14 +318,14 @@ Rapor sayfaları Index.cshtml pattern'i izler ama modal yerine filtre ve tablo i
 
 ---
 
-## 8. Mevcut Yanlış Modüller (Düzeltilmesi Gereken)
+## 8. Düzeltilmiş Modüller
 
-Bu modüller yanlış pattern ile yapılmış, tek Index.cshtml + modal'a dönüştürülmeli:
+Bu modüller doğru SPA Modal Pattern'e dönüştürüldü:
 
-- [ ] Calls (4 cshtml, 4 js dosyası var)
-- [ ] Trainings (4 cshtml, 4 js dosyası var)
-- [ ] Meetings (4 cshtml, 4 js dosyası var)
-- [ ] Approvals (2 cshtml, 2 js dosyası var)
+- [x] Calls (tek Index.cshtml + Index.js)
+- [x] Trainings (tek Index.cshtml + Index.js)
+- [x] Meetings (tek Index.cshtml + Index.js)
+- [x] Approvals (tek Index.cshtml + Index.js)
 - [ ] Notifications (Settings ayrı kalabilir)
 
 ---
@@ -343,9 +343,88 @@ Bu modüller doğru pattern kullanıyor:
 
 ---
 
+---
+
+## 10. Kütüphane Kullanımı (Offline Uyumluluk)
+
+### KESİNLİKLE CDN KULLANILMAZ!
+
+Uygulama offline çalışmalıdır. Tüm kütüphaneler `wwwroot/lib/` altında yerel olarak bulunmalıdır.
+
+### YANLIŞ - CDN Link Kullanımı
+```html
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+```
+
+### DOĞRU - Yerel Dosya Kullanımı
+```html
+<link href="~/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+<script src="~/lib/toastr/toastr.min.js"></script>
+```
+
+### Mevcut Yerel Kütüphaneler
+```
+wwwroot/lib/
+  bootstrap/           # CSS ve JS
+  bootstrap-icons/     # CSS ve font dosyaları
+  chartjs/             # Chart.js
+  jquery/              # jQuery
+  knockout/            # KnockoutJS
+  toastr/              # Toastr notifications
+```
+
+### Yeni Kütüphane Ekleme
+1. Kütüphane dosyalarını `wwwroot/lib/{library-name}/` altına indir
+2. `_Layout.cshtml`'de yerel path kullan
+3. CDN referansı KULLANMA
+
+---
+
+## 11. Onay Modalları (Confirmation)
+
+### Native confirm() KULLANILMAZ!
+
+Browser'ın native `confirm()` popup'ı yerine Bootstrap modal kullanılmalıdır.
+
+### YANLIŞ
+```javascript
+if (confirm('Silmek istediğinize emin misiniz?')) {
+    // işlem
+}
+```
+
+### DOĞRU - Shared Modal Kullanımı
+```javascript
+// Silme onayı için
+showDeleteConfirm('Kayıt adı', function() {
+    // silme işlemi
+});
+
+// Genel onay için
+showConfirmModal({
+    title: 'Onay Başlığı',
+    message: 'Onay mesajı',
+    type: 'warning',  // warning, danger, info, success
+    confirmText: 'Onayla',
+    confirmIcon: 'bi-check',
+    onConfirm: function() {
+        // onaylanan işlem
+    }
+});
+```
+
+### Shared Modal Dosyaları
+- **Modal HTML:** `_Layout.cshtml` içinde `#sharedConfirmModal`
+- **JS Helper:** `wwwroot/js/shared/confirm-modal.js`
+
+---
+
 ## ÖZET
 
 1. **Her modül TEK Index.cshtml ile çalışır**
 2. **Create/Edit/Detail işlemleri MODAL ile yapılır**
 3. **ko.applyBindings MUTLAKA spesifik div'e bağlanır**
 4. **Ayrı sayfa (Create.cshtml, Edit.cshtml, Detail.cshtml) OLMAZ**
+5. **CDN KULLANILMAZ - Tüm kütüphaneler yerel olmalı**
+6. **Native confirm() KULLANILMAZ - showConfirmModal() kullan**

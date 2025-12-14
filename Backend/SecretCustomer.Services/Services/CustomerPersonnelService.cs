@@ -182,6 +182,22 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         await _personnelRepository.UpdateAsync(personnel);
     }
 
+    public async Task<CustomerPersonnel?> AuthenticateAsync(string username, string password)
+    {
+        var personnel = await _personnelRepository.GetByUsernameAsync(username);
+
+        if (personnel == null)
+            return null;
+
+        if (!personnel.IsActive)
+            return null;
+
+        if (!BCrypt.Net.BCrypt.Verify(password, personnel.PasswordHash))
+            return null;
+
+        return personnel;
+    }
+
     private static CustomerPersonnelDto MapToDto(CustomerPersonnel personnel)
     {
         return new CustomerPersonnelDto

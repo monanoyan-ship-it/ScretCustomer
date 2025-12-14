@@ -562,7 +562,7 @@ public class ProjectService : IProjectService
         };
     }
 
-    private async Task<ProjectDetailDto> MapToDetailDtoAsync(Project project)
+    private Task<ProjectDetailDto> MapToDetailDtoAsync(Project project)
     {
         var dto = MapToDto(project);
         var detailDto = new ProjectDetailDto
@@ -653,6 +653,6 @@ public class ProjectService : IProjectService
             })
             .ToList() ?? new List<ProjectTeamMemberDto>();
 
-        return detailDto;
+        return Task.FromResult(detailDto);
     }
 }

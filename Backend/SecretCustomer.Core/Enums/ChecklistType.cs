@@ -28,5 +28,10 @@ public enum ChecklistType
     /// <summary>
     /// Genel anket
     /// </summary>
-    Survey = 5
+    Survey = 5,
+
+    /// <summary>
+    /// Banka Gizli Müşteri (GBF - Gizli Banka Formu)
+    /// </summary>
+    BankMysteryShopping = 6
 }

@@ -52,7 +52,7 @@ function ProfileViewModel() {
 
         fetch('/api/profile', { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Profil yüklenemedi');
+                if (!response.ok) throw new Error(T('Profile.LoadError', 'Profil yüklenemedi'));
                 return response.json();
             })
             .then(function(data) {
@@ -66,7 +66,7 @@ function ProfileViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Profil yüklenirken bir hata oluştu.');
+                self.errorMessage(error.message || T('Profile.LoadErrorMessage', 'Profil yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -95,18 +95,18 @@ function ProfileViewModel() {
             .then(function(response) {
                 if (!response.ok) {
                     return response.json().then(function(err) {
-                        throw new Error(err.message || 'Güncelleme başarısız');
+                        throw new Error(err.message || T('Profile.UpdateError', 'Güncelleme başarısız'));
                     });
                 }
                 return response.json();
             })
             .then(function(data) {
                 self.profile(data);
-                self.successMessage('Profil bilgileriniz başarıyla güncellendi.');
+                self.successMessage(T('Profile.UpdateSuccess', 'Profil bilgileriniz başarıyla güncellendi.'));
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Profil güncellenirken bir hata oluştu.');
+                self.errorMessage(error.message || T('Profile.UpdateErrorMessage', 'Profil güncellenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -117,12 +117,12 @@ function ProfileViewModel() {
     self.changePassword = function() {
         // Validate
         if (self.passwordForm.newPassword() !== self.passwordForm.confirmPassword()) {
-            self.errorMessage('Yeni şifreler eşleşmiyor.');
+            self.errorMessage(T('Validation.PasswordMismatch', 'Yeni şifreler eşleşmiyor.'));
             return;
         }
 
         if (self.passwordForm.newPassword().length < 6) {
-            self.errorMessage('Yeni şifre en az 6 karakter olmalıdır.');
+            self.errorMessage(T('Validation.PasswordMinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
@@ -145,13 +145,13 @@ function ProfileViewModel() {
             .then(function(response) {
                 if (!response.ok) {
                     return response.json().then(function(err) {
-                        throw new Error(err.message || 'Şifre değiştirme başarısız');
+                        throw new Error(err.message || T('Account.PasswordChangeError', 'Şifre değiştirme başarısız'));
                     });
                 }
                 return response.json();
             })
             .then(function(data) {
-                self.successMessage(data.message || 'Şifreniz başarıyla değiştirildi.');
+                self.successMessage(data.message || T('Account.PasswordChanged', 'Şifreniz başarıyla değiştirildi.'));
                 // Clear password form
                 self.passwordForm.currentPassword('');
                 self.passwordForm.newPassword('');
@@ -159,7 +159,7 @@ function ProfileViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Şifre değiştirilirken bir hata oluştu.');
+                self.errorMessage(error.message || T('Account.PasswordChangeErrorMessage', 'Şifre değiştirilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isChangingPassword(false);
@@ -169,11 +169,11 @@ function ProfileViewModel() {
     // Helper: Get role text
     self.getRoleText = function(role) {
         var roles = {
-            'Admin': 'Yönetici',
-            'TeamLeader': 'Takım Lideri',
-            'Evaluator': 'Değerlendirici',
-            'FieldWorker': 'Saha Çalışanı',
-            'CustomerRepresentative': 'Müşteri Temsilcisi'
+            'Admin': T('Role.Admin', 'Yönetici'),
+            'TeamLeader': T('Role.TeamLeader', 'Takım Lideri'),
+            'Evaluator': T('Role.Evaluator', 'Değerlendirici'),
+            'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı'),
+            'CustomerRepresentative': T('Role.CustomerRepresentative', 'Müşteri Temsilcisi')
         };
         return roles[role] || role;
     };

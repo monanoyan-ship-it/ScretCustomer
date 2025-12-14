@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecretCustomer.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin,TeamLeader")]
 public class AssignmentsController : Controller
 {
     public IActionResult Index()

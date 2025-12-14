@@ -12,6 +12,26 @@
 
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
+                <!-- Language Selector -->
+                <li class="nav-item dropdown me-2">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-globe me-1"></i>
+                        <span data-bind="text: currentLanguageName">TR</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" data-bind="foreach: languages">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="#" data-bind="click: $parent.changeLanguage, css: { 'active': isDefault }">
+                                <span class="me-2" data-bind="text: uniqueSeoCode.toUpperCase()"></span>
+                                <span data-bind="text: name"></span>
+                                <!-- ko if: isDefault -->
+                                <i class="bi bi-check-circle-fill text-success ms-auto"></i>
+                                <!-- /ko -->
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- User Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle me-2 fs-5"></i>
@@ -30,7 +50,7 @@
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; cursor: pointer; width: 100%; text-align: left;">
                                     <i class="bi bi-box-arrow-right me-2"></i>
-                                    Çıkış Yap
+                                    @Html.T("Common.Logout", "Çıkış Yap")
                                 </button>
                             </form>
                         </li>
@@ -48,6 +68,9 @@
 
         self.userName = ko.observable('...');
         self.userRole = ko.observable('...');
+        self.languages = ko.observableArray([]);
+        self.currentLanguageId = ko.observable(null);
+        self.currentLanguageName = ko.observable('TR');
 
         // Load current user info
         fetch('/api/auth/me', {
@@ -61,6 +84,47 @@
         .catch(error => {
             console.error('Error loading user info:', error);
         });
+
+        // Load languages
+        fetch('/api/localization/languages?onlyActive=true')
+        .then(res => res.json())
+        .then(data => {
+            self.languages(data);
+            // Get current language
+            fetch('/api/localization/current')
+            .then(res => res.json())
+            .then(current => {
+                if (current && current.id) {
+                    self.currentLanguageId(current.id);
+                    self.currentLanguageName(current.uniqueSeoCode ? current.uniqueSeoCode.toUpperCase() : 'TR');
+                    // Mark current as default in list
+                    var langs = self.languages();
+                    langs.forEach(function(l) {
+                        l.isDefault = l.id === current.id;
+                    });
+                    self.languages(langs);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading languages:', error);
+        });
+
+        // Change language
+        self.changeLanguage = function(language) {
+            fetch('/api/localization/current/' + language.id, {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Reload page to apply new language
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error changing language:', error);
+            });
+        };
     }
 
     // Apply binding to topnav component

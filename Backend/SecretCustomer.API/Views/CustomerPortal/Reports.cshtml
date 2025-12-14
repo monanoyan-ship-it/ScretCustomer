@@ -1,0 +1,171 @@
+@{
+    ViewData["Title"] = "Raporlar";
+    Layout = "_CustomerLayout";
+}
+
+<div id="customer-reports-app">
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Filters -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-end g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Başlangıç Tarihi</label>
+                        <input type="date" class="form-control" data-bind="value: startDate" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Bitiş Tarihi</label>
+                        <input type="date" class="form-control" data-bind="value: endDate" />
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success" data-bind="click: loadReports">
+                            <i class="bi bi-search me-1"></i> Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0" data-bind="text: summary().totalEvaluations || 0"></h3>
+                        <small>Toplam Değerlendirme</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0 text-primary" data-bind="text: (summary().averageScore || 0).toFixed(1)"></h3>
+                        <small class="text-muted">Ortalama Puan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0 text-info" data-bind="text: summary().branchCount || 0"></h3>
+                        <small class="text-muted">Şube Sayısı</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="d-flex justify-content-around">
+                            <div>
+                                <span class="badge bg-danger" data-bind="text: (summary().minScore || 0).toFixed(1)"></span>
+                                <div class="small text-muted">Min</div>
+                            </div>
+                            <div>
+                                <span class="badge bg-success" data-bind="text: (summary().maxScore || 0).toFixed(1)"></span>
+                                <div class="small text-muted">Max</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Distribution -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Puan Dağılımı</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="display-6 text-success" data-bind="text: summary().excellentCount || 0"></div>
+                                <small class="text-muted">90+</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="display-6 text-primary" data-bind="text: summary().goodCount || 0"></div>
+                                <small class="text-muted">80-89</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="display-6 text-warning" data-bind="text: summary().averageCount || 0"></div>
+                                <small class="text-muted">60-79</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="display-6 text-danger" data-bind="text: summary().poorCount || 0"></div>
+                                <small class="text-muted">&lt;60</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Aylık Trend</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branch Performance Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h6 class="mb-0"><i class="bi bi-building me-2"></i>Şube Performansı</h6>
+            </div>
+            <div class="card-body p-0">
+                <div data-bind="visible: branchPerformance().length === 0" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">Seçilen dönemde değerlendirme bulunmuyor.</p>
+                </div>
+                <div data-bind="visible: branchPerformance().length > 0" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Şube</th>
+                                <th>Şehir</th>
+                                <th class="text-center">Değerlendirme</th>
+                                <th class="text-center">Ortalama</th>
+                                <th class="text-center">Min</th>
+                                <th class="text-center">Max</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: branchPerformance">
+                            <tr>
+                                <td data-bind="text: $index() + 1"></td>
+                                <td><strong data-bind="text: branchName"></strong></td>
+                                <td data-bind="text: city || '-'"></td>
+                                <td class="text-center" data-bind="text: evaluationCount"></td>
+                                <td class="text-center">
+                                    <span class="badge fs-6" data-bind="text: averageScore.toFixed(1), css: $parent.getScoreBadgeClass(averageScore)"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-danger" data-bind="text: minScore.toFixed(1)"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-success" data-bind="text: maxScore.toFixed(1)"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CustomerPortal/reports.js"></script>
+}

@@ -446,110 +446,137 @@ function ProjectsViewModel() {
 
     // Start project
     self.startProject = function(project) {
-        if (!confirm('Projeyi başlatmak istediğinizden emin misiniz?')) return;
-
-        fetch('/api/projects/' + project.id + '/start', {
-            method: 'POST',
-            credentials: 'include'
-        })
-        .then(function(res) {
-            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
-            return res.json();
-        })
-        .then(function(data) {
-            toastr.success('Proje başlatıldı.');
-            self.loadProjects();
-            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                self.openDetailModal(project);
+        showConfirmModal({
+            title: 'Proje Başlat',
+            message: 'Projeyi başlatmak istediğinizden emin misiniz?',
+            type: 'success',
+            confirmText: 'Başlat',
+            confirmIcon: 'bi-play-fill',
+            onConfirm: function() {
+                fetch('/api/projects/' + project.id + '/start', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    toastr.success('Proje başlatıldı.');
+                    self.loadProjects();
+                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                        self.openDetailModal(project);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Proje başlatılırken bir hata oluştu.');
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-            toastr.error(error.message || 'Proje başlatılırken bir hata oluştu.');
         });
     };
 
     // Pause project
     self.pauseProject = function(project) {
-        if (!confirm('Projeyi duraklatmak istediğinizden emin misiniz?')) return;
-
-        fetch('/api/projects/' + project.id + '/pause', {
-            method: 'POST',
-            credentials: 'include'
-        })
-        .then(function(res) {
-            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
-            return res.json();
-        })
-        .then(function(data) {
-            toastr.success('Proje duraklatıldı.');
-            self.loadProjects();
-            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                self.openDetailModal(project);
+        showConfirmModal({
+            title: 'Proje Duraklat',
+            message: 'Projeyi duraklatmak istediğinizden emin misiniz?',
+            type: 'warning',
+            confirmText: 'Duraklat',
+            confirmIcon: 'bi-pause-fill',
+            onConfirm: function() {
+                fetch('/api/projects/' + project.id + '/pause', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    toastr.success('Proje duraklatıldı.');
+                    self.loadProjects();
+                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                        self.openDetailModal(project);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Proje duraklatılırken bir hata oluştu.');
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-            toastr.error(error.message || 'Proje duraklatılırken bir hata oluştu.');
         });
     };
 
     // Complete project
     self.completeProject = function(project) {
-        if (!confirm('Projeyi tamamlamak istediğinizden emin misiniz?')) return;
-
-        fetch('/api/projects/' + project.id + '/complete', {
-            method: 'POST',
-            credentials: 'include'
-        })
-        .then(function(res) {
-            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
-            return res.json();
-        })
-        .then(function(data) {
-            toastr.success('Proje tamamlandı.');
-            self.loadProjects();
-            if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                self.openDetailModal(project);
+        showConfirmModal({
+            title: 'Proje Tamamla',
+            message: 'Projeyi tamamlamak istediğinizden emin misiniz?',
+            type: 'success',
+            confirmText: 'Tamamla',
+            confirmIcon: 'bi-check-circle',
+            onConfirm: function() {
+                fetch('/api/projects/' + project.id + '/complete', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    toastr.success('Proje tamamlandı.');
+                    self.loadProjects();
+                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
+                        self.openDetailModal(project);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Proje tamamlanırken bir hata oluştu.');
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-            toastr.error(error.message || 'Proje tamamlanırken bir hata oluştu.');
         });
     };
 
     // Cancel project
     self.cancelProject = function(project) {
-        var reason = prompt('İptal nedeni (opsiyonel):');
-        if (reason === null) return;
-
-        fetch('/api/projects/' + project.id + '/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ reason: reason || null })
-        })
-        .then(function(res) {
-            if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
-            return res.json();
-        })
-        .then(function(data) {
-            toastr.success('Proje iptal edildi.');
-            self.loadProjects();
-            if (self.isDetailModalOpen()) {
-                self.closeDetailModal();
+        showConfirmModal({
+            title: 'Proje İptal',
+            message: 'Projeyi iptal etmek istediğinizden emin misiniz?',
+            type: 'danger',
+            confirmText: 'İptal Et',
+            confirmIcon: 'bi-x-circle',
+            onConfirm: function() {
+                fetch('/api/projects/' + project.id + '/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ reason: null })
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    toastr.success('Proje iptal edildi.');
+                    self.loadProjects();
+                    if (self.isDetailModalOpen()) {
+                        self.closeDetailModal();
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Proje iptal edilirken bir hata oluştu.');
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-            toastr.error(error.message || 'Proje iptal edilirken bir hata oluştu.');
         });
     };
 
     // Delete project
     self.deleteProject = function(project) {
-        deleteConfirmation.show('Bu projeyi silmek istediğinizden emin misiniz?', function() {
+        showDeleteConfirm(project.name + ' projesi', function() {
             fetch('/api/projects/' + project.id, {
                 method: 'DELETE',
                 credentials: 'include'

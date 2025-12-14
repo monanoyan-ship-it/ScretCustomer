@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Customer;
+using SecretCustomer.Core.Entities;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -13,4 +14,7 @@ public interface ICustomerPersonnelService
     Task DeleteAsync(Guid id);
     Task ChangePasswordAsync(Guid personnelId, CustomerPersonnelChangePasswordDto changePasswordDto);
     Task ResetPasswordAsync(Guid personnelId, AdminResetPasswordDto resetPasswordDto);
+
+    // Customer Portal Login
+    Task<CustomerPersonnel?> AuthenticateAsync(string username, string password);
 }

@@ -1,0 +1,853 @@
+@{
+    ViewData["Title"] = "Banka Gizli Müşteri Ziyaretleri (GBF)";
+}
+
+<div id="bank-visits-app" class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Banka Gizli Müşteri Ziyaretleri</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item active">GBF - Gizli Banka Formu</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-success" data-bind="click: exportExcel">
+                <i class="bi bi-file-excel me-2"></i>Excel
+            </button>
+            <button class="btn btn-outline-primary" data-bind="click: showStatistics">
+                <i class="bi bi-bar-chart me-2"></i>İstatistikler
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4" data-bind="with: summary">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: totalVisits">0</h4>
+                    <small>Toplam Ziyaret</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: completedScenarios">0</h4>
+                    <small>Tamamlanan Senaryo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: avgSatisfaction">0</h4>
+                    <small>Ort. Memnuniyet</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: avgWaitTime">0</h4>
+                    <small>Ort. Bekleme (dk)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: greetingRate">%0</h4>
+                    <small>Karşılama Oranı</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0" data-bind="text: farewellRate">%0</h4>
+                    <small>Vedalaşma Oranı</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Müşteri</label>
+                    <select class="form-select" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: filter.customerId, optionsCaption: 'Tümü'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Şube</label>
+                    <select class="form-select" data-bind="options: branches, optionsText: 'name', optionsValue: 'id', value: filter.branchId, optionsCaption: 'Tümü'"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Senaryo</label>
+                    <select class="form-select" data-bind="value: filter.scenario">
+                        <option value="">Tümü</option>
+                        <option value="0">Genel Bilgi Alma</option>
+                        <option value="1">Hesap Açma</option>
+                        <option value="2">Kredi Başvurusu</option>
+                        <option value="3">Kredi Kartı Başvurusu</option>
+                        <option value="4">Mevduat İşlemi</option>
+                        <option value="5">Para Çekme</option>
+                        <option value="6">Havale/EFT</option>
+                        <option value="7">Fatura Ödeme</option>
+                        <option value="8">Döviz İşlemi</option>
+                        <option value="9">Sigorta Danışmanlığı</option>
+                        <option value="10">Yatırım Danışmanlığı</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" data-bind="value: filter.status">
+                        <option value="">Tümü</option>
+                        <option value="0">Planlandı</option>
+                        <option value="1">Devam Ediyor</option>
+                        <option value="2">Tamamlandı</option>
+                        <option value="3">İptal</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Başlangıç</label>
+                    <input type="date" class="form-control" data-bind="value: filter.fromDate" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitiş</label>
+                    <input type="date" class="form-control" data-bind="value: filter.toDate" />
+                </div>
+                <div class="col-md-11">
+                    <label class="form-label">Memnuniyet Puanı</label>
+                    <div class="d-flex gap-2">
+                        <input type="number" class="form-control" placeholder="Min" min="1" max="10" data-bind="value: filter.minSatisfaction" />
+                        <span class="align-self-center">-</span>
+                        <input type="number" class="form-control" placeholder="Max" min="1" max="10" data-bind="value: filter.maxSatisfaction" />
+                    </div>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
+        <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+
+    <!-- Bank Visits Table -->
+    <div data-bind="visible: !isLoading()" class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-bank me-2"></i>Banka Ziyaretleri</h5>
+            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+        </div>
+        <div class="card-body p-0">
+            <!-- Empty State -->
+            <div data-bind="visible: visits().length === 0" class="text-center py-5">
+                <i class="bi bi-bank-slash fs-1 text-muted"></i>
+                <p class="text-muted mt-2">Henüz banka ziyareti kaydı bulunmamaktadır.</p>
+            </div>
+
+            <!-- Table -->
+            <div data-bind="visible: visits().length > 0" class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Müşteri / Şube</th>
+                            <th>Senaryo</th>
+                            <th>Ziyaretçi</th>
+                            <th>Tarih</th>
+                            <th>Süre</th>
+                            <th>Bekleme</th>
+                            <th>Personel</th>
+                            <th>Memnuniyet</th>
+                            <th class="text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: visits">
+                        <tr>
+                            <td>
+                                <div data-bind="text: customerName || '-'"></div>
+                                <small class="text-muted" data-bind="text: branchName"></small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info" data-bind="text: scenarioName"></span>
+                                <!-- ko if: scenarioCompleted -->
+                                <i class="bi bi-check-circle text-success ms-1" title="Tamamlandı"></i>
+                                <!-- /ko -->
+                            </td>
+                            <td data-bind="text: visitorName || '-'"></td>
+                            <td data-bind="text: entryTime ? new Date(entryTime).toLocaleString('tr-TR') : new Date(plannedDate).toLocaleDateString('tr-TR')"></td>
+                            <td>
+                                <!-- ko if: totalTimeMinutes -->
+                                <span data-bind="text: totalTimeMinutes + ' dk'"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: totalTimeMinutes -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: queueWaitMinutes -->
+                                <span data-bind="text: queueWaitMinutes + ' dk'"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: queueWaitMinutes -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: averageStaffRating -->
+                                <span class="badge bg-secondary" data-bind="text: averageStaffRating.toFixed(1) + '/5'"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: averageStaffRating -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: overallSatisfactionRating -->
+                                <span class="badge" data-bind="text: overallSatisfactionRating + '/10', css: $parent.getSatisfactionBadgeClass(overallSatisfactionRating)"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: overallSatisfactionRating -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }" title="Detay">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editVisit($data); }" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteVisit($data); }" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" data-bind="with: viewingVisit">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bank me-2"></i>Banka Ziyareti Detayı
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-8">
+                            <!-- Senaryo Bilgileri -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-info text-white">
+                                    <strong><i class="bi bi-clipboard-check me-2"></i>Senaryo Bilgileri</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Senaryo:</th><td><span class="badge bg-info" data-bind="text: scenarioName"></span></td></tr>
+                                                <tr><th>Tamamlandı:</th><td><span class="badge" data-bind="text: scenarioCompleted ? 'Evet' : 'Hayır', css: scenarioCompleted ? 'bg-success' : 'bg-warning'"></span></td></tr>
+                                                <tr><th>Ürün Teklifi:</th><td data-bind="text: productOffered || '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Çapraz Satış:</th><td><span class="badge" data-bind="text: crossSellOffered ? 'Evet' : 'Hayır', css: crossSellOffered ? 'bg-success' : 'bg-secondary'"></span></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <!-- ko if: scenarioDescription -->
+                                    <div class="mt-2 pt-2 border-top">
+                                        <strong>Açıklama:</strong>
+                                        <p class="mb-0" data-bind="text: scenarioDescription"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Zaman Bilgileri -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-warning text-dark">
+                                    <strong><i class="bi bi-clock me-2"></i>Zaman Bilgileri</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Giriş:</th><td data-bind="text: entryTime ? new Date(entryTime).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>Çıkış:</th><td data-bind="text: exitTime ? new Date(exitTime).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>Toplam Süre:</th><td data-bind="text: totalTimeInBranch ? totalTimeInBranch + ' dakika' : '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="40%">Sıra Bekleme:</th><td data-bind="text: queueWaitMinutes ? queueWaitMinutes + ' dakika' : '-'"></td></tr>
+                                                <tr><th>Hizmet Süresi:</th><td data-bind="text: serviceDurationMinutes ? serviceDurationMinutes + ' dakika' : '-'"></td></tr>
+                                                <tr><th>Sıra No:</th><td data-bind="text: queueNumber || '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Personel Değerlendirmesi -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-success text-white">
+                                    <strong><i class="bi bi-person-badge me-2"></i>Personel Değerlendirmesi</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Personel Adı:</th><td data-bind="text: staffName || '-'"></td></tr>
+                                                <tr><th>Yaka Kartı:</th><td><span class="badge" data-bind="text: staffHasNameTag ? 'Var' : 'Yok', css: staffHasNameTag ? 'bg-success' : 'bg-danger'"></span></td></tr>
+                                                <tr><th>Karşılama:</th><td><span class="badge" data-bind="text: greetingReceived ? 'Evet' : 'Hayır', css: greetingReceived ? 'bg-success' : 'bg-danger'"></span></td></tr>
+                                                <tr><th>Vedalaşma:</th><td><span class="badge" data-bind="text: farewellReceived ? 'Evet' : 'Hayır', css: farewellReceived ? 'bg-success' : 'bg-danger'"></span></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Dış Görünüm:</th><td data-bind="text: staffAppearanceRating ? staffAppearanceRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Bilgi Düzeyi:</th><td data-bind="text: staffKnowledgeRating ? staffKnowledgeRating + '/5' : '-'"></td></tr>
+                                                <tr><th>İlgilenme:</th><td data-bind="text: staffAttentivenessRating ? staffAttentivenessRating + '/5' : '-'"></td></tr>
+                                                <tr><th>İletişim:</th><td data-bind="text: staffCommunicationRating ? staffCommunicationRating + '/5' : '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <!-- ko if: averageStaffRating -->
+                                    <div class="mt-2 pt-2 border-top text-center">
+                                        <strong>Ortalama Personel Puanı:</strong>
+                                        <span class="badge bg-primary ms-2" data-bind="text: averageStaffRating.toFixed(1) + '/5'"></span>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Şube Alanları -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-secondary text-white">
+                                    <strong><i class="bi bi-building me-2"></i>Şube Alanları Değerlendirmesi</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Giriş Alanı:</th><td data-bind="text: entranceAreaRating ? entranceAreaRating + '/5' : '-'"></td></tr>
+                                                <tr><th>ATM Alanı:</th><td data-bind="text: atmAreaRating ? atmAreaRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Bekleme Alanı:</th><td data-bind="text: waitingAreaRating ? waitingAreaRating + '/5' : '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Gişe Alanı:</th><td data-bind="text: counterAreaRating ? counterAreaRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Müdür Odası:</th><td data-bind="text: managerAreaRating ? managerAreaRating + '/5' : '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tesis Değerlendirmesi -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-dark text-white">
+                                    <strong><i class="bi bi-tools me-2"></i>Tesis Değerlendirmesi</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Temizlik:</th><td data-bind="text: cleanlinessRating ? cleanlinessRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Aydınlatma:</th><td data-bind="text: lightingRating ? lightingRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Klima/Hava:</th><td data-bind="text: airConditioningRating ? airConditioningRating + '/5' : '-'"></td></tr>
+                                                <tr><th>Tabela/Yönl.:</th><td data-bind="text: signageRating ? signageRating + '/5' : '-'"></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><th width="50%">Broşürler:</th><td><span class="badge" data-bind="text: brochuresAvailable ? 'Var' : 'Yok', css: brochuresAvailable ? 'bg-success' : 'bg-secondary'"></span></td></tr>
+                                                <tr><th>Sıra Sistemi:</th><td><span class="badge" data-bind="text: queueSystemAvailable ? 'Var' : 'Yok', css: queueSystemAvailable ? 'bg-success' : 'bg-secondary'"></span></td></tr>
+                                                <tr><th>Engelli Erişimi:</th><td><span class="badge" data-bind="text: disabledAccessAvailable ? 'Uygun' : 'Yok', css: disabledAccessAvailable ? 'bg-success' : 'bg-warning'"></span></td></tr>
+                                                <tr><th>Güvenlik:</th><td><span class="badge" data-bind="text: securityPersonnelPresent ? 'Var' : 'Yok', css: securityPersonnelPresent ? 'bg-success' : 'bg-secondary'"></span></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="col-md-4">
+                            <!-- Genel Değerlendirme -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 bg-primary text-white">
+                                    <strong><i class="bi bi-star me-2"></i>Genel Değerlendirme</strong>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <h6>Genel Memnuniyet</h6>
+                                        <h2 class="mb-0">
+                                            <span class="badge" data-bind="text: overallSatisfactionRating ? overallSatisfactionRating + '/10' : '-', css: $parent.getSatisfactionBadgeClass(overallSatisfactionRating), style: { fontSize: '1.5rem' }"></span>
+                                        </h2>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Tavsiye Skoru</h6>
+                                        <h2 class="mb-0">
+                                            <span class="badge bg-info" data-bind="text: recommendationScore ? recommendationScore + '/10' : '-', style: { fontSize: '1.5rem' }"></span>
+                                        </h2>
+                                    </div>
+                                    <div>
+                                        <h6>Tekrar Ziyaret</h6>
+                                        <span class="badge" data-bind="text: wouldVisitAgain ? 'Evet' : 'Hayır', css: wouldVisitAgain ? 'bg-success' : 'bg-danger', style: { fontSize: '1rem' }"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ATM Değerlendirmesi -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2"><strong><i class="bi bi-cash-stack me-2"></i>ATM Değerlendirmesi</strong></div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr><th>ATM Sayısı:</th><td data-bind="text: atmCount || '-'"></td></tr>
+                                        <tr><th>Çalışan ATM:</th><td data-bind="text: workingAtmCount || '-'"></td></tr>
+                                        <tr><th>Temizlik:</th><td data-bind="text: atmCleanlinessRating ? atmCleanlinessRating + '/5' : '-'"></td></tr>
+                                        <tr><th>Kullanılabilirlik:</th><td data-bind="text: atmUsabilityRating ? atmUsabilityRating + '/5' : '-'"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Notlar -->
+                            <div class="card">
+                                <div class="card-header py-2"><strong><i class="bi bi-journal-text me-2"></i>Notlar</strong></div>
+                                <div class="card-body">
+                                    <!-- ko if: strengths -->
+                                    <div class="mb-2">
+                                        <strong class="text-success">Güçlü Yönler:</strong>
+                                        <p class="mb-0" data-bind="text: strengths"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: improvementAreas -->
+                                    <div class="mb-2">
+                                        <strong class="text-warning">Gelişim Alanları:</strong>
+                                        <p class="mb-0" data-bind="text: improvementAreas"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: additionalNotes -->
+                                    <div>
+                                        <strong>Ek Notlar:</strong>
+                                        <p class="mb-0" data-bind="text: additionalNotes"></p>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: !strengths && !improvementAreas && !additionalNotes -->
+                                    <p class="text-muted mb-0">Not bulunmamaktadır.</p>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editVisit($data); $parent.closeDetailModal(); }">
+                        <i class="bi bi-pencil me-1"></i>Düzenle
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== EDIT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isEditModalOpen }, style: { display: isEditModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" data-bind="with: editingVisit">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Banka Ziyareti Düzenle
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeEditModal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="editTabs" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabScenario">Senaryo</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabTime">Zaman</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabStaff">Personel</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabAreas">Şube Alanları</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabFacilities">Tesisler</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabAtm">ATM</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabGeneral">Genel</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- Senaryo Tab -->
+                        <div class="tab-pane fade show active" id="tabScenario">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Senaryo</label>
+                                    <select class="form-select" data-bind="value: scenario">
+                                        <option value="0">Genel Bilgi Alma</option>
+                                        <option value="1">Hesap Açma</option>
+                                        <option value="2">Kredi Başvurusu</option>
+                                        <option value="3">Kredi Kartı Başvurusu</option>
+                                        <option value="4">Mevduat İşlemi</option>
+                                        <option value="5">Para Çekme</option>
+                                        <option value="6">Havale/EFT</option>
+                                        <option value="7">Fatura Ödeme</option>
+                                        <option value="8">Döviz İşlemi</option>
+                                        <option value="9">Sigorta Danışmanlığı</option>
+                                        <option value="10">Yatırım Danışmanlığı</option>
+                                        <option value="11">Şikayet</option>
+                                        <option value="12">Bloke Açma</option>
+                                        <option value="99">Diğer</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tamamlandı mı?</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: scenarioCompleted">
+                                        <label class="form-check-label">Evet</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teklif Edilen Ürün</label>
+                                    <input type="text" class="form-control" data-bind="value: productOffered" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Çapraz Satış</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: crossSellOffered">
+                                        <label class="form-check-label">Yapıldı</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Senaryo Açıklaması</label>
+                                    <textarea class="form-control" rows="3" data-bind="value: scenarioDescription"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Zaman Tab -->
+                        <div class="tab-pane fade" id="tabTime">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Giriş Zamanı</label>
+                                    <input type="datetime-local" class="form-control" data-bind="value: entryTime" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Çıkış Zamanı</label>
+                                    <input type="datetime-local" class="form-control" data-bind="value: exitTime" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Sıra Bekleme (dk)</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: queueWaitMinutes" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Hizmet Süresi (dk)</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: serviceDurationMinutes" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Sıra Numarası</label>
+                                    <input type="text" class="form-control" data-bind="value: queueNumber" />
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: queueTicketTaken">
+                                        <label class="form-check-label">Sıra Numarası Alındı</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Personel Tab -->
+                        <div class="tab-pane fade" id="tabStaff">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Personel Adı</label>
+                                    <input type="text" class="form-control" data-bind="value: staffName" />
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: staffHasNameTag">
+                                        <label class="form-check-label">Yaka Kartı Var</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: greetingReceived">
+                                        <label class="form-check-label">Karşılama Yapıldı</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: farewellReceived">
+                                        <label class="form-check-label">Vedalaşma Yapıldı</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6"></div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Dış Görünüm (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: staffAppearanceRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Bilgi Düzeyi (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: staffKnowledgeRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">İlgilenme (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: staffAttentivenessRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">İletişim (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: staffCommunicationRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Gözlemlenen Personel Sayısı</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: staffCountObserved" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Meşgul Gişe Sayısı</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: busyCountersCount" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Toplam Gişe Sayısı</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: totalCountersCount" />
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Şube Alanları Tab -->
+                        <div class="tab-pane fade" id="tabAreas">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Giriş Alanı (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: entranceAreaRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">ATM Alanı (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: atmAreaRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bekleme Alanı (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: waitingAreaRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Gişe Alanı (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: counterAreaRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Müdür Odası (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: managerAreaRating" />
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tesisler Tab -->
+                        <div class="tab-pane fade" id="tabFacilities">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Temizlik (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: cleanlinessRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Aydınlatma (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: lightingRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Klima/Hava (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: airConditioningRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Tabela (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: signageRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: brochuresAvailable">
+                                        <label class="form-check-label">Broşürler Mevcut</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: queueSystemAvailable">
+                                        <label class="form-check-label">Sıra Sistemi Var</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: disabledAccessAvailable">
+                                        <label class="form-check-label">Engelli Erişimi</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: securityPersonnelPresent">
+                                        <label class="form-check-label">Güvenlik Var</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ATM Tab -->
+                        <div class="tab-pane fade" id="tabAtm">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">ATM Sayısı</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: atmCount" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Çalışan ATM</label>
+                                    <input type="number" class="form-control" min="0" data-bind="value: workingAtmCount" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Temizlik (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: atmCleanlinessRating" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Kullanılabilirlik (1-5)</label>
+                                    <input type="number" class="form-control" min="1" max="5" data-bind="value: atmUsabilityRating" />
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Genel Tab -->
+                        <div class="tab-pane fade" id="tabGeneral">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Genel Memnuniyet (1-10)</label>
+                                    <input type="number" class="form-control" min="1" max="10" data-bind="value: overallSatisfactionRating" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tavsiye Skoru (1-10)</label>
+                                    <input type="number" class="form-control" min="1" max="10" data-bind="value: recommendationScore" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tekrar Ziyaret</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: wouldVisitAgain">
+                                        <label class="form-check-label">Evet</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Güçlü Yönler</label>
+                                    <textarea class="form-control" rows="2" data-bind="value: strengths"></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Gelişim Alanları</label>
+                                    <textarea class="form-control" rows="2" data-bind="value: improvementAreas"></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Ek Notlar</label>
+                                    <textarea class="form-control" rows="2" data-bind="value: additionalNotes"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeEditModal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveVisit, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()"><i class="bi bi-save me-1"></i>Kaydet</span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isEditModalOpen }, style: { display: isEditModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== STATISTICS MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isStatsModalOpen }, style: { display: isStatsModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="bi bi-bar-chart me-2"></i>İstatistikler</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeStatsModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: statistics">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Genel</h6>
+                                    <table class="table table-sm">
+                                        <tr><th>Toplam Ziyaret:</th><td data-bind="text: totalVisits"></td></tr>
+                                        <tr><th>Tamamlanan Senaryo:</th><td data-bind="text: completedScenarios"></td></tr>
+                                        <tr><th>Tamamlanma Oranı:</th><td data-bind="text: '%' + scenarioCompletionRate.toFixed(1)"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Zaman</h6>
+                                    <table class="table table-sm">
+                                        <tr><th>Ort. Bekleme:</th><td data-bind="text: averageWaitTime.toFixed(1) + ' dk'"></td></tr>
+                                        <tr><th>Ort. Hizmet:</th><td data-bind="text: averageServiceTime.toFixed(1) + ' dk'"></td></tr>
+                                        <tr><th>Ort. Toplam:</th><td data-bind="text: averageTotalTime.toFixed(1) + ' dk'"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Puanlar</h6>
+                                    <table class="table table-sm">
+                                        <tr><th>Ort. Personel:</th><td data-bind="text: averageStaffRating.toFixed(1) + '/5'"></td></tr>
+                                        <tr><th>Ort. Memnuniyet:</th><td data-bind="text: averageOverallSatisfaction.toFixed(1) + '/10'"></td></tr>
+                                        <tr><th>Ort. Tavsiye:</th><td data-bind="text: averageRecommendationScore.toFixed(1) + '/10'"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>İletişim</h6>
+                                    <table class="table table-sm">
+                                        <tr><th>Karşılama Oranı:</th><td data-bind="text: '%' + greetingRate.toFixed(1)"></td></tr>
+                                        <tr><th>Vedalaşma Oranı:</th><td data-bind="text: '%' + farewellRate.toFixed(1)"></td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeStatsModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isStatsModalOpen }, style: { display: isStatsModalOpen() ? 'block' : 'none' }"></div>
+</div>
+
+@section Scripts {
+    <script src="~/js/BankVisits/Index.js"></script>
+}

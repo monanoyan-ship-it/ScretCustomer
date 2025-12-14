@@ -284,29 +284,27 @@ function PermissionsViewModel() {
 
     // Remove user permission
     self.removeUserPermission = function(permission) {
-        if (!confirm('Bu özel yetkiyi kaldırmak istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        fetch('/api/permissions/users/' + permission.userId + '/' + permission.permissionId, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                return response.json().then(function(err) {
-                    throw new Error(err.message || 'İşlem başarısız');
-                });
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            self.successMessage('Kullanıcı yetkisi başarıyla kaldırıldı.');
-            self.loadUserPermissions(self.selectedUser().id);
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-            self.errorMessage(error.message || 'Yetki kaldırılırken bir hata oluştu.');
+        showDeleteConfirm('Bu özel yetki', function() {
+            fetch('/api/permissions/users/' + permission.userId + '/' + permission.permissionId, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.message || 'İşlem başarısız');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                self.successMessage('Kullanıcı yetkisi başarıyla kaldırıldı.');
+                self.loadUserPermissions(self.selectedUser().id);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.errorMessage(error.message || 'Yetki kaldırılırken bir hata oluştu.');
+            });
         });
     };
 

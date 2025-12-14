@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Atamalar";
+    ViewData["Title"] = Html.T("Assignment.Title", "Atamalar").ToString();
 }
 
 <style>
@@ -24,13 +24,13 @@
 
 <div id="assignments-app">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-clipboard-check"></i> Atamalar</h2>
+        <h2><i class="bi bi-clipboard-check"></i> @Html.T("Assignment.Title", "Atamalar")</h2>
         <div class="btn-group">
             <button class="btn btn-primary" data-bind="click: createNew">
-                <i class="bi bi-plus-circle"></i> Yeni Atama
+                <i class="bi bi-plus-circle"></i> @Html.T("Assignment.New", "Yeni Atama")
             </button>
             <button class="btn btn-outline-primary" data-bind="click: openBulkAssignmentModal">
-                <i class="bi bi-collection"></i> Toplu Atama
+                <i class="bi bi-collection"></i> @Html.T("Assignment.Bulk", "Toplu Atama")
             </button>
         </div>
     </div>
@@ -42,7 +42,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Toplam</h6>
+                            <h6 class="mb-0 small">@Html.T("Common.Total", "Toplam")</h6>
                             <h4 class="mb-0" data-bind="text: totalAssignments"></h4>
                         </div>
                         <i class="bi bi-clipboard-data fs-3 opacity-50"></i>
@@ -55,7 +55,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Bekleyen</h6>
+                            <h6 class="mb-0 small">@Html.T("Status.Pending", "Bekleyen")</h6>
                             <h4 class="mb-0" data-bind="text: pendingCount"></h4>
                         </div>
                         <i class="bi bi-hourglass-split fs-3 opacity-50"></i>
@@ -68,7 +68,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Devam Eden</h6>
+                            <h6 class="mb-0 small">@Html.T("Status.InProgress", "Devam Eden")</h6>
                             <h4 class="mb-0" data-bind="text: inProgressCount"></h4>
                         </div>
                         <i class="bi bi-play-circle fs-3 opacity-50"></i>
@@ -81,7 +81,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Tamamlanan</h6>
+                            <h6 class="mb-0 small">@Html.T("Status.Completed", "Tamamlanan")</h6>
                             <h4 class="mb-0" data-bind="text: completedCount"></h4>
                         </div>
                         <i class="bi bi-check-circle fs-3 opacity-50"></i>
@@ -94,7 +94,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Süresi Dolan</h6>
+                            <h6 class="mb-0 small">@Html.T("Status.Expired", "Süresi Dolan")</h6>
                             <h4 class="mb-0" data-bind="text: expiredCount"></h4>
                         </div>
                         <i class="bi bi-exclamation-triangle fs-3 opacity-50"></i>
@@ -107,7 +107,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">Ort. Puan</h6>
+                            <h6 class="mb-0 small">@Html.T("Common.AverageScore", "Ort. Puan")</h6>
                             <h4 class="mb-0" data-bind="text: averageScore ? averageScore.toFixed(1) + '%' : '-'"></h4>
                         </div>
                         <i class="bi bi-bar-chart fs-3 opacity-50"></i>
@@ -122,30 +122,30 @@
         <div class="card-body py-2">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label small mb-1">Proje</label>
-                    <select class="form-select form-select-sm" data-bind="value: filterProjectId, options: availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Projeler'"></select>
+                    <label class="form-label small mb-1">@Html.T("Project.Title", "Proje")</label>
+                    <select class="form-select form-select-sm" data-bind="value: filterProjectId, options: availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Assignment.AllProjects", "Tüm Projeler")'"></select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Durum</label>
+                    <label class="form-label small mb-1">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select form-select-sm" data-bind="value: filterStatus">
-                        <option value="">Tüm Durumlar</option>
-                        <option value="Pending">Bekleyen</option>
-                        <option value="InProgress">Devam Eden</option>
-                        <option value="Completed">Tamamlanan</option>
-                        <option value="Expired">Süresi Dolan</option>
-                        <option value="Cancelled">İptal Edilen</option>
+                        <option value="">@Html.T("Assignment.AllStatuses", "Tüm Durumlar")</option>
+                        <option value="Pending">@Html.T("Status.Pending", "Bekleyen")</option>
+                        <option value="InProgress">@Html.T("Status.InProgress", "Devam Eden")</option>
+                        <option value="Completed">@Html.T("Status.Completed", "Tamamlanan")</option>
+                        <option value="Expired">@Html.T("Status.Expired", "Süresi Dolan")</option>
+                        <option value="Cancelled">@Html.T("Status.Cancelled", "İptal Edilen")</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small mb-1">Atanan Kişi</label>
-                    <select class="form-select form-select-sm" data-bind="value: filterAssignedUserId, options: allAssignableUsers, optionsValue: 'id', optionsText: 'displayName', optionsCaption: 'Tüm Kişiler'"></select>
+                    <label class="form-label small mb-1">@Html.T("Assignment.AssignedPerson", "Atanan Kişi")</label>
+                    <select class="form-select form-select-sm" data-bind="value: filterAssignedUserId, options: allAssignableUsers, optionsValue: 'id', optionsText: 'displayName', optionsCaption: '@Html.T("Assignment.AllPersons", "Tüm Kişiler")'"></select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Son Tarih (Başlangıç)</label>
+                    <label class="form-label small mb-1">@Html.T("Assignment.DueDateFrom", "Son Tarih (Başlangıç)")</label>
                     <input type="date" class="form-control form-control-sm" data-bind="value: filterDueDateFrom">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Son Tarih (Bitiş)</label>
+                    <label class="form-label small mb-1">@Html.T("Assignment.DueDateTo", "Son Tarih (Bitiş)")</label>
                     <input type="date" class="form-control form-control-sm" data-bind="value: filterDueDateTo">
                 </div>
             </div>
@@ -153,15 +153,15 @@
                 <div class="col-md-4">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Ara..." data-bind="value: filterSearchTerm, valueUpdate: 'afterkeydown'">
+                        <input type="text" class="form-control" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: filterSearchTerm, valueUpdate: 'afterkeydown'">
                     </div>
                 </div>
                 <div class="col-md-8 text-end">
                     <button class="btn btn-sm btn-outline-secondary me-2" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i> Filtreleri Temizle
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Filtreleri Temizle")
                     </button>
                     <button class="btn btn-sm btn-primary" data-bind="click: applyFilters">
-                        <i class="bi bi-funnel"></i> Filtrele
+                        <i class="bi bi-funnel"></i> @Html.T("Common.Filter", "Filtrele")
                     </button>
                 </div>
             </div>
@@ -171,7 +171,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">Yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</p>
     </div>
 
     <!-- Messages -->

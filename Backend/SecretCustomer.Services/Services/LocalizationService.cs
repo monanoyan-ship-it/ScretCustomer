@@ -1,0 +1,414 @@
+using System.Xml.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
+
+namespace SecretCustomer.Services.Services;
+
+public class LocalizationService : ILocalizationService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IMemoryCache _cache;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private const string CACHE_KEY_PREFIX = "locale_";
+    private const string LANGUAGES_CACHE_KEY = "all_languages";
+
+    public LocalizationService(
+        ApplicationDbContext context,
+        IMemoryCache cache,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        _context = context;
+        _cache = cache;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    #region Language Operations
+
+    public async Task<IEnumerable<Language>> GetAllLanguagesAsync(bool onlyActive = true)
+    {
+        var cacheKey = $"{LANGUAGES_CACHE_KEY}_{onlyActive}";
+
+        if (!_cache.TryGetValue(cacheKey, out IEnumerable<Language>? languages))
+        {
+            var query = _context.Languages.AsQueryable();
+            if (onlyActive)
+                query = query.Where(l => l.IsActive);
+
+            languages = await query.OrderBy(l => l.DisplayOrder).ToListAsync();
+
+            _cache.Set(cacheKey, languages, TimeSpan.FromHours(1));
+        }
+
+        return languages!;
+    }
+
+    public async Task<Language?> GetLanguageByIdAsync(Guid id)
+    {
+        return await _context.Languages.FindAsync(id);
+    }
+
+    public async Task<Language?> GetLanguageByCodeAsync(string code)
+    {
+        return await _context.Languages
+            .FirstOrDefaultAsync(l => l.UniqueSeoCode == code || l.LanguageCulture == code);
+    }
+
+    public async Task<Language?> GetDefaultLanguageAsync()
+    {
+        return await _context.Languages.FirstOrDefaultAsync(l => l.IsDefault && l.IsActive)
+            ?? await _context.Languages.FirstOrDefaultAsync(l => l.IsActive);
+    }
+
+    public async Task<Language> CreateLanguageAsync(Language language)
+    {
+        // Eğer varsayılan olarak işaretlendiyse, diğerlerini kaldır
+        if (language.IsDefault)
+        {
+            var others = await _context.Languages.Where(l => l.IsDefault).ToListAsync();
+            foreach (var other in others)
+                other.IsDefault = false;
+        }
+
+        _context.Languages.Add(language);
+        await _context.SaveChangesAsync();
+        ClearLanguageCache();
+
+        return language;
+    }
+
+    public async Task<Language> UpdateLanguageAsync(Language language)
+    {
+        var existing = await _context.Languages.FindAsync(language.Id);
+        if (existing == null)
+            throw new Exception("Dil bulunamadı.");
+
+        // Eğer varsayılan olarak işaretlendiyse, diğerlerini kaldır
+        if (language.IsDefault && !existing.IsDefault)
+        {
+            var others = await _context.Languages.Where(l => l.IsDefault && l.Id != language.Id).ToListAsync();
+            foreach (var other in others)
+                other.IsDefault = false;
+        }
+
+        existing.Name = language.Name;
+        existing.LanguageCulture = language.LanguageCulture;
+        existing.UniqueSeoCode = language.UniqueSeoCode;
+        existing.FlagImageFileName = language.FlagImageFileName;
+        existing.Rtl = language.Rtl;
+        existing.IsDefault = language.IsDefault;
+        existing.IsActive = language.IsActive;
+        existing.DisplayOrder = language.DisplayOrder;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        ClearLanguageCache();
+
+        return existing;
+    }
+
+    public async Task DeleteLanguageAsync(Guid id)
+    {
+        var language = await _context.Languages.FindAsync(id);
+        if (language == null)
+            return;
+
+        if (language.IsDefault)
+            throw new Exception("Varsayılan dil silinemez.");
+
+        // İlgili kaynakları da sil
+        var resources = await _context.LocaleStringResources
+            .Where(r => r.LanguageId == id)
+            .ToListAsync();
+        _context.LocaleStringResources.RemoveRange(resources);
+
+        _context.Languages.Remove(language);
+        await _context.SaveChangesAsync();
+        ClearLanguageCache();
+    }
+
+    #endregion
+
+    #region Resource Operations
+
+    public async Task<string> GetResourceAsync(string resourceName, Guid? languageId = null, string? defaultValue = null)
+    {
+        var langId = languageId ?? GetCurrentLanguageId();
+        var cacheKey = $"{CACHE_KEY_PREFIX}{langId}_{resourceName}";
+
+        if (!_cache.TryGetValue(cacheKey, out string? value))
+        {
+            var resource = await _context.LocaleStringResources
+                .FirstOrDefaultAsync(r => r.LanguageId == langId && r.ResourceName == resourceName);
+
+            value = resource?.ResourceValue;
+
+            if (value != null)
+                _cache.Set(cacheKey, value, TimeSpan.FromMinutes(30));
+        }
+
+        return value ?? defaultValue ?? resourceName;
+    }
+
+    public async Task<string> GetResourceAsync(string resourceName, string languageCode, string? defaultValue = null)
+    {
+        var language = await GetLanguageByCodeAsync(languageCode);
+        if (language == null)
+            return defaultValue ?? resourceName;
+
+        return await GetResourceAsync(resourceName, language.Id, defaultValue);
+    }
+
+    public async Task<Dictionary<string, string>> GetAllResourcesAsync(Guid languageId)
+    {
+        var cacheKey = $"{CACHE_KEY_PREFIX}all_{languageId}";
+
+        if (!_cache.TryGetValue(cacheKey, out Dictionary<string, string>? resources))
+        {
+            resources = await _context.LocaleStringResources
+                .Where(r => r.LanguageId == languageId)
+                .ToDictionaryAsync(r => r.ResourceName, r => r.ResourceValue);
+
+            _cache.Set(cacheKey, resources, TimeSpan.FromMinutes(30));
+        }
+
+        return resources!;
+    }
+
+    public async Task<Dictionary<string, string>> GetResourcesByPrefixAsync(string prefix, Guid? languageId = null)
+    {
+        var langId = languageId ?? GetCurrentLanguageId();
+
+        return await _context.LocaleStringResources
+            .Where(r => r.LanguageId == langId && r.ResourceName.StartsWith(prefix))
+            .ToDictionaryAsync(r => r.ResourceName, r => r.ResourceValue);
+    }
+
+    public async Task<LocaleStringResource?> GetResourceByNameAsync(string resourceName, Guid languageId)
+    {
+        return await _context.LocaleStringResources
+            .FirstOrDefaultAsync(r => r.LanguageId == languageId && r.ResourceName == resourceName);
+    }
+
+    public async Task<IEnumerable<LocaleStringResource>> GetResourcesByLanguageAsync(Guid languageId)
+    {
+        return await _context.LocaleStringResources
+            .Where(r => r.LanguageId == languageId)
+            .OrderBy(r => r.ResourceName)
+            .ToListAsync();
+    }
+
+    public async Task<LocaleStringResource> SetResourceAsync(Guid languageId, string resourceName, string resourceValue)
+    {
+        var existing = await GetResourceByNameAsync(resourceName, languageId);
+
+        if (existing != null)
+        {
+            existing.ResourceValue = resourceValue;
+            existing.UpdatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            existing = new LocaleStringResource
+            {
+                LanguageId = languageId,
+                ResourceName = resourceName,
+                ResourceValue = resourceValue
+            };
+            _context.LocaleStringResources.Add(existing);
+        }
+
+        await _context.SaveChangesAsync();
+        ClearResourceCache(languageId, resourceName);
+
+        return existing;
+    }
+
+    public async Task DeleteResourceAsync(Guid resourceId)
+    {
+        var resource = await _context.LocaleStringResources.FindAsync(resourceId);
+        if (resource != null)
+        {
+            _context.LocaleStringResources.Remove(resource);
+            await _context.SaveChangesAsync();
+            ClearResourceCache(resource.LanguageId, resource.ResourceName);
+        }
+    }
+
+    public async Task DeleteResourceByNameAsync(string resourceName, Guid languageId)
+    {
+        var resource = await GetResourceByNameAsync(resourceName, languageId);
+        if (resource != null)
+        {
+            _context.LocaleStringResources.Remove(resource);
+            await _context.SaveChangesAsync();
+            ClearResourceCache(languageId, resourceName);
+        }
+    }
+
+    #endregion
+
+    #region Bulk Operations
+
+    public async Task ImportResourcesAsync(Guid languageId, Dictionary<string, string> resources)
+    {
+        foreach (var kvp in resources)
+        {
+            await SetResourceAsync(languageId, kvp.Key, kvp.Value);
+        }
+    }
+
+    public async Task<Dictionary<string, string>> ExportResourcesAsync(Guid languageId)
+    {
+        return await GetAllResourcesAsync(languageId);
+    }
+
+    #endregion
+
+    #region Current Language
+
+    public Guid GetCurrentLanguageId()
+    {
+        // Cookie'den dene
+        var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["Language"];
+        if (Guid.TryParse(cookie, out var cookieLangId))
+            return cookieLangId;
+
+        // Varsayılan dili getir (sync olarak)
+        var defaultLang = _context.Languages.FirstOrDefault(l => l.IsDefault && l.IsActive)
+            ?? _context.Languages.FirstOrDefault(l => l.IsActive);
+
+        return defaultLang?.Id ?? Guid.Empty;
+    }
+
+    public string GetCurrentLanguageCode()
+    {
+        var langId = GetCurrentLanguageId();
+        var lang = _context.Languages.Find(langId);
+        return lang?.UniqueSeoCode ?? "tr";
+    }
+
+    public void SetCurrentLanguage(Guid languageId)
+    {
+        // Cookie'ye kaydet
+        _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", languageId.ToString(),
+            new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+    }
+
+    public void SetCurrentLanguage(string languageCode)
+    {
+        var lang = _context.Languages.FirstOrDefault(l => l.UniqueSeoCode == languageCode || l.LanguageCulture == languageCode);
+        if (lang != null)
+            SetCurrentLanguage(lang.Id);
+    }
+
+    #endregion
+
+    #region Cache Helpers
+
+    private void ClearLanguageCache()
+    {
+        _cache.Remove($"{LANGUAGES_CACHE_KEY}_true");
+        _cache.Remove($"{LANGUAGES_CACHE_KEY}_false");
+    }
+
+    private void ClearResourceCache(Guid languageId, string resourceName)
+    {
+        _cache.Remove($"{CACHE_KEY_PREFIX}{languageId}_{resourceName}");
+        _cache.Remove($"{CACHE_KEY_PREFIX}all_{languageId}");
+    }
+
+    #endregion
+
+    #region XML Import/Export
+
+    /// <summary>
+    /// XML dosyasından çevirileri içe aktarır
+    /// Format: NopCommerce tarzı LocaleResource XML
+    /// </summary>
+    public async Task<int> ImportFromXmlAsync(Guid languageId, string xmlContent)
+    {
+        var doc = XDocument.Parse(xmlContent);
+        var resources = doc.Descendants("LocaleResource");
+        int count = 0;
+
+        foreach (var resource in resources)
+        {
+            var name = resource.Attribute("Name")?.Value;
+            var value = resource.Element("Value")?.Value;
+
+            if (!string.IsNullOrEmpty(name) && value != null)
+            {
+                await SetResourceAsync(languageId, name, value);
+                count++;
+            }
+        }
+
+        // Cache'i temizle
+        _cache.Remove($"{CACHE_KEY_PREFIX}all_{languageId}");
+
+        return count;
+    }
+
+    /// <summary>
+    /// XML dosyasından çevirileri içe aktarır (dosya yolu ile)
+    /// </summary>
+    public async Task<int> ImportFromXmlFileAsync(Guid languageId, string filePath)
+    {
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"XML dosyası bulunamadı: {filePath}");
+
+        var xmlContent = await File.ReadAllTextAsync(filePath);
+        return await ImportFromXmlAsync(languageId, xmlContent);
+    }
+
+    /// <summary>
+    /// Dil koduna göre varsayılan XML dosyasından çevirileri içe aktarır
+    /// App_Data/Localization/resources.{languageCode}.xml
+    /// </summary>
+    public async Task<int> ImportFromDefaultXmlAsync(Guid languageId, string basePath)
+    {
+        var language = await GetLanguageByIdAsync(languageId);
+        if (language == null)
+            throw new Exception("Dil bulunamadı.");
+
+        var fileName = $"resources.{language.UniqueSeoCode}.xml";
+        var filePath = Path.Combine(basePath, "App_Data", "Localization", fileName);
+
+        return await ImportFromXmlFileAsync(languageId, filePath);
+    }
+
+    /// <summary>
+    /// Çevirileri XML formatında dışa aktarır
+    /// </summary>
+    public async Task<string> ExportToXmlAsync(Guid languageId)
+    {
+        var language = await GetLanguageByIdAsync(languageId);
+        if (language == null)
+            throw new Exception("Dil bulunamadı.");
+
+        var resources = await GetResourcesByLanguageAsync(languageId);
+
+        var doc = new XDocument(
+            new XDeclaration("1.0", "utf-8", null),
+            new XElement("Language",
+                new XAttribute("Name", language.Name),
+                new XAttribute("LanguageCulture", language.LanguageCulture),
+                new XAttribute("UniqueSeoCode", language.UniqueSeoCode),
+                resources.Select(r =>
+                    new XElement("LocaleResource",
+                        new XAttribute("Name", r.ResourceName),
+                        new XElement("Value", r.ResourceValue)
+                    )
+                )
+            )
+        );
+
+        return doc.ToString();
+    }
+
+    #endregion
+}

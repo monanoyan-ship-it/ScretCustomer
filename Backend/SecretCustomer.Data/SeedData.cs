@@ -445,6 +445,86 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Assignments created");
 
+            // 7.5 Sample Evaluations
+            var evaluation1 = new Evaluation
+            {
+                Id = Guid.NewGuid(),
+                AssignmentId = assignment1.Id,
+                EvaluatorId = evaluator1.Id,
+                Status = Core.Enums.EvaluationStatus.Completed,
+                TotalScore = 85.5m,
+                MaxScore = 100m,
+                ScorePercentage = 85.5m,
+                StartedAt = DateTime.UtcNow.AddDays(-5),
+                CompletedAt = DateTime.UtcNow.AddDays(-4),
+                Notes = "Genel olarak iyi performans",
+                CreatedAt = DateTime.UtcNow.AddDays(-5)
+            };
+
+            var evaluation2 = new Evaluation
+            {
+                Id = Guid.NewGuid(),
+                AssignmentId = assignment2.Id,
+                EvaluatorId = evaluator2.Id,
+                Status = Core.Enums.EvaluationStatus.Completed,
+                TotalScore = 92.0m,
+                MaxScore = 100m,
+                ScorePercentage = 92.0m,
+                StartedAt = DateTime.UtcNow.AddDays(-3),
+                CompletedAt = DateTime.UtcNow.AddDays(-2),
+                Notes = "Mükemmel hizmet kalitesi",
+                CreatedAt = DateTime.UtcNow.AddDays(-3)
+            };
+
+            var evaluation3 = new Evaluation
+            {
+                Id = Guid.NewGuid(),
+                AssignmentId = assignment3.Id,
+                Status = Core.Enums.EvaluationStatus.Completed,
+                TotalScore = 78.0m,
+                MaxScore = 100m,
+                ScorePercentage = 78.0m,
+                StartedAt = DateTime.UtcNow.AddDays(-1),
+                CompletedAt = DateTime.UtcNow,
+                Notes = "Temizlik konusunda iyileştirme gerekli",
+                CreatedAt = DateTime.UtcNow.AddDays(-1)
+            };
+
+            // Geçmiş aylardan ek değerlendirmeler
+            var evaluation4 = new Evaluation
+            {
+                Id = Guid.NewGuid(),
+                AssignmentId = assignment1.Id,
+                EvaluatorId = evaluator1.Id,
+                Status = Core.Enums.EvaluationStatus.Completed,
+                TotalScore = 88.0m,
+                MaxScore = 100m,
+                ScorePercentage = 88.0m,
+                StartedAt = DateTime.UtcNow.AddMonths(-1).AddDays(-10),
+                CompletedAt = DateTime.UtcNow.AddMonths(-1).AddDays(-9),
+                Notes = "Geçen ayın değerlendirmesi",
+                CreatedAt = DateTime.UtcNow.AddMonths(-1).AddDays(-10)
+            };
+
+            var evaluation5 = new Evaluation
+            {
+                Id = Guid.NewGuid(),
+                AssignmentId = assignment2.Id,
+                EvaluatorId = evaluator2.Id,
+                Status = Core.Enums.EvaluationStatus.Completed,
+                TotalScore = 75.5m,
+                MaxScore = 100m,
+                ScorePercentage = 75.5m,
+                StartedAt = DateTime.UtcNow.AddMonths(-2).AddDays(-5),
+                CompletedAt = DateTime.UtcNow.AddMonths(-2).AddDays(-4),
+                Notes = "2 ay önceki değerlendirme",
+                CreatedAt = DateTime.UtcNow.AddMonths(-2).AddDays(-5)
+            };
+
+            context.Evaluations.AddRange(evaluation1, evaluation2, evaluation3, evaluation4, evaluation5);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Evaluations created (5 sample evaluations)");
+
             // 8. Sample Customers
             var customer1 = new Customer
             {
@@ -918,15 +998,25 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Branch Personnel created");
 
-            // 13. Link some branches and projects to customers
-            branch1.CustomerId = customer1.Id;
-            branch2.CustomerId = customer2.Id;
+            // 13. Link all branches to customers
+            branch1.CustomerId = customer1.Id;  // ABC Şirketi - İstanbul Kadıköy
+            branch2.CustomerId = customer1.Id;  // ABC Şirketi - Ankara Kızılay
+            branch3.CustomerId = customer2.Id;  // XYZ Holding - İzmir Alsancak
             project.CustomerId = customer1.Id;
+
+            context.Branches.UpdateRange(branch1, branch2, branch3);
+            context.Projects.Update(project);
             await context.SaveChangesAsync();
             logger.LogInformation("Linked branches and projects to customers");
 
             // 14. Permissions - RBAC System
             await SeedPermissionsAsync(context, logger);
+
+            // 15. App Settings - Varsayılan Ayarlar
+            await SeedAppSettingsAsync(context, logger);
+
+            // 16. Languages - Çoklu Dil Desteği
+            await SeedLanguagesAsync(context, logger);
 
             logger.LogInformation("Database seed completed successfully!");
             logger.LogInformation("Test users:");
@@ -1092,5 +1182,188 @@ public static class SeedData
         logger.LogInformation("  - TeamLeader: Project, Assignment, Report management");
         logger.LogInformation("  - Evaluator: View checklists and own assignments");
         logger.LogInformation("  - FieldWorker: View own assignments only");
+    }
+
+    private static async Task SeedAppSettingsAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.AppSettings.AnyAsync())
+        {
+            logger.LogInformation("App settings already exist, skipping...");
+            return;
+        }
+
+        var settings = new List<AppSettings>
+        {
+            // General Settings
+            new AppSettings
+            {
+                Key = "General.DemoMode",
+                Value = "true",
+                ValueType = SettingValueType.Bool,
+                Category = "General",
+                Description = "Demo modu aktif. True ise detaylı hata mesajları gösterilir.",
+                DisplayOrder = 1,
+                IsSystem = true
+            },
+            new AppSettings
+            {
+                Key = "General.AppName",
+                Value = "Gizli Müşteri Değerlendirme Sistemi",
+                ValueType = SettingValueType.String,
+                Category = "General",
+                Description = "Uygulama adı",
+                DisplayOrder = 2,
+                IsSystem = true
+            },
+            new AppSettings
+            {
+                Key = "General.Version",
+                Value = "1.0.0",
+                ValueType = SettingValueType.String,
+                Category = "General",
+                Description = "Uygulama versiyonu",
+                DisplayOrder = 3,
+                IsSystem = true
+            },
+            new AppSettings
+            {
+                Key = "General.MaintenanceMode",
+                Value = "false",
+                ValueType = SettingValueType.Bool,
+                Category = "General",
+                Description = "Bakım modu aktif mi?",
+                DisplayOrder = 4,
+                IsSystem = true
+            },
+
+            // Security Settings
+            new AppSettings
+            {
+                Key = "Security.MaxLoginAttempts",
+                Value = "5",
+                ValueType = SettingValueType.Int,
+                Category = "Security",
+                Description = "Maksimum başarısız giriş denemesi sayısı",
+                DisplayOrder = 1,
+                IsSystem = false
+            },
+            new AppSettings
+            {
+                Key = "Security.LockoutDurationMinutes",
+                Value = "15",
+                ValueType = SettingValueType.Int,
+                Category = "Security",
+                Description = "Hesap kilitleme süresi (dakika)",
+                DisplayOrder = 2,
+                IsSystem = false
+            },
+            new AppSettings
+            {
+                Key = "Security.SessionTimeoutMinutes",
+                Value = "60",
+                ValueType = SettingValueType.Int,
+                Category = "Security",
+                Description = "Oturum zaman aşımı süresi (dakika)",
+                DisplayOrder = 3,
+                IsSystem = false
+            },
+
+            // Customer Portal Settings
+            new AppSettings
+            {
+                Key = "CustomerPortal.Enabled",
+                Value = "true",
+                ValueType = SettingValueType.Bool,
+                Category = "CustomerPortal",
+                Description = "Müşteri portalı aktif mi?",
+                DisplayOrder = 1,
+                IsSystem = false
+            },
+            new AppSettings
+            {
+                Key = "CustomerPortal.AllowSelfRegistration",
+                Value = "false",
+                ValueType = SettingValueType.Bool,
+                Category = "CustomerPortal",
+                Description = "Müşteri personeli kendi kaydını oluşturabilir mi?",
+                DisplayOrder = 2,
+                IsSystem = false
+            }
+        };
+
+        context.AppSettings.AddRange(settings);
+        await context.SaveChangesAsync();
+        logger.LogInformation("App settings created ({Count} settings)", settings.Count);
+    }
+
+    private static async Task SeedLanguagesAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.Languages.AnyAsync())
+        {
+            logger.LogInformation("Languages already exist, skipping...");
+            return;
+        }
+
+        var languages = new List<Language>
+        {
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Türkçe",
+                LanguageCulture = "tr-TR",
+                UniqueSeoCode = "tr",
+                FlagImageFileName = "tr.png",
+                Rtl = false,
+                IsDefault = true,
+                IsActive = true,
+                DisplayOrder = 1,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "English",
+                LanguageCulture = "en-US",
+                UniqueSeoCode = "en",
+                FlagImageFileName = "en.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 2,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Español",
+                LanguageCulture = "es-ES",
+                UniqueSeoCode = "es",
+                FlagImageFileName = "es.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 3,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Deutsch",
+                LanguageCulture = "de-DE",
+                UniqueSeoCode = "de",
+                FlagImageFileName = "de.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 4,
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        context.Languages.AddRange(languages);
+        await context.SaveChangesAsync();
+        logger.LogInformation("Languages created ({Count} languages): {Names}",
+            languages.Count,
+            string.Join(", ", languages.Select(l => l.Name)));
     }
 }

@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_CustomerLayout";
+}
+
+<div id="customer-dashboard-app">
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Toplam Değerlendirme</h6>
+                                <h2 class="mb-0" data-bind="text: stats().totalEvaluations || 0"></h2>
+                            </div>
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-clipboard-check text-success fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Ortalama Puan</h6>
+                                <h2 class="mb-0" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h2>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-star-fill text-primary fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Şube Sayısı</h6>
+                                <h2 class="mb-0" data-bind="text: stats().branchCount || 0"></h2>
+                            </div>
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-building text-info fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Bu Ay</h6>
+                                <h2 class="mb-0" data-bind="text: stats().thisMonthEvaluations || 0"></h2>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-calendar-check text-warning fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Aylık Değerlendirme Trendi</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Puan Dağılımı</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="scoreDistributionChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Evaluations -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Son Değerlendirmeler</h5>
+                <a href="/CustomerPortal/Evaluations" class="btn btn-sm btn-outline-success">
+                    Tümünü Gör <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div data-bind="visible: recentEvaluations().length === 0" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">Henüz değerlendirme bulunmuyor.</p>
+                </div>
+                <div class="table-responsive" data-bind="visible: recentEvaluations().length > 0">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Şube</th>
+                                <th>Checklist</th>
+                                <th>Puan</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: recentEvaluations">
+                            <tr>
+                                <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                <td data-bind="text: branchName"></td>
+                                <td data-bind="text: checklistName"></td>
+                                <td>
+                                    <span class="badge" data-bind="text: score.toFixed(1), css: $parent.getScoreBadgeClass(score)"></span>
+                                </td>
+                                <td>
+                                    <span class="badge" data-bind="text: statusText, css: $parent.getStatusBadgeClass(status)"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CustomerPortal/dashboard.js"></script>
+}

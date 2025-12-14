@@ -76,7 +76,7 @@ function PenaltiesViewModel() {
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Rapor yüklenemedi');
+                if (!response.ok) throw new Error(T('Report.LoadError', 'Rapor yüklenemedi'));
                 return response.json();
             })
             .then(function(data) {
@@ -94,7 +94,7 @@ function PenaltiesViewModel() {
             })
             .catch(function(error) {
                 console.error('Penalties report error:', error);
-                self.errorMessage(error.message || 'Rapor yüklenirken bir hata oluştu.');
+                self.errorMessage(error.message || T('Report.LoadErrorMessage', 'Rapor yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -120,14 +120,14 @@ function PenaltiesViewModel() {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Sarı Kart',
+                        label: T('Penalty.YellowCard', 'Sarı Kart'),
                         data: yellowData,
                         backgroundColor: 'rgba(255, 193, 7, 0.7)',
                         borderColor: 'rgb(255, 193, 7)',
                         borderWidth: 1
                     },
                     {
-                        label: 'Kırmızı Kart',
+                        label: T('Penalty.RedCard', 'Kırmızı Kart'),
                         data: redData,
                         backgroundColor: 'rgba(220, 53, 69, 0.7)',
                         borderColor: 'rgb(220, 53, 69)',
@@ -185,14 +185,14 @@ function PenaltiesViewModel() {
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
-                if (!response.ok) throw new Error('Export başarısız');
+                if (!response.ok) throw new Error(T('Report.ExportError', 'Export başarısız'));
                 return response.blob();
             })
             .then(function(blob) {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'CezaliKLRaporu_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                a.download = T('File.PenaltyReport', 'CezaliKLRaporu') + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -200,7 +200,7 @@ function PenaltiesViewModel() {
             })
             .catch(function(error) {
                 console.error('Export error:', error);
-                self.errorMessage('Excel export başarısız: ' + error.message);
+                self.errorMessage(T('Report.ExcelExportError', 'Excel export başarısız') + ': ' + error.message);
             })
             .finally(function() {
                 self.isExporting(false);

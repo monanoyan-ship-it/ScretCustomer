@@ -384,19 +384,26 @@
         // ========== MEETING ACTIONS ==========
 
         self.startMeeting = function(meeting) {
-            if (!confirm('Toplantıyı başlatmak istediğinizden emin misiniz?')) return;
-
-            fetch('/api/meetings/' + meeting.id + '/start', { method: 'POST' })
-                .then(function(response) {
-                    if (response.ok) {
-                        self.loadMeetings();
-                        self.loadSummary();
-                        if (self.currentMeetingId()) {
-                            self.loadMeetingDetail(self.currentMeetingId());
-                        }
-                        toastr.success('Toplantı başlatıldı');
-                    }
-                });
+            showConfirmModal({
+                title: 'Toplantı Başlat',
+                message: 'Toplantıyı başlatmak istediğinizden emin misiniz?',
+                type: 'success',
+                confirmText: 'Başlat',
+                confirmIcon: 'bi-play-fill',
+                onConfirm: function() {
+                    fetch('/api/meetings/' + meeting.id + '/start', { method: 'POST' })
+                        .then(function(response) {
+                            if (response.ok) {
+                                self.loadMeetings();
+                                self.loadSummary();
+                                if (self.currentMeetingId()) {
+                                    self.loadMeetingDetail(self.currentMeetingId());
+                                }
+                                toastr.success('Toplantı başlatıldı');
+                            }
+                        });
+                }
+            });
         };
 
         self.showCompleteMeetingModal = function(meeting) {
@@ -436,37 +443,43 @@
         };
 
         self.cancelMeeting = function(meeting) {
-            var reason = prompt('İptal nedeni (opsiyonel):');
-            if (reason === null) return;
-
-            fetch('/api/meetings/' + meeting.id + '/cancel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: reason })
-            })
-            .then(function(response) {
-                if (response.ok) {
-                    self.loadMeetings();
-                    self.loadSummary();
-                    if (self.currentMeetingId()) {
-                        self.loadMeetingDetail(self.currentMeetingId());
-                    }
-                    toastr.success('Toplantı iptal edildi');
+            showConfirmModal({
+                title: 'Toplantı İptali',
+                message: 'Bu toplantıyı iptal etmek istediğinizden emin misiniz?',
+                type: 'warning',
+                confirmText: 'İptal Et',
+                confirmIcon: 'bi-x-circle',
+                onConfirm: function() {
+                    fetch('/api/meetings/' + meeting.id + '/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason: null })
+                    })
+                    .then(function(response) {
+                        if (response.ok) {
+                            self.loadMeetings();
+                            self.loadSummary();
+                            if (self.currentMeetingId()) {
+                                self.loadMeetingDetail(self.currentMeetingId());
+                            }
+                            toastr.success('Toplantı iptal edildi');
+                        }
+                    });
                 }
             });
         };
 
         self.deleteMeeting = function(meeting) {
-            if (!confirm('Bu toplantıyı silmek istediğinizden emin misiniz?')) return;
-
-            fetch('/api/meetings/' + meeting.id, { method: 'DELETE' })
-                .then(function(response) {
-                    if (response.ok) {
-                        self.loadMeetings();
-                        self.loadSummary();
-                        toastr.success('Toplantı silindi');
-                    }
-                });
+            showDeleteConfirm('Bu toplantı', function() {
+                fetch('/api/meetings/' + meeting.id, { method: 'DELETE' })
+                    .then(function(response) {
+                        if (response.ok) {
+                            self.loadMeetings();
+                            self.loadSummary();
+                            toastr.success('Toplantı silindi');
+                        }
+                    });
+            });
         };
 
         // ========== FILE UPLOAD ==========
@@ -513,16 +526,16 @@
         };
 
         self.deleteAttachment = function(meeting, attachment) {
-            if (!confirm('Bu dosyayı silmek istediğinizden emin misiniz?')) return;
-
-            fetch('/api/meetings/' + meeting.id + '/attachments/' + attachment.id, {
-                method: 'DELETE'
-            })
-            .then(function(response) {
-                if (response.ok) {
-                    self.loadMeetingDetail(meeting.id);
-                    toastr.success('Dosya silindi');
-                }
+            showDeleteConfirm('Bu dosya', function() {
+                fetch('/api/meetings/' + meeting.id + '/attachments/' + attachment.id, {
+                    method: 'DELETE'
+                })
+                .then(function(response) {
+                    if (response.ok) {
+                        self.loadMeetingDetail(meeting.id);
+                        toastr.success('Dosya silindi');
+                    }
+                });
             });
         };
 

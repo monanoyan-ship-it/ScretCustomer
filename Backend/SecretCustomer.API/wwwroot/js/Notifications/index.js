@@ -120,25 +120,32 @@ function NotificationsIndexViewModel() {
 
     // Mark all as read
     self.markAllAsRead = function() {
-        if (confirm('Tüm bildirimleri okundu olarak işaretlemek istiyor musunuz?')) {
-            $.ajax({
-                url: '/api/notifications/read-all',
-                method: 'POST',
-                success: function(data) {
-                    toastr.success(data.count + ' bildirim okundu olarak işaretlendi');
-                    self.loadNotifications();
-                    self.loadSummary();
-                },
-                error: function() {
-                    toastr.error('Bir hata oluştu');
-                }
-            });
-        }
+        showConfirmModal({
+            title: 'Tümünü Okundu İşaretle',
+            message: 'Tüm bildirimleri okundu olarak işaretlemek istiyor musunuz?',
+            type: 'info',
+            confirmText: 'Okundu İşaretle',
+            confirmIcon: 'bi-check-all',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/notifications/read-all',
+                    method: 'POST',
+                    success: function(data) {
+                        toastr.success(data.count + ' bildirim okundu olarak işaretlendi');
+                        self.loadNotifications();
+                        self.loadSummary();
+                    },
+                    error: function() {
+                        toastr.error('Bir hata oluştu');
+                    }
+                });
+            }
+        });
     };
 
     // Delete notification
     self.deleteNotification = function(notification) {
-        if (confirm('Bu bildirimi silmek istediğinizden emin misiniz?')) {
+        showDeleteConfirm('Bu bildirim', function() {
             $.ajax({
                 url: '/api/notifications/' + notification.id,
                 method: 'DELETE',
@@ -151,7 +158,7 @@ function NotificationsIndexViewModel() {
                     toastr.error('Bir hata oluştu');
                 }
             });
-        }
+        });
     };
 
     // Helper functions

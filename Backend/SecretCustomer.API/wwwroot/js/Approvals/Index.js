@@ -39,6 +39,11 @@ function ApprovalsViewModel() {
         return Math.ceil(self.totalCount() / self.pageSize()) || 1;
     });
 
+    // Total count text for display
+    self.totalCountText = ko.computed(function() {
+        return T('Common.Total', 'Toplam') + ': ' + self.totalCount();
+    });
+
     self.visiblePages = ko.computed(function() {
         var pages = [];
         var total = self.totalPages();
@@ -80,7 +85,7 @@ function ApprovalsViewModel() {
                 self.totalCount(response.totalCount || 0);
             })
             .fail(function(xhr) {
-                toastr.error('Onaylar yüklenirken hata oluştu');
+                toastr.error(T('Approval.LoadError', 'Onaylar yüklenirken hata oluştu'));
             })
             .always(function() {
                 self.isLoading(false);
@@ -153,7 +158,7 @@ function ApprovalsViewModel() {
                 self.isDetailModalOpen(true);
             })
             .fail(function() {
-                toastr.error('Onay detayı yüklenemedi');
+                toastr.error(T('Approval.DetailLoadError', 'Onay detayı yüklenemedi'));
             });
     };
 
@@ -166,98 +171,132 @@ function ApprovalsViewModel() {
 
     // Approve request (quick action from list)
     self.approveRequest = function(approval) {
-        if (!confirm('Bu onay talebini onaylamak istediğinizden emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/approvals/' + approval.id + '/approve',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ note: '' })
-        })
-        .done(function() {
-            toastr.success('Onay işlemi başarıyla tamamlandı');
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Onay işlemi başarısız');
+        showConfirmModal({
+            title: T('Approval.Approve', 'Onay'),
+            message: T('Approval.ConfirmApprove', 'Bu onay talebini onaylamak istediğinizden emin misiniz?'),
+            type: 'success',
+            confirmText: T('Approval.Approve', 'Onayla'),
+            confirmIcon: 'bi-check-circle',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/approvals/' + approval.id + '/approve',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ note: '' })
+                })
+                .done(function() {
+                    toastr.success(T('Approval.ApproveSuccess', 'Onay işlemi başarıyla tamamlandı'));
+                    self.refreshAll();
+                })
+                .fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Approval.ApproveError', 'Onay işlemi başarısız'));
+                });
+            }
         });
     };
 
     // Reject request (quick action from list)
     self.rejectRequest = function(approval) {
-        var note = prompt('Red sebebi (opsiyonel):');
-        if (note === null) return; // User cancelled
-
-        $.ajax({
-            url: '/api/approvals/' + approval.id + '/reject',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ note: note })
-        })
-        .done(function() {
-            toastr.success('Red işlemi başarıyla tamamlandı');
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Red işlemi başarısız');
+        showConfirmModal({
+            title: T('Approval.Reject', 'Reddet'),
+            message: T('Approval.ConfirmReject', 'Bu onay talebini reddetmek istediğinizden emin misiniz?'),
+            type: 'danger',
+            confirmText: T('Approval.Reject', 'Reddet'),
+            confirmIcon: 'bi-x-circle',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/approvals/' + approval.id + '/reject',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ note: '' })
+                })
+                .done(function() {
+                    toastr.success(T('Approval.RejectSuccess', 'Red işlemi başarıyla tamamlandı'));
+                    self.refreshAll();
+                })
+                .fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Approval.RejectError', 'Red işlemi başarısız'));
+                });
+            }
         });
     };
 
     // Approve from detail modal
     self.approveFromDetail = function(approval) {
-        if (!confirm('Bu onay talebini onaylamak istediğinizden emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/approvals/' + approval.id + '/approve',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ note: self.responseNote() })
-        })
-        .done(function() {
-            toastr.success('Onay işlemi başarıyla tamamlandı');
-            self.closeDetailModal();
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Onay işlemi başarısız');
+        showConfirmModal({
+            title: T('Approval.Approve', 'Onay'),
+            message: T('Approval.ConfirmApprove', 'Bu onay talebini onaylamak istediğinizden emin misiniz?'),
+            type: 'success',
+            confirmText: T('Approval.Approve', 'Onayla'),
+            confirmIcon: 'bi-check-circle',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/approvals/' + approval.id + '/approve',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ note: self.responseNote() })
+                })
+                .done(function() {
+                    toastr.success(T('Approval.ApproveSuccess', 'Onay işlemi başarıyla tamamlandı'));
+                    self.closeDetailModal();
+                    self.refreshAll();
+                })
+                .fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Approval.ApproveError', 'Onay işlemi başarısız'));
+                });
+            }
         });
     };
 
     // Reject from detail modal
     self.rejectFromDetail = function(approval) {
-        if (!confirm('Bu onay talebini reddetmek istediğinizden emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/approvals/' + approval.id + '/reject',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ note: self.responseNote() })
-        })
-        .done(function() {
-            toastr.success('Red işlemi başarıyla tamamlandı');
-            self.closeDetailModal();
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Red işlemi başarısız');
+        showConfirmModal({
+            title: T('Approval.Reject', 'Reddet'),
+            message: T('Approval.ConfirmReject', 'Bu onay talebini reddetmek istediğinizden emin misiniz?'),
+            type: 'danger',
+            confirmText: T('Approval.Reject', 'Reddet'),
+            confirmIcon: 'bi-x-circle',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/approvals/' + approval.id + '/reject',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ note: self.responseNote() })
+                })
+                .done(function() {
+                    toastr.success(T('Approval.RejectSuccess', 'Red işlemi başarıyla tamamlandı'));
+                    self.closeDetailModal();
+                    self.refreshAll();
+                })
+                .fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Approval.RejectError', 'Red işlemi başarısız'));
+                });
+            }
         });
     };
 
     // Cancel approval (by requester)
     self.cancelApproval = function(approval) {
-        if (!confirm('Onay talebinizi iptal etmek istediğinizden emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/approvals/' + approval.id + '/cancel',
-            type: 'POST'
-        })
-        .done(function() {
-            toastr.success('Onay talebi iptal edildi');
-            self.closeDetailModal();
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            toastr.error(xhr.responseJSON?.message || 'İptal işlemi başarısız');
+        showConfirmModal({
+            title: T('Common.Cancel', 'İptal'),
+            message: T('Approval.ConfirmCancel', 'Onay talebinizi iptal etmek istediğinizden emin misiniz?'),
+            type: 'warning',
+            confirmText: T('Approval.CancelRequest', 'İptal Et'),
+            confirmIcon: 'bi-x-circle',
+            onConfirm: function() {
+                $.ajax({
+                    url: '/api/approvals/' + approval.id + '/cancel',
+                    type: 'POST'
+                })
+                .done(function() {
+                    toastr.success(T('Approval.CancelSuccess', 'Onay talebi iptal edildi'));
+                    self.closeDetailModal();
+                    self.refreshAll();
+                })
+                .fail(function(xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Approval.CancelError', 'İptal işlemi başarısız'));
+                });
+            }
         });
     };
 
@@ -275,23 +314,23 @@ function ApprovalsViewModel() {
     // Helper functions
     self.getApprovalTypeText = function(type) {
         var types = {
-            'Evaluation': 'Değerlendirme',
-            'Assignment': 'Atama',
-            'Project': 'Proje',
-            'Meeting': 'Toplantı',
-            'Training': 'Eğitim',
-            'Delegation': 'Vekalet',
-            'General': 'Genel'
+            'Evaluation': T('Approval.Type.Evaluation', 'Değerlendirme'),
+            'Assignment': T('Approval.Type.Assignment', 'Atama'),
+            'Project': T('Approval.Type.Project', 'Proje'),
+            'Meeting': T('Approval.Type.Meeting', 'Toplantı'),
+            'Training': T('Approval.Type.Training', 'Eğitim'),
+            'Delegation': T('Approval.Type.Delegation', 'Vekalet'),
+            'General': T('Approval.Type.General', 'Genel')
         };
         return types[type] || type;
     };
 
     self.getStatusText = function(status) {
         var statuses = {
-            'Pending': 'Beklemede',
-            'Approved': 'Onaylandı',
-            'Rejected': 'Reddedildi',
-            'Cancelled': 'İptal'
+            'Pending': T('Approval.Status.Pending', 'Beklemede'),
+            'Approved': T('Approval.Status.Approved', 'Onaylandı'),
+            'Rejected': T('Approval.Status.Rejected', 'Reddedildi'),
+            'Cancelled': T('Approval.Status.Cancelled', 'İptal')
         };
         return statuses[status] || status;
     };
@@ -308,10 +347,10 @@ function ApprovalsViewModel() {
 
     self.getPriorityText = function(priority) {
         var priorities = {
-            'Low': 'Düşük',
-            'Normal': 'Normal',
-            'High': 'Yüksek',
-            'Urgent': 'Acil'
+            'Low': T('Priority.Low', 'Düşük'),
+            'Normal': T('Priority.Normal', 'Normal'),
+            'High': T('Priority.High', 'Yüksek'),
+            'Urgent': T('Priority.Urgent', 'Acil')
         };
         return priorities[priority] || priority;
     };

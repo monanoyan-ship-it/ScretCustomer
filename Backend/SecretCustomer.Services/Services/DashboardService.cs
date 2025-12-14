@@ -44,8 +44,8 @@ public class DashboardService : IDashboardService
 
         // Şube gruplandırması
         var branchGroups = completedEvaluations
-            .Where(e => e.Assignment?.Branch != null)
-            .GroupBy(e => e.Assignment.Branch)
+            .Where(e => e.Assignment != null && e.Assignment.Branch != null)
+            .GroupBy(e => e.Assignment!.Branch!)
             .Select(g => new
             {
                 Branch = g.Key,
@@ -59,7 +59,7 @@ public class DashboardService : IDashboardService
             .Take(5)
             .Select(b => new TopBranchDto
             {
-                BranchId = b.Branch.Id,
+                BranchId = b.Branch!.Id,
                 BranchName = b.Branch.Name,
                 AverageScore = Math.Round(b.AverageScore, 2),
                 EvaluationCount = b.Count
@@ -71,7 +71,7 @@ public class DashboardService : IDashboardService
             .Take(5)
             .Select(b => new TopBranchDto
             {
-                BranchId = b.Branch.Id,
+                BranchId = b.Branch!.Id,
                 BranchName = b.Branch.Name,
                 AverageScore = Math.Round(b.AverageScore, 2),
                 EvaluationCount = b.Count
@@ -98,7 +98,7 @@ public class DashboardService : IDashboardService
         var branchComparisons = branchGroups
             .Select(b => new BranchComparisonDto
             {
-                BranchId = b.Branch.Id,
+                BranchId = b.Branch!.Id,
                 BranchName = b.Branch.Name,
                 Region = b.Branch.Region ?? "Belirtilmemiş",
                 AverageScore = Math.Round(b.AverageScore, 2),
