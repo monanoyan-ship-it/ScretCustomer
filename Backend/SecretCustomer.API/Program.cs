@@ -189,7 +189,19 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<ApplicationDbContext>();
     var logger = services.GetRequiredService<ILogger<Program>>();
 
-    await SeedData.InitializeAsync(context, logger);
+    // Production için: sadece admin + diller + temel ayarlar
+    // Development için: örnek veriler dahil
+    var useProductionSeed = builder.Configuration.GetValue<bool>("UseProductionSeed", false);
+
+    if (useProductionSeed || app.Environment.IsProduction())
+    {
+        var basePath = app.Environment.ContentRootPath;
+        await SeedData.InitializeProductionAsync(context, logger, basePath);
+    }
+    else
+    {
+        await SeedData.InitializeAsync(context, logger);
+    }
 }
 
 // Configure the HTTP request pipeline.

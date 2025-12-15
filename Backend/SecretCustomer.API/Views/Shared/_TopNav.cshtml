@@ -20,11 +20,11 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" data-bind="foreach: languages">
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#" data-bind="click: $parent.changeLanguage, css: { 'active': isDefault }">
+                            <a class="dropdown-item d-flex align-items-center" href="#" data-bind="click: $parent.changeLanguage, css: { 'active': isCurrent }">
                                 <span class="me-2" data-bind="text: uniqueSeoCode.toUpperCase()"></span>
                                 <span data-bind="text: name"></span>
-                                <!-- ko if: isDefault -->
-                                <i class="bi bi-check-circle-fill text-success ms-auto"></i>
+                                <!-- ko if: isCurrent -->
+                                <i class="bi bi-check ms-auto"></i>
                                 <!-- /ko -->
                             </a>
                         </li>
@@ -89,6 +89,8 @@
         fetch('/api/localization/languages?onlyActive=true')
         .then(res => res.json())
         .then(data => {
+            // isDefault'u temizle (sadece ayarlarda görünsün)
+            data.forEach(function(l) { l.isCurrent = false; });
             self.languages(data);
             // Get current language
             fetch('/api/localization/current')
@@ -97,10 +99,10 @@
                 if (current && current.id) {
                     self.currentLanguageId(current.id);
                     self.currentLanguageName(current.uniqueSeoCode ? current.uniqueSeoCode.toUpperCase() : 'TR');
-                    // Mark current as default in list
+                    // Mark current language in list
                     var langs = self.languages();
                     langs.forEach(function(l) {
-                        l.isDefault = l.id === current.id;
+                        l.isCurrent = l.id === current.id;
                     });
                     self.languages(langs);
                 }

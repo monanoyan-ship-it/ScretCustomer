@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- SecretCustomer Localization Resources - Deutsch (German) -->
+<!-- Import to database: POST /api/localization/import/{languageId}/default -->
 <Language Name="Deutsch" LanguageCulture="de-DE" UniqueSeoCode="de">
   <LocaleResource Name="Common.Save">
     <Value>Speichern</Value>
@@ -10,10 +12,10 @@
     <Value>Löschen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DeleteConfirmation">
-    <Value>Löschen bestätigen</Value>
+    <Value>Löschbestätigung</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DeleteConfirmationMessage">
-    <Value>Sind Sie sicher, dass Sie diesen Datensatz löschen möchten?</Value>
+    <Value>Möchten Sie diesen Eintrag wirklich löschen?</Value>
   </LocaleResource>
   <LocaleResource Name="Common.YesDelete">
     <Value>Ja, löschen</Value>
@@ -34,7 +36,7 @@
     <Value>Suchen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Filter">
-    <Value>Filtern</Value>
+    <Value>Filter</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Clear">
     <Value>Leeren</Value>
@@ -49,7 +51,7 @@
     <Value>Weiter</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Previous">
-    <Value>Vorherige</Value>
+    <Value>Zurück</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Yes">
     <Value>Ja</Value>
@@ -64,7 +66,7 @@
     <Value>Bestätigen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Loading">
-    <Value>Laden...</Value>
+    <Value>Wird geladen...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NoData">
     <Value>Keine Daten gefunden</Value>
@@ -88,7 +90,7 @@
     <Value>Auswählen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.SelectAll">
-    <Value>Alle Auswählen</Value>
+    <Value>Alle auswählen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Export">
     <Value>Exportieren</Value>
@@ -124,7 +126,7 @@
     <Value>Warnung</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Info">
-    <Value>Information</Value>
+    <Value>Info</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Name">
     <Value>Name</Value>
@@ -169,7 +171,7 @@
     <Value>Prozent</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Score">
-    <Value>Punktzahl</Value>
+    <Value>Punkte</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AppName">
     <Value>Mystery Shopper</Value>
@@ -190,7 +192,7 @@
     <Value>Nachname</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Saving">
-    <Value>Speichern...</Value>
+    <Value>Wird gespeichert...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Total">
     <Value>Gesamt</Value>
@@ -200,6 +202,347 @@
   </LocaleResource>
   <LocaleResource Name="Common.Refresh">
     <Value>Aktualisieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Status.Pending">
+    <Value>Ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Status.InProgress">
+    <Value>In Bearbeitung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Status.Draft">
+    <Value>Entwurf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Project">
+    <Value>Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Checklist">
+    <Value>Checkliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DueDate">
+    <Value>Fälligkeitsdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NotSpecified">
+    <Value>Nicht angegeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ViewDetails">
+    <Value>Details anzeigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastUpdate">
+    <Value>Letzte Aktualisierung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Continue">
+    <Value>Fortfahren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Other">
+    <Value>Sonstige</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Confirmation">
+    <Value>Bestätigung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ConfirmMessage">
+    <Value>Möchten Sie mit dieser Aktion wirklich fortfahren?</Value>
+  </LocaleResource>
+
+  <!-- Layout -->
+  <LocaleResource Name="Layout.AppTitle">
+    <Value>Mystery Shopper Bewertungssystem</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.ViewingAs">
+    <Value>angezeigt als</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.Exit">
+    <Value>Beenden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.ViewAsCompany">
+    <Value>Als Unternehmen anzeigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.SelectCustomer">
+    <Value>Kunde auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.SelectCustomerPlaceholder">
+    <Value>Kunde auswählen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.ImpersonationDescription">
+    <Value>Diese Funktion ermöglicht es Ihnen, das System als ausgewählter Kunde zu sehen. Ihre Aktionen werden protokolliert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Layout.StartViewing">
+    <Value>Ansicht starten</Value>
+  </LocaleResource>
+
+  <!-- Permission -->
+  <LocaleResource Name="Permission.Title">
+    <Value>Berechtigungsverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.AllPermissions">
+    <Value>Alle Berechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.RolePermissions">
+    <Value>Rollenberechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.UserPermissions">
+    <Value>Benutzerberechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SystemPermissions">
+    <Value>Systemberechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.AllCategories">
+    <Value>Alle Kategorien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Code">
+    <Value>Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Category">
+    <Value>Kategorie</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.NoPermissionsFound">
+    <Value>Keine Berechtigungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Roles">
+    <Value>Rollen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Permissions">
+    <Value>Berechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SelectRole">
+    <Value>Rolle auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SelectRoleToView">
+    <Value>Wählen Sie eine Rolle aus der Liste links aus, um Berechtigungen anzuzeigen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SearchUser">
+    <Value>Benutzer suchen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SearchUserPlaceholder">
+    <Value>Name, Nachname oder E-Mail...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.NoUserFound">
+    <Value>Kein Benutzer gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.EffectivePermissions">
+    <Value>Effektive Berechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.NoEffectivePermissions">
+    <Value>Dieser Benutzer hat keine effektiven Berechtigungen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.CustomPermissions">
+    <Value>Benutzerdefinierte Berechtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.AddCustomPermission">
+    <Value>Benutzerdefinierte Berechtigung hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Permission">
+    <Value>Berechtigung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Scope">
+    <Value>Geltungsbereich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Validity">
+    <Value>Gültigkeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.NoCustomPermissions">
+    <Value>Dieser Benutzer hat keine benutzerdefinierten Berechtigungen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SelectUserToView">
+    <Value>Wählen Sie einen Benutzer aus der Liste links aus, um Berechtigungen anzuzeigen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.GrantPermission">
+    <Value>Berechtigung erteilen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.RevokePermission">
+    <Value>Berechtigung widerrufen (Überschreiben)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Note">
+    <Value>Notiz</Value>
+  </LocaleResource>
+
+  <!-- Organization -->
+  <LocaleResource Name="Organization.Title">
+    <Value>Organisationsverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.TreeView">
+    <Value>Baumansicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.ListView">
+    <Value>Listenansicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewUnit">
+    <Value>Neue Einheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.LoadingStructure">
+    <Value>Organisationsstruktur wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoUnitsYet">
+    <Value>Noch keine Organisationseinheiten gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.CreateFirstUnit">
+    <Value>Erste Einheit erstellen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SearchPlaceholder">
+    <Value>Einheitsname oder Code...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType">
+    <Value>Einheitstyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType.Company">
+    <Value>Unternehmen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType.Department">
+    <Value>Abteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType.Division">
+    <Value>Bereich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType.Team">
+    <Value>Team</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitType.Unit">
+    <Value>Einheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitName">
+    <Value>Einheitsname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Code">
+    <Value>Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Type">
+    <Value>Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.ParentUnit">
+    <Value>Übergeordnete Einheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Manager">
+    <Value>Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.User">
+    <Value>Benutzer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoUnitsMatchFilter">
+    <Value>Keine Einheiten gefunden, die den Filtern entsprechen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewUnit.Title">
+    <Value>Neue Organisationseinheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.EditUnit">
+    <Value>Einheit bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitNamePlaceholder">
+    <Value>Z.B.: Vertriebsabteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitCode">
+    <Value>Einheitscode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UnitCodePlaceholder">
+    <Value>Z.B.: SALES-001</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DescriptionPlaceholder">
+    <Value>Einheitsbeschreibung...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Order">
+    <Value>Reihenfolge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoParent">
+    <Value>Keine (Stammeinheit)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Branch">
+    <Value>Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.AddSubUnit">
+    <Value>Untereinheit hinzufügen</Value>
+  </LocaleResource>
+
+  <!-- Delegation -->
+  <LocaleResource Name="Delegation.Title">
+    <Value>Vertretungsverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.NewDelegation">
+    <Value>Neue Vertretung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.SearchPlaceholder">
+    <Value>Titel, Benutzername...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.DelegationType">
+    <Value>Vertretungstyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Type.FullAccess">
+    <Value>Vollzugriff</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Type.ReadOnly">
+    <Value>Nur Lesen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Type.ApprovalOnly">
+    <Value>Nur Genehmigung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.ApprovalStatus">
+    <Value>Genehmigungsstatus</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Approved">
+    <Value>Genehmigt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.PendingApproval">
+    <Value>Genehmigung ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.ActiveNow">
+    <Value>Aktiv (Derzeit gültig)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Loading">
+    <Value>Vertretungen werden geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Delegation">
+    <Value>Vertretung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.NoRecordsYet">
+    <Value>Noch keine Vertretungseinträge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.DelegationTitle">
+    <Value>Titel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Delegator">
+    <Value>Delegierender</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Delegatee">
+    <Value>Stellvertreter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.DateRange">
+    <Value>Zeitraum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Type">
+    <Value>Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Reason">
+    <Value>Grund</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.EditDelegation">
+    <Value>Vertretung bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.TitlePlaceholder">
+    <Value>Z.B.: Urlaubsvertretung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.DescriptionPlaceholder">
+    <Value>Vertretungsbeschreibung...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Reason.AnnualLeave">
+    <Value>Jahresurlaub</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Reason.SickLeave">
+    <Value>Krankheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Reason.BusinessTrip">
+    <Value>Geschäftsreise</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Reason.Training">
+    <Value>Schulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Delegation.NotesPlaceholder">
+    <Value>Zusätzliche Notizen...</Value>
   </LocaleResource>
 
   <!-- Profile -->
@@ -239,10 +582,10 @@
     <Value>Passwort</Value>
   </LocaleResource>
   <LocaleResource Name="Account.UsernamePlaceholder">
-    <Value>Benutzernamen eingeben</Value>
+    <Value>Geben Sie Ihren Benutzernamen ein</Value>
   </LocaleResource>
   <LocaleResource Name="Account.PasswordPlaceholder">
-    <Value>Passwort eingeben</Value>
+    <Value>Geben Sie Ihr Passwort ein</Value>
   </LocaleResource>
   <LocaleResource Name="Account.ForgotPassword">
     <Value>Passwort vergessen</Value>
@@ -251,10 +594,10 @@
     <Value>Passwort vergessen</Value>
   </LocaleResource>
   <LocaleResource Name="Account.ForgotPasswordDescription">
-    <Value>Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.</Value>
+    <Value>Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen des Passworts.</Value>
   </LocaleResource>
   <LocaleResource Name="Account.SendResetLink">
-    <Value>Zurücksetzungslink senden</Value>
+    <Value>Link senden</Value>
   </LocaleResource>
   <LocaleResource Name="Account.BackToLogin">
     <Value>Zurück zur Anmeldung</Value>
@@ -278,13 +621,13 @@
     <Value>Der Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse gesendet.</Value>
   </LocaleResource>
   <LocaleResource Name="Account.ForgotPasswordConfirmationTitle">
-    <Value>Passwort-Zurücksetzungscode gesendet</Value>
+    <Value>Passwort-Reset-Code gesendet</Value>
   </LocaleResource>
   <LocaleResource Name="Account.EmailSent">
     <Value>E-Mail gesendet</Value>
   </LocaleResource>
   <LocaleResource Name="Account.GoToResetPassword">
-    <Value>Zur Passwortzurücksetzung gehen</Value>
+    <Value>Zum Passwort zurücksetzen</Value>
   </LocaleResource>
   <LocaleResource Name="Account.SetNewPassword">
     <Value>Neues Passwort festlegen</Value>
@@ -375,7 +718,7 @@
     <Value>Ankündigungen</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Meetings">
-    <Value>Meetings</Value>
+    <Value>Besprechungen</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Trainings">
     <Value>Schulungen</Value>
@@ -408,7 +751,7 @@
     <Value>Vertretungen</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.MyAssignments">
-    <Value>Meine Zuweisungen</Value>
+    <Value>Meine Aufträge</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.MyTasks">
     <Value>Meine Aufgaben</Value>
@@ -438,7 +781,7 @@
     <Value>Organisation</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Operations">
-    <Value>Vorgänge</Value>
+    <Value>Operationen</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Activities">
     <Value>Aktivitäten</Value>
@@ -449,8 +792,157 @@
   <LocaleResource Name="Menu.SystemMenu">
     <Value>System</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.BankVisits">
-    <Value>Bankbesuche</Value>
+  <LocaleResource Name="Menu.VisitDetails">
+    <Value>Besuchsfelder</Value>
+  </LocaleResource>
+
+  <!-- Visit Details -->
+  <LocaleResource Name="VisitDetails.Title">
+    <Value>Besuchsdetailverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Sectors">
+    <Value>Sektoren</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldDefinitions">
+    <Value>Felddefinitionen</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.SectorList">
+    <Value>Sektorenliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldDefinitionList">
+    <Value>Felddefinitionen</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.NewSector">
+    <Value>Neuer Sektor</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.EditSector">
+    <Value>Sektor bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.NewField">
+    <Value>Neues Feld</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.EditField">
+    <Value>Feld bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Sector">
+    <Value>Sektor</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType">
+    <Value>Feldtyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category">
+    <Value>Kategorie</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Required">
+    <Value>Erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldCount">
+    <Value>Feldanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.ViewFields">
+    <Value>Felder anzeigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.AllSectors">
+    <Value>Alle Sektoren</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.CommonField">
+    <Value>Gemeinsames Feld (Alle Sektoren)</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Common">
+    <Value>Gemeinsam</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.NoSectors">
+    <Value>Noch keine Sektoren definiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.NoFields">
+    <Value>Noch keine Felddefinitionen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.IconClass">
+    <Value>Icon-Klasse</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.CodeHelp">
+    <Value>Eindeutiger Sektorcode (Großbuchstaben, keine Leerzeichen)</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.MaxRating">
+    <Value>Maximale Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.MaxLength">
+    <Value>Maximale Länge</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.MinValue">
+    <Value>Minimalwert</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.MaxValue">
+    <Value>Maximalwert</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Placeholder">
+    <Value>Platzhalter</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.HelpText">
+    <Value>Hilfetext</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.Int">
+    <Value>Ganzzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.Decimal">
+    <Value>Dezimalzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.Bool">
+    <Value>Ja/Nein</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.String">
+    <Value>Text</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.DateTime">
+    <Value>Datum/Uhrzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldType.Rating">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category.Time">
+    <Value>Zeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category.Staff">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category.Facility">
+    <Value>Einrichtung</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category.General">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.Category.Sector">
+    <Value>Sektorspezifisch</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.SectorCreated">
+    <Value>Sektor erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.SectorUpdated">
+    <Value>Sektor aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.SectorDeleted">
+    <Value>Sektor gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldCreated">
+    <Value>Felddefinition erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldUpdated">
+    <Value>Felddefinition aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.FieldDeleted">
+    <Value>Felddefinition gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.CodeNameRequired">
+    <Value>Code- und Namensfelder sind erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.LoadError">
+    <Value>Fehler beim Laden der Daten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.SaveError">
+    <Value>Speicherfehler.</Value>
+  </LocaleResource>
+  <LocaleResource Name="VisitDetails.DeleteError">
+    <Value>Löschfehler.</Value>
   </LocaleResource>
 
   <!-- Dashboard -->
@@ -461,16 +953,16 @@
     <Value>Willkommen</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.TotalEvaluations">
-    <Value>Gesamtbewertungen</Value>
+    <Value>Bewertungen gesamt</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.AverageScore">
-    <Value>Durchschnittliche Punktzahl</Value>
+    <Value>Durchschnittspunktzahl</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.ActiveProjects">
     <Value>Aktive Projekte</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.TotalBranches">
-    <Value>Gesamtfilialen</Value>
+    <Value>Filialen gesamt</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.MonthlyTrend">
     <Value>Monatlicher Bewertungstrend</Value>
@@ -485,34 +977,34 @@
     <Value>Top-Performer</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.NeedsImprovement">
-    <Value>5 Filialen mit Verbesserungsbedarf</Value>
+    <Value>Letzte 5 Filialen</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.PersonalScorecard">
     <Value>Persönliche Leistungskarte</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.ThisMonth">
-    <Value>Diesen Monat</Value>
+    <Value>Dieser Monat</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.LastMonth">
-    <Value>Letzten Monat</Value>
+    <Value>Letzter Monat</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Evaluation">
     <Value>Bewertung</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Ranking">
-    <Value>Ranking</Value>
+    <Value>Rangliste</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.YourAverage">
     <Value>Ihr Durchschnitt</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.CompanyAverage">
-    <Value>Firmendurchschnitt</Value>
+    <Value>Unternehmensdurchschnitt</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.MonthlyChange">
     <Value>Monatliche Veränderung</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.NoAnnouncements">
-    <Value>Keine Ankündigungen vorhanden.</Value>
+    <Value>Keine Ankündigungen gefunden.</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.ActiveBranches">
     <Value>Aktive Filialen</Value>
@@ -538,13 +1030,13 @@
     <Value>Neuer Kunde</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.EditCustomer">
-    <Value>Kunde Bearbeiten</Value>
+    <Value>Kunde bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.CustomerName">
     <Value>Kundenname</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.ContactPerson">
-    <Value>Kontaktperson</Value>
+    <Value>Ansprechpartner</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Phone">
     <Value>Telefon</Value>
@@ -559,18 +1051,295 @@
     <Value>Steuernummer</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.DeleteConfirm">
-    <Value>Sind Sie sicher, dass Sie diesen Kunden löschen möchten?</Value>
+    <Value>Möchten Sie diesen Kunden wirklich löschen?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoCustomers">
+    <Value>Keine Kunden gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CompanyName">
+    <Value>Firmenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CompanyNamePlaceholder">
+    <Value>ABC GmbH</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.City">
+    <Value>Stadt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CityPlaceholder">
+    <Value>Berlin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.AddressPlaceholder">
+    <Value>Hauptstraße 123...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Project">
+    <Value>Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Contract">
+    <Value>Vertrag</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ContractStartDate">
+    <Value>Vertragsbeginn</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ContractEndDate">
+    <Value>Vertragsende</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NotesPlaceholder">
+    <Value>Notizen zum Kunden...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CustomerPersonnel">
+    <Value>Kundenpersonal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ResetPassword">
+    <Value>Passwort zurücksetzen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.PasswordMinLength">
+    <Value>Mindestens 6 Zeichen erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Resetting">
+    <Value>Wird zurückgesetzt...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SearchPersonnel">
+    <Value>Personal suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewPersonnel">
+    <Value>Neues Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.EditPersonnel">
+    <Value>Personal bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoPersonnel">
+    <Value>Kein Personal für diesen Kunden gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.FirstNamePlaceholder">
+    <Value>Max</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.LastNamePlaceholder">
+    <Value>Mustermann</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.PasswordOptional">
+    <Value>Passwort (Ausfüllen zum Ändern)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.PasswordUnchanged">
+    <Value>Leer lassen, um aktuelles Passwort beizubehalten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Role.Manager">
+    <Value>Kundenmanager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Role.Supervisor">
+    <Value>Kundenaufseher</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Role.Operator">
+    <Value>Kundenbediener</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Role.Viewer">
+    <Value>Kundenbetrachter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Department">
+    <Value>Abteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DepartmentPlaceholder">
+    <Value>Qualitätskontrolle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.JobTitle">
+    <Value>Berufsbezeichnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.TitlePlaceholder">
+    <Value>Qualitätsmanager</Value>
+  </LocaleResource>
+
+  <!-- FieldWorkers -->
+  <LocaleResource Name="FieldWorker.Title">
+    <Value>Außendienstmitarbeiter</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.NewFieldWorker">
+    <Value>Neuer Außendienstmitarbeiter</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.EditFieldWorker">
+    <Value>Außendienstmitarbeiter bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.NoFieldWorkers">
+    <Value>Keine Außendienstmitarbeiter gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.FullName">
+    <Value>Vollständiger Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.FirstName">
+    <Value>Vorname</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.FirstNamePlaceholder">
+    <Value>Max</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.LastName">
+    <Value>Nachname</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.LastNamePlaceholder">
+    <Value>Mustermann</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Username">
+    <Value>Benutzername</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.UsernamePlaceholder">
+    <Value>max.mustermann</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Password">
+    <Value>Passwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.PasswordPlaceholder">
+    <Value>Mindestens 6 Zeichen</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Phone">
+    <Value>Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.PhonePlaceholder">
+    <Value>+49 30 123 4567</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.EmailPlaceholder">
+    <Value>max@beispiel.de</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Address">
+    <Value>Adresse</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.AddressPlaceholder">
+    <Value>Vollständige Adresse...</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.NotesPlaceholder">
+    <Value>Zusätzliche Notizen...</Value>
+  </LocaleResource>
+
+  <!-- Personnel -->
+  <LocaleResource Name="Personnel.Title">
+    <Value>Personalverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.NewPersonnel">
+    <Value>Neues Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EditPersonnel">
+    <Value>Personal bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.NoPersonnel">
+    <Value>Keine Personaleinträge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Loading">
+    <Value>Personalliste wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SearchPlaceholder">
+    <Value>Name, Nachname, ID, Personalnummer...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Customer">
+    <Value>Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.FullName">
+    <Value>Vollständiger Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SicilNo">
+    <Value>Personalnummer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.TcKimlik">
+    <Value>Personalausweisnummer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.TcKimlikPlaceholder">
+    <Value>11 Ziffern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.JobTitle">
+    <Value>Berufsbezeichnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.JobTitlePlaceholder">
+    <Value>Kundenberater</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Phone">
+    <Value>Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.PhonePlaceholder">
+    <Value>+49 30 123 4567</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Evaluation">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.PersonalInfo">
+    <Value>Persönliche Informationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.FirstName">
+    <Value>Vorname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.LastName">
+    <Value>Nachname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Gender">
+    <Value>Geschlecht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Gender.NotSpecified">
+    <Value>Nicht angegeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Gender.Male">
+    <Value>Männlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Gender.Female">
+    <Value>Weiblich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.BirthDate">
+    <Value>Geburtsdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.HireDate">
+    <Value>Einstellungsdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.JobInfo">
+    <Value>Berufsinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.ErpNo">
+    <Value>ERP-Nr.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Department">
+    <Value>Abteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DepartmentPlaceholder">
+    <Value>Kundenservice</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.ContactInfo">
+    <Value>Kontaktinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EmailPlaceholder">
+    <Value>beispiel@email.de</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Other">
+    <Value>Sonstiges</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.NotesPlaceholder">
+    <Value>Notizen zum Personal...</Value>
   </LocaleResource>
 
   <!-- Projects -->
   <LocaleResource Name="Project.Title">
-    <Value>Projekte</Value>
+    <Value>Projektverwaltung</Value>
   </LocaleResource>
   <LocaleResource Name="Project.NewProject">
     <Value>Neues Projekt</Value>
   </LocaleResource>
   <LocaleResource Name="Project.EditProject">
-    <Value>Projekt Bearbeiten</Value>
+    <Value>Projekt bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.CreateProject">
+    <Value>Neues Projekt erstellen</Value>
   </LocaleResource>
   <LocaleResource Name="Project.ProjectName">
     <Value>Projektname</Value>
@@ -596,6 +1365,264 @@
   <LocaleResource Name="Project.Pending">
     <Value>Ausstehend</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.TotalProjects">
+    <Value>Projekte gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.UpcomingEnd">
+    <Value>Bevorstehendes Ende</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.SearchPlaceholder">
+    <Value>Projekte suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AllStatuses">
+    <Value>Alle Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AllTypes">
+    <Value>Alle Typen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Loading">
+    <Value>Projekte werden geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Projects">
+    <Value>Projekte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NoProjects">
+    <Value>Keine Projekte gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Code">
+    <Value>Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type">
+    <Value>Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Progress">
+    <Value>Fortschritt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Dates">
+    <Value>Termine</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Team">
+    <Value>Team</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NoCustomer">
+    <Value>Kunde nicht angegeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Task">
+    <Value>Aufgabe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Person">
+    <Value>Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Branch">
+    <Value>Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NoDescription">
+    <Value>Keine Beschreibung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Start">
+    <Value>Starten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Pause">
+    <Value>Pausieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Complete">
+    <Value>Abschließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Cancel">
+    <Value>Abbrechen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Draft">
+    <Value>Entwurf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Planned">
+    <Value>Geplant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Active">
+    <Value>Aktiv</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Paused">
+    <Value>Pausiert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Status.Cancelled">
+    <Value>Abgebrochen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.MysteryShopping">
+    <Value>Mystery Shopping</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.CallAuditing">
+    <Value>Anrufprüfung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.PhysicalAudit">
+    <Value>Physische Prüfung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.OnlineSurvey">
+    <Value>Online-Umfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.CustomerSatisfaction">
+    <Value>Kundenzufriedenheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.TrainingEvaluation">
+    <Value>Schulungsbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Type.QualityControl">
+    <Value>Qualitätskontrolle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.BasicInfo">
+    <Value>Grundinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Description">
+    <Value>Beschreibung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.DescriptionPlaceholder">
+    <Value>Projektbeschreibung...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Auto">
+    <Value>Auto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AutoCode">
+    <Value>Auto-Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NamePlaceholder">
+    <Value>Z.B.: 2025 Q1 Mystery Shopping Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssignmentType">
+    <Value>Zuweisungstyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Assignment.InternalBranch">
+    <Value>Interne Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Assignment.ExternalLocation">
+    <Value>Externer Standort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Assignment.Phone">
+    <Value>Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Assignment.Online">
+    <Value>Online</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Checklist">
+    <Value>Checkliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectManager">
+    <Value>Projektleiter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.TargetsAndQuotas">
+    <Value>Ziele und Kontingente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.TotalTarget">
+    <Value>Gesamtziel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.DailyQuota">
+    <Value>Tageskontingent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.WeeklyQuota">
+    <Value>Wochenkontingent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MonthlyQuota">
+    <Value>Monatskontingent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.BudgetInfo">
+    <Value>Budgetinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.EstimatedBudget">
+    <Value>Geschätztes Budget</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.CostPerEvaluation">
+    <Value>Kosten pro Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.OtherSettings">
+    <Value>Weitere Einstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ReportingFrequency">
+    <Value>Berichtshäufigkeit (Tage)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinScoreThreshold">
+    <Value>Min. Punkteschwelle (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority">
+    <Value>Priorität</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority.Normal">
+    <Value>Normal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority.Low">
+    <Value>Niedrig</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority.Medium">
+    <Value>Mittel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority.High">
+    <Value>Hoch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Priority.Critical">
+    <Value>Kritisch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Tags">
+    <Value>Tags</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.TagsPlaceholder">
+    <Value>Mit Kommas trennen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AutoGenerateReports">
+    <Value>Berichte automatisch generieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.TeamMembers">
+    <Value>Teammitglieder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AddTeamMember">
+    <Value>Teammitglied hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.User">
+    <Value>Benutzer...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Role.Evaluator">
+    <Value>Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Role.Manager">
+    <Value>Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Role.Observer">
+    <Value>Beobachter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.TargetBranches">
+    <Value>Zielfilialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AddBranch">
+    <Value>Filiale hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Target">
+    <Value>Ziel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AddAllBranches">
+    <Value>Alle Filialen hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AverageScore">
+    <Value>Durchschnittspunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.PenaltyCards">
+    <Value>Strafkarten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectInfo">
+    <Value>Projektinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.StatusActions">
+    <Value>Statusaktionen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NoTeamMember">
+    <Value>Keine Teammitglieder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.QuickInfo">
+    <Value>Schnellinfo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Eval">
+    <Value>Bew.</Value>
+  </LocaleResource>
 
   <!-- Branches -->
   <LocaleResource Name="Branch.Title">
@@ -605,7 +1632,7 @@
     <Value>Neue Filiale</Value>
   </LocaleResource>
   <LocaleResource Name="Branch.EditBranch">
-    <Value>Filiale Bearbeiten</Value>
+    <Value>Filiale bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="Branch.BranchName">
     <Value>Filialname</Value>
@@ -622,6 +1649,27 @@
   <LocaleResource Name="Branch.Region">
     <Value>Region</Value>
   </LocaleResource>
+  <LocaleResource Name="Branch.NoBranches">
+    <Value>Keine Filialen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.UserCount">
+    <Value>Benutzeranzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.NamePlaceholder">
+    <Value>Hauptfiliale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.CodePlaceholder">
+    <Value>FIL001</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.CityPlaceholder">
+    <Value>Berlin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.RegionPlaceholder">
+    <Value>Brandenburg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.AddressPlaceholder">
+    <Value>Filialadresse...</Value>
+  </LocaleResource>
 
   <!-- Checklists -->
   <LocaleResource Name="Checklist.Title">
@@ -631,7 +1679,7 @@
     <Value>Neue Checkliste</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.EditChecklist">
-    <Value>Checkliste Bearbeiten</Value>
+    <Value>Checkliste bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ChecklistName">
     <Value>Checklistenname</Value>
@@ -639,17 +1687,248 @@
   <LocaleResource Name="Checklist.Sections">
     <Value>Abschnitte</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.Section">
+    <Value>Abschnitt</Value>
+  </LocaleResource>
   <LocaleResource Name="Checklist.Questions">
     <Value>Fragen</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.TotalWeight">
-    <Value>Gesamtgewicht</Value>
+    <Value>Gesamtgewichtung</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.AddSection">
-    <Value>Abschnitt Hinzufügen</Value>
+    <Value>Abschnitt hinzufügen</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.AddQuestion">
-    <Value>Frage Hinzufügen</Value>
+    <Value>Frage hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoChecklists">
+    <Value>Keine Checklisten gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Clone">
+    <Value>Klonen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Step1.GeneralInfo">
+    <Value>Allgemeine Informationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Step2.ChecklistItems">
+    <Value>Checklistenelemente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Step3.AuditSettings">
+    <Value>Prüfungseinstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Step4.Summary">
+    <Value>Zusammenfassung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NamePlaceholder">
+    <Value>Z.B.: Anrufleistungsbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Code">
+    <Value>CL-Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Version">
+    <Value>Version</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.TemplateName">
+    <Value>Vorlagenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.TemplateNamePlaceholder">
+    <Value>Anrufleistung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type">
+    <Value>CL-Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type.CallPerformance">
+    <Value>Anrufleistung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type.PhysicalAudit">
+    <Value>Physische Prüfung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type.MysteryShopping">
+    <Value>Mystery Shopping</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type.OnlineEvaluation">
+    <Value>Online-Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Type.Survey">
+    <Value>Umfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringMethod">
+    <Value>Bewertungsmethode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringMethod.Maximum">
+    <Value>Maximum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringMethod.Average">
+    <Value>Durchschnitt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringMethod.WeightedAverage">
+    <Value>Gewichteter Durchschnitt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringMethod.Sum">
+    <Value>Summe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.DescriptionPlaceholder">
+    <Value>Kurze Beschreibung der Checkliste...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.MaxTotalPoints">
+    <Value>Max. Gesamtpunkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.EstimatedDuration">
+    <Value>Geschätzte Dauer (Min.)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ValidFrom">
+    <Value>Gültig ab</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ValidUntil">
+    <Value>Gültig bis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.IsScored">
+    <Value>Bewertet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupsAndQuestions">
+    <Value>Kontrollgruppen und Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AddGroup">
+    <Value>Gruppe hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupNamePlaceholder">
+    <Value>Gruppenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupType.Scored">
+    <Value>Bewertet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupType.Unscored">
+    <Value>Nicht bewertet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupType.Penalty">
+    <Value>Strafe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Weight">
+    <Value>Gewichtung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.WeightPoints">
+    <Value>Gewichtungspunkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Max">
+    <Value>Max</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.MaxPoints">
+    <Value>Max. Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Question">
+    <Value>Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoQuestionsInGroup">
+    <Value>Noch keine Fragen in dieser Gruppe.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionText">
+    <Value>Fragentext</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionTextPlaceholder">
+    <Value>Fragentext</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionType">
+    <Value>Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionType.Likert">
+    <Value>Likert (1-5)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionType.Star">
+    <Value>Stern (1-5)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionType.MultipleChoice">
+    <Value>Mehrfachauswahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionType.Text">
+    <Value>Text</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Scoring">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType">
+    <Value>Straftyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType.None">
+    <Value>Keine</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType.YellowCard">
+    <Value>Gelbe Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType.RedCard">
+    <Value>Rote Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyValue">
+    <Value>Strafwert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Order">
+    <Value>Reihenfolge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RecommendedNote">
+    <Value>Empfohlene Notiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RecommendedNotePlaceholder">
+    <Value>Empfehlung für den Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.HelpText">
+    <Value>Hilfetext</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.HelpTextPlaceholder">
+    <Value>Hinweis zur Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.FileAttachments">
+    <Value>Dateianhänge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.FileUploadInfo">
+    <Value>Max 10MB. Erlaubt: jpg, png, gif, pdf, doc, docx, xls, xlsx, txt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SaveBeforeAttaching">
+    <Value>Speichern Sie zuerst die Checkliste, um Dateianhänge hinzuzufügen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoGroupsWarning">
+    <Value>Noch keine Gruppen hinzugefügt. Bitte fügen Sie mindestens eine Gruppe und Frage hinzu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AuditSettingsInfo">
+    <Value>Prüfungseinstellungen enthalten zusätzliche Konfigurationen für die Bewertung.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.YellowCardCriteria">
+    <Value>Gelbe-Karte-Kriterien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.YellowCardInfo">
+    <Value>Gelbe-Karte-Situationen werden als "Strafe"-Typ in Kontrollgruppen definiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RedCardCriteria">
+    <Value>Rote-Karte-Kriterien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RedCardInfo">
+    <Value>Rote-Karte-Situationen werden als "Strafe"-Typ in Kontrollgruppen definiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SummaryInfo">
+    <Value>Zusammenfassende Informationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.TotalGroups">
+    <Value>Gruppen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.TotalQuestions">
+    <Value>Fragen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.YellowCardQuestions">
+    <Value>Gelbe-Karte-Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RedCardQuestions">
+    <Value>Rote-Karte-Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Minutes">
+    <Value>Min.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupAndQuestionSummary">
+    <Value>Gruppen- und Fragenzusammenfassung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.GroupName">
+    <Value>Gruppenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionCount">
+    <Value>Fragenanzahl</Value>
   </LocaleResource>
 
   <!-- Evaluations -->
@@ -660,7 +1939,7 @@
     <Value>Neue Bewertung</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.EditEvaluation">
-    <Value>Bewertung Bearbeiten</Value>
+    <Value>Bewertung bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.ViewEvaluation">
     <Value>Bewertungsdetails</Value>
@@ -687,7 +1966,7 @@
     <Value>Abgeschlossen</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Cancelled">
-    <Value>Abgebrochen</Value>
+    <Value>Storniert</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Notes">
     <Value>Notizen</Value>
@@ -696,13 +1975,707 @@
     <Value>Vorschläge</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.SaveAsDraft">
-    <Value>Als Entwurf Speichern</Value>
+    <Value>Als Entwurf speichern</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Complete">
     <Value>Abschließen</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.RevertToDraft">
-    <Value>Zum Entwurf Zurücksetzen</Value>
+    <Value>Zum Entwurf zurücksetzen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SearchPlaceholder">
+    <Value>Projekt, Filiale suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PendingAssignments">
+    <Value>Ausstehende Aufgaben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Drafts">
+    <Value>Entwürfe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoPendingAssignments">
+    <Value>Keine ausstehenden Aufgaben gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoCompletedEvaluations">
+    <Value>Keine abgeschlossenen Bewertungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoDraftEvaluations">
+    <Value>Keine Entwurfsbewertungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.YellowCard">
+    <Value>Gelb</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RedCard">
+    <Value>Rot</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.TempScore">
+    <Value>Vorläufige Punktzahl</Value>
+  </LocaleResource>
+
+  <!-- Meetings -->
+  <LocaleResource Name="Meeting.Title">
+    <Value>Besprechungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NewMeeting">
+    <Value>Neue Besprechung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.EditMeeting">
+    <Value>Besprechung bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Today">
+    <Value>Heute</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Upcoming">
+    <Value>Bevorstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MeetingType">
+    <Value>Besprechungsart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MeetingFormat">
+    <Value>Besprechungsformat</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.General">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.Project">
+    <Value>Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.Evaluation">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.Training">
+    <Value>Schulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.Customer">
+    <Value>Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.KickOff">
+    <Value>Kick-off</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type.Closing">
+    <Value>Abschluss</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.Planned">
+    <Value>Geplant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.Approved">
+    <Value>Genehmigt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.InProgress">
+    <Value>In Bearbeitung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.Cancelled">
+    <Value>Storniert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Status.Postponed">
+    <Value>Verschoben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Online">
+    <Value>Online</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.InPerson">
+    <Value>Vor Ort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MeetingList">
+    <Value>Besprechungsliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NoMeetingsFound">
+    <Value>Keine Besprechungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Meeting">
+    <Value>Besprechung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Type">
+    <Value>Art</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Organizer">
+    <Value>Organisator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Participant">
+    <Value>Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MeetingInfo">
+    <Value>Besprechungsinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TitleLabel">
+    <Value>Titel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Agenda">
+    <Value>Tagesordnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DateTime">
+    <Value>Datum und Uhrzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Duration">
+    <Value>Dauer (Minuten)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DurationLabel">
+    <Value>Dauer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Minutes2">
+    <Value>Minuten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Reminder">
+    <Value>Erinnerung (Stunden vorher)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Location">
+    <Value>Ort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.LocationLabel">
+    <Value>Ort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.OnlineMeeting">
+    <Value>Online-Besprechung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.PhysicalLocation">
+    <Value>Physischer Standort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Platform">
+    <Value>Plattform</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MeetingLink">
+    <Value>Besprechungslink</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NotesAndMinutes">
+    <Value>Notizen und Protokoll</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Minutes">
+    <Value>Besprechungsprotokoll</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Decisions">
+    <Value>Entscheidungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Participants">
+    <Value>Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NoParticipantsYet">
+    <Value>Noch keine Teilnehmer hinzugefügt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NoParticipantsYet2">
+    <Value>Noch keine Teilnehmer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.SelectUser">
+    <Value>Benutzer auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.ExternalParticipantName">
+    <Value>Name des externen Teilnehmers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Required">
+    <Value>Erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.JoinMeeting">
+    <Value>An Besprechung teilnehmen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NotEnteredYet">
+    <Value>Noch nicht eingegeben.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Files">
+    <Value>Dateien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.NoFilesYet">
+    <Value>Noch keine Dateien hinzugefügt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.CancelMeeting">
+    <Value>Besprechung absagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.CompleteMeeting">
+    <Value>Besprechung abschließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.MinutesPlaceholder">
+    <Value>In der Besprechung besprochene Themen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DecisionsMade">
+    <Value>Getroffene Entscheidungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DecisionsPlaceholder">
+    <Value>In der Besprechung getroffene Entscheidungen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.UploadFile">
+    <Value>Datei hochladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.File">
+    <Value>Datei</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.Uploading">
+    <Value>Wird hochgeladen...</Value>
+  </LocaleResource>
+
+  <!-- Calls -->
+  <LocaleResource Name="Call.Title">
+    <Value>Anrufverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Calls">
+    <Value>Anrufe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.NewCall">
+    <Value>Neuer Anruf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.EditCall">
+    <Value>Anruf bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Today">
+    <Value>Heute</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Missed">
+    <Value>Verpasst</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Callback">
+    <Value>Rückruf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Customer">
+    <Value>Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallType">
+    <Value>Anrufart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.Inbound">
+    <Value>Eingehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.Outbound">
+    <Value>Ausgehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.Internal">
+    <Value>Intern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.Conference">
+    <Value>Konferenz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.MysteryCall">
+    <Value>Mystery Shopper</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.InboundCall">
+    <Value>Eingehender Anruf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.OutboundCall">
+    <Value>Ausgehender Anruf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type.InternalCall">
+    <Value>Interner Anruf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.Scheduled">
+    <Value>Geplant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.Pending">
+    <Value>Ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.InProgress">
+    <Value>In Bearbeitung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.Missed">
+    <Value>Verpasst</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Status.Cancelled">
+    <Value>Storniert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.SearchPlaceholder">
+    <Value>Telefon, Name, Betreff...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.NoCallsFound">
+    <Value>Noch keine Anrufaufzeichnungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Reference">
+    <Value>Referenz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Type">
+    <Value>Art</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Subject">
+    <Value>Betreff</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Caller">
+    <Value>Anrufer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.ProjectBranch">
+    <Value>Projekt/Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Duration">
+    <Value>Dauer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.HasRecording">
+    <Value>Hat Aufnahme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallbackPending">
+    <Value>Rückruf ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallInfo">
+    <Value>Anrufinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Priority">
+    <Value>Priorität</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Priority.Low">
+    <Value>Niedrig</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Priority.Normal">
+    <Value>Normal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Priority.High">
+    <Value>Hoch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Priority.Urgent">
+    <Value>Dringend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.ScheduledDate">
+    <Value>Geplantes Datum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.SubjectPlaceholder">
+    <Value>Anrufbetreff</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.ContactInfo">
+    <Value>Kontaktinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallerPhone">
+    <Value>Anrufertelefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallerName">
+    <Value>Anrufername</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CalledPhone">
+    <Value>Angerufenes Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.NotesAndOutcome">
+    <Value>Notizen und Ergebnis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Outcome">
+    <Value>Ergebnis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallbackRequired">
+    <Value>Rückruf erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallbackDate">
+    <Value>Rückrufdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallbackNote">
+    <Value>Rückrufnotiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Relations">
+    <Value>Beziehungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Branch">
+    <Value>Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.AssignedUser">
+    <Value>Zugewiesener Benutzer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Tags">
+    <Value>Tags</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TagsPlaceholder">
+    <Value>durch Kommas trennen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.StartTime">
+    <Value>Startzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.EndTime">
+    <Value>Endzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Scheduled">
+    <Value>Geplant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallerPhoneShort">
+    <Value>Anrufertelefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CalledPhoneShort">
+    <Value>Angerufenes Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Assigned">
+    <Value>Zugewiesen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Waiting">
+    <Value>Wartend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Note">
+    <Value>Notiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CallRecording">
+    <Value>Anrufaufnahme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Timeline">
+    <Value>Zeitachse</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Created">
+    <Value>Erstellt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.Started">
+    <Value>Gestartet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.CompleteCall">
+    <Value>Anruf abschließen</Value>
+  </LocaleResource>
+
+  <!-- Trainings -->
+  <LocaleResource Name="Training.Title">
+    <Value>Schulungsverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Trainings">
+    <Value>Schulungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NewTraining">
+    <Value>Neue Schulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EditTraining">
+    <Value>Schulung bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Info">
+    <Value>Schulungsinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Code">
+    <Value>Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type">
+    <Value>Art</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category">
+    <Value>Kategorie</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Duration">
+    <Value>Dauer (Minuten)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Trainer">
+    <Value>Trainer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Participant">
+    <Value>Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Participants">
+    <Value>Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Certificate">
+    <Value>Zertifikat</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoRecords">
+    <Value>Keine Schulungsaufzeichnungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SearchPlaceholder">
+    <Value>Titel, Code...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Mandatory">
+    <Value>Pflicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Start">
+    <Value>Starten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Complete">
+    <Value>Abschließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DateLocation">
+    <Value>Datum und Ort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.StartDate">
+    <Value>Startdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EndDate">
+    <Value>Enddatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.OnlineLink">
+    <Value>Online-Link</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Content">
+    <Value>Inhalt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Curriculum">
+    <Value>Lehrplan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Objectives">
+    <Value>Ziele</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Prerequisites">
+    <Value>Voraussetzungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InternalTrainer">
+    <Value>Interner Trainer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalTrainerName">
+    <Value>Name des externen Trainers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalTrainerCompany">
+    <Value>Firma des externen Trainers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MaxParticipants">
+    <Value>Max. Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MandatoryTraining">
+    <Value>Pflichtschulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.HasCertificate">
+    <Value>Stellt Zertifikat aus</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PassingScore">
+    <Value>Bestehensgrenze (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Cost">
+    <Value>Kosten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Currency">
+    <Value>Währung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TagsPlaceholder">
+    <Value>Durch Kommas trennen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Score">
+    <Value>Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CertificateIssued">
+    <Value>Ausgestellt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.IssueCertificate">
+    <Value>Zertifikat ausstellen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoParticipants">
+    <Value>Noch keine Teilnehmer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Materials">
+    <Value>Materialien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Required">
+    <Value>Erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoMaterials">
+    <Value>Noch keine Materialien.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Unlimited">
+    <Value>Unbegrenzt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Current">
+    <Value>Aktuell</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddParticipant">
+    <Value>Teilnehmer hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InternalUser">
+    <Value>Interner Benutzer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalParticipant">
+    <Value>Externer Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.UpdateParticipant">
+    <Value>Teilnehmer aktualisieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Feedback">
+    <Value>Feedback</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Rating">
+    <Value>Bewertung (1-5)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddMaterial">
+    <Value>Material hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.OrExternalLink">
+    <Value>oder externer Link</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.RequiredMaterial">
+    <Value>Erforderliches Material</Value>
+  </LocaleResource>
+  <!-- Training Types -->
+  <LocaleResource Name="Training.Type.InPerson">
+    <Value>Vor Ort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.Online">
+    <Value>Online</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.Hybrid">
+    <Value>Hybrid</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.SelfPaced">
+    <Value>Selbstgesteuert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.OnTheJob">
+    <Value>Praxisschulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.Workshop">
+    <Value>Workshop</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.Seminar">
+    <Value>Seminar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Type.Certification">
+    <Value>Zertifizierung</Value>
+  </LocaleResource>
+  <!-- Training Status -->
+  <LocaleResource Name="Training.Status.Draft">
+    <Value>Entwurf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.Planned">
+    <Value>Geplant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.Approved">
+    <Value>Genehmigt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.InProgress">
+    <Value>In Bearbeitung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.Cancelled">
+    <Value>Storniert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Status.Postponed">
+    <Value>Verschoben</Value>
+  </LocaleResource>
+  <!-- Training Categories -->
+  <LocaleResource Name="Training.Category.General">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Technical">
+    <Value>Technisch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Sales">
+    <Value>Vertrieb</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.CustomerService">
+    <Value>Kundenservice</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Management">
+    <Value>Management</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Communication">
+    <Value>Kommunikation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Product">
+    <Value>Produkt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Process">
+    <Value>Prozess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Safety">
+    <Value>Sicherheit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Category.Compliance">
+    <Value>Compliance</Value>
+  </LocaleResource>
+  <!-- Participant Status -->
+  <LocaleResource Name="Training.ParticipantStatus.Invited">
+    <Value>Eingeladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.Accepted">
+    <Value>Angenommen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.Declined">
+    <Value>Abgelehnt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.Attended">
+    <Value>Teilgenommen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.NotAttended">
+    <Value>Nicht teilgenommen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantStatus.Failed">
+    <Value>Nicht bestanden</Value>
   </LocaleResource>
 
   <!-- Reports -->
@@ -713,13 +2686,13 @@
     <Value>Datumsbereich</Value>
   </LocaleResource>
   <LocaleResource Name="Report.GenerateReport">
-    <Value>Bericht Erstellen</Value>
+    <Value>Bericht erstellen</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExportExcel">
-    <Value>Nach Excel Exportieren</Value>
+    <Value>Nach Excel exportieren</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExportPDF">
-    <Value>Nach PDF Exportieren</Value>
+    <Value>Als PDF exportieren</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Summary">
     <Value>Zusammenfassung</Value>
@@ -746,7 +2719,7 @@
     <Value>Strafbewertungen</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Suggestions">
-    <Value>Vorschlägebericht</Value>
+    <Value>Vorschlagsbericht</Value>
   </LocaleResource>
 
   <!-- Users -->
@@ -757,7 +2730,7 @@
     <Value>Neuer Benutzer</Value>
   </LocaleResource>
   <LocaleResource Name="User.EditUser">
-    <Value>Benutzer Bearbeiten</Value>
+    <Value>Benutzer bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="User.FullName">
     <Value>Vollständiger Name</Value>
@@ -772,10 +2745,10 @@
     <Value>Passwort</Value>
   </LocaleResource>
   <LocaleResource Name="User.ConfirmPassword">
-    <Value>Passwort Bestätigen</Value>
+    <Value>Passwort bestätigen</Value>
   </LocaleResource>
   <LocaleResource Name="User.ChangePassword">
-    <Value>Passwort Ändern</Value>
+    <Value>Passwort ändern</Value>
   </LocaleResource>
   <LocaleResource Name="User.LastLogin">
     <Value>Letzte Anmeldung</Value>
@@ -792,6 +2765,51 @@
   <LocaleResource Name="User.Viewer">
     <Value>Betrachter</Value>
   </LocaleResource>
+  <LocaleResource Name="User.NoUsers">
+    <Value>Keine Benutzer gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Username">
+    <Value>Benutzername</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FirstName">
+    <Value>Vorname</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastName">
+    <Value>Nachname</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FirstNamePlaceholder">
+    <Value>Max</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastNamePlaceholder">
+    <Value>Mustermann</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.PasswordPlaceholder">
+    <Value>Mindestens 6 Zeichen</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.TeamLeader">
+    <Value>Teamleiter</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.CustomerRepresentative">
+    <Value>Kundenvertreter</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SelectBranch">
+    <Value>-- Filiale auswählen --</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.PasswordChangeInfo">
+    <Value>Sie ändern das Passwort für diesen Benutzer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.NewPassword">
+    <Value>Neues Passwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.ConfirmPasswordPlaceholder">
+    <Value>Passwort erneut eingeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.ChangePasswordBtn">
+    <Value>Passwort ändern</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Changing">
+    <Value>Wird geändert...</Value>
+  </LocaleResource>
 
   <!-- Pagination -->
   <LocaleResource Name="Pagination.First">
@@ -807,13 +2825,13 @@
     <Value>Nächste</Value>
   </LocaleResource>
   <LocaleResource Name="Pagination.Showing">
-    <Value>Angezeigt</Value>
+    <Value>Zeige</Value>
   </LocaleResource>
   <LocaleResource Name="Pagination.Of">
     <Value>von</Value>
   </LocaleResource>
   <LocaleResource Name="Pagination.Records">
-    <Value>Einträge</Value>
+    <Value>Einträgen</Value>
   </LocaleResource>
   <LocaleResource Name="Pagination.PerPage">
     <Value>Pro Seite</Value>
@@ -827,7 +2845,7 @@
     <Value>Bitte geben Sie eine gültige E-Mail-Adresse ein</Value>
   </LocaleResource>
   <LocaleResource Name="Validation.MinLength">
-    <Value>Muss mindestens {0} Zeichen haben</Value>
+    <Value>Muss mindestens {0} Zeichen lang sein</Value>
   </LocaleResource>
   <LocaleResource Name="Validation.MaxLength">
     <Value>Darf {0} Zeichen nicht überschreiten</Value>
@@ -850,7 +2868,7 @@
     <Value>Datensatz erfolgreich gelöscht</Value>
   </LocaleResource>
   <LocaleResource Name="Message.DeleteConfirm">
-    <Value>Sind Sie sicher, dass Sie diesen Datensatz löschen möchten?</Value>
+    <Value>Möchten Sie diesen Datensatz wirklich löschen?</Value>
   </LocaleResource>
   <LocaleResource Name="Message.Error">
     <Value>Ein Fehler ist aufgetreten</Value>
@@ -888,7 +2906,7 @@
     <Value>Sprache</Value>
   </LocaleResource>
   <LocaleResource Name="Settings.Theme">
-    <Value>Thema</Value>
+    <Value>Design</Value>
   </LocaleResource>
   <LocaleResource Name="Settings.DemoMode">
     <Value>Demo-Modus</Value>
@@ -902,7 +2920,7 @@
     <Value>Neue Sprache</Value>
   </LocaleResource>
   <LocaleResource Name="Language.EditLanguage">
-    <Value>Sprache Bearbeiten</Value>
+    <Value>Sprache bearbeiten</Value>
   </LocaleResource>
   <LocaleResource Name="Language.Name">
     <Value>Sprachname</Value>
@@ -917,16 +2935,16 @@
     <Value>Standard</Value>
   </LocaleResource>
   <LocaleResource Name="Language.RTL">
-    <Value>Rechts nach Links</Value>
+    <Value>Rechts nach links</Value>
   </LocaleResource>
   <LocaleResource Name="Language.DisplayOrder">
     <Value>Anzeigereihenfolge</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ImportResources">
-    <Value>Ressourcen Importieren</Value>
+    <Value>Ressourcen importieren</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ExportResources">
-    <Value>Ressourcen Exportieren</Value>
+    <Value>Ressourcen exportieren</Value>
   </LocaleResource>
   <LocaleResource Name="Language.Resources">
     <Value>Sprachressourcen</Value>
@@ -961,7 +2979,7 @@
     <Value>Anmeldung läuft...</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.CompanyLogin">
-    <Value>Firmenvertreter-Anmeldung</Value>
+    <Value>Anmeldung für Firmenvertreter</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.AdminLogin">
     <Value>Admin-Anmeldung</Value>
@@ -969,7 +2987,7 @@
 
   <!-- Menu Extra -->
   <LocaleResource Name="Menu.Assignments">
-    <Value>Zuweisungen</Value>
+    <Value>Aufgaben</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Approvals">
     <Value>Genehmigungen</Value>
@@ -983,7 +3001,7 @@
     <Value>Alle Genehmigungen</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.MyPendingRequests">
-    <Value>Anfragen auf meine Genehmigung wartend</Value>
+    <Value>Auf meine Genehmigung wartend</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Reference">
     <Value>Referenz</Value>
@@ -1001,10 +3019,10 @@
     <Value>Abgelehnt</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.NoRecords">
-    <Value>Noch keine Genehmigungsdatensätze gefunden.</Value>
+    <Value>Noch keine Genehmigungseinträge gefunden.</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Detail">
-    <Value>Genehmigungsdetail</Value>
+    <Value>Genehmigungsdetails</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Info">
     <Value>Genehmigungsinformationen</Value>
@@ -1058,10 +3076,10 @@
     <Value>Fehler beim Laden der Genehmigungen</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.DetailLoadError">
-    <Value>Genehmigungsdetail konnte nicht geladen werden</Value>
+    <Value>Genehmigungsdetails konnten nicht geladen werden</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.ConfirmApprove">
-    <Value>Sind Sie sicher, dass Sie diese Anfrage genehmigen möchten?</Value>
+    <Value>Möchten Sie diese Anfrage wirklich genehmigen?</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.ApproveSuccess">
     <Value>Genehmigung erfolgreich abgeschlossen</Value>
@@ -1070,7 +3088,7 @@
     <Value>Genehmigung fehlgeschlagen</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.ConfirmReject">
-    <Value>Sind Sie sicher, dass Sie diese Anfrage ablehnen möchten?</Value>
+    <Value>Möchten Sie diese Anfrage wirklich ablehnen?</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.RejectSuccess">
     <Value>Ablehnung erfolgreich abgeschlossen</Value>
@@ -1079,7 +3097,7 @@
     <Value>Ablehnung fehlgeschlagen</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.ConfirmCancel">
-    <Value>Sind Sie sicher, dass Sie Ihre Anfrage stornieren möchten?</Value>
+    <Value>Möchten Sie Ihre Anfrage wirklich stornieren?</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.CancelSuccess">
     <Value>Anfrage storniert</Value>
@@ -1093,7 +3111,7 @@
     <Value>Bewertung</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Type.Assignment">
-    <Value>Zuweisung</Value>
+    <Value>Aufgabe</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Type.Project">
     <Value>Projekt</Value>
@@ -1139,17 +3157,1876 @@
     <Value>Dringend</Value>
   </LocaleResource>
 
+  <!-- Notifications -->
+  <LocaleResource Name="Notification.Title">
+    <Value>Benachrichtigungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.MarkAllAsRead">
+    <Value>Alle als gelesen markieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.MarkAsRead">
+    <Value>Als gelesen markieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Unread">
+    <Value>Ungelesen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Read">
+    <Value>Gelesen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.NoRecords">
+    <Value>Keine Benachrichtigungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SearchPlaceholder">
+    <Value>Titel, Nachricht...</Value>
+  </LocaleResource>
+  <!-- Notification Types -->
+  <LocaleResource Name="Notification.Type.Info">
+    <Value>Info</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.Success">
+    <Value>Erfolg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.Warning">
+    <Value>Warnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.Error">
+    <Value>Fehler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.ApprovalRequest">
+    <Value>Genehmigungsanfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.Assignment">
+    <Value>Aufgabe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.MeetingInvite">
+    <Value>Besprechungseinladung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.TrainingInvite">
+    <Value>Schulungseinladung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.Reminder">
+    <Value>Erinnerung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Type.System">
+    <Value>System</Value>
+  </LocaleResource>
+
+  <!-- Notification Settings -->
+  <LocaleResource Name="Notification.Settings.Title">
+    <Value>Benachrichtigungseinstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Preferences">
+    <Value>Benachrichtigungspräferenzen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Description">
+    <Value>Wählen Sie aus, über welche Kanäle Sie für jeden Benachrichtigungstyp Nachrichten erhalten möchten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.NotificationType">
+    <Value>Benachrichtigungstyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.InApp">
+    <Value>In-App</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.SMS">
+    <Value>SMS</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Push">
+    <Value>Push</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Channels">
+    <Value>Benachrichtigungskanäle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.InApp.Desc">
+    <Value>Wird angezeigt, wenn Sie im System angemeldet sind</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Email.Desc">
+    <Value>Wird an Ihre registrierte E-Mail-Adresse gesendet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.SMS.Desc">
+    <Value>Wird an Ihre registrierte Telefonnummer gesendet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Push.Desc">
+    <Value>Push-Benachrichtigung an Ihr Mobilgerät</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.ImportantNotes">
+    <Value>Wichtige Hinweise</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Note.AutoSave">
+    <Value>Änderungen werden automatisch gespeichert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Note.Urgent">
+    <Value>Dringende Benachrichtigungen werden immer gesendet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.Note.System">
+    <Value>Systembenachrichtigungen können nicht deaktiviert werden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.NoRecords">
+    <Value>Keine Benachrichtigungseinstellungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.Settings.CreateDefaults">
+    <Value>Standardeinstellungen erstellen</Value>
+  </LocaleResource>
+
+  <!-- Settings -->
+  <LocaleResource Name="Setting.Title">
+    <Value>Systemeinstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.NewSetting">
+    <Value>Neue Einstellung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.EditSetting">
+    <Value>Einstellung bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.Category">
+    <Value>Kategorie</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.Key">
+    <Value>Schlüssel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.Value">
+    <Value>Wert</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.ValueType">
+    <Value>Werttyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.System">
+    <Value>System</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.NoRecords">
+    <Value>Keine Einstellungen gefunden.</Value>
+  </LocaleResource>
+
+  <!-- Languages -->
+  <LocaleResource Name="Language.Title">
+    <Value>Sprachverwaltung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NewLanguage">
+    <Value>Neue Sprache</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.EditLanguage">
+    <Value>Sprache bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Order">
+    <Value>Reihenfolge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Flag">
+    <Value>Flagge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Name">
+    <Value>Sprachname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Culture">
+    <Value>Kulturcode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeoCode">
+    <Value>SEO-Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.IsDefault">
+    <Value>Standard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Default">
+    <Value>Standard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceCount">
+    <Value>Ressourcenanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefault">
+    <Value>Als Standard festlegen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportXml">
+    <Value>Aus XML importieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ExportXml">
+    <Value>Als XML exportieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ViewResources">
+    <Value>Ressourcen anzeigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NoRecords">
+    <Value>Noch keine Sprachen hinzugefügt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CreateDefaults">
+    <Value>Standardsprachen erstellen (TR, EN, ES, DE)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.AvailableXmlFiles">
+    <Value>Verfügbare XML-Dateien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NamePlaceholder">
+    <Value>z.B.: Deutsch, Englisch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CulturePlaceholder">
+    <Value>z.B.: de-DE, en-US</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeoCodePlaceholder">
+    <Value>z.B.: de, en</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.FlagIcon">
+    <Value>Flaggensymbol</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.FlagIconPlaceholder">
+    <Value>z.B.: de, gb, tr</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.FlagIconHelp">
+    <Value>Verwendet flag-icon-css</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DisplayOrder">
+    <Value>Anzeigereihenfolge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.RTL">
+    <Value>Rechts nach links</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Resources">
+    <Value>Übersetzungsressourcen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SearchResource">
+    <Value>Ressourcenname suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.AllPrefixes">
+    <Value>Alle Präfixe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NewResource">
+    <Value>Neue Ressource</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.EditResource">
+    <Value>Ressource bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceName">
+    <Value>Ressourcenschlüssel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceValue">
+    <Value>Übersetzung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.NoResources">
+    <Value>Keine Ressourcen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.TotalResources">
+    <Value>Gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceUnit">
+    <Value>Ressourcen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceNamePlaceholder">
+    <Value>z.B.: Common.Save</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceValuePlaceholder">
+    <Value>Übersetzungswert</Value>
+  </LocaleResource>
+
+  <!-- Reports -->
+  <LocaleResource Name="Report.Title">
+    <Value>Berichte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportExcel">
+    <Value>Excel exportieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Downloading">
+    <Value>Wird heruntergeladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DetailedExcel">
+    <Value>Detailliertes Excel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Project">
+    <Value>Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Branch">
+    <Value>Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluator">
+    <Value>Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Checklist">
+    <Value>Checkliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Region">
+    <Value>Region</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllProjects">
+    <Value>Alle Projekte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllBranches">
+    <Value>Alle Filialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllEvaluators">
+    <Value>Alle Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllChecklists">
+    <Value>Alle Checklisten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllRegions">
+    <Value>Alle Regionen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AllStatuses">
+    <Value>Alle Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Status.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Status.Draft">
+    <Value>Entwurf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Status.InProgress">
+    <Value>In Bearbeitung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.StartDate">
+    <Value>Startdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EndDate">
+    <Value>Enddatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Total">
+    <Value>Gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Completed">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Pending">
+    <Value>Ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AverageScore">
+    <Value>Ø Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.YellowCard">
+    <Value>Gelbe Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RedCard">
+    <Value>Rote Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ResultsFound">
+    <Value>Ergebnisse gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Page">
+    <Value>Seite</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoResults">
+    <Value>Keine Ergebnisse gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Date">
+    <Value>Datum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Score">
+    <Value>Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Cards">
+    <Value>Karten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatedPerson">
+    <Value>Bewertete Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationDetail">
+    <Value>Bewertungsdetails</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GeneralInfo">
+    <Value>Allgemeine Informationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Scoring">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Question">
+    <Value>Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Answer">
+    <Value>Antwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Note">
+    <Value>Notiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GeneralComment">
+    <Value>Allgemeiner Kommentar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PenaltyReport">
+    <Value>Strafbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PenaltyType">
+    <Value>Strafart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalPenalties">
+    <Value>Strafen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AffectedEvaluations">
+    <Value>Betroffene Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TopPenaltyQuestions">
+    <Value>Meistbestrafte Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TopPenaltyBranches">
+    <Value>Meistbestrafte Filialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoDataYet">
+    <Value>Noch keine Daten verfügbar.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Yellow">
+    <Value>Gelb</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Red">
+    <Value>Rot</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyPenaltyTrend">
+    <Value>Monatlicher Straftrend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PenaltyEvaluations">
+    <Value>Bestrafte Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Records">
+    <Value>Einträge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoPenaltyEvaluations">
+    <Value>Keine bestraften Bewertungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ProjectBranch">
+    <Value>Projekt / Filiale</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PersonnelReportCard">
+    <Value>Personalberichtskarte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PrintPdf">
+    <Value>PDF drucken</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PersonnelSelection">
+    <Value>Personalauswahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectPersonnel">
+    <Value>Personal auswählen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GetReport">
+    <Value>Bericht abrufen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadingReportCard">
+    <Value>Berichtskarte wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluation">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.HighestScore">
+    <Value>Höchste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LowestScore">
+    <Value>Niedrigste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyPerformanceTrend">
+    <Value>Monatlicher Leistungstrend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Period">
+    <Value>Zeitraum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SectionPerformance">
+    <Value>Bereichsleistung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Section">
+    <Value>Bereich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuccessRate">
+    <Value>Erfolgsquote %</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.StrengthsWeaknesses">
+    <Value>Stärken und Schwächen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Strengths">
+    <Value>Stärken</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NeedsImprovement">
+    <Value>Verbesserungsbedarf</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RecentEvaluations">
+    <Value>Aktuelle Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluationsForPersonnel">
+    <Value>Keine Bewertungen für dieses Personal gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectPersonnelToViewReport">
+    <Value>Wählen Sie Personal aus, um die Berichtskarte anzuzeigen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionsReport">
+    <Value>Vorschlagsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TextSearch">
+    <Value>Textsuche</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SearchInSuggestion">
+    <Value>In Vorschlagstext suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalSuggestions">
+    <Value>Vorschläge/Notizen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationsWithSuggestions">
+    <Value>Bewertungen mit Vorschlägen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorCount">
+    <Value>Bewerteranzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PersonnelCount">
+    <Value>Personalanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TopSuggestedQuestions">
+    <Value>Meistkommentierte Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Suggestion">
+    <Value>Vorschlag</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportInfo">
+    <Value>Berichtsinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalRecords">
+    <Value>Einträge gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionsDescription">
+    <Value>Dieser Bericht listet alle Notizen und Vorschläge auf, die von Bewertern während der Bewertungen eingegeben wurden. Notizen sind Erklärungen bei der Bewertung; Vorschläge sind Verbesserungsempfehlungen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionList">
+    <Value>Vorschlagsliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoSuggestions">
+    <Value>Keine Vorschläge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoteSuggestion">
+    <Value>Notiz / Vorschlag</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GoToEvaluation">
+    <Value>Zur Bewertung</Value>
+  </LocaleResource>
+
   <!-- Common extras -->
   <LocaleResource Name="Common.Filters">
     <Value>Filter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Settings">
+    <Value>Einstellungen</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Today">
     <Value>Heute</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Dates">
-    <Value>Termine</Value>
+    <Value>Daten</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Home">
     <Value>Startseite</Value>
+  </LocaleResource>
+
+  <!-- Excel Templates -->
+  <LocaleResource Name="ExcelTemplate.Title">
+    <Value>Excel-Vorlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NewTemplate">
+    <Value>Neue Vorlage</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoRecords">
+    <Value>Keine Excel-Vorlagen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.TemplateName">
+    <Value>Vorlagenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.EntityType">
+    <Value>Entitätstyp (Tabelle)</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ColumnCount">
+    <Value>Spaltenanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DownloadSample">
+    <Value>Beispiel-Excel herunterladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.UploadExcel">
+    <Value>Excel hochladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NewExcelTemplate">
+    <Value>Neue Excel-Vorlage</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.EditExcelTemplate">
+    <Value>Excel-Vorlage bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.TemplateNamePlaceholder">
+    <Value>z.B.: Benutzerimport</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.EntityTypeHint">
+    <Value>In welche Tabelle werden die Daten per Excel geladen?</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.EntityTypeLocked">
+    <Value>Löschen Sie zuerst alle Spalten, um die Tabelle zu ändern</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DescriptionPlaceholder">
+    <Value>Kurze Beschreibung der Vorlage...</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.SheetName">
+    <Value>Tabellenblattname</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.HasHeader">
+    <Value>Hat Kopfzeile</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Columns">
+    <Value>Spalten</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.AddColumn">
+    <Value>Spalte hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Column">
+    <Value>Spalte</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ExcelColumnName">
+    <Value>Excel-Spaltenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ExcelColumnNamePlaceholder">
+    <Value>z.B.: Vollständiger Name, E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ExcelColumnNameHint">
+    <Value>Kopfzeile in Excel angezeigt</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DatabaseField">
+    <Value>Datenbankfeld</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DatabaseFieldHint">
+    <Value>In welches Feld wird gespeichert?</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ColumnType">
+    <Value>Typ</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Text">
+    <Value>Text</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Number">
+    <Value>Zahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Date">
+    <Value>Datum</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Boolean">
+    <Value>Ja/Nein</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Phone">
+    <Value>Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Type.Dropdown">
+    <Value>Dropdown-Liste</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Order">
+    <Value>Reihenfolge</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.SampleValue">
+    <Value>Beispielwert</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DropdownOptions">
+    <Value>Dropdown-Listenwerte (durch Kommas getrennt)</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DropdownOptionsPlaceholder">
+    <Value>Option1, Option2, Option3</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoColumnsYet">
+    <Value>Noch keine Spalten hinzugefügt. Verwenden Sie die Schaltfläche "Spalte hinzufügen" oben.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.UploadExcelFile">
+    <Value>Excel-Datei hochladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ImportNote">
+    <Value>Ihre Excel-Datei muss der Vorlagenstruktur entsprechen. Laden Sie zuerst die Vorlage mit der Schaltfläche "Beispiel-Excel herunterladen" herunter.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.SelectExcelFile">
+    <Value>Excel-Datei auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.SupportedFormats">
+    <Value>Nur .xlsx und .xls Dateien werden unterstützt</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.UploadAndProcess">
+    <Value>Datei hochladen und verarbeiten</Value>
+  </LocaleResource>
+
+  <!-- Customer Personnel -->
+  <LocaleResource Name="CustomerPersonnel.Title">
+    <Value>Kundenpersonal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NewPersonnel">
+    <Value>Neues Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NoRecords">
+    <Value>Kein Kundenpersonal gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.TaskCount">
+    <Value>Aufgabenanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.ResetPassword">
+    <Value>Passwort zurücksetzen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NewCustomerPersonnel">
+    <Value>Neues Kundenpersonal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.EditCustomerPersonnel">
+    <Value>Kundenpersonal bearbeiten</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.PasswordChangeHint">
+    <Value>Passwort (Ausfüllen zum Ändern)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.PasswordKeepHint">
+    <Value>Leer lassen, um aktuelles Passwort zu behalten</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Manager">
+    <Value>Kundenmanager</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Supervisor">
+    <Value>Kundenbetreuer</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Operator">
+    <Value>Kundenoperator</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Viewer">
+    <Value>Kundenbetrachter</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.DepartmentPlaceholder">
+    <Value>Qualitätskontrolle</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.TitlePlaceholder">
+    <Value>Qualitätsmanager</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NotesPlaceholder">
+    <Value>Notizen zum Personal...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.ResetPasswordInfo">
+    <Value>Als Administrator können Sie das Passwort des Personals zurücksetzen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NewPassword">
+    <Value>Neues Passwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.MinChars">
+    <Value>Mindestens 6 Zeichen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.PasswordMinLength">
+    <Value>Muss mindestens 6 Zeichen lang sein</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.ConfirmPassword">
+    <Value>Neues Passwort (Bestätigen)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.ConfirmPasswordPlaceholder">
+    <Value>Neues Passwort erneut eingeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Resetting">
+    <Value>Wird zurückgesetzt...</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal.Branch -->
+  <LocaleResource Name="CustomerPortal.Branch.Title">
+    <Value>Filialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Branch.NotFound">
+    <Value>Filiale nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Branch.NoRecords">
+    <Value>Für Ihr Unternehmen sind keine Filialen definiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Branch.EvaluationCount">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Branch.AverageScore">
+    <Value>Ø Punktzahl</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal.Dashboard -->
+  <LocaleResource Name="CustomerPortal.Dashboard.Title">
+    <Value>Dashboard</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.TotalEvaluations">
+    <Value>Bewertungen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.AverageScore">
+    <Value>Durchschnittliche Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.BranchCount">
+    <Value>Filialanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.ThisMonth">
+    <Value>Diesen Monat</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.MonthlyTrend">
+    <Value>Monatlicher Bewertungstrend</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.ScoreDistribution">
+    <Value>Punkteverteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.RecentEvaluations">
+    <Value>Aktuelle Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.NoEvaluations">
+    <Value>Noch keine Bewertungen.</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal.Evaluation -->
+  <LocaleResource Name="CustomerPortal.Evaluation.Title">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluation.NotFound">
+    <Value>Bewertung nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluation.NoRecords">
+    <Value>Noch keine Bewertungseinträge.</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal.Report -->
+  <LocaleResource Name="CustomerPortal.Report.Title">
+    <Value>Berichte</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.TotalEvaluations">
+    <Value>Bewertungen gesamt</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.AverageScore">
+    <Value>Durchschnittliche Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.BranchCount">
+    <Value>Filialanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.ScoreDistribution">
+    <Value>Punkteverteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.MonthlyTrend">
+    <Value>Monatlicher Trend</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.BranchPerformance">
+    <Value>Filialleistung</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Report.NoPeriodData">
+    <Value>Keine Bewertungen im ausgewählten Zeitraum.</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal.Menu (Layout) -->
+  <LocaleResource Name="CustomerPortal.Menu.Dashboard">
+    <Value>Dashboard</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Evaluations">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Branches">
+    <Value>Filialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Reports">
+    <Value>Berichte</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Logout">
+    <Value>Abmelden</Value>
+  </LocaleResource>
+
+  <!-- Form (Evaluation Form - Public) -->
+  <LocaleResource Name="Form.Title">
+    <Value>Bewertungsformular</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Loading">
+    <Value>Formular wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.ThankYou">
+    <Value>Vielen Dank!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.PlannedDate">
+    <Value>Geplantes Datum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.AlreadyCompleted">
+    <Value>Diese Bewertung wurde bereits abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Points">
+    <Value>Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Yes">
+    <Value>Ja</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.No">
+    <Value>Nein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.NA">
+    <Value>N/V</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.WriteAnswer">
+    <Value>Schreiben Sie Ihre Antwort...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.AddNote">
+    <Value>Notiz hinzufügen (optional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.GeneralNotes">
+    <Value>Allgemeine Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.GeneralNotesPlaceholder">
+    <Value>Ihre allgemeinen Notizen zur Bewertung...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Submit">
+    <Value>Bewertung absenden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Submitting">
+    <Value>Wird gesendet...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Success">
+    <Value>Ihre Bewertung wurde erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Error.AssignmentNotFound">
+    <Value>Aufgabe nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Error.FormNotFound">
+    <Value>Dieses Formular wurde nicht gefunden oder ist nicht mehr gültig.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Error.ChecklistLoadFailed">
+    <Value>Checkliste konnte nicht geladen werden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Error.SubmitFailed">
+    <Value>Übermittlung fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Form.Error.SubmitError">
+    <Value>Beim Absenden der Bewertung ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+
+  <!-- Auth (API Controller) -->
+  <LocaleResource Name="Auth.InvalidCredentials">
+    <Value>Ungültiger Benutzername oder Passwort.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.LoginError">
+    <Value>Bei der Anmeldung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.LogoutSuccess">
+    <Value>Abmeldung erfolgreich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.CustomerListError">
+    <Value>Beim Laden der Kundenliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.UserNotFound">
+    <Value>Benutzerinformationen nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.ImpersonationStartError">
+    <Value>Beim Starten der Identitätsübernahme ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.ImpersonationNotActive">
+    <Value>Identitätsübernahme ist nicht aktiv.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.InvalidUserId">
+    <Value>Ungültige Benutzer-ID.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Auth.ImpersonationEndError">
+    <Value>Beim Beenden der Identitätsübernahme ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Assignment (API Controller) -->
+  <LocaleResource Name="Api.Assignment.LoadError">
+    <Value>Beim Laden der Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.NotFound">
+    <Value>Aufgabe nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.DetailLoadError">
+    <Value>Beim Laden der Aufgabendetails ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.CreateError">
+    <Value>Beim Erstellen der Aufgabe ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.BulkCreateSuccess">
+    <Value>{0} Aufgaben erfolgreich erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.BulkCreateError">
+    <Value>Beim Erstellen mehrerer Aufgaben ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.UpdateError">
+    <Value>Beim Aktualisieren der Aufgabe ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.DeleteError">
+    <Value>Beim Löschen der Aufgabe ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.FilterError">
+    <Value>Beim Filtern der Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ProjectLoadError">
+    <Value>Beim Laden der Projektaufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.BranchLoadError">
+    <Value>Beim Laden der Filialaufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.FieldWorkerLoadError">
+    <Value>Beim Laden der Außendienstmitarbeiter-Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.CompleteError">
+    <Value>Beim Abschließen der Aufgabe ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.CancelError">
+    <Value>Beim Stornieren der Aufgabe ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ReassignError">
+    <Value>Beim Neuzuweisen der Aufgabe ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ProjectCreateError">
+    <Value>Beim Erstellen der Projektaufgaben ist ein Fehler aufgetreten:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.BulkDeleteSuccess">
+    <Value>{0} Aufgaben erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ProjectDeleteError">
+    <Value>Beim Löschen der Projektaufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.SummaryLoadError">
+    <Value>Beim Laden der Aufgabenübersicht ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ProjectSummaryError">
+    <Value>Beim Laden der Projektübersichten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.BranchSummaryError">
+    <Value>Beim Laden der Filialübersichten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.ExpiredLoadError">
+    <Value>Beim Laden der abgelaufenen Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.UpcomingLoadError">
+    <Value>Beim Laden der anstehenden Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Assignment.QRCodeError">
+    <Value>Beim Generieren des QR-Codes ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Evaluation (API Controller) -->
+  <LocaleResource Name="Api.Evaluation.LoadListError">
+    <Value>Beim Laden der Bewertungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.LoadError">
+    <Value>Beim Laden der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.NotFound">
+    <Value>Bewertung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.UserNotFound">
+    <Value>Benutzerinformationen nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.AssignmentNotFound">
+    <Value>Aufgabe nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.FormLoadError">
+    <Value>Beim Laden des Bewertungsformulars ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.StartError">
+    <Value>Beim Starten der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.SubmitSuccess">
+    <Value>Bewertung erfolgreich abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.SubmitError">
+    <Value>Beim Absenden der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.DraftSaveSuccess">
+    <Value>Entwurf erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.DraftSaveError">
+    <Value>Beim Speichern des Entwurfs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.DraftUpdateSuccess">
+    <Value>Entwurf erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.DraftUpdateError">
+    <Value>Beim Aktualisieren des Entwurfs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.RevertToDraftSuccess">
+    <Value>Bewertung erfolgreich zum Entwurf zurückgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.RevertToDraftError">
+    <Value>Beim Zurücksetzen der Bewertung zum Entwurf ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.CancelSuccess">
+    <Value>Bewertung erfolgreich storniert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.CancelError">
+    <Value>Beim Stornieren der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Project (API Controller) -->
+  <LocaleResource Name="Api.Project.NotFound">
+    <Value>Projekt nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.LoadListError">
+    <Value>Beim Laden der Projekte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.LoadError">
+    <Value>Beim Laden des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.SummaryLoadError">
+    <Value>Beim Laden der Projektübersichten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.DetailLoadError">
+    <Value>Beim Laden der Projektdetails ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CreateError">
+    <Value>Beim Erstellen des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.UpdateError">
+    <Value>Beim Aktualisieren des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.DeleteError">
+    <Value>Beim Löschen des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.StatusUpdateError">
+    <Value>Beim Aktualisieren des Projektstatus ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.StartError">
+    <Value>Beim Starten des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.PauseError">
+    <Value>Beim Pausieren des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CompleteError">
+    <Value>Beim Abschließen des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CancelError">
+    <Value>Beim Stornieren des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CloseError">
+    <Value>Beim Schließen des Projekts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.TeamUpdateError">
+    <Value>Beim Aktualisieren des Projektteams ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.BranchesUpdateError">
+    <Value>Beim Aktualisieren der Projektfilialen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.StatisticsLoadError">
+    <Value>Beim Laden der Projektstatistiken ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CustomerProjectsLoadError">
+    <Value>Beim Laden der Kundenprojekte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.ManagerProjectsLoadError">
+    <Value>Beim Laden der Managerprojekte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.ActiveProjectsLoadError">
+    <Value>Beim Laden der aktiven Projekte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.UpcomingDeadlinesLoadError">
+    <Value>Beim Laden der Projekte mit anstehenden Fristen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Project.CodeGenerationError">
+    <Value>Beim Generieren des Projektcodes ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Branch (API Controller) -->
+  <LocaleResource Name="Api.Branch.NotFound">
+    <Value>Filiale nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.LoadListError">
+    <Value>Beim Laden der Filialen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.LoadError">
+    <Value>Beim Laden der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.ActiveLoadError">
+    <Value>Beim Laden der aktiven Filialen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.CreateError">
+    <Value>Beim Erstellen der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.UpdateError">
+    <Value>Beim Aktualisieren der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Branch.DeleteError">
+    <Value>Beim Löschen der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Checklist (API Controller) -->
+  <LocaleResource Name="Api.Checklist.NotFound">
+    <Value>Checkliste nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.LoadListError">
+    <Value>Beim Laden der Checklisten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.LoadError">
+    <Value>Beim Laden der Checkliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.CreateError">
+    <Value>Beim Erstellen der Checkliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.UpdateError">
+    <Value>Beim Aktualisieren der Checkliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.DeleteError">
+    <Value>Beim Löschen der Checkliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Checklist.CloneError">
+    <Value>Beim Klonen der Checkliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Customer (API Controller) -->
+  <LocaleResource Name="Api.Customer.NotFound">
+    <Value>Kunde nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.LoadListError">
+    <Value>Beim Laden der Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.LoadError">
+    <Value>Beim Laden des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.ActiveLoadError">
+    <Value>Beim Laden der aktiven Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.CreateError">
+    <Value>Beim Erstellen des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.UpdateError">
+    <Value>Beim Aktualisieren des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Customer.DeleteError">
+    <Value>Beim Löschen des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.CustomerPersonnel (API Controller) -->
+  <LocaleResource Name="Api.CustomerPersonnel.NotFound">
+    <Value>Personal nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.LoadListError">
+    <Value>Beim Laden des Kundenpersonals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.LoadError">
+    <Value>Beim Laden des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.CreateError">
+    <Value>Beim Erstellen des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.UpdateError">
+    <Value>Beim Aktualisieren des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.DeleteError">
+    <Value>Beim Löschen des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.PasswordChangeSuccess">
+    <Value>Passwort erfolgreich geändert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.PasswordChangeError">
+    <Value>Beim Ändern des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.PasswordResetSuccess">
+    <Value>Passwort erfolgreich zurückgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPersonnel.PasswordResetError">
+    <Value>Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.FieldWorker (API Controller) -->
+  <LocaleResource Name="Api.FieldWorker.NotFound">
+    <Value>Außendienstmitarbeiter nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.FieldWorker.LoadListError">
+    <Value>Beim Laden der Außendienstmitarbeiter ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.FieldWorker.LoadError">
+    <Value>Beim Laden des Außendienstmitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.FieldWorker.CreateError">
+    <Value>Beim Erstellen des Außendienstmitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.FieldWorker.UpdateError">
+    <Value>Beim Aktualisieren des Außendienstmitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.FieldWorker.DeleteError">
+    <Value>Beim Löschen des Außendienstmitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Personnel (API Controller) -->
+  <LocaleResource Name="Api.Personnel.NotFound">
+    <Value>Personal nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.LoadListError">
+    <Value>Beim Laden der Personalliste ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.LoadError">
+    <Value>Beim Laden der Personalinformationen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.CreateError">
+    <Value>Beim Erstellen des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.UpdateError">
+    <Value>Beim Aktualisieren des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.DeleteSuccess">
+    <Value>Personal erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.DeleteError">
+    <Value>Beim Löschen des Personals ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Personnel.CheckError">
+    <Value>Bei der Validierung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.User (API Controller) -->
+  <LocaleResource Name="Api.User.NotFound">
+    <Value>Benutzer nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.LoadListError">
+    <Value>Beim Laden der Benutzer ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.LoadError">
+    <Value>Beim Laden des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.ActiveLoadError">
+    <Value>Beim Laden der aktiven Benutzer ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.CreateError">
+    <Value>Beim Erstellen des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.UpdateError">
+    <Value>Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.DeleteError">
+    <Value>Beim Löschen des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.IdMismatch">
+    <Value>Benutzer-ID stimmt nicht überein.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.PasswordChangeSuccess">
+    <Value>Passwort erfolgreich geändert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.PasswordChangeFailed">
+    <Value>Passwort konnte nicht geändert werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.User.PasswordChangeError">
+    <Value>Beim Ändern des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Profile (API Controller) -->
+  <LocaleResource Name="Api.Profile.NotFound">
+    <Value>Profil nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Profile.LoadError">
+    <Value>Beim Laden des Profils ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Profile.UpdateError">
+    <Value>Beim Aktualisieren des Profils ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Profile.PasswordChangeError">
+    <Value>Beim Ändern des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.OrganizationUnit (API Controller) -->
+  <LocaleResource Name="Api.OrganizationUnit.NotFound">
+    <Value>Organisationseinheit nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.OrganizationUnit.MoveSuccess">
+    <Value>Einheit erfolgreich verschoben.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.OrganizationUnit.DeleteSuccess">
+    <Value>Organisationseinheit erfolgreich gelöscht.</Value>
+  </LocaleResource>
+
+  <!-- Api.Delegation (API Controller) -->
+  <LocaleResource Name="Api.Delegation.NotFound">
+    <Value>Delegation nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Delegation.DeleteSuccess">
+    <Value>Delegation erfolgreich gelöscht.</Value>
+  </LocaleResource>
+
+  <!-- Api.Permission (API Controller) -->
+  <LocaleResource Name="Api.Permission.LoadError">
+    <Value>Beim Laden der Berechtigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.RoleLoadError">
+    <Value>Beim Laden der Rollenberechtigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.RolePermissionUpdateSuccess">
+    <Value>Rollenberechtigung erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.RolePermissionUpdateError">
+    <Value>Beim Aktualisieren der Rollenberechtigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.BulkAssignSuccess">
+    <Value>Berechtigungen erfolgreich zugewiesen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.BulkAssignError">
+    <Value>Bei der Massenzuweisung von Berechtigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.RolePermissionRevokeSuccess">
+    <Value>Rollenberechtigung erfolgreich widerrufen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.RolePermissionRevokeError">
+    <Value>Beim Widerrufen der Rollenberechtigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.UserPermissionLoadError">
+    <Value>Beim Laden der Benutzerberechtigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.UserPermissionUpdateSuccess">
+    <Value>Benutzerberechtigung erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.UserPermissionUpdateError">
+    <Value>Beim Aktualisieren der Benutzerberechtigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.UserPermissionRevokeSuccess">
+    <Value>Benutzerberechtigung erfolgreich widerrufen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Permission.UserPermissionRevokeError">
+    <Value>Beim Widerrufen der Benutzerberechtigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Meeting (API Controller) -->
+  <LocaleResource Name="Api.Meeting.NotFound">
+    <Value>Besprechung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.CreateSuccess">
+    <Value>Besprechung erfolgreich erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.UpdateSuccess">
+    <Value>Besprechung erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.DeleteSuccess">
+    <Value>Besprechung erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.StartSuccess">
+    <Value>Besprechung gestartet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.CompleteSuccess">
+    <Value>Besprechung abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.CancelSuccess">
+    <Value>Besprechung storniert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.PostponeSuccess">
+    <Value>Besprechung verschoben.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.ParticipantAddSuccess">
+    <Value>Teilnehmer hinzugefügt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.ParticipantNotFound">
+    <Value>Teilnehmer nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.ParticipantRemoveSuccess">
+    <Value>Teilnehmer entfernt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.NotInvited">
+    <Value>Sie sind zu dieser Besprechung nicht eingeladen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Meeting.ResponseSaved">
+    <Value>Ihre Antwort wurde gespeichert.</Value>
+  </LocaleResource>
+
+  <!-- Api.Common (Shared API Messages) -->
+  <LocaleResource Name="Api.Common.FileNotSelected">
+    <Value>Keine Datei ausgewählt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileSizeExceeded10MB">
+    <Value>Die Dateigröße darf 10 MB nicht überschreiten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileSizeExceeded100MB">
+    <Value>Die Dateigröße darf 100 MB nicht überschreiten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileUploadSuccess">
+    <Value>Datei hochgeladen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileNotFound">
+    <Value>Datei nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileDeleteSuccess">
+    <Value>Datei gelöscht.</Value>
+  </LocaleResource>
+
+  <!-- Api.Call (API Controller) -->
+  <LocaleResource Name="Api.Call.NotFound">
+    <Value>Anruf nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.CreateSuccess">
+    <Value>Anruf erfolgreich erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.UpdateSuccess">
+    <Value>Anruf erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.DeleteSuccess">
+    <Value>Anruf erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.StartSuccess">
+    <Value>Anruf gestartet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.CompleteSuccess">
+    <Value>Anruf abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.MissedSuccess">
+    <Value>Anruf als verpasst markiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.CallbackCompleteSuccess">
+    <Value>Rückruf abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.RecordingUploadSuccess">
+    <Value>Anrufaufzeichnung hochgeladen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Call.RecordingNotFound">
+    <Value>Anrufaufzeichnung nicht gefunden.</Value>
+  </LocaleResource>
+
+  <!-- Api.Training (API Controller) -->
+  <LocaleResource Name="Api.Training.MaxParticipantsReached">
+    <Value>Maximale Teilnehmerzahl erreicht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Training.ParticipantAlreadyExists">
+    <Value>Dieser Benutzer ist bereits Teilnehmer.</Value>
+  </LocaleResource>
+
+  <!-- Api.Approval (API Controller) -->
+  <LocaleResource Name="Api.Approval.AlreadyResponded">
+    <Value>Diese Genehmigungsanfrage wurde bereits beantwortet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Approval.CannotCancel">
+    <Value>Diese Genehmigungsanfrage kann nicht storniert werden.</Value>
+  </LocaleResource>
+
+  <!-- Api.Notification (API Controller) -->
+  <LocaleResource Name="Api.Notification.InvalidType">
+    <Value>Ungültiger Benachrichtigungstyp.</Value>
+  </LocaleResource>
+
+  <!-- Api.Report (API Controller) -->
+  <LocaleResource Name="Api.Report.LoadError">
+    <Value>Beim Laden des Berichts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.EvaluationDetailLoadError">
+    <Value>Beim Laden der Bewertungsdetails ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.SummaryLoadError">
+    <Value>Beim Laden des Zusammenfassungsberichts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.ExcelExportError">
+    <Value>Beim Erstellen der Excel-Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.DetailedExcelExportError">
+    <Value>Beim Erstellen der detaillierten Excel-Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.PenaltiesLoadError">
+    <Value>Beim Laden des Strafenberichts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.PenaltiesExportError">
+    <Value>Beim Exportieren des Strafenberichts nach Excel ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.ReportCardLoadError">
+    <Value>Beim Laden der Berichtskarte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.ReportCardExportError">
+    <Value>Beim Exportieren der Berichtskarte ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.SuggestionsLoadError">
+    <Value>Beim Laden des Vorschlagsberichts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.TopSuggestionsLoadError">
+    <Value>Beim Laden der am häufigsten vorgeschlagenen Fragen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Report.SuggestionsExportError">
+    <Value>Beim Exportieren des Vorschlagsberichts nach Excel ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Common (Common messages - additional) -->
+  <LocaleResource Name="Api.Common.UserNotFound">
+    <Value>Benutzer nicht gefunden.</Value>
+  </LocaleResource>
+
+  <!-- Api.Dashboard (API Controller) -->
+  <LocaleResource Name="Api.Dashboard.LoadError">
+    <Value>Beim Laden des Dashboards ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Dashboard.ScorecardLoadError">
+    <Value>Beim Laden der Scorecard ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.AppSettings (API Controller) -->
+  <LocaleResource Name="Api.AppSettings.NotFound">
+    <Value>Einstellung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.AppSettings.KeyRequired">
+    <Value>Einstellungsschlüssel ist erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.AppSettings.KeyExists">
+    <Value>Dieser Schlüssel existiert bereits.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.AppSettings.SystemCannotDelete">
+    <Value>Systemeinstellungen können nicht gelöscht werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.AppSettings.DeleteSuccess">
+    <Value>Einstellung erfolgreich gelöscht.</Value>
+  </LocaleResource>
+
+  <!-- Api.Language (API Controller) -->
+  <LocaleResource Name="Api.Language.NotFound">
+    <Value>Sprache nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.CreateSuccess">
+    <Value>Sprache erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.UpdateSuccess">
+    <Value>Sprache aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.DeleteSuccess">
+    <Value>Sprache gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.AlreadySeeded">
+    <Value>Sprachen existieren bereits.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.SeededWithImport">
+    <Value>{0} Sprachen erstellt, {1} Übersetzungen importiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.ImportSuccess">
+    <Value>{0} Übersetzungen importiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Language.ChangeSuccess">
+    <Value>Sprache geändert.</Value>
+  </LocaleResource>
+
+  <!-- Api.Resource (API Controller) -->
+  <LocaleResource Name="Api.Resource.SaveSuccess">
+    <Value>Ressource gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Resource.DeleteSuccess">
+    <Value>Ressource gelöscht.</Value>
+  </LocaleResource>
+
+  <!-- Api.ExcelTemplate (API Controller) -->
+  <LocaleResource Name="Api.ExcelTemplate.NotFound">
+    <Value>Vorlage nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.GenerationFailed">
+    <Value>Excel-Generierung fehlgeschlagen: {0}</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.OnlyExcelAllowed">
+    <Value>Nur Excel-Dateien (.xlsx, .xls) sind erlaubt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.ParsingFailed">
+    <Value>Excel-Analyse fehlgeschlagen: {0}</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.UnsupportedEntityType">
+    <Value>Entitätstyp '{0}' wird für attributbasierte Vorlagenerstellung nicht unterstützt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.NoAttributesFound">
+    <Value>Keine ExcelColumn-Attribute auf {0} gefunden.</Value>
+  </LocaleResource>
+
+  <!-- Api.Answer (API Controller) -->
+  <LocaleResource Name="Api.Answer.UploadError">
+    <Value>Beim Hochladen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Answer.DeleteError">
+    <Value>Beim Löschen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Answer.DownloadError">
+    <Value>Beim Herunterladen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.VisitDetail (API Controller) -->
+  <LocaleResource Name="Api.VisitDetail.SectorsLoadError">
+    <Value>Beim Laden der Sektoren ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorNotFound">
+    <Value>Sektor nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorLoadError">
+    <Value>Beim Laden des Sektors ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorCreateError">
+    <Value>Beim Erstellen des Sektors ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorUpdateError">
+    <Value>Beim Aktualisieren des Sektors ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorDeleteSuccess">
+    <Value>Sektor gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SectorDeleteError">
+    <Value>Beim Löschen des Sektors ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldsLoadError">
+    <Value>Beim Laden der Felddefinitionen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldNotFound">
+    <Value>Felddefinition nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldLoadError">
+    <Value>Beim Laden der Felddefinition ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldCreateError">
+    <Value>Beim Erstellen der Felddefinition ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldUpdateError">
+    <Value>Beim Aktualisieren der Felddefinition ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldDeleteSuccess">
+    <Value>Felddefinition gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldDeleteError">
+    <Value>Beim Löschen der Felddefinition ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.DetailsLoadError">
+    <Value>Beim Laden der Besuchsdetails ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.SummaryLoadError">
+    <Value>Beim Laden der Besuchsübersicht ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.DetailsSaveSuccess">
+    <Value>Besuchsdetails gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.DetailsSaveError">
+    <Value>Beim Speichern der Besuchsdetails ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldValueUpdateSuccess">
+    <Value>Feldwert aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FieldValueUpdateError">
+    <Value>Beim Aktualisieren des Feldwerts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.FilterError">
+    <Value>Beim Filtern der Besuche ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.StatisticsLoadError">
+    <Value>Beim Laden der Statistiken ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.VisitDetail.CompareError">
+    <Value>Beim Vergleichen der Besuche ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Common (File operations - additional) -->
+  <LocaleResource Name="Api.Common.FilesLoadError">
+    <Value>Beim Laden der Dateien ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileSizeExceeded10MB">
+    <Value>Die Dateigröße darf 10 MB nicht überschreiten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileSizeExceeded50MB">
+    <Value>Die Dateigröße darf 50 MB nicht überschreiten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileTypeNotSupported">
+    <Value>Dieser Dateityp wird nicht unterstützt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileUploadError">
+    <Value>Beim Hochladen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileNotFoundOnServer">
+    <Value>Datei nicht auf dem Server gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileDownloadError">
+    <Value>Beim Herunterladen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Common.FileDeleteError">
+    <Value>Beim Löschen der Datei ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Question (API Controller) -->
+  <LocaleResource Name="Api.Question.NotFound">
+    <Value>Frage nicht gefunden.</Value>
+  </LocaleResource>
+
+  <!-- Api.QuestionAttachment (API Controller) -->
+  <LocaleResource Name="Api.QuestionAttachment.OrderUpdateSuccess">
+    <Value>Reihenfolge aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.QuestionAttachment.OrderUpdateError">
+    <Value>Beim Aktualisieren der Reihenfolge ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.Announcement (API Controller) -->
+  <LocaleResource Name="Api.Announcement.LoadError">
+    <Value>Beim Laden der Ankündigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.NotFound">
+    <Value>Ankündigung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.LoadSingleError">
+    <Value>Beim Laden der Ankündigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.CreateError">
+    <Value>Beim Erstellen der Ankündigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.UpdateSuccess">
+    <Value>Ankündigung aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.UpdateError">
+    <Value>Beim Aktualisieren der Ankündigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.DeleteSuccess">
+    <Value>Ankündigung gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Announcement.DeleteError">
+    <Value>Beim Löschen der Ankündigung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.CustomerVisit (API Controller) -->
+  <LocaleResource Name="Api.CustomerVisit.LoadError">
+    <Value>Beim Laden der Besuche ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.NotFound">
+    <Value>Besuch nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.LoadSingleError">
+    <Value>Beim Laden des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CreateSuccess">
+    <Value>Besuch erfolgreich erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CreateError">
+    <Value>Beim Erstellen des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.UpdateSuccess">
+    <Value>Besuch aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.UpdateError">
+    <Value>Beim Aktualisieren des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.StartSuccess">
+    <Value>Besuch gestartet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.StartError">
+    <Value>Beim Starten des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CompleteSuccess">
+    <Value>Besuch abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CompleteError">
+    <Value>Beim Abschließen des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CancelSuccess">
+    <Value>Besuch storniert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.CancelError">
+    <Value>Beim Stornieren des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.DeleteSuccess">
+    <Value>Besuch gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerVisit.DeleteError">
+    <Value>Beim Löschen des Besuchs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Api.CustomerPortalAuth -->
+  <LocaleResource Name="Api.CustomerPortalAuth.UsernamePasswordRequired">
+    <Value>Benutzername und Passwort sind erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPortalAuth.InvalidCredentials">
+    <Value>Ungültiger Benutzername oder Passwort.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPortalAuth.LoginError">
+    <Value>Bei der Anmeldung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPortalAuth.CustomerPersonnelOnly">
+    <Value>Dieser Endpunkt ist nur für Kundenpersonal.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPortalAuth.LogoutSuccess">
+    <Value>Abmeldung erfolgreich.</Value>
+  </LocaleResource>
+
+  <!-- Api.CustomerPortal -->
+  <LocaleResource Name="Api.CustomerPortal.CustomerNotFound">
+    <Value>Kundeninformationen nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.CustomerPortal.CustomerNotFoundTokenInvalid">
+    <Value>Kundeninformationen nicht gefunden. Token ist ungültig oder fehlt.</Value>
+  </LocaleResource>
+
+  <!-- Mvc.Account -->
+  <LocaleResource Name="Mvc.Account.InvalidCredentials">
+    <Value>Ungültiger Benutzername oder Passwort.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Mvc.Account.LoginError">
+    <Value>Bei der Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Mvc.Account.OperationError">
+    <Value>Bei der Operation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.</Value>
+  </LocaleResource>
+
+  <!-- Mvc.MyAssignments -->
+  <LocaleResource Name="Mvc.MyAssignments.FieldWorkerNotFound">
+    <Value>Außendienstmitarbeiter-Datensatz nicht gefunden. Bitte wenden Sie sich an den Systemadministrator.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Mvc.MyAssignments.LoadError">
+    <Value>Beim Laden der Aufgaben ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+
+  <!-- Common -->
+  <LocaleResource Name="Common.User">
+    <Value>Benutzer</Value>
   </LocaleResource>
 </Language>

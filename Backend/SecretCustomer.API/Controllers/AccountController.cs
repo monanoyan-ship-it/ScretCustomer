@@ -86,6 +86,9 @@ public class AccountController : Controller
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
 
+            // Kullanıcının kayıtlı dil tercihini uygula
+            _localizationService.ApplyUserLanguagePreference(result.UserId);
+
             _logger.LogInformation("User {Username} logged in successfully", model.Username);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))

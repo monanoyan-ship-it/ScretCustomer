@@ -40,6 +40,10 @@ public class User : BaseEntity
 
     public DateTime? LastLoginAt { get; set; }
 
+    // Language Preference
+    public Guid? PreferredLanguageId { get; set; }
+    public Language? PreferredLanguage { get; set; }
+
     // Password Reset
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiry { get; set; }

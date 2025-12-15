@@ -8,6 +8,68 @@ namespace SecretCustomer.Data;
 
 public static class SeedData
 {
+    /// <summary>
+    /// Production için temiz kurulum - sadece admin, diller ve temel ayarlar
+    /// </summary>
+    public static async Task InitializeProductionAsync(ApplicationDbContext context, ILogger logger, string basePath)
+    {
+        try
+        {
+            // Database migrations uygula
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied");
+
+            // Zaten data varsa skip et
+            if (await context.Users.AnyAsync())
+            {
+                logger.LogInformation("Database already initialized");
+                return;
+            }
+
+            logger.LogInformation("Starting PRODUCTION database initialization...");
+
+            // 1. Admin User
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin",
+                Email = "admin@secretcustomer.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                FirstName = "Sistem",
+                LastName = "Yöneticisi",
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Admin user created: admin / Admin@123");
+
+            // 2. Permissions
+            await SeedPermissionsAsync(context, logger);
+
+            // 3. App Settings
+            await SeedAppSettingsAsync(context, logger);
+
+            // 4. Languages with XML import
+            await SeedLanguagesWithImportAsync(context, logger, basePath);
+
+            logger.LogInformation("===========================================");
+            logger.LogInformation("PRODUCTION database initialization completed!");
+            logger.LogInformation("Admin Login: admin / Admin@123");
+            logger.LogInformation("===========================================");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred during production initialization");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Development/Test için örnek veriler dahil kurulum
+    /// </summary>
     public static async Task InitializeAsync(ApplicationDbContext context, ILogger logger)
     {
         try
@@ -22,7 +84,7 @@ public static class SeedData
                 return;
             }
 
-            logger.LogInformation("Starting database seed...");
+            logger.LogInformation("Starting DEVELOPMENT database seed...");
 
             // 1. Users (Admin, TeamLeader, Evaluator)
             var adminUser = new User
@@ -1365,5 +1427,128 @@ public static class SeedData
         logger.LogInformation("Languages created ({Count} languages): {Names}",
             languages.Count,
             string.Join(", ", languages.Select(l => l.Name)));
+    }
+
+    /// <summary>
+    /// Dilleri oluşturur ve XML dosyalarından çevirileri import eder
+    /// </summary>
+    private static async Task SeedLanguagesWithImportAsync(ApplicationDbContext context, ILogger logger, string basePath)
+    {
+        if (await context.Languages.AnyAsync())
+        {
+            logger.LogInformation("Languages already exist, skipping...");
+            return;
+        }
+
+        var languages = new List<Language>
+        {
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Türkçe",
+                LanguageCulture = "tr-TR",
+                UniqueSeoCode = "tr",
+                FlagImageFileName = "tr.png",
+                Rtl = false,
+                IsDefault = true,
+                IsActive = true,
+                DisplayOrder = 1,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "English",
+                LanguageCulture = "en-US",
+                UniqueSeoCode = "en",
+                FlagImageFileName = "en.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 2,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Español",
+                LanguageCulture = "es-ES",
+                UniqueSeoCode = "es",
+                FlagImageFileName = "es.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 3,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Language
+            {
+                Id = Guid.NewGuid(),
+                Name = "Deutsch",
+                LanguageCulture = "de-DE",
+                UniqueSeoCode = "de",
+                FlagImageFileName = "de.png",
+                Rtl = false,
+                IsDefault = false,
+                IsActive = true,
+                DisplayOrder = 4,
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        context.Languages.AddRange(languages);
+        await context.SaveChangesAsync();
+        logger.LogInformation("Languages created ({Count} languages)", languages.Count);
+
+        // XML dosyalarından çevirileri import et
+        var localizationPath = Path.Combine(basePath, "App_Data", "Localization");
+
+        foreach (var language in languages)
+        {
+            var xmlFile = Path.Combine(localizationPath, $"resources.{language.UniqueSeoCode}.xml");
+
+            if (File.Exists(xmlFile))
+            {
+                try
+                {
+                    var xmlContent = await File.ReadAllTextAsync(xmlFile);
+                    var doc = System.Xml.Linq.XDocument.Parse(xmlContent);
+                    var resources = doc.Descendants("LocaleResource");
+                    int count = 0;
+
+                    foreach (var resource in resources)
+                    {
+                        var name = resource.Attribute("Name")?.Value;
+                        var value = resource.Element("Value")?.Value;
+
+                        if (!string.IsNullOrEmpty(name) && value != null)
+                        {
+                            context.LocaleStringResources.Add(new LocaleStringResource
+                            {
+                                Id = Guid.NewGuid(),
+                                LanguageId = language.Id,
+                                ResourceName = name,
+                                ResourceValue = value,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            count++;
+                        }
+                    }
+
+                    await context.SaveChangesAsync();
+                    logger.LogInformation("Imported {Count} translations for {Language} from {File}",
+                        count, language.Name, xmlFile);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to import translations for {Language} from {File}",
+                        language.Name, xmlFile);
+                }
+            }
+            else
+            {
+                logger.LogWarning("XML file not found for {Language}: {File}", language.Name, xmlFile);
+            }
+        }
     }
 }

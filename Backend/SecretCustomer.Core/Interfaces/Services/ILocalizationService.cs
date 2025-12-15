@@ -41,4 +41,9 @@ public interface ILocalizationService
     string GetCurrentLanguageCode();
     void SetCurrentLanguage(Guid languageId);
     void SetCurrentLanguage(string languageCode);
+
+    /// <summary>
+    /// Kullanıcının kayıtlı dil tercihini cookie'ye uygular (login sonrası çağrılır)
+    /// </summary>
+    void ApplyUserLanguagePreference(Guid userId);
 }

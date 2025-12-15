@@ -272,12 +272,29 @@ public class LocalizationService : ILocalizationService
 
     public Guid GetCurrentLanguageId()
     {
-        // Cookie'den dene
+        // 1. Cookie'den dene (en öncelikli - kullanıcı seçimi)
         var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["Language"];
         if (Guid.TryParse(cookie, out var cookieLangId))
             return cookieLangId;
 
-        // Varsayılan dili getir (sync olarak)
+        // 2. Kullanıcının kayıtlı dil tercihinden dene
+        var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value
+            ?? _httpContextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (Guid.TryParse(userIdClaim, out var userId))
+        {
+            // Normal kullanıcı mı kontrol et
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (user?.PreferredLanguageId != null)
+                return user.PreferredLanguageId.Value;
+
+            // Müşteri personeli mi kontrol et
+            var customerPersonnel = _context.CustomerPersonnel.FirstOrDefault(cp => cp.Id == userId);
+            if (customerPersonnel?.PreferredLanguageId != null)
+                return customerPersonnel.PreferredLanguageId.Value;
+        }
+
+        // 3. Varsayılan dili getir
         var defaultLang = _context.Languages.FirstOrDefault(l => l.IsDefault && l.IsActive)
             ?? _context.Languages.FirstOrDefault(l => l.IsActive);
 
@@ -296,6 +313,9 @@ public class LocalizationService : ILocalizationService
         // Cookie'ye kaydet
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", languageId.ToString(),
             new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+
+        // Kullanıcı giriş yapmışsa, tercihini veritabanına da kaydet
+        SaveUserLanguagePreference(languageId);
     }
 
     public void SetCurrentLanguage(string languageCode)
@@ -303,6 +323,58 @@ public class LocalizationService : ILocalizationService
         var lang = _context.Languages.FirstOrDefault(l => l.UniqueSeoCode == languageCode || l.LanguageCulture == languageCode);
         if (lang != null)
             SetCurrentLanguage(lang.Id);
+    }
+
+    /// <summary>
+    /// Kullanıcının dil tercihini veritabanına kaydeder
+    /// </summary>
+    private void SaveUserLanguagePreference(Guid languageId)
+    {
+        var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value
+            ?? _httpContextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return;
+
+        // Normal kullanıcı mı kontrol et
+        var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+        if (user != null)
+        {
+            user.PreferredLanguageId = languageId;
+            _context.SaveChanges();
+            return;
+        }
+
+        // Müşteri personeli mi kontrol et
+        var customerPersonnel = _context.CustomerPersonnel.FirstOrDefault(cp => cp.Id == userId);
+        if (customerPersonnel != null)
+        {
+            customerPersonnel.PreferredLanguageId = languageId;
+            _context.SaveChanges();
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcının kayıtlı dil tercihini cookie'ye uygular (login sonrası çağrılır)
+    /// </summary>
+    public void ApplyUserLanguagePreference(Guid userId)
+    {
+        // Normal kullanıcı mı kontrol et
+        var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+        if (user?.PreferredLanguageId != null)
+        {
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", user.PreferredLanguageId.Value.ToString(),
+                new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+            return;
+        }
+
+        // Müşteri personeli mi kontrol et
+        var customerPersonnel = _context.CustomerPersonnel.FirstOrDefault(cp => cp.Id == userId);
+        if (customerPersonnel?.PreferredLanguageId != null)
+        {
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", customerPersonnel.PreferredLanguageId.Value.ToString(),
+                new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+        }
     }
 
     #endregion

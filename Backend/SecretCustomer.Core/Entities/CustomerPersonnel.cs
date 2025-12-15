@@ -53,6 +53,10 @@ public class CustomerPersonnel : BaseEntity
         Description = "Personel hakkında notlar")]
     public string? Notes { get; set; }
 
+    // Language Preference
+    public Guid? PreferredLanguageId { get; set; }
+    public Language? PreferredLanguage { get; set; }
+
     // Computed Property
     public string FullName => $"{FirstName} {LastName}";
 

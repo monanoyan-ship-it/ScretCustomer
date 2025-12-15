@@ -76,6 +76,9 @@ public class CustomerPortalAuthController : ControllerBase
             // Generate JWT token for customer personnel
             var token = _jwtHelper.GenerateCustomerPersonnelToken(personnel);
 
+            // Kullanıcının kayıtlı dil tercihini uygula
+            _localizationService.ApplyUserLanguagePreference(personnel.Id);
+
             _logger.LogInformation("[CustomerPortal] Login successful for: {Username}", loginDto.Username);
 
             return Ok(new
