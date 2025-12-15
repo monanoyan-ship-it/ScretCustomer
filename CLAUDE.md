@@ -41,6 +41,7 @@ Backend/
 
 ## Önemli Dosyalar
 
+- `KALDIGIMIZ_YER.md` - **"Nerede kaldık?" diye sorulursa bu dosyayı oku!**
 - `mp4analizi.xml` - Müşteri geribidirim analizi ve özellik takibi
 - `DEVELOPMENT_PATTERNS.md` - Kod standartları ve pattern'ler
 - `is kapsam.docx` - Proje kapsamı
