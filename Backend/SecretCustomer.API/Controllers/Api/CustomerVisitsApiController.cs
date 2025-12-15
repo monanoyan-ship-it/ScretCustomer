@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.CustomerVisit;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -17,6 +18,7 @@ public class CustomerVisitsApiController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<CustomerVisitsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx", ".mp4", ".mp3" };
     private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
@@ -24,11 +26,13 @@ public class CustomerVisitsApiController : ControllerBase
     public CustomerVisitsApiController(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
-        ILogger<CustomerVisitsApiController> logger)
+        ILogger<CustomerVisitsApiController> logger,
+        ILocalizationService localizationService)
     {
         _context = context;
         _environment = environment;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -94,7 +98,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting customer visits");
-            return StatusCode(500, new { message = "Ziyaretler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadError") });
         }
     }
 
@@ -115,7 +119,7 @@ public class CustomerVisitsApiController : ControllerBase
                 .FirstOrDefaultAsync(v => v.Id == id);
 
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             var dto = new CustomerVisitDto
             {
@@ -170,7 +174,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadSingleError") });
         }
     }
 
@@ -185,7 +189,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Common.UserNotFound") });
 
             var visit = new CustomerVisit
             {
@@ -209,12 +213,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} created", visit.Id);
 
-            return Ok(new { id = visit.Id, message = "Ziyaret başarıyla oluşturuldu." });
+            return Ok(new { id = visit.Id, message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CreateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating customer visit");
-            return StatusCode(500, new { message = "Ziyaret oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CreateError") });
         }
     }
 
@@ -229,7 +233,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             visit.CustomerId = dto.CustomerId;
             visit.BranchId = dto.BranchId;
@@ -248,12 +252,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} updated", id);
 
-            return Ok(new { message = "Ziyaret güncellendi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.UpdateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.UpdateError") });
         }
     }
 
@@ -267,7 +271,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             visit.Status = VisitStatus.InProgress;
             visit.StartTime = DateTime.UtcNow;
@@ -278,12 +282,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} started", id);
 
-            return Ok(new { message = "Ziyaret başlatıldı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.StartSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret başlatılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.StartError") });
         }
     }
 
@@ -297,7 +301,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             visit.Status = VisitStatus.Completed;
             visit.ActualDate = dto.ActualDate ?? DateTime.UtcNow;
@@ -325,12 +329,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} completed", id);
 
-            return Ok(new { message = "Ziyaret tamamlandı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CompleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error completing customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret tamamlanırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CompleteError") });
         }
     }
 
@@ -344,7 +348,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             visit.Status = VisitStatus.Cancelled;
             visit.Notes = string.IsNullOrEmpty(reason)
@@ -356,12 +360,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} cancelled", id);
 
-            return Ok(new { message = "Ziyaret iptal edildi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CancelSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret iptal edilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CancelError") });
         }
     }
 
@@ -376,7 +380,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             visit.IsDeleted = true;
             visit.UpdatedAt = DateTime.UtcNow;
@@ -384,12 +388,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Customer visit {Id} deleted", id);
 
-            return Ok(new { message = "Ziyaret silindi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.DeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting customer visit {Id}", id);
-            return StatusCode(500, new { message = "Ziyaret silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.DeleteError") });
         }
     }
 
@@ -403,17 +407,17 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(visitId);
             if (visit == null)
-                return NotFound(new { message = "Ziyaret bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
 
             if (file == null || file.Length == 0)
-                return BadRequest(new { message = "Dosya seçilmedi." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
 
             if (file.Length > MaxFileSize)
-                return BadRequest(new { message = "Dosya boyutu 50MB'dan büyük olamaz." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded50MB") });
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(extension))
-                return BadRequest(new { message = $"Bu dosya türü desteklenmiyor." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileTypeNotSupported") });
 
             // Determine attachment type from extension if not provided
             var type = attachmentType ?? (extension switch
@@ -476,7 +480,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading attachment for visit {VisitId}", visitId);
-            return StatusCode(500, new { message = "Dosya yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileUploadError") });
         }
     }
 
@@ -490,11 +494,11 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var attachment = await _context.CustomerVisitAttachments.FindAsync(id);
             if (attachment == null)
-                return NotFound(new { message = "Dosya bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
             var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
             if (!System.IO.File.Exists(filePath))
-                return NotFound(new { message = "Dosya sunucuda bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer") });
 
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
             return File(fileBytes, attachment.ContentType, attachment.FileName);
@@ -502,7 +506,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment {Id}", id);
-            return StatusCode(500, new { message = "Dosya indirilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDownloadError") });
         }
     }
 
@@ -516,7 +520,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var attachment = await _context.CustomerVisitAttachments.FindAsync(id);
             if (attachment == null)
-                return NotFound(new { message = "Dosya bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
             // Delete physical file
             var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
@@ -530,12 +534,12 @@ public class CustomerVisitsApiController : ControllerBase
 
             _logger.LogInformation("Attachment {Id} deleted", id);
 
-            return Ok(new { message = "Dosya silindi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment {Id}", id);
-            return StatusCode(500, new { message = "Dosya silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteError") });
         }
     }
 }

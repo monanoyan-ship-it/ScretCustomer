@@ -12,11 +12,16 @@ public class ReportsApiController : ControllerBase
 {
     private readonly IReportService _reportService;
     private readonly ILogger<ReportsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public ReportsApiController(IReportService reportService, ILogger<ReportsApiController> logger)
+    public ReportsApiController(
+        IReportService reportService,
+        ILogger<ReportsApiController> logger,
+        ILocalizationService localizationService)
     {
         _reportService = reportService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -33,7 +38,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations report");
-            return StatusCode(500, new { message = "Rapor yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.LoadError") });
         }
     }
 
@@ -47,14 +52,14 @@ public class ReportsApiController : ControllerBase
         {
             var result = await _reportService.GetEvaluationDetailAsync(evaluationId);
             if (result == null)
-                return NotFound(new { message = "Değerlendirme bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
 
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation detail {EvaluationId}", evaluationId);
-            return StatusCode(500, new { message = "Değerlendirme detayı yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.EvaluationDetailLoadError") });
         }
     }
 
@@ -72,7 +77,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading summary report");
-            return StatusCode(500, new { message = "Özet rapor yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SummaryLoadError") });
         }
     }
 
@@ -90,7 +95,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting evaluations to Excel");
-            return StatusCode(500, new { message = "Excel dosyası oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ExcelExportError") });
         }
     }
 
@@ -108,7 +113,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting detailed evaluations to Excel");
-            return StatusCode(500, new { message = "Detaylı Excel dosyası oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.DetailedExcelExportError") });
         }
     }
 
@@ -141,7 +146,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading penalties report");
-            return StatusCode(500, new { message = "Cezalı KL raporu yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.PenaltiesLoadError") });
         }
     }
 
@@ -172,7 +177,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting penalties to Excel");
-            return StatusCode(500, new { message = "Cezalı KL raporu Excel dosyası oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.PenaltiesExportError") });
         }
     }
 
@@ -192,7 +197,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel list for report card");
-            return StatusCode(500, new { message = "Personel listesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
         }
     }
 
@@ -218,14 +223,14 @@ public class ReportsApiController : ControllerBase
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
             if (result == null)
-                return NotFound(new { message = "Personel bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
 
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel report card for {PersonnelId}", personnelId);
-            return StatusCode(500, new { message = "Temsilci karnesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ReportCardLoadError") });
         }
     }
 
@@ -255,7 +260,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting personnel report card for {PersonnelId}", personnelId);
-            return StatusCode(500, new { message = "Temsilci karnesi dışa aktarılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError") });
         }
     }
 
@@ -298,7 +303,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading suggestions report");
-            return StatusCode(500, new { message = "Öneriler raporu yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SuggestionsLoadError") });
         }
     }
 
@@ -328,7 +333,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading top suggested questions");
-            return StatusCode(500, new { message = "En çok öneri yazılan sorular yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.TopSuggestionsLoadError") });
         }
     }
 
@@ -365,7 +370,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting suggestions to Excel");
-            return StatusCode(500, new { message = "Öneriler raporu Excel dosyası oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SuggestionsExportError") });
         }
     }
 }

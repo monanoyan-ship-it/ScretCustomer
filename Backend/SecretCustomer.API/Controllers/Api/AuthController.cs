@@ -14,15 +14,18 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly JwtHelper _jwtHelper;
     private readonly ILogger<AuthController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public AuthController(
         IAuthService authService,
         JwtHelper jwtHelper,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        ILocalizationService localizationService)
     {
         _authService = authService;
         _jwtHelper = jwtHelper;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpPost("login")]
@@ -40,7 +43,7 @@ public class AuthController : ControllerBase
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Geçersiz kullanıcı adı veya şifre." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.InvalidCredentials") });
             }
 
             // Generate JWT token
@@ -72,7 +75,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login for user {Username}", loginDto.Username);
-            return StatusCode(500, new { message = "Giriş sırasında bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Auth.LoginError") });
         }
     }
 
@@ -94,12 +97,12 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         // JWT is stateless, so just return success
         // Client will delete the token
         _logger.LogInformation("User logged out");
-        return Ok(new { message = "Logout successful" });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Auth.LogoutSuccess") });
     }
 
     // ===== IMPERSONATION (Video 17 - Firma Olarak Görüntüle) =====
@@ -119,7 +122,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customers for impersonation");
-            return StatusCode(500, new { message = "Müşteri listesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Auth.CustomerListError") });
         }
     }
 
@@ -135,7 +138,7 @@ public class AuthController : ControllerBase
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.UserNotFound") });
             }
 
             var result = await _authService.StartImpersonationAsync(userId, dto.CustomerId);
@@ -153,7 +156,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting impersonation");
-            return StatusCode(500, new { message = "Müşteri olarak görüntüleme başlatılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Auth.ImpersonationStartError") });
         }
     }
 
@@ -178,13 +181,13 @@ public class AuthController : ControllerBase
                 }
                 else
                 {
-                    return BadRequest(new { message = "Impersonation aktif değil." });
+                    return BadRequest(new { message = await _localizationService.GetResourceAsync("Auth.ImpersonationNotActive") });
                 }
             }
 
             if (!Guid.TryParse(originalUserIdClaim, out var originalUserId))
             {
-                return BadRequest(new { message = "Geçersiz kullanıcı ID." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Auth.InvalidUserId") });
             }
 
             var result = await _authService.EndImpersonationAsync(originalUserId);
@@ -201,7 +204,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error ending impersonation");
-            return StatusCode(500, new { message = "Müşteri olarak görüntüleme sonlandırılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Auth.ImpersonationEndError") });
         }
     }
 

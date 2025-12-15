@@ -1,9 +1,9 @@
 @{
-    ViewData["Title"] = "Cagri Denetleme";
+    ViewData["Title"] = Html.T("Evaluation.Title", "Çağrı Denetleme");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-clipboard-check"></i> Cagri Denetleme</h2>
+    <h2><i class="bi bi-clipboard-check"></i> @Html.T("Evaluation.Title", "Çağrı Denetleme")</h2>
 </div>
 
 <div id="evaluations-app">
@@ -12,23 +12,23 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">Durum</label>
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filterStatus">
-                        <option value="">Tumu</option>
-                        <option value="Pending">Bekleyen</option>
-                        <option value="InProgress">Devam Eden</option>
-                        <option value="Draft">Taslak</option>
-                        <option value="Completed">Tamamlanan</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Pending">@Html.T("Common.Status.Pending", "Bekleyen")</option>
+                        <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Eden")</option>
+                        <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
+                        <option value="Completed">@Html.T("Common.Status.Completed", "Tamamlanan")</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Arama</label>
-                    <input type="text" class="form-control" data-bind="value: searchTerm, valueUpdate: 'afterkeydown'" placeholder="Proje, sube ara...">
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" data-bind="value: searchTerm, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, şube ara...")">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
                     <button class="btn btn-outline-primary d-block" data-bind="click: loadEvaluations">
-                        <i class="bi bi-arrow-clockwise"></i> Yenile
+                        <i class="bi bi-arrow-clockwise"></i> @Html.T("Common.Refresh", "Yenile")
                     </button>
                 </div>
             </div>
@@ -38,7 +38,7 @@
     <!-- Loading State -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yukleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
     </div>
 
@@ -53,19 +53,19 @@
     <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'pending' }, click: function() { activeTab('pending'); }" href="#">
-                <i class="bi bi-hourglass-split"></i> Bekleyen Atamalar
+                <i class="bi bi-hourglass-split"></i> @Html.T("Evaluation.PendingAssignments", "Bekleyen Atamalar")
                 <span class="badge bg-primary" data-bind="text: pendingAssignments().length"></span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'completed' }, click: function() { activeTab('completed'); }" href="#">
-                <i class="bi bi-check-circle"></i> Tamamlanan
+                <i class="bi bi-check-circle"></i> @Html.T("Common.Status.Completed", "Tamamlanan")
                 <span class="badge bg-success" data-bind="text: completedEvaluations().length"></span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'drafts' }, click: function() { activeTab('drafts'); }" href="#">
-                <i class="bi bi-file-earmark"></i> Taslaklar
+                <i class="bi bi-file-earmark"></i> @Html.T("Evaluation.Drafts", "Taslaklar")
                 <span class="badge bg-warning text-dark" data-bind="text: draftEvaluations().length"></span>
             </a>
         </li>
@@ -75,7 +75,7 @@
     <div data-bind="visible: activeTab() === 'pending' && !isLoading()">
         <!-- Empty State -->
         <div data-bind="visible: pendingAssignments().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Bekleyen atama bulunmamaktadir.
+            <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoPendingAssignments", "Bekleyen atama bulunmamaktadır.")
         </div>
 
         <!-- Assignments Grid -->
@@ -84,8 +84,8 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong data-bind="text: projectName || 'Proje'"></strong>
-                            <span class="badge bg-primary">Bekliyor</span>
+                            <strong data-bind="text: projectName || '@Html.T("Common.Project", "Proje")'"></strong>
+                            <span class="badge bg-primary">@Html.T("Common.Status.Pending", "Bekliyor")</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -93,17 +93,17 @@
                             <i class="bi bi-building"></i> <span data-bind="text: branchName || 'N/A'"></span>
                         </p>
                         <p class="text-muted mb-2">
-                            <i class="bi bi-list-check"></i> <span data-bind="text: checklistName || 'Kontrol Listesi'"></span>
+                            <i class="bi bi-list-check"></i> <span data-bind="text: checklistName || '@Html.T("Common.Checklist", "Kontrol Listesi")'"></span>
                         </p>
                         <p class="text-muted small mb-3">
-                            <i class="bi bi-calendar"></i> Son Tarih:
-                            <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : 'Belirtilmemis'"></span>
+                            <i class="bi bi-calendar"></i> @Html.T("Common.DueDate", "Son Tarih"):
+                            <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '@Html.T("Common.NotSpecified", "Belirtilmemiş")'"></span>
                         </p>
                     </div>
                     <div class="card-footer bg-white">
-                        <a class="btn btn-primary w-100" data-bind="attr: { href: '/Evaluations/Evaluate?assignmentId=' + id }">
-                            <i class="bi bi-play-fill"></i> Degerlendirmeyi Baslat
-                        </a>
+                        <button class="btn btn-primary w-100" data-bind="click: $parent.startEvaluation">
+                            <i class="bi bi-play-fill"></i> @Html.T("Evaluation.StartEvaluation", "Değerlendirmeyi Başlat")
+                        </button>
                     </div>
                 </div>
             </div>
@@ -114,7 +114,7 @@
     <div data-bind="visible: activeTab() === 'completed' && !isLoading()">
         <!-- Empty State -->
         <div data-bind="visible: completedEvaluations().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Tamamlanan degerlendirme bulunmamaktadir.
+            <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoCompletedEvaluations", "Tamamlanan değerlendirme bulunmamaktadır.")
         </div>
 
         <!-- Evaluations Grid -->
@@ -123,8 +123,8 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-success text-white">
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong data-bind="text: projectName || 'Proje'"></strong>
-                            <span class="badge bg-white text-success">Tamamlandi</span>
+                            <strong data-bind="text: projectName || '@Html.T("Common.Project", "Proje")'"></strong>
+                            <span class="badge bg-white text-success">@Html.T("Common.Status.Completed", "Tamamlandı")</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -135,7 +135,7 @@
                         <!-- Score -->
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span>Puan</span>
+                                <span>@Html.T("Evaluation.Score", "Puan")</span>
                                 <strong>
                                     <span data-bind="text: (scorePercentage || 0).toFixed(1)"></span>%
                                 </strong>
@@ -149,12 +149,12 @@
                         <div class="mb-2" data-bind="visible: yellowCardCount > 0 || redCardCount > 0">
                             <!-- ko if: yellowCardCount > 0 -->
                             <span class="badge bg-warning text-dark me-1">
-                                <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span> Sari
+                                <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span> @Html.T("Evaluation.YellowCard", "Sarı")
                             </span>
                             <!-- /ko -->
                             <!-- ko if: redCardCount > 0 -->
                             <span class="badge bg-danger">
-                                <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span> Kirmizi
+                                <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span> @Html.T("Evaluation.RedCard", "Kırmızı")
                             </span>
                             <!-- /ko -->
                         </div>
@@ -171,9 +171,9 @@
                         </p>
                     </div>
                     <div class="card-footer bg-white">
-                        <a class="btn btn-outline-primary w-100" data-bind="attr: { href: '/Evaluations/Details?id=' + id }">
-                            <i class="bi bi-eye"></i> Detay Gor
-                        </a>
+                        <button class="btn btn-outline-primary w-100" data-bind="click: $parent.showDetails">
+                            <i class="bi bi-eye"></i> @Html.T("Common.ViewDetails", "Detay Gör")
+                        </button>
                     </div>
                 </div>
             </div>
@@ -184,7 +184,7 @@
     <div data-bind="visible: activeTab() === 'drafts' && !isLoading()">
         <!-- Empty State -->
         <div data-bind="visible: draftEvaluations().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Taslak degerlendirme bulunmamaktadir.
+            <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoDraftEvaluations", "Taslak değerlendirme bulunmamaktadır.")
         </div>
 
         <!-- Drafts Grid -->
@@ -193,8 +193,8 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-warning text-dark">
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong data-bind="text: projectName || 'Proje'"></strong>
-                            <span class="badge bg-dark">Taslak</span>
+                            <strong data-bind="text: projectName || '@Html.T("Common.Project", "Proje")'"></strong>
+                            <span class="badge bg-dark">@Html.T("Common.Status.Draft", "Taslak")</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -204,24 +204,540 @@
 
                         <!-- Partial Score -->
                         <div class="mb-3" data-bind="visible: totalScore !== null">
-                            <small class="text-muted">Gecici Puan:</small>
+                            <small class="text-muted">@Html.T("Evaluation.TempScore", "Geçici Puan"):</small>
                             <strong data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></strong>
                         </div>
 
                         <p class="text-muted small mb-0">
-                            <i class="bi bi-clock"></i> Son guncelleme:
+                            <i class="bi bi-clock"></i> @Html.T("Common.LastUpdate", "Son güncelleme"):
                             <span data-bind="text: startedAt ? new Date(startedAt).toLocaleDateString('tr-TR') : ''"></span>
                         </p>
                     </div>
                     <div class="card-footer bg-white">
-                        <a class="btn btn-warning w-100" data-bind="attr: { href: '/Evaluations/Evaluate?evaluationId=' + id }">
-                            <i class="bi bi-pencil"></i> Devam Et
-                        </a>
+                        <button class="btn btn-warning w-100" data-bind="click: $parent.continueEvaluation">
+                            <i class="bi bi-pencil"></i> @Html.T("Common.Continue", "Devam Et")
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" data-bind="css: { show: isDetailsModalOpen }, style: { display: isDetailsModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check"></i>
+                        <!-- ko if: detailsData() -->
+                        <span data-bind="text: detailsData().checklistName || '@Html.T("Evaluation.Details", "Değerlendirme Detayı")'"></span>
+                        <!-- /ko -->
+                    </h5>
+                    <div>
+                        <button type="button" class="btn btn-light btn-sm me-2" onclick="window.print()">
+                            <i class="bi bi-printer"></i> @Html.T("Common.Print", "Yazdır")
+                        </button>
+                        <button type="button" class="btn-close btn-close-white" data-bind="click: closeDetailsModal"></button>
+                    </div>
+                </div>
+                <div class="modal-body" data-bind="with: detailsData">
+                    <!-- Loading -->
+                    <div data-bind="visible: $parent.isDetailsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Content -->
+                    <div data-bind="visible: !$parent.isDetailsLoading()">
+                        <!-- Summary Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h2 class="mb-0 text-primary" data-bind="text: (totalScore || 0).toFixed(1) + ' / ' + (maxScore || 0).toFixed(1)"></h2>
+                                        <small class="text-muted">@Html.T("Evaluation.RawScore", "Ham Puan")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-warning">
+                                    <div class="card-body">
+                                        <h2 class="mb-0" data-bind="text: yellowCardCount || 0"></h2>
+                                        <small>@Html.T("Evaluation.YellowCard", "Sarı Kart")</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center bg-danger text-white">
+                                    <div class="card-body">
+                                        <h2 class="mb-0" data-bind="text: redCardCount || 0"></h2>
+                                        <small>@Html.T("Evaluation.RedCard", "Kırmızı Kart")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm mb-0">
+                                            <tr>
+                                                <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
+                                                <td data-bind="text: callId || '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
+                                                <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.Duration", "Süre")</th>
+                                                <td><span data-bind="text: durationMinutes || '-'"></span> @Html.T("Common.Minutes", "dakika")</td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.ControlTime", "Kontrol Saati")</th>
+                                                <td data-bind="text: controlTime || '-'"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="bi bi-person"></i> @Html.T("Evaluation.EvaluationInfo", "Değerlendirme Bilgileri")</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm mb-0">
+                                            <tr>
+                                                <th style="width: 40%;">@Html.T("Evaluation.Evaluator", "Değerlendiren")</th>
+                                                <td data-bind="text: evaluatorName || '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
+                                                <td data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.CompletedAt", "Tamamlanma")</th>
+                                                <td data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Common.Status", "Durum")</th>
+                                                <td><span class="badge bg-success" data-bind="text: status"></span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evaluation Comment -->
+                        <div class="card mb-4" data-bind="visible: evaluationComment">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0" data-bind="text: evaluationComment"></p>
+                            </div>
+                        </div>
+
+                        <!-- Answers -->
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-list-check"></i> @Html.T("Evaluation.Answers", "Cevaplar")</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 5%;">#</th>
+                                            <th style="width: 45%;">@Html.T("Evaluation.Question", "Soru")</th>
+                                            <th style="width: 20%;">@Html.T("Evaluation.Answer", "Cevap")</th>
+                                            <th style="width: 15%;">@Html.T("Evaluation.Score", "Puan")</th>
+                                            <th style="width: 15%;">@Html.T("Common.Status", "Durum")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: answers">
+                                        <tr>
+                                            <td>
+                                                <span data-bind="text: (sectionOrder || 1) + '.' + (questionOrder || 1)"></span>
+                                            </td>
+                                            <td>
+                                                <strong data-bind="text: questionText"></strong>
+                                                <!-- ko if: notes -->
+                                                <br><small class="text-muted"><i class="bi bi-sticky"></i> <span data-bind="text: notes"></span></small>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td>
+                                                <!-- ko if: isNA -->
+                                                <span class="badge bg-secondary">N/A</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: !isNA && answerNumeric -->
+                                                <span class="badge bg-primary" data-bind="text: answerNumeric + '/5'"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: !isNA && answerText -->
+                                                <span data-bind="text: answerText"></span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td>
+                                                <!-- ko if: !isNA -->
+                                                <span data-bind="text: (givenPoints || earnedPoints || 0).toFixed(1)"></span>
+                                                / <span data-bind="text: (maxPoints || 0).toFixed(1)"></span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td>
+                                                <!-- ko if: isPenaltyApplied -->
+                                                <span class="badge" data-bind="css: appliedPenaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: appliedPenaltyType === 'YellowCard' ? '@Html.T("Evaluation.YellowCard", "Sarı Kart")' : '@Html.T("Evaluation.RedCard", "Kırmızı Kart")'"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: !isPenaltyApplied && !isNA -->
+                                                <i class="bi bi-check-circle text-success"></i>
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeDetailsModal">
+                        @Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isDetailsModalOpen, css: { show: isDetailsModalOpen }"></div>
+
+    <!-- Evaluate Modal (Full Screen) -->
+    <div class="modal fade" data-bind="css: { show: isEvaluateModalOpen }, style: { display: isEvaluateModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check"></i>
+                        <!-- ko if: formData() -->
+                        <span data-bind="text: formData().checklistName"></span>
+                        <small data-bind="text: ' - ' + formData().projectName + ' / ' + formData().branchName"></small>
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeEvaluateModal"></button>
+                </div>
+                <div class="modal-body" style="overflow-y: auto;">
+                    <!-- Loading -->
+                    <div data-bind="visible: isFormLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">@Html.T("Evaluation.FormLoading", "Form yükleniyor...")</p>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div data-bind="visible: formErrorMessage" class="alert alert-danger alert-dismissible fade show">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span data-bind="text: formErrorMessage"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { formErrorMessage(''); }"></button>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div data-bind="visible: formSuccessMessage" class="alert alert-success alert-dismissible fade show">
+                        <i class="bi bi-check-circle"></i>
+                        <span data-bind="text: formSuccessMessage"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { formSuccessMessage(''); }"></button>
+                    </div>
+
+                    <!-- Form Content -->
+                    <div data-bind="visible: !isFormLoading() && formData()">
+                        <div class="container-fluid">
+                            <!-- Call & Personnel Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">@Html.T("Evaluation.CallId", "Çağrı ID")</label>
+                                                    <input type="text" class="form-control" data-bind="value: callId" placeholder="@Html.T("Evaluation.CallIdPlaceholder", "Çağrı numarası")">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</label>
+                                                    <input type="date" class="form-control" data-bind="value: callDate">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">@Html.T("Evaluation.DurationMinutes", "Süre (dk)")</label>
+                                                    <input type="number" class="form-control" data-bind="value: durationMinutes" placeholder="@Html.T("Common.Minutes", "Dakika")">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">@Html.T("Evaluation.ControlTime", "Kontrol Saati")</label>
+                                                    <input type="time" class="form-control" data-bind="value: controlTime">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="bi bi-person"></i> @Html.T("Evaluation.EvaluatedPersonnel", "Değerlendirilen Personel")</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label">@Html.T("Evaluation.SelectPersonnel", "Personel Seç")</label>
+                                                    <select class="form-select" data-bind="value: evaluatedPersonnelId, options: formData().availablePersonnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">@Html.T("Evaluation.OrUnknownPersonnel", "veya Tanımsız Personel")</label>
+                                                    <input type="text" class="form-control" data-bind="value: evaluatedUnknownPersonnel" placeholder="@Html.T("Evaluation.UnknownPersonnelPlaceholder", "Tanımsız personel adı")">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Summary (Sticky) -->
+                            <div class="sticky-top bg-white py-2 mb-3" style="top: 0; z-index: 1020;">
+                                <div class="card border-primary">
+                                    <div class="card-body py-2">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <h5 class="mb-0">
+                                                    @Html.T("Evaluation.Score", "Puan"): <span class="text-primary" data-bind="text: totalScoreCalc().toFixed(1)"></span>
+                                                    / <span data-bind="text: maxScoreCalc().toFixed(1)"></span>
+                                                    (<span data-bind="text: scorePercentageCalc().toFixed(1)"></span>%)
+                                                </h5>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar" role="progressbar"
+                                                         data-bind="style: { width: scorePercentageCalc() + '%' },
+                                                                    css: scorePercentageCalc() >= 70 ? 'bg-success' : (scorePercentageCalc() >= 50 ? 'bg-warning' : 'bg-danger')">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <span class="badge bg-warning text-dark me-2" data-bind="visible: yellowCardCountCalc() > 0">
+                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
+                                                </span>
+                                                <span class="badge bg-danger" data-bind="visible: redCardCountCalc() > 0">
+                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Evaluation.Red", "Kırmızı")
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sections -->
+                            <div data-bind="foreach: formData().sections">
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header" data-bind="css: groupType === 'Penalty' ? 'bg-danger text-white' : (groupType === 'Unscored' ? 'bg-secondary text-white' : 'bg-light')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">
+                                                <span data-bind="text: order"></span>.
+                                                <span data-bind="text: name"></span>
+                                                <!-- ko if: groupType === 'Penalty' -->
+                                                <span class="badge bg-white text-danger ms-2">@Html.T("Evaluation.PenaltySection", "Cezalı Bölüm")</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: groupType === 'Unscored' -->
+                                                <span class="badge bg-white text-secondary ms-2">@Html.T("Evaluation.Unscored", "Puansız")</span>
+                                                <!-- /ko -->
+                                            </h5>
+                                            <div>
+                                                <small>
+                                                    @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
+                                                    @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span> @Html.T("Evaluation.Points", "puan")
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Questions -->
+                                        <div data-bind="foreach: questions">
+                                            <div class="border rounded p-3 mb-3" data-bind="css: { 'border-danger': penaltyType !== 'None', 'border-warning': $parent.groupType === 'Unscored' }">
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        <!-- Question Header -->
+                                                        <div class="d-flex align-items-start mb-2">
+                                                            <span class="badge bg-secondary me-2" data-bind="text: $parent.order + '.' + order"></span>
+                                                            <div class="flex-grow-1">
+                                                                <strong data-bind="text: text"></strong>
+                                                                <!-- ko if: helpText -->
+                                                                <button type="button" class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="tooltip" data-bind="attr: { title: helpText }">
+                                                                    <i class="bi bi-question-circle"></i>
+                                                                </button>
+                                                                <!-- /ko -->
+                                                                <div class="mt-1">
+                                                                    <!-- ko if: scoringType === 'Scored' -->
+                                                                    <span class="badge bg-primary">@Html.T("Evaluation.Scored", "Puanlı")</span>
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if: scoringType === 'Unscored' -->
+                                                                    <span class="badge bg-secondary">@Html.T("Evaluation.Unscored", "Puansız")</span>
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if: scoringType === 'Penalty' -->
+                                                                    <span class="badge bg-danger">@Html.T("Evaluation.Penalty", "Cezalı")</span>
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if: penaltyType === 'YellowCard' -->
+                                                                    <span class="badge bg-warning text-dark">@Html.T("Evaluation.YellowCard", "Sarı Kart") (<span data-bind="text: penaltyValue"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if: penaltyType === 'RedCard' -->
+                                                                    <span class="badge bg-danger">@Html.T("Evaluation.RedCard", "Kırmızı Kart") (<span data-bind="text: penaltyValue"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if: isRequired -->
+                                                                    <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>
+                                                                    <!-- /ko -->
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Answer Input -->
+                                                        <div class="mt-2" data-bind="with: $root.getAnswer(id)">
+                                                            <!-- ko if: $parent.type === 'Likert' || $parent.type === 'Star' -->
+                                                            <div class="btn-group" role="group">
+                                                                <!-- ko foreach: [1, 2, 3, 4, 5] -->
+                                                                <button type="button" class="btn"
+                                                                        data-bind="click: function() { $parent.answerNumeric($data); },
+                                                                                   css: $parent.answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
+                                                                                   text: $data">
+                                                                </button>
+                                                                <!-- /ko -->
+                                                            </div>
+                                                            <!-- /ko -->
+
+                                                            <!-- ko if: $parent.type === 'YesNo' -->
+                                                            <div class="btn-group" role="group">
+                                                                <button type="button" class="btn"
+                                                                        data-bind="click: function() { answerText('@Html.T("Common.Yes", "Evet")'); },
+                                                                                   css: answerText() === '@Html.T("Common.Yes", "Evet")' ? 'btn-success' : 'btn-outline-success'">
+                                                                    @Html.T("Common.Yes", "Evet")
+                                                                </button>
+                                                                <button type="button" class="btn"
+                                                                        data-bind="click: function() { answerText('@Html.T("Common.No", "Hayır")'); },
+                                                                                   css: answerText() === '@Html.T("Common.No", "Hayır")' ? 'btn-danger' : 'btn-outline-danger'">
+                                                                    @Html.T("Common.No", "Hayır")
+                                                                </button>
+                                                            </div>
+                                                            <!-- /ko -->
+
+                                                            <!-- ko if: $parent.type === 'MultipleChoice' && $parent.optionsJson -->
+                                                            <select class="form-select" data-bind="value: answerText">
+                                                                <option value="">@Html.T("Common.Select", "Seçin...")</option>
+                                                                <!-- ko foreach: JSON.parse($parent.optionsJson || '[]') -->
+                                                                <option data-bind="text: $data, value: $data"></option>
+                                                                <!-- /ko -->
+                                                            </select>
+                                                            <!-- /ko -->
+
+                                                            <!-- ko if: $parent.type === 'Text' -->
+                                                            <textarea class="form-control" rows="2" data-bind="value: answerText" placeholder="@Html.T("Evaluation.WriteYourAnswer", "Cevabınızı yazın...")"></textarea>
+                                                            <!-- /ko -->
+
+                                                            <!-- N/A checkbox -->
+                                                            <!-- ko if: $parent.allowNA -->
+                                                            <div class="form-check mt-2">
+                                                                <input type="checkbox" class="form-check-input" data-bind="checked: isNA">
+                                                                <label class="form-check-label">@Html.T("Evaluation.NA", "N/A (Uygulanamaz)")</label>
+                                                            </div>
+                                                            <!-- /ko -->
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <!-- Points & Penalty Section -->
+                                                        <div data-bind="with: $root.getAnswer(id)">
+                                                            <!-- ko if: $parent.scoringType === 'Scored' -->
+                                                            <div class="mb-2">
+                                                                <label class="form-label small">@Html.T("Evaluation.GivenPoints", "Verilen Puan")</label>
+                                                                <input type="number" class="form-control form-control-sm"
+                                                                       data-bind="value: givenPoints, attr: { max: $parent.maxPoints }"
+                                                                       step="0.5" min="0">
+                                                                <small class="text-muted">@Html.T("Evaluation.Max", "Maks"): <span data-bind="text: $parent.maxPoints"></span></small>
+                                                            </div>
+                                                            <!-- /ko -->
+
+                                                            <!-- ko if: $parent.scoringType === 'Penalty' || $parent.penaltyType !== 'None' -->
+                                                            <div class="mb-2">
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" data-bind="checked: applyPenalty">
+                                                                    <label class="form-check-label text-danger">
+                                                                        <i class="bi bi-card-fill"></i> @Html.T("Evaluation.ApplyPenalty", "Ceza Uygula")
+                                                                    </label>
+                                                                </div>
+                                                                <!-- ko if: applyPenalty() -->
+                                                                <select class="form-select form-select-sm mt-1" data-bind="value: selectedPenaltyType">
+                                                                    <option value="">@Html.T("Evaluation.SelectPenaltyType", "Ceza Tipi Seçin")</option>
+                                                                    <option value="YellowCard">@Html.T("Evaluation.YellowCard", "Sarı Kart")</option>
+                                                                    <option value="RedCard">@Html.T("Evaluation.RedCard", "Kırmızı Kart")</option>
+                                                                </select>
+                                                                <!-- /ko -->
+                                                            </div>
+                                                            <!-- /ko -->
+
+                                                            <!-- Notes -->
+                                                            <div class="mb-2">
+                                                                <label class="form-label small">@Html.T("Common.Note", "Not")</label>
+                                                                <textarea class="form-control form-control-sm" rows="1" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")"></textarea>
+                                                            </div>
+
+                                                            <!-- ko if: $parent.recommendedNote -->
+                                                            <div class="alert alert-info py-1 px-2 small mb-0">
+                                                                <i class="bi bi-lightbulb"></i> <span data-bind="text: $parent.recommendedNote"></span>
+                                                            </div>
+                                                            <!-- /ko -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evaluation Comment -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h5>
+                                </div>
+                                <div class="card-body">
+                                    <textarea class="form-control" rows="4" data-bind="value: evaluationComment" placeholder="@Html.T("Evaluation.EvaluationCommentPlaceholder", "Genel değerlendirme yorumunuzu yazın...")"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeEvaluateModal">
+                        <i class="bi bi-x"></i> @Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-bind="click: saveDraft, disable: isSavingForm">
+                        <i class="bi bi-save"></i> @Html.T("Evaluation.SaveDraft", "Taslak Kaydet")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: submitEvaluation, disable: isSavingForm">
+                        <!-- ko if: isSavingForm() -->
+                        <span class="spinner-border spinner-border-sm"></span>
+                        <!-- /ko -->
+                        <i class="bi bi-check-circle"></i> @Html.T("Evaluation.Complete", "Değerlendirmeyi Tamamla")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isEvaluateModalOpen, css: { show: isEvaluateModalOpen }"></div>
 </div>
 
 @section Scripts {

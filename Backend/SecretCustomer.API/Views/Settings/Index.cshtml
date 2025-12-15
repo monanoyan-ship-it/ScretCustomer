@@ -1,12 +1,12 @@
 @{
-    ViewData["Title"] = "Sistem Ayarları";
+    ViewData["Title"] = @Html.T("Setting.Title", "Sistem Ayarları");
 }
 
 <div id="settings-app">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Sistem Ayarları</h4>
+        <h4 class="mb-0">@Html.T("Setting.Title", "Sistem Ayarları")</h4>
         <button class="btn btn-primary" data-bind="click: openCreateModal">
-            <i class="bi bi-plus-lg me-1"></i> Yeni Ayar
+            <i class="bi bi-plus-lg me-1"></i> @Html.T("Setting.NewSetting", "Yeni Ayar")
         </button>
     </div>
 
@@ -14,11 +14,11 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body py-2">
             <div class="d-flex align-items-center gap-2">
-                <span class="text-muted small">Kategori:</span>
+                <span class="text-muted small">@Html.T("Setting.Category", "Kategori"):</span>
                 <button class="btn btn-sm"
                         data-bind="click: function() { selectedCategory(null); loadSettings(); },
                                    css: { 'btn-primary': !selectedCategory(), 'btn-outline-secondary': selectedCategory() }">
-                    Tümü
+                    @Html.T("Common.All", "Tümü")
                 </button>
                 <!-- ko foreach: categories -->
                 <button class="btn btn-sm"
@@ -41,17 +41,17 @@
         <div class="card-body p-0">
             <div data-bind="visible: settings().length === 0" class="text-center py-5 text-muted">
                 <i class="bi bi-gear fs-1"></i>
-                <p class="mt-2">Ayar bulunamadı.</p>
+                <p class="mt-2">@Html.T("Setting.NoRecords", "Ayar bulunamadı.")</p>
             </div>
             <div data-bind="visible: settings().length > 0" class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Anahtar</th>
-                            <th>Değer</th>
-                            <th>Tip</th>
-                            <th>Kategori</th>
-                            <th>Açıklama</th>
+                            <th>@Html.T("Setting.Key", "Anahtar")</th>
+                            <th>@Html.T("Setting.Value", "Değer")</th>
+                            <th>@Html.T("Setting.ValueType", "Tip")</th>
+                            <th>@Html.T("Setting.Category", "Kategori")</th>
+                            <th>@Html.T("Common.Description", "Açıklama")</th>
                             <th width="100"></th>
                         </tr>
                     </thead>
@@ -60,12 +60,12 @@
                             <td>
                                 <code data-bind="text: key"></code>
                                 <!-- ko if: isSystem -->
-                                <span class="badge bg-secondary ms-1">Sistem</span>
+                                <span class="badge bg-secondary ms-1">@Html.T("Setting.System", "Sistem")</span>
                                 <!-- /ko -->
                             </td>
                             <td>
                                 <!-- ko if: valueType === 1 -->
-                                <span class="badge" data-bind="text: value === 'true' ? 'Evet' : 'Hayır',
+                                <span class="badge" data-bind="text: value === 'true' ? '@Html.T("Common.Yes", "Evet")' : '@Html.T("Common.No", "Hayır")',
                                       css: { 'bg-success': value === 'true', 'bg-danger': value !== 'true' }"></span>
                                 <!-- /ko -->
                                 <!-- ko if: valueType !== 1 -->
@@ -79,11 +79,11 @@
                             <td class="text-muted small" data-bind="text: description || '-'"></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="Düzenle">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <!-- ko if: !isSystem -->
-                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteSetting" title="Sil">
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteSetting" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                     <!-- /ko -->
@@ -101,16 +101,23 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" data-bind="text: isEditing() ? 'Ayar Düzenle' : 'Yeni Ayar'"></h5>
+                    <h5 class="modal-title">
+                        <!-- ko ifnot: isEditing -->
+                        @Html.T("Setting.NewSetting", "Yeni Ayar")
+                        <!-- /ko -->
+                        <!-- ko if: isEditing -->
+                        @Html.T("Setting.EditSetting", "Ayar Düzenle")
+                        <!-- /ko -->
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Anahtar <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("Setting.Key", "Anahtar") <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" data-bind="value: form.key, disable: isEditing" placeholder="General.MySetting" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Değer Tipi</label>
+                        <label class="form-label">@Html.T("Setting.ValueType", "Değer Tipi")</label>
                         <select class="form-select" data-bind="value: form.valueType">
                             <option value="0">String</option>
                             <option value="1">Boolean</option>
@@ -121,11 +128,11 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Değer</label>
+                        <label class="form-label">@Html.T("Setting.Value", "Değer")</label>
                         <!-- ko if: form.valueType() == '1' -->
                         <select class="form-select" data-bind="value: form.value">
-                            <option value="true">Evet (true)</option>
-                            <option value="false">Hayır (false)</option>
+                            <option value="true">@Html.T("Common.Yes", "Evet") (true)</option>
+                            <option value="false">@Html.T("Common.No", "Hayır") (false)</option>
                         </select>
                         <!-- /ko -->
                         <!-- ko if: form.valueType() != '1' -->
@@ -133,19 +140,19 @@
                         <!-- /ko -->
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Kategori</label>
+                        <label class="form-label">@Html.T("Setting.Category", "Kategori")</label>
                         <input type="text" class="form-control" data-bind="value: form.category" placeholder="General" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Açıklama</label>
+                        <label class="form-label">@Html.T("Common.Description", "Açıklama")</label>
                         <textarea class="form-control" rows="2" data-bind="value: form.description"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveSetting, disable: isSaving">
                         <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                        Kaydet
+                        @Html.T("Common.Save", "Kaydet")
                     </button>
                 </div>
             </div>

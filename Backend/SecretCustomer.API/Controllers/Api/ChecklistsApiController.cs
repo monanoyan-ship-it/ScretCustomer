@@ -12,11 +12,16 @@ public class ChecklistsApiController : ControllerBase
 {
     private readonly IChecklistService _checklistService;
     private readonly ILogger<ChecklistsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public ChecklistsApiController(IChecklistService checklistService, ILogger<ChecklistsApiController> logger)
+    public ChecklistsApiController(
+        IChecklistService checklistService,
+        ILogger<ChecklistsApiController> logger,
+        ILocalizationService localizationService)
     {
         _checklistService = checklistService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -34,7 +39,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading checklists");
-            return StatusCode(500, new { message = "Kontrol listeleri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.LoadListError") });
         }
     }
 
@@ -53,7 +58,7 @@ public class ChecklistsApiController : ControllerBase
             if (checklist == null)
             {
                 _logger.LogWarning("Checklist {Id} not found", id);
-                return NotFound(new { message = "Kontrol listesi bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
             }
 
             _logger.LogInformation("Successfully loaded checklist {Id} with {SectionCount} sections",
@@ -70,7 +75,7 @@ public class ChecklistsApiController : ControllerBase
             var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
             return StatusCode(500, new {
-                message = "Kontrol listesi yüklenirken bir hata oluştu.",
+                message = await _localizationService.GetResourceAsync("Api.Checklist.LoadError"),
                 error = isDevelopment ? ex.Message : null,
                 details = isDevelopment ? ex.StackTrace : null
             });
@@ -94,7 +99,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating checklist");
-            return StatusCode(500, new { message = "Kontrol listesi oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.CreateError") });
         }
     }
 
@@ -113,7 +118,7 @@ public class ChecklistsApiController : ControllerBase
             var checklist = await _checklistService.UpdateAsync(dto);
             if (checklist == null)
             {
-                return NotFound(new { message = "Kontrol listesi bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
             }
 
             return Ok(checklist);
@@ -121,7 +126,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating checklist {Id}", id);
-            return StatusCode(500, new { message = "Kontrol listesi güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.UpdateError") });
         }
     }
 
@@ -134,7 +139,7 @@ public class ChecklistsApiController : ControllerBase
             var result = await _checklistService.DeleteAsync(id);
             if (!result)
             {
-                return NotFound(new { message = "Kontrol listesi bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
             }
 
             return NoContent();
@@ -142,7 +147,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting checklist {Id}", id);
-            return StatusCode(500, new { message = "Kontrol listesi silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.DeleteError") });
         }
     }
 
@@ -155,7 +160,7 @@ public class ChecklistsApiController : ControllerBase
             var checklist = await _checklistService.CloneChecklistAsync(id, newName);
             if (checklist == null)
             {
-                return NotFound(new { message = "Kontrol listesi bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
             }
 
             return CreatedAtAction(nameof(GetById), new { id = checklist.Id }, checklist);
@@ -163,7 +168,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cloning checklist {Id}", id);
-            return StatusCode(500, new { message = "Kontrol listesi klonlanırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.CloneError") });
         }
     }
 }

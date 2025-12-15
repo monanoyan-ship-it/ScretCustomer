@@ -141,9 +141,9 @@ public class CustomerVisit : BaseEntity
     public ICollection<CustomerVisitAttachment> Attachments { get; set; } = new List<CustomerVisitAttachment>();
 
     /// <summary>
-    /// Banka ziyareti detayları (GBF için)
+    /// Dinamik ziyaret detayları
     /// </summary>
-    public BankVisitDetails? BankVisitDetails { get; set; }
+    public ICollection<VisitDetailValue> DetailValues { get; set; } = new List<VisitDetailValue>();
 }
 
 /// <summary>

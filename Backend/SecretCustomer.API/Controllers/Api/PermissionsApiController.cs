@@ -17,17 +17,20 @@ public class PermissionsApiController : ControllerBase
     private readonly IUserService _userService;
     private readonly ApplicationDbContext _context;
     private readonly ILogger<PermissionsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public PermissionsApiController(
         IPermissionService permissionService,
         IUserService userService,
         ApplicationDbContext context,
-        ILogger<PermissionsApiController> logger)
+        ILogger<PermissionsApiController> logger,
+        ILocalizationService localizationService)
     {
         _permissionService = permissionService;
         _userService = userService;
         _context = context;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -60,7 +63,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions");
-            return StatusCode(500, new { message = "Yetkiler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.LoadError") });
         }
     }
 
@@ -93,7 +96,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions by category {Category}", category);
-            return StatusCode(500, new { message = "Yetkiler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.LoadError") });
         }
     }
 
@@ -139,7 +142,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading role permissions");
-            return StatusCode(500, new { message = "Rol yetkileri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError") });
         }
     }
 
@@ -174,7 +177,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions for role {Role}", role);
-            return StatusCode(500, new { message = "Rol yetkileri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError") });
         }
     }
 
@@ -209,12 +212,12 @@ public class PermissionsApiController : ControllerBase
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Rol yetkisi başarıyla güncellendi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionUpdateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error granting role permission");
-            return StatusCode(500, new { message = "Rol yetkisi güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionUpdateError") });
         }
     }
 
@@ -246,12 +249,12 @@ public class PermissionsApiController : ControllerBase
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = $"{dto.PermissionIds.Count} yetki başarıyla atandı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.BulkAssignSuccess"), count = dto.PermissionIds.Count });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error bulk granting role permissions");
-            return StatusCode(500, new { message = "Toplu yetki ataması sırasında bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.BulkAssignError") });
         }
     }
 
@@ -264,12 +267,12 @@ public class PermissionsApiController : ControllerBase
         try
         {
             await _permissionService.RevokeRolePermissionAsync(role, permissionId);
-            return Ok(new { message = "Rol yetkisi başarıyla kaldırıldı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error revoking role permission");
-            return StatusCode(500, new { message = "Rol yetkisi kaldırılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeError") });
         }
     }
 
@@ -283,7 +286,7 @@ public class PermissionsApiController : ControllerBase
         {
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
-                return NotFound(new { message = "Kullanıcı bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.User.NotFound") });
 
             // Rol yetkileri
             var rolePermissions = await _context.RolePermissions
@@ -351,7 +354,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading user permissions for {UserId}", userId);
-            return StatusCode(500, new { message = "Kullanıcı yetkileri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionLoadError") });
         }
     }
 
@@ -390,12 +393,12 @@ public class PermissionsApiController : ControllerBase
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Kullanıcı yetkisi başarıyla güncellendi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionUpdateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error granting user permission");
-            return StatusCode(500, new { message = "Kullanıcı yetkisi güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionUpdateError") });
         }
     }
 
@@ -408,12 +411,12 @@ public class PermissionsApiController : ControllerBase
         try
         {
             await _permissionService.RevokeUserPermissionAsync(userId, permissionId);
-            return Ok(new { message = "Kullanıcı yetkisi başarıyla kaldırıldı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionRevokeSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error revoking user permission");
-            return StatusCode(500, new { message = "Kullanıcı yetkisi kaldırılırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionRevokeError") });
         }
     }
 

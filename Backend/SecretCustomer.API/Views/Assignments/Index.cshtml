@@ -191,7 +191,7 @@
     <div data-bind="visible: !isLoading()">
         <!-- Empty State -->
         <div data-bind="visible: assignments().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Henüz atama bulunmamaktadır veya filtrelere uygun sonuç yoktur.
+            <i class="bi bi-info-circle"></i> @Html.T("Assignment.NoRecords", "Henüz atama bulunmamaktadır veya filtrelere uygun sonuç yoktur.")
         </div>
 
         <!-- Assignments Table -->
@@ -201,14 +201,14 @@
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>Proje</th>
-                                <th>Şube</th>
-                                <th>Kontrol Listesi</th>
-                                <th>Atanan</th>
-                                <th>Son Tarih</th>
-                                <th>Durum</th>
-                                <th>Puan</th>
-                                <th class="text-center">İşlemler</th>
+                                <th>@Html.T("Project.Title", "Proje")</th>
+                                <th>@Html.T("Branch.Title", "Şube")</th>
+                                <th>@Html.T("Checklist.Title", "Kontrol Listesi")</th>
+                                <th>@Html.T("Assignment.Assignee", "Atanan")</th>
+                                <th>@Html.T("Common.DueDate", "Son Tarih")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th>@Html.T("Common.Score", "Puan")</th>
+                                <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: assignments">
@@ -224,15 +224,11 @@
                                 <td data-bind="text: checklistName"></td>
                                 <td>
                                     <span data-bind="text: assigneeName"></span>
-                                    <small class="text-muted d-block" data-bind="text: assigneeType === 'FieldWorker' ? 'Saha Çalışanı' : assigneeType === 'External' ? 'Harici' : assigneeType === 'CustomerPersonnel' ? 'Müşteri Temsilcisi' : ''"></small>
+                                    <small class="text-muted d-block" data-bind="text: $parent.getAssigneeTypeText(assigneeType)"></small>
                                 </td>
                                 <td>
                                     <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
-                                    <small class="d-block" data-bind="visible: daysRemaining !== undefined, css: { 'text-danger': daysRemaining < 0, 'text-warning': daysRemaining >= 0 && daysRemaining <= 3, 'text-muted': daysRemaining > 3 }">
-                                        <span data-bind="visible: daysRemaining < 0">(<span data-bind="text: Math.abs(daysRemaining)"></span> gün geçti)</span>
-                                        <span data-bind="visible: daysRemaining === 0">Bugün!</span>
-                                        <span data-bind="visible: daysRemaining > 0">(<span data-bind="text: daysRemaining"></span> gün kaldı)</span>
-                                    </small>
+                                    <small class="d-block" data-bind="visible: daysRemaining !== undefined, text: $parent.getDaysRemainingText(daysRemaining), css: { 'text-danger': daysRemaining < 0, 'text-warning': daysRemaining >= 0 && daysRemaining <= 3, 'text-muted': daysRemaining > 3 }"></small>
                                 </td>
                                 <td>
                                     <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
@@ -241,10 +237,10 @@
                                     <span data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
                                         <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
                                         <span data-bind="visible: yellowCardCount > 0 || redCardCount > 0" class="ms-1">
-                                            <span data-bind="visible: yellowCardCount > 0" class="badge bg-warning text-dark" title="Sarı Kart">
+                                            <span data-bind="visible: yellowCardCount > 0" class="badge bg-warning text-dark" title="@Html.T("Card.Yellow", "Sarı Kart")">
                                                 <i class="bi bi-card-text"></i> <span data-bind="text: yellowCardCount"></span>
                                             </span>
-                                            <span data-bind="visible: redCardCount > 0" class="badge bg-danger" title="Kırmızı Kart">
+                                            <span data-bind="visible: redCardCount > 0" class="badge bg-danger" title="@Html.T("Card.Red", "Kırmızı Kart")">
                                                 <i class="bi bi-card-text"></i> <span data-bind="text: redCardCount"></span>
                                             </span>
                                         </span>
@@ -256,47 +252,47 @@
                                         <!-- Evaluate Button -->
                                         <button type="button" class="btn btn-outline-primary"
                                                 data-bind="click: $parent.openEvaluation, visible: status !== 'Completed' && status !== 'Cancelled'"
-                                                title="Değerlendir">
+                                                title="@Html.T("Button.Evaluate", "Değerlendir")">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <!-- View Button -->
                                         <button type="button" class="btn btn-outline-info"
                                                 data-bind="click: $parent.viewDetail"
-                                                title="Detay">
+                                                title="@Html.T("Button.Detail", "Detay")">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         <!-- QR Code Button -->
                                         <button type="button" class="btn btn-outline-secondary"
                                                 data-bind="click: $parent.showQRCode"
-                                                title="QR Kod">
+                                                title="@Html.T("Button.QRCode", "QR Kod")">
                                             <i class="bi bi-qr-code"></i>
                                         </button>
                                         <!-- More Actions Dropdown -->
                                         <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Daha Fazla">
+                                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="@Html.T("Button.More", "Daha Fazla")">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
                                                     <a class="dropdown-item" href="#" data-bind="click: $parent.openReassignModal">
-                                                        <i class="bi bi-person-fill-gear"></i> Yeniden Ata
+                                                        <i class="bi bi-person-fill-gear"></i> @Html.T("Assignment.Reassign", "Yeniden Ata")
                                                     </a>
                                                 </li>
                                                 <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
                                                     <a class="dropdown-item text-warning" href="#" data-bind="click: $parent.cancelAssignment">
-                                                        <i class="bi bi-x-circle"></i> İptal Et
+                                                        <i class="bi bi-x-circle"></i> @Html.T("Button.Cancel", "İptal Et")
                                                     </a>
                                                 </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item" href="#" data-bind="click: $parent.copyLink">
-                                                        <i class="bi bi-link-45deg"></i> Link Kopyala
+                                                        <i class="bi bi-link-45deg"></i> @Html.T("Button.CopyLink", "Link Kopyala")
                                                     </a>
                                                 </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item text-danger" href="#" data-bind="click: $parent.deleteAssignment">
-                                                        <i class="bi bi-trash"></i> Sil
+                                                        <i class="bi bi-trash"></i> @Html.T("Button.Delete", "Sil")
                                                     </a>
                                                 </li>
                                             </ul>
@@ -318,7 +314,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-clipboard-plus"></i>
-                        <span data-bind="text: $parent.isEditing() ? 'Atamayı Düzenle' : 'Yeni Atama Oluştur'"></span>
+                        <span data-bind="text: $parent.getModalTitle()"></span>
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
@@ -326,64 +322,64 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Proje <span class="text-danger">*</span></label>
-                                <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...', event: { change: $parent.onProjectChange }"></select>
+                                <label class="form-label">@Html.T("Project.Title", "Proje") <span class="text-danger">*</span></label>
+                                <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', event: { change: $parent.onProjectChange }"></select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Şube</label>
-                                <select class="form-select" data-bind="value: branchId, options: $parent.projectBranches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz (İsteğe bağlı)...'"></select>
+                                <label class="form-label">@Html.T("Branch.Title", "Şube")</label>
+                                <select class="form-select" data-bind="value: branchId, options: $parent.projectBranches, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.SelectOptional", "Seçiniz (İsteğe bağlı)...")'"></select>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Kontrol Listesi <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: checklistId, options: $parent.projectChecklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("Checklist.Title", "Kontrol Listesi") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: checklistId, options: $parent.projectChecklists, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
 
                     <div class="card mb-3">
                         <div class="card-header">
-                            <i class="bi bi-person"></i> Atanacak Kişi
+                            <i class="bi bi-person"></i> @Html.T("Assignment.AssigneePerson", "Atanacak Kişi")
                         </div>
                         <div class="card-body">
                             <!-- Assignment Type Selection -->
                             <div class="mb-3">
                                 <div class="btn-group w-100" role="group">
                                     <input type="radio" class="btn-check" name="assignmentType" id="assignTypeUser" value="user" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeUser">Kullanıcı</label>
+                                    <label class="btn btn-outline-primary" for="assignTypeUser">@Html.T("User.Title", "Kullanıcı")</label>
 
                                     <input type="radio" class="btn-check" name="assignmentType" id="assignTypeFieldWorker" value="fieldworker" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeFieldWorker">Saha Çalışanı</label>
+                                    <label class="btn btn-outline-primary" for="assignTypeFieldWorker">@Html.T("Role.FieldWorker", "Saha Çalışanı")</label>
 
                                     <input type="radio" class="btn-check" name="assignmentType" id="assignTypeExternal" value="external" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeExternal">Harici</label>
+                                    <label class="btn btn-outline-primary" for="assignTypeExternal">@Html.T("Assignment.External", "Harici")</label>
                                 </div>
                             </div>
 
                             <!-- User Selection -->
                             <div data-bind="visible: assignmentType() === 'user'">
-                                <label class="form-label">Kullanıcı</label>
-                                <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                                <label class="form-label">@Html.T("User.Title", "Kullanıcı")</label>
+                                <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                             </div>
 
                             <!-- Field Worker Selection -->
                             <div data-bind="visible: assignmentType() === 'fieldworker'">
-                                <label class="form-label">Saha Çalışanı</label>
-                                <select class="form-select" data-bind="value: assignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                                <label class="form-label">@Html.T("Role.FieldWorker", "Saha Çalışanı")</label>
+                                <select class="form-select" data-bind="value: assignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                             </div>
 
                             <!-- External Email -->
                             <div data-bind="visible: assignmentType() === 'external'">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <label class="form-label">E-posta</label>
+                                        <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                                         <input type="email" class="form-control" placeholder="ornek@email.com" data-bind="value: externalEmail">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Ad Soyad</label>
-                                        <input type="text" class="form-control" placeholder="Adı Soyadı" data-bind="value: externalName">
+                                        <label class="form-label">@Html.T("Common.FullName", "Ad Soyad")</label>
+                                        <input type="text" class="form-control" placeholder="@Html.T("Common.FullNamePlaceholder", "Adı Soyadı")" data-bind="value: externalName">
                                     </div>
                                 </div>
                             </div>
@@ -393,29 +389,29 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Son Tarih <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.DueDate", "Son Tarih") <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" data-bind="value: dueDate">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Notlar</label>
-                                <textarea class="form-control" rows="2" placeholder="İsteğe bağlı notlar..." data-bind="value: notes"></textarea>
+                                <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>
+                                <textarea class="form-control" rows="2" placeholder="@Html.T("Common.OptionalNotes", "İsteğe bağlı notlar...")" data-bind="value: notes"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">
-                        <i class="bi bi-x"></i> İptal
+                        <i class="bi bi-x"></i> @Html.T("Button.Cancel", "İptal")
                     </button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveAssignment, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-save"></i> <span data-bind="text: $parent.isEditing() ? 'Güncelle' : 'Oluştur'"></span>
+                            <i class="bi bi-save"></i> <span data-bind="text: $parent.getSaveButtonText()"></span>
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Kaydediliyor...
+                            @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>
@@ -429,44 +425,41 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-collection"></i> Toplu Atama Oluştur</h5>
+                    <h5 class="modal-title"><i class="bi bi-collection"></i> @Html.T("Assignment.BulkCreate", "Toplu Atama Oluştur")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: bulkAssignment">
                     <div class="mb-3">
-                        <label class="form-label">Proje <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...', event: { change: $parent.onBulkProjectChange }"></select>
+                        <label class="form-label">@Html.T("Project.Title", "Proje") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', event: { change: $parent.onBulkProjectChange }"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Son Tarih <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("Common.DueDate", "Son Tarih") <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" data-bind="value: dueDate">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Her Şube için Atama Sayısı</label>
+                        <label class="form-label">@Html.T("Assignment.AssignmentsPerBranch", "Her Şube için Atama Sayısı")</label>
                         <input type="number" class="form-control" min="1" max="10" data-bind="value: assignmentsPerBranch">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Atanacak Kullanıcı (İsteğe bağlı)</label>
-                        <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Tüm takıma eşit dağıt...'"></select>
-                        <small class="text-muted">Boş bırakılırsa proje takımına eşit dağıtılır</small>
+                        <label class="form-label">@Html.T("Assignment.AssigneeUserOptional", "Atanacak Kullanıcı (İsteğe bağlı)")</label>
+                        <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Assignment.DistributeToTeam", "Tüm takıma eşit dağıt...")'"></select>
+                        <small class="text-muted">@Html.T("Assignment.DistributeToTeamHint", "Boş bırakılırsa proje takımına eşit dağıtılır")</small>
                     </div>
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
-                        <span data-bind="visible: $parent.bulkBranchCount() > 0">
-                            Seçilen projede <strong data-bind="text: $parent.bulkBranchCount"></strong> şube bulunmaktadır.
-                            Toplam <strong data-bind="text: $parent.bulkBranchCount() * (assignmentsPerBranch() || 1)"></strong> atama oluşturulacaktır.
-                        </span>
-                        <span data-bind="visible: $parent.bulkBranchCount() === 0">Lütfen bir proje seçin.</span>
+                        <span data-bind="visible: $parent.bulkBranchCount() > 0, html: $parent.getBulkInfoText(assignmentsPerBranch())"></span>
+                        <span data-bind="visible: $parent.bulkBranchCount() === 0">@Html.T("Assignment.SelectProject", "Lütfen bir proje seçin.")</span>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: createBulkAssignments, disable: isSaving">
                         <span data-bind="visible: !isSaving()">
-                            <i class="bi bi-check-circle"></i> Oluştur
+                            <i class="bi bi-check-circle"></i> @Html.T("Button.Create", "Oluştur")
                         </span>
                         <span data-bind="visible: isSaving">
-                            <span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...
+                            <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Creating", "Oluşturuluyor...")
                         </span>
                     </button>
                 </div>
@@ -479,51 +472,51 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-fill-gear"></i> Yeniden Ata</h5>
+                    <h5 class="modal-title"><i class="bi bi-person-fill-gear"></i> @Html.T("Assignment.Reassign", "Yeniden Ata")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: reassignData">
                     <div class="mb-3">
-                        <label class="form-label">Yeni Atanan Kişi Türü</label>
+                        <label class="form-label">@Html.T("Assignment.NewAssigneeType", "Yeni Atanan Kişi Türü")</label>
                         <select class="form-select" data-bind="value: newAssigneeType">
-                            <option value="user">Kullanıcı</option>
-                            <option value="fieldworker">Saha Çalışanı</option>
-                            <option value="external">Harici</option>
+                            <option value="user">@Html.T("User.Title", "Kullanıcı")</option>
+                            <option value="fieldworker">@Html.T("Role.FieldWorker", "Saha Çalışanı")</option>
+                            <option value="external">@Html.T("Assignment.External", "Harici")</option>
                         </select>
                     </div>
                     <div data-bind="visible: newAssigneeType() === 'user'" class="mb-3">
-                        <label class="form-label">Kullanıcı</label>
-                        <select class="form-select" data-bind="value: newAssignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("User.Title", "Kullanıcı")</label>
+                        <select class="form-select" data-bind="value: newAssignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div data-bind="visible: newAssigneeType() === 'fieldworker'" class="mb-3">
-                        <label class="form-label">Saha Çalışanı</label>
-                        <select class="form-select" data-bind="value: newAssignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("Role.FieldWorker", "Saha Çalışanı")</label>
+                        <select class="form-select" data-bind="value: newAssignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div data-bind="visible: newAssigneeType() === 'external'">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">E-posta</label>
+                                <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                                 <input type="email" class="form-control" data-bind="value: newExternalEmail">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Ad Soyad</label>
+                                <label class="form-label">@Html.T("Common.FullName", "Ad Soyad")</label>
                                 <input type="text" class="form-control" data-bind="value: newExternalName">
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Yeni Son Tarih (İsteğe bağlı)</label>
+                        <label class="form-label">@Html.T("Assignment.NewDueDateOptional", "Yeni Son Tarih (İsteğe bağlı)")</label>
                         <input type="date" class="form-control" data-bind="value: newDueDate">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Sebep</label>
-                        <textarea class="form-control" rows="2" placeholder="Yeniden atama sebebi..." data-bind="value: reason"></textarea>
+                        <label class="form-label">@Html.T("Common.Reason", "Sebep")</label>
+                        <textarea class="form-control" rows="2" placeholder="@Html.T("Assignment.ReassignReasonPlaceholder", "Yeniden atama sebebi...")" data-bind="value: reason"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveReassign, disable: isSaving">
-                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> Kaydet</span>
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Button.Save", "Kaydet")</span>
                         <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
@@ -536,61 +529,61 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Atama Detayı</h5>
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> @Html.T("Assignment.Detail", "Atama Detayı")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: selectedDetail">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Proje:</strong> <span data-bind="text: projectName"></span>
+                            <strong>@Html.T("Project.Title", "Proje"):</strong> <span data-bind="text: projectName"></span>
                         </div>
                         <div class="col-md-6">
-                            <strong>Şube:</strong> <span data-bind="text: branchName || 'Belirtilmemiş'"></span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Kontrol Listesi:</strong> <span data-bind="text: checklistName"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Atanan:</strong> <span data-bind="text: assigneeName"></span>
+                            <strong>@Html.T("Branch.Title", "Şube"):</strong> <span data-bind="text: branchName || '@Html.T("Common.NotSpecified", "Belirtilmemiş")'"></span>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Son Tarih:</strong> <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
+                            <strong>@Html.T("Checklist.Title", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
                         </div>
                         <div class="col-md-6">
-                            <strong>Durum:</strong> <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
+                            <strong>@Html.T("Assignment.Assignee", "Atanan"):</strong> <span data-bind="text: assigneeName"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>@Html.T("Common.DueDate", "Son Tarih"):</strong> <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>@Html.T("Common.Status", "Durum"):</strong> <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
                         </div>
                     </div>
                     <hr>
                     <div class="row mb-3" data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
                         <div class="col-md-4">
-                            <strong>Puan:</strong> <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
+                            <strong>@Html.T("Common.Score", "Puan"):</strong> <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
                         </div>
                         <div class="col-md-4">
-                            <strong>Sarı Kart:</strong> <span data-bind="text: yellowCardCount || 0"></span>
+                            <strong>@Html.T("Card.Yellow", "Sarı Kart"):</strong> <span data-bind="text: yellowCardCount || 0"></span>
                         </div>
                         <div class="col-md-4">
-                            <strong>Kırmızı Kart:</strong> <span data-bind="text: redCardCount || 0"></span>
+                            <strong>@Html.T("Card.Red", "Kırmızı Kart"):</strong> <span data-bind="text: redCardCount || 0"></span>
                         </div>
                     </div>
                     <div data-bind="visible: evaluatorName" class="mb-3">
-                        <strong>Değerlendiren:</strong> <span data-bind="text: evaluatorName"></span>
+                        <strong>@Html.T("Evaluation.Evaluator", "Değerlendiren"):</strong> <span data-bind="text: evaluatorName"></span>
                         <span data-bind="visible: evaluationDate">
                             - <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleString('tr-TR') : ''"></span>
                         </span>
                     </div>
                     <div data-bind="visible: history && history.length > 0">
-                        <h6><i class="bi bi-clock-history"></i> Geçmiş</h6>
+                        <h6><i class="bi bi-clock-history"></i> @Html.T("Common.History", "Geçmiş")</h6>
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Tarih</th>
-                                    <th>İşlem</th>
-                                    <th>Yapan</th>
-                                    <th>Not</th>
+                                    <th>@Html.T("Common.Date", "Tarih")</th>
+                                    <th>@Html.T("Common.Action", "İşlem")</th>
+                                    <th>@Html.T("Common.PerformedBy", "Yapan")</th>
+                                    <th>@Html.T("Common.Note", "Not")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: history">
@@ -605,7 +598,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
                 </div>
             </div>
         </div>
@@ -616,14 +609,14 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-qr-code"></i> QR Kod</h5>
+                    <h5 class="modal-title"><i class="bi bi-qr-code"></i> @Html.T("Button.QRCode", "QR Kod")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center">
                     <img data-bind="attr: { src: qrCodeImage }" class="img-fluid mb-3" style="max-width: 200px;">
                     <p class="small text-muted" data-bind="text: qrCodeLink"></p>
                     <button class="btn btn-sm btn-outline-primary" data-bind="click: copyQRLink">
-                        <i class="bi bi-clipboard"></i> Linki Kopyala
+                        <i class="bi bi-clipboard"></i> @Html.T("Button.CopyLink", "Linki Kopyala")
                     </button>
                 </div>
             </div>
@@ -635,37 +628,37 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> Değerlendirme Formu</h5>
+                    <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> @Html.T("Evaluation.Form", "Değerlendirme Formu")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div data-bind="with: $root.selectedEvaluation">
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <strong>Proje:</strong> <span data-bind="text: projectName"></span>
+                                <strong>@Html.T("Project.Title", "Proje"):</strong> <span data-bind="text: projectName"></span>
                             </div>
                             <div class="col-md-4">
-                                <strong>Şube:</strong> <span data-bind="text: branchName || 'Belirtilmemiş'"></span>
+                                <strong>@Html.T("Branch.Title", "Şube"):</strong> <span data-bind="text: branchName || '@Html.T("Common.NotSpecified", "Belirtilmemiş")'"></span>
                             </div>
                             <div class="col-md-4">
-                                <strong>Kontrol Listesi:</strong> <span data-bind="text: checklistName"></span>
+                                <strong>@Html.T("Checklist.Title", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
                             </div>
                         </div>
                         <hr>
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i>
-                            Değerlendirme formu için <a data-bind="attr: { href: '/form/' + uniqueLink }" target="_blank">bu linki</a> kullanabilir veya QR kodu taratabilirsiniz.
+                            @Html.T("Evaluation.FormLinkInfo", "Değerlendirme formu için") <a data-bind="attr: { href: '/form/' + uniqueLink }" target="_blank">@Html.T("Evaluation.ThisLink", "bu linki")</a> @Html.T("Evaluation.FormLinkInfo2", "kullanabilir veya QR kodu taratabilirsiniz.")
                         </div>
                     </div>
                     <div data-bind="ifnot: $root.selectedEvaluation" class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
-                        <p class="mt-2">Yükleniyor...</p>
+                        <p class="mt-2">@Html.T("Common.Loading", "Yükleniyor...")</p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
                     <a class="btn btn-primary" data-bind="attr: { href: selectedEvaluation() ? '/form/' + selectedEvaluation().uniqueLink : '#' }" target="_blank">
-                        <i class="bi bi-box-arrow-up-right"></i> Formu Aç
+                        <i class="bi bi-box-arrow-up-right"></i> @Html.T("Button.OpenForm", "Formu Aç")
                     </a>
                 </div>
             </div>

@@ -663,6 +663,41 @@ function AssignmentsViewModel() {
         }
     };
 
+    self.getAssigneeTypeText = function(assigneeType) {
+        switch (assigneeType) {
+            case 'FieldWorker': return T('Role.FieldWorker', 'Saha Çalışanı');
+            case 'External': return T('Assignment.External', 'Harici');
+            case 'CustomerPersonnel': return T('Role.CustomerPersonnel', 'Müşteri Temsilcisi');
+            default: return '';
+        }
+    };
+
+    self.getDaysRemainingText = function(daysRemaining) {
+        if (daysRemaining < 0) {
+            return '(' + Math.abs(daysRemaining) + ' ' + T('Common.DaysPassed', 'gün geçti') + ')';
+        } else if (daysRemaining === 0) {
+            return T('Common.Today', 'Bugün!');
+        } else {
+            return '(' + daysRemaining + ' ' + T('Common.DaysLeft', 'gün kaldı') + ')';
+        }
+    };
+
+    self.getModalTitle = function() {
+        return self.isEditing() ? T('Assignment.Edit', 'Atamayı Düzenle') : T('Assignment.Create', 'Yeni Atama Oluştur');
+    };
+
+    self.getSaveButtonText = function() {
+        return self.isEditing() ? T('Button.Update', 'Güncelle') : T('Button.Create', 'Oluştur');
+    };
+
+    self.getBulkInfoText = function(assignmentsPerBranch) {
+        var branchCount = self.bulkBranchCount();
+        var totalAssignments = branchCount * (assignmentsPerBranch || 1);
+        return T('Assignment.BulkInfoText', 'Seçilen projede <strong>{0}</strong> şube bulunmaktadır. Toplam <strong>{1}</strong> atama oluşturulacaktır.')
+            .replace('{0}', branchCount)
+            .replace('{1}', totalAssignments);
+    };
+
     // ===== Initialize =====
     self.loadAssignments();
     self.loadSummary();

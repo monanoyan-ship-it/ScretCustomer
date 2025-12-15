@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,11 +15,16 @@ public class CustomerPortalApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<CustomerPortalApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public CustomerPortalApiController(ApplicationDbContext context, ILogger<CustomerPortalApiController> logger)
+    public CustomerPortalApiController(
+        ApplicationDbContext context,
+        ILogger<CustomerPortalApiController> logger,
+        ILocalizationService localizationService)
     {
         _context = context;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     private Guid? GetCustomerIdFromToken()
@@ -92,7 +98,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı. Token geçersiz veya eksik." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
         var branchCount = await _context.Branches
             .CountAsync(b => b.CustomerId == customerId);
@@ -128,7 +134,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var now = DateTime.UtcNow;
         var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -168,7 +174,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
@@ -209,7 +215,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı. Token geçersiz veya eksik." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
         var branches = await _context.Branches
             .Where(b => b.CustomerId == customerId && b.IsActive)
@@ -241,7 +247,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı. Token geçersiz veya eksik." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
@@ -274,7 +280,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı. Token geçersiz veya eksik." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
         var query = _context.Evaluations
             .Include(e => e.Assignment)
@@ -332,7 +338,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
         var end = endDate ?? DateTime.UtcNow;
@@ -384,7 +390,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
         var end = endDate ?? DateTime.UtcNow;
@@ -432,7 +438,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         var customerId = GetCustomerId();
         if (customerId == null)
-            return BadRequest(new { message = "Müşteri bilgisi bulunamadı." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var start = startDate ?? DateTime.UtcNow.AddMonths(-6);
         var end = endDate ?? DateTime.UtcNow;

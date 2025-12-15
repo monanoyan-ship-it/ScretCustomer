@@ -12,13 +12,16 @@ public class EvaluationsApiController : ControllerBase
 {
     private readonly IEvaluationService _evaluationService;
     private readonly ILogger<EvaluationsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public EvaluationsApiController(
         IEvaluationService evaluationService,
-        ILogger<EvaluationsApiController> logger)
+        ILogger<EvaluationsApiController> logger,
+        ILocalizationService localizationService)
     {
         _evaluationService = evaluationService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -36,7 +39,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading all evaluations");
-            return StatusCode(500, new { message = "Degerlendirmeler yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
         }
     }
 
@@ -51,14 +54,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var evaluation = await _evaluationService.GetByIdAsync(id);
             if (evaluation == null)
-                return NotFound(new { message = "Degerlendirme bulunamadi." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
 
             return Ok(evaluation);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation {EvaluationId}", id);
-            return StatusCode(500, new { message = "Degerlendirme yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadError") });
         }
     }
 
@@ -77,7 +80,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation for assignment {AssignmentId}", assignmentId);
-            return StatusCode(500, new { message = "Degerlendirme yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadError") });
         }
     }
 
@@ -96,7 +99,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for project {ProjectId}", projectId);
-            return StatusCode(500, new { message = "Degerlendirmeler yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
         }
     }
 
@@ -112,7 +115,7 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = "Kullanici bilgisi bulunamadi." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
             }
 
             var evaluations = await _evaluationService.GetByEvaluatorIdAsync(userId);
@@ -121,7 +124,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for current user");
-            return StatusCode(500, new { message = "Degerlendirmeler yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
         }
     }
 
@@ -136,14 +139,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var form = await _evaluationService.GetEvaluationFormAsync(assignmentId);
             if (form == null)
-                return NotFound(new { message = "Atama bulunamadi." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.AssignmentNotFound") });
 
             return Ok(form);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation form for assignment {AssignmentId}", assignmentId);
-            return StatusCode(500, new { message = "Degerlendirme formu yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError") });
         }
     }
 
@@ -158,14 +161,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var form = await _evaluationService.GetExistingEvaluationFormAsync(evaluationId);
             if (form == null)
-                return NotFound(new { message = "Degerlendirme bulunamadi." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
 
             return Ok(form);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading existing evaluation form {EvaluationId}", evaluationId);
-            return StatusCode(500, new { message = "Degerlendirme formu yuklenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError") });
         }
     }
 
@@ -202,7 +205,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting evaluation for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = "Degerlendirme baslatilirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.StartError") });
         }
     }
 
@@ -228,7 +231,7 @@ public class EvaluationsApiController : ControllerBase
             var evaluation = await _evaluationService.SubmitEvaluationAsync(dto);
             return Ok(new
             {
-                message = "Degerlendirme basariyla tamamlandi.",
+                message = await _localizationService.GetResourceAsync("Api.Evaluation.SubmitSuccess"),
                 evaluation
             });
         }
@@ -239,7 +242,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error submitting evaluation for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = "Degerlendirme gonderilirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.SubmitError") });
         }
     }
 
@@ -265,7 +268,7 @@ public class EvaluationsApiController : ControllerBase
             var evaluation = await _evaluationService.SaveDraftAsync(dto);
             return Ok(new
             {
-                message = "Taslak basariyla kaydedildi.",
+                message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveSuccess"),
                 evaluation
             });
         }
@@ -276,7 +279,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving draft for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = "Taslak kaydedilirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveError") });
         }
     }
 
@@ -292,7 +295,7 @@ public class EvaluationsApiController : ControllerBase
             var evaluation = await _evaluationService.UpdateDraftAsync(dto);
             return Ok(new
             {
-                message = "Taslak basariyla guncellendi.",
+                message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftUpdateSuccess"),
                 evaluation
             });
         }
@@ -307,7 +310,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating draft {EvaluationId}", dto.EvaluationId);
-            return StatusCode(500, new { message = "Taslak guncellenirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftUpdateError") });
         }
     }
 
@@ -324,13 +327,13 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = "Kullanici bilgisi bulunamadi." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
             }
 
             var evaluation = await _evaluationService.RevertToDraftAsync(id, userId, request?.Reason);
             return Ok(new
             {
-                message = "Degerlendirme basariyla taslaga alindi.",
+                message = await _localizationService.GetResourceAsync("Api.Evaluation.RevertToDraftSuccess"),
                 evaluation
             });
         }
@@ -345,7 +348,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error reverting evaluation {EvaluationId} to draft", id);
-            return StatusCode(500, new { message = "Degerlendirme taslaga alinirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.RevertToDraftError") });
         }
     }
 
@@ -361,13 +364,13 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = "Kullanici bilgisi bulunamadi." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
             }
 
             var evaluation = await _evaluationService.CancelEvaluationAsync(id, userId, request?.Reason);
             return Ok(new
             {
-                message = "Degerlendirme basariyla iptal edildi.",
+                message = await _localizationService.GetResourceAsync("Api.Evaluation.CancelSuccess"),
                 evaluation
             });
         }
@@ -382,7 +385,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling evaluation {EvaluationId}", id);
-            return StatusCode(500, new { message = "Degerlendirme iptal edilirken bir hata olustu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.CancelError") });
         }
     }
 }

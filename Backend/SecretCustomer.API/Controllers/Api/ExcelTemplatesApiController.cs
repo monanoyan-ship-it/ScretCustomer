@@ -14,10 +14,14 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ExcelTemplatesApiController : ControllerBase
 {
     private readonly IExcelTemplateService _excelTemplateService;
+    private readonly ILocalizationService _localizationService;
 
-    public ExcelTemplatesApiController(IExcelTemplateService excelTemplateService)
+    public ExcelTemplatesApiController(
+        IExcelTemplateService excelTemplateService,
+        ILocalizationService localizationService)
     {
         _excelTemplateService = excelTemplateService;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -54,7 +58,7 @@ public class ExcelTemplatesApiController : ControllerBase
 
         if (template == null)
         {
-            return NotFound(new { message = "Template not found" });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound") });
         }
 
         var dto = MapToDto(template);
@@ -188,7 +192,7 @@ public class ExcelTemplatesApiController : ControllerBase
 
         if (!result)
         {
-            return NotFound(new { message = "Template not found" });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound") });
         }
 
         return NoContent();
@@ -218,7 +222,7 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Excel generation failed: {ex.Message}" });
+            return StatusCode(500, new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.GenerationFailed"), ex.Message) });
         }
     }
 
@@ -232,12 +236,12 @@ public class ExcelTemplatesApiController : ControllerBase
     {
         if (file == null || file.Length == 0)
         {
-            return BadRequest(new { message = "No file uploaded" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
         }
 
         if (!file.FileName.EndsWith(".xlsx") && !file.FileName.EndsWith(".xls"))
         {
-            return BadRequest(new { message = "Only Excel files (.xlsx, .xls) are allowed" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.OnlyExcelAllowed") });
         }
 
         try
@@ -273,7 +277,7 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Excel parsing failed: {ex.Message}" });
+            return StatusCode(500, new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.ParsingFailed"), ex.Message) });
         }
     }
 
@@ -331,7 +335,7 @@ public class ExcelTemplatesApiController : ControllerBase
                         dto.TemplateName, dto.Description);
                     break;
                 default:
-                    return BadRequest(new { message = $"Entity type '{dto.EntityType}' is not supported for attribute-based template creation" });
+                    return BadRequest(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), dto.EntityType) });
             }
 
             var resultDto = MapToDto(template);
@@ -348,7 +352,7 @@ public class ExcelTemplatesApiController : ControllerBase
     /// Preview columns from entity attributes without creating template
     /// </summary>
     [HttpGet("attributes/{entityType}")]
-    public ActionResult<List<ExcelColumnDto>> GetColumnsFromAttributes(string entityType)
+    public async Task<ActionResult<List<ExcelColumnDto>>> GetColumnsFromAttributes(string entityType)
     {
         try
         {
@@ -387,12 +391,12 @@ public class ExcelTemplatesApiController : ControllerBase
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Answer>();
                     break;
                 default:
-                    return BadRequest(new { message = $"Entity type '{entityType}' is not supported for attribute-based template creation" });
+                    return BadRequest(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), entityType) });
             }
 
             if (!columns.Any())
             {
-                return NotFound(new { message = $"No ExcelColumn attributes found on {entityType}" });
+                return NotFound(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.NoAttributesFound"), entityType) });
             }
 
             var dtos = columns.Select(c => new ExcelColumnDto

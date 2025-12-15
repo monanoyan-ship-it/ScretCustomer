@@ -12,11 +12,16 @@ public class BranchesApiController : ControllerBase
 {
     private readonly IBranchService _branchService;
     private readonly ILogger<BranchesApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public BranchesApiController(IBranchService branchService, ILogger<BranchesApiController> logger)
+    public BranchesApiController(
+        IBranchService branchService,
+        ILogger<BranchesApiController> logger,
+        ILocalizationService localizationService)
     {
         _branchService = branchService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -30,7 +35,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading branches");
-            return StatusCode(500, new { message = "Şubeler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.LoadListError") });
         }
     }
 
@@ -45,7 +50,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active branches");
-            return StatusCode(500, new { message = "Aktif şubeler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.ActiveLoadError") });
         }
     }
 
@@ -57,7 +62,7 @@ public class BranchesApiController : ControllerBase
             var branch = await _branchService.GetByIdAsync(id);
             if (branch == null)
             {
-                return NotFound(new { message = "Şube bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Branch.NotFound") });
             }
 
             return Ok(branch);
@@ -65,7 +70,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading branch {Id}", id);
-            return StatusCode(500, new { message = "Şube yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.LoadError") });
         }
     }
 
@@ -90,7 +95,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating branch");
-            return StatusCode(500, new { message = "Şube oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.CreateError") });
         }
     }
 
@@ -120,7 +125,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating branch {Id}", id);
-            return StatusCode(500, new { message = "Şube güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.UpdateError") });
         }
     }
 
@@ -140,7 +145,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting branch {Id}", id);
-            return StatusCode(500, new { message = "Şube silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.DeleteError") });
         }
     }
 }

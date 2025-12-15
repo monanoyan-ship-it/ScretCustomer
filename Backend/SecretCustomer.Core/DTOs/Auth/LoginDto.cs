@@ -48,8 +48,8 @@ public class RegisterDto
 // Password Reset DTOs
 public class ForgotPasswordDto
 {
-    [Required(ErrorMessage = "E-posta adresi gereklidir.")]
-    [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
 }
 
@@ -62,19 +62,19 @@ public class ForgotPasswordResultDto
 
 public class ResetPasswordDto
 {
-    [Required(ErrorMessage = "Token gereklidir.")]
+    [Required]
     public string Token { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "E-posta adresi gereklidir.")]
-    [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Yeni şifre gereklidir.")]
-    [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
+    [Required]
+    [MinLength(6)]
     public string NewPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Şifre tekrarı gereklidir.")]
-    [Compare("NewPassword", ErrorMessage = "Şifreler eşleşmiyor.")]
+    [Required]
+    [Compare("NewPassword")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 

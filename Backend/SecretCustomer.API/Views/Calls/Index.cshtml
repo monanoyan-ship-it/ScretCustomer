@@ -1,21 +1,21 @@
 @{
-    ViewData["Title"] = "Çağrı Yönetimi";
+    ViewData["Title"] = Html.T("Call.Title", "Çağrı Yönetimi");
 }
 
 <div id="calls-app" class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Çağrı Yönetimi</h1>
+            <h1 class="h3 mb-0">@Html.T("Call.Title", "Çağrı Yönetimi")</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
-                    <li class="breadcrumb-item active">Çağrılar</li>
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Call.Calls", "Çağrılar")</li>
                 </ol>
             </nav>
         </div>
         <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle me-2"></i>Yeni Çağrı
+            <i class="bi bi-plus-circle me-2"></i>@Html.T("Call.NewCall", "Yeni Çağrı")
         </button>
     </div>
 
@@ -25,7 +25,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: totalCalls">0</h4>
-                    <small>Toplam</small>
+                    <small>@Html.T("Common.Total", "Toplam")</small>
                 </div>
             </div>
         </div>
@@ -33,7 +33,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: todayCalls">0</h4>
-                    <small>Bugün</small>
+                    <small>@Html.T("Call.Today", "Bugün")</small>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: pendingCalls">0</h4>
-                    <small>Bekleyen</small>
+                    <small>@Html.T("Common.Status.Pending", "Bekleyen")</small>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: completedCalls">0</h4>
-                    <small>Tamamlanan</small>
+                    <small>@Html.T("Common.Status.Completed", "Tamamlanan")</small>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: missedCalls">0</h4>
-                    <small>Cevapsız</small>
+                    <small>@Html.T("Call.Missed", "Cevapsız")</small>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
             <div class="card bg-secondary text-white">
                 <div class="card-body text-center py-2">
                     <h4 class="mb-0" data-bind="text: callbackRequired">0</h4>
-                    <small>Geri Arama</small>
+                    <small>@Html.T("Call.Callback", "Geri Arama")</small>
                 </div>
             </div>
         </div>
@@ -74,52 +74,52 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtreler</h5>
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Proje</label>
-                    <select class="form-select" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: filter.projectId, optionsCaption: 'Tümü'"></select>
+                    <label class="form-label">@Html.T("Common.Project", "Proje")</label>
+                    <select class="form-select" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: filter.projectId, optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Müşteri</label>
-                    <select class="form-select" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: filter.customerId, optionsCaption: 'Tümü'"></select>
+                    <label class="form-label">@Html.T("Call.Customer", "Müşteri")</label>
+                    <select class="form-select" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: filter.customerId, optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Çağrı Tipi</label>
+                    <label class="form-label">@Html.T("Call.CallType", "Çağrı Tipi")</label>
                     <select class="form-select" data-bind="value: filter.callType">
-                        <option value="">Tümü</option>
-                        <option value="Inbound">Gelen</option>
-                        <option value="Outbound">Giden</option>
-                        <option value="Internal">Dahili</option>
-                        <option value="Conference">Konferans</option>
-                        <option value="MysteryCall">Gizli Müşteri</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Inbound">@Html.T("Call.Type.Inbound", "Gelen")</option>
+                        <option value="Outbound">@Html.T("Call.Type.Outbound", "Giden")</option>
+                        <option value="Internal">@Html.T("Call.Type.Internal", "Dahili")</option>
+                        <option value="Conference">@Html.T("Call.Type.Conference", "Konferans")</option>
+                        <option value="MysteryCall">@Html.T("Call.Type.MysteryCall", "Gizli Müşteri")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Durum</label>
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filter.status">
-                        <option value="">Tümü</option>
-                        <option value="Scheduled">Planlandı</option>
-                        <option value="Pending">Beklemede</option>
-                        <option value="InProgress">Devam Ediyor</option>
-                        <option value="Completed">Tamamlandı</option>
-                        <option value="Missed">Cevapsız</option>
-                        <option value="Cancelled">İptal</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Scheduled">@Html.T("Call.Status.Scheduled", "Planlandı")</option>
+                        <option value="Pending">@Html.T("Call.Status.Pending", "Beklemede")</option>
+                        <option value="InProgress">@Html.T("Call.Status.InProgress", "Devam Ediyor")</option>
+                        <option value="Completed">@Html.T("Call.Status.Completed", "Tamamlandı")</option>
+                        <option value="Missed">@Html.T("Call.Status.Missed", "Cevapsız")</option>
+                        <option value="Cancelled">@Html.T("Call.Status.Cancelled", "İptal")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Başlangıç</label>
+                    <label class="form-label">@Html.T("Common.StartDate", "Başlangıç")</label>
                     <input type="date" class="form-control" data-bind="value: filter.startDate" />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Bitiş</label>
+                    <label class="form-label">@Html.T("Common.EndDate", "Bitiş")</label>
                     <input type="date" class="form-control" data-bind="value: filter.endDate" />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Arama</label>
-                    <input type="text" class="form-control" placeholder="Telefon, isim, konu..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Call.SearchPlaceholder", "Telefon, isim, konu...")" data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
                     <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
@@ -150,14 +150,14 @@
     <!-- Calls Table -->
     <div data-bind="visible: !isLoading()" class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>Çağrılar</h5>
-            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+            <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>@Html.T("Call.Calls", "Çağrılar")</h5>
+            <span class="badge bg-primary" data-bind="text: '@Html.T("Common.Total", "Toplam"): ' + totalCount()"></span>
         </div>
         <div class="card-body p-0">
             <!-- Empty State -->
             <div data-bind="visible: calls().length === 0" class="text-center py-5">
                 <i class="bi bi-telephone-x fs-1 text-muted"></i>
-                <p class="text-muted mt-2">Henüz çağrı kaydı bulunmamaktadır.</p>
+                <p class="text-muted mt-2">@Html.T("Call.NoCallsFound", "Henüz çağrı kaydı bulunmamaktadır.")</p>
             </div>
 
             <!-- Table -->
@@ -165,15 +165,15 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Referans</th>
-                            <th>Tip</th>
-                            <th>Durum</th>
-                            <th>Konu</th>
-                            <th>Arayan</th>
-                            <th>Proje/Şube</th>
-                            <th>Tarih</th>
-                            <th>Süre</th>
-                            <th class="text-center">İşlemler</th>
+                            <th>@Html.T("Call.Reference", "Referans")</th>
+                            <th>@Html.T("Call.Type", "Tip")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Call.Subject", "Konu")</th>
+                            <th>@Html.T("Call.Caller", "Arayan")</th>
+                            <th>@Html.T("Call.ProjectBranch", "Proje/Şube")</th>
+                            <th>@Html.T("Common.Date", "Tarih")</th>
+                            <th>@Html.T("Call.Duration", "Süre")</th>
+                            <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: calls">
@@ -181,10 +181,10 @@
                             <td>
                                 <a href="#" data-bind="text: referenceNumber, click: function() { $parent.showDetail($data); }"></a>
                                 <!-- ko if: hasRecording -->
-                                <i class="bi bi-mic text-info ms-1" title="Kayıt var"></i>
+                                <i class="bi bi-mic text-info ms-1" title="@Html.T("Call.HasRecording", "Kayıt var")"></i>
                                 <!-- /ko -->
                                 <!-- ko if: requiresCallback && !callbackCompleted -->
-                                <i class="bi bi-telephone-forward text-warning ms-1" title="Geri arama bekliyor"></i>
+                                <i class="bi bi-telephone-forward text-warning ms-1" title="@Html.T("Call.CallbackPending", "Geri arama bekliyor")"></i>
                                 <!-- /ko -->
                             </td>
                             <td><span class="badge" data-bind="text: callTypeText, css: $parent.getCallTypeBadgeClass(callType)"></span></td>
@@ -202,23 +202,23 @@
                             <td data-bind="text: durationFormatted || '-'"></td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }" title="Detay">
+                                    <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDetail($data); }" title="@Html.T("Common.Detail", "Detay")">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editCall($data); }" title="Düzenle">
+                                    <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editCall($data); }" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <!-- ko if: status === 'Pending' || status === 'Scheduled' -->
-                                    <button class="btn btn-outline-success" data-bind="click: function() { $parent.startCall($data); }" title="Başlat">
+                                    <button class="btn btn-outline-success" data-bind="click: function() { $parent.startCall($data); }" title="@Html.T("Common.Start", "Başlat")">
                                         <i class="bi bi-play"></i>
                                     </button>
                                     <!-- /ko -->
                                     <!-- ko if: status === 'InProgress' -->
-                                    <button class="btn btn-outline-info" data-bind="click: function() { $parent.showCompleteModal($data); }" title="Tamamla">
+                                    <button class="btn btn-outline-info" data-bind="click: function() { $parent.showCompleteModal($data); }" title="@Html.T("Common.Complete", "Tamamla")">
                                         <i class="bi bi-check"></i>
                                     </button>
                                     <!-- /ko -->
-                                    <button class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteCall($data); }" title="Sil">
+                                    <button class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteCall($data); }" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -234,7 +234,7 @@
             <nav>
                 <ul class="pagination justify-content-center mb-0">
                     <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
-                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Önceki")</a>
                     </li>
                     <!-- ko foreach: visiblePages -->
                     <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
@@ -242,7 +242,7 @@
                     </li>
                     <!-- /ko -->
                     <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
-                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                        <a class="page-link" href="#" data-bind="click: nextPage">@Html.T("Pagination.Next", "Sonraki")</a>
                     </li>
                 </ul>
             </nav>
@@ -256,8 +256,12 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-telephone me-2"></i>
-                        <span data-bind="visible: !id()">Yeni Çağrı</span>
-                        <span data-bind="visible: id()">Çağrı Düzenle</span>
+                        <!-- ko ifnot: id -->
+                        @Html.T("Call.NewCall", "Yeni Çağrı")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        @Html.T("Call.EditCall", "Çağrı Düzenle")
+                        <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeFormModal"></button>
                 </div>
@@ -267,49 +271,49 @@
                         <div class="col-md-8">
                             <!-- Çağrı Bilgileri -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>Çağrı Bilgileri</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.CallInfo", "Çağrı Bilgileri")</strong></div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-4">
-                                            <label class="form-label">Çağrı Tipi</label>
+                                            <label class="form-label">@Html.T("Call.CallType", "Çağrı Tipi")</label>
                                             <select class="form-select" data-bind="value: callType">
-                                                <option value="Inbound">Gelen Çağrı</option>
-                                                <option value="Outbound">Giden Çağrı</option>
-                                                <option value="Internal">Dahili Çağrı</option>
-                                                <option value="Conference">Konferans</option>
-                                                <option value="MysteryCall">Gizli Müşteri</option>
+                                                <option value="Inbound">@Html.T("Call.Type.InboundCall", "Gelen Çağrı")</option>
+                                                <option value="Outbound">@Html.T("Call.Type.OutboundCall", "Giden Çağrı")</option>
+                                                <option value="Internal">@Html.T("Call.Type.InternalCall", "Dahili Çağrı")</option>
+                                                <option value="Conference">@Html.T("Call.Type.Conference", "Konferans")</option>
+                                                <option value="MysteryCall">@Html.T("Call.Type.MysteryCall", "Gizli Müşteri")</option>
                                             </select>
                                         </div>
                                         <div class="col-md-4" data-bind="visible: id()">
-                                            <label class="form-label">Durum</label>
+                                            <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                                             <select class="form-select" data-bind="value: status">
-                                                <option value="Scheduled">Planlandı</option>
-                                                <option value="Pending">Beklemede</option>
-                                                <option value="InProgress">Devam Ediyor</option>
-                                                <option value="Completed">Tamamlandı</option>
-                                                <option value="Missed">Cevapsız</option>
-                                                <option value="Cancelled">İptal</option>
+                                                <option value="Scheduled">@Html.T("Call.Status.Scheduled", "Planlandı")</option>
+                                                <option value="Pending">@Html.T("Call.Status.Pending", "Beklemede")</option>
+                                                <option value="InProgress">@Html.T("Call.Status.InProgress", "Devam Ediyor")</option>
+                                                <option value="Completed">@Html.T("Call.Status.Completed", "Tamamlandı")</option>
+                                                <option value="Missed">@Html.T("Call.Status.Missed", "Cevapsız")</option>
+                                                <option value="Cancelled">@Html.T("Call.Status.Cancelled", "İptal")</option>
                                             </select>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">Öncelik</label>
+                                            <label class="form-label">@Html.T("Call.Priority", "Öncelik")</label>
                                             <select class="form-select" data-bind="value: priority">
-                                                <option value="Low">Düşük</option>
-                                                <option value="Normal">Normal</option>
-                                                <option value="High">Yüksek</option>
-                                                <option value="Urgent">Acil</option>
+                                                <option value="Low">@Html.T("Call.Priority.Low", "Düşük")</option>
+                                                <option value="Normal">@Html.T("Call.Priority.Normal", "Normal")</option>
+                                                <option value="High">@Html.T("Call.Priority.High", "Yüksek")</option>
+                                                <option value="Urgent">@Html.T("Call.Priority.Urgent", "Acil")</option>
                                             </select>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label">Planlanan Tarih</label>
+                                            <label class="form-label">@Html.T("Call.ScheduledDate", "Planlanan Tarih")</label>
                                             <input type="datetime-local" class="form-control" data-bind="value: scheduledDate" />
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label">Konu</label>
-                                            <input type="text" class="form-control" placeholder="Çağrı konusu" data-bind="value: subject" />
+                                            <label class="form-label">@Html.T("Call.Subject", "Konu")</label>
+                                            <input type="text" class="form-control" placeholder="@Html.T("Call.SubjectPlaceholder", "Çağrı konusu")" data-bind="value: subject" />
                                         </div>
                                         <div class="col-md-12">
-                                            <label class="form-label">Açıklama</label>
+                                            <label class="form-label">@Html.T("Common.Description", "Açıklama")</label>
                                             <textarea class="form-control" rows="2" data-bind="value: description"></textarea>
                                         </div>
                                     </div>
@@ -318,19 +322,19 @@
 
                             <!-- İletişim Bilgileri -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>İletişim Bilgileri</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.ContactInfo", "İletişim Bilgileri")</strong></div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-4">
-                                            <label class="form-label">Arayan Telefon</label>
+                                            <label class="form-label">@Html.T("Call.CallerPhone", "Arayan Telefon")</label>
                                             <input type="tel" class="form-control" placeholder="0xxx xxx xx xx" data-bind="value: callerPhone" />
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">Arayan Adı</label>
+                                            <label class="form-label">@Html.T("Call.CallerName", "Arayan Adı")</label>
                                             <input type="text" class="form-control" data-bind="value: callerName" />
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">Aranan Telefon</label>
+                                            <label class="form-label">@Html.T("Call.CalledPhone", "Aranan Telefon")</label>
                                             <input type="tel" class="form-control" placeholder="0xxx xxx xx xx" data-bind="value: calledPhone" />
                                         </div>
                                     </div>
@@ -339,15 +343,15 @@
 
                             <!-- Notlar (Edit modunda) -->
                             <div class="card mb-3" data-bind="visible: id()">
-                                <div class="card-header py-2"><strong>Notlar ve Sonuç</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.NotesAndOutcome", "Notlar ve Sonuç")</strong></div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-12">
-                                            <label class="form-label">Notlar</label>
+                                            <label class="form-label">@Html.T("Call.Notes", "Notlar")</label>
                                             <textarea class="form-control" rows="2" data-bind="value: notes"></textarea>
                                         </div>
                                         <div class="col-md-12">
-                                            <label class="form-label">Sonuç</label>
+                                            <label class="form-label">@Html.T("Call.Outcome", "Sonuç")</label>
                                             <input type="text" class="form-control" data-bind="value: outcome" />
                                         </div>
                                     </div>
@@ -356,21 +360,21 @@
 
                             <!-- Geri Arama (Edit modunda) -->
                             <div class="card" data-bind="visible: id()">
-                                <div class="card-header py-2"><strong>Geri Arama</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.Callback", "Geri Arama")</strong></div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-12">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" data-bind="checked: requiresCallback">
-                                                <label class="form-check-label">Geri Arama Gerekli</label>
+                                                <label class="form-check-label">@Html.T("Call.CallbackRequired", "Geri Arama Gerekli")</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6" data-bind="visible: requiresCallback">
-                                            <label class="form-label">Geri Arama Tarihi</label>
+                                            <label class="form-label">@Html.T("Call.CallbackDate", "Geri Arama Tarihi")</label>
                                             <input type="datetime-local" class="form-control" data-bind="value: callbackDate" />
                                         </div>
                                         <div class="col-md-6" data-bind="visible: requiresCallback">
-                                            <label class="form-label">Geri Arama Notu</label>
+                                            <label class="form-label">@Html.T("Call.CallbackNote", "Geri Arama Notu")</label>
                                             <input type="text" class="form-control" data-bind="value: callbackNote" />
                                         </div>
                                     </div>
@@ -381,27 +385,27 @@
                         <!-- Right Column - İlişkiler -->
                         <div class="col-md-4">
                             <div class="card">
-                                <div class="card-header py-2"><strong>İlişkiler</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.Relations", "İlişkiler")</strong></div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Proje</label>
-                                        <select class="form-select" data-bind="options: $parent.projects, optionsText: 'name', optionsValue: 'id', value: projectId, optionsCaption: 'Seçiniz...'"></select>
+                                        <label class="form-label">@Html.T("Common.Project", "Proje")</label>
+                                        <select class="form-select" data-bind="options: $parent.projects, optionsText: 'name', optionsValue: 'id', value: projectId, optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Müşteri</label>
-                                        <select class="form-select" data-bind="options: $parent.customers, optionsText: 'companyName', optionsValue: 'id', value: customerId, optionsCaption: 'Seçiniz...'"></select>
+                                        <label class="form-label">@Html.T("Call.Customer", "Müşteri")</label>
+                                        <select class="form-select" data-bind="options: $parent.customers, optionsText: 'companyName', optionsValue: 'id', value: customerId, optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Şube</label>
-                                        <select class="form-select" data-bind="options: $parent.branches, optionsText: 'name', optionsValue: 'id', value: branchId, optionsCaption: 'Seçiniz...'"></select>
+                                        <label class="form-label">@Html.T("Call.Branch", "Şube")</label>
+                                        <select class="form-select" data-bind="options: $parent.branches, optionsText: 'name', optionsValue: 'id', value: branchId, optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Atanan Kullanıcı</label>
-                                        <select class="form-select" data-bind="options: $parent.users, optionsText: 'fullName', optionsValue: 'id', value: assignedUserId, optionsCaption: 'Seçiniz...'"></select>
+                                        <label class="form-label">@Html.T("Call.AssignedUser", "Atanan Kullanıcı")</label>
+                                        <select class="form-select" data-bind="options: $parent.users, optionsText: 'fullName', optionsValue: 'id', value: assignedUserId, optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Etiketler</label>
-                                        <input type="text" class="form-control" placeholder="virgülle ayırın" data-bind="value: tags" />
+                                        <label class="form-label">@Html.T("Call.Tags", "Etiketler")</label>
+                                        <input type="text" class="form-control" placeholder="@Html.T("Call.TagsPlaceholder", "virgülle ayırın")" data-bind="value: tags" />
                                     </div>
                                 </div>
                             </div>
@@ -409,10 +413,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeFormModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeFormModal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveCall, disable: $parent.isSaving">
-                        <span data-bind="visible: !$parent.isSaving()"><i class="bi bi-save me-1"></i>Kaydet</span>
-                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...</span>
+                        <span data-bind="visible: !$parent.isSaving()"><i class="bi bi-save me-1"></i>@Html.T("Common.Save", "Kaydet")</span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")</span>
                     </button>
                 </div>
             </div>
@@ -438,31 +442,31 @@
                         <div class="col-md-8">
                             <!-- Çağrı Bilgileri -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>Çağrı Bilgileri</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.CallInfo", "Çağrı Bilgileri")</strong></div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><th width="40%">Referans:</th><td data-bind="text: referenceNumber"></td></tr>
-                                                <tr><th>Çağrı Tipi:</th><td><span class="badge" data-bind="text: callTypeText, css: $parent.getCallTypeBadgeClass(callType)"></span></td></tr>
-                                                <tr><th>Durum:</th><td><span class="badge" data-bind="text: statusText, css: $parent.getStatusBadgeClass(status)"></span></td></tr>
-                                                <tr><th>Öncelik:</th><td><span class="badge" data-bind="text: priorityText, css: $parent.getPriorityBadgeClass(priority)"></span></td></tr>
-                                                <tr><th>Konu:</th><td data-bind="text: subject || '-'"></td></tr>
+                                                <tr><th width="40%">@Html.T("Call.Reference", "Referans"):</th><td data-bind="text: referenceNumber"></td></tr>
+                                                <tr><th>@Html.T("Call.CallType", "Çağrı Tipi"):</th><td><span class="badge" data-bind="text: callTypeText, css: $parent.getCallTypeBadgeClass(callType)"></span></td></tr>
+                                                <tr><th>@Html.T("Common.Status", "Durum"):</th><td><span class="badge" data-bind="text: statusText, css: $parent.getStatusBadgeClass(status)"></span></td></tr>
+                                                <tr><th>@Html.T("Call.Priority", "Öncelik"):</th><td><span class="badge" data-bind="text: priorityText, css: $parent.getPriorityBadgeClass(priority)"></span></td></tr>
+                                                <tr><th>@Html.T("Call.Subject", "Konu"):</th><td data-bind="text: subject || '-'"></td></tr>
                                             </table>
                                         </div>
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><th width="40%">Başlangıç:</th><td data-bind="text: startTime ? new Date(startTime).toLocaleString('tr-TR') : '-'"></td></tr>
-                                                <tr><th>Bitiş:</th><td data-bind="text: endTime ? new Date(endTime).toLocaleString('tr-TR') : '-'"></td></tr>
-                                                <tr><th>Süre:</th><td data-bind="text: durationFormatted || '-'"></td></tr>
-                                                <tr><th>Planlanan:</th><td data-bind="text: scheduledDate ? new Date(scheduledDate).toLocaleString('tr-TR') : '-'"></td></tr>
-                                                <tr><th>Etiketler:</th><td data-bind="text: tags || '-'"></td></tr>
+                                                <tr><th width="40%">@Html.T("Call.StartTime", "Başlangıç"):</th><td data-bind="text: startTime ? new Date(startTime).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>@Html.T("Call.EndTime", "Bitiş"):</th><td data-bind="text: endTime ? new Date(endTime).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>@Html.T("Call.Duration", "Süre"):</th><td data-bind="text: durationFormatted || '-'"></td></tr>
+                                                <tr><th>@Html.T("Call.Scheduled", "Planlanan"):</th><td data-bind="text: scheduledDate ? new Date(scheduledDate).toLocaleString('tr-TR') : '-'"></td></tr>
+                                                <tr><th>@Html.T("Call.Tags", "Etiketler"):</th><td data-bind="text: tags || '-'"></td></tr>
                                             </table>
                                         </div>
                                     </div>
                                     <!-- ko if: description -->
                                     <div class="mt-3 pt-3 border-top">
-                                        <strong>Açıklama:</strong>
+                                        <strong>@Html.T("Common.Description", "Açıklama"):</strong>
                                         <p class="mb-0" data-bind="text: description"></p>
                                     </div>
                                     <!-- /ko -->
@@ -471,19 +475,19 @@
 
                             <!-- İletişim Bilgileri -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>İletişim Bilgileri</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.ContactInfo", "İletişim Bilgileri")</strong></div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><th width="40%">Arayan Tel:</th><td><a data-bind="attr: { href: 'tel:' + callerPhone }, text: callerPhone || '-'"></a></td></tr>
-                                                <tr><th>Arayan Adı:</th><td data-bind="text: callerName || '-'"></td></tr>
+                                                <tr><th width="40%">@Html.T("Call.CallerPhoneShort", "Arayan Tel"):</th><td><a data-bind="attr: { href: 'tel:' + callerPhone }, text: callerPhone || '-'"></a></td></tr>
+                                                <tr><th>@Html.T("Call.CallerName", "Arayan Adı"):</th><td data-bind="text: callerName || '-'"></td></tr>
                                             </table>
                                         </div>
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><th width="40%">Aranan Tel:</th><td><a data-bind="attr: { href: 'tel:' + calledPhone }, text: calledPhone || '-'"></a></td></tr>
-                                                <tr><th>Atanan:</th><td data-bind="text: assignedUserName || '-'"></td></tr>
+                                                <tr><th width="40%">@Html.T("Call.CalledPhoneShort", "Aranan Tel"):</th><td><a data-bind="attr: { href: 'tel:' + calledPhone }, text: calledPhone || '-'"></a></td></tr>
+                                                <tr><th>@Html.T("Call.Assigned", "Atanan"):</th><td data-bind="text: assignedUserName || '-'"></td></tr>
                                             </table>
                                         </div>
                                     </div>
@@ -492,13 +496,13 @@
 
                             <!-- Notlar ve Sonuç -->
                             <div class="card mb-3" data-bind="visible: notes || outcome">
-                                <div class="card-header py-2"><strong>Notlar ve Sonuç</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.NotesAndOutcome", "Notlar ve Sonuç")</strong></div>
                                 <div class="card-body">
                                     <!-- ko if: notes -->
-                                    <div class="mb-2"><strong>Notlar:</strong> <span data-bind="text: notes"></span></div>
+                                    <div class="mb-2"><strong>@Html.T("Call.Notes", "Notlar"):</strong> <span data-bind="text: notes"></span></div>
                                     <!-- /ko -->
                                     <!-- ko if: outcome -->
-                                    <div><strong>Sonuç:</strong> <span data-bind="text: outcome"></span></div>
+                                    <div><strong>@Html.T("Call.Outcome", "Sonuç"):</strong> <span data-bind="text: outcome"></span></div>
                                     <!-- /ko -->
                                 </div>
                             </div>
@@ -506,30 +510,30 @@
                             <!-- Geri Arama -->
                             <div class="card mb-3" data-bind="visible: requiresCallback">
                                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                                    <strong>Geri Arama</strong>
+                                    <strong>@Html.T("Call.Callback", "Geri Arama")</strong>
                                     <!-- ko if: !callbackCompleted -->
                                     <button class="btn btn-sm btn-success" data-bind="click: function() { $parent.completeCallback($data); }">
-                                        <i class="bi bi-check me-1"></i>Tamamlandı
+                                        <i class="bi bi-check me-1"></i>@Html.T("Common.Status.Completed", "Tamamlandı")
                                     </button>
                                     <!-- /ko -->
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <strong>Durum:</strong>
+                                            <strong>@Html.T("Common.Status", "Durum"):</strong>
                                             <!-- ko if: callbackCompleted -->
-                                            <span class="badge bg-success">Tamamlandı</span>
+                                            <span class="badge bg-success">@Html.T("Common.Status.Completed", "Tamamlandı")</span>
                                             <!-- /ko -->
                                             <!-- ko ifnot: callbackCompleted -->
-                                            <span class="badge bg-warning">Bekliyor</span>
+                                            <span class="badge bg-warning">@Html.T("Call.Waiting", "Bekliyor")</span>
                                             <!-- /ko -->
                                         </div>
                                         <div class="col-md-4">
-                                            <strong>Tarih:</strong>
+                                            <strong>@Html.T("Common.Date", "Tarih"):</strong>
                                             <span data-bind="text: callbackDate ? new Date(callbackDate).toLocaleString('tr-TR') : '-'"></span>
                                         </div>
                                         <div class="col-md-4">
-                                            <strong>Not:</strong>
+                                            <strong>@Html.T("Call.Note", "Not"):</strong>
                                             <span data-bind="text: callbackNote || '-'"></span>
                                         </div>
                                     </div>
@@ -538,12 +542,12 @@
 
                             <!-- Kayıt -->
                             <div class="card" data-bind="visible: hasRecording">
-                                <div class="card-header py-2"><strong>Çağrı Kaydı</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.CallRecording", "Çağrı Kaydı")</strong></div>
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <audio controls class="flex-grow-1" data-bind="attr: { src: '/api/calls/' + id + '/recording' }"></audio>
                                         <a class="btn btn-outline-primary ms-3" data-bind="attr: { href: '/api/calls/' + id + '/recording' }" download>
-                                            <i class="bi bi-download me-1"></i>İndir
+                                            <i class="bi bi-download me-1"></i>@Html.T("Common.Download", "İndir")
                                         </a>
                                     </div>
                                 </div>
@@ -553,25 +557,25 @@
                         <!-- Right Column - İlişkiler -->
                         <div class="col-md-4">
                             <div class="card mb-3">
-                                <div class="card-header py-2"><strong>İlişkiler</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.Relations", "İlişkiler")</strong></div>
                                 <div class="card-body">
                                     <table class="table table-sm table-borderless mb-0">
-                                        <tr><th>Proje:</th><td data-bind="text: projectName || '-'"></td></tr>
-                                        <tr><th>Müşteri:</th><td data-bind="text: customerName || '-'"></td></tr>
-                                        <tr><th>Şube:</th><td data-bind="text: branchName || '-'"></td></tr>
+                                        <tr><th>@Html.T("Common.Project", "Proje"):</th><td data-bind="text: projectName || '-'"></td></tr>
+                                        <tr><th>@Html.T("Call.Customer", "Müşteri"):</th><td data-bind="text: customerName || '-'"></td></tr>
+                                        <tr><th>@Html.T("Call.Branch", "Şube"):</th><td data-bind="text: branchName || '-'"></td></tr>
                                     </table>
                                 </div>
                             </div>
 
                             <div class="card">
-                                <div class="card-header py-2"><strong>Zaman Çizelgesi</strong></div>
+                                <div class="card-header py-2"><strong>@Html.T("Call.Timeline", "Zaman Çizelgesi")</strong></div>
                                 <div class="card-body">
                                     <div class="timeline-simple">
                                         <div class="d-flex align-items-start mb-2">
                                             <span class="badge bg-primary me-2">1</span>
                                             <div>
                                                 <small class="text-muted" data-bind="text: createdAt ? new Date(createdAt).toLocaleString('tr-TR') : ''"></small>
-                                                <div>Oluşturuldu</div>
+                                                <div>@Html.T("Call.Created", "Oluşturuldu")</div>
                                             </div>
                                         </div>
                                         <!-- ko if: startTime -->
@@ -579,7 +583,7 @@
                                             <span class="badge bg-success me-2">2</span>
                                             <div>
                                                 <small class="text-muted" data-bind="text: new Date(startTime).toLocaleString('tr-TR')"></small>
-                                                <div>Başladı</div>
+                                                <div>@Html.T("Call.Started", "Başladı")</div>
                                             </div>
                                         </div>
                                         <!-- /ko -->
@@ -588,7 +592,7 @@
                                             <span class="badge bg-info me-2">3</span>
                                             <div>
                                                 <small class="text-muted" data-bind="text: new Date(endTime).toLocaleString('tr-TR')"></small>
-                                                <div>Tamamlandı</div>
+                                                <div>@Html.T("Common.Status.Completed", "Tamamlandı")</div>
                                             </div>
                                         </div>
                                         <!-- /ko -->
@@ -601,18 +605,18 @@
                 <div class="modal-footer">
                     <!-- ko if: status === 'Pending' || status === 'Scheduled' -->
                     <button class="btn btn-success" data-bind="click: function() { $parent.startCall($data); $parent.closeDetailModal(); }">
-                        <i class="bi bi-play me-1"></i>Başlat
+                        <i class="bi bi-play me-1"></i>@Html.T("Common.Start", "Başlat")
                     </button>
                     <!-- /ko -->
                     <!-- ko if: status === 'InProgress' -->
                     <button class="btn btn-info" data-bind="click: function() { $parent.showCompleteModal($data); }">
-                        <i class="bi bi-check me-1"></i>Tamamla
+                        <i class="bi bi-check me-1"></i>@Html.T("Common.Complete", "Tamamla")
                     </button>
                     <!-- /ko -->
                     <button class="btn btn-outline-secondary" data-bind="click: function() { $parent.editCall($data); $parent.closeDetailModal(); }">
-                        <i class="bi bi-pencil me-1"></i>Düzenle
+                        <i class="bi bi-pencil me-1"></i>@Html.T("Common.Edit", "Düzenle")
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>
@@ -624,37 +628,37 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Çağrıyı Tamamla</h5>
+                    <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>@Html.T("Call.CompleteCall", "Çağrıyı Tamamla")</h5>
                     <button type="button" class="btn-close" data-bind="click: closeCompleteModal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: completeData">
                     <div class="mb-3">
-                        <label class="form-label">Notlar</label>
+                        <label class="form-label">@Html.T("Call.Notes", "Notlar")</label>
                         <textarea class="form-control" rows="3" data-bind="value: notes"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Sonuç</label>
+                        <label class="form-label">@Html.T("Call.Outcome", "Sonuç")</label>
                         <input type="text" class="form-control" data-bind="value: outcome" />
                     </div>
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" data-bind="checked: requiresCallback">
-                        <label class="form-check-label">Geri Arama Gerekli</label>
+                        <label class="form-check-label">@Html.T("Call.CallbackRequired", "Geri Arama Gerekli")</label>
                     </div>
                     <div data-bind="visible: requiresCallback">
                         <div class="mb-3">
-                            <label class="form-label">Geri Arama Tarihi</label>
+                            <label class="form-label">@Html.T("Call.CallbackDate", "Geri Arama Tarihi")</label>
                             <input type="datetime-local" class="form-control" data-bind="value: callbackDate" />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Geri Arama Notu</label>
+                            <label class="form-label">@Html.T("Call.CallbackNote", "Geri Arama Notu")</label>
                             <input type="text" class="form-control" data-bind="value: callbackNote" />
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: closeCompleteModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeCompleteModal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: completeCall">
-                        <i class="bi bi-check me-1"></i>Tamamla
+                        <i class="bi bi-check me-1"></i>@Html.T("Common.Complete", "Tamamla")
                     </button>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = @Html.T("CustomerPortal.Dashboard.Title", "Dashboard");
     Layout = "_CustomerLayout";
 }
 
@@ -7,7 +7,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
     </div>
 
@@ -20,7 +20,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">Toplam Değerlendirme</h6>
+                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.TotalEvaluations", "Toplam Değerlendirme")</h6>
                                 <h2 class="mb-0" data-bind="text: stats().totalEvaluations || 0"></h2>
                             </div>
                             <div class="bg-success bg-opacity-10 rounded-circle p-3">
@@ -35,7 +35,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">Ortalama Puan</h6>
+                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</h6>
                                 <h2 class="mb-0" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h2>
                             </div>
                             <div class="bg-primary bg-opacity-10 rounded-circle p-3">
@@ -50,7 +50,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">Şube Sayısı</h6>
+                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.BranchCount", "Şube Sayısı")</h6>
                                 <h2 class="mb-0" data-bind="text: stats().branchCount || 0"></h2>
                             </div>
                             <div class="bg-info bg-opacity-10 rounded-circle p-3">
@@ -65,7 +65,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">Bu Ay</h6>
+                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.ThisMonth", "Bu Ay")</h6>
                                 <h2 class="mb-0" data-bind="text: stats().thisMonthEvaluations || 0"></h2>
                             </div>
                             <div class="bg-warning bg-opacity-10 rounded-circle p-3">
@@ -82,7 +82,7 @@
             <div class="col-md-8">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Aylık Değerlendirme Trendi</h5>
+                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="monthlyChart" height="300"></canvas>
@@ -92,7 +92,7 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Puan Dağılımı</h5>
+                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="scoreDistributionChart" height="300"></canvas>
@@ -104,25 +104,25 @@
         <!-- Recent Evaluations -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Son Değerlendirmeler</h5>
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("CustomerPortal.Dashboard.RecentEvaluations", "Son Değerlendirmeler")</h5>
                 <a href="/CustomerPortal/Evaluations" class="btn btn-sm btn-outline-success">
-                    Tümünü Gör <i class="bi bi-arrow-right"></i>
+                    @Html.T("Common.ViewAll", "Tümünü Gör") <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
             <div class="card-body">
                 <div data-bind="visible: recentEvaluations().length === 0" class="text-center text-muted py-4">
                     <i class="bi bi-inbox fs-1"></i>
-                    <p class="mt-2">Henüz değerlendirme bulunmuyor.</p>
+                    <p class="mt-2">@Html.T("CustomerPortal.Dashboard.NoEvaluations", "Henüz değerlendirme bulunmuyor.")</p>
                 </div>
                 <div class="table-responsive" data-bind="visible: recentEvaluations().length > 0">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Tarih</th>
-                                <th>Şube</th>
-                                <th>Checklist</th>
-                                <th>Puan</th>
-                                <th>Durum</th>
+                                <th>@Html.T("Common.Date", "Tarih")</th>
+                                <th>@Html.T("Common.Branch", "Şube")</th>
+                                <th>@Html.T("Common.Checklist", "Checklist")</th>
+                                <th>@Html.T("Common.Score", "Puan")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: recentEvaluations">

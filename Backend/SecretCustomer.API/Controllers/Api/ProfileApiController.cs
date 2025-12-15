@@ -13,11 +13,16 @@ public class ProfileApiController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ILogger<ProfileApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public ProfileApiController(IAuthService authService, ILogger<ProfileApiController> logger)
+    public ProfileApiController(
+        IAuthService authService,
+        ILogger<ProfileApiController> logger,
+        ILocalizationService localizationService)
     {
         _authService = authService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -38,14 +43,14 @@ public class ProfileApiController : ControllerBase
             var profile = await _authService.GetProfileAsync(userId);
 
             if (profile == null)
-                return NotFound(new { message = "Profil bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Profile.NotFound") });
 
             return Ok(profile);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting profile");
-            return StatusCode(500, new { message = "Profil yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.LoadError") });
         }
     }
 
@@ -64,7 +69,7 @@ public class ProfileApiController : ControllerBase
             var updatedProfile = await _authService.UpdateProfileAsync(userId, dto);
 
             if (updatedProfile == null)
-                return NotFound(new { message = "Profil bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Profile.NotFound") });
 
             return Ok(updatedProfile);
         }
@@ -75,7 +80,7 @@ public class ProfileApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating profile");
-            return StatusCode(500, new { message = "Profil güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.UpdateError") });
         }
     }
 
@@ -101,7 +106,7 @@ public class ProfileApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error changing password");
-            return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError") });
         }
     }
 }

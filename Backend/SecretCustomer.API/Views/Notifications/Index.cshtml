@@ -1,25 +1,25 @@
 @{
-    ViewData["Title"] = "Bildirimler";
+    ViewData["Title"] = @Html.T("Notification.Title", "Bildirimler");
 }
 
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Bildirimler</h1>
+            <h1 class="h3 mb-0">@Html.T("Notification.Title", "Bildirimler")</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
-                    <li class="breadcrumb-item active">Bildirimler</li>
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Notification.Title", "Bildirimler")</li>
                 </ol>
             </nav>
         </div>
         <div>
             <button class="btn btn-outline-primary me-2" data-bind="click: markAllAsRead, visible: summary().unreadCount > 0">
-                <i class="fas fa-check-double me-2"></i>Tümünü Okundu İşaretle
+                <i class="fas fa-check-double me-2"></i>@Html.T("Notification.MarkAllAsRead", "Tümünü Okundu İşaretle")
             </button>
             <a href="/Notifications/Settings" class="btn btn-outline-secondary">
-                <i class="fas fa-cog me-2"></i>Ayarlar
+                <i class="fas fa-cog me-2"></i>@Html.T("Common.Settings", "Ayarlar")
             </a>
         </div>
     </div>
@@ -30,7 +30,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: totalNotifications">0</h3>
-                    <small>Toplam</small>
+                    <small>@Html.T("Common.Total", "Toplam")</small>
                 </div>
             </div>
         </div>
@@ -38,7 +38,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: unreadCount">0</h3>
-                    <small>Okunmamış</small>
+                    <small>@Html.T("Notification.Unread", "Okunmamış")</small>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: todayCount">0</h3>
-                    <small>Bugün</small>
+                    <small>@Html.T("Common.Today", "Bugün")</small>
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: totalNotifications - unreadCount">0</h3>
-                    <small>Okunan</small>
+                    <small>@Html.T("Notification.Read", "Okunan")</small>
                 </div>
             </div>
         </div>
@@ -63,51 +63,51 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtreler</h5>
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Tip</label>
+                    <label class="form-label">@Html.T("Common.Type", "Tip")</label>
                     <select class="form-select" data-bind="value: filter.notificationType">
-                        <option value="">Tümü</option>
-                        <option value="Info">Bilgi</option>
-                        <option value="Success">Başarılı</option>
-                        <option value="Warning">Uyarı</option>
-                        <option value="Error">Hata</option>
-                        <option value="ApprovalRequest">Onay Talebi</option>
-                        <option value="Assignment">Atama</option>
-                        <option value="MeetingInvite">Toplantı Daveti</option>
-                        <option value="TrainingInvite">Eğitim Daveti</option>
-                        <option value="Reminder">Hatırlatma</option>
-                        <option value="System">Sistem</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Info">@Html.T("Notification.Type.Info", "Bilgi")</option>
+                        <option value="Success">@Html.T("Notification.Type.Success", "Başarılı")</option>
+                        <option value="Warning">@Html.T("Notification.Type.Warning", "Uyarı")</option>
+                        <option value="Error">@Html.T("Notification.Type.Error", "Hata")</option>
+                        <option value="ApprovalRequest">@Html.T("Notification.Type.ApprovalRequest", "Onay Talebi")</option>
+                        <option value="Assignment">@Html.T("Notification.Type.Assignment", "Atama")</option>
+                        <option value="MeetingInvite">@Html.T("Notification.Type.MeetingInvite", "Toplantı Daveti")</option>
+                        <option value="TrainingInvite">@Html.T("Notification.Type.TrainingInvite", "Eğitim Daveti")</option>
+                        <option value="Reminder">@Html.T("Notification.Type.Reminder", "Hatırlatma")</option>
+                        <option value="System">@Html.T("Notification.Type.System", "Sistem")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Öncelik</label>
+                    <label class="form-label">@Html.T("Approval.Priority", "Öncelik")</label>
                     <select class="form-select" data-bind="value: filter.priority">
-                        <option value="">Tümü</option>
-                        <option value="Low">Düşük</option>
-                        <option value="Normal">Normal</option>
-                        <option value="High">Yüksek</option>
-                        <option value="Urgent">Acil</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="Low">@Html.T("Priority.Low", "Düşük")</option>
+                        <option value="Normal">@Html.T("Priority.Normal", "Normal")</option>
+                        <option value="High">@Html.T("Priority.High", "Yüksek")</option>
+                        <option value="Urgent">@Html.T("Priority.Urgent", "Acil")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Durum</label>
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filter.isRead">
-                        <option value="">Tümü</option>
-                        <option value="false">Okunmamış</option>
-                        <option value="true">Okunmuş</option>
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="false">@Html.T("Notification.Unread", "Okunmamış")</option>
+                        <option value="true">@Html.T("Notification.Read", "Okunmuş")</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Arama</label>
-                    <input type="text" class="form-control" placeholder="Başlık, mesaj..." data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Notification.SearchPlaceholder", "Başlık, mesaj...")" data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" />
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
-                        <i class="fas fa-times me-2"></i>Temizle
+                        <i class="fas fa-times me-2"></i>@Html.T("Common.Clear", "Temizle")
                     </button>
                 </div>
             </div>
@@ -117,8 +117,8 @@
     <!-- Notifications List -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Bildirimler</h5>
-            <span class="badge bg-primary" data-bind="text: 'Toplam: ' + totalCount()"></span>
+            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>@Html.T("Notification.Title", "Bildirimler")</h5>
+            <span class="badge bg-primary" data-bind="text: '@Html.T("Common.Total", "Toplam"): ' + totalCount()"></span>
         </div>
         <div class="card-body p-0">
             <div class="list-group list-group-flush" data-bind="foreach: notifications">
@@ -142,16 +142,16 @@
                         </div>
                         <div class="btn-group btn-group-sm">
                             <!-- ko if: !isRead -->
-                            <button class="btn btn-outline-success" data-bind="click: $parent.markAsRead" title="Okundu İşaretle">
+                            <button class="btn btn-outline-success" data-bind="click: $parent.markAsRead" title="@Html.T("Notification.MarkAsRead", "Okundu İşaretle")">
                                 <i class="fas fa-check"></i>
                             </button>
                             <!-- /ko -->
                             <!-- ko if: actionUrl -->
-                            <a class="btn btn-outline-primary" data-bind="attr: { href: actionUrl }" title="Görüntüle">
+                            <a class="btn btn-outline-primary" data-bind="attr: { href: actionUrl }" title="@Html.T("Common.View", "Görüntüle")">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                             <!-- /ko -->
-                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteNotification" title="Sil">
+                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteNotification" title="@Html.T("Common.Delete", "Sil")">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -162,7 +162,7 @@
             <!-- Empty State -->
             <div class="text-center py-5" data-bind="visible: notifications().length === 0">
                 <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                <p class="text-muted">Henüz bildirim bulunmamaktadır.</p>
+                <p class="text-muted">@Html.T("Notification.NoRecords", "Henüz bildirim bulunmamaktadır.")</p>
             </div>
         </div>
 
@@ -171,7 +171,7 @@
             <nav>
                 <ul class="pagination justify-content-center mb-0">
                     <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
-                        <a class="page-link" href="#" data-bind="click: previousPage">Önceki</a>
+                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Önceki")</a>
                     </li>
                     <!-- ko foreach: visiblePages -->
                     <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
@@ -179,7 +179,7 @@
                     </li>
                     <!-- /ko -->
                     <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
-                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                        <a class="page-link" href="#" data-bind="click: nextPage">@Html.T("Pagination.Next", "Sonraki")</a>
                     </li>
                 </ul>
             </nav>

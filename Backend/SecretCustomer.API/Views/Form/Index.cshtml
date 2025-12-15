@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Değerlendirme Formu</title>
+    <title>@Html.T("Form.Title", "Değerlendirme Formu")</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
     <style>
@@ -24,7 +24,7 @@
         <!-- Loading -->
         <div data-bind="visible: isLoading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3">Form yükleniyor...</p>
+            <p class="mt-3">@Html.T("Form.Loading", "Form yükleniyor...")</p>
         </div>
 
         <!-- Error -->
@@ -36,7 +36,7 @@
         <!-- Success -->
         <div data-bind="visible: successMessage" class="alert alert-success text-center">
             <i class="bi bi-check-circle fs-1 d-block mb-3"></i>
-            <h4>Teşekkürler!</h4>
+            <h4>@Html.T("Form.ThankYou", "Teşekkürler!")</h4>
             <p data-bind="text: successMessage"></p>
         </div>
 
@@ -56,11 +56,11 @@
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6">
-                            <small class="text-muted">Planlanan Tarih</small>
+                            <small class="text-muted">@Html.T("Form.PlannedDate", "Planlanan Tarih")</small>
                             <div data-bind="text: formatDate(assignment().plannedDate)"></div>
                         </div>
                         <div class="col-6">
-                            <small class="text-muted">Durum</small>
+                            <small class="text-muted">@Html.T("Common.Status", "Durum")</small>
                             <div><span class="badge" data-bind="text: getStatusText(assignment().status), css: getStatusBadge(assignment().status)"></span></div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
             <!-- Already Completed Message -->
             <div data-bind="visible: assignment().status === 'Completed' || assignment().status === 'Approved'" class="alert alert-info">
                 <i class="bi bi-info-circle me-2"></i>
-                Bu değerlendirme zaten tamamlanmış.
+                @Html.T("Form.AlreadyCompleted", "Bu değerlendirme zaten tamamlanmış.")
             </div>
 
             <!-- Checklist Sections -->
@@ -90,18 +90,18 @@
                                     <span data-bind="text: text"></span>
                                     <span class="required-mark" data-bind="visible: isRequired">*</span>
                                 </label>
-                                <span class="badge bg-secondary" data-bind="text: maxScore + ' puan', visible: maxScore > 0"></span>
+                                <span class="badge bg-secondary" data-bind="text: maxScore + ' @Html.T("Form.Points", "puan")', visible: maxScore > 0"></span>
                             </div>
 
                             <!-- Yes/No Question -->
                             <div data-bind="visible: questionType === 'YesNo'">
                                 <div class="btn-group" role="group">
                                     <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_yes' }, checked: $parents[1].getAnswer(id), checkedValue: 'yes'">
-                                    <label class="btn btn-outline-success" data-bind="attr: { for: 'q_' + id + '_yes' }">Evet</label>
+                                    <label class="btn btn-outline-success" data-bind="attr: { for: 'q_' + id + '_yes' }">@Html.T("Form.Yes", "Evet")</label>
                                     <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_no' }, checked: $parents[1].getAnswer(id), checkedValue: 'no'">
-                                    <label class="btn btn-outline-danger" data-bind="attr: { for: 'q_' + id + '_no' }">Hayır</label>
+                                    <label class="btn btn-outline-danger" data-bind="attr: { for: 'q_' + id + '_no' }">@Html.T("Form.No", "Hayır")</label>
                                     <input type="radio" class="btn-check" data-bind="attr: { name: 'q_' + id, id: 'q_' + id + '_na' }, checked: $parents[1].getAnswer(id), checkedValue: 'na'">
-                                    <label class="btn btn-outline-secondary" data-bind="attr: { for: 'q_' + id + '_na' }">N/A</label>
+                                    <label class="btn btn-outline-secondary" data-bind="attr: { for: 'q_' + id + '_na' }">@Html.T("Form.NA", "N/A")</label>
                                 </div>
                             </div>
 
@@ -117,7 +117,7 @@
 
                             <!-- Text Question -->
                             <div data-bind="visible: questionType === 'Text' || questionType === 'LongText'">
-                                <textarea class="form-control" rows="3" data-bind="value: $parents[1].getAnswer(id), attr: { placeholder: 'Cevabınızı yazın...' }"></textarea>
+                                <textarea class="form-control" rows="3" data-bind="value: $parents[1].getAnswer(id)" placeholder="@Html.T("Form.WriteAnswer", "Cevabınızı yazın...")"></textarea>
                             </div>
 
                             <!-- Number Question -->
@@ -147,7 +147,7 @@
 
                             <!-- Note -->
                             <div class="mt-2">
-                                <input type="text" class="form-control form-control-sm" placeholder="Not ekle (opsiyonel)" data-bind="value: $parents[1].getNote(id)">
+                                <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Form.AddNote", "Not ekle (opsiyonel)")" data-bind="value: $parents[1].getNote(id)">
                             </div>
                         </div>
                     </div>
@@ -156,17 +156,17 @@
 
                     <!-- General Notes -->
                     <div class="card mb-4">
-                        <div class="card-header">Genel Notlar</div>
+                        <div class="card-header">@Html.T("Form.GeneralNotes", "Genel Notlar")</div>
                         <div class="card-body">
-                            <textarea class="form-control" rows="3" placeholder="Değerlendirme hakkında genel notlarınız..." data-bind="value: generalNotes"></textarea>
+                            <textarea class="form-control" rows="3" placeholder="@Html.T("Form.GeneralNotesPlaceholder", "Değerlendirme hakkında genel notlarınız...")" data-bind="value: generalNotes"></textarea>
                         </div>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg" data-bind="disable: isSubmitting">
-                            <span data-bind="visible: !isSubmitting()"><i class="bi bi-check-circle me-2"></i>Değerlendirmeyi Gönder</span>
-                            <span data-bind="visible: isSubmitting"><span class="spinner-border spinner-border-sm me-2"></span>Gönderiliyor...</span>
+                            <span data-bind="visible: !isSubmitting()"><i class="bi bi-check-circle me-2"></i>@Html.T("Form.Submit", "Değerlendirmeyi Gönder")</span>
+                            <span data-bind="visible: isSubmitting"><span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Form.Submitting", "Gönderiliyor...")</span>
                         </button>
                     </div>
                 </form>
@@ -192,8 +192,8 @@
             self.generalNotes = ko.observable('');
 
             self.statusTexts = {
-                'Pending': 'Beklemede', 'InProgress': 'Devam Ediyor', 'Completed': 'Tamamlandı',
-                'Approved': 'Onaylandı', 'Rejected': 'Reddedildi', 'Cancelled': 'İptal'
+                'Pending': '@Html.T("Status.Pending", "Beklemede")', 'InProgress': '@Html.T("Status.InProgress", "Devam Ediyor")', 'Completed': '@Html.T("Status.Completed", "Tamamlandı")',
+                'Approved': '@Html.T("Status.Approved", "Onaylandı")', 'Rejected': '@Html.T("Status.Rejected", "Reddedildi")', 'Cancelled': '@Html.T("Status.Cancelled", "İptal")'
             };
             self.statusBadges = {
                 'Pending': 'bg-warning', 'InProgress': 'bg-info', 'Completed': 'bg-success',
@@ -246,7 +246,7 @@
             self.loadAssignment = function() {
                 fetch('/api/assignments/by-link/' + uniqueLink)
                     .then(function(res) {
-                        if (!res.ok) throw new Error('Atama bulunamadı');
+                        if (!res.ok) throw new Error('@Html.T("Form.Error.AssignmentNotFound", "Atama bulunamadı")');
                         return res.json();
                     })
                     .then(function(data) {
@@ -258,7 +258,7 @@
                         }
                     })
                     .catch(function(error) {
-                        self.errorMessage('Bu form bulunamadı veya artık geçerli değil.');
+                        self.errorMessage('@Html.T("Form.Error.FormNotFound", "Bu form bulunamadı veya artık geçerli değil.")');
                         self.isLoading(false);
                     });
             };
@@ -266,7 +266,7 @@
             self.loadChecklist = function(checklistId) {
                 fetch('/api/checklists/' + checklistId)
                     .then(function(res) {
-                        if (!res.ok) throw new Error('Checklist yüklenemedi');
+                        if (!res.ok) throw new Error('@Html.T("Form.Error.ChecklistLoadFailed", "Checklist yüklenemedi")');
                         return res.json();
                     })
                     .then(function(data) {
@@ -308,14 +308,14 @@
                     body: JSON.stringify(submitData)
                 })
                 .then(function(res) {
-                    if (!res.ok) return res.json().then(function(d) { throw new Error(d.message || 'Gönderim başarısız'); });
+                    if (!res.ok) return res.json().then(function(d) { throw new Error(d.message || '@Html.T("Form.Error.SubmitFailed", "Gönderim başarısız")'); });
                     return res.json();
                 })
                 .then(function(data) {
-                    self.successMessage('Değerlendirmeniz başarıyla kaydedildi.');
+                    self.successMessage('@Html.T("Form.Success", "Değerlendirmeniz başarıyla kaydedildi.")');
                 })
                 .catch(function(error) {
-                    self.errorMessage('Değerlendirme gönderilirken bir hata oluştu: ' + error.message);
+                    self.errorMessage('@Html.T("Form.Error.SubmitError", "Değerlendirme gönderilirken bir hata oluştu:")' + ' ' + error.message);
                 })
                 .finally(function() {
                     self.isSubmitting(false);

@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Değerlendirmeler";
+    ViewData["Title"] = @Html.T("CustomerPortal.Evaluation.Title", "Değerlendirmeler");
     Layout = "_CustomerLayout";
 }
 
@@ -7,7 +7,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
     </div>
 
@@ -15,15 +15,15 @@
     <div data-bind="visible: !isLoading()">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Değerlendirmeler</h5>
-                <span class="badge bg-success" data-bind="text: totalCount() + ' kayıt'"></span>
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>@Html.T("CustomerPortal.Evaluation.Title", "Değerlendirmeler")</h5>
+                <span class="badge bg-success" data-bind="text: totalCount() + ' @Html.T("Common.Records", "kayıt")'"></span>
             </div>
             <div class="card-body p-0">
                 <!-- Empty State -->
                 <div data-bind="visible: evaluations().length === 0" class="text-center py-5">
                     <i class="bi bi-clipboard-x fs-1 text-muted"></i>
-                    <h5 class="mt-3">Değerlendirme Bulunamadı</h5>
-                    <p class="text-muted">Henüz değerlendirme kaydı bulunmuyor.</p>
+                    <h5 class="mt-3">@Html.T("CustomerPortal.Evaluation.NotFound", "Değerlendirme Bulunamadı")</h5>
+                    <p class="text-muted">@Html.T("CustomerPortal.Evaluation.NoRecords", "Henüz değerlendirme kaydı bulunmuyor.")</p>
                 </div>
 
                 <!-- Table -->
@@ -32,11 +32,11 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Tarih</th>
-                                    <th>Şube</th>
-                                    <th>Kontrol Listesi</th>
-                                    <th class="text-center">Puan</th>
-                                    <th class="text-center">Durum</th>
+                                    <th>@Html.T("Common.Date", "Tarih")</th>
+                                    <th>@Html.T("Common.Branch", "Şube")</th>
+                                    <th>@Html.T("Common.Checklist", "Kontrol Listesi")</th>
+                                    <th class="text-center">@Html.T("Common.Score", "Puan")</th>
+                                    <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: evaluations">

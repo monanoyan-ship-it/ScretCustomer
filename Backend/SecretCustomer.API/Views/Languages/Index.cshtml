@@ -25,7 +25,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
     </div>
 
@@ -36,14 +36,14 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;">Sıra</th>
-                            <th>Bayrak</th>
+                            <th style="width: 50px;">@Html.T("Language.Order", "Sıra")</th>
+                            <th>@Html.T("Language.Flag", "Bayrak")</th>
                             <th>@Html.T("Language.Name", "Dil Adı")</th>
                             <th>@Html.T("Language.Culture", "Kültür Kodu")</th>
                             <th>@Html.T("Language.SeoCode", "SEO Kodu")</th>
                             <th>@Html.T("Language.IsDefault", "Varsayılan")</th>
                             <th>@Html.T("Common.Status", "Durum")</th>
-                            <th>Kaynak Sayısı</th>
+                            <th>@Html.T("Language.ResourceCount", "Kaynak Sayısı")</th>
                             <th style="width: 200px;">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
@@ -66,33 +66,33 @@
                             <td><code data-bind="text: uniqueSeoCode"></code></td>
                             <td>
                                 <span class="badge bg-success" data-bind="visible: isDefault">
-                                    <i class="fas fa-check"></i> Varsayılan
+                                    <i class="fas fa-check"></i> @Html.T("Language.Default", "Varsayılan")
                                 </span>
                             </td>
                             <td>
-                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                             </td>
                             <td>
                                 <span class="badge bg-primary" data-bind="text: resourceCount || 0"></span>
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-warning" data-bind="click: $parent.setAsDefault, visible: !isDefault" title="Varsayılan Yap">
+                                    <button class="btn btn-outline-warning" data-bind="click: $parent.setAsDefault, visible: !isDefault" title="@Html.T("Language.SetDefault", "Varsayılan Yap")">
                                         <i class="bi bi-star"></i>
                                     </button>
-                                    <button class="btn btn-outline-primary" data-bind="click: $parent.importResources" title="XML'den İçe Aktar">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.importResources" title="@Html.T("Language.ImportXml", "XML'den İçe Aktar")">
                                         <i class="bi bi-file-earmark-arrow-down"></i>
                                     </button>
-                                    <button class="btn btn-outline-success" data-bind="click: $parent.exportResources" title="XML'e Dışa Aktar">
+                                    <button class="btn btn-outline-success" data-bind="click: $parent.exportResources" title="@Html.T("Language.ExportXml", "XML'e Dışa Aktar")">
                                         <i class="bi bi-file-earmark-arrow-up"></i>
                                     </button>
-                                    <button class="btn btn-outline-info" data-bind="click: $parent.showResourcesModal" title="Kaynakları Görüntüle">
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.showResourcesModal" title="@Html.T("Language.ViewResources", "Kaynakları Görüntüle")">
                                         <i class="bi bi-list-ul"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary" data-bind="click: $parent.showEditModal" title="Düzenle">
+                                    <button class="btn btn-outline-secondary" data-bind="click: $parent.showEditModal" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteLanguage, visible: !isDefault" title="Sil">
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteLanguage, visible: !isDefault" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -105,11 +105,11 @@
             <!-- No Data -->
             <div data-bind="visible: languages().length === 0" class="text-center py-4 text-muted">
                 <i class="bi bi-globe fa-3x mb-3" style="font-size: 3rem;"></i>
-                <p>Henüz dil eklenmemiş.</p>
+                <p>@Html.T("Language.NoRecords", "Henüz dil eklenmemiş.")</p>
                 <button class="btn btn-success" data-bind="click: seedDefaultLanguages, disable: isSeeding">
                     <span data-bind="visible: isSeeding"><i class="bi bi-arrow-repeat spin me-2"></i></span>
                     <span data-bind="visible: !isSeeding()"><i class="bi bi-plus-circle me-2"></i></span>
-                    <span data-bind="text: isSeeding() ? 'Oluşturuluyor...' : 'Varsayılan Dilleri Oluştur (TR, EN, ES, DE)'"></span>
+                    <span data-bind="text: isSeeding() ? '@Html.T("Common.Creating", "Oluşturuluyor...")' : '@Html.T("Language.CreateDefaults", "Varsayılan Dilleri Oluştur (TR, EN, ES, DE)")'"></span>
                 </button>
             </div>
         </div>
@@ -118,7 +118,7 @@
     <!-- Available XML Files -->
     <div class="card mt-4" data-bind="visible: availableXmlFiles().length > 0">
         <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>Mevcut XML Dosyaları</h6>
+            <h6 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>@Html.T("Language.AvailableXmlFiles", "Mevcut XML Dosyaları")</h6>
         </div>
         <div class="card-body">
             <div class="row" data-bind="foreach: availableXmlFiles">
@@ -145,23 +145,23 @@
                     <form id="languageForm">
                         <div class="mb-3">
                             <label class="form-label">@Html.T("Language.Name", "Dil Adı") <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" data-bind="value: form.name" placeholder="Örn: Türkçe, English" required>
+                            <input type="text" class="form-control" data-bind="value: form.name" placeholder="@Html.T("Language.NamePlaceholder", "Örn: Türkçe, English")" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">@Html.T("Language.Culture", "Kültür Kodu") <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" data-bind="value: form.languageCulture" placeholder="Örn: tr-TR, en-US" required>
+                                <input type="text" class="form-control" data-bind="value: form.languageCulture" placeholder="@Html.T("Language.CulturePlaceholder", "Örn: tr-TR, en-US")" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">@Html.T("Language.SeoCode", "SEO Kodu") <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" data-bind="value: form.uniqueSeoCode" placeholder="Örn: tr, en" maxlength="10" required>
+                                <input type="text" class="form-control" data-bind="value: form.uniqueSeoCode" placeholder="@Html.T("Language.SeoCodePlaceholder", "Örn: tr, en")" maxlength="10" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Bayrak İkonu</label>
-                                <input type="text" class="form-control" data-bind="value: form.flagImageFileName" placeholder="Örn: tr, gb, de">
-                                <small class="text-muted">flag-icon-css kullanılır</small>
+                                <label class="form-label">@Html.T("Language.FlagIcon", "Bayrak İkonu")</label>
+                                <input type="text" class="form-control" data-bind="value: form.flagImageFileName" placeholder="@Html.T("Language.FlagIconPlaceholder", "Örn: tr, gb, de")">
+                                <small class="text-muted">@Html.T("Language.FlagIconHelp", "flag-icon-css kullanılır")</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">@Html.T("Language.DisplayOrder", "Sıralama")</label>
@@ -216,11 +216,11 @@
                     <!-- Search -->
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <input type="text" class="form-control" placeholder="Kaynak adı ara..." data-bind="value: resourceSearch, valueUpdate: 'afterkeydown'">
+                            <input type="text" class="form-control" placeholder="@Html.T("Language.SearchResource", "Kaynak adı ara...")" data-bind="value: resourceSearch, valueUpdate: 'afterkeydown'">
                         </div>
                         <div class="col-md-4">
                             <select class="form-select" data-bind="value: resourcePrefix">
-                                <option value="">Tüm Önekler</option>
+                                <option value="">@Html.T("Language.AllPrefixes", "Tüm Önekler")</option>
                                 <option value="Common.">Common.</option>
                                 <option value="Login.">Login.</option>
                                 <option value="Menu.">Menu.</option>
@@ -241,7 +241,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <button class="btn btn-success btn-sm" data-bind="click: showAddResourceModal">
-                                <i class="bi bi-plus me-1"></i> Yeni Kaynak
+                                <i class="bi bi-plus me-1"></i> @Html.T("Language.NewResource", "Yeni Kaynak")
                             </button>
                         </div>
                     </div>
@@ -253,7 +253,7 @@
                                 <tr>
                                     <th style="width: 40%;">@Html.T("Language.ResourceName", "Kaynak Anahtarı")</th>
                                     <th>@Html.T("Language.ResourceValue", "Çeviri")</th>
-                                    <th style="width: 100px;">İşlem</th>
+                                    <th style="width: 100px;">@Html.T("Common.Actions", "İşlemler")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: filteredResources">
@@ -261,10 +261,10 @@
                                     <td><code data-bind="text: resourceName"></code></td>
                                     <td data-bind="text: resourceValue"></td>
                                     <td>
-                                        <button class="btn btn-outline-secondary btn-sm" data-bind="click: $parent.editResource" title="Düzenle">
+                                        <button class="btn btn-outline-secondary btn-sm" data-bind="click: $parent.editResource" title="@Html.T("Common.Edit", "Düzenle")">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.deleteResource" title="Sil">
+                                        <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.deleteResource" title="@Html.T("Common.Delete", "Sil")">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -274,12 +274,12 @@
                     </div>
 
                     <div data-bind="visible: filteredResources().length === 0" class="text-center py-3 text-muted">
-                        Kaynak bulunamadı.
+                        @Html.T("Language.NoResources", "Kaynak bulunamadı.")
                     </div>
                 </div>
                 <div class="modal-footer">
                     <span class="text-muted me-auto">
-                        Toplam: <strong data-bind="text: resources().length"></strong> kaynak
+                        @Html.T("Language.TotalResources", "Toplam:"): <strong data-bind="text: resources().length"></strong> @Html.T("Language.ResourceUnit", "kaynak")
                     </span>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
@@ -292,22 +292,29 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" data-bind="text: editingResourceId() ? 'Kaynak Düzenle' : 'Yeni Kaynak'"></h5>
+                    <h5 class="modal-title">
+                        <!-- ko ifnot: editingResourceId -->
+                        @Html.T("Language.NewResource", "Yeni Kaynak")
+                        <!-- /ko -->
+                        <!-- ko if: editingResourceId -->
+                        @Html.T("Language.EditResource", "Kaynak Düzenle")
+                        <!-- /ko -->
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Kaynak Anahtarı <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" data-bind="value: resourceForm.name, disable: editingResourceId()" placeholder="Örn: Common.Save">
+                        <label class="form-label">@Html.T("Language.ResourceName", "Kaynak Anahtarı") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: resourceForm.name, disable: editingResourceId()" placeholder="@Html.T("Language.ResourceNamePlaceholder", "Örn: Common.Save")">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Çeviri <span class="text-danger">*</span></label>
-                        <textarea class="form-control" rows="3" data-bind="value: resourceForm.value" placeholder="Çeviri değeri"></textarea>
+                        <label class="form-label">@Html.T("Language.ResourceValue", "Çeviri") <span class="text-danger">*</span></label>
+                        <textarea class="form-control" rows="3" data-bind="value: resourceForm.value" placeholder="@Html.T("Language.ResourceValuePlaceholder", "Çeviri değeri")"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-primary" data-bind="click: saveResource">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveResource">@Html.T("Common.Save", "Kaydet")</button>
                 </div>
             </div>
         </div>

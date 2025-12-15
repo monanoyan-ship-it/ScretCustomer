@@ -12,11 +12,16 @@ public class PersonnelApiController : ControllerBase
 {
     private readonly IPersonnelService _personnelService;
     private readonly ILogger<PersonnelApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public PersonnelApiController(IPersonnelService personnelService, ILogger<PersonnelApiController> logger)
+    public PersonnelApiController(
+        IPersonnelService personnelService,
+        ILogger<PersonnelApiController> logger,
+        ILocalizationService localizationService)
     {
         _personnelService = personnelService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -33,7 +38,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel list");
-            return StatusCode(500, new { message = "Personel listesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
         }
     }
 
@@ -47,14 +52,14 @@ public class PersonnelApiController : ControllerBase
         {
             var personnel = await _personnelService.GetByIdAsync(id);
             if (personnel == null)
-                return NotFound(new { message = "Personel bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
 
             return Ok(personnel);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel bilgileri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadError") });
         }
     }
 
@@ -79,7 +84,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating personnel");
-            return StatusCode(500, new { message = "Personel oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.CreateError") });
         }
     }
 
@@ -96,7 +101,7 @@ public class PersonnelApiController : ControllerBase
 
             var personnel = await _personnelService.UpdateAsync(id, dto);
             if (personnel == null)
-                return NotFound(new { message = "Personel bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
 
             return Ok(personnel);
         }
@@ -107,7 +112,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.UpdateError") });
         }
     }
 
@@ -121,14 +126,14 @@ public class PersonnelApiController : ControllerBase
         {
             var result = await _personnelService.DeleteAsync(id);
             if (!result)
-                return NotFound(new { message = "Personel bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
 
-            return Ok(new { message = "Personel başarıyla silindi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Personnel.DeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.DeleteError") });
         }
     }
 
@@ -146,7 +151,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel by branch {BranchId}", branchId);
-            return StatusCode(500, new { message = "Personel listesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
         }
     }
 
@@ -164,7 +169,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel by customer {CustomerId}", customerId);
-            return StatusCode(500, new { message = "Personel listesi yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
         }
     }
 
@@ -182,7 +187,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking TC Kimlik No");
-            return StatusCode(500, new { message = "Kontrol sırasında bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.CheckError") });
         }
     }
 }

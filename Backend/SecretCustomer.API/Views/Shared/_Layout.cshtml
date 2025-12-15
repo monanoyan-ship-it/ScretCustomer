@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - Gizli Müşteri Değerlendirme Sistemi</title>
+    <title>@ViewData["Title"] - @Html.T("Layout.AppTitle", "Gizli Müşteri Değerlendirme Sistemi")</title>
 
     <!-- Bootstrap CSS (Local) -->
     <link href="~/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
@@ -37,11 +37,11 @@
                 <div id="impersonation-banner" class="alert alert-warning alert-dismissible mb-0 rounded-0 d-flex align-items-center justify-content-between py-2" style="display: none !important;">
                     <div>
                         <i class="bi bi-person-badge-fill me-2"></i>
-                        <strong id="impersonation-customer-name"></strong> olarak goruntuluyor
+                        <strong id="impersonation-customer-name"></strong> @Html.T("Layout.ViewingAs", "olarak görüntüleniyor")
                         <small class="text-muted ms-2">(<span id="impersonation-original-user"></span>)</small>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-dark" onclick="endImpersonation()">
-                        <i class="bi bi-x-circle"></i> Cikis
+                        <i class="bi bi-x-circle"></i> @Html.T("Layout.Exit", "Çıkış")
                     </button>
                 </div>
 
@@ -60,26 +60,25 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title"><i class="bi bi-person-badge"></i> Firma Olarak Goruntule</h5>
+                        <h5 class="modal-title"><i class="bi bi-person-badge"></i> @Html.T("Layout.ViewAsCompany", "Firma Olarak Görüntüle")</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Musteri Secin</label>
+                            <label class="form-label">@Html.T("Layout.SelectCustomer", "Müşteri Seçin")</label>
                             <select id="impersonation-customer-select" class="form-select">
-                                <option value="">Musteri Secin...</option>
+                                <option value="">@Html.T("Layout.SelectCustomerPlaceholder", "Müşteri Seçin...")</option>
                             </select>
                         </div>
                         <p class="text-muted small">
                             <i class="bi bi-info-circle"></i>
-                            Bu ozellik, secilen musterinin gorunumune gecmenizi saglar.
-                            Gerceklestirdiginiz islemler kayit altina alinir.
+                            @Html.T("Layout.ImpersonationDescription", "Bu özellik, seçilen müşterinin görünümüne geçmenizi sağlar. Gerçekleştirdiğiniz işlemler kayıt altına alınır.")
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgec</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "Vazgeç")</button>
                         <button type="button" class="btn btn-info text-white" onclick="startImpersonation()">
-                            <i class="bi bi-play-fill"></i> Goruntulumeyi Baslat
+                            <i class="bi bi-play-fill"></i> @Html.T("Layout.StartViewing", "Görüntülemeyi Başlat")
                         </button>
                     </div>
                 </div>
@@ -92,20 +91,20 @@
                     <div class="modal-header" id="confirmModalHeader">
                         <h5 class="modal-title text-white">
                             <i class="bi" id="confirmModalIcon"></i>
-                            <span id="confirmModalTitle">Onay</span>
+                            <span id="confirmModalTitle">@Html.T("Common.Confirmation", "Onay")</span>
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p id="confirmModalMessage">Bu işlemi onaylıyor musunuz?</p>
+                        <p id="confirmModalMessage">@Html.T("Common.ConfirmMessage", "Bu işlemi onaylıyor musunuz?")</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> İptal
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.Cancel", "İptal")
                         </button>
                         <button type="button" class="btn" id="confirmModalBtn">
                             <i class="bi" id="confirmModalBtnIcon"></i>
-                            <span id="confirmModalBtnText">Onayla</span>
+                            <span id="confirmModalBtnText">@Html.T("Common.Confirm", "Onayla")</span>
                         </button>
                     </div>
                 </div>

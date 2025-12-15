@@ -1,13 +1,13 @@
 @{
-    ViewData["Title"] = "Proje Yönetimi";
+    ViewData["Title"] = Html.T("Project.Title", "Proje Yönetimi");
 }
 
 <div id="projects-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-kanban"></i> Proje Yönetimi</h2>
+        <h2><i class="bi bi-kanban"></i> @Html.T("Project.Title", "Proje Yönetimi")</h2>
         <button class="btn btn-primary" data-bind="click: openCreateModal">
-            <i class="bi bi-plus-circle"></i> Yeni Proje
+            <i class="bi bi-plus-circle"></i> @Html.T("Project.NewProject", "Yeni Proje")
         </button>
     </div>
 
@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">Toplam Proje</h6>
+                            <h6 class="mb-0">@Html.T("Project.TotalProjects", "Toplam Proje")</h6>
                             <h3 class="mb-0" data-bind="text: stats().total"></h3>
                         </div>
                         <i class="bi bi-folder2 fs-1 opacity-50"></i>
@@ -31,7 +31,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">Aktif</h6>
+                            <h6 class="mb-0">@Html.T("Common.Active", "Aktif")</h6>
                             <h3 class="mb-0" data-bind="text: stats().active"></h3>
                         </div>
                         <i class="bi bi-play-circle fs-1 opacity-50"></i>
@@ -44,7 +44,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">Yaklaşan Bitiş</h6>
+                            <h6 class="mb-0">@Html.T("Project.UpcomingEnd", "Yaklaşan Bitiş")</h6>
                             <h3 class="mb-0" data-bind="text: stats().upcoming"></h3>
                         </div>
                         <i class="bi bi-clock-history fs-1 opacity-50"></i>
@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">Tamamlanan</h6>
+                            <h6 class="mb-0">@Html.T("Project.Completed", "Tamamlanan")</h6>
                             <h3 class="mb-0" data-bind="text: stats().completed"></h3>
                         </div>
                         <i class="bi bi-check-circle fs-1 opacity-50"></i>
@@ -74,33 +74,33 @@
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Proje ara..." data-bind="value: searchTerm, valueUpdate: 'input'">
+                        <input type="text" class="form-control" placeholder="@Html.T("Project.SearchPlaceholder", "Proje ara...")" data-bind="value: searchTerm, valueUpdate: 'input'">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <select class="form-select" data-bind="value: statusFilter">
-                        <option value="">Tüm Durumlar</option>
-                        <option value="Draft">Taslak</option>
-                        <option value="Planned">Planlandı</option>
-                        <option value="Active">Aktif</option>
-                        <option value="Paused">Duraklatıldı</option>
-                        <option value="Completed">Tamamlandı</option>
-                        <option value="Cancelled">İptal Edildi</option>
+                        <option value="">@Html.T("Project.AllStatuses", "Tüm Durumlar")</option>
+                        <option value="Draft">@Html.T("Project.Status.Draft", "Taslak")</option>
+                        <option value="Planned">@Html.T("Project.Status.Planned", "Planlandı")</option>
+                        <option value="Active">@Html.T("Project.Status.Active", "Aktif")</option>
+                        <option value="Paused">@Html.T("Project.Status.Paused", "Duraklatıldı")</option>
+                        <option value="Completed">@Html.T("Project.Status.Completed", "Tamamlandı")</option>
+                        <option value="Cancelled">@Html.T("Project.Status.Cancelled", "İptal Edildi")</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <select class="form-select" data-bind="value: projectTypeFilter">
-                        <option value="">Tüm Tipler</option>
-                        <option value="MysteryShopping">Gizli Müşteri</option>
-                        <option value="CallAuditing">Çağrı Denetimi</option>
-                        <option value="PhysicalAudit">Fiziksel Denetim</option>
-                        <option value="OnlineSurvey">Online Anket</option>
-                        <option value="CustomerSatisfaction">Müşteri Memnuniyeti</option>
+                        <option value="">@Html.T("Project.AllTypes", "Tüm Tipler")</option>
+                        <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
+                        <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
+                        <option value="PhysicalAudit">@Html.T("Project.Type.PhysicalAudit", "Fiziksel Denetim")</option>
+                        <option value="OnlineSurvey">@Html.T("Project.Type.OnlineSurvey", "Online Anket")</option>
+                        <option value="CustomerSatisfaction">@Html.T("Project.Type.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
                     </select>
                 </div>
                 <div class="col-md-2 text-end">
                     <button class="btn btn-outline-secondary" data-bind="click: resetFilters">
-                        <i class="bi bi-x-circle"></i> Temizle
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                     </button>
                 </div>
             </div>
@@ -110,7 +110,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2">Projeler yükleniyor...</p>
+        <p class="mt-2">@Html.T("Project.Loading", "Projeler yükleniyor...")</p>
     </div>
 
     <!-- Messages -->
@@ -127,7 +127,7 @@
     <div class="card" data-bind="visible: !isLoading()">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
-                <i class="bi bi-list"></i> Projeler
+                <i class="bi bi-list"></i> @Html.T("Project.Projects", "Projeler")
                 <span class="badge bg-secondary ms-2" data-bind="text: filteredProjects().length"></span>
             </span>
             <div class="btn-group btn-group-sm">
@@ -143,7 +143,7 @@
             <!-- Empty State -->
             <div data-bind="visible: filteredProjects().length === 0" class="text-center py-5">
                 <i class="bi bi-folder-x fs-1 text-muted"></i>
-                <p class="text-muted mt-2">Proje bulunamadı</p>
+                <p class="text-muted mt-2">@Html.T("Project.NoProjects", "Proje bulunamadı")</p>
             </div>
 
             <!-- Table View -->
@@ -151,14 +151,14 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Kod</th>
-                            <th>Proje Adı</th>
-                            <th>Tip</th>
-                            <th>Durum</th>
-                            <th>İlerleme</th>
-                            <th>Tarihler</th>
-                            <th>Takım</th>
-                            <th class="text-end">İşlemler</th>
+                            <th>@Html.T("Project.Code", "Kod")</th>
+                            <th>@Html.T("Project.ProjectName", "Proje Adı")</th>
+                            <th>@Html.T("Project.Type", "Tip")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Project.Progress", "İlerleme")</th>
+                            <th>@Html.T("Project.Dates", "Tarihler")</th>
+                            <th>@Html.T("Project.Team", "Takım")</th>
+                            <th class="text-end">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: filteredProjects">
@@ -166,7 +166,7 @@
                             <td><code data-bind="text: code || '-'"></code></td>
                             <td>
                                 <a href="#" data-bind="text: name, click: function() { $parent.openDetailModal($data); }" class="fw-bold text-decoration-none"></a>
-                                <br><small class="text-muted" data-bind="text: customerName || 'Müşteri belirtilmedi'"></small>
+                                <br><small class="text-muted" data-bind="text: customerName || '@Html.T("Project.NoCustomer", "Müşteri belirtilmedi")'"></small>
                             </td>
                             <td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td>
                             <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadge(status)"></span></td>
@@ -191,22 +191,22 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }" title="Detay">
+                                    <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }" title="@Html.T("Common.Detail", "Detay")">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled'" title="Düzenle">
+                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled'" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'" title="Başlat">
+                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'" title="@Html.T("Project.Start", "Başlat")">
                                         <i class="bi bi-play"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-warning" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'" title="Duraklat">
+                                    <button type="button" class="btn btn-outline-warning" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'" title="@Html.T("Project.Pause", "Duraklat")">
                                         <i class="bi bi-pause"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'" title="Tamamla">
+                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'" title="@Html.T("Project.Complete", "Tamamla")">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, visible: status === 'Draft'" title="Sil">
+                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, visible: status === 'Draft'" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -228,23 +228,23 @@
                             <h5 class="card-title">
                                 <a href="#" data-bind="text: name, click: function() { $parent.openDetailModal($data); }" class="text-decoration-none"></a>
                             </h5>
-                            <p class="card-text text-muted small" data-bind="text: description || 'Açıklama yok'"></p>
+                            <p class="card-text text-muted small" data-bind="text: description || '@Html.T("Project.NoDescription", "Açıklama yok")'"></p>
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small class="text-muted">İlerleme</small>
+                                    <small class="text-muted">@Html.T("Project.Progress", "İlerleme")</small>
                                     <small class="fw-bold" data-bind="text: completionPercentage.toFixed(0) + '%'"></small>
                                 </div>
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar" data-bind="style: { width: completionPercentage + '%' }, css: completionPercentage >= 100 ? 'bg-success' : ''"></div>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <small class="text-muted"><span data-bind="text: completedAssignments"></span> / <span data-bind="text: totalAssignments"></span> görev</small>
+                                    <small class="text-muted"><span data-bind="text: completedAssignments"></span> / <span data-bind="text: totalAssignments"></span> @Html.T("Project.Task", "görev")</small>
                                     <small class="text-muted" data-bind="visible: averageScore > 0"><i class="bi bi-star-fill text-warning"></i> <span data-bind="text: averageScore.toFixed(1)"></span></small>
                                 </div>
                             </div>
                             <div class="row text-muted small">
-                                <div class="col-6"><i class="bi bi-people"></i> <span data-bind="text: teamMemberCount"></span> Kişi</div>
-                                <div class="col-6"><i class="bi bi-building"></i> <span data-bind="text: targetBranchCount"></span> Şube</div>
+                                <div class="col-6"><i class="bi bi-people"></i> <span data-bind="text: teamMemberCount"></span> @Html.T("Project.Person", "Kişi")</div>
+                                <div class="col-6"><i class="bi bi-building"></i> <span data-bind="text: targetBranchCount"></span> @Html.T("Project.Branch", "Şube")</div>
                             </div>
                         </div>
                         <div class="card-footer bg-light">
@@ -255,8 +255,8 @@
                                     <span data-bind="text: new Date(endDate).toLocaleDateString('tr-TR')"></span>
                                 </small>
                                 <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }" title="Detay"><i class="bi bi-eye"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.openEditModal($data); }" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                                    <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }" title="@Html.T("Common.Detail", "Detay")"><i class="bi bi-eye"></i></button>
+                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }" title="@Html.T("Common.Edit", "Düzenle")"><i class="bi bi-pencil"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -272,8 +272,12 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-kanban me-2"></i>
-                        <span data-bind="text: editingProject() && editingProject().id ? 'Proje Düzenle' : 'Yeni Proje Oluştur'"></span>
+                        <!-- ko ifnot: editingProject() && editingProject().id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("Project.CreateProject", "Yeni Proje Oluştur")
+                        <!-- /ko -->
+                        <!-- ko if: editingProject() && editingProject().id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Project.EditProject", "Proje Düzenle")
+                        <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: closeEditModal"></button>
                 </div>
@@ -283,93 +287,93 @@
                         <div class="col-lg-8">
                             <!-- Basic Info -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-info-circle"></i> Temel Bilgiler</div>
+                                <div class="card-header py-2"><i class="bi bi-info-circle"></i> @Html.T("Project.BasicInfo", "Temel Bilgiler")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">Proje Kodu</label>
+                                            <label class="form-label">@Html.T("Project.Code", "Proje Kodu")</label>
                                             <div class="input-group">
-                                                <input type="text" class="form-control" data-bind="value: code" placeholder="Otomatik">
-                                                <button type="button" class="btn btn-outline-secondary" data-bind="click: $parent.generateCode" title="Otomatik Kod"><i class="bi bi-magic"></i></button>
+                                                <input type="text" class="form-control" data-bind="value: code" placeholder="@Html.T("Project.Auto", "Otomatik")">
+                                                <button type="button" class="btn btn-outline-secondary" data-bind="click: $parent.generateCode" title="@Html.T("Project.AutoCode", "Otomatik Kod")"><i class="bi bi-magic"></i></button>
                                             </div>
                                         </div>
                                         <div class="col-md-8 mb-3">
-                                            <label class="form-label">Proje Adı *</label>
-                                            <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: 2025 Q1 Gizli Müşteri Projesi">
+                                            <label class="form-label">@Html.T("Project.ProjectName", "Proje Adı") <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("Project.NamePlaceholder", "Örn: 2025 Q1 Gizli Müşteri Projesi")">
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Açıklama</label>
-                                        <textarea class="form-control" data-bind="value: description" rows="2" placeholder="Proje açıklaması..."></textarea>
+                                        <label class="form-label">@Html.T("Project.Description", "Açıklama")</label>
+                                        <textarea class="form-control" data-bind="value: description" rows="2" placeholder="@Html.T("Project.DescriptionPlaceholder", "Proje açıklaması...")"></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Proje Tipi *</label>
+                                            <label class="form-label">@Html.T("Project.Type", "Proje Tipi") <span class="text-danger">*</span></label>
                                             <select class="form-select" data-bind="value: projectType">
-                                                <option value="MysteryShopping">Gizli Müşteri</option>
-                                                <option value="CallAuditing">Çağrı Denetimi</option>
-                                                <option value="PhysicalAudit">Fiziksel Denetim</option>
-                                                <option value="OnlineSurvey">Online Anket</option>
-                                                <option value="CustomerSatisfaction">Müşteri Memnuniyeti</option>
-                                                <option value="TrainingEvaluation">Eğitim Değerlendirme</option>
-                                                <option value="QualityControl">Kalite Kontrol</option>
+                                                <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
+                                                <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
+                                                <option value="PhysicalAudit">@Html.T("Project.Type.PhysicalAudit", "Fiziksel Denetim")</option>
+                                                <option value="OnlineSurvey">@Html.T("Project.Type.OnlineSurvey", "Online Anket")</option>
+                                                <option value="CustomerSatisfaction">@Html.T("Project.Type.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
+                                                <option value="TrainingEvaluation">@Html.T("Project.Type.TrainingEvaluation", "Eğitim Değerlendirme")</option>
+                                                <option value="QualityControl">@Html.T("Project.Type.QualityControl", "Kalite Kontrol")</option>
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Atama Tipi *</label>
+                                            <label class="form-label">@Html.T("Project.AssignmentType", "Atama Tipi") <span class="text-danger">*</span></label>
                                             <select class="form-select" data-bind="value: assignmentType">
-                                                <option value="InternalBranch">Dahili Şube</option>
-                                                <option value="ExternalLocation">Harici Lokasyon</option>
-                                                <option value="Phone">Telefon</option>
-                                                <option value="Online">Online</option>
+                                                <option value="InternalBranch">@Html.T("Project.Assignment.InternalBranch", "Dahili Şube")</option>
+                                                <option value="ExternalLocation">@Html.T("Project.Assignment.ExternalLocation", "Harici Lokasyon")</option>
+                                                <option value="Phone">@Html.T("Project.Assignment.Phone", "Telefon")</option>
+                                                <option value="Online">@Html.T("Project.Assignment.Online", "Online")</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Kontrol Listesi *</label>
-                                            <select class="form-select" data-bind="value: checklistId, options: $parent.checklists, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Seçiniz...'"></select>
+                                            <label class="form-label">@Html.T("Project.Checklist", "Kontrol Listesi") <span class="text-danger">*</span></label>
+                                            <select class="form-select" data-bind="value: checklistId, options: $parent.checklists, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Müşteri</label>
-                                            <select class="form-select" data-bind="value: customerId, options: $parent.customers, optionsText: 'companyName', optionsValue: 'id', optionsCaption: 'Seçiniz (Opsiyonel)...'"></select>
+                                            <label class="form-label">@Html.T("Project.Customer", "Müşteri")</label>
+                                            <select class="form-select" data-bind="value: customerId, options: $parent.customers, optionsText: 'companyName', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOptional", "Seçiniz (Opsiyonel)...")'"></select>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Başlangıç Tarihi *</label>
+                                            <label class="form-label">@Html.T("Project.StartDate", "Başlangıç Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: startDate">
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Bitiş Tarihi *</label>
+                                            <label class="form-label">@Html.T("Project.EndDate", "Bitiş Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: endDate">
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Proje Yöneticisi</label>
-                                        <select class="form-select" data-bind="value: projectManagerId, options: $parent.users, optionsText: function(u) { return u.fullName + ' (' + u.email + ')'; }, optionsValue: 'id', optionsCaption: 'Seçiniz (Opsiyonel)...'"></select>
+                                        <label class="form-label">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</label>
+                                        <select class="form-select" data-bind="value: projectManagerId, options: $parent.users, optionsText: function(u) { return u.fullName + ' (' + u.email + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOptional", "Seçiniz (Opsiyonel)...")'"></select>
                                     </div>
                                 </div>
                             </div>
                             <!-- Targets -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-bullseye"></i> Hedefler ve Kotalar</div>
+                                <div class="card-header py-2"><i class="bi bi-bullseye"></i> @Html.T("Project.TargetsAndQuotas", "Hedefler ve Kotalar")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
-                                            <label class="form-label">Toplam Hedef</label>
+                                            <label class="form-label">@Html.T("Project.TotalTarget", "Toplam Hedef")</label>
                                             <input type="number" class="form-control" data-bind="value: targetCount" min="0">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="form-label">Günlük Kota</label>
+                                            <label class="form-label">@Html.T("Project.DailyQuota", "Günlük Kota")</label>
                                             <input type="number" class="form-control" data-bind="value: dailyQuota" min="0">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="form-label">Haftalık Kota</label>
+                                            <label class="form-label">@Html.T("Project.WeeklyQuota", "Haftalık Kota")</label>
                                             <input type="number" class="form-control" data-bind="value: weeklyQuota" min="0">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="form-label">Aylık Kota</label>
+                                            <label class="form-label">@Html.T("Project.MonthlyQuota", "Aylık Kota")</label>
                                             <input type="number" class="form-control" data-bind="value: monthlyQuota" min="0">
                                         </div>
                                     </div>
@@ -377,15 +381,15 @@
                             </div>
                             <!-- Budget -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-currency-dollar"></i> Bütçe Bilgileri</div>
+                                <div class="card-header py-2"><i class="bi bi-currency-dollar"></i> @Html.T("Project.BudgetInfo", "Bütçe Bilgileri")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Tahmini Bütçe (TL)</label>
+                                            <label class="form-label">@Html.T("Project.EstimatedBudget", "Tahmini Bütçe (TL)")</label>
                                             <input type="number" class="form-control" data-bind="value: estimatedBudget" min="0" step="0.01">
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Değerlendirme Başına Maliyet (TL)</label>
+                                            <label class="form-label">@Html.T("Project.CostPerEvaluation", "Değerlendirme Başına Maliyet (TL)")</label>
                                             <input type="number" class="form-control" data-bind="value: costPerEvaluation" min="0" step="0.01">
                                         </div>
                                     </div>
@@ -393,42 +397,42 @@
                             </div>
                             <!-- Other -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-gear"></i> Diğer Ayarlar</div>
+                                <div class="card-header py-2"><i class="bi bi-gear"></i> @Html.T("Project.OtherSettings", "Diğer Ayarlar")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">Raporlama Sıklığı (Gün)</label>
+                                            <label class="form-label">@Html.T("Project.ReportingFrequency", "Raporlama Sıklığı (Gün)")</label>
                                             <input type="number" class="form-control" data-bind="value: reportingFrequencyDays" min="1">
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">Min. Puan Eşiği (%)</label>
+                                            <label class="form-label">@Html.T("Project.MinScoreThreshold", "Min. Puan Eşiği (%)")</label>
                                             <input type="number" class="form-control" data-bind="value: minimumScoreThreshold" min="0" max="100">
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">Öncelik</label>
+                                            <label class="form-label">@Html.T("Project.Priority", "Öncelik")</label>
                                             <select class="form-select" data-bind="value: priority">
-                                                <option value="">Normal</option>
-                                                <option value="Low">Düşük</option>
-                                                <option value="Medium">Orta</option>
-                                                <option value="High">Yüksek</option>
-                                                <option value="Critical">Kritik</option>
+                                                <option value="">@Html.T("Project.Priority.Normal", "Normal")</option>
+                                                <option value="Low">@Html.T("Project.Priority.Low", "Düşük")</option>
+                                                <option value="Medium">@Html.T("Project.Priority.Medium", "Orta")</option>
+                                                <option value="High">@Html.T("Project.Priority.High", "Yüksek")</option>
+                                                <option value="Critical">@Html.T("Project.Priority.Critical", "Kritik")</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Etiketler</label>
-                                            <input type="text" class="form-control" data-bind="value: tags" placeholder="Virgülle ayırın">
+                                            <label class="form-label">@Html.T("Project.Tags", "Etiketler")</label>
+                                            <input type="text" class="form-control" data-bind="value: tags" placeholder="@Html.T("Project.TagsPlaceholder", "Virgülle ayırın")">
                                         </div>
                                         <div class="col-md-6 mb-3 d-flex align-items-end">
                                             <div class="form-check">
                                                 <input type="checkbox" class="form-check-input" data-bind="checked: autoGenerateReports" id="autoReports">
-                                                <label class="form-check-label" for="autoReports">Otomatik Rapor Oluştur</label>
+                                                <label class="form-check-label" for="autoReports">@Html.T("Project.AutoGenerateReports", "Otomatik Rapor Oluştur")</label>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Notlar</label>
+                                        <label class="form-label">@Html.T("Project.Notes", "Notlar")</label>
                                         <textarea class="form-control" data-bind="value: notes" rows="2"></textarea>
                                     </div>
                                 </div>
@@ -439,20 +443,20 @@
                             <!-- Team Members -->
                             <div class="card mb-3">
                                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                                    <span><i class="bi bi-people"></i> Takım Üyeleri</span>
+                                    <span><i class="bi bi-people"></i> @Html.T("Project.TeamMembers", "Takım Üyeleri")</span>
                                     <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.addTeamMember"><i class="bi bi-plus"></i></button>
                                 </div>
                                 <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
                                     <div data-bind="visible: teamMembers().length === 0" class="text-center py-3 text-muted">
-                                        <i class="bi bi-person-plus"></i> Takım üyesi ekleyin
+                                        <i class="bi bi-person-plus"></i> @Html.T("Project.AddTeamMember", "Takım üyesi ekleyin")
                                     </div>
                                     <ul class="list-group list-group-flush" data-bind="foreach: teamMembers">
                                         <li class="list-group-item d-flex align-items-center gap-2 py-2">
-                                            <select class="form-select form-select-sm flex-grow-1" data-bind="value: userId, options: $parents[1].users, optionsText: 'fullName', optionsValue: 'id', optionsCaption: 'Kullanıcı...'"></select>
+                                            <select class="form-select form-select-sm flex-grow-1" data-bind="value: userId, options: $parents[1].users, optionsText: 'fullName', optionsValue: 'id', optionsCaption: '@Html.T("Project.User", "Kullanıcı...")'"></select>
                                             <select class="form-select form-select-sm" style="width: 110px;" data-bind="value: role">
-                                                <option value="Evaluator">Değerlendirici</option>
-                                                <option value="Manager">Yönetici</option>
-                                                <option value="Observer">Gözlemci</option>
+                                                <option value="Evaluator">@Html.T("Project.Role.Evaluator", "Değerlendirici")</option>
+                                                <option value="Manager">@Html.T("Project.Role.Manager", "Yönetici")</option>
+                                                <option value="Observer">@Html.T("Project.Role.Observer", "Gözlemci")</option>
                                             </select>
                                             <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parents[1].removeTeamMember"><i class="bi bi-x"></i></button>
                                         </li>
@@ -462,29 +466,29 @@
                             <!-- Branches -->
                             <div class="card mb-3">
                                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                                    <span><i class="bi bi-building"></i> Hedef Şubeler</span>
+                                    <span><i class="bi bi-building"></i> @Html.T("Project.TargetBranches", "Hedef Şubeler")</span>
                                     <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.addBranch"><i class="bi bi-plus"></i></button>
                                 </div>
                                 <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
                                     <div data-bind="visible: branches().length === 0" class="text-center py-3 text-muted">
-                                        <i class="bi bi-building"></i> Şube ekleyin
+                                        <i class="bi bi-building"></i> @Html.T("Project.AddBranch", "Şube ekleyin")
                                     </div>
                                     <ul class="list-group list-group-flush" data-bind="foreach: branches">
                                         <li class="list-group-item py-2">
                                             <div class="d-flex align-items-center gap-2 mb-1">
-                                                <select class="form-select form-select-sm flex-grow-1" data-bind="value: branchId, options: $parents[1].branches, optionsText: function(b) { return b.name + ' (' + b.code + ')'; }, optionsValue: 'id', optionsCaption: 'Şube...'"></select>
+                                                <select class="form-select form-select-sm flex-grow-1" data-bind="value: branchId, options: $parents[1].branches, optionsText: function(b) { return b.name + ' (' + b.code + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Project.Branch", "Şube...")'"></select>
                                                 <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parents[1].removeBranch"><i class="bi bi-x"></i></button>
                                             </div>
                                             <div class="row g-1">
-                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: targetCount" placeholder="Hedef" min="0"></div>
-                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: priority" placeholder="Öncelik" min="0"></div>
+                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: targetCount" placeholder="@Html.T("Project.Target", "Hedef")" min="0"></div>
+                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: priority" placeholder="@Html.T("Project.Priority", "Öncelik")" min="0"></div>
                                             </div>
                                         </li>
                                     </ul>
                                 </div>
                                 <div class="card-footer py-2">
                                     <button type="button" class="btn btn-outline-secondary btn-sm w-100" data-bind="click: $parent.addAllBranches">
-                                        <i class="bi bi-plus-square"></i> Tüm Şubeleri Ekle
+                                        <i class="bi bi-plus-square"></i> @Html.T("Project.AddAllBranches", "Tüm Şubeleri Ekle")
                                     </button>
                                 </div>
                             </div>
@@ -492,10 +496,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: closeEditModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeEditModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveProject, disable: isSaving">
-                        <span data-bind="visible: !isSaving()"><i class="bi bi-save me-1"></i> Kaydet</span>
-                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...</span>
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")</span>
+                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Common.Saving", "Kaydediliyor...")</span>
                     </button>
                 </div>
             </div>
@@ -522,7 +528,7 @@
                             <div class="card bg-primary text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0" data-bind="text: completionPercentage.toFixed(0) + '%'"></h4>
-                                    <small>İlerleme</small>
+                                    <small>@Html.T("Project.Progress", "İlerleme")</small>
                                     <div class="progress mt-1" style="height: 4px;"><div class="progress-bar bg-light" data-bind="style: { width: completionPercentage + '%' }"></div></div>
                                 </div>
                             </div>
@@ -531,7 +537,7 @@
                             <div class="card bg-success text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0"><span data-bind="text: completedAssignments"></span>/<span data-bind="text: totalAssignments"></span></h4>
-                                    <small>Tamamlanan</small>
+                                    <small>@Html.T("Project.Completed", "Tamamlanan")</small>
                                 </div>
                             </div>
                         </div>
@@ -539,7 +545,7 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0" data-bind="text: averageScore.toFixed(1)"></h4>
-                                    <small>Ortalama Puan</small>
+                                    <small>@Html.T("Project.AverageScore", "Ortalama Puan")</small>
                                 </div>
                             </div>
                         </div>
@@ -547,7 +553,7 @@
                             <div class="card" data-bind="css: totalRedCards > 0 ? 'bg-danger text-white' : totalYellowCards > 0 ? 'bg-warning' : 'bg-light'">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0"><span data-bind="text: totalYellowCards"></span> <i class="bi bi-card-fill text-warning"></i> <span data-bind="text: totalRedCards"></span> <i class="bi bi-card-fill text-danger"></i></h4>
-                                    <small>Ceza Kartları</small>
+                                    <small>@Html.T("Project.PenaltyCards", "Ceza Kartları")</small>
                                 </div>
                             </div>
                         </div>
@@ -557,7 +563,7 @@
                         <div class="col-lg-8">
                             <!-- Project Info -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-info-circle"></i> Proje Bilgileri</div>
+                                <div class="card-header py-2"><i class="bi bi-info-circle"></i> @Html.T("Project.ProjectInfo", "Proje Bilgileri")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
@@ -618,32 +624,32 @@
                         <div class="col-lg-4">
                             <!-- Status Actions -->
                             <div class="card mb-3" data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
-                                <div class="card-header py-2"><i class="bi bi-toggles"></i> Durum İşlemleri</div>
+                                <div class="card-header py-2"><i class="bi bi-toggles"></i> @Html.T("Project.StatusActions", "Durum İşlemleri")</div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'"><i class="bi bi-play-fill"></i> Başlat</button>
-                                        <button type="button" class="btn btn-warning btn-sm" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'"><i class="bi bi-pause-fill"></i> Duraklat</button>
-                                        <button type="button" class="btn btn-primary btn-sm" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'"><i class="bi bi-check-lg"></i> Tamamla</button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.cancelProject($data); }"><i class="bi bi-x-lg"></i> İptal Et</button>
+                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'"><i class="bi bi-play-fill"></i> @Html.T("Project.Start", "Başlat")</button>
+                                        <button type="button" class="btn btn-warning btn-sm" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'"><i class="bi bi-pause-fill"></i> @Html.T("Project.Pause", "Duraklat")</button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'"><i class="bi bi-check-lg"></i> @Html.T("Project.Complete", "Tamamla")</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.cancelProject($data); }"><i class="bi bi-x-lg"></i> @Html.T("Project.Cancel", "İptal Et")</button>
                                     </div>
                                 </div>
                             </div>
                             <!-- Team -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-people"></i> Takım <span class="badge bg-secondary" data-bind="text: teamMembers ? teamMembers.length : 0"></span></div>
+                                <div class="card-header py-2"><i class="bi bi-people"></i> @Html.T("Project.Team", "Takım") <span class="badge bg-secondary" data-bind="text: teamMembers ? teamMembers.length : 0"></span></div>
                                 <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
                                     <ul class="list-group list-group-flush" data-bind="foreach: teamMembers, visible: teamMembers && teamMembers.length > 0">
                                         <li class="list-group-item d-flex justify-content-between align-items-center py-2">
                                             <div><i class="bi bi-person-circle me-1"></i><span data-bind="text: userName"></span><br><small class="text-muted" data-bind="text: email"></small></div>
-                                            <div class="text-end"><span class="badge bg-secondary" data-bind="text: $parents[1].getRoleText(role)"></span><br><small class="text-muted" data-bind="text: completedEvaluations + ' değ.'"></small></div>
+                                            <div class="text-end"><span class="badge bg-secondary" data-bind="text: $parents[1].getRoleText(role)"></span><br><small class="text-muted" data-bind="text: completedEvaluations + ' @Html.T("Project.Eval", "değ.")'"></small></div>
                                         </li>
                                     </ul>
-                                    <div data-bind="visible: !teamMembers || teamMembers.length === 0" class="text-center py-3 text-muted">Takım üyesi yok</div>
+                                    <div data-bind="visible: !teamMembers || teamMembers.length === 0" class="text-center py-3 text-muted">@Html.T("Project.NoTeamMember", "Takım üyesi yok")</div>
                                 </div>
                             </div>
                             <!-- Quick Info -->
                             <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-info-square"></i> Hızlı Bilgi</div>
+                                <div class="card-header py-2"><i class="bi bi-info-square"></i> @Html.T("Project.QuickInfo", "Hızlı Bilgi")</div>
                                 <ul class="list-group list-group-flush small">
                                     <li class="list-group-item d-flex justify-content-between py-1"><span>Min. Puan Eşiği</span><span data-bind="text: minimumScoreThreshold ? minimumScoreThreshold + '%' : '-'"></span></li>
                                     <li class="list-group-item d-flex justify-content-between py-1"><span>Raporlama</span><span data-bind="text: reportingFrequencyDays ? reportingFrequencyDays + ' gün' : '-'"></span></li>
@@ -655,10 +661,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled'">
-                        <i class="bi bi-pencil"></i> Düzenle
+                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled'">
+                        <i class="bi bi-pencil"></i> @Html.T("Common.Edit", "Düzenle")
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
                 </div>
             </div>
         </div>

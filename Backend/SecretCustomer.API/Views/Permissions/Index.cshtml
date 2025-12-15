@@ -1,12 +1,12 @@
 @{
-    ViewData["Title"] = "Yetki Yönetimi";
+    ViewData["Title"] = @Html.T("Permission.Title", "Yetki Yönetimi");
 }
 
 <div id="permissions-app">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">
-            <i class="bi bi-shield-lock me-2"></i>Yetki Yönetimi
+            <i class="bi bi-shield-lock me-2"></i>@Html.T("Permission.Title", "Yetki Yönetimi")
         </h2>
     </div>
 
@@ -14,17 +14,17 @@
     <ul class="nav nav-tabs mb-4" id="permissionTabs">
         <li class="nav-item">
             <a class="nav-link active" data-bs-toggle="tab" href="#allPermissions">
-                <i class="bi bi-list-check me-1"></i>Tüm Yetkiler
+                <i class="bi bi-list-check me-1"></i>@Html.T("Permission.AllPermissions", "Tüm Yetkiler")
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#rolePermissions">
-                <i class="bi bi-people me-1"></i>Rol Yetkileri
+                <i class="bi bi-people me-1"></i>@Html.T("Permission.RolePermissions", "Rol Yetkileri")
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#userPermissions">
-                <i class="bi bi-person me-1"></i>Kullanıcı Yetkileri
+                <i class="bi bi-person me-1"></i>@Html.T("Permission.UserPermissions", "Kullanıcı Yetkileri")
             </a>
         </li>
     </ul>
@@ -32,9 +32,9 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
-        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
     </div>
 
     <!-- Error Message -->
@@ -57,10 +57,10 @@
         <div class="tab-pane fade show active" id="allPermissions">
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Sistem Yetkileri</h5>
+                    <h5 class="mb-0">@Html.T("Permission.SystemPermissions", "Sistem Yetkileri")</h5>
                     <div class="d-flex gap-2">
                         <select class="form-select form-select-sm" style="width: 200px;" data-bind="value: categoryFilter">
-                            <option value="">Tüm Kategoriler</option>
+                            <option value="">@Html.T("Permission.AllCategories", "Tüm Kategoriler")</option>
                             <!-- ko foreach: categories -->
                             <option data-bind="value: value, text: name"></option>
                             <!-- /ko -->
@@ -72,11 +72,11 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Kod</th>
-                                    <th>Ad</th>
-                                    <th>Kategori</th>
-                                    <th>Açıklama</th>
-                                    <th>Durum</th>
+                                    <th>@Html.T("Permission.Code", "Kod")</th>
+                                    <th>@Html.T("Common.Name", "Ad")</th>
+                                    <th>@Html.T("Permission.Category", "Kategori")</th>
+                                    <th>@Html.T("Common.Description", "Açıklama")</th>
+                                    <th>@Html.T("Common.Status", "Durum")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: filteredPermissions">
@@ -102,7 +102,7 @@
                     </div>
                     <div data-bind="visible: filteredPermissions().length === 0" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">Yetki bulunamadı.</p>
+                        <p class="mt-2">@Html.T("Permission.NoPermissionsFound", "Yetki bulunamadı.")</p>
                     </div>
                 </div>
             </div>
@@ -115,7 +115,7 @@
                 <div class="col-md-3 mb-4">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-white">
-                            <h6 class="mb-0">Roller</h6>
+                            <h6 class="mb-0">@Html.T("Permission.Roles", "Roller")</h6>
                         </div>
                         <div class="list-group list-group-flush" data-bind="foreach: roles">
                             <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
@@ -133,12 +133,12 @@
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
                                 <span data-bind="visible: selectedRole">
-                                    <span data-bind="text: selectedRole() ? selectedRole().name : ''"></span> - Yetkileri
+                                    <span data-bind="text: selectedRole() ? selectedRole().name : ''"></span> - @Html.T("Permission.Permissions", "Yetkileri")
                                 </span>
-                                <span data-bind="visible: !selectedRole()">Rol Seçin</span>
+                                <span data-bind="visible: !selectedRole()">@Html.T("Permission.SelectRole", "Rol Seçin")</span>
                             </h5>
                             <button class="btn btn-primary btn-sm" data-bind="visible: selectedRole, click: saveRolePermissions, disable: isSaving">
-                                <i class="bi bi-check-lg me-1"></i>Kaydet
+                                <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Save", "Kaydet")
                             </button>
                         </div>
                         <div class="card-body" data-bind="visible: selectedRole">
@@ -170,7 +170,7 @@
                         </div>
                         <div class="card-body text-center text-muted py-5" data-bind="visible: !selectedRole()">
                             <i class="bi bi-arrow-left fs-1"></i>
-                            <p class="mt-2">Yetkileri görüntülemek için soldaki listeden bir rol seçin.</p>
+                            <p class="mt-2">@Html.T("Permission.SelectRoleToView", "Yetkileri görüntülemek için soldaki listeden bir rol seçin.")</p>
                         </div>
                     </div>
                 </div>
@@ -184,12 +184,12 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-header bg-white">
-                            <h6 class="mb-0">Kullanıcı Ara</h6>
+                            <h6 class="mb-0">@Html.T("Permission.SearchUser", "Kullanıcı Ara")</h6>
                         </div>
                         <div class="card-body">
                             <div class="input-group mb-3">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" placeholder="Ad, soyad veya email..."
+                                <input type="text" class="form-control" placeholder="@Html.T("Permission.SearchUserPlaceholder", "Ad, soyad veya email...")"
                                        data-bind="value: userSearchTerm, valueUpdate: 'afterkeydown'">
                             </div>
                             <div class="list-group" style="max-height: 400px; overflow-y: auto;">
@@ -204,7 +204,7 @@
                                 </a>
                                 <!-- /ko -->
                                 <div data-bind="visible: filteredUsers().length === 0" class="text-center py-3 text-muted">
-                                    <small>Kullanıcı bulunamadı</small>
+                                    <small>@Html.T("Permission.NoUserFound", "Kullanıcı bulunamadı")</small>
                                 </div>
                             </div>
                         </div>
@@ -232,7 +232,7 @@
                         <!-- Effective Permissions -->
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="bi bi-check-circle me-1"></i>Etkin Yetkiler</h6>
+                                <h6 class="mb-0"><i class="bi bi-check-circle me-1"></i>@Html.T("Permission.EffectivePermissions", "Etkin Yetkiler")</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -246,7 +246,7 @@
                                     <!-- /ko -->
                                 </div>
                                 <div data-bind="visible: !userPermissionsSummary() || userPermissionsSummary().effectivePermissions.length === 0" class="text-center text-muted py-3">
-                                    <small>Bu kullanıcının etkin yetkisi bulunmamaktadır.</small>
+                                    <small>@Html.T("Permission.NoEffectivePermissions", "Bu kullanıcının etkin yetkisi bulunmamaktadır.")</small>
                                 </div>
                             </div>
                         </div>
@@ -254,9 +254,9 @@
                         <!-- Custom Permissions -->
                         <div class="card shadow-sm">
                             <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0"><i class="bi bi-person-gear me-1"></i>Özel Yetkiler</h6>
+                                <h6 class="mb-0"><i class="bi bi-person-gear me-1"></i>@Html.T("Permission.CustomPermissions", "Özel Yetkiler")</h6>
                                 <button class="btn btn-sm btn-dark" data-bind="click: showAddUserPermissionModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Özel Yetki Ekle
+                                    <i class="bi bi-plus-lg me-1"></i>@Html.T("Permission.AddCustomPermission", "Özel Yetki Ekle")
                                 </button>
                             </div>
                             <div class="card-body p-0">
@@ -264,11 +264,11 @@
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Yetki</th>
-                                                <th>Durum</th>
-                                                <th>Kapsam</th>
-                                                <th>Geçerlilik</th>
-                                                <th>İşlem</th>
+                                                <th>@Html.T("Permission.Permission", "Yetki")</th>
+                                                <th>@Html.T("Common.Status", "Durum")</th>
+                                                <th>@Html.T("Permission.Scope", "Kapsam")</th>
+                                                <th>@Html.T("Permission.Validity", "Geçerlilik")</th>
+                                                <th>@Html.T("Common.Actions", "İşlem")</th>
                                             </tr>
                                         </thead>
                                         <tbody data-bind="foreach: userPermissionsSummary() ? userPermissionsSummary().customPermissions : []">
@@ -295,7 +295,7 @@
                                     </table>
                                 </div>
                                 <div data-bind="visible: !userPermissionsSummary() || userPermissionsSummary().customPermissions.length === 0" class="text-center text-muted py-4">
-                                    <small>Bu kullanıcının özel yetkisi bulunmamaktadır.</small>
+                                    <small>@Html.T("Permission.NoCustomPermissions", "Bu kullanıcının özel yetkisi bulunmamaktadır.")</small>
                                 </div>
                             </div>
                         </div>
@@ -304,7 +304,7 @@
                     <div data-bind="visible: !selectedUser()" class="card shadow-sm">
                         <div class="card-body text-center text-muted py-5">
                             <i class="bi bi-person-bounding-box fs-1"></i>
-                            <p class="mt-2">Yetkileri görüntülemek için soldaki listeden bir kullanıcı seçin.</p>
+                            <p class="mt-2">@Html.T("Permission.SelectUserToView", "Yetkileri görüntülemek için soldaki listeden bir kullanıcı seçin.")</p>
                         </div>
                     </div>
                 </div>
@@ -317,48 +317,48 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Özel Yetki Ekle</h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>@Html.T("Permission.AddCustomPermission", "Özel Yetki Ekle")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Yetki <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: newUserPermission.permissionId, options: permissions, optionsValue: 'id', optionsText: 'displayName', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("Permission.Permission", "Yetki") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: newUserPermission.permissionId, options: permissions, optionsValue: 'id', optionsText: 'displayName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Durum</label>
+                        <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                         <select class="form-select" data-bind="value: newUserPermission.isGranted">
-                            <option value="true">Yetkiyi Ver</option>
-                            <option value="false">Yetkiyi Kaldır (Override)</option>
+                            <option value="true">@Html.T("Permission.GrantPermission", "Yetkiyi Ver")</option>
+                            <option value="false">@Html.T("Permission.RevokePermission", "Yetkiyi Kaldır (Override)")</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Kapsam</label>
+                        <label class="form-label">@Html.T("Permission.Scope", "Kapsam")</label>
                         <select class="form-select" data-bind="value: newUserPermission.scope, options: scopes, optionsValue: 'value', optionsText: 'name'"></select>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Başlangıç Tarihi</label>
+                            <label class="form-label">@Html.T("Common.StartDate", "Başlangıç Tarihi")</label>
                             <input type="date" class="form-control" data-bind="value: newUserPermission.validFrom">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Bitiş Tarihi</label>
+                            <label class="form-label">@Html.T("Common.EndDate", "Bitiş Tarihi")</label>
                             <input type="date" class="form-control" data-bind="value: newUserPermission.validUntil">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Not</label>
+                        <label class="form-label">@Html.T("Permission.Note", "Not")</label>
                         <textarea class="form-control" rows="2" data-bind="value: newUserPermission.notes"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: addUserPermission, disable: isSaving">
                         <span data-bind="visible: !isSaving()">
-                            <i class="bi bi-check-lg me-1"></i>Ekle
+                            <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Add", "Ekle")
                         </span>
                         <span data-bind="visible: isSaving">
-                            <span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...
+                            <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>

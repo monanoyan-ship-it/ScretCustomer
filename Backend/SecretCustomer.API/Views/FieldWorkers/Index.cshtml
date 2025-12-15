@@ -1,12 +1,12 @@
 @{
-    ViewData["Title"] = "Saha Çalışanları";
+    ViewData["Title"] = Html.T("FieldWorker.Title", "Saha Çalışanları");
 }
 
 <div id="fieldworkers-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Saha Çalışanları</h2>
+        <h2>@Html.T("FieldWorker.Title", "Saha Çalışanları")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle"></i> Yeni Saha Çalışanı
+            <i class="bi bi-plus-circle"></i> @Html.T("FieldWorker.NewFieldWorker", "Yeni Saha Çalışanı")
         </button>
     </div>
 
@@ -32,7 +32,7 @@
         <!-- Empty State -->
         <div data-bind="visible: fieldWorkers().length === 0">
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Henüz saha çalışanı bulunmamaktadır.
+                <i class="bi bi-info-circle"></i> @Html.T("FieldWorker.NoFieldWorkers", "Henüz saha çalışanı bulunmamaktadır.")
             </div>
         </div>
 
@@ -42,12 +42,12 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Ad Soyad</th>
-                            <th>Telefon</th>
-                            <th>E-posta</th>
-                            <th>Adres</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
+                            <th>@Html.T("FieldWorker.FullName", "Ad Soyad")</th>
+                            <th>@Html.T("FieldWorker.Phone", "Telefon")</th>
+                            <th>@Html.T("FieldWorker.Email", "E-posta")</th>
+                            <th>@Html.T("FieldWorker.Address", "Adres")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: fieldWorkers">
@@ -57,14 +57,14 @@
                             <td data-bind="text: email || '-'"></td>
                             <td data-bind="text: address"></td>
                             <td>
-                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editFieldWorker">
-                                    <i class="bi bi-pencil"></i> Düzenle
+                                <button class="btn btn-sm btn-outline-primary me-1" data-bind="click: $parent.editFieldWorker" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteFieldWorker">
-                                    <i class="bi bi-trash"></i> Sil
+                                <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteFieldWorker" title="@Html.T("Common.Delete", "Sil")">
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>
@@ -80,69 +80,75 @@
             <div class="modal-content" data-bind="with: editingFieldWorker">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <span data-bind="visible: !id">Yeni Saha Çalışanı</span>
-                        <span data-bind="visible: id">Saha Çalışanı Düzenle</span>
+                        <!-- ko ifnot: id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("FieldWorker.NewFieldWorker", "Yeni Saha Çalışanı")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("FieldWorker.EditFieldWorker", "Saha Çalışanı Düzenle")
+                        <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Ad *</label>
-                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ahmet" />
+                            <label class="form-label">@Html.T("FieldWorker.FirstName", "Ad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="@Html.T("FieldWorker.FirstNamePlaceholder", "Ahmet")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Soyad *</label>
-                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Yılmaz" />
+                            <label class="form-label">@Html.T("FieldWorker.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="@Html.T("FieldWorker.LastNamePlaceholder", "Yılmaz")" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Kullanıcı Adı *</label>
-                            <input type="text" class="form-control" data-bind="value: username" placeholder="ahmet.yilmaz" />
+                            <label class="form-label">@Html.T("FieldWorker.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: username" placeholder="@Html.T("FieldWorker.UsernamePlaceholder", "ahmet.yilmaz")" />
                         </div>
                         <div class="col-md-6 mb-3" data-bind="visible: !id">
-                            <label class="form-label">Şifre *</label>
-                            <input type="password" class="form-control" data-bind="value: password" placeholder="En az 6 karakter" />
+                            <label class="form-label">@Html.T("FieldWorker.Password", "Şifre") <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" data-bind="value: password" placeholder="@Html.T("FieldWorker.PasswordPlaceholder", "En az 6 karakter")" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefon *</label>
-                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="+90 555 123 45 67" />
+                            <label class="form-label">@Html.T("FieldWorker.Phone", "Telefon") <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="@Html.T("FieldWorker.PhonePlaceholder", "+90 555 123 45 67")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">E-posta</label>
-                            <input type="email" class="form-control" data-bind="value: email" placeholder="ahmet@example.com" />
+                            <label class="form-label">@Html.T("FieldWorker.Email", "E-posta")</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="@Html.T("FieldWorker.EmailPlaceholder", "ahmet@example.com")" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Adres *</label>
-                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="Tam adres bilgisi..."></textarea>
+                        <label class="form-label">@Html.T("FieldWorker.Address", "Adres") <span class="text-danger">*</span></label>
+                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="@Html.T("FieldWorker.AddressPlaceholder", "Tam adres bilgisi...")"></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Notlar</label>
-                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="Ek notlar..."></textarea>
+                        <label class="form-label">@Html.T("FieldWorker.Notes", "Notlar")</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="@Html.T("FieldWorker.NotesPlaceholder", "Ek notlar...")"></textarea>
                     </div>
 
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
-                        <label class="form-check-label" for="isActive">Aktif</label>
+                        <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveFieldWorker, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-save"></i> Kaydet
+                            <i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Kaydediliyor...
+                            @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>

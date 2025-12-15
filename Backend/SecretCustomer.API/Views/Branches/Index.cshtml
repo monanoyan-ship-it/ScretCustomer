@@ -1,12 +1,12 @@
 @{
-    ViewData["Title"] = "Şubeler";
+    ViewData["Title"] = Html.T("Branch.Title", "Şubeler");
 }
 
 <div id="branches-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Şubeler</h2>
+        <h2>@Html.T("Branch.Title", "Şubeler")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle"></i> Yeni Şube
+            <i class="bi bi-plus-circle"></i> @Html.T("Branch.NewBranch", "Yeni Şube")
         </button>
     </div>
 
@@ -32,7 +32,7 @@
         <!-- Empty State -->
         <div data-bind="visible: branches().length === 0">
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Henüz şube bulunmamaktadır.
+                <i class="bi bi-info-circle"></i> @Html.T("Branch.NoBranches", "Henüz şube bulunmamaktadır.")
             </div>
         </div>
 
@@ -42,13 +42,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Şube Adı</th>
-                            <th>Şube Kodu</th>
-                            <th>Şehir</th>
-                            <th>Bölge</th>
-                            <th>Kullanıcı Sayısı</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
+                            <th>@Html.T("Branch.BranchName", "Şube Adı")</th>
+                            <th>@Html.T("Branch.BranchCode", "Şube Kodu")</th>
+                            <th>@Html.T("Branch.City", "Şehir")</th>
+                            <th>@Html.T("Branch.Region", "Bölge")</th>
+                            <th>@Html.T("Branch.UserCount", "Kullanıcı Sayısı")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: branches">
@@ -59,14 +59,14 @@
                             <td data-bind="text: region || '-'"></td>
                             <td><span class="badge bg-info" data-bind="text: userCount"></span></td>
                             <td>
-                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editBranch">
-                                    <i class="bi bi-pencil"></i> Düzenle
+                                <button class="btn btn-sm btn-outline-primary me-1" data-bind="click: $parent.editBranch" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deleteBranch">
-                                    <i class="bi bi-trash"></i> Sil
+                                <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteBranch" title="@Html.T("Common.Delete", "Sil")">
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>
@@ -82,53 +82,59 @@
             <div class="modal-content" data-bind="with: editingBranch">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <span data-bind="visible: !id">Yeni Şube</span>
-                        <span data-bind="visible: id">Şube Düzenle</span>
+                        <!-- ko ifnot: id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("Branch.NewBranch", "Yeni Şube")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Branch.EditBranch", "Şube Düzenle")
+                        <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Şube Adı *</label>
-                            <input type="text" class="form-control" data-bind="value: name" placeholder="Merkez Şube" />
+                            <label class="form-label">@Html.T("Branch.BranchName", "Şube Adı") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("Branch.NamePlaceholder", "Merkez Şube")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Şube Kodu *</label>
-                            <input type="text" class="form-control" data-bind="value: code" placeholder="MRK001" />
+                            <label class="form-label">@Html.T("Branch.BranchCode", "Şube Kodu") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: code" placeholder="@Html.T("Branch.CodePlaceholder", "MRK001")" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Şehir</label>
-                            <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul" />
+                            <label class="form-label">@Html.T("Branch.City", "Şehir")</label>
+                            <input type="text" class="form-control" data-bind="value: city" placeholder="@Html.T("Branch.CityPlaceholder", "İstanbul")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Bölge</label>
-                            <input type="text" class="form-control" data-bind="value: region" placeholder="Marmara" />
+                            <label class="form-label">@Html.T("Branch.Region", "Bölge")</label>
+                            <input type="text" class="form-control" data-bind="value: region" placeholder="@Html.T("Branch.RegionPlaceholder", "Marmara")" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Adres</label>
-                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="Şube adresi..."></textarea>
+                        <label class="form-label">@Html.T("Common.Address", "Adres")</label>
+                        <textarea class="form-control" data-bind="value: address" rows="3" placeholder="@Html.T("Branch.AddressPlaceholder", "Şube adresi...")"></textarea>
                     </div>
 
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
-                        <label class="form-check-label" for="isActive">Aktif</label>
+                        <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveBranch, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-save"></i> Kaydet
+                            <i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Kaydediliyor...
+                            @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>

@@ -380,173 +380,6 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("Assignments");
                 });
 
-            modelBuilder.Entity("SecretCustomer.Core.Entities.BankVisitDetails", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AdditionalNotes")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("AirConditioningRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AtmAreaRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AtmCleanlinessRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AtmCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AtmUsabilityRating")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("BrochuresAvailable")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("BusyCountersCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CleanlinessRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CounterAreaRating")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("CrossSellOffered")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("CustomerVisitId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("DisabledAccessAvailable")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("EntranceAreaRating")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("EntryTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExitTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("FarewellReceived")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("GreetingReceived")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ImprovementAreas")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("LightingRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ManagerAreaRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("OverallSatisfactionRating")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ProductOffered")
-                        .HasColumnType("text");
-
-                    b.Property<string>("QueueNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("QueueSystemAvailable")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("QueueTicketTaken")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("QueueWaitMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RecommendationScore")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Scenario")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("ScenarioCompleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ScenarioDescription")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("SecurityPersonnelPresent")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("ServiceDurationMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("SignageRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("StaffAppearanceRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("StaffAttentivenessRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("StaffCommunicationRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("StaffCountObserved")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("StaffHasNameTag")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("StaffKnowledgeRating")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StaffName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Strengths")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("TotalCountersCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("WaitingAreaRating")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("WorkingAtmCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("WouldVisitAgain")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerVisitId")
-                        .IsUnique();
-
-                    b.ToTable("BankVisitDetails");
-                });
-
             modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3148,6 +2981,204 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("UserPermissions");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitDetailValue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool?>("BoolValue")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CustomerVisitId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DateTimeValue")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("DecimalValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid>("FieldDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("IntValue")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StringValue")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerVisitId");
+
+                    b.HasIndex("FieldDefinitionId");
+
+                    b.HasIndex("CustomerVisitId", "FieldDefinitionId")
+                        .IsUnique();
+
+                    b.HasIndex("FieldDefinitionId", "BoolValue");
+
+                    b.HasIndex("FieldDefinitionId", "IntValue");
+
+                    b.ToTable("VisitDetailValues", (string)null);
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("FieldType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HelpText")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaxLength")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MaxRating")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MaxValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("MinValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Placeholder")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("SectorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectorId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("SectorId", "Category", "SortOrder");
+
+                    b.ToTable("VisitFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitSector", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("IconClass")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("SortOrder");
+
+                    b.ToTable("VisitSectors", (string)null);
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Announcement", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.User", "CreatedByUser")
@@ -3248,17 +3279,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Checklist");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("SecretCustomer.Core.Entities.BankVisitDetails", b =>
-                {
-                    b.HasOne("SecretCustomer.Core.Entities.CustomerVisit", "CustomerVisit")
-                        .WithOne("BankVisitDetails")
-                        .HasForeignKey("SecretCustomer.Core.Entities.BankVisitDetails", "CustomerVisitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CustomerVisit");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
@@ -3863,6 +3883,35 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitDetailValue", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerVisit", "CustomerVisit")
+                        .WithMany("DetailValues")
+                        .HasForeignKey("CustomerVisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.VisitFieldDefinition", "FieldDefinition")
+                        .WithMany("DetailValues")
+                        .HasForeignKey("FieldDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerVisit");
+
+                    b.Navigation("FieldDefinition");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.VisitSector", "Sector")
+                        .WithMany("FieldDefinitions")
+                        .HasForeignKey("SectorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Sector");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Assignment", b =>
                 {
                     b.Navigation("Evaluations");
@@ -3916,7 +3965,7 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.Navigation("Attachments");
 
-                    b.Navigation("BankVisitDetails");
+                    b.Navigation("DetailValues");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
@@ -4012,6 +4061,16 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("ManagedOrganizationUnits");
 
                     b.Navigation("UserPermissions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.Navigation("DetailValues");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitSector", b =>
+                {
+                    b.Navigation("FieldDefinitions");
                 });
 #pragma warning restore 612, 618
         }

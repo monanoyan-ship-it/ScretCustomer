@@ -46,7 +46,7 @@ public class LocalizationApiController : ControllerBase
     {
         var language = await _localizationService.GetLanguageByIdAsync(id);
         if (language == null)
-            return NotFound(new { message = "Dil bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Language.NotFound") });
 
         return Ok(new
         {
@@ -79,7 +79,7 @@ public class LocalizationApiController : ControllerBase
         };
 
         var result = await _localizationService.CreateLanguageAsync(language);
-        return Ok(new { message = "Dil oluşturuldu.", id = result.Id });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.CreateSuccess"), id = result.Id });
     }
 
     [HttpPut("languages/{id}")]
@@ -100,7 +100,7 @@ public class LocalizationApiController : ControllerBase
         };
 
         await _localizationService.UpdateLanguageAsync(language);
-        return Ok(new { message = "Dil güncellendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.UpdateSuccess") });
     }
 
     [HttpDelete("languages/{id}")]
@@ -108,7 +108,7 @@ public class LocalizationApiController : ControllerBase
     public async Task<IActionResult> DeleteLanguage(Guid id)
     {
         await _localizationService.DeleteLanguageAsync(id);
-        return Ok(new { message = "Dil silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.DeleteSuccess") });
     }
 
     [HttpPost("languages/seed-defaults")]
@@ -118,7 +118,7 @@ public class LocalizationApiController : ControllerBase
         var existingLanguages = await _localizationService.GetAllLanguagesAsync(false);
         if (existingLanguages.Any())
         {
-            return Ok(new { message = "Diller zaten mevcut.", count = existingLanguages.Count() });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.AlreadySeeded"), count = existingLanguages.Count() });
         }
 
         var defaultLanguages = new List<(string Name, string Culture, string Seo, bool IsDefault)>
@@ -163,7 +163,7 @@ public class LocalizationApiController : ControllerBase
         }
 
         return Ok(new {
-            message = $"{createdCount} dil oluşturuldu, {importedResources} çeviri içe aktarıldı.",
+            message = string.Format(await _localizationService.GetResourceAsync("Api.Language.SeededWithImport"), createdCount, importedResources),
             languageCount = createdCount,
             resourceCount = importedResources
         });
@@ -204,7 +204,7 @@ public class LocalizationApiController : ControllerBase
     public async Task<IActionResult> SetResource(Guid languageId, [FromBody] SetResourceDto dto)
     {
         var result = await _localizationService.SetResourceAsync(languageId, dto.ResourceName, dto.ResourceValue);
-        return Ok(new { message = "Kaynak kaydedildi.", id = result.Id });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.SaveSuccess"), id = result.Id });
     }
 
     [HttpDelete("resources/{resourceId}")]
@@ -212,7 +212,7 @@ public class LocalizationApiController : ControllerBase
     public async Task<IActionResult> DeleteResource(Guid resourceId)
     {
         await _localizationService.DeleteResourceAsync(resourceId);
-        return Ok(new { message = "Kaynak silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.DeleteSuccess") });
     }
 
     #endregion
@@ -226,7 +226,7 @@ public class LocalizationApiController : ControllerBase
         try
         {
             var count = await _localizationService.ImportFromXmlAsync(languageId, dto.XmlContent);
-            return Ok(new { message = $"{count} çeviri içe aktarıldı.", count });
+            return Ok(new { message = string.Format(await _localizationService.GetResourceAsync("Api.Language.ImportSuccess"), count), count });
         }
         catch (Exception ex)
         {
@@ -242,7 +242,7 @@ public class LocalizationApiController : ControllerBase
         {
             var basePath = _environment.ContentRootPath;
             var count = await _localizationService.ImportFromDefaultXmlAsync(languageId, basePath);
-            return Ok(new { message = $"{count} çeviri içe aktarıldı.", count });
+            return Ok(new { message = string.Format(await _localizationService.GetResourceAsync("Api.Language.ImportSuccess"), count), count });
         }
         catch (FileNotFoundException ex)
         {
@@ -324,18 +324,18 @@ public class LocalizationApiController : ControllerBase
 
     [HttpPost("current/{languageId}")]
     [AllowAnonymous]
-    public IActionResult SetCurrentLanguage(Guid languageId)
+    public async Task<IActionResult> SetCurrentLanguage(Guid languageId)
     {
         _localizationService.SetCurrentLanguage(languageId);
-        return Ok(new { message = "Dil değiştirildi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.ChangeSuccess") });
     }
 
     [HttpPost("current/code/{languageCode}")]
     [AllowAnonymous]
-    public IActionResult SetCurrentLanguageByCode(string languageCode)
+    public async Task<IActionResult> SetCurrentLanguageByCode(string languageCode)
     {
         _localizationService.SetCurrentLanguage(languageCode);
-        return Ok(new { message = "Dil değiştirildi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.ChangeSuccess") });
     }
 
     [HttpGet("translate/{resourceName}")]

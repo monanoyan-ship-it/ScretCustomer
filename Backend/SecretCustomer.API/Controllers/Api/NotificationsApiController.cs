@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Notification;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -18,10 +19,12 @@ namespace SecretCustomer.API.Controllers.Api;
 public class NotificationsApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
-    public NotificationsApiController(ApplicationDbContext context)
+    public NotificationsApiController(ApplicationDbContext context, ILocalizationService localizationService)
     {
         _context = context;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -364,7 +367,7 @@ public class NotificationsApiController : ControllerBase
         var userId = GetCurrentUserId();
 
         if (!Enum.TryParse<NotificationType>(dto.NotificationType, out var notificationType))
-            return BadRequest(new { message = "Geçersiz bildirim türü" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Notification.InvalidType") });
 
         var setting = await _context.NotificationSettings
             .FirstOrDefaultAsync(s => s.UserId == userId && s.NotificationType == notificationType);

@@ -12,15 +12,18 @@ public class MyAssignmentsController : Controller
     private readonly IAssignmentService _assignmentService;
     private readonly IFieldWorkerService _fieldWorkerService;
     private readonly ILogger<MyAssignmentsController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public MyAssignmentsController(
         IAssignmentService assignmentService,
         IFieldWorkerService fieldWorkerService,
-        ILogger<MyAssignmentsController> logger)
+        ILogger<MyAssignmentsController> logger,
+        ILocalizationService localizationService)
     {
         _assignmentService = assignmentService;
         _fieldWorkerService = fieldWorkerService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     public async Task<IActionResult> Index()
@@ -28,7 +31,7 @@ public class MyAssignmentsController : Controller
         try
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var userName = User.FindFirstValue(ClaimTypes.Name) ?? "Kullanıcı";
+            var userName = User.FindFirstValue(ClaimTypes.Name) ?? await _localizationService.GetResourceAsync("Common.User");
 
             // Get field worker by user id
             var fieldWorker = await _fieldWorkerService.GetByUserIdAsync(userId);
@@ -38,7 +41,7 @@ public class MyAssignmentsController : Controller
                 _logger.LogWarning("Field worker not found for user {UserId}", userId);
                 // Show empty list with informative message instead of redirecting
                 ViewData["FieldWorkerName"] = userName;
-                TempData["ErrorMessage"] = "Saha çalışanı kaydınız bulunamadı. Lütfen sistem yöneticisi ile iletişime geçin.";
+                TempData["ErrorMessage"] = await _localizationService.GetResourceAsync("Mvc.MyAssignments.FieldWorkerNotFound");
                 return View(new List<Core.DTOs.Assignment.AssignmentDto>());
             }
 
@@ -52,7 +55,7 @@ public class MyAssignmentsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading my assignments");
-            TempData["ErrorMessage"] = "Atamalar yüklenirken bir hata oluştu.";
+            TempData["ErrorMessage"] = await _localizationService.GetResourceAsync("Mvc.MyAssignments.LoadError");
             return View(new List<Core.DTOs.Assignment.AssignmentDto>());
         }
     }

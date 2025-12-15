@@ -13,11 +13,16 @@ public class AccountController : Controller
 {
     private readonly IAuthService _authService;
     private readonly ILogger<AccountController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public AccountController(IAuthService authService, ILogger<AccountController> logger)
+    public AccountController(
+        IAuthService authService,
+        ILogger<AccountController> logger,
+        ILocalizationService localizationService)
     {
         _authService = authService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -55,7 +60,7 @@ public class AccountController : Controller
 
             if (result == null)
             {
-                ModelState.AddModelError(string.Empty, "Geçersiz kullanıcı adı veya şifre.");
+                ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.InvalidCredentials"));
                 return View(model);
             }
 
@@ -93,7 +98,7 @@ public class AccountController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login for user {Username}", model.Username);
-            ModelState.AddModelError(string.Empty, "Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.LoginError"));
             return View(model);
         }
     }
@@ -155,7 +160,7 @@ public class AccountController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during forgot password for email {Email}", model.Email);
-            ModelState.AddModelError(string.Empty, "İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.OperationError"));
             return View(model);
         }
     }
@@ -212,7 +217,7 @@ public class AccountController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during password reset for email {Email}", model.Email);
-            ModelState.AddModelError(string.Empty, "İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.OperationError"));
             return View(model);
         }
     }

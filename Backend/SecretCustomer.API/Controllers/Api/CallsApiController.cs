@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Call;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -17,15 +18,18 @@ public class CallsApiController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ILogger<CallsApiController> _logger;
     private readonly IWebHostEnvironment _env;
+    private readonly ILocalizationService _localizationService;
 
     public CallsApiController(
         ApplicationDbContext context,
         ILogger<CallsApiController> logger,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        ILocalizationService localizationService)
     {
         _context = context;
         _logger = logger;
         _env = env;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -150,7 +154,7 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         var dto = MapToDto(call);
         return Ok(dto);
@@ -189,7 +193,7 @@ public class CallsApiController : ControllerBase
 
         _logger.LogInformation("Call created: {CallId} by user {UserId}", call.Id, currentUserId);
 
-        return CreatedAtAction(nameof(GetCall), new { id = call.Id }, new { id = call.Id, referenceNumber = call.ReferenceNumber, message = "Çağrı başarıyla oluşturuldu." });
+        return CreatedAtAction(nameof(GetCall), new { id = call.Id }, new { id = call.Id, referenceNumber = call.ReferenceNumber, message = await _localizationService.GetResourceAsync("Api.Call.CreateSuccess") });
     }
 
     /// <summary>
@@ -200,7 +204,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.CallType = Enum.TryParse<CallType>(dto.CallType, out var ct) ? ct : CallType.Inbound;
         call.Status = Enum.TryParse<CallStatus>(dto.Status, out var st) ? st : CallStatus.Pending;
@@ -224,7 +228,7 @@ public class CallsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı başarıyla güncellendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.UpdateSuccess") });
     }
 
     /// <summary>
@@ -235,12 +239,12 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı başarıyla silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.DeleteSuccess") });
     }
 
     /// <summary>
@@ -251,13 +255,13 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.Status = CallStatus.InProgress;
         call.StartTime = dto?.StartTime ?? DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı başlatıldı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.StartSuccess") });
     }
 
     /// <summary>
@@ -268,7 +272,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.Status = CallStatus.Completed;
         call.EndTime = dto.EndTime ?? DateTime.UtcNow;
@@ -290,7 +294,7 @@ public class CallsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı tamamlandı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.CompleteSuccess") });
     }
 
     /// <summary>
@@ -301,12 +305,12 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.Status = CallStatus.Missed;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı cevapsız olarak işaretlendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.MissedSuccess") });
     }
 
     /// <summary>
@@ -317,12 +321,12 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         call.CallbackCompleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Geri arama tamamlandı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.CallbackCompleteSuccess") });
     }
 
     // ===== KAYIT DOSYASI İŞLEMLERİ =====
@@ -335,14 +339,14 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "Dosya seçilmedi." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
 
         // Max 100MB for recordings
         if (file.Length > 100 * 1024 * 1024)
-            return BadRequest(new { message = "Dosya boyutu 100MB'dan büyük olamaz." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded100MB") });
 
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "calls", "recordings", id.ToString());
         Directory.CreateDirectory(uploadsPath);
@@ -359,7 +363,7 @@ public class CallsApiController : ControllerBase
         call.RecordingFileName = file.FileName;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Çağrı kaydı yüklendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Call.RecordingUploadSuccess") });
     }
 
     /// <summary>
@@ -370,10 +374,10 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         if (string.IsNullOrEmpty(call.RecordingPath) || !System.IO.File.Exists(call.RecordingPath))
-            return NotFound(new { message = "Çağrı kaydı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.RecordingNotFound") });
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(call.RecordingPath);
         var contentType = "audio/mpeg";
@@ -394,13 +398,13 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = "Çağrı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "Dosya seçilmedi." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
 
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = "Dosya boyutu 10MB'dan büyük olamaz." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB") });
 
         var currentUserId = GetCurrentUserId();
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "calls", id.ToString());
@@ -428,7 +432,7 @@ public class CallsApiController : ControllerBase
         _context.CallAttachments.Add(attachment);
         await _context.SaveChangesAsync();
 
-        return Ok(new { id = attachment.Id, message = "Dosya yüklendi." });
+        return Ok(new { id = attachment.Id, message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess") });
     }
 
     /// <summary>
@@ -441,10 +445,10 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);
 
         if (attachment == null)
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         if (!System.IO.File.Exists(attachment.FilePath))
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(attachment.FilePath);
         return File(fileBytes, attachment.ContentType ?? "application/octet-stream", attachment.FileName);
@@ -460,12 +464,12 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);
 
         if (attachment == null)
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         attachment.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Dosya silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
     }
 
     // ===== ÖZET VE İSTATİSTİK =====

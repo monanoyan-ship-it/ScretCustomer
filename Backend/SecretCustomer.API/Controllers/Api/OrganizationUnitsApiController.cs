@@ -12,10 +12,14 @@ namespace SecretCustomer.API.Controllers.Api;
 public class OrganizationUnitsApiController : ControllerBase
 {
     private readonly IOrganizationService _organizationService;
+    private readonly ILocalizationService _localizationService;
 
-    public OrganizationUnitsApiController(IOrganizationService organizationService)
+    public OrganizationUnitsApiController(
+        IOrganizationService organizationService,
+        ILocalizationService localizationService)
     {
         _organizationService = organizationService;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -68,7 +72,7 @@ public class OrganizationUnitsApiController : ControllerBase
             var unit = await _organizationService.GetOrganizationUnitByIdAsync(id);
             if (unit == null)
             {
-                return NotFound(new { message = "Organizasyon birimi bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
             }
             return Ok(unit);
         }
@@ -131,9 +135,9 @@ public class OrganizationUnitsApiController : ControllerBase
             var result = await _organizationService.MoveOrganizationUnitAsync(id, request.NewParentId);
             if (result)
             {
-                return Ok(new { message = "Birim başarıyla taşındı." });
+                return Ok(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.MoveSuccess") });
             }
-            return NotFound(new { message = "Organizasyon birimi bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
         }
         catch (Exception ex)
         {
@@ -150,9 +154,9 @@ public class OrganizationUnitsApiController : ControllerBase
             var result = await _organizationService.DeleteOrganizationUnitAsync(id);
             if (result)
             {
-                return Ok(new { message = "Organizasyon birimi başarıyla silindi." });
+                return Ok(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.DeleteSuccess") });
             }
-            return NotFound(new { message = "Organizasyon birimi bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
         }
         catch (Exception ex)
         {

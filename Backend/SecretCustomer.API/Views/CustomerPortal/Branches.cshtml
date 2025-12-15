@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Şubeler";
+    ViewData["Title"] = @Html.T("CustomerPortal.Branch.Title", "Şubeler");
     Layout = "_CustomerLayout";
 }
 
@@ -7,7 +7,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
     </div>
 
@@ -17,8 +17,8 @@
         <div data-bind="visible: branches().length === 0" class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
                 <i class="bi bi-building fs-1 text-muted"></i>
-                <h5 class="mt-3">Şube Bulunamadı</h5>
-                <p class="text-muted">Firmanıza tanımlı şube bulunmuyor.</p>
+                <h5 class="mt-3">@Html.T("CustomerPortal.Branch.NotFound", "Şube Bulunamadı")</h5>
+                <p class="text-muted">@Html.T("CustomerPortal.Branch.NoRecords", "Firmanıza tanımlı şube bulunmuyor.")</p>
             </div>
         </div>
 
@@ -33,13 +33,13 @@
                                 <h5 class="mb-1" data-bind="text: name"></h5>
                                 <small class="text-muted" data-bind="text: code"></small>
                             </div>
-                            <span class="badge bg-success" data-bind="visible: isActive">Aktif</span>
+                            <span class="badge bg-success" data-bind="visible: isActive">@Html.T("Common.Active", "Aktif")</span>
                         </div>
 
                         <div class="mb-3">
                             <div class="text-muted small">
                                 <i class="bi bi-geo-alt me-1"></i>
-                                <span data-bind="text: city || 'Belirtilmemiş'"></span>
+                                <span data-bind="text: city || '@Html.T("Common.NotSpecified", "Belirtilmemiş")'"></span>
                             </div>
                             <!-- ko if: address -->
                             <div class="text-muted small">
@@ -53,11 +53,11 @@
 
                         <div class="row text-center">
                             <div class="col-6">
-                                <div class="text-muted small">Değerlendirme</div>
+                                <div class="text-muted small">@Html.T("CustomerPortal.Branch.EvaluationCount", "Değerlendirme")</div>
                                 <div class="fs-5 fw-bold" data-bind="text: evaluationCount"></div>
                             </div>
                             <div class="col-6">
-                                <div class="text-muted small">Ort. Puan</div>
+                                <div class="text-muted small">@Html.T("CustomerPortal.Branch.AverageScore", "Ort. Puan")</div>
                                 <div class="fs-5 fw-bold">
                                     <span data-bind="text: averageScore.toFixed(1), css: $parent.getScoreClass(averageScore)"></span>
                                 </div>

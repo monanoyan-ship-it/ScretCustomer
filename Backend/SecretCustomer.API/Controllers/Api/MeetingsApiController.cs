@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Meeting;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -17,15 +18,18 @@ public class MeetingsApiController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ILogger<MeetingsApiController> _logger;
     private readonly IWebHostEnvironment _env;
+    private readonly ILocalizationService _localizationService;
 
     public MeetingsApiController(
         ApplicationDbContext context,
         ILogger<MeetingsApiController> logger,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        ILocalizationService localizationService)
     {
         _context = context;
         _logger = logger;
         _env = env;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -127,7 +131,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         var dto = MapToDto(meeting);
         return Ok(dto);
@@ -179,7 +183,7 @@ public class MeetingsApiController : ControllerBase
 
         _logger.LogInformation("Meeting created: {MeetingId} by user {UserId}", meeting.Id, currentUserId);
 
-        return CreatedAtAction(nameof(GetMeeting), new { id = meeting.Id }, new { id = meeting.Id, message = "Toplantı başarıyla oluşturuldu." });
+        return CreatedAtAction(nameof(GetMeeting), new { id = meeting.Id }, new { id = meeting.Id, message = await _localizationService.GetResourceAsync("Api.Meeting.CreateSuccess") });
     }
 
     /// <summary>
@@ -190,7 +194,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.Title = dto.Title;
         meeting.Description = dto.Description;
@@ -213,7 +217,7 @@ public class MeetingsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı başarıyla güncellendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.UpdateSuccess") });
     }
 
     /// <summary>
@@ -224,12 +228,12 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı başarıyla silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.DeleteSuccess") });
     }
 
     /// <summary>
@@ -240,13 +244,13 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.Status = MeetingStatus.InProgress;
         meeting.ActualDate = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı başlatıldı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.StartSuccess") });
     }
 
     /// <summary>
@@ -260,7 +264,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.Status = MeetingStatus.Completed;
         meeting.ActualDate = dto.ActualDate ?? meeting.ActualDate ?? DateTime.UtcNow;
@@ -282,7 +286,7 @@ public class MeetingsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı tamamlandı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.CompleteSuccess") });
     }
 
     /// <summary>
@@ -293,7 +297,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.Status = MeetingStatus.Cancelled;
         if (!string.IsNullOrEmpty(request?.Reason))
@@ -301,7 +305,7 @@ public class MeetingsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı iptal edildi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.CancelSuccess") });
     }
 
     /// <summary>
@@ -312,7 +316,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         meeting.Status = MeetingStatus.Postponed;
         meeting.PlannedDate = request.NewDate;
@@ -322,7 +326,7 @@ public class MeetingsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Toplantı ertelendi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.PostponeSuccess") });
     }
 
     // ===== KATILIMCI İŞLEMLERİ =====
@@ -335,7 +339,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         var participant = new MeetingParticipant
         {
@@ -350,7 +354,7 @@ public class MeetingsApiController : ControllerBase
         _context.MeetingParticipants.Add(participant);
         await _context.SaveChangesAsync();
 
-        return Ok(new { id = participant.Id, message = "Katılımcı eklendi." });
+        return Ok(new { id = participant.Id, message = await _localizationService.GetResourceAsync("Api.Meeting.ParticipantAddSuccess") });
     }
 
     /// <summary>
@@ -363,12 +367,12 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(p => p.Id == participantId && p.MeetingId == id);
 
         if (participant == null)
-            return NotFound(new { message = "Katılımcı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.ParticipantNotFound") });
 
         participant.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Katılımcı kaldırıldı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.ParticipantRemoveSuccess") });
     }
 
     /// <summary>
@@ -383,7 +387,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(p => p.MeetingId == id && p.UserId == currentUserId);
 
         if (participant == null)
-            return NotFound(new { message = "Bu toplantıya davetli değilsiniz." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotInvited") });
 
         participant.Status = Enum.TryParse<ParticipantStatus>(dto.Status, out var ps) ? ps : ParticipantStatus.Accepted;
         participant.ResponseNote = dto.ResponseNote;
@@ -391,7 +395,7 @@ public class MeetingsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Yanıtınız kaydedildi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Meeting.ResponseSaved") });
     }
 
     // ===== DOSYA İŞLEMLERİ =====
@@ -404,14 +408,14 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = "Toplantı bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = "Dosya seçilmedi." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
 
         // Max 10MB
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = "Dosya boyutu 10MB'dan büyük olamaz." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB") });
 
         var currentUserId = GetCurrentUserId();
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "meetings", id.ToString());
@@ -439,7 +443,7 @@ public class MeetingsApiController : ControllerBase
         _context.MeetingAttachments.Add(attachment);
         await _context.SaveChangesAsync();
 
-        return Ok(new { id = attachment.Id, message = "Dosya yüklendi." });
+        return Ok(new { id = attachment.Id, message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess") });
     }
 
     /// <summary>
@@ -452,10 +456,10 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);
 
         if (attachment == null)
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         if (!System.IO.File.Exists(attachment.FilePath))
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(attachment.FilePath);
         return File(fileBytes, attachment.ContentType ?? "application/octet-stream", attachment.FileName);
@@ -471,12 +475,12 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);
 
         if (attachment == null)
-            return NotFound(new { message = "Dosya bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
 
         attachment.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Dosya silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
     }
 
     // ===== ÖZET VE İSTATİSTİK =====

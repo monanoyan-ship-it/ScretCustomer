@@ -150,7 +150,7 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
-builder.Services.AddScoped<IBankVisitService, BankVisitService>();
+builder.Services.AddScoped<IVisitDetailService, VisitDetailService>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

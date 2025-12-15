@@ -12,11 +12,16 @@ public class FieldWorkersApiController : ControllerBase
 {
     private readonly IFieldWorkerService _fieldWorkerService;
     private readonly ILogger<FieldWorkersApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public FieldWorkersApiController(IFieldWorkerService fieldWorkerService, ILogger<FieldWorkersApiController> logger)
+    public FieldWorkersApiController(
+        IFieldWorkerService fieldWorkerService,
+        ILogger<FieldWorkersApiController> logger,
+        ILocalizationService localizationService)
     {
         _fieldWorkerService = fieldWorkerService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -30,7 +35,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading field workers");
-            return StatusCode(500, new { message = "Saha çalışanları yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.LoadListError") });
         }
     }
 
@@ -42,7 +47,7 @@ public class FieldWorkersApiController : ControllerBase
             var fieldWorker = await _fieldWorkerService.GetByIdAsync(id);
             if (fieldWorker == null)
             {
-                return NotFound(new { message = "Saha çalışanı bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.NotFound") });
             }
 
             return Ok(fieldWorker);
@@ -50,7 +55,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading field worker {Id}", id);
-            return StatusCode(500, new { message = "Saha çalışanı yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.LoadError") });
         }
     }
 
@@ -75,7 +80,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating field worker");
-            return StatusCode(500, new { message = "Saha çalışanı oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.CreateError") });
         }
     }
 
@@ -106,7 +111,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating field worker {Id}", id);
-            return StatusCode(500, new { message = "Saha çalışanı güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.UpdateError") });
         }
     }
 
@@ -126,7 +131,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting field worker {Id}", id);
-            return StatusCode(500, new { message = "Saha çalışanı silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.DeleteError") });
         }
     }
 }

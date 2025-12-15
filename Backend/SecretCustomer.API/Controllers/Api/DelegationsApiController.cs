@@ -13,10 +13,14 @@ namespace SecretCustomer.API.Controllers.Api;
 public class DelegationsApiController : ControllerBase
 {
     private readonly IOrganizationService _organizationService;
+    private readonly ILocalizationService _localizationService;
 
-    public DelegationsApiController(IOrganizationService organizationService)
+    public DelegationsApiController(
+        IOrganizationService organizationService,
+        ILocalizationService localizationService)
     {
         _organizationService = organizationService;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -41,7 +45,7 @@ public class DelegationsApiController : ControllerBase
             var delegation = await _organizationService.GetDelegationByIdAsync(id);
             if (delegation == null)
             {
-                return NotFound(new { message = "Vekalet bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Delegation.NotFound") });
             }
             return Ok(delegation);
         }
@@ -179,9 +183,9 @@ public class DelegationsApiController : ControllerBase
             var result = await _organizationService.DeleteDelegationAsync(id);
             if (result)
             {
-                return Ok(new { message = "Vekalet başarıyla silindi." });
+                return Ok(new { message = await _localizationService.GetResourceAsync("Api.Delegation.DeleteSuccess") });
             }
-            return NotFound(new { message = "Vekalet bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Delegation.NotFound") });
         }
         catch (Exception ex)
         {

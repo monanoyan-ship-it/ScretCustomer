@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Question;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -16,6 +17,7 @@ public class QuestionAttachmentsApiController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<QuestionAttachmentsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt" };
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
@@ -23,11 +25,13 @@ public class QuestionAttachmentsApiController : ControllerBase
     public QuestionAttachmentsApiController(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
-        ILogger<QuestionAttachmentsApiController> logger)
+        ILogger<QuestionAttachmentsApiController> logger,
+        ILocalizationService localizationService)
     {
         _context = context;
         _environment = environment;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -63,7 +67,7 @@ public class QuestionAttachmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting attachments for question {QuestionId}", questionId);
-            return StatusCode(500, new { message = "Dosyalar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FilesLoadError") });
         }
     }
 
@@ -80,26 +84,26 @@ public class QuestionAttachmentsApiController : ControllerBase
             var question = await _context.Questions.FindAsync(questionId);
             if (question == null)
             {
-                return NotFound(new { message = "Soru bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Question.NotFound") });
             }
 
             // Dosya kontrolü
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new { message = "Dosya seçilmedi." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
             }
 
             // Boyut kontrolü
             if (file.Length > MaxFileSize)
             {
-                return BadRequest(new { message = "Dosya boyutu 10MB'dan büyük olamaz." });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB") });
             }
 
             // Uzantı kontrolü
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(extension))
             {
-                return BadRequest(new { message = $"Bu dosya türü desteklenmiyor. İzin verilen türler: {string.Join(", ", AllowedExtensions)}" });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileTypeNotSupported") });
             }
 
             // Dosya kaydetme dizini
@@ -154,7 +158,7 @@ public class QuestionAttachmentsApiController : ControllerBase
             return Ok(new UploadAttachmentResultDto
             {
                 Success = true,
-                Message = "Dosya başarıyla yüklendi.",
+                Message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess"),
                 Attachment = new QuestionAttachmentDto
                 {
                     Id = attachment.Id,
@@ -172,7 +176,7 @@ public class QuestionAttachmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading file for question {QuestionId}", questionId);
-            return StatusCode(500, new { message = "Dosya yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileUploadError") });
         }
     }
 
@@ -187,13 +191,13 @@ public class QuestionAttachmentsApiController : ControllerBase
             var attachment = await _context.QuestionAttachments.FindAsync(id);
             if (attachment == null)
             {
-                return NotFound(new { message = "Dosya bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
             }
 
             var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
             if (!System.IO.File.Exists(filePath))
             {
-                return NotFound(new { message = "Dosya sunucuda bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer") });
             }
 
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
@@ -202,7 +206,7 @@ public class QuestionAttachmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment {AttachmentId}", id);
-            return StatusCode(500, new { message = "Dosya indirilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDownloadError") });
         }
     }
 
@@ -218,7 +222,7 @@ public class QuestionAttachmentsApiController : ControllerBase
             var attachment = await _context.QuestionAttachments.FindAsync(id);
             if (attachment == null)
             {
-                return NotFound(new { message = "Dosya bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
             }
 
             // Fiziksel dosyayı sil
@@ -235,12 +239,12 @@ public class QuestionAttachmentsApiController : ControllerBase
 
             _logger.LogInformation("Attachment {AttachmentId} deleted", id);
 
-            return Ok(new { message = "Dosya başarıyla silindi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment {AttachmentId}", id);
-            return StatusCode(500, new { message = "Dosya silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteError") });
         }
     }
 
@@ -256,19 +260,19 @@ public class QuestionAttachmentsApiController : ControllerBase
             var attachment = await _context.QuestionAttachments.FindAsync(id);
             if (attachment == null)
             {
-                return NotFound(new { message = "Dosya bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
             }
 
             attachment.Order = newOrder;
             attachment.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Sıra güncellendi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.QuestionAttachment.OrderUpdateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating attachment order {AttachmentId}", id);
-            return StatusCode(500, new { message = "Sıra güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.QuestionAttachment.OrderUpdateError") });
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Announcement;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -16,11 +17,16 @@ public class AnnouncementsApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<AnnouncementsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public AnnouncementsApiController(ApplicationDbContext context, ILogger<AnnouncementsApiController> logger)
+    public AnnouncementsApiController(
+        ApplicationDbContext context,
+        ILogger<AnnouncementsApiController> logger,
+        ILocalizationService localizationService)
     {
         _context = context;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -79,7 +85,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting announcements");
-            return StatusCode(500, new { message = "Duyurular yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
         }
     }
 
@@ -121,7 +127,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting dashboard announcements");
-            return StatusCode(500, new { message = "Duyurular yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
         }
     }
 
@@ -139,7 +145,7 @@ public class AnnouncementsApiController : ControllerBase
 
             if (announcement == null)
             {
-                return NotFound(new { message = "Duyuru bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
             }
 
             return Ok(new AnnouncementDto
@@ -164,7 +170,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting announcement {Id}", id);
-            return StatusCode(500, new { message = "Duyuru yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadSingleError") });
         }
     }
 
@@ -205,7 +211,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting all announcements for admin");
-            return StatusCode(500, new { message = "Duyurular yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
         }
     }
 
@@ -264,7 +270,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating announcement");
-            return StatusCode(500, new { message = "Duyuru oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.CreateError") });
         }
     }
 
@@ -280,7 +286,7 @@ public class AnnouncementsApiController : ControllerBase
             var announcement = await _context.Announcements.FindAsync(id);
             if (announcement == null)
             {
-                return NotFound(new { message = "Duyuru bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
             }
 
             announcement.Title = dto.Title;
@@ -299,12 +305,12 @@ public class AnnouncementsApiController : ControllerBase
 
             _logger.LogInformation("Announcement {Id} updated", id);
 
-            return Ok(new { message = "Duyuru güncellendi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Announcement.UpdateSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating announcement {Id}", id);
-            return StatusCode(500, new { message = "Duyuru güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.UpdateError") });
         }
     }
 
@@ -320,7 +326,7 @@ public class AnnouncementsApiController : ControllerBase
             var announcement = await _context.Announcements.FindAsync(id);
             if (announcement == null)
             {
-                return NotFound(new { message = "Duyuru bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
             }
 
             announcement.IsDeleted = true;
@@ -329,12 +335,12 @@ public class AnnouncementsApiController : ControllerBase
 
             _logger.LogInformation("Announcement {Id} deleted", id);
 
-            return Ok(new { message = "Duyuru silindi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Announcement.DeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting announcement {Id}", id);
-            return StatusCode(500, new { message = "Duyuru silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.DeleteError") });
         }
     }
 }

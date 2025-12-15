@@ -83,8 +83,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Language> Languages { get; set; }
     public DbSet<LocaleStringResource> LocaleStringResources { get; set; }
 
-    // Bank Visit Details (GBF - Gizli Banka Formu)
-    public DbSet<BankVisitDetails> BankVisitDetails { get; set; }
+    // Visit Detail System (Dinamik alan sistemi)
+    public DbSet<VisitSector> VisitSectors { get; set; }
+    public DbSet<VisitFieldDefinition> VisitFieldDefinitions { get; set; }
+    public DbSet<VisitDetailValue> VisitDetailValues { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,15 +161,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<NotificationSetting>().HasQueryFilter(e => !e.IsDeleted);
 
-        // Bank Visit Details (GBF)
-        modelBuilder.Entity<BankVisitDetails>().HasQueryFilter(e => !e.IsDeleted);
-
-        // BankVisitDetails - CustomerVisit one-to-one relationship
-        modelBuilder.Entity<BankVisitDetails>()
-            .HasOne(b => b.CustomerVisit)
-            .WithOne(c => c.BankVisitDetails)
-            .HasForeignKey<BankVisitDetails>(b => b.CustomerVisitId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Visit Detail System
+        modelBuilder.Entity<VisitSector>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<VisitFieldDefinition>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<VisitDetailValue>().HasQueryFilter(e => !e.IsDeleted);
 
         // Delegation relationships configuration
         modelBuilder.Entity<Delegation>()

@@ -326,6 +326,7 @@ Bu modüller doğru SPA Modal Pattern'e dönüştürüldü:
 - [x] Trainings (tek Index.cshtml + Index.js)
 - [x] Meetings (tek Index.cshtml + Index.js)
 - [x] Approvals (tek Index.cshtml + Index.js)
+- [x] Evaluations (tek Index.cshtml + Index.js, modal-fullscreen kullanıyor)
 - [ ] Notifications (Settings ayrı kalabilir)
 
 ---
@@ -340,12 +341,86 @@ Bu modüller doğru pattern kullanıyor:
 - Customers - Tek Index.cshtml + modal
 - FieldWorkers - Tek Index.cshtml + modal
 - Personnel - Tek Index.cshtml + modal
+- VisitDetails - Tek Index.cshtml + tab yapısı + modal (Sektör ve Alan Tanımları)
 
 ---
 
+## 10. Visit Details - Dinamik Alan Sistemi
+
+Ziyaret detayları için dinamik alan sistemi (EAV - Entity-Attribute-Value pattern).
+
+### Tablo Yapısı
+
+```
+VisitSectors (Sektör Tanımları)
+├── Id, Code, Name, Description, IconClass, SortOrder, IsActive
+│
+VisitFieldDefinitions (Alan Tanımları)
+├── Id, SectorId (nullable = ortak alan), Code, Name
+├── FieldType (Int, Decimal, Bool, String, DateTime, Rating)
+├── Category (Time, Staff, Facility, General, Sector)
+├── IsRequired, MaxRating, MaxLength, MinValue, MaxValue
+├── Placeholder, HelpText, SortOrder, IsActive
+│
+VisitDetailValues (Değerler - EAV)
+├── Id, CustomerVisitId, FieldDefinitionId
+├── IntValue, DecimalValue, BoolValue, StringValue, DateTimeValue
+```
+
+### Kullanım
+
+**Sektör Oluşturma:**
+```
+POST /api/visit-details/sectors
+{ "code": "BANK", "name": "Banka", "iconClass": "bi-bank", "isActive": true }
+```
+
+**Alan Tanımı Oluşturma:**
+```
+POST /api/visit-details/fields
+{
+  "sectorId": null,  // null = tüm sektörlerde geçerli ortak alan
+  "code": "wait_time",
+  "name": "Bekleme Süresi (dk)",
+  "fieldType": 0,    // Int
+  "category": 0,     // Time
+  "isRequired": true
+}
+```
+
+**Ziyaret Detayı Kaydetme:**
+```
+POST /api/visit-details/values
+{
+  "customerVisitId": "...",
+  "values": [
+    { "fieldDefinitionId": "...", "value": 15 },
+    { "fieldDefinitionId": "...", "value": true }
+  ]
+}
+```
+
+### API Endpoints
+
+| Endpoint | Açıklama |
+|----------|----------|
+| `GET /api/visit-details/sectors` | Tüm sektörler |
+| `GET /api/visit-details/fields` | Tüm alan tanımları |
+| `GET /api/visit-details/fields/sector/{id}` | Sektöre özel alanlar |
+| `GET /api/visit-details/fields/for-visit?sectorId=` | Ziyaret için geçerli alanlar (ortak + sektöre özel) |
+| `GET /api/visit-details/values/{customerVisitId}` | Ziyaret detayları |
+| `POST /api/visit-details/values` | Toplu değer kaydetme |
+| `GET /api/visit-details/statistics/{fieldId}` | Alan istatistikleri |
+
+### Yönetim UI
+
+`/VisitDetails/Index` - Admin only
+- **Sektörler Tab:** Sektör CRUD
+- **Alan Tanımları Tab:** Alan tanımı CRUD, sektöre göre filtreleme
+
 ---
 
-## 10. Kütüphane Kullanımı (Offline Uyumluluk)
+## 11. Kütüphane Kullanımı (Offline Uyumluluk)
 
 ### KESİNLİKLE CDN KULLANILMAZ!
 
@@ -381,7 +456,7 @@ wwwroot/lib/
 
 ---
 
-## 11. Onay Modalları (Confirmation)
+## 12. Onay Modalları (Confirmation)
 
 ### Native confirm() KULLANILMAZ!
 

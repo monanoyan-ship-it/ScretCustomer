@@ -1,30 +1,71 @@
-// Evaluations Index ViewModel - Cagri Denetleme Listesi
-function EvaluationsIndexViewModel() {
+// Evaluations ViewModel - Çağrı Denetleme (Birleştirilmiş: Liste + Detay + Değerlendirme Formu)
+function EvaluationsViewModel() {
     var self = this;
 
-    // State
+    // ========================
+    // LIST STATE
+    // ========================
     self.isLoading = ko.observable(true);
     self.errorMessage = ko.observable('');
     self.activeTab = ko.observable('pending');
     self.filterStatus = ko.observable('');
     self.searchTerm = ko.observable('');
 
-    // Data
+    // List Data
     self.allAssignments = ko.observableArray([]);
     self.allEvaluations = ko.observableArray([]);
 
-    // Computed - Pending Assignments (no evaluation yet)
+    // ========================
+    // DETAILS MODAL STATE
+    // ========================
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
+
+    // ========================
+    // EVALUATE MODAL STATE
+    // ========================
+    self.isEvaluateModalOpen = ko.observable(false);
+    self.isFormLoading = ko.observable(false);
+    self.isSavingForm = ko.observable(false);
+    self.formErrorMessage = ko.observable('');
+    self.formSuccessMessage = ko.observable('');
+    self.formData = ko.observable(null);
+    self.currentAssignmentId = null;
+    self.currentEvaluationId = null;
+
+    // Form fields
+    self.callId = ko.observable('');
+    self.callDate = ko.observable('');
+    self.durationMinutes = ko.observable(null);
+    self.controlTime = ko.observable('');
+    self.evaluatedPersonnelId = ko.observable(null);
+    self.evaluatedUnknownPersonnel = ko.observable('');
+    self.evaluationComment = ko.observable('');
+
+    // Answers dictionary (questionId -> answer observable)
+    self.answers = {};
+
+    // Computed scores
+    self.totalScoreCalc = ko.observable(0);
+    self.maxScoreCalc = ko.observable(0);
+    self.scorePercentageCalc = ko.observable(0);
+    self.yellowCardCountCalc = ko.observable(0);
+    self.redCardCountCalc = ko.observable(0);
+
+    // ========================
+    // LIST COMPUTED
+    // ========================
+
+    // Pending Assignments (no evaluation yet)
     self.pendingAssignments = ko.computed(function() {
         var assignments = self.allAssignments();
         var evaluationAssignmentIds = self.allEvaluations().map(function(e) { return e.assignmentId; });
         var search = self.searchTerm().toLowerCase();
 
         return assignments.filter(function(a) {
-            // Filter out completed assignments
             if (a.isCompleted) return false;
-            // Filter out assignments that already have evaluations
             if (evaluationAssignmentIds.indexOf(a.id) >= 0) return false;
-            // Search filter
             if (search) {
                 var matchesSearch = (a.projectName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (a.branchName || '').toLowerCase().indexOf(search) >= 0 ||
@@ -35,7 +76,7 @@ function EvaluationsIndexViewModel() {
         });
     });
 
-    // Computed - Completed Evaluations
+    // Completed Evaluations
     self.completedEvaluations = ko.computed(function() {
         var search = self.searchTerm().toLowerCase();
         return self.allEvaluations().filter(function(e) {
@@ -49,7 +90,7 @@ function EvaluationsIndexViewModel() {
         });
     });
 
-    // Computed - Draft Evaluations
+    // Draft Evaluations
     self.draftEvaluations = ko.computed(function() {
         var search = self.searchTerm().toLowerCase();
         return self.allEvaluations().filter(function(e) {
@@ -63,12 +104,14 @@ function EvaluationsIndexViewModel() {
         });
     });
 
-    // Load data
+    // ========================
+    // LIST FUNCTIONS
+    // ========================
+
     self.loadEvaluations = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        // Load both assignments and evaluations in parallel
         Promise.all([
             fetch('/api/assignments', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/evaluations/evaluator', { credentials: 'include' }).then(function(r) { return r.json(); })
@@ -86,11 +129,378 @@ function EvaluationsIndexViewModel() {
         });
     };
 
-    // Initialize
+    // ========================
+    // DETAILS MODAL FUNCTIONS
+    // ========================
+
+    self.showDetails = function(evaluation) {
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        fetch('/api/evaluations/' + evaluation.id, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error(T('Evaluation.NotFound', 'Değerlendirme bulunamadı'));
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                self.closeDetailsModal();
+                self.errorMessage(T('Evaluation.DetailsLoadError', 'Değerlendirme detayları yüklenirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
+    };
+
+    // ========================
+    // EVALUATE MODAL FUNCTIONS
+    // ========================
+
+    self.startEvaluation = function(assignment) {
+        self.currentAssignmentId = assignment.id;
+        self.currentEvaluationId = null;
+        self.openEvaluateModal();
+    };
+
+    self.continueEvaluation = function(evaluation) {
+        self.currentAssignmentId = null;
+        self.currentEvaluationId = evaluation.id;
+        self.openEvaluateModal();
+    };
+
+    self.openEvaluateModal = function() {
+        self.isEvaluateModalOpen(true);
+        self.isFormLoading(true);
+        self.formErrorMessage('');
+        self.formSuccessMessage('');
+        self.formData(null);
+        self.answers = {};
+        self.resetFormFields();
+        self.loadForm();
+    };
+
+    self.resetFormFields = function() {
+        self.callId('');
+        self.callDate('');
+        self.durationMinutes(null);
+        self.controlTime('');
+        self.evaluatedPersonnelId(null);
+        self.evaluatedUnknownPersonnel('');
+        self.evaluationComment('');
+        self.totalScoreCalc(0);
+        self.maxScoreCalc(0);
+        self.scorePercentageCalc(0);
+        self.yellowCardCountCalc(0);
+        self.redCardCountCalc(0);
+    };
+
+    self.closeEvaluateModal = function() {
+        self.isEvaluateModalOpen(false);
+        self.formData(null);
+        self.currentAssignmentId = null;
+        self.currentEvaluationId = null;
+    };
+
+    // Get or create answer for a question
+    self.getAnswer = function(questionId) {
+        if (!self.answers[questionId]) {
+            self.answers[questionId] = {
+                questionId: questionId,
+                answerText: ko.observable(''),
+                answerNumeric: ko.observable(null),
+                isNA: ko.observable(false),
+                givenPoints: ko.observable(null),
+                notes: ko.observable(''),
+                recommendationNotes: ko.observable(''),
+                applyPenalty: ko.observable(false),
+                selectedPenaltyType: ko.observable('')
+            };
+
+            // Subscribe to changes to recalculate scores
+            self.answers[questionId].answerNumeric.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].answerText.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].isNA.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].givenPoints.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].applyPenalty.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].selectedPenaltyType.subscribe(function() { self.calculateScores(); });
+        }
+        return self.answers[questionId];
+    };
+
+    // Load form data
+    self.loadForm = function() {
+        self.isFormLoading(true);
+        self.formErrorMessage('');
+
+        var url = '';
+        if (self.currentAssignmentId) {
+            url = '/api/evaluations/form/' + self.currentAssignmentId;
+        } else if (self.currentEvaluationId) {
+            url = '/api/evaluations/form/edit/' + self.currentEvaluationId;
+        } else {
+            self.formErrorMessage(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
+            self.isFormLoading(false);
+            return;
+        }
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error(T('Evaluation.FormLoadError', 'Form yüklenemedi'));
+                return response.json();
+            })
+            .then(function(data) {
+                self.formData(data);
+
+                // Load existing values if any
+                if (data.callId) self.callId(data.callId);
+                if (data.callDate) self.callDate(data.callDate.split('T')[0]);
+                if (data.durationMinutes) self.durationMinutes(data.durationMinutes);
+                if (data.evaluatedPersonnelId) self.evaluatedPersonnelId(data.evaluatedPersonnelId);
+                if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
+                if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
+
+                // Load existing answers
+                if (data.existingAnswers && data.existingAnswers.length > 0) {
+                    data.existingAnswers.forEach(function(a) {
+                        var answer = self.getAnswer(a.questionId);
+                        if (a.answerText) answer.answerText(a.answerText);
+                        if (a.answerNumeric) answer.answerNumeric(a.answerNumeric);
+                        answer.isNA(a.isNA || false);
+                        if (a.givenPoints) answer.givenPoints(a.givenPoints);
+                        if (a.notes) answer.notes(a.notes);
+                        if (a.recommendationNotes) answer.recommendationNotes(a.recommendationNotes);
+                        answer.applyPenalty(a.isPenaltyApplied || false);
+                        if (a.appliedPenaltyType && a.appliedPenaltyType !== 'None') {
+                            answer.selectedPenaltyType(a.appliedPenaltyType);
+                        }
+                    });
+                }
+
+                // Initialize answers for all questions
+                data.sections.forEach(function(section) {
+                    section.questions.forEach(function(q) {
+                        self.getAnswer(q.id);
+                    });
+                });
+
+                self.calculateScores();
+            })
+            .catch(function(error) {
+                console.error('Form loading error:', error);
+                self.formErrorMessage(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isFormLoading(false);
+            });
+    };
+
+    // Calculate scores
+    self.calculateScores = function() {
+        if (!self.formData()) return;
+
+        var total = 0;
+        var max = 0;
+        var yellowCards = 0;
+        var redCards = 0;
+
+        self.formData().sections.forEach(function(section) {
+            section.questions.forEach(function(q) {
+                var answer = self.answers[q.id];
+                if (!answer) return;
+
+                // Skip N/A questions
+                if (answer.isNA()) return;
+
+                // Skip unscored questions
+                if (q.scoringType === 'Unscored') return;
+
+                // Handle penalty questions
+                if (q.scoringType === 'Penalty' || q.penaltyType !== 'None') {
+                    if (answer.applyPenalty()) {
+                        if (answer.selectedPenaltyType() === 'YellowCard') {
+                            yellowCards++;
+                        } else if (answer.selectedPenaltyType() === 'RedCard') {
+                            redCards++;
+                        }
+                        total -= q.penaltyValue || 0;
+                    }
+                    return;
+                }
+
+                // Normal scored questions
+                var qMax = q.maxPoints || q.points || 0;
+                max += qMax;
+
+                // Use given points if available
+                if (answer.givenPoints() !== null && answer.givenPoints() !== '') {
+                    total += parseFloat(answer.givenPoints()) || 0;
+                } else if (answer.answerNumeric() !== null) {
+                    // Calculate based on Likert/Star scale
+                    total += (answer.answerNumeric() / 5) * qMax;
+                } else if (answer.answerText()) {
+                    // YesNo type
+                    var answerLower = answer.answerText().toLowerCase();
+                    if (answerLower === 'evet' || answerLower === 'yes') {
+                        total += qMax;
+                    }
+                }
+            });
+        });
+
+        self.totalScoreCalc(Math.max(0, total));
+        self.maxScoreCalc(max);
+        self.scorePercentageCalc(max > 0 ? (total / max) * 100 : 0);
+        self.yellowCardCountCalc(yellowCards);
+        self.redCardCountCalc(redCards);
+    };
+
+    // Prepare submission data
+    self.prepareData = function() {
+        var answers = [];
+
+        Object.keys(self.answers).forEach(function(questionId) {
+            var a = self.answers[questionId];
+            answers.push({
+                questionId: questionId,
+                answerText: a.answerText() || null,
+                answerNumeric: a.answerNumeric() || null,
+                isNA: a.isNA(),
+                givenPoints: a.givenPoints() ? parseFloat(a.givenPoints()) : null,
+                notes: a.notes() || null,
+                recommendationNotes: a.recommendationNotes() || null,
+                applyPenalty: a.applyPenalty(),
+                selectedPenaltyType: a.selectedPenaltyType() || null
+            });
+        });
+
+        return {
+            assignmentId: self.formData().assignmentId,
+            answers: answers,
+            notes: '',
+            evaluationComment: self.evaluationComment(),
+            callId: self.callId() || null,
+            callDate: self.callDate() || null,
+            durationMinutes: self.durationMinutes() ? parseInt(self.durationMinutes()) : null,
+            evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
+            evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
+            controlDate: new Date().toISOString().split('T')[0],
+            controlTime: self.controlTime() || null,
+            formOpenedAt: new Date().toISOString()
+        };
+    };
+
+    // Save as draft
+    self.saveDraft = function() {
+        self.isSavingForm(true);
+        self.formErrorMessage('');
+        self.formSuccessMessage('');
+
+        var data = self.prepareData();
+
+        fetch('/api/evaluations/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error(T('Evaluation.DraftSaveError', 'Taslak kaydedilemedi'));
+            return response.json();
+        })
+        .then(function(result) {
+            self.formSuccessMessage(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+        })
+        .catch(function(error) {
+            console.error('Draft save error:', error);
+            self.formErrorMessage(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+        })
+        .finally(function() {
+            self.isSavingForm(false);
+        });
+    };
+
+    // Submit evaluation
+    self.submitEvaluation = function() {
+        // Validate required questions
+        var hasError = false;
+        self.formData().sections.forEach(function(section) {
+            section.questions.forEach(function(q) {
+                if (q.isRequired) {
+                    var answer = self.answers[q.id];
+                    if (!answer) {
+                        hasError = true;
+                        return;
+                    }
+                    if (answer.isNA()) return; // N/A is acceptable
+
+                    var hasAnswer = answer.answerText() || answer.answerNumeric() !== null || answer.givenPoints() !== null;
+                    if (!hasAnswer) {
+                        hasError = true;
+                    }
+                }
+            });
+        });
+
+        if (hasError) {
+            self.formErrorMessage(T('Evaluation.AnswerAllRequired', 'Lütfen tüm zorunlu soruları cevaplayın.'));
+            return;
+        }
+
+        self.isSavingForm(true);
+        self.formErrorMessage('');
+        self.formSuccessMessage('');
+
+        var data = self.prepareData();
+
+        fetch('/api/evaluations/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error(T('Evaluation.SubmitError', 'Değerlendirme gönderilemedi'));
+            return response.json();
+        })
+        .then(function(result) {
+            self.formSuccessMessage(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
+            // Close modal and refresh list after 1.5 seconds
+            setTimeout(function() {
+                self.closeEvaluateModal();
+                self.loadEvaluations();
+            }, 1500);
+        })
+        .catch(function(error) {
+            console.error('Submit error:', error);
+            self.formErrorMessage(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
+        })
+        .finally(function() {
+            self.isSavingForm(false);
+        });
+    };
+
+    // ========================
+    // INITIALIZE
+    // ========================
     self.loadEvaluations();
 }
 
 // Apply bindings when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    ko.applyBindings(new EvaluationsIndexViewModel(), document.getElementById('evaluations-app'));
+    ko.applyBindings(new EvaluationsViewModel(), document.getElementById('evaluations-app'));
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });

@@ -4,13 +4,11 @@ namespace SecretCustomer.API.ViewModels;
 
 public class LoginViewModel
 {
-    [Required(ErrorMessage = "Kullanıcı adı gereklidir")]
-    [Display(Name = "Kullanıcı Adı")]
+    [Required]
     public string Username { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Şifre gereklidir")]
+    [Required]
     [DataType(DataType.Password)]
-    [Display(Name = "Şifre")]
     public string Password { get; set; } = string.Empty;
 
     public string? ReturnUrl { get; set; }

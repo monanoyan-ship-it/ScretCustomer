@@ -1,22 +1,22 @@
 @{
-    ViewData["Title"] = "Organizasyon Yönetimi";
+    ViewData["Title"] = @Html.T("Organization.Title", "Organizasyon Yönetimi");
 }
 
 <div id="organization-app">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">
-            <i class="bi bi-diagram-3 me-2"></i>Organizasyon Yönetimi
+            <i class="bi bi-diagram-3 me-2"></i>@Html.T("Organization.Title", "Organizasyon Yönetimi")
         </h2>
         <div class="btn-group">
             <button class="btn btn-outline-primary" data-bind="click: toggleView, css: { active: viewMode() === 'tree' }">
-                <i class="bi bi-diagram-3 me-1"></i>Ağaç Görünümü
+                <i class="bi bi-diagram-3 me-1"></i>@Html.T("Organization.TreeView", "Ağaç Görünümü")
             </button>
             <button class="btn btn-outline-primary" data-bind="click: toggleView, css: { active: viewMode() === 'list' }">
-                <i class="bi bi-list me-1"></i>Liste Görünümü
+                <i class="bi bi-list me-1"></i>@Html.T("Organization.ListView", "Liste Görünümü")
             </button>
             <button class="btn btn-primary" data-bind="click: createNew">
-                <i class="bi bi-plus-circle me-1"></i>Yeni Birim
+                <i class="bi bi-plus-circle me-1"></i>@Html.T("Organization.NewUnit", "Yeni Birim")
             </button>
         </div>
     </div>
@@ -38,9 +38,9 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
         </div>
-        <p class="mt-2 text-muted">Organizasyon yapısı yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Organization.LoadingStructure", "Organizasyon yapısı yükleniyor...")</p>
     </div>
 
     <!-- Tree View -->
@@ -54,9 +54,9 @@
                 </div>
                 <div data-bind="visible: tree().length === 0" class="text-center py-5">
                     <i class="bi bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
-                    <p class="mt-3 text-muted">Henüz organizasyon birimi bulunmamaktadır.</p>
+                    <p class="mt-3 text-muted">@Html.T("Organization.NoUnitsYet", "Henüz organizasyon birimi bulunmamaktadır.")</p>
                     <button class="btn btn-primary" data-bind="click: createNew">
-                        <i class="bi bi-plus-circle me-1"></i>İlk Birimi Oluştur
+                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Organization.CreateFirstUnit", "İlk Birimi Oluştur")
                     </button>
                 </div>
             </div>
@@ -70,35 +70,35 @@
                 <!-- Filters -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <label class="form-label">Arama</label>
-                        <input type="text" class="form-control" placeholder="Birim adı veya kodu..."
+                        <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                        <input type="text" class="form-control" placeholder="@Html.T("Organization.SearchPlaceholder", "Birim adı veya kodu...")"
                                data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Birim Tipi</label>
+                        <label class="form-label">@Html.T("Organization.UnitType", "Birim Tipi")</label>
                         <select class="form-select" data-bind="value: filter.unitType">
-                            <option value="">Tümü</option>
-                            <option value="0">Şirket</option>
-                            <option value="1">Departman</option>
-                            <option value="2">Bölüm</option>
-                            <option value="3">Takım</option>
-                            <option value="4">Birim</option>
+                            <option value="">@Html.T("Common.All", "Tümü")</option>
+                            <option value="0">@Html.T("Organization.UnitType.Company", "Şirket")</option>
+                            <option value="1">@Html.T("Organization.UnitType.Department", "Departman")</option>
+                            <option value="2">@Html.T("Organization.UnitType.Division", "Bölüm")</option>
+                            <option value="3">@Html.T("Organization.UnitType.Team", "Takım")</option>
+                            <option value="4">@Html.T("Organization.UnitType.Unit", "Birim")</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Durum</label>
+                        <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                         <select class="form-select" data-bind="value: filter.isActive">
-                            <option value="">Tümü</option>
-                            <option value="true">Aktif</option>
-                            <option value="false">Pasif</option>
+                            <option value="">@Html.T("Common.All", "Tümü")</option>
+                            <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                            <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-end gap-2">
                         <button class="btn btn-primary" data-bind="click: loadUnits">
-                            <i class="bi bi-search me-1"></i>Filtrele
+                            <i class="bi bi-search me-1"></i>@Html.T("Common.Filter", "Filtrele")
                         </button>
                         <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
-                            <i class="bi bi-x-lg me-1"></i>Temizle
+                            <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Clear", "Temizle")
                         </button>
                     </div>
                 </div>
@@ -108,14 +108,14 @@
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Birim Adı</th>
-                                <th>Kod</th>
-                                <th>Tip</th>
-                                <th>Üst Birim</th>
-                                <th>Yönetici</th>
-                                <th>Kullanıcı</th>
-                                <th>Durum</th>
-                                <th style="width: 120px;">İşlemler</th>
+                                <th>@Html.T("Organization.UnitName", "Birim Adı")</th>
+                                <th>@Html.T("Organization.Code", "Kod")</th>
+                                <th>@Html.T("Organization.Type", "Tip")</th>
+                                <th>@Html.T("Organization.ParentUnit", "Üst Birim")</th>
+                                <th>@Html.T("Organization.Manager", "Yönetici")</th>
+                                <th>@Html.T("Organization.User", "Kullanıcı")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th style="width: 120px;">@Html.T("Common.Actions", "İşlemler")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: units">
@@ -137,10 +137,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Düzenle" data-bind="click: $parent.editUnit">
+                                        <button class="btn btn-outline-primary" title="@Html.T("Common.Edit", "Düzenle")" data-bind="click: $parent.editUnit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-outline-danger" title="Sil" data-bind="click: $parent.deleteUnit">
+                                        <button class="btn btn-outline-danger" title="@Html.T("Common.Delete", "Sil")" data-bind="click: $parent.deleteUnit">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -152,7 +152,7 @@
 
                 <div data-bind="visible: units().length === 0" class="text-center py-5">
                     <i class="bi bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
-                    <p class="mt-3 text-muted">Filtrelere uygun birim bulunamadı.</p>
+                    <p class="mt-3 text-muted">@Html.T("Organization.NoUnitsMatchFilter", "Filtrelere uygun birim bulunamadı.")</p>
                 </div>
             </div>
         </div>
@@ -165,65 +165,65 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-diagram-3 me-2"></i>
-                        <span data-bind="visible: !id">Yeni Organizasyon Birimi</span>
-                        <span data-bind="visible: id">Birimi Düzenle</span>
+                        <!-- ko ifnot: id --><span>@Html.T("Organization.NewUnit.Title", "Yeni Organizasyon Birimi")</span><!-- /ko -->
+                        <!-- ko if: id --><span>@Html.T("Organization.EditUnit", "Birimi Düzenle")</span><!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Birim Adı <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" data-bind="value: name" placeholder="Örn: Satış Departmanı">
+                        <label class="form-label">@Html.T("Organization.UnitName", "Birim Adı") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("Organization.UnitNamePlaceholder", "Örn: Satış Departmanı")">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Birim Kodu</label>
-                        <input type="text" class="form-control" data-bind="value: code" placeholder="Örn: SATIS-001">
+                        <label class="form-label">@Html.T("Organization.UnitCode", "Birim Kodu")</label>
+                        <input type="text" class="form-control" data-bind="value: code" placeholder="@Html.T("Organization.UnitCodePlaceholder", "Örn: SATIS-001")">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Açıklama</label>
-                        <textarea class="form-control" rows="2" data-bind="value: description" placeholder="Birim açıklaması..."></textarea>
+                        <label class="form-label">@Html.T("Common.Description", "Açıklama")</label>
+                        <textarea class="form-control" rows="2" data-bind="value: description" placeholder="@Html.T("Organization.DescriptionPlaceholder", "Birim açıklaması...")"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Birim Tipi</label>
+                            <label class="form-label">@Html.T("Organization.UnitType", "Birim Tipi")</label>
                             <select class="form-select" data-bind="value: unitType">
-                                <option value="0">Şirket</option>
-                                <option value="1">Departman</option>
-                                <option value="2">Bölüm</option>
-                                <option value="3">Takım</option>
-                                <option value="4">Birim</option>
+                                <option value="0">@Html.T("Organization.UnitType.Company", "Şirket")</option>
+                                <option value="1">@Html.T("Organization.UnitType.Department", "Departman")</option>
+                                <option value="2">@Html.T("Organization.UnitType.Division", "Bölüm")</option>
+                                <option value="3">@Html.T("Organization.UnitType.Team", "Takım")</option>
+                                <option value="4">@Html.T("Organization.UnitType.Unit", "Birim")</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Sıra</label>
+                            <label class="form-label">@Html.T("Organization.Order", "Sıra")</label>
                             <input type="number" class="form-control" data-bind="value: order" min="0">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Üst Birim</label>
-                        <select class="form-select" data-bind="value: parentId, options: $parent.allUnitsForSelect, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Yok (Kök Birim)'"></select>
+                        <label class="form-label">@Html.T("Organization.ParentUnit", "Üst Birim")</label>
+                        <select class="form-select" data-bind="value: parentId, options: $parent.allUnitsForSelect, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Organization.NoParent", "Yok (Kök Birim)")'"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Yönetici</label>
-                        <select class="form-select" data-bind="value: managerId, options: $parent.users, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("Organization.Manager", "Yönetici")</label>
+                        <select class="form-select" data-bind="value: managerId, options: $parent.users, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Şube</label>
-                        <select class="form-select" data-bind="value: branchId, options: $parent.branches, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçiniz...'"></select>
+                        <label class="form-label">@Html.T("Organization.Branch", "Şube")</label>
+                        <select class="form-select" data-bind="value: branchId, options: $parent.branches, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="unitIsActive" data-bind="checked: isActive">
-                        <label class="form-check-label" for="unitIsActive">Aktif</label>
+                        <label class="form-check-label" for="unitIsActive">@Html.T("Common.Active", "Aktif")</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveUnit, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-check-lg me-1"></i>Kaydet
+                            <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Save", "Kaydet")
                         </span>
                         <span data-bind="visible: $parent.isSaving">
-                            <span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...
+                            <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>
@@ -238,10 +238,10 @@
         <div class="org-card-header" data-bind="css: 'org-type-' + unitType">
             <span class="org-type-badge" data-bind="text: unitTypeName"></span>
             <div class="org-card-actions">
-                <button class="btn btn-sm btn-light" title="Düzenle" data-bind="click: $root.editUnit">
+                <button class="btn btn-sm btn-light" title="@Html.T("Common.Edit", "Düzenle")" data-bind="click: $root.editUnit">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-light" title="Alt Birim Ekle" data-bind="click: $root.createChild">
+                <button class="btn btn-sm btn-light" title="@Html.T("Organization.AddSubUnit", "Alt Birim Ekle")" data-bind="click: $root.createChild">
                     <i class="bi bi-plus"></i>
                 </button>
             </div>

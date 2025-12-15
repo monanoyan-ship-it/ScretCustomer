@@ -15,17 +15,20 @@ public class AssignmentsApiController : ControllerBase
     private readonly IFieldWorkerService _fieldWorkerService;
     private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<AssignmentsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public AssignmentsApiController(
         IAssignmentService assignmentService,
         IFieldWorkerService fieldWorkerService,
         IQRCodeService qrCodeService,
-        ILogger<AssignmentsApiController> logger)
+        ILogger<AssignmentsApiController> logger,
+        ILocalizationService localizationService)
     {
         _assignmentService = assignmentService;
         _fieldWorkerService = fieldWorkerService;
         _qrCodeService = qrCodeService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     #region TEMEL CRUD
@@ -59,7 +62,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignments");
-            return StatusCode(500, new { message = "Atamalar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.LoadError") });
         }
     }
 
@@ -74,7 +77,7 @@ public class AssignmentsApiController : ControllerBase
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -87,7 +90,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.LoadError") });
         }
     }
 
@@ -102,7 +105,7 @@ public class AssignmentsApiController : ControllerBase
             var assignment = await _assignmentService.GetDetailByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -115,7 +118,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment detail {Id}", id);
-            return StatusCode(500, new { message = "Atama detayı yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.DetailLoadError") });
         }
     }
 
@@ -131,7 +134,7 @@ public class AssignmentsApiController : ControllerBase
             var assignment = await _assignmentService.GetByUniqueLinkAsync(uniqueLink);
             if (assignment == null)
             {
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
             }
 
             return Ok(assignment);
@@ -139,7 +142,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment by link {UniqueLink}", uniqueLink);
-            return StatusCode(500, new { message = "Atama yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.LoadError") });
         }
     }
 
@@ -155,7 +158,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating assignment");
-            return StatusCode(500, new { message = "Atama oluşturulurken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.CreateError") + " " + ex.Message });
         }
     }
 
@@ -166,15 +169,16 @@ public class AssignmentsApiController : ControllerBase
         try
         {
             var assignments = await _assignmentService.CreateBulkAsync(dto);
+            var successMsg = string.Format(await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateSuccess"), assignments.Count());
             return Ok(new {
-                message = $"{assignments.Count()} atama başarıyla oluşturuldu.",
+                message = successMsg,
                 assignments
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating bulk assignments");
-            return StatusCode(500, new { message = "Toplu atama oluşturulurken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateError") + " " + ex.Message });
         }
     }
 
@@ -190,7 +194,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama güncellenirken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.UpdateError") + " " + ex.Message });
         }
     }
 
@@ -203,7 +207,7 @@ public class AssignmentsApiController : ControllerBase
             var result = await _assignmentService.DeleteAsync(id);
             if (!result)
             {
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
             }
 
             return NoContent();
@@ -211,7 +215,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.DeleteError") });
         }
     }
 
@@ -234,7 +238,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error filtering assignments");
-            return StatusCode(500, new { message = "Atamalar filtrelenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.FilterError") });
         }
     }
 
@@ -249,7 +253,7 @@ public class AssignmentsApiController : ControllerBase
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.UserNotFound") });
             }
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -279,7 +283,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading user assignments");
-            return StatusCode(500, new { message = "Atamalar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.LoadError") });
         }
     }
 
@@ -298,7 +302,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignments for project {ProjectId}", projectId);
-            return StatusCode(500, new { message = "Proje atamaları yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ProjectLoadError") });
         }
     }
 
@@ -317,7 +321,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignments for branch {BranchId}", branchId);
-            return StatusCode(500, new { message = "Şube atamaları yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.BranchLoadError") });
         }
     }
 
@@ -336,7 +340,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignments for field worker {FieldWorkerId}", fieldWorkerId);
-            return StatusCode(500, new { message = "Saha çalışanı atamaları yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.FieldWorkerLoadError") });
         }
     }
 
@@ -355,7 +359,7 @@ public class AssignmentsApiController : ControllerBase
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -369,7 +373,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error completing assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama tamamlanırken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.CompleteError") + " " + ex.Message });
         }
     }
 
@@ -388,7 +392,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama iptal edilirken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.CancelError") + " " + ex.Message });
         }
     }
 
@@ -407,7 +411,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error reassigning assignment {Id}", id);
-            return StatusCode(500, new { message = "Atama yeniden atanırken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ReassignError") + " " + ex.Message });
         }
     }
 
@@ -425,15 +429,16 @@ public class AssignmentsApiController : ControllerBase
         try
         {
             var assignments = await _assignmentService.CreateForProjectBranchesAsync(dto);
+            var successMsg = string.Format(await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateSuccess"), assignments.Count());
             return Ok(new {
-                message = $"{assignments.Count()} atama başarıyla oluşturuldu.",
+                message = successMsg,
                 assignments
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating assignments for project branches");
-            return StatusCode(500, new { message = "Proje atamaları oluşturulurken bir hata oluştu: " + ex.Message });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ProjectCreateError") + " " + ex.Message });
         }
     }
 
@@ -447,12 +452,13 @@ public class AssignmentsApiController : ControllerBase
         try
         {
             var count = await _assignmentService.DeleteByProjectIdAsync(projectId);
-            return Ok(new { message = $"{count} atama başarıyla silindi." });
+            var successMsg = string.Format(await _localizationService.GetResourceAsync("Api.Assignment.BulkDeleteSuccess"), count);
+            return Ok(new { message = successMsg });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting assignments for project {ProjectId}", projectId);
-            return StatusCode(500, new { message = "Proje atamaları silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ProjectDeleteError") });
         }
     }
 
@@ -475,7 +481,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment summary");
-            return StatusCode(500, new { message = "Atama özeti yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.SummaryLoadError") });
         }
     }
 
@@ -494,7 +500,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project summaries");
-            return StatusCode(500, new { message = "Proje özetleri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ProjectSummaryError") });
         }
     }
 
@@ -513,7 +519,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading branch summaries for project {ProjectId}", projectId);
-            return StatusCode(500, new { message = "Şube özetleri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.BranchSummaryError") });
         }
     }
 
@@ -536,7 +542,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading expired assignments");
-            return StatusCode(500, new { message = "Süresi dolan atamalar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.ExpiredLoadError") });
         }
     }
 
@@ -555,7 +561,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading upcoming due assignments");
-            return StatusCode(500, new { message = "Yaklaşan atamalar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.UpcomingLoadError") });
         }
     }
 
@@ -571,7 +577,7 @@ public class AssignmentsApiController : ControllerBase
         {
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
 
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
@@ -584,7 +590,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating QR code for assignment {Id}", id);
-            return StatusCode(500, new { message = "QR kod oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.QRCodeError") });
         }
     }
 
@@ -596,7 +602,7 @@ public class AssignmentsApiController : ControllerBase
         {
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
-                return NotFound(new { message = "Atama bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Assignment.NotFound") });
 
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var qrBase64 = _qrCodeService.GenerateQRCodeBase64(
@@ -607,7 +613,7 @@ public class AssignmentsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating QR code base64 for assignment {Id}", id);
-            return StatusCode(500, new { message = "QR kod oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Assignment.QRCodeError") });
         }
     }
 

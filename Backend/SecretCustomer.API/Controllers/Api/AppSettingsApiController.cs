@@ -12,11 +12,16 @@ public class AppSettingsApiController : ControllerBase
 {
     private readonly IAppSettingsService _settingsService;
     private readonly ILogger<AppSettingsApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public AppSettingsApiController(IAppSettingsService settingsService, ILogger<AppSettingsApiController> logger)
+    public AppSettingsApiController(
+        IAppSettingsService settingsService,
+        ILogger<AppSettingsApiController> logger,
+        ILocalizationService localizationService)
     {
         _settingsService = settingsService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -46,7 +51,7 @@ public class AppSettingsApiController : ControllerBase
     {
         var setting = await _settingsService.GetByKeyAsync(key);
         if (setting == null)
-            return NotFound(new { message = "Ayar bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
 
         return Ok(setting);
     }
@@ -55,11 +60,11 @@ public class AppSettingsApiController : ControllerBase
     public async Task<IActionResult> Create([FromBody] AppSettingsDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Key))
-            return BadRequest(new { message = "Ayar anahtarı gereklidir." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.KeyRequired") });
 
         var existing = await _settingsService.GetByKeyAsync(dto.Key);
         if (existing != null)
-            return BadRequest(new { message = "Bu anahtar zaten mevcut." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.KeyExists") });
 
         var setting = await _settingsService.SetAsync(
             dto.Key,
@@ -79,7 +84,7 @@ public class AppSettingsApiController : ControllerBase
     {
         var existing = await _settingsService.GetByKeyAsync(key);
         if (existing == null)
-            return NotFound(new { message = "Ayar bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
 
         var setting = await _settingsService.SetAsync(
             key,
@@ -99,16 +104,16 @@ public class AppSettingsApiController : ControllerBase
     {
         var existing = await _settingsService.GetByKeyAsync(key);
         if (existing == null)
-            return NotFound(new { message = "Ayar bulunamadı." });
+            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
 
         if (existing.IsSystem)
-            return BadRequest(new { message = "Sistem ayarları silinemez." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.SystemCannotDelete") });
 
         await _settingsService.DeleteAsync(key);
 
         _logger.LogInformation("AppSetting deleted: {Key} by {User}", key, User.Identity?.Name);
 
-        return Ok(new { message = "Ayar silindi." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.DeleteSuccess") });
     }
 
     public class AppSettingsDto

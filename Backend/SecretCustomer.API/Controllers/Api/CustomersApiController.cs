@@ -12,11 +12,16 @@ public class CustomersApiController : ControllerBase
 {
     private readonly ICustomerService _customerService;
     private readonly ILogger<CustomersApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public CustomersApiController(ICustomerService customerService, ILogger<CustomersApiController> logger)
+    public CustomersApiController(
+        ICustomerService customerService,
+        ILogger<CustomersApiController> logger,
+        ILocalizationService localizationService)
     {
         _customerService = customerService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -30,7 +35,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customers");
-            return StatusCode(500, new { message = "Müşteriler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.LoadListError") });
         }
     }
 
@@ -45,7 +50,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active customers");
-            return StatusCode(500, new { message = "Aktif müşteriler yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.ActiveLoadError") });
         }
     }
 
@@ -57,7 +62,7 @@ public class CustomersApiController : ControllerBase
             var customer = await _customerService.GetByIdAsync(id);
             if (customer == null)
             {
-                return NotFound(new { message = "Müşteri bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Customer.NotFound") });
             }
 
             return Ok(customer);
@@ -65,7 +70,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customer {Id}", id);
-            return StatusCode(500, new { message = "Müşteri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.LoadError") });
         }
     }
 
@@ -90,7 +95,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating customer");
-            return StatusCode(500, new { message = "Müşteri oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.CreateError") });
         }
     }
 
@@ -120,7 +125,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating customer {Id}", id);
-            return StatusCode(500, new { message = "Müşteri güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.UpdateError") });
         }
     }
 
@@ -140,7 +145,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting customer {Id}", id);
-            return StatusCode(500, new { message = "Müşteri silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.DeleteError") });
         }
     }
 }

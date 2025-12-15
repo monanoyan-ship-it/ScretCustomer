@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Approval;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -18,10 +19,12 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ApprovalsApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
-    public ApprovalsApiController(ApplicationDbContext context)
+    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService)
     {
         _context = context;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -231,7 +234,7 @@ public class ApprovalsApiController : ControllerBase
             return NotFound();
 
         if (approval.Status != ApprovalStatus.Pending)
-            return BadRequest(new { message = "Bu onay talebi zaten yanıtlanmış" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Approval.AlreadyResponded") });
 
         var userId = GetCurrentUserId();
 
@@ -275,7 +278,7 @@ public class ApprovalsApiController : ControllerBase
             return Forbid();
 
         if (approval.Status != ApprovalStatus.Pending)
-            return BadRequest(new { message = "Bu onay talebi iptal edilemez" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Approval.CannotCancel") });
 
         approval.Status = ApprovalStatus.Cancelled;
         await _context.SaveChangesAsync();

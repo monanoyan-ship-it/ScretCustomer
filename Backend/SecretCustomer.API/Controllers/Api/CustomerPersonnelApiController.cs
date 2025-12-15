@@ -12,13 +12,16 @@ public class CustomerPersonnelApiController : ControllerBase
 {
     private readonly ICustomerPersonnelService _personnelService;
     private readonly ILogger<CustomerPersonnelApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public CustomerPersonnelApiController(
         ICustomerPersonnelService personnelService,
-        ILogger<CustomerPersonnelApiController> logger)
+        ILogger<CustomerPersonnelApiController> logger,
+        ILocalizationService localizationService)
     {
         _personnelService = personnelService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -32,7 +35,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customer personnel");
-            return StatusCode(500, new { message = "Müşteri personelleri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError") });
         }
     }
 
@@ -47,7 +50,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel for customer {CustomerId}", customerId);
-            return StatusCode(500, new { message = "Müşteri personelleri yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError") });
         }
     }
 
@@ -59,7 +62,7 @@ public class CustomerPersonnelApiController : ControllerBase
             var personnel = await _personnelService.GetByIdAsync(id);
             if (personnel == null)
             {
-                return NotFound(new { message = "Personel bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.NotFound") });
             }
 
             return Ok(personnel);
@@ -67,7 +70,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadError") });
         }
     }
 
@@ -97,7 +100,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating personnel");
-            return StatusCode(500, new { message = "Personel oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.CreateError") });
         }
     }
 
@@ -127,7 +130,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.UpdateError") });
         }
     }
 
@@ -147,7 +150,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting personnel {Id}", id);
-            return StatusCode(500, new { message = "Personel silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.DeleteError") });
         }
     }
 
@@ -163,7 +166,7 @@ public class CustomerPersonnelApiController : ControllerBase
         try
         {
             await _personnelService.ChangePasswordAsync(id, dto);
-            return Ok(new { message = "Şifre başarıyla değiştirildi." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordChangeSuccess") });
         }
         catch (KeyNotFoundException ex)
         {
@@ -178,7 +181,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error changing password for personnel {Id}", id);
-            return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordChangeError") });
         }
     }
 
@@ -197,7 +200,7 @@ public class CustomerPersonnelApiController : ControllerBase
         try
         {
             await _personnelService.ResetPasswordAsync(id, dto);
-            return Ok(new { message = "Şifre başarıyla sıfırlandı." });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordResetSuccess") });
         }
         catch (KeyNotFoundException ex)
         {
@@ -207,7 +210,7 @@ public class CustomerPersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error resetting password for personnel {Id}", id);
-            return StatusCode(500, new { message = "Şifre sıfırlanırken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordResetError") });
         }
     }
 }

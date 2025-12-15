@@ -11,13 +11,16 @@ public class AnswersApiController : ControllerBase
 {
     private readonly IFileUploadService _fileUploadService;
     private readonly ILogger<AnswersApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public AnswersApiController(
         IFileUploadService fileUploadService,
-        ILogger<AnswersApiController> logger)
+        ILogger<AnswersApiController> logger,
+        ILocalizationService localizationService)
     {
         _fileUploadService = fileUploadService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     /// <summary>
@@ -31,7 +34,7 @@ public class AnswersApiController : ControllerBase
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new { message = "Dosya seçilmedi" });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
             }
 
             using var stream = file.OpenReadStream();
@@ -48,7 +51,7 @@ public class AnswersApiController : ControllerBase
 
             return Ok(new
             {
-                message = "Dosya başarıyla yüklendi",
+                message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess"),
                 fileName = result.FileName,
                 fileSize = result.FileSize
             });
@@ -56,7 +59,7 @@ public class AnswersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = "Dosya yüklenirken bir hata oluştu" });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.UploadError") });
         }
     }
 
@@ -71,15 +74,15 @@ public class AnswersApiController : ControllerBase
             var success = await _fileUploadService.DeleteAnswerAttachmentAsync(answerId);
             if (!success)
             {
-                return NotFound(new { message = "Dosya bulunamadı" });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
             }
 
-            return Ok(new { message = "Dosya başarıyla silindi" });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = "Dosya silinirken bir hata oluştu" });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.DeleteError") });
         }
     }
 
@@ -95,7 +98,7 @@ public class AnswersApiController : ControllerBase
             var result = await _fileUploadService.GetAnswerAttachmentAsync(answerId);
             if (result == null)
             {
-                return NotFound(new { message = "Dosya bulunamadı" });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
             }
 
             var (fileStream, fileName, contentType) = result.Value;
@@ -104,7 +107,7 @@ public class AnswersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = "Dosya indirilirken bir hata oluştu" });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.DownloadError") });
         }
     }
 }

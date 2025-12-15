@@ -13,11 +13,16 @@ public class UsersApiController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly ILogger<UsersApiController> _logger;
+    private readonly ILocalizationService _localizationService;
 
-    public UsersApiController(IUserService userService, ILogger<UsersApiController> logger)
+    public UsersApiController(
+        IUserService userService,
+        ILogger<UsersApiController> logger,
+        ILocalizationService localizationService)
     {
         _userService = userService;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     [HttpGet]
@@ -31,7 +36,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading users");
-            return StatusCode(500, new { message = "Kullanıcılar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.LoadListError") });
         }
     }
 
@@ -46,7 +51,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active users");
-            return StatusCode(500, new { message = "Aktif kullanıcılar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.ActiveLoadError") });
         }
     }
 
@@ -61,7 +66,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading users by role");
-            return StatusCode(500, new { message = "Kullanıcılar yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.LoadListError") });
         }
     }
 
@@ -73,7 +78,7 @@ public class UsersApiController : ControllerBase
             var user = await _userService.GetByIdAsync(id);
             if (user == null)
             {
-                return NotFound(new { message = "Kullanıcı bulunamadı." });
+                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.User.NotFound") });
             }
 
             return Ok(user);
@@ -81,7 +86,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading user {Id}", id);
-            return StatusCode(500, new { message = "Kullanıcı yüklenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.LoadError") });
         }
     }
 
@@ -106,7 +111,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user");
-            return StatusCode(500, new { message = "Kullanıcı oluşturulurken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.CreateError") });
         }
     }
 
@@ -136,7 +141,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user {Id}", id);
-            return StatusCode(500, new { message = "Kullanıcı güncellenirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.UpdateError") });
         }
     }
 
@@ -156,7 +161,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting user {Id}", id);
-            return StatusCode(500, new { message = "Kullanıcı silinirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.DeleteError") });
         }
     }
 
@@ -170,7 +175,7 @@ public class UsersApiController : ControllerBase
 
         if (id != dto.UserId)
         {
-            return BadRequest(new { message = "User ID mismatch." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.User.IdMismatch") });
         }
 
         try
@@ -178,10 +183,10 @@ public class UsersApiController : ControllerBase
             var result = await _userService.AdminChangePasswordAsync(id, dto.NewPassword);
             if (result)
             {
-                return Ok(new { message = "Şifre başarıyla değiştirildi." });
+                return Ok(new { message = await _localizationService.GetResourceAsync("Api.User.PasswordChangeSuccess") });
             }
 
-            return BadRequest(new { message = "Şifre değiştirilemedi." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.User.PasswordChangeFailed") });
         }
         catch (KeyNotFoundException ex)
         {
@@ -191,7 +196,7 @@ public class UsersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error changing password for user {Id}", id);
-            return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.User.PasswordChangeError") });
         }
     }
 }

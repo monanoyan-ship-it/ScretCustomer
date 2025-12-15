@@ -1,12 +1,12 @@
 @{
-    ViewData["Title"] = "Müşteri Personeli";
+    ViewData["Title"] = @Html.T("CustomerPersonnel.Title", "Müşteri Personeli");
 }
 
 <div id="customer-personnel-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Müşteri Personeli</h2>
+        <h2>@Html.T("CustomerPersonnel.Title", "Müşteri Personeli")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle"></i> Yeni Personel
+            <i class="bi bi-plus-circle"></i> @Html.T("CustomerPersonnel.NewPersonnel", "Yeni Personel")
         </button>
     </div>
 
@@ -32,7 +32,7 @@
         <!-- Empty State -->
         <div data-bind="visible: personnel().length === 0">
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Henüz müşteri personeli bulunmamaktadır.
+                <i class="bi bi-info-circle"></i> @Html.T("CustomerPersonnel.NoRecords", "Henüz müşteri personeli bulunmamaktadır.")
             </div>
         </div>
 
@@ -42,15 +42,15 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Müşteri</th>
-                            <th>Ad Soyad</th>
-                            <th>Kullanıcı Adı</th>
-                            <th>E-posta</th>
-                            <th>Telefon</th>
-                            <th>Rol</th>
-                            <th>Görev Sayısı</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
+                            <th>@Html.T("Common.Customer", "Müşteri")</th>
+                            <th>@Html.T("Common.FullName", "Ad Soyad")</th>
+                            <th>@Html.T("Common.Username", "Kullanıcı Adı")</th>
+                            <th>@Html.T("Common.Email", "E-posta")</th>
+                            <th>@Html.T("Common.Phone", "Telefon")</th>
+                            <th>@Html.T("Common.Role", "Rol")</th>
+                            <th>@Html.T("CustomerPersonnel.TaskCount", "Görev Sayısı")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: personnel">
@@ -63,17 +63,17 @@
                             <td><span class="badge bg-primary" data-bind="text: roleName"></span></td>
                             <td><span class="badge bg-info" data-bind="text: taskAssignmentCount"></span></td>
                             <td>
-                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editPersonnel">
-                                    <i class="bi bi-pencil"></i> Düzenle
+                                <button class="btn btn-sm btn-warning me-1" data-bind="click: $parent.editPersonnel" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-info me-1" data-bind="click: $parent.showChangePassword">
-                                    <i class="bi bi-key"></i> Şifre Sıfırla
+                                <button class="btn btn-sm btn-info me-1" data-bind="click: $parent.showChangePassword" title="@Html.T("CustomerPersonnel.ResetPassword", "Şifre Sıfırla")">
+                                    <i class="bi bi-key"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deletePersonnel">
-                                    <i class="bi bi-trash"></i> Sil
+                                <button class="btn btn-sm btn-danger" data-bind="click: $parent.deletePersonnel" title="@Html.T("Common.Delete", "Sil")">
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>
@@ -89,97 +89,105 @@
             <div class="modal-content" data-bind="with: editingPersonnel">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <span data-bind="visible: !id">Yeni Müşteri Personeli</span>
-                        <span data-bind="visible: id">Müşteri Personeli Düzenle</span>
+                        <!-- ko ifnot: id -->
+                        @Html.T("CustomerPersonnel.NewCustomerPersonnel", "Yeni Müşteri Personeli")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        @Html.T("CustomerPersonnel.EditCustomerPersonnel", "Müşteri Personeli Düzenle")
+                        <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Müşteri *</label>
-                            <select class="form-select" data-bind="value: customerId, options: $parent.availableCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: 'Seçiniz...', enable: !id">
+                            <label class="form-label">@Html.T("Common.Customer", "Müşteri") *</label>
+                            <select class="form-select" data-bind="value: customerId, options: $parent.availableCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', enable: !id">
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Kullanıcı Adı *</label>
+                            <label class="form-label">@Html.T("Common.Username", "Kullanıcı Adı") *</label>
                             <input type="text" class="form-control" data-bind="value: username" placeholder="ali.veli" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">E-posta *</label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta") *</label>
                             <input type="email" class="form-control" data-bind="value: email" placeholder="ali.veli@example.com" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">
-                                <span data-bind="visible: !id">Şifre *</span>
-                                <span data-bind="visible: id">Şifre (Değiştirmek için doldurun)</span>
+                                <!-- ko ifnot: id -->
+                                @Html.T("Common.Password", "Şifre") *
+                                <!-- /ko -->
+                                <!-- ko if: id -->
+                                @Html.T("CustomerPersonnel.PasswordChangeHint", "Şifre (Değiştirmek için doldurun)")
+                                <!-- /ko -->
                             </label>
                             <input type="password" class="form-control" data-bind="value: password" placeholder="••••••••" />
-                            <small class="text-muted" data-bind="visible: id">Boş bırakırsanız mevcut şifre değişmez</small>
+                            <small class="text-muted" data-bind="visible: id">@Html.T("CustomerPersonnel.PasswordKeepHint", "Boş bırakırsanız mevcut şifre değişmez")</small>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Ad *</label>
+                            <label class="form-label">@Html.T("Common.FirstName", "Ad") *</label>
                             <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ali" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Soyad *</label>
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") *</label>
                             <input type="text" class="form-control" data-bind="value: lastName" placeholder="Veli" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefon</label>
+                            <label class="form-label">@Html.T("Common.Phone", "Telefon")</label>
                             <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="0555 123 4567" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Rol *</label>
+                            <label class="form-label">@Html.T("Common.Role", "Rol") *</label>
                             <select class="form-select" data-bind="value: role">
-                                <option value="">Seçiniz...</option>
-                                <option value="1">Müşteri Yöneticisi</option>
-                                <option value="2">Müşteri Süpervizörü</option>
-                                <option value="3">Müşteri Operatörü</option>
-                                <option value="4">Müşteri Görüntüleyici</option>
+                                <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
+                                <option value="1">@Html.T("CustomerPersonnel.Role.Manager", "Müşteri Yöneticisi")</option>
+                                <option value="2">@Html.T("CustomerPersonnel.Role.Supervisor", "Müşteri Süpervizörü")</option>
+                                <option value="3">@Html.T("CustomerPersonnel.Role.Operator", "Müşteri Operatörü")</option>
+                                <option value="4">@Html.T("CustomerPersonnel.Role.Viewer", "Müşteri Görüntüleyici")</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Departman</label>
-                            <input type="text" class="form-control" data-bind="value: department" placeholder="Kalite Kontrol" />
+                            <label class="form-label">@Html.T("Common.Department", "Departman")</label>
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("CustomerPersonnel.DepartmentPlaceholder", "Kalite Kontrol")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Ünvan</label>
-                            <input type="text" class="form-control" data-bind="value: title" placeholder="Kalite Müdürü" />
+                            <label class="form-label">@Html.T("Common.Title", "Ünvan")</label>
+                            <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("CustomerPersonnel.TitlePlaceholder", "Kalite Müdürü")" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Notlar</label>
-                        <textarea class="form-control" data-bind="value: notes" rows="3" placeholder="Personel hakkında notlar..."></textarea>
+                        <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="3" placeholder="@Html.T("CustomerPersonnel.NotesPlaceholder", "Personel hakkında notlar...")"></textarea>
                     </div>
 
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
-                        <label class="form-check-label" for="isActive">Aktif</label>
+                        <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.savePersonnel, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
-                            <i class="bi bi-save"></i> Kaydet
+                            <i class="bi bi-save"></i> @Html.T("Common.Save", "Kaydet")
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Kaydediliyor...
+                            @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>
@@ -194,7 +202,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-key"></i> Şifre Sıfırla
+                        <i class="bi bi-key"></i> @Html.T("CustomerPersonnel.ResetPassword", "Şifre Sıfırla")
                         <span data-bind="if: selectedPersonnelForPassword">
                             - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
                         </span>
@@ -204,26 +212,26 @@
                 <div class="modal-body">
                     <div class="alert alert-info mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        Admin olarak personelin şifresini sıfırlayabilirsiniz.
+                        @Html.T("CustomerPersonnel.ResetPasswordInfo", "Admin olarak personelin şifresini sıfırlayabilirsiniz.")
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Yeni Şifre *</label>
-                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter" />
-                        <small class="text-muted">En az 6 karakter olmalıdır</small>
+                        <label class="form-label">@Html.T("CustomerPersonnel.NewPassword", "Yeni Şifre") *</label>
+                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="@Html.T("CustomerPersonnel.MinChars", "En az 6 karakter")" />
+                        <small class="text-muted">@Html.T("CustomerPersonnel.PasswordMinLength", "En az 6 karakter olmalıdır")</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Yeni Şifre (Tekrar) *</label>
-                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="Yeni şifrenizi tekrar girin" />
+                        <label class="form-label">@Html.T("CustomerPersonnel.ConfirmPassword", "Yeni Şifre (Tekrar)") *</label>
+                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="@Html.T("CustomerPersonnel.ConfirmPasswordPlaceholder", "Yeni şifrenizi tekrar girin")" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">İptal</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: cancelChangePassword">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: resetPassword, disable: isResettingPassword">
                         <span data-bind="visible: !isResettingPassword()">
-                            <i class="bi bi-key"></i> Şifre Sıfırla
+                            <i class="bi bi-key"></i> @Html.T("CustomerPersonnel.ResetPassword", "Şifre Sıfırla")
                         </span>
                         <span data-bind="visible: isResettingPassword">
-                            <span class="spinner-border spinner-border-sm me-2"></span>Sıfırlanıyor...
+                            <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("CustomerPersonnel.Resetting", "Sıfırlanıyor...")
                         </span>
                     </button>
                 </div>

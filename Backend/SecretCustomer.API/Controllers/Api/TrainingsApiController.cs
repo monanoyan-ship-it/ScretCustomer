@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Training;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
 
@@ -19,11 +20,16 @@ public class TrainingsApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _env;
+    private readonly ILocalizationService _localizationService;
 
-    public TrainingsApiController(ApplicationDbContext context, IWebHostEnvironment env)
+    public TrainingsApiController(
+        ApplicationDbContext context,
+        IWebHostEnvironment env,
+        ILocalizationService localizationService)
     {
         _context = context;
         _env = env;
+        _localizationService = localizationService;
     }
 
     private Guid GetCurrentUserId()
@@ -380,13 +386,13 @@ public class TrainingsApiController : ControllerBase
             return NotFound();
 
         if (training.MaxParticipants.HasValue && training.Participants.Count(p => !p.IsDeleted) >= training.MaxParticipants.Value)
-            return BadRequest(new { message = "Maksimum katılımcı sayısına ulaşıldı" });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Training.MaxParticipantsReached") });
 
         if (dto.UserId.HasValue)
         {
             var exists = await _context.TrainingParticipants.AnyAsync(p => p.TrainingId == id && p.UserId == dto.UserId && !p.IsDeleted);
             if (exists)
-                return BadRequest(new { message = "Bu kullanıcı zaten katılımcı olarak ekli" });
+                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Training.ParticipantAlreadyExists") });
         }
 
         var participant = new TrainingParticipant

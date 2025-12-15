@@ -13,17 +13,20 @@ public class CustomerPortalAuthController : ControllerBase
     private readonly IAppSettingsService _appSettingsService;
     private readonly JwtHelper _jwtHelper;
     private readonly ILogger<CustomerPortalAuthController> _logger;
+    private readonly ILocalizationService _localizationService;
 
     public CustomerPortalAuthController(
         ICustomerPersonnelService personnelService,
         IAppSettingsService appSettingsService,
         JwtHelper jwtHelper,
-        ILogger<CustomerPortalAuthController> logger)
+        ILogger<CustomerPortalAuthController> logger,
+        ILocalizationService localizationService)
     {
         _personnelService = personnelService;
         _appSettingsService = appSettingsService;
         _jwtHelper = jwtHelper;
         _logger = logger;
+        _localizationService = localizationService;
     }
 
     public class CustomerLoginDto
@@ -40,7 +43,7 @@ public class CustomerPortalAuthController : ControllerBase
 
         if (string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
         {
-            return BadRequest(new { message = "Kullanıcı adı ve şifre gereklidir." });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.UsernamePasswordRequired") });
         }
 
         try
@@ -56,7 +59,7 @@ public class CustomerPortalAuthController : ControllerBase
                 if (isDemoMode)
                 {
                     return Unauthorized(new {
-                        message = "Geçersiz kullanıcı adı veya şifre.",
+                        message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.InvalidCredentials"),
                         debug = new {
                             hint = "Kullanıcı bulunamadı veya şifre yanlış",
                             username = loginDto.Username,
@@ -64,7 +67,7 @@ public class CustomerPortalAuthController : ControllerBase
                         }
                     });
                 }
-                return Unauthorized(new { message = "Geçersiz kullanıcı adı veya şifre." });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.InvalidCredentials") });
             }
 
             _logger.LogInformation("[CustomerPortal] User found: {Username}, CustomerId: {CustomerId}",
@@ -98,7 +101,7 @@ public class CustomerPortalAuthController : ControllerBase
             if (isDemoMode)
             {
                 return StatusCode(500, new {
-                    message = "Giriş sırasında bir hata oluştu.",
+                    message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LoginError"),
                     debug = new {
                         error = ex.Message,
                         stackTrace = ex.StackTrace,
@@ -106,18 +109,18 @@ public class CustomerPortalAuthController : ControllerBase
                     }
                 });
             }
-            return StatusCode(500, new { message = "Giriş sırasında bir hata oluştu." });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LoginError") });
         }
     }
 
     [HttpGet("me")]
     [Authorize]
-    public IActionResult GetCurrentUser()
+    public async Task<IActionResult> GetCurrentUser()
     {
         var userType = User.FindFirst("UserType")?.Value;
         if (userType != "CustomerPersonnel")
         {
-            return Unauthorized(new { message = "Bu endpoint sadece müşteri personeli için geçerlidir." });
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.CustomerPersonnelOnly") });
         }
 
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -142,9 +145,9 @@ public class CustomerPortalAuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         _logger.LogInformation("Customer personnel logged out");
-        return Ok(new { message = "Çıkış başarılı." });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LogoutSuccess") });
     }
 }

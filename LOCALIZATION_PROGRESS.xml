@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lokalizasyon İlerleme Durumu
+  T() fonksiyonu ile çoklu dil desteği çalışması
+  Son güncelleme: 2025-12-15
+-->
+<LocalizationProgress>
+  <CompletedModules>
+    <Module name="VisitDetails" status="completed" date="2025-12-15" />
+    <Module name="Branches" status="completed" date="2025-12-15" />
+    <Module name="Users" status="completed" date="2025-12-15" />
+    <Module name="Checklists" status="completed" date="2025-12-15" />
+    <Module name="Customers" status="completed" date="2025-12-15" />
+    <Module name="FieldWorkers" status="completed" date="2025-12-15" />
+    <Module name="Personnel" status="completed" date="2025-12-15" />
+    <Module name="Projects" status="completed" date="2025-12-15" />
+    <Module name="Evaluations" status="completed" date="2025-12-15" note="SPA Modal Pattern - tek Index.cshtml, modal-fullscreen" />
+    <Module name="Meetings" status="completed" date="2025-12-15" />
+    <Module name="Calls" status="completed" date="2025-12-15" />
+    <Module name="Trainings" status="completed" date="2025-12-15" />
+    <Module name="Approvals" status="completed" date="2025-12-15" />
+    <Module name="Notifications" status="completed" date="2025-12-15" />
+    <Module name="Settings" status="completed" date="2025-12-15" />
+    <Module name="Languages" status="completed" date="2025-12-15" />
+    <Module name="Reports" status="completed" date="2025-12-15" note="Index, Penalties, PersonnelReportCard, Suggestions" />
+    <Module name="_Layout" status="completed" date="2025-12-15" note="Shared layout - impersonation, confirmation modal" />
+    <Module name="Permissions" status="completed" date="2025-12-15" note="Permission management - roles, users, custom permissions" />
+    <Module name="Organization" status="completed" date="2025-12-15" note="Index (tree/list view), Delegations" />
+    <Module name="NotificationSettings" status="completed" date="2025-12-15" note="Notification preferences - channels, types" />
+    <Module name="ExcelTemplates" status="completed" date="2025-12-15" note="Excel template management - CRUD, columns, import/export" />
+    <Module name="CustomerPersonnel" status="completed" date="2025-12-15" note="Customer personnel management - CRUD, password reset" />
+    <Module name="CustomerPortal.Branches" status="completed" date="2025-12-15" note="Customer portal branches view" />
+    <Module name="CustomerPortal.Dashboard" status="completed" date="2025-12-15" note="Customer portal dashboard - stats, charts, recent evaluations" />
+    <Module name="CustomerPortal.Evaluations" status="completed" date="2025-12-15" note="Customer portal evaluations list" />
+    <Module name="CustomerPortal.Reports" status="completed" date="2025-12-15" note="Customer portal reports - filters, summary, branch performance" />
+    <Module name="CustomerPortal.Login" status="completed" date="2025-12-15" note="Customer portal login (already localized)" />
+    <Module name="_CustomerLayout" status="completed" date="2025-12-15" note="Customer portal layout - sidebar menu, role names in JS" />
+    <Module name="Form" status="completed" date="2025-12-15" note="Public evaluation form - questions, status texts, error messages in JS" />
+
+    <!-- Zaten lokalize edilmiş modüller (önceden yapılmış) -->
+    <Module name="Account" status="completed" date="2025-12-15" note="Login, ForgotPassword, ResetPassword, Confirmations" />
+    <Module name="Dashboard" status="completed" date="2025-12-15" note="Admin dashboard - stats, charts, recent evaluations" />
+    <Module name="Assignments" status="completed" date="2025-12-15" note="Assignment management - CRUD, bulk, reassign, QR code" />
+    <Module name="_Sidebar" status="completed" date="2025-12-15" note="Main navigation sidebar - all menu items" />
+    <Module name="MyAssignments" status="completed" date="2025-12-15" note="Field worker task list" />
+    <Module name="Profile" status="completed" date="2025-12-15" note="User profile - edit info, change password" />
+  </CompletedModules>
+
+  <PendingModules>
+    <Module name="Announcements" priority="16" note="View dosyası henüz oluşturulmamış" />
+  </PendingModules>
+
+  <!-- Controller Lokalizasyonu - Hata mesajları, validation, response mesajları -->
+  <ControllerLocalization>
+    <MvcControllers note="View Controller'lar - genelde sadece return View()">
+      <Controller name="HomeController" status="completed" date="2025-12-15" note="Sadece redirect - lokalizasyon yok" />
+      <Controller name="AccountController" status="completed" date="2025-12-15" note="Login, ForgotPassword, ResetPassword - 4 mesaj" />
+      <Controller name="DashboardController" status="completed" date="2025-12-15" note="Sadece View/redirect - lokalizasyon yok" />
+      <Controller name="AssignmentsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="MyAssignmentsController" status="completed" date="2025-12-15" note="FieldWorker görev listesi - 3 mesaj" />
+      <Controller name="EvaluationsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ProjectsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="BranchesController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ChecklistsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="CustomersController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="CustomerPersonnelController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="FieldWorkersController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="PersonnelController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="UsersController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ProfileController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="OrganizationController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="PermissionsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="MeetingsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="CallsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="TrainingsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ApprovalsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="NotificationsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ReportsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="SettingsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="LanguagesController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="ExcelTemplatesController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="VisitDetailsController" status="completed" date="2025-12-15" note="Sadece View - lokalizasyon yok" />
+      <Controller name="FormController" status="completed" date="2025-12-15" note="Public form - sadece View" />
+      <Controller name="CustomerPortalController" status="completed" date="2025-12-15" note="Müşteri portalı - sadece View/redirect" />
+    </MvcControllers>
+
+    <ApiControllers note="API Controller'lar - hata mesajları, validation, response">
+      <Controller name="AuthController" status="completed" date="2025-12-15" note="Login, JWT, authentication, impersonation - 9 mesaj" />
+      <Controller name="AssignmentsApiController" status="completed" date="2025-12-15" note="CRUD, bulk operations, filters, QR code - 24 mesaj" />
+      <Controller name="EvaluationsApiController" status="completed" date="2025-12-15" note="CRUD, form, draft, submit, cancel, revert - 17 mesaj" />
+      <Controller name="ProjectsApiController" status="completed" date="2025-12-15" note="CRUD, status, team, branches, statistics - 21 mesaj" />
+      <Controller name="BranchesApiController" status="completed" date="2025-12-15" note="CRUD, active - 7 mesaj" />
+      <Controller name="ChecklistsApiController" status="completed" date="2025-12-15" note="CRUD, clone - 7 mesaj" />
+      <Controller name="CustomersApiController" status="completed" date="2025-12-15" note="CRUD, active - 7 mesaj" />
+      <Controller name="CustomerPersonnelApiController" status="completed" date="2025-12-15" note="CRUD, password change/reset - 10 mesaj" />
+      <Controller name="FieldWorkersApiController" status="completed" date="2025-12-15" note="CRUD - 6 mesaj" />
+      <Controller name="PersonnelApiController" status="completed" date="2025-12-15" note="CRUD, branch/customer filter, TC check - 8 mesaj" />
+      <Controller name="UsersApiController" status="completed" date="2025-12-15" note="CRUD, role, password change - 11 mesaj" />
+      <Controller name="ProfileApiController" status="completed" date="2025-12-15" note="Profile load/update, password change - 4 mesaj" />
+      <Controller name="OrganizationUnitsApiController" status="completed" date="2025-12-15" note="CRUD, move, tree - 3 mesaj" />
+      <Controller name="DelegationsApiController" status="completed" date="2025-12-15" note="CRUD - 2 mesaj" />
+      <Controller name="PermissionsApiController" status="completed" date="2025-12-15" note="Roles, users, bulk assign, revoke - 13 mesaj" />
+      <Controller name="MeetingsApiController" status="completed" date="2025-12-15" note="CRUD, start/complete/cancel/postpone, participants, attachments - 19 mesaj" />
+      <Controller name="CallsApiController" status="completed" date="2025-12-15" note="CRUD, start/complete/missed, callback, recording, attachments - 10 mesaj" />
+      <Controller name="TrainingsApiController" status="completed" date="2025-12-15" note="Participants validation - 2 mesaj" />
+      <Controller name="ApprovalsApiController" status="completed" date="2025-12-15" note="Validation messages - 2 mesaj" />
+      <Controller name="NotificationsApiController" status="completed" date="2025-12-15" note="Validation messages - 1 mesaj" />
+      <Controller name="ReportsApiController" status="completed" date="2025-12-15" note="CRUD, export errors, suggestions - 12 mesaj" />
+      <Controller name="DashboardApiController" status="completed" date="2025-12-15" note="CRUD, scorecard - 3 mesaj" />
+      <Controller name="AppSettingsApiController" status="completed" date="2025-12-15" note="CRUD, system settings - 5 mesaj" />
+      <Controller name="LocalizationApiController" status="completed" date="2025-12-15" note="Languages, resources, import/export - 11 mesaj" />
+      <Controller name="ExcelTemplatesApiController" status="completed" date="2025-12-15" note="CRUD, import/export, attributes - 6 mesaj" />
+      <Controller name="VisitDetailsApiController" status="completed" date="2025-12-15" note="Sectors, fields, values, stats - 23 mesaj" />
+      <Controller name="AnswersApiController" status="completed" date="2025-12-15" note="Upload, delete, download - 3 mesaj" />
+      <Controller name="QuestionAttachmentsApiController" status="completed" date="2025-12-15" note="File CRUD, order update - 12 mesaj" />
+      <Controller name="AnnouncementsApiController" status="completed" date="2025-12-15" note="CRUD, admin list - 10 mesaj" />
+      <Controller name="CustomerVisitsApiController" status="completed" date="2025-12-15" note="CRUD, start/complete/cancel, attachments - 25 mesaj" />
+      <Controller name="CustomerPortalAuthController" status="completed" date="2025-12-15" note="Login, logout, me endpoint - 5 mesaj" />
+      <Controller name="CustomerPortalApiController" status="completed" date="2025-12-15" note="Dashboard, branches, evaluations, reports - 9 mesaj" />
+    </ApiControllers>
+  </ControllerLocalization>
+
+  <Notes>
+    <Note date="2025-12-15">
+      View dosyalarında Html.T("Key", "Default") kullanılıyor.
+      JS dosyalarında T("Key", "Default") kullanılıyor.
+      Mevcut XML key prefix'leri: Branch.*, User.*, Checklist.*, Customer.*, vb. (tekil)
+      Tüm mevcut view dosyaları T() ile lokalize edildi.
+
+      TOPLAM: 35 modül lokalize edildi.
+    </Note>
+  </Notes>
+</LocalizationProgress>
