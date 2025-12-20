@@ -14,15 +14,18 @@ public class AccountController : Controller
     private readonly IAuthService _authService;
     private readonly ILogger<AccountController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly IAuditLogService _auditLogService;
 
     public AccountController(
         IAuthService authService,
         ILogger<AccountController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAuditLogService auditLogService)
     {
         _authService = authService;
         _logger = logger;
         _localizationService = localizationService;
+        _auditLogService = auditLogService;
     }
 
     [HttpGet]
@@ -89,6 +92,9 @@ public class AccountController : Controller
             // Kullanıcının kayıtlı dil tercihini uygula
             _localizationService.ApplyUserLanguagePreference(result.UserId);
 
+            // Audit Log - Başarılı giriş
+            await _auditLogService.LogLoginAsync(result.UserId, result.Username, success: true);
+
             _logger.LogInformation("User {Username} logged in successfully", model.Username);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
@@ -98,8 +104,20 @@ public class AccountController : Controller
 
             return RedirectToAction("Index", "Home");
         }
+        catch (UnauthorizedAccessException)
+        {
+            // Audit Log - Başarısız giriş
+            await _auditLogService.LogLoginAsync(Guid.Empty, model.Username, false, "Geçersiz kullanıcı adı veya şifre");
+
+            _logger.LogWarning("Failed login attempt for user {Username}", model.Username);
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.InvalidCredentials"));
+            return View(model);
+        }
         catch (Exception ex)
         {
+            // Audit Log - Hata
+            await _auditLogService.LogErrorAsync($"Login hatası: {model.Username}", "Account", ex);
+
             _logger.LogError(ex, "Error during login for user {Username}", model.Username);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.LoginError"));
             return View(model);
@@ -111,6 +129,14 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        // Audit Log - Çıkış
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
+        if (Guid.TryParse(userIdClaim, out var userId))
+        {
+            await _auditLogService.LogLogoutAsync(userId, userName);
+        }
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         _logger.LogInformation("User logged out");
         return RedirectToAction("Login", "Account");

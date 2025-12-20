@@ -88,6 +88,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<VisitFieldDefinition> VisitFieldDefinitions { get; set; }
     public DbSet<VisitDetailValue> VisitDetailValues { get; set; }
 
+    // Audit Logs (Sistem logları)
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -217,6 +220,18 @@ public class ApplicationDbContext : DbContext
             .WithMany(o => o.Users)
             .HasForeignKey(u => u.OrganizationUnitId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // AuditLog indexleri (hızlı sorgu için)
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.CreatedAt);
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.LogType);
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.UserId);
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.Category);
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => new { a.TableName, a.RecordId });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

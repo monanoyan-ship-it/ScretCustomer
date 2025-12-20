@@ -14,17 +14,20 @@ public class AssignmentService : IAssignmentService
     private readonly IProjectRepository _projectRepository;
     private readonly IChecklistRepository _checklistRepository;
     private readonly ApplicationDbContext _context;
+    private readonly IAuditLogService _auditLogService;
 
     public AssignmentService(
         IAssignmentRepository assignmentRepository,
         IProjectRepository projectRepository,
         IChecklistRepository checklistRepository,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IAuditLogService auditLogService)
     {
         _assignmentRepository = assignmentRepository;
         _projectRepository = projectRepository;
         _checklistRepository = checklistRepository;
         _context = context;
+        _auditLogService = auditLogService;
     }
 
     #region TEMEL CRUD
@@ -346,7 +349,9 @@ public class AssignmentService : IAssignmentService
 
     public async Task<AssignmentDto> CompleteAssignmentAsync(Guid id)
     {
-        var assignment = await _context.Assignments.FindAsync(id);
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == id);
         if (assignment == null || assignment.IsDeleted)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
@@ -355,12 +360,20 @@ public class AssignmentService : IAssignmentService
         assignment.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Atama tamamlandı: {assignment.Project?.Name} - {assignment.Branch?.Name ?? "Şube yok"}",
+            "AssignmentService");
+
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
     public async Task<AssignmentDto> CancelAssignmentAsync(Guid id, string? reason)
     {
-        var assignment = await _context.Assignments.FindAsync(id);
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == id);
         if (assignment == null || assignment.IsDeleted)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
@@ -368,12 +381,20 @@ public class AssignmentService : IAssignmentService
         assignment.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogWarningAsync(
+            $"Atama iptal edildi: {assignment.Project?.Name} - Sebep: {reason ?? "Belirtilmedi"}",
+            "AssignmentService");
+
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
     public async Task<AssignmentDto> ReassignAsync(Guid id, ReassignAssignmentDto dto)
     {
-        var assignment = await _context.Assignments.FindAsync(id);
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == id);
         if (assignment == null || assignment.IsDeleted)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
@@ -400,6 +421,11 @@ public class AssignmentService : IAssignmentService
 
         assignment.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Atama yeniden atandı: {assignment.Project?.Name}",
+            "AssignmentService");
 
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }

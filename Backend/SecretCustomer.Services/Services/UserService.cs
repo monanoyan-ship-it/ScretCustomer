@@ -9,10 +9,12 @@ namespace SecretCustomer.Services.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IAuditLogService _auditLogService;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IAuditLogService auditLogService)
     {
         _userRepository = userRepository;
+        _auditLogService = auditLogService;
     }
 
     public async Task<UserDto?> GetByIdAsync(Guid id)
@@ -74,6 +76,12 @@ public class UserService : IUserService
         };
 
         var createdUser = await _userRepository.CreateAsync(user);
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Yeni kullanıcı oluşturuldu: {createdUser.Username} ({createdUser.Role})",
+            "UserService");
+
         return MapToDto(createdUser);
     }
 
@@ -101,6 +109,12 @@ public class UserService : IUserService
         user.BranchId = updateUserDto.BranchId;
 
         var updatedUser = await _userRepository.UpdateAsync(user);
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Kullanıcı güncellendi: {updatedUser.Username}",
+            "UserService");
+
         return MapToDto(updatedUser);
     }
 
@@ -113,6 +127,11 @@ public class UserService : IUserService
         }
 
         await _userRepository.DeleteAsync(id);
+
+        // Audit Log
+        await _auditLogService.LogWarningAsync(
+            $"Kullanıcı silindi: {user.Username}",
+            "UserService");
     }
 
     public async Task<bool> ChangePasswordAsync(Guid userId, string newPassword)
@@ -127,7 +146,14 @@ public class UserService : IUserService
         var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
         // Update password
-        return await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
+        var result = await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Kullanıcı şifresini değiştirdi: {user.Username}",
+            "UserService");
+
+        return result;
     }
 
     public async Task<bool> AdminChangePasswordAsync(Guid userId, string newPassword)
@@ -142,7 +168,14 @@ public class UserService : IUserService
         var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
         // Update password (admin doesn't need current password)
-        return await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
+        var result = await _userRepository.ChangePasswordAsync(userId, newPasswordHash);
+
+        // Audit Log
+        await _auditLogService.LogWarningAsync(
+            $"Admin kullanıcının şifresini değiştirdi: {user.Username}",
+            "UserService");
+
+        return result;
     }
 
     // Branch assignment

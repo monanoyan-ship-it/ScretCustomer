@@ -1,0 +1,243 @@
+@{
+    ViewData["Title"] = ViewBag.Title ?? "Sistem Logları";
+}
+
+<div id="auditlogs-app">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-journal-text me-2"></i>@ViewData["Title"]</h2>
+        <button class="btn btn-outline-danger" data-bind="click: cleanupLogs">
+            <i class="bi bi-trash me-1"></i> Eski Logları Temizle
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Log Türü</label>
+                    <select class="form-select" data-bind="value: filter.logType">
+                        <option value="">Tümü</option>
+                        <!-- ko foreach: logTypes -->
+                        <option data-bind="value: value, text: name"></option>
+                        <!-- /ko -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kategori</label>
+                    <input type="text" class="form-control" placeholder="Kategori"
+                           data-bind="value: filter.category, valueUpdate: 'afterkeydown'" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kullanıcı ID</label>
+                    <input type="number" class="form-control" placeholder="User ID"
+                           data-bind="value: filter.userId" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.fromDate" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" class="form-control" data-bind="value: filter.toDate" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" data-bind="click: loadLogs">
+                        <i class="bi bi-search me-1"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Toplam Log</h5>
+                    <h2 data-bind="text: totalCount"></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Hatalar</h5>
+                    <h2 data-bind="text: errorCount"></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Uyarılar</h5>
+                    <h2 data-bind="text: warningCount"></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Başarılı Girişler</h5>
+                    <h2 data-bind="text: loginCount"></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 120px;">Tür</th>
+                            <th style="width: 100px;">Kategori</th>
+                            <th>Mesaj</th>
+                            <th style="width: 120px;">Kullanıcı</th>
+                            <th style="width: 120px;">IP Adresi</th>
+                            <th style="width: 160px;">Tarih</th>
+                            <th style="width: 80px;">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: logs">
+                        <tr data-bind="css: { 'table-danger': logType === 2, 'table-warning': logType === 1, 'table-info': logType === 20 }">
+                            <td data-bind="text: id"></td>
+                            <td>
+                                <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logType)"></span>
+                            </td>
+                            <td data-bind="text: category || '-'"></td>
+                            <td>
+                                <span data-bind="text: message.length > 80 ? message.substring(0, 80) + '...' : message"></span>
+                            </td>
+                            <td data-bind="text: userName || '-'"></td>
+                            <td data-bind="text: ipAddress || '-'"></td>
+                            <td data-bind="text: $parent.formatDate(createdAt)"></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetail">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading -->
+            <div class="text-center py-4" data-bind="visible: isLoading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+
+            <!-- No Data -->
+            <div class="text-center py-4 text-muted" data-bind="visible: !isLoading() && logs().length === 0">
+                <i class="bi bi-inbox fs-1"></i>
+                <p>Kayıt bulunamadı</p>
+            </div>
+
+            <!-- Pagination -->
+            <nav data-bind="visible: totalPages() > 1">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
+                        <a class="page-link" href="#" data-bind="click: prevPage">Önceki</a>
+                    </li>
+                    <!-- ko foreach: visiblePages -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">Sonraki</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Log Detayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: selectedLog">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>ID:</strong> <span data-bind="text: id"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Tür:</strong>
+                            <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logType)"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Kategori:</strong> <span data-bind="text: category || '-'"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Tarih:</strong> <span data-bind="text: $parent.formatDate(createdAt)"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Mesaj:</strong>
+                        <p class="bg-light p-2 rounded" data-bind="text: message"></p>
+                    </div>
+                    <div class="mb-3" data-bind="visible: details">
+                        <strong>Detaylar:</strong>
+                        <pre class="bg-light p-2 rounded" style="max-height: 200px; overflow-y: auto;" data-bind="text: details"></pre>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Kullanıcı:</strong> <span data-bind="text: (userName || '-') + (userId ? ' (ID: ' + userId + ')' : '')"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>IP Adresi:</strong> <span data-bind="text: ipAddress || '-'"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3" data-bind="visible: requestUrl">
+                        <strong>URL:</strong> <code data-bind="text: httpMethod + ' ' + requestUrl"></code>
+                    </div>
+                    <div class="mb-3" data-bind="visible: tableName">
+                        <strong>Tablo:</strong> <span data-bind="text: tableName"></span>
+                        <span data-bind="visible: recordId"> (Kayıt ID: <span data-bind="text: recordId"></span>)</span>
+                    </div>
+                    <div class="row" data-bind="visible: oldValues || newValues">
+                        <div class="col-md-6" data-bind="visible: oldValues">
+                            <strong>Eski Değerler:</strong>
+                            <pre class="bg-light p-2 rounded" style="max-height: 150px; overflow-y: auto;" data-bind="text: oldValues"></pre>
+                        </div>
+                        <div class="col-md-6" data-bind="visible: newValues">
+                            <strong>Yeni Değerler:</strong>
+                            <pre class="bg-light p-2 rounded" style="max-height: 150px; overflow-y: auto;" data-bind="text: newValues"></pre>
+                        </div>
+                    </div>
+                    <div class="mb-3" data-bind="visible: exceptionType">
+                        <strong>Exception Türü:</strong> <code data-bind="text: exceptionType"></code>
+                    </div>
+                    <div data-bind="visible: stackTrace">
+                        <strong>Stack Trace:</strong>
+                        <pre class="bg-danger text-white p-2 rounded" style="max-height: 200px; overflow-y: auto; font-size: 0.75rem;" data-bind="text: stackTrace"></pre>
+                    </div>
+                    <div class="mb-3" data-bind="visible: userAgent">
+                        <strong>User Agent:</strong>
+                        <small class="text-muted" data-bind="text: userAgent"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/AuditLogs/index.js"></script>
+}

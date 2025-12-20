@@ -13,15 +13,18 @@ public class PermissionService : IPermissionService
     private readonly ApplicationDbContext _context;
     private readonly IUserRepository _userRepository;
     private readonly ILogger<PermissionService> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public PermissionService(
         ApplicationDbContext context,
         IUserRepository userRepository,
-        ILogger<PermissionService> logger)
+        ILogger<PermissionService> logger,
+        IAuditLogService auditLogService)
     {
         _context = context;
         _userRepository = userRepository;
         _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -157,6 +160,7 @@ public class PermissionService : IPermissionService
 
     public async Task GrantRolePermissionAsync(UserRole role, Guid permissionId, PermissionScope scope = PermissionScope.All)
     {
+        var permission = await _context.Permissions.FindAsync(permissionId);
         var existing = await _context.RolePermissions
             .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
 
@@ -178,10 +182,16 @@ public class PermissionService : IPermissionService
         }
 
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogWarningAsync(
+            $"Rol yetkisi verildi: {role} - {permission?.DisplayName ?? permissionId.ToString()}",
+            "PermissionService");
     }
 
     public async Task RevokeRolePermissionAsync(UserRole role, Guid permissionId)
     {
+        var permission = await _context.Permissions.FindAsync(permissionId);
         var rolePermission = await _context.RolePermissions
             .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
 
@@ -189,11 +199,18 @@ public class PermissionService : IPermissionService
         {
             _context.RolePermissions.Remove(rolePermission);
             await _context.SaveChangesAsync();
+
+            // Audit Log
+            await _auditLogService.LogWarningAsync(
+                $"Rol yetkisi kaldırıldı: {role} - {permission?.DisplayName ?? permissionId.ToString()}",
+                "PermissionService");
         }
     }
 
     public async Task GrantUserPermissionAsync(Guid userId, Guid permissionId, bool isGranted, PermissionScope scope = PermissionScope.All)
     {
+        var user = await _userRepository.GetByIdAsync(userId);
+        var permission = await _context.Permissions.FindAsync(permissionId);
         var existing = await _context.UserPermissions
             .FirstOrDefaultAsync(up => up.UserId == userId && up.PermissionId == permissionId);
 
@@ -215,10 +232,18 @@ public class PermissionService : IPermissionService
         }
 
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        var action = isGranted ? "verildi" : "reddedildi";
+        await _auditLogService.LogWarningAsync(
+            $"Kullanıcı yetkisi {action}: {user?.Username ?? userId.ToString()} - {permission?.DisplayName ?? permissionId.ToString()}",
+            "PermissionService");
     }
 
     public async Task RevokeUserPermissionAsync(Guid userId, Guid permissionId)
     {
+        var user = await _userRepository.GetByIdAsync(userId);
+        var permission = await _context.Permissions.FindAsync(permissionId);
         var userPermission = await _context.UserPermissions
             .FirstOrDefaultAsync(up => up.UserId == userId && up.PermissionId == permissionId);
 
@@ -226,6 +251,11 @@ public class PermissionService : IPermissionService
         {
             _context.UserPermissions.Remove(userPermission);
             await _context.SaveChangesAsync();
+
+            // Audit Log
+            await _auditLogService.LogWarningAsync(
+                $"Kullanıcı yetkisi kaldırıldı: {user?.Username ?? userId.ToString()} - {permission?.DisplayName ?? permissionId.ToString()}",
+                "PermissionService");
         }
     }
 

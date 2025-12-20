@@ -9,6 +9,7 @@ using SecretCustomer.Data;
 using SecretCustomer.Data.Repositories;
 using SecretCustomer.Services.Helpers;
 using SecretCustomer.Services.Services;
+using SecretCustomer.API.Middleware;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -157,6 +158,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 
+// Audit Log Service
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+
 // HttpClient for Python Services
 builder.Services.AddHttpClient("ExcelProcessor", client =>
 {
@@ -205,6 +209,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+
+// Exception logging middleware (en başta olmalı)
+app.UseExceptionLogging();
+
 app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();

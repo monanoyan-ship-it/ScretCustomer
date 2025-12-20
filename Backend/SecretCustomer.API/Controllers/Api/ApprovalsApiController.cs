@@ -20,11 +20,13 @@ public class ApprovalsApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
+    private readonly IAuditLogService _auditLogService;
 
-    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService)
+    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService, IAuditLogService auditLogService)
     {
         _context = context;
         _localizationService = localizationService;
+        _auditLogService = auditLogService;
     }
 
     private Guid GetCurrentUserId()
@@ -220,6 +222,11 @@ public class ApprovalsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Onay talebi oluşturuldu: {approval.ReferenceNumber} - {approval.Title}",
+            "ApprovalService");
+
         return Ok(new { id = approval.Id, referenceNumber = approval.ReferenceNumber });
     }
 
@@ -261,6 +268,12 @@ public class ApprovalsApiController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // Audit Log
+        var logMessage = dto.Approved
+            ? $"Onay kabul edildi: {approval.ReferenceNumber} - {approval.Title}"
+            : $"Onay reddedildi: {approval.ReferenceNumber} - {approval.Title}";
+        await _auditLogService.LogInfoAsync(logMessage, "ApprovalService");
+
         return Ok();
     }
 
@@ -282,6 +295,11 @@ public class ApprovalsApiController : ControllerBase
 
         approval.Status = ApprovalStatus.Cancelled;
         await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Onay talebi iptal edildi: {approval.ReferenceNumber} - {approval.Title}",
+            "ApprovalService");
 
         return Ok();
     }

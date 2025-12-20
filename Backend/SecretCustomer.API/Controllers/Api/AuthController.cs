@@ -15,17 +15,20 @@ public class AuthController : ControllerBase
     private readonly JwtHelper _jwtHelper;
     private readonly ILogger<AuthController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly IAuditLogService _auditLogService;
 
     public AuthController(
         IAuthService authService,
         JwtHelper jwtHelper,
         ILogger<AuthController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAuditLogService auditLogService)
     {
         _authService = authService;
         _jwtHelper = jwtHelper;
         _logger = logger;
         _localizationService = localizationService;
+        _auditLogService = auditLogService;
     }
 
     [HttpPost("login")]
@@ -151,6 +154,11 @@ public class AuthController : ControllerBase
             _logger.LogInformation("User {UserId} started impersonating customer {CustomerId}",
                 userId, dto.CustomerId);
 
+            // Audit Log - Impersonation başlatıldı
+            await _auditLogService.LogWarningAsync(
+                $"Firma olarak görüntüleme başlatıldı: Müşteri ID {dto.CustomerId}",
+                "Impersonation");
+
             return Ok(result);
         }
         catch (Exception ex)
@@ -198,6 +206,11 @@ public class AuthController : ControllerBase
             }
 
             _logger.LogInformation("User {UserId} ended impersonation", originalUserId);
+
+            // Audit Log - Impersonation sonlandırıldı
+            await _auditLogService.LogInfoAsync(
+                "Firma olarak görüntüleme sonlandırıldı",
+                "Impersonation");
 
             return Ok(result);
         }
