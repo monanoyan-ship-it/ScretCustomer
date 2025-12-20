@@ -4,6 +4,7 @@ using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Services.Services;
 
 namespace SecretCustomer.Services.Tests;
@@ -11,12 +12,14 @@ namespace SecretCustomer.Services.Tests;
 public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository;
+    private readonly Mock<IAuditLogService> _mockAuditLogService;
     private readonly UserService _userService;
 
     public UserServiceTests()
     {
         _mockUserRepository = new Mock<IUserRepository>();
-        _userService = new UserService(_mockUserRepository.Object);
+        _mockAuditLogService = new Mock<IAuditLogService>();
+        _userService = new UserService(_mockUserRepository.Object, _mockAuditLogService.Object);
     }
 
     [Fact]
