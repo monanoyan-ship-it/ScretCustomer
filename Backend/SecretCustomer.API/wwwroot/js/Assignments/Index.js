@@ -122,6 +122,7 @@ function AssignmentsViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.isEditing = ko.observable(false);
 
     // ===== Data =====
@@ -320,6 +321,7 @@ function AssignmentsViewModel() {
         self.editingAssignment(new AssignmentEditViewModel());
         self.projectBranches([]);
         self.projectChecklists([]);
+        self.modalErrorMessage('');
         self.isModalOpen(true);
     };
 
@@ -356,17 +358,17 @@ function AssignmentsViewModel() {
 
         // Validation
         if (!assignment.projectId()) {
-            toastr.warning(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
+            self.modalErrorMessage(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
             return;
         }
 
         if (!assignment.checklistId()) {
-            toastr.warning(T('Assignment.SelectChecklist', 'Kontrol listesi seçmelisiniz!'));
+            self.modalErrorMessage(T('Assignment.SelectChecklist', 'Kontrol listesi seçmelisiniz!'));
             return;
         }
 
         if (!assignment.dueDate()) {
-            toastr.warning(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
+            self.modalErrorMessage(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
             return;
         }
 
@@ -376,6 +378,7 @@ function AssignmentsViewModel() {
         var method = isEdit ? 'PUT' : 'POST';
 
         self.isSaving(true);
+        self.modalErrorMessage('');
 
         fetch(url, {
             method: method,
@@ -395,7 +398,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
+                self.modalErrorMessage(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -425,6 +428,7 @@ function AssignmentsViewModel() {
         self.isModalOpen(false);
         self.editingAssignment(null);
         self.isEditing(false);
+        self.modalErrorMessage('');
     };
 
     // ===== Bulk Assignment =====

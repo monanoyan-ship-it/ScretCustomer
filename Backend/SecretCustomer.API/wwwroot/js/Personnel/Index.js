@@ -7,6 +7,7 @@ function PersonnelViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable(''); // Modal içi hata mesajı
 
     // Data
     self.personnel = ko.observableArray([]);
@@ -137,6 +138,7 @@ function PersonnelViewModel() {
 
     // Create new
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.editingPersonnel({
             id: null,
             firstName: ko.observable(''),
@@ -161,6 +163,7 @@ function PersonnelViewModel() {
 
     // Edit personnel
     self.editPersonnel = function(personnel) {
+        self.modalErrorMessage('');
         self.editingPersonnel({
             id: personnel.id,
             firstName: ko.observable(personnel.firstName),
@@ -190,12 +193,12 @@ function PersonnelViewModel() {
 
         // Validation
         if (!editing.firstName() || !editing.lastName()) {
-            self.errorMessage('Ad ve Soyad alanları zorunludur.');
+            self.modalErrorMessage('Ad ve Soyad alanları zorunludur.');
             return;
         }
 
         self.isSaving(true);
-        self.errorMessage('');
+        self.modalErrorMessage('');
 
         var dto = {
             firstName: editing.firstName(),
@@ -228,7 +231,11 @@ function PersonnelViewModel() {
             .then(function(response) {
                 if (!response.ok) {
                     return response.json().then(function(err) {
-                        throw new Error(err.message || 'İşlem başarısız');
+                        console.error('Server error response:', err);
+                        var errorMsg = err.message || 'İşlem başarısız';
+                        if (err.error) errorMsg += ' - ' + err.error;
+                        if (err.innerException) errorMsg += ' (' + err.innerException + ')';
+                        throw new Error(errorMsg);
                     });
                 }
                 return response.json();
@@ -240,7 +247,7 @@ function PersonnelViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Personel kaydedilirken bir hata oluştu.');
+                self.modalErrorMessage(error.message || 'Personel kaydedilirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);

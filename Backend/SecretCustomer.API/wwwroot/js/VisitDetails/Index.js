@@ -10,6 +10,7 @@ function VisitDetailsViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
 
     // ===== Modal State =====
     self.isSectorModalOpen = ko.observable(false);
@@ -92,6 +93,7 @@ function VisitDetailsViewModel() {
     };
 
     self.createSector = function() {
+        self.modalErrorMessage('');
         self.editingSector({
             id: null,
             code: ko.observable(''),
@@ -105,6 +107,7 @@ function VisitDetailsViewModel() {
     };
 
     self.editSector = function(sector) {
+        self.modalErrorMessage('');
         self.editingSector({
             id: sector.id,
             code: ko.observable(sector.code),
@@ -130,7 +133,7 @@ function VisitDetailsViewModel() {
         var name = sector.name();
 
         if (!code || !name) {
-            self.errorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
+            self.modalErrorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
             return;
         }
 
@@ -168,7 +171,7 @@ function VisitDetailsViewModel() {
             self.clearMessages();
         })
         .catch(function(err) {
-            self.errorMessage(err.message);
+            self.modalErrorMessage(err.message);
         })
         .finally(function() {
             self.isSaving(false);
@@ -224,6 +227,7 @@ function VisitDetailsViewModel() {
     };
 
     self.createField = function() {
+        self.modalErrorMessage('');
         self.editingField({
             id: null,
             sectorId: ko.observable(self.selectedSectorIdForFields()),
@@ -246,6 +250,7 @@ function VisitDetailsViewModel() {
     };
 
     self.editField = function(field) {
+        self.modalErrorMessage('');
         self.editingField({
             id: field.id,
             sectorId: ko.observable(field.sectorId),
@@ -280,7 +285,7 @@ function VisitDetailsViewModel() {
         var name = field.name();
 
         if (!code || !name) {
-            self.errorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
+            self.modalErrorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
             return;
         }
 
@@ -327,7 +332,7 @@ function VisitDetailsViewModel() {
             self.clearMessages();
         })
         .catch(function(err) {
-            self.errorMessage(err.message);
+            self.modalErrorMessage(err.message);
         })
         .finally(function() {
             self.isSaving(false);

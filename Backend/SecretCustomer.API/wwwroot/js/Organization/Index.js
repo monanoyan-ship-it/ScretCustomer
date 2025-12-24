@@ -7,6 +7,7 @@ function OrganizationViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.viewMode = ko.observable('tree'); // 'tree' or 'list'
 
     // Data
@@ -131,6 +132,7 @@ function OrganizationViewModel() {
 
     // Create new unit
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.editingUnit({
             id: null,
             name: ko.observable(''),
@@ -148,6 +150,7 @@ function OrganizationViewModel() {
 
     // Create child unit
     self.createChild = function(parent) {
+        self.modalErrorMessage('');
         self.editingUnit({
             id: null,
             name: ko.observable(''),
@@ -165,6 +168,7 @@ function OrganizationViewModel() {
 
     // Edit unit
     self.editUnit = function(unit) {
+        self.modalErrorMessage('');
         self.editingUnit({
             id: unit.id,
             name: ko.observable(unit.name),
@@ -187,12 +191,12 @@ function OrganizationViewModel() {
 
         // Validation
         if (!editing.name()) {
-            self.errorMessage('Birim adı zorunludur.');
+            self.modalErrorMessage('Birim adı zorunludur.');
             return;
         }
 
         self.isSaving(true);
-        self.errorMessage('');
+        self.modalErrorMessage('');
 
         var dto = {
             name: editing.name(),
@@ -234,7 +238,7 @@ function OrganizationViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Birim kaydedilirken bir hata oluştu.');
+                self.modalErrorMessage(error.message || 'Birim kaydedilirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);

@@ -360,6 +360,8 @@
 
     function highlightActiveMenu() {
         var currentPath = window.location.pathname.toLowerCase();
+        // Normalize: remove trailing slash and /index suffix
+        var normalizedCurrent = currentPath.replace(/\/index$/i, '').replace(/\/$/, '');
 
         // Find all submenu links
         var menuLinks = document.querySelectorAll('.sidebar-nav .submenu .nav-link');
@@ -368,8 +370,10 @@
             var href = link.getAttribute('href');
             if (href) {
                 var linkPath = href.toLowerCase();
-                // Check if current path starts with link path (handles /Controller/Index and /Controller/Details/1 etc.)
-                if (currentPath === linkPath || currentPath.startsWith(linkPath.replace('/index', ''))) {
+                var normalizedLink = linkPath.replace(/\/index$/i, '').replace(/\/$/, '');
+
+                // Exact match after normalization
+                if (normalizedCurrent === normalizedLink) {
                     // Add active class to the link
                     link.classList.add('active');
                     link.classList.remove('text-white-50');
@@ -397,7 +401,8 @@
             var href = link.getAttribute('href');
             if (href) {
                 var linkPath = href.toLowerCase();
-                if (currentPath === linkPath || currentPath.startsWith(linkPath.replace('/index', ''))) {
+                var normalizedLink = linkPath.replace(/\/index$/i, '').replace(/\/$/, '');
+                if (normalizedCurrent === normalizedLink) {
                     link.classList.add('active');
                     link.style.backgroundColor = 'rgba(13, 110, 253, 0.3)';
                 }

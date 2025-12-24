@@ -16,12 +16,12 @@ namespace SecretCustomer.API.Controllers.Api;
 [Route("api/notifications")]
 [ApiController]
 [Authorize]
-public class NotificationsApiController : ControllerBase
+public class NotificationsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
 
-    public NotificationsApiController(ApplicationDbContext context, ILocalizationService localizationService)
+    public NotificationsApiController(ApplicationDbContext context, ILocalizationService localizationService, IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _localizationService = localizationService;
@@ -367,7 +367,7 @@ public class NotificationsApiController : ControllerBase
         var userId = GetCurrentUserId();
 
         if (!Enum.TryParse<NotificationType>(dto.NotificationType, out var notificationType))
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Notification.InvalidType") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Notification.InvalidType")));
 
         var setting = await _context.NotificationSettings
             .FirstOrDefaultAsync(s => s.UserId == userId && s.NotificationType == notificationType);

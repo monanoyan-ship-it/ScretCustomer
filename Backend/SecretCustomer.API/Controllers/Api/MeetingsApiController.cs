@@ -13,7 +13,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/meetings")]
 [Authorize]
-public class MeetingsApiController : ControllerBase
+public class MeetingsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<MeetingsApiController> _logger;
@@ -24,7 +24,8 @@ public class MeetingsApiController : ControllerBase
         ApplicationDbContext context,
         ILogger<MeetingsApiController> logger,
         IWebHostEnvironment env,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _logger = logger;
@@ -131,7 +132,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         var dto = MapToDto(meeting);
         return Ok(dto);
@@ -194,7 +195,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.Title = dto.Title;
         meeting.Description = dto.Description;
@@ -228,7 +229,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.IsDeleted = true;
         await _context.SaveChangesAsync();
@@ -244,7 +245,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.Status = MeetingStatus.InProgress;
         meeting.ActualDate = DateTime.UtcNow;
@@ -264,7 +265,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.Status = MeetingStatus.Completed;
         meeting.ActualDate = dto.ActualDate ?? meeting.ActualDate ?? DateTime.UtcNow;
@@ -297,7 +298,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.Status = MeetingStatus.Cancelled;
         if (!string.IsNullOrEmpty(request?.Reason))
@@ -316,7 +317,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         meeting.Status = MeetingStatus.Postponed;
         meeting.PlannedDate = request.NewDate;
@@ -339,7 +340,7 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         var participant = new MeetingParticipant
         {
@@ -367,7 +368,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(p => p.Id == participantId && p.MeetingId == id);
 
         if (participant == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.ParticipantNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.ParticipantNotFound")));
 
         participant.IsDeleted = true;
         await _context.SaveChangesAsync();
@@ -387,7 +388,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(p => p.MeetingId == id && p.UserId == currentUserId);
 
         if (participant == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotInvited") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotInvited")));
 
         participant.Status = Enum.TryParse<ParticipantStatus>(dto.Status, out var ps) ? ps : ParticipantStatus.Accepted;
         participant.ResponseNote = dto.ResponseNote;
@@ -408,14 +409,14 @@ public class MeetingsApiController : ControllerBase
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Meeting.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
 
         // Max 10MB
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB")));
 
         var currentUserId = GetCurrentUserId();
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "meetings", id.ToString());
@@ -456,10 +457,10 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);
 
         if (attachment == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         if (!System.IO.File.Exists(attachment.FilePath))
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(attachment.FilePath);
         return File(fileBytes, attachment.ContentType ?? "application/octet-stream", attachment.FileName);
@@ -475,7 +476,7 @@ public class MeetingsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);
 
         if (attachment == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         attachment.IsDeleted = true;
         await _context.SaveChangesAsync();

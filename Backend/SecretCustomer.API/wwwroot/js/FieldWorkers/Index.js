@@ -22,6 +22,7 @@ function FieldWorkersViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
 
     // Data
     self.fieldWorkers = ko.observableArray([]);
@@ -54,12 +55,14 @@ function FieldWorkersViewModel() {
 
     // Create new field worker
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.editingFieldWorker(new FieldWorkerEditViewModel());
         self.isModalOpen(true);
     };
 
     // Edit existing field worker
     self.editFieldWorker = function(fieldWorker) {
+        self.modalErrorMessage('');
         self.editingFieldWorker(new FieldWorkerEditViewModel(fieldWorker));
         self.isModalOpen(true);
     };
@@ -146,7 +149,7 @@ function FieldWorkersViewModel() {
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Saha çalışanı kaydedilirken bir hata oluştu.');
+            self.modalErrorMessage(error.message || 'Saha çalışanı kaydedilirken bir hata oluştu.');
         })
         .finally(() => {
             self.isSaving(false);

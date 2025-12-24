@@ -11,7 +11,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/permissions")]
 [Authorize(Roles = "Admin")]
-public class PermissionsApiController : ControllerBase
+public class PermissionsApiController : BaseApiController
 {
     private readonly IPermissionService _permissionService;
     private readonly IUserService _userService;
@@ -24,7 +24,8 @@ public class PermissionsApiController : ControllerBase
         IUserService userService,
         ApplicationDbContext context,
         ILogger<PermissionsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _permissionService = permissionService;
         _userService = userService;
@@ -63,7 +64,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.LoadError"), ex));
         }
     }
 
@@ -96,7 +97,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions by category {Category}", category);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.LoadError"), ex));
         }
     }
 
@@ -142,7 +143,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading role permissions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError"), ex));
         }
     }
 
@@ -177,7 +178,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading permissions for role {Role}", role);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError"), ex));
         }
     }
 
@@ -217,7 +218,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error granting role permission");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RolePermissionUpdateError"), ex));
         }
     }
 
@@ -254,7 +255,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error bulk granting role permissions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.BulkAssignError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.BulkAssignError"), ex));
         }
     }
 
@@ -272,7 +273,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error revoking role permission");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeError"), ex));
         }
     }
 
@@ -286,7 +287,7 @@ public class PermissionsApiController : ControllerBase
         {
             var user = await _userService.GetByIdAsync(userId);
             if (user == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.User.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.NotFound")));
 
             // Rol yetkileri
             var rolePermissions = await _context.RolePermissions
@@ -354,7 +355,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading user permissions for {UserId}", userId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionLoadError"), ex));
         }
     }
 
@@ -398,7 +399,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error granting user permission");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionUpdateError"), ex));
         }
     }
 
@@ -416,7 +417,7 @@ public class PermissionsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error revoking user permission");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Permission.UserPermissionRevokeError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionRevokeError"), ex));
         }
     }
 

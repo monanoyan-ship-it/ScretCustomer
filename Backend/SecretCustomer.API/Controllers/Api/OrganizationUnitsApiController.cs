@@ -9,14 +9,15 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/organizationunits")]
 [Authorize]
-public class OrganizationUnitsApiController : ControllerBase
+public class OrganizationUnitsApiController : BaseApiController
 {
     private readonly IOrganizationService _organizationService;
     private readonly ILocalizationService _localizationService;
 
     public OrganizationUnitsApiController(
         IOrganizationService organizationService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _organizationService = organizationService;
         _localizationService = localizationService;
@@ -32,7 +33,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -46,7 +47,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -60,7 +61,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -72,13 +73,13 @@ public class OrganizationUnitsApiController : ControllerBase
             var unit = await _organizationService.GetOrganizationUnitByIdAsync(id);
             if (unit == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound")));
             }
             return Ok(unit);
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -92,7 +93,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -107,7 +108,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -122,7 +123,7 @@ public class OrganizationUnitsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -137,11 +138,11 @@ public class OrganizationUnitsApiController : ControllerBase
             {
                 return Ok(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.MoveSuccess") });
             }
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound")));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -156,11 +157,11 @@ public class OrganizationUnitsApiController : ControllerBase
             {
                 return Ok(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.DeleteSuccess") });
             }
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.OrganizationUnit.NotFound")));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 

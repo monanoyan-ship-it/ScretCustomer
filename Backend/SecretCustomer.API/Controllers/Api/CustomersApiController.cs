@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/customers")]
 [Authorize(Roles = "Admin")]
-public class CustomersApiController : ControllerBase
+public class CustomersApiController : BaseApiController
 {
     private readonly ICustomerService _customerService;
     private readonly ILogger<CustomersApiController> _logger;
@@ -17,7 +17,8 @@ public class CustomersApiController : ControllerBase
     public CustomersApiController(
         ICustomerService customerService,
         ILogger<CustomersApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _customerService = customerService;
         _logger = logger;
@@ -35,7 +36,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customers");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.LoadListError"), ex));
         }
     }
 
@@ -50,7 +51,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active customers");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.ActiveLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.ActiveLoadError"), ex));
         }
     }
 
@@ -62,7 +63,7 @@ public class CustomersApiController : ControllerBase
             var customer = await _customerService.GetByIdAsync(id);
             if (customer == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Customer.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.NotFound")));
             }
 
             return Ok(customer);
@@ -70,7 +71,7 @@ public class CustomersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customer {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.LoadError"), ex));
         }
     }
 
@@ -90,12 +91,12 @@ public class CustomersApiController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while creating customer");
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating customer");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.CreateError"), ex));
         }
     }
 
@@ -115,17 +116,17 @@ public class CustomersApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Customer {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while updating customer {Id}", id);
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating customer {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.UpdateError"), ex));
         }
     }
 
@@ -140,12 +141,12 @@ public class CustomersApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Customer {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting customer {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Customer.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.DeleteError"), ex));
         }
     }
 }

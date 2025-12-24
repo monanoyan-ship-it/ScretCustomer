@@ -12,7 +12,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/visit-details")]
 [Authorize]
-public class VisitDetailsApiController : ControllerBase
+public class VisitDetailsApiController : BaseApiController
 {
     private readonly IVisitDetailService _visitDetailService;
     private readonly ILogger<VisitDetailsApiController> _logger;
@@ -21,7 +21,8 @@ public class VisitDetailsApiController : ControllerBase
     public VisitDetailsApiController(
         IVisitDetailService visitDetailService,
         ILogger<VisitDetailsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _visitDetailService = visitDetailService;
         _logger = logger;
@@ -44,7 +45,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting sectors");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorsLoadError"), ex));
         }
     }
 
@@ -58,13 +59,13 @@ public class VisitDetailsApiController : ControllerBase
         {
             var sector = await _visitDetailService.GetSectorByIdAsync(id);
             if (sector == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorNotFound")));
             return Ok(sector);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting sector {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorLoadError"), ex));
         }
     }
 
@@ -82,12 +83,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating sector");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorCreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorCreateError"), ex));
         }
     }
 
@@ -105,16 +106,16 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating sector {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorUpdateError"), ex));
         }
     }
 
@@ -132,16 +133,16 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting sector {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SectorDeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SectorDeleteError"), ex));
         }
     }
 
@@ -163,7 +164,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting field definitions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError"), ex));
         }
     }
 
@@ -181,7 +182,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting field definitions for sector {SectorId}", sectorId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError"), ex));
         }
     }
 
@@ -199,7 +200,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting common field definitions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError"), ex));
         }
     }
 
@@ -217,7 +218,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting field definitions for visit");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError"), ex));
         }
     }
 
@@ -235,7 +236,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting grouped field definitions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldsLoadError"), ex));
         }
     }
 
@@ -249,13 +250,13 @@ public class VisitDetailsApiController : ControllerBase
         {
             var field = await _visitDetailService.GetFieldDefinitionByIdAsync(id);
             if (field == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldNotFound")));
             return Ok(field);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting field definition {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldLoadError"), ex));
         }
     }
 
@@ -273,16 +274,16 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating field definition");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldCreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldCreateError"), ex));
         }
     }
 
@@ -300,16 +301,16 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating field definition {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldUpdateError"), ex));
         }
     }
 
@@ -327,16 +328,16 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting field definition {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldDeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldDeleteError"), ex));
         }
     }
 
@@ -357,12 +358,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting visit details for {CustomerVisitId}", customerVisitId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.DetailsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.DetailsLoadError"), ex));
         }
     }
 
@@ -379,12 +380,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting visit summary for {CustomerVisitId}", customerVisitId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.SummaryLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.SummaryLoadError"), ex));
         }
     }
 
@@ -404,12 +405,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving visit details for {CustomerVisitId}", dto.CustomerVisitId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.DetailsSaveError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.DetailsSaveError"), ex));
         }
     }
 
@@ -428,12 +429,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating field {FieldDefinitionId} for visit {CustomerVisitId}", fieldDefinitionId, customerVisitId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FieldValueUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FieldValueUpdateError"), ex));
         }
     }
 
@@ -458,7 +459,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error filtering visits by field {FieldDefinitionId}", fieldDefinitionId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.FilterError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.FilterError"), ex));
         }
     }
 
@@ -479,12 +480,12 @@ public class VisitDetailsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting statistics for field {FieldDefinitionId}", fieldDefinitionId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.StatisticsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.StatisticsLoadError"), ex));
         }
     }
 
@@ -502,7 +503,7 @@ public class VisitDetailsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error comparing visits");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.VisitDetail.CompareError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.VisitDetail.CompareError"), ex));
         }
     }
 

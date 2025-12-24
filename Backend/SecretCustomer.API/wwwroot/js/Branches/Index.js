@@ -26,6 +26,7 @@ function BranchesViewModel() {
 
     // Modal state
     self.isModalOpen = ko.observable(false);
+    self.modalErrorMessage = ko.observable('');
 
     // Load branches
     self.loadBranches = function() {
@@ -51,12 +52,14 @@ function BranchesViewModel() {
 
     // Create new branch
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.editingBranch(new BranchEditViewModel());
         self.isModalOpen(true);
     };
 
     // Edit existing branch
     self.editBranch = function(branch) {
+        self.modalErrorMessage('');
         self.editingBranch(new BranchEditViewModel(branch));
         self.isModalOpen(true);
     };
@@ -111,7 +114,7 @@ function BranchesViewModel() {
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || T('Branch.SaveError', 'Şube kaydedilirken bir hata oluştu.'));
+            self.modalErrorMessage(error.message || T('Branch.SaveError', 'Şube kaydedilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);
@@ -142,6 +145,7 @@ function BranchesViewModel() {
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingBranch(null);
+        self.modalErrorMessage('');
     };
 
     // Initialize

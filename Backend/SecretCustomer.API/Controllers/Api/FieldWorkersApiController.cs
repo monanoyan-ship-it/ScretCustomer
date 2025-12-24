@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/fieldworkers")]
 [Authorize(Roles = "Admin")]
-public class FieldWorkersApiController : ControllerBase
+public class FieldWorkersApiController : BaseApiController
 {
     private readonly IFieldWorkerService _fieldWorkerService;
     private readonly ILogger<FieldWorkersApiController> _logger;
@@ -17,7 +17,8 @@ public class FieldWorkersApiController : ControllerBase
     public FieldWorkersApiController(
         IFieldWorkerService fieldWorkerService,
         ILogger<FieldWorkersApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _fieldWorkerService = fieldWorkerService;
         _logger = logger;
@@ -35,7 +36,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading field workers");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.LoadListError"), ex));
         }
     }
 
@@ -47,7 +48,7 @@ public class FieldWorkersApiController : ControllerBase
             var fieldWorker = await _fieldWorkerService.GetByIdAsync(id);
             if (fieldWorker == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.NotFound")));
             }
 
             return Ok(fieldWorker);
@@ -55,7 +56,7 @@ public class FieldWorkersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading field worker {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.LoadError"), ex));
         }
     }
 
@@ -75,12 +76,12 @@ public class FieldWorkersApiController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while creating field worker");
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating field worker");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.CreateError"), ex));
         }
     }
 
@@ -101,17 +102,17 @@ public class FieldWorkersApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Field worker {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while updating field worker {Id}", id);
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating field worker {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.UpdateError"), ex));
         }
     }
 
@@ -126,12 +127,12 @@ public class FieldWorkersApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Field worker {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting field worker {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.FieldWorker.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.FieldWorker.DeleteError"), ex));
         }
     }
 }

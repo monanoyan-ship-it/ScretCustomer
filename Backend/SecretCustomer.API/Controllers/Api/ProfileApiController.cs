@@ -9,7 +9,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/profile")]
 [Authorize]
-public class ProfileApiController : ControllerBase
+public class ProfileApiController : BaseApiController
 {
     private readonly IAuthService _authService;
     private readonly ILogger<ProfileApiController> _logger;
@@ -18,7 +18,8 @@ public class ProfileApiController : ControllerBase
     public ProfileApiController(
         IAuthService authService,
         ILogger<ProfileApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _authService = authService;
         _logger = logger;
@@ -43,14 +44,14 @@ public class ProfileApiController : ControllerBase
             var profile = await _authService.GetProfileAsync(userId);
 
             if (profile == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Profile.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
 
             return Ok(profile);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting profile");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.LoadError"), ex));
         }
     }
 
@@ -69,18 +70,18 @@ public class ProfileApiController : ControllerBase
             var updatedProfile = await _authService.UpdateProfileAsync(userId, dto);
 
             if (updatedProfile == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Profile.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
 
             return Ok(updatedProfile);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating profile");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.UpdateError"), ex));
         }
     }
 
@@ -106,7 +107,7 @@ public class ProfileApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error changing password");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError"), ex));
         }
     }
 }

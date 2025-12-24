@@ -13,7 +13,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/calls")]
 [Authorize]
-public class CallsApiController : ControllerBase
+public class CallsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<CallsApiController> _logger;
@@ -24,7 +24,8 @@ public class CallsApiController : ControllerBase
         ApplicationDbContext context,
         ILogger<CallsApiController> logger,
         IWebHostEnvironment env,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _logger = logger;
@@ -154,7 +155,7 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         var dto = MapToDto(call);
         return Ok(dto);
@@ -204,7 +205,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.CallType = Enum.TryParse<CallType>(dto.CallType, out var ct) ? ct : CallType.Inbound;
         call.Status = Enum.TryParse<CallStatus>(dto.Status, out var st) ? st : CallStatus.Pending;
@@ -239,7 +240,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.IsDeleted = true;
         await _context.SaveChangesAsync();
@@ -255,7 +256,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.Status = CallStatus.InProgress;
         call.StartTime = dto?.StartTime ?? DateTime.UtcNow;
@@ -272,7 +273,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.Status = CallStatus.Completed;
         call.EndTime = dto.EndTime ?? DateTime.UtcNow;
@@ -305,7 +306,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.Status = CallStatus.Missed;
         await _context.SaveChangesAsync();
@@ -321,7 +322,7 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         call.CallbackCompleted = true;
         await _context.SaveChangesAsync();
@@ -339,14 +340,14 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
 
         // Max 100MB for recordings
         if (file.Length > 100 * 1024 * 1024)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded100MB") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded100MB")));
 
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "calls", "recordings", id.ToString());
         Directory.CreateDirectory(uploadsPath);
@@ -374,10 +375,10 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         if (string.IsNullOrEmpty(call.RecordingPath) || !System.IO.File.Exists(call.RecordingPath))
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.RecordingNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.RecordingNotFound")));
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(call.RecordingPath);
         var contentType = "audio/mpeg";
@@ -398,13 +399,13 @@ public class CallsApiController : ControllerBase
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Call.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Call.NotFound")));
 
         if (file == null || file.Length == 0)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
 
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded10MB")));
 
         var currentUserId = GetCurrentUserId();
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "calls", id.ToString());
@@ -445,10 +446,10 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);
 
         if (attachment == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         if (!System.IO.File.Exists(attachment.FilePath))
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(attachment.FilePath);
         return File(fileBytes, attachment.ContentType ?? "application/octet-stream", attachment.FileName);
@@ -464,7 +465,7 @@ public class CallsApiController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);
 
         if (attachment == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
         attachment.IsDeleted = true;
         await _context.SaveChangesAsync();

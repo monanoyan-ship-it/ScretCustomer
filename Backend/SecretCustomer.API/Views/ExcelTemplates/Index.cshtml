@@ -103,6 +103,13 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("ExcelTemplate.TemplateName", "Şablon Adı") <span class="text-danger">*</span></label>
@@ -250,6 +257,13 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeImportModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>@Html.T("Common.Note", "Not"):</strong> @Html.T("ExcelTemplate.ImportNote", "Excel dosyanız şablon yapısına uygun olmalıdır. Önce \"Örnek Excel İndir\" butonunu kullanarak şablonu indirin.")

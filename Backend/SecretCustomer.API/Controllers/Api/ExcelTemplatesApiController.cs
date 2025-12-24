@@ -11,14 +11,15 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/excel-templates")]
 [Authorize]
-public class ExcelTemplatesApiController : ControllerBase
+public class ExcelTemplatesApiController : BaseApiController
 {
     private readonly IExcelTemplateService _excelTemplateService;
     private readonly ILocalizationService _localizationService;
 
     public ExcelTemplatesApiController(
         IExcelTemplateService excelTemplateService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _excelTemplateService = excelTemplateService;
         _localizationService = localizationService;
@@ -58,7 +59,7 @@ public class ExcelTemplatesApiController : ControllerBase
 
         if (template == null)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound")));
         }
 
         var dto = MapToDto(template);
@@ -124,7 +125,7 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
     }
 
@@ -174,11 +175,11 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
     }
 
@@ -192,7 +193,7 @@ public class ExcelTemplatesApiController : ControllerBase
 
         if (!result)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.ExcelTemplate.NotFound")));
         }
 
         return NoContent();
@@ -218,11 +219,11 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.GenerationFailed"), ex.Message) });
+            return StatusCode(500, CreateErrorResponse(string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.GenerationFailed"), ex.Message), ex));
         }
     }
 
@@ -236,12 +237,12 @@ public class ExcelTemplatesApiController : ControllerBase
     {
         if (file == null || file.Length == 0)
         {
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
         }
 
         if (!file.FileName.EndsWith(".xlsx") && !file.FileName.EndsWith(".xls"))
         {
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.ExcelTemplate.OnlyExcelAllowed") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.ExcelTemplate.OnlyExcelAllowed")));
         }
 
         try
@@ -273,11 +274,11 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.ParsingFailed"), ex.Message) });
+            return StatusCode(500, CreateErrorResponse(string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.ParsingFailed"), ex.Message), ex));
         }
     }
 
@@ -335,7 +336,7 @@ public class ExcelTemplatesApiController : ControllerBase
                         dto.TemplateName, dto.Description);
                     break;
                 default:
-                    return BadRequest(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), dto.EntityType) });
+                    return BadRequest(CreateErrorResponse(string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), dto.EntityType)));
             }
 
             var resultDto = MapToDto(template);
@@ -344,7 +345,7 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
     }
 
@@ -391,12 +392,12 @@ public class ExcelTemplatesApiController : ControllerBase
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Answer>();
                     break;
                 default:
-                    return BadRequest(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), entityType) });
+                    return BadRequest(CreateErrorResponse(string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.UnsupportedEntityType"), entityType)));
             }
 
             if (!columns.Any())
             {
-                return NotFound(new { message = string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.NoAttributesFound"), entityType) });
+                return NotFound(CreateErrorResponse(string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.NoAttributesFound"), entityType)));
             }
 
             var dtos = columns.Select(c => new ExcelColumnDto
@@ -420,7 +421,7 @@ public class ExcelTemplatesApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = ex.Message });
+            return StatusCode(500, CreateErrorResponse(ex.Message, ex));
         }
     }
 

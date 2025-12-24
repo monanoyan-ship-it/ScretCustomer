@@ -24,6 +24,20 @@ public class ProjectService : IProjectService
         _context = context;
     }
 
+    // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
+    private static DateTime ToUtc(DateTime dateTime)
+    {
+        if (dateTime.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+    }
+
     public async Task<ProjectDto?> GetByIdAsync(Guid id)
     {
         var project = await _context.Projects
@@ -125,8 +139,8 @@ public class ProjectService : IProjectService
             ProjectType = Enum.TryParse<ProjectType>(dto.ProjectType, out var pt) ? pt : ProjectType.MysteryShopping,
             Status = ProjectStatus.Draft,
             AssignmentType = Enum.TryParse<AssignmentType>(dto.AssignmentType, out var at) ? at : AssignmentType.InternalBranch,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
+            StartDate = ToUtc(dto.StartDate),
+            EndDate = ToUtc(dto.EndDate),
             IsActive = true,
             TargetCount = dto.TargetCount,
             DailyQuota = dto.DailyQuota,
@@ -201,8 +215,8 @@ public class ProjectService : IProjectService
         project.ChecklistId = dto.ChecklistId;
         project.ProjectType = Enum.TryParse<ProjectType>(dto.ProjectType, out var pt) ? pt : project.ProjectType;
         project.AssignmentType = Enum.TryParse<AssignmentType>(dto.AssignmentType, out var at) ? at : project.AssignmentType;
-        project.StartDate = dto.StartDate;
-        project.EndDate = dto.EndDate;
+        project.StartDate = ToUtc(dto.StartDate);
+        project.EndDate = ToUtc(dto.EndDate);
         project.TargetCount = dto.TargetCount;
         project.DailyQuota = dto.DailyQuota;
         project.WeeklyQuota = dto.WeeklyQuota;

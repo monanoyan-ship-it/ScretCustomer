@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/branches")]
 [Authorize(Roles = "Admin")]
-public class BranchesApiController : ControllerBase
+public class BranchesApiController : BaseApiController
 {
     private readonly IBranchService _branchService;
     private readonly ILogger<BranchesApiController> _logger;
@@ -17,7 +17,8 @@ public class BranchesApiController : ControllerBase
     public BranchesApiController(
         IBranchService branchService,
         ILogger<BranchesApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _branchService = branchService;
         _logger = logger;
@@ -35,7 +36,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading branches");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.LoadListError"), ex));
         }
     }
 
@@ -50,7 +51,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active branches");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.ActiveLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.ActiveLoadError"), ex));
         }
     }
 
@@ -62,7 +63,7 @@ public class BranchesApiController : ControllerBase
             var branch = await _branchService.GetByIdAsync(id);
             if (branch == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Branch.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.NotFound")));
             }
 
             return Ok(branch);
@@ -70,7 +71,7 @@ public class BranchesApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading branch {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.LoadError"), ex));
         }
     }
 
@@ -90,12 +91,12 @@ public class BranchesApiController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while creating branch");
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating branch");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.CreateError"), ex));
         }
     }
 
@@ -115,17 +116,17 @@ public class BranchesApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Branch {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation error while updating branch {Id}", id);
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating branch {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.UpdateError"), ex));
         }
     }
 
@@ -140,12 +141,12 @@ public class BranchesApiController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Branch {Id} not found", id);
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting branch {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Branch.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Branch.DeleteError"), ex));
         }
     }
 }

@@ -282,6 +282,13 @@
                     <button type="button" class="btn-close" data-bind="click: closeEditModal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: editingProject" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="row">
                         <!-- Left Column -->
                         <div class="col-lg-8">

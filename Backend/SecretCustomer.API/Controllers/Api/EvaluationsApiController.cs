@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/evaluations")]
-public class EvaluationsApiController : ControllerBase
+public class EvaluationsApiController : BaseApiController
 {
     private readonly IEvaluationService _evaluationService;
     private readonly ILogger<EvaluationsApiController> _logger;
@@ -17,7 +17,8 @@ public class EvaluationsApiController : ControllerBase
     public EvaluationsApiController(
         IEvaluationService evaluationService,
         ILogger<EvaluationsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _evaluationService = evaluationService;
         _logger = logger;
@@ -39,7 +40,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading all evaluations");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
         }
     }
 
@@ -54,14 +55,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var evaluation = await _evaluationService.GetByIdAsync(id);
             if (evaluation == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
 
             return Ok(evaluation);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation {EvaluationId}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
 
@@ -80,7 +81,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation for assignment {AssignmentId}", assignmentId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
 
@@ -99,7 +100,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for project {ProjectId}", projectId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
         }
     }
 
@@ -115,7 +116,7 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
 
             var evaluations = await _evaluationService.GetByEvaluatorIdAsync(userId);
@@ -124,7 +125,7 @@ public class EvaluationsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for current user");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
         }
     }
 
@@ -139,14 +140,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var form = await _evaluationService.GetEvaluationFormAsync(assignmentId);
             if (form == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.AssignmentNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.AssignmentNotFound")));
 
             return Ok(form);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation form for assignment {AssignmentId}", assignmentId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError"), ex));
         }
     }
 
@@ -161,14 +162,14 @@ public class EvaluationsApiController : ControllerBase
         {
             var form = await _evaluationService.GetExistingEvaluationFormAsync(evaluationId);
             if (form == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
 
             return Ok(form);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading existing evaluation form {EvaluationId}", evaluationId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError"), ex));
         }
     }
 
@@ -196,16 +197,16 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting evaluation for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.StartError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.StartError"), ex));
         }
     }
 
@@ -237,12 +238,12 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error submitting evaluation for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.SubmitError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.SubmitError"), ex));
         }
     }
 
@@ -274,12 +275,12 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving draft for assignment {AssignmentId}", dto.AssignmentId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveError"), ex));
         }
     }
 
@@ -301,16 +302,16 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating draft {EvaluationId}", dto.EvaluationId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.DraftUpdateError"), ex));
         }
     }
 
@@ -327,7 +328,7 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
 
             var evaluation = await _evaluationService.RevertToDraftAsync(id, userId, request?.Reason);
@@ -339,16 +340,16 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error reverting evaluation {EvaluationId} to draft", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.RevertToDraftError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.RevertToDraftError"), ex));
         }
     }
 
@@ -364,7 +365,7 @@ public class EvaluationsApiController : ControllerBase
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound") });
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
 
             var evaluation = await _evaluationService.CancelEvaluationAsync(id, userId, request?.Reason);
@@ -376,16 +377,16 @@ public class EvaluationsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling evaluation {EvaluationId}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Evaluation.CancelError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.CancelError"), ex));
         }
     }
 }

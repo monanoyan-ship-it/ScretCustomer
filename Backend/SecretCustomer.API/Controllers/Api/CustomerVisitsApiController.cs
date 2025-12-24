@@ -13,7 +13,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/customer-visits")]
 [Authorize]
-public class CustomerVisitsApiController : ControllerBase
+public class CustomerVisitsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
@@ -27,7 +27,8 @@ public class CustomerVisitsApiController : ControllerBase
         ApplicationDbContext context,
         IWebHostEnvironment environment,
         ILogger<CustomerVisitsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _environment = environment;
@@ -98,7 +99,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting customer visits");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadError"), ex));
         }
     }
 
@@ -119,7 +120,7 @@ public class CustomerVisitsApiController : ControllerBase
                 .FirstOrDefaultAsync(v => v.Id == id);
 
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             var dto = new CustomerVisitDto
             {
@@ -174,7 +175,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadSingleError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.LoadSingleError"), ex));
         }
     }
 
@@ -189,7 +190,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.Common.UserNotFound") });
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
 
             var visit = new CustomerVisit
             {
@@ -218,7 +219,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating customer visit");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.CreateError"), ex));
         }
     }
 
@@ -233,7 +234,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.CustomerId = dto.CustomerId;
             visit.BranchId = dto.BranchId;
@@ -257,7 +258,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.UpdateError"), ex));
         }
     }
 
@@ -271,7 +272,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.Status = VisitStatus.InProgress;
             visit.StartTime = DateTime.UtcNow;
@@ -287,7 +288,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.StartError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.StartError"), ex));
         }
     }
 
@@ -301,7 +302,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.Status = VisitStatus.Completed;
             visit.ActualDate = dto.ActualDate ?? DateTime.UtcNow;
@@ -334,7 +335,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error completing customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CompleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.CompleteError"), ex));
         }
     }
 
@@ -348,7 +349,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.Status = VisitStatus.Cancelled;
             visit.Notes = string.IsNullOrEmpty(reason)
@@ -365,7 +366,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.CancelError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.CancelError"), ex));
         }
     }
 
@@ -380,7 +381,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(id);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.IsDeleted = true;
             visit.UpdatedAt = DateTime.UtcNow;
@@ -393,7 +394,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting customer visit {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.DeleteError"), ex));
         }
     }
 
@@ -407,17 +408,17 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var visit = await _context.CustomerVisits.FindAsync(visitId);
             if (visit == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             if (file == null || file.Length == 0)
-                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
 
             if (file.Length > MaxFileSize)
-                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded50MB") });
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileSizeExceeded50MB")));
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(extension))
-                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileTypeNotSupported") });
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileTypeNotSupported")));
 
             // Determine attachment type from extension if not provided
             var type = attachmentType ?? (extension switch
@@ -480,7 +481,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading attachment for visit {VisitId}", visitId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileUploadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileUploadError"), ex));
         }
     }
 
@@ -494,11 +495,11 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var attachment = await _context.CustomerVisitAttachments.FindAsync(id);
             if (attachment == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
             var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
             if (!System.IO.File.Exists(filePath))
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer")));
 
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
             return File(fileBytes, attachment.ContentType, attachment.FileName);
@@ -506,7 +507,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDownloadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDownloadError"), ex));
         }
     }
 
@@ -520,7 +521,7 @@ public class CustomerVisitsApiController : ControllerBase
         {
             var attachment = await _context.CustomerVisitAttachments.FindAsync(id);
             if (attachment == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
 
             // Delete physical file
             var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
@@ -539,7 +540,7 @@ public class CustomerVisitsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDeleteError"), ex));
         }
     }
 }

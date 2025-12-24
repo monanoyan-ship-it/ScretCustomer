@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
-public class AppSettingsApiController : ControllerBase
+public class AppSettingsApiController : BaseApiController
 {
     private readonly IAppSettingsService _settingsService;
     private readonly ILogger<AppSettingsApiController> _logger;
@@ -17,7 +17,8 @@ public class AppSettingsApiController : ControllerBase
     public AppSettingsApiController(
         IAppSettingsService settingsService,
         ILogger<AppSettingsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _settingsService = settingsService;
         _logger = logger;
@@ -51,7 +52,7 @@ public class AppSettingsApiController : ControllerBase
     {
         var setting = await _settingsService.GetByKeyAsync(key);
         if (setting == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.NotFound")));
 
         return Ok(setting);
     }
@@ -60,11 +61,11 @@ public class AppSettingsApiController : ControllerBase
     public async Task<IActionResult> Create([FromBody] AppSettingsDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Key))
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.KeyRequired") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.KeyRequired")));
 
         var existing = await _settingsService.GetByKeyAsync(dto.Key);
         if (existing != null)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.KeyExists") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.KeyExists")));
 
         var setting = await _settingsService.SetAsync(
             dto.Key,
@@ -84,7 +85,7 @@ public class AppSettingsApiController : ControllerBase
     {
         var existing = await _settingsService.GetByKeyAsync(key);
         if (existing == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.NotFound")));
 
         var setting = await _settingsService.SetAsync(
             key,
@@ -104,10 +105,10 @@ public class AppSettingsApiController : ControllerBase
     {
         var existing = await _settingsService.GetByKeyAsync(key);
         if (existing == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.NotFound")));
 
         if (existing.IsSystem)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.SystemCannotDelete") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.AppSettings.SystemCannotDelete")));
 
         await _settingsService.DeleteAsync(key);
 

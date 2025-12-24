@@ -7,6 +7,7 @@
         self.isSaving = ko.observable(false);
         self.errorMessage = ko.observable('');
         self.successMessage = ko.observable('');
+        self.modalErrorMessage = ko.observable('');
 
         // ==================== DATA ====================
         self.calls = ko.observableArray([]);
@@ -193,6 +194,7 @@
 
         // ==================== CREATE/EDIT MODAL ====================
         self.createNew = function() {
+            self.modalErrorMessage('');
             self.editingCall({
                 id: ko.observable(null),
                 callType: ko.observable('Inbound'),
@@ -220,6 +222,7 @@
 
         self.editCall = function(call) {
             // Load full call data for editing
+            self.modalErrorMessage('');
             fetch('/api/calls/' + call.id)
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
@@ -301,12 +304,12 @@
                     setTimeout(function() { self.successMessage(''); }, 3000);
                 } else {
                     return response.json().then(function(err) {
-                        self.errorMessage(err.message || 'Bir hata oluştu.');
+                        self.modalErrorMessage(err.message || 'Bir hata oluştu.');
                     });
                 }
             })
             .catch(function(error) {
-                self.errorMessage('İşlem sırasında hata oluştu.');
+                self.modalErrorMessage('İşlem sırasında hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);

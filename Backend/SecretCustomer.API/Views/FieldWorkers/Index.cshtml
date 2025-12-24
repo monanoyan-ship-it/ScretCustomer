@@ -90,6 +90,13 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("FieldWorker.FirstName", "Ad") <span class="text-danger">*</span></label>

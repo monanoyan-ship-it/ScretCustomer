@@ -15,6 +15,14 @@ public class PersonnelService : IPersonnelService
         _context = context;
     }
 
+    // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
     public async Task<PagedPersonnelResult> GetAllAsync(PersonnelFilterDto filter)
     {
         var query = _context.Personnel
@@ -131,8 +139,8 @@ public class PersonnelService : IPersonnelService
             SicilNo = dto.SicilNo,
             Title = dto.Title,
             Gender = dto.Gender,
-            BirthDate = dto.BirthDate,
-            HireDate = dto.HireDate,
+            BirthDate = ToUtc(dto.BirthDate),
+            HireDate = ToUtc(dto.HireDate),
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
             Department = dto.Department,
@@ -168,8 +176,8 @@ public class PersonnelService : IPersonnelService
         personnel.SicilNo = dto.SicilNo;
         personnel.Title = dto.Title;
         personnel.Gender = dto.Gender;
-        personnel.BirthDate = dto.BirthDate;
-        personnel.HireDate = dto.HireDate;
+        personnel.BirthDate = ToUtc(dto.BirthDate);
+        personnel.HireDate = ToUtc(dto.HireDate);
         personnel.Email = dto.Email;
         personnel.PhoneNumber = dto.PhoneNumber;
         personnel.Department = dto.Department;

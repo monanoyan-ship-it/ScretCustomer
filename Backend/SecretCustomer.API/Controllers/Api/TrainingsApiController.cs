@@ -16,7 +16,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [Route("api/trainings")]
 [ApiController]
 [Authorize]
-public class TrainingsApiController : ControllerBase
+public class TrainingsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _env;
@@ -25,7 +25,8 @@ public class TrainingsApiController : ControllerBase
     public TrainingsApiController(
         ApplicationDbContext context,
         IWebHostEnvironment env,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _env = env;
@@ -386,13 +387,13 @@ public class TrainingsApiController : ControllerBase
             return NotFound();
 
         if (training.MaxParticipants.HasValue && training.Participants.Count(p => !p.IsDeleted) >= training.MaxParticipants.Value)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Training.MaxParticipantsReached") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Training.MaxParticipantsReached")));
 
         if (dto.UserId.HasValue)
         {
             var exists = await _context.TrainingParticipants.AnyAsync(p => p.TrainingId == id && p.UserId == dto.UserId && !p.IsDeleted);
             if (exists)
-                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Training.ParticipantAlreadyExists") });
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Training.ParticipantAlreadyExists")));
         }
 
         var participant = new TrainingParticipant

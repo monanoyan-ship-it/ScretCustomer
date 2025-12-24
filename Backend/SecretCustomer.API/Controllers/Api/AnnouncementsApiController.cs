@@ -13,7 +13,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/announcements")]
 [Authorize]
-public class AnnouncementsApiController : ControllerBase
+public class AnnouncementsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<AnnouncementsApiController> _logger;
@@ -22,7 +22,8 @@ public class AnnouncementsApiController : ControllerBase
     public AnnouncementsApiController(
         ApplicationDbContext context,
         ILogger<AnnouncementsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _logger = logger;
@@ -85,7 +86,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting announcements");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
 
@@ -127,7 +128,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting dashboard announcements");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
 
@@ -145,7 +146,7 @@ public class AnnouncementsApiController : ControllerBase
 
             if (announcement == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.NotFound")));
             }
 
             return Ok(new AnnouncementDto
@@ -170,7 +171,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting announcement {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadSingleError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadSingleError"), ex));
         }
     }
 
@@ -211,7 +212,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting all announcements for admin");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
 
@@ -270,7 +271,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating announcement");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.CreateError"), ex));
         }
     }
 
@@ -286,7 +287,7 @@ public class AnnouncementsApiController : ControllerBase
             var announcement = await _context.Announcements.FindAsync(id);
             if (announcement == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.NotFound")));
             }
 
             announcement.Title = dto.Title;
@@ -310,7 +311,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating announcement {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.UpdateError"), ex));
         }
     }
 
@@ -326,7 +327,7 @@ public class AnnouncementsApiController : ControllerBase
             var announcement = await _context.Announcements.FindAsync(id);
             if (announcement == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Announcement.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.NotFound")));
             }
 
             announcement.IsDeleted = true;
@@ -340,7 +341,7 @@ public class AnnouncementsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting announcement {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Announcement.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.DeleteError"), ex));
         }
     }
 }

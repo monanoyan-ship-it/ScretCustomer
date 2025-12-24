@@ -6,6 +6,7 @@ function PermissionsViewModel() {
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.successMessage = ko.observable('');
 
     // Data
@@ -227,6 +228,7 @@ function PermissionsViewModel() {
         self.newUserPermission.validFrom('');
         self.newUserPermission.validUntil('');
         self.newUserPermission.notes('');
+        self.modalErrorMessage('');
 
         if (!self.userPermissionModal) {
             self.userPermissionModal = new bootstrap.Modal(document.getElementById('addUserPermissionModal'));
@@ -237,12 +239,12 @@ function PermissionsViewModel() {
     // Add user permission
     self.addUserPermission = function() {
         if (!self.selectedUser() || !self.newUserPermission.permissionId()) {
-            self.errorMessage('Lütfen bir yetki seçin.');
+            self.modalErrorMessage('Lütfen bir yetki seçin.');
             return;
         }
 
         self.isSaving(true);
-        self.errorMessage('');
+        self.modalErrorMessage('');
 
         var dto = {
             userId: self.selectedUser().id,
@@ -275,7 +277,7 @@ function PermissionsViewModel() {
         })
         .catch(function(error) {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Yetki eklenirken bir hata oluştu.');
+            self.modalErrorMessage(error.message || 'Yetki eklenirken bir hata oluştu.');
         })
         .finally(function() {
             self.isSaving(false);

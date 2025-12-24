@@ -16,13 +16,13 @@ namespace SecretCustomer.API.Controllers.Api;
 [Route("api/approvals")]
 [ApiController]
 [Authorize]
-public class ApprovalsApiController : ControllerBase
+public class ApprovalsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
     private readonly IAuditLogService _auditLogService;
 
-    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService, IAuditLogService auditLogService)
+    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService, IAuditLogService auditLogService, IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _localizationService = localizationService;
@@ -241,7 +241,7 @@ public class ApprovalsApiController : ControllerBase
             return NotFound();
 
         if (approval.Status != ApprovalStatus.Pending)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Approval.AlreadyResponded") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Approval.AlreadyResponded")));
 
         var userId = GetCurrentUserId();
 
@@ -291,7 +291,7 @@ public class ApprovalsApiController : ControllerBase
             return Forbid();
 
         if (approval.Status != ApprovalStatus.Pending)
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Approval.CannotCancel") });
+            return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Approval.CannotCancel")));
 
         approval.Status = ApprovalStatus.Cancelled;
         await _context.SaveChangesAsync();

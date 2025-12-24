@@ -109,6 +109,13 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Customer.CompanyName", "Şirket Adı") <span class="text-danger">*</span></label>
@@ -196,6 +203,13 @@
                     <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { modalErrorMessage(''); }"></button>
+                    </div>
+
                     <!-- Password Reset Form (Inline) -->
                     <div data-bind="visible: showChangePasswordModal" class="card border-primary mb-3">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -321,6 +335,13 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closePersonnelFormModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
@@ -407,6 +428,7 @@
 </div> <!-- End of customers-app -->
 
 @section Scripts {
+    <script src="~/js/Shared/app.config.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
     <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/Shared/customer.api.service.js"></script>

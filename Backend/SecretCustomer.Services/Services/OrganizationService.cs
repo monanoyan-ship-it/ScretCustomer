@@ -16,6 +16,20 @@ public class OrganizationService : IOrganizationService
         _context = context;
     }
 
+    // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
+    private static DateTime ToUtc(DateTime dateTime)
+    {
+        if (dateTime.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+    }
+
     #region OrganizationUnit Methods
 
     public async Task<List<OrganizationUnitDto>> GetAllOrganizationUnitsAsync()
@@ -542,8 +556,8 @@ public class OrganizationService : IOrganizationService
             DelegatorOrganizationUnitId = dto.DelegatorOrganizationUnitId,
             DelegateeUserId = dto.DelegateeUserId,
             DelegateeOrganizationUnitId = dto.DelegateeOrganizationUnitId,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
+            StartDate = ToUtc(dto.StartDate),
+            EndDate = ToUtc(dto.EndDate),
             IsActive = true,
             DelegationType = dto.DelegationType,
             PermissionScope = dto.PermissionScope,
@@ -575,8 +589,8 @@ public class OrganizationService : IOrganizationService
         delegation.Description = dto.Description;
         delegation.DelegateeUserId = dto.DelegateeUserId;
         delegation.DelegateeOrganizationUnitId = dto.DelegateeOrganizationUnitId;
-        delegation.StartDate = dto.StartDate;
-        delegation.EndDate = dto.EndDate;
+        delegation.StartDate = ToUtc(dto.StartDate);
+        delegation.EndDate = ToUtc(dto.EndDate);
         delegation.IsActive = dto.IsActive;
         delegation.DelegationType = dto.DelegationType;
         delegation.PermissionScope = dto.PermissionScope;

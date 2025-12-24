@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/projects")]
 [Authorize]
-public class ProjectsApiController : ControllerBase
+public class ProjectsApiController : BaseApiController
 {
     private readonly IProjectService _projectService;
     private readonly ILogger<ProjectsApiController> _logger;
@@ -17,7 +17,8 @@ public class ProjectsApiController : ControllerBase
     public ProjectsApiController(
         IProjectService projectService,
         ILogger<ProjectsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _projectService = projectService;
         _logger = logger;
@@ -41,7 +42,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading projects");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.LoadListError"), ex));
         }
     }
 
@@ -60,7 +61,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project summaries");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.SummaryLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.SummaryLoadError"), ex));
         }
     }
 
@@ -76,14 +77,14 @@ public class ProjectsApiController : ControllerBase
             var project = await _projectService.GetByIdAsync(id);
             if (project == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
             return Ok(project);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.LoadError"), ex));
         }
     }
 
@@ -99,14 +100,14 @@ public class ProjectsApiController : ControllerBase
             var project = await _projectService.GetDetailByIdAsync(id);
             if (project == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
             return Ok(project);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project detail {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.DetailLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.DetailLoadError"), ex));
         }
     }
 
@@ -130,7 +131,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating project");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CreateError"), error = ex.Message });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CreateError"), ex));
         }
     }
 
@@ -151,14 +152,14 @@ public class ProjectsApiController : ControllerBase
             var project = await _projectService.UpdateAsync(id, dto);
             if (project == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
             return Ok(project);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.UpdateError"), error = ex.Message });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.UpdateError"), ex));
         }
     }
 
@@ -174,14 +175,14 @@ public class ProjectsApiController : ControllerBase
             var result = await _projectService.DeleteAsync(id);
             if (!result)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
             return NoContent();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.DeleteError"), ex));
         }
     }
 
@@ -208,16 +209,16 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating project status {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.StatusUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StatusUpdateError"), ex));
         }
     }
 
@@ -235,16 +236,16 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.StartError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StartError"), ex));
         }
     }
 
@@ -262,16 +263,16 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error pausing project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.PauseError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.PauseError"), ex));
         }
     }
 
@@ -289,16 +290,16 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error completing project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CompleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CompleteError"), ex));
         }
     }
 
@@ -316,16 +317,16 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error canceling project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CancelError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CancelError"), ex));
         }
     }
 
@@ -343,12 +344,12 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error closing project {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CloseError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CloseError"), ex));
         }
     }
 
@@ -375,12 +376,12 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error managing project team {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.TeamUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.TeamUpdateError"), ex));
         }
     }
 
@@ -407,12 +408,12 @@ public class ProjectsApiController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error managing project branches {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.BranchesUpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.BranchesUpdateError"), ex));
         }
     }
 
@@ -432,14 +433,14 @@ public class ProjectsApiController : ControllerBase
             var project = await _projectService.GetStatisticsAsync(id, startDate, endDate);
             if (project == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Project.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
             return Ok(project);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project statistics {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.StatisticsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StatisticsLoadError"), ex));
         }
     }
 
@@ -458,7 +459,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading projects by customer {CustomerId}", customerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CustomerProjectsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CustomerProjectsLoadError"), ex));
         }
     }
 
@@ -477,7 +478,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading projects by manager {ManagerId}", managerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.ManagerProjectsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.ManagerProjectsLoadError"), ex));
         }
     }
 
@@ -496,7 +497,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading active projects");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.ActiveProjectsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.ActiveProjectsLoadError"), ex));
         }
     }
 
@@ -515,7 +516,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading upcoming deadline projects");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.UpcomingDeadlinesLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.UpcomingDeadlinesLoadError"), ex));
         }
     }
 
@@ -534,7 +535,7 @@ public class ProjectsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating project code");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Project.CodeGenerationError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CodeGenerationError"), ex));
         }
     }
 

@@ -23,10 +23,49 @@ var apiService = (function() {
         if (!response.ok) {
             if (response.status === 401) {
                 // Unauthorized - redirect to login
-                authService.logout();
-                window.location.hash = '#/login';
+                if (typeof authService !== 'undefined') {
+                    authService.logout();
+                }
+                window.location.href = '/Account/Login';
+                return Promise.reject({ message: 'Oturum suresi doldu. Giris sayfasina yonlendiriliyorsunuz.' });
             }
-            return response.json().then(err => Promise.reject(err));
+
+            // Response'u text olarak al, JSON parse hatasi olabilir
+            return response.text().then(function(text) {
+                var errorObj = { message: 'Bir hata olustu.' };
+
+                try {
+                    // JSON parse etmeyi dene
+                    var jsonError = JSON.parse(text);
+                    errorObj = jsonError;
+                } catch (parseError) {
+                    // JSON degilse (HTML gibi), detayli hata mesaji olustur
+                    var isDev = typeof APP_CONFIG !== 'undefined' && APP_CONFIG.isDevelopment();
+
+                    if (isDev) {
+                        // Development: Detayli hata
+                        errorObj = {
+                            message: 'API Hatasi [' + response.status + ' ' + response.statusText + '] - ' + response.url,
+                            details: text.substring(0, 500),
+                            status: response.status,
+                            url: response.url
+                        };
+                        console.error('API Error Details:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            url: response.url,
+                            responseBody: text
+                        });
+                    } else {
+                        // Production: Ozet hata
+                        errorObj = {
+                            message: 'Islem sirasinda bir hata olustu. Hata kodu: ' + response.status
+                        };
+                    }
+                }
+
+                return Promise.reject(errorObj);
+            });
         }
 
         if (response.status === 204) {

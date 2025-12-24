@@ -53,13 +53,29 @@ public class ExceptionLoggingMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        var response = new
+        // ShowDetailedErrors ayarını kontrol et
+        var config = context.RequestServices.GetService<IConfiguration>();
+        var showDetails = config?.GetValue<bool>("ShowDetailedErrors") ?? false;
+
+        object response;
+        if (showDetails)
         {
-            error = "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
-            details = context.RequestServices.GetService<IWebHostEnvironment>()?.IsDevelopment() == true
-                ? exception.Message
-                : null
-        };
+            response = new
+            {
+                error = "Bir hata oluştu.",
+                message = exception.Message,
+                stackTrace = exception.StackTrace,
+                innerException = exception.InnerException?.Message,
+                exceptionType = exception.GetType().Name
+            };
+        }
+        else
+        {
+            response = new
+            {
+                error = "Bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+            };
+        }
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));

@@ -8,14 +8,15 @@ namespace SecretCustomer.API.Controllers.Api;
 [Route("api/localization")]
 [ApiController]
 [Authorize]
-public class LocalizationApiController : ControllerBase
+public class LocalizationApiController : BaseApiController
 {
     private readonly ILocalizationService _localizationService;
     private readonly IWebHostEnvironment _environment;
 
     public LocalizationApiController(
         ILocalizationService localizationService,
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment,
+        IConfiguration configuration) : base(configuration)
     {
         _localizationService = localizationService;
         _environment = environment;
@@ -46,7 +47,7 @@ public class LocalizationApiController : ControllerBase
     {
         var language = await _localizationService.GetLanguageByIdAsync(id);
         if (language == null)
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Language.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Language.NotFound")));
 
         return Ok(new
         {
@@ -230,7 +231,7 @@ public class LocalizationApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -246,11 +247,11 @@ public class LocalizationApiController : ControllerBase
         }
         catch (FileNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -272,7 +273,7 @@ public class LocalizationApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 

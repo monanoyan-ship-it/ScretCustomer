@@ -6,6 +6,7 @@ function ChecklistViewModel() {
     self.isLoading = ko.observable(true);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.isModalOpen = ko.observable(false);
     self.isViewModalOpen = ko.observable(false);
     self.editingChecklist = ko.observable(null);
@@ -31,6 +32,7 @@ function ChecklistViewModel() {
     };
 
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.wizardStep(1);
         self.editingChecklist({
             id: null,
@@ -59,6 +61,7 @@ function ChecklistViewModel() {
     };
 
     self.editChecklist = function(checklist) {
+        self.modalErrorMessage('');
         self.wizardStep(1);
         // Convert API data to observables for editing
         var sections = (checklist.sections || []).map(function(section) {
@@ -123,6 +126,7 @@ function ChecklistViewModel() {
     };
 
     self.cloneChecklist = function(checklist) {
+        self.modalErrorMessage('');
         self.wizardStep(1);
         // Clone the checklist by loading it as new (without ID)
         var sections = (checklist.sections || []).map(function(section) {
@@ -247,12 +251,12 @@ function ChecklistViewModel() {
                 question.attachments.push(result.attachment);
                 self.successMessage('Dosya başarıyla yüklendi.');
             } else {
-                self.errorMessage(result.message || 'Dosya yüklenemedi.');
+                self.modalErrorMessage(result.message || 'Dosya yüklenemedi.');
             }
         })
         .catch(function(error) {
             console.error('Upload error:', error);
-            self.errorMessage('Dosya yüklenirken bir hata oluştu.');
+            self.modalErrorMessage('Dosya yüklenirken bir hata oluştu.');
         })
         .finally(function() {
             question.isUploadingFile(false);
@@ -273,7 +277,7 @@ function ChecklistViewModel() {
             })
             .catch(function(error) {
                 console.error('Delete error:', error);
-                self.errorMessage('Dosya silinirken bir hata oluştu.');
+                self.modalErrorMessage('Dosya silinirken bir hata oluştu.');
             });
         });
     };
@@ -412,7 +416,7 @@ function ChecklistViewModel() {
         };
 
         self.isSaving(true);
-        self.errorMessage('');
+        self.modalErrorMessage('');
 
         var promise = checklist.id
             ? apiService.put('/checklists/' + checklist.id, data)
@@ -426,7 +430,7 @@ function ChecklistViewModel() {
             })
             .catch(function(error) {
                 console.error('Save error:', error);
-                self.errorMessage('Kontrol listesi kaydedilirken bir hata olustu: ' + (error.message || ''));
+                self.modalErrorMessage('Kontrol listesi kaydedilirken bir hata olustu: ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSaving(false);

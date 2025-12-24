@@ -11,6 +11,7 @@ function CustomerPersonnelViewModel(customerId) {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.showInactive = ko.observable(false);
 
     // Modal
@@ -96,7 +97,7 @@ function CustomerPersonnelViewModel(customerId) {
     self.createNew = function() {
         self.editingPersonnel({
             id: null,
-            customerId: customerId || '',
+            customerId: customerId || null,
             username: '',
             email: '',
             password: '',
@@ -109,6 +110,7 @@ function CustomerPersonnelViewModel(customerId) {
             isActive: true,
             notes: ''
         });
+        self.modalErrorMessage('');
         self.isModalOpen(true);
     };
 
@@ -129,12 +131,13 @@ function CustomerPersonnelViewModel(customerId) {
             isActive: personnel.isActive,
             notes: personnel.notes || ''
         });
+        self.modalErrorMessage('');
         self.isModalOpen(true);
     };
 
     // Save personnel
     self.savePersonnel = function() {
-        self.errorMessage('');
+        self.modalErrorMessage('');
         self.successMessage('');
 
         var personnel = self.editingPersonnel();
@@ -142,25 +145,53 @@ function CustomerPersonnelViewModel(customerId) {
 
         // Validation
         if (!personnel.customerId) {
-            self.errorMessage(T('Validation.CustomerRequired', 'Müşteri seçimi zorunludur.'));
+            self.modalErrorMessage(T('Validation.CustomerRequired', 'Müşteri seçimi zorunludur.'));
             return;
         }
 
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
-            self.errorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
+            self.modalErrorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
         if (!personnel.id && !personnel.password) {
-            self.errorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
+            self.modalErrorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
+            return;
+        }
+
+        if (!personnel.role) {
+            self.modalErrorMessage(T('Personnel.RoleRequired', 'Rol seçimi zorunludur.'));
             return;
         }
 
         self.isSaving(true);
+        self.modalErrorMessage('');
 
-        var promise = personnel.id 
-            ? customerApiService.updatePersonnel(personnel.id, personnel)
-            : customerApiService.createPersonnel(personnel);
+        // Backend'e gönderilecek veriyi hazırla
+        var dataToSend = {
+            customerId: personnel.customerId,
+            username: personnel.username,
+            email: personnel.email,
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            phoneNumber: personnel.phoneNumber || null,
+            department: personnel.department || null,
+            title: personnel.title || null,
+            role: parseInt(personnel.role, 10),
+            isActive: personnel.isActive,
+            notes: personnel.notes || null
+        };
+
+        // Yeni personel için şifre ekle
+        if (!personnel.id) {
+            dataToSend.password = personnel.password;
+        }
+
+        console.log('Sending personnel data:', JSON.stringify(dataToSend, null, 2));
+
+        var promise = personnel.id
+            ? customerApiService.updatePersonnel(personnel.id, dataToSend)
+            : customerApiService.createPersonnel(dataToSend);
 
         promise
             .then(function() {
@@ -170,7 +201,7 @@ function CustomerPersonnelViewModel(customerId) {
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
-                self.errorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu:') + ' ' + (error.message || ''));
+                self.modalErrorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu:') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -181,7 +212,7 @@ function CustomerPersonnelViewModel(customerId) {
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingPersonnel(null);
-        self.errorMessage('');
+        self.modalErrorMessage('');
     };
 
     // Delete personnel

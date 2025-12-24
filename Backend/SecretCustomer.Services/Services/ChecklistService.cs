@@ -16,6 +16,14 @@ public class ChecklistService : IChecklistService
         _checklistRepository = checklistRepository;
     }
 
+    // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
     public async Task<ChecklistDto?> GetByIdAsync(Guid id)
     {
         var checklist = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
@@ -43,8 +51,8 @@ public class ChecklistService : IChecklistService
             MaxTotalPoints = dto.MaxTotalPoints,
             Code = dto.Code,
             TemplateName = dto.TemplateName,
-            ValidFrom = dto.ValidFrom,
-            ValidUntil = dto.ValidUntil,
+            ValidFrom = ToUtc(dto.ValidFrom),
+            ValidUntil = ToUtc(dto.ValidUntil),
             EstimatedDurationMinutes = dto.EstimatedDurationMinutes,
             Sections = dto.Sections.Select(s => new Section
             {
@@ -97,8 +105,8 @@ public class ChecklistService : IChecklistService
         existing.MaxTotalPoints = dto.MaxTotalPoints;
         existing.Code = dto.Code;
         existing.TemplateName = dto.TemplateName;
-        existing.ValidFrom = dto.ValidFrom;
-        existing.ValidUntil = dto.ValidUntil;
+        existing.ValidFrom = ToUtc(dto.ValidFrom);
+        existing.ValidUntil = ToUtc(dto.ValidUntil);
         existing.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
 
         // Update sections

@@ -24,6 +24,20 @@ public class EvaluationService : IEvaluationService
         _context = context;
     }
 
+    // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (!dateTime.HasValue) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
+    private static DateTime ToUtc(DateTime dateTime)
+    {
+        if (dateTime.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+    }
+
     public async Task<EvaluationDto?> GetByIdAsync(Guid id)
     {
         var evaluation = await _evaluationRepository.GetByIdAsync(id, includeDetails: true);
@@ -135,7 +149,7 @@ public class EvaluationService : IEvaluationService
             StartedAt = DateTime.UtcNow,
             FormOpenedAt = DateTime.UtcNow,
             CallId = dto.CallId,
-            CallDate = dto.CallDate,
+            CallDate = ToUtc(dto.CallDate),
             EvaluatedPersonnelId = dto.EvaluatedPersonnelId,
             EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel
         };
@@ -364,11 +378,11 @@ public class EvaluationService : IEvaluationService
         evaluation.Notes = dto.Notes;
         evaluation.EvaluationComment = dto.EvaluationComment;
         evaluation.CallId = dto.CallId;
-        evaluation.CallDate = dto.CallDate;
+        evaluation.CallDate = ToUtc(dto.CallDate);
         evaluation.DurationMinutes = dto.DurationMinutes;
         evaluation.EvaluatedPersonnelId = dto.EvaluatedPersonnelId;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
-        evaluation.ControlDate = dto.ControlDate;
+        evaluation.ControlDate = ToUtc(dto.ControlDate);
         evaluation.ControlTime = dto.ControlTime;
         evaluation.YellowCardCount = scoreResult.YellowCardCount;
         evaluation.RedCardCount = scoreResult.RedCardCount;

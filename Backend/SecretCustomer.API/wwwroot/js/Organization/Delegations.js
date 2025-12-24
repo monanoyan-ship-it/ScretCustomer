@@ -7,6 +7,7 @@ function DelegationsViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
 
     // Data
     self.delegations = ko.observableArray([]);
@@ -113,6 +114,7 @@ function DelegationsViewModel() {
 
     // Create new delegation
     self.createNew = function() {
+        self.modalErrorMessage('');
         var today = new Date().toISOString().split('T')[0];
         self.editingDelegation({
             id: null,
@@ -132,6 +134,7 @@ function DelegationsViewModel() {
 
     // Edit delegation
     self.editDelegation = function(delegation) {
+        self.modalErrorMessage('');
         self.editingDelegation({
             id: delegation.id,
             title: ko.observable(delegation.title || ''),
@@ -155,17 +158,17 @@ function DelegationsViewModel() {
 
         // Validation
         if (!editing.delegatorUserId() || !editing.delegateeUserId()) {
-            self.errorMessage('Vekalet veren ve alan seçilmelidir.');
+            self.modalErrorMessage('Vekalet veren ve alan seçilmelidir.');
             return;
         }
 
         if (!editing.startDate()) {
-            self.errorMessage('Başlangıç tarihi zorunludur.');
+            self.modalErrorMessage('Başlangıç tarihi zorunludur.');
             return;
         }
 
         self.isSaving(true);
-        self.errorMessage('');
+        self.modalErrorMessage('');
 
         var dto = {
             title: editing.title() || null,
@@ -204,7 +207,7 @@ function DelegationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Vekalet kaydedilirken bir hata oluştu.');
+                self.modalErrorMessage(error.message || 'Vekalet kaydedilirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);

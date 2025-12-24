@@ -10,14 +10,15 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/delegations")]
 [Authorize]
-public class DelegationsApiController : ControllerBase
+public class DelegationsApiController : BaseApiController
 {
     private readonly IOrganizationService _organizationService;
     private readonly ILocalizationService _localizationService;
 
     public DelegationsApiController(
         IOrganizationService organizationService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _organizationService = organizationService;
         _localizationService = localizationService;
@@ -33,7 +34,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -45,13 +46,13 @@ public class DelegationsApiController : ControllerBase
             var delegation = await _organizationService.GetDelegationByIdAsync(id);
             if (delegation == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Delegation.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Delegation.NotFound")));
             }
             return Ok(delegation);
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -71,7 +72,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -91,7 +92,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -111,7 +112,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -136,7 +137,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -150,7 +151,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -171,7 +172,7 @@ public class DelegationsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 
@@ -185,11 +186,11 @@ public class DelegationsApiController : ControllerBase
             {
                 return Ok(new { message = await _localizationService.GetResourceAsync("Api.Delegation.DeleteSuccess") });
             }
-            return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Delegation.NotFound") });
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Delegation.NotFound")));
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
     }
 

@@ -10,6 +10,7 @@ function ExcelTemplatesViewModel() {
     self.isModalOpen = ko.observable(false);
     self.isImportModalOpen = ko.observable(false);
     self.errorMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.successMessage = ko.observable('');
     self.editingTemplate = ko.observable(null);
     self.importingTemplate = ko.observable(null);
@@ -213,6 +214,7 @@ function ExcelTemplatesViewModel() {
     // Create New Template
     self.createNew = function() {
         self.editingTemplate(new Template());
+        self.modalErrorMessage('');
         self.isModalOpen(true);
     };
 
@@ -223,6 +225,7 @@ function ExcelTemplatesViewModel() {
             .then(res => res.json())
             .then(data => {
                 self.editingTemplate(new Template(data));
+                self.modalErrorMessage('');
                 self.isModalOpen(true);
             })
             .catch(err => {
@@ -281,7 +284,7 @@ function ExcelTemplatesViewModel() {
         })
         .catch(err => {
             console.error('Error saving template:', err);
-            self.errorMessage('Şablon kaydedilirken hata oluştu: ' + err.message);
+            self.modalErrorMessage('Şablon kaydedilirken hata oluştu: ' + err.message);
         });
     };
 
@@ -312,6 +315,7 @@ function ExcelTemplatesViewModel() {
     self.showImportModal = function(template) {
         self.importingTemplate(template);
         self.selectedFile(null);
+        self.modalErrorMessage('');
         self.isImportModalOpen(true);
     };
 

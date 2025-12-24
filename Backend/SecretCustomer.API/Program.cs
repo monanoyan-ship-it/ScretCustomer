@@ -10,6 +10,7 @@ using SecretCustomer.Data.Repositories;
 using SecretCustomer.Services.Helpers;
 using SecretCustomer.Services.Services;
 using SecretCustomer.API.Middleware;
+using SecretCustomer.API.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +45,33 @@ builder.Services.AddAuthentication(options =>
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = true;
+
+        // API istekleri için redirect yerine 401/403 döndür
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    context.Response.ContentType = "application/json";
+                    return context.Response.WriteAsync("{\"message\":\"Oturum süresi doldu. Lütfen tekrar giriş yapın.\"}");
+                }
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            },
+            OnRedirectToAccessDenied = context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+                    return context.Response.WriteAsync("{\"message\":\"Bu işlem için yetkiniz bulunmuyor.\"}");
+                }
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            }
+        };
     })
     .AddJwtBearer(options =>
     {
@@ -180,9 +208,15 @@ builder.Services.AddCors(options =>
 });
 
 // Add MVC Controllers with Views
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ModelStateValidationFilter>();
+});
 // Also add API controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ModelStateValidationFilter>();
+});
 
 var app = builder.Build();
 

@@ -7,7 +7,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/answers")]
 [Authorize]
-public class AnswersApiController : ControllerBase
+public class AnswersApiController : BaseApiController
 {
     private readonly IFileUploadService _fileUploadService;
     private readonly ILogger<AnswersApiController> _logger;
@@ -16,7 +16,8 @@ public class AnswersApiController : ControllerBase
     public AnswersApiController(
         IFileUploadService fileUploadService,
         ILogger<AnswersApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _fileUploadService = fileUploadService;
         _logger = logger;
@@ -34,7 +35,7 @@ public class AnswersApiController : ControllerBase
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotSelected") });
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
             }
 
             using var stream = file.OpenReadStream();
@@ -46,7 +47,7 @@ public class AnswersApiController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(new { message = result.ErrorMessage });
+                return BadRequest(CreateErrorResponse(result.ErrorMessage ?? "Upload failed"));
             }
 
             return Ok(new
@@ -59,7 +60,7 @@ public class AnswersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.UploadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
 
@@ -74,7 +75,7 @@ public class AnswersApiController : ControllerBase
             var success = await _fileUploadService.DeleteAnswerAttachmentAsync(answerId);
             if (!success)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
@@ -82,7 +83,7 @@ public class AnswersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
 
@@ -98,7 +99,7 @@ public class AnswersApiController : ControllerBase
             var result = await _fileUploadService.GetAnswerAttachmentAsync(answerId);
             if (result == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Common.FileNotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
 
             var (fileStream, fileName, contentType) = result.Value;
@@ -107,7 +108,7 @@ public class AnswersApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment for answer {AnswerId}", answerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Answer.DownloadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
 }

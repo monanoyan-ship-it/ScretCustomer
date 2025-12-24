@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/checklists")]
 [Authorize]
-public class ChecklistsApiController : ControllerBase
+public class ChecklistsApiController : BaseApiController
 {
     private readonly IChecklistService _checklistService;
     private readonly ILogger<ChecklistsApiController> _logger;
@@ -17,7 +17,8 @@ public class ChecklistsApiController : ControllerBase
     public ChecklistsApiController(
         IChecklistService checklistService,
         ILogger<ChecklistsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _checklistService = checklistService;
         _logger = logger;
@@ -39,7 +40,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading checklists");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.LoadListError"), ex));
         }
     }
 
@@ -58,7 +59,7 @@ public class ChecklistsApiController : ControllerBase
             if (checklist == null)
             {
                 _logger.LogWarning("Checklist {Id} not found", id);
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
             _logger.LogInformation("Successfully loaded checklist {Id} with {SectionCount} sections",
@@ -71,14 +72,7 @@ public class ChecklistsApiController : ControllerBase
             _logger.LogError(ex, "Error loading checklist {Id}. Exception: {Message}, StackTrace: {StackTrace}",
                 id, ex.Message, ex.StackTrace);
 
-            // Development ortamında detaylı hata döndür
-            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-
-            return StatusCode(500, new {
-                message = await _localizationService.GetResourceAsync("Api.Checklist.LoadError"),
-                error = isDevelopment ? ex.Message : null,
-                details = isDevelopment ? ex.StackTrace : null
-            });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.LoadError"), ex));
         }
     }
 
@@ -99,7 +93,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating checklist");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.CreateError"), ex));
         }
     }
 
@@ -118,7 +112,7 @@ public class ChecklistsApiController : ControllerBase
             var checklist = await _checklistService.UpdateAsync(dto);
             if (checklist == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
             return Ok(checklist);
@@ -126,7 +120,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating checklist {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.UpdateError"), ex));
         }
     }
 
@@ -139,7 +133,7 @@ public class ChecklistsApiController : ControllerBase
             var result = await _checklistService.DeleteAsync(id);
             if (!result)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
             return NoContent();
@@ -147,7 +141,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting checklist {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.DeleteError"), ex));
         }
     }
 
@@ -160,7 +154,7 @@ public class ChecklistsApiController : ControllerBase
             var checklist = await _checklistService.CloneChecklistAsync(id, newName);
             if (checklist == null)
             {
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Checklist.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
             return CreatedAtAction(nameof(GetById), new { id = checklist.Id }, checklist);
@@ -168,7 +162,7 @@ public class ChecklistsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cloning checklist {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Checklist.CloneError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.CloneError"), ex));
         }
     }
 }

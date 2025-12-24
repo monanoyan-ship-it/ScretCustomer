@@ -28,7 +28,7 @@ function EvaluationsViewModel() {
     self.isEvaluateModalOpen = ko.observable(false);
     self.isFormLoading = ko.observable(false);
     self.isSavingForm = ko.observable(false);
-    self.formErrorMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
     self.formSuccessMessage = ko.observable('');
     self.formData = ko.observable(null);
     self.currentAssignmentId = null;
@@ -180,7 +180,7 @@ function EvaluationsViewModel() {
     self.openEvaluateModal = function() {
         self.isEvaluateModalOpen(true);
         self.isFormLoading(true);
-        self.formErrorMessage('');
+        self.modalErrorMessage('');
         self.formSuccessMessage('');
         self.formData(null);
         self.answers = {};
@@ -239,7 +239,7 @@ function EvaluationsViewModel() {
     // Load form data
     self.loadForm = function() {
         self.isFormLoading(true);
-        self.formErrorMessage('');
+        self.modalErrorMessage('');
 
         var url = '';
         if (self.currentAssignmentId) {
@@ -247,7 +247,7 @@ function EvaluationsViewModel() {
         } else if (self.currentEvaluationId) {
             url = '/api/evaluations/form/edit/' + self.currentEvaluationId;
         } else {
-            self.formErrorMessage(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
+            self.modalErrorMessage(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
             self.isFormLoading(false);
             return;
         }
@@ -296,7 +296,7 @@ function EvaluationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                self.formErrorMessage(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+                self.modalErrorMessage(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isFormLoading(false);
@@ -401,7 +401,7 @@ function EvaluationsViewModel() {
     // Save as draft
     self.saveDraft = function() {
         self.isSavingForm(true);
-        self.formErrorMessage('');
+        self.modalErrorMessage('');
         self.formSuccessMessage('');
 
         var data = self.prepareData();
@@ -421,7 +421,7 @@ function EvaluationsViewModel() {
         })
         .catch(function(error) {
             console.error('Draft save error:', error);
-            self.formErrorMessage(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+            self.modalErrorMessage(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);
@@ -451,12 +451,12 @@ function EvaluationsViewModel() {
         });
 
         if (hasError) {
-            self.formErrorMessage(T('Evaluation.AnswerAllRequired', 'Lütfen tüm zorunlu soruları cevaplayın.'));
+            self.modalErrorMessage(T('Evaluation.AnswerAllRequired', 'Lütfen tüm zorunlu soruları cevaplayın.'));
             return;
         }
 
         self.isSavingForm(true);
-        self.formErrorMessage('');
+        self.modalErrorMessage('');
         self.formSuccessMessage('');
 
         var data = self.prepareData();
@@ -481,7 +481,7 @@ function EvaluationsViewModel() {
         })
         .catch(function(error) {
             console.error('Submit error:', error);
-            self.formErrorMessage(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
+            self.modalErrorMessage(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);

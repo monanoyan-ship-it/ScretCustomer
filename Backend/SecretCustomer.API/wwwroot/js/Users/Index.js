@@ -40,6 +40,8 @@ function UsersViewModel() {
     // Modal state
     self.isModalOpen = ko.observable(false);
     self.isPasswordModalOpen = ko.observable(false);
+    self.modalErrorMessage = ko.observable('');
+    self.passwordModalErrorMessage = ko.observable('');
 
     // Role display helpers - handle both numeric and string enum values
     self.getRoleDisplayName = function(role) {
@@ -117,12 +119,14 @@ function UsersViewModel() {
 
     // Create new user
     self.createNew = function() {
+        self.modalErrorMessage('');
         self.editingUser(new UserEditViewModel());
         self.isModalOpen(true);
     };
 
     // Edit existing user
     self.editUser = function(user) {
+        self.modalErrorMessage('');
         self.editingUser(new UserEditViewModel(user));
         self.isModalOpen(true);
     };
@@ -197,7 +201,7 @@ function UsersViewModel() {
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || T('User.SaveError', 'Kullanıcı kaydedilirken bir hata oluştu.'));
+            self.modalErrorMessage(error.message || T('User.SaveError', 'Kullanıcı kaydedilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);
@@ -225,6 +229,7 @@ function UsersViewModel() {
 
     // Change password
     self.changePassword = function(user) {
+        self.passwordModalErrorMessage('');
         self.passwordChangeUser(new PasswordChangeViewModel(user));
         self.isPasswordModalOpen(true);
     };
@@ -277,7 +282,7 @@ function UsersViewModel() {
         })
         .catch(error => {
             console.error('Error:', error);
-            self.errorMessage(error.message || T('Account.PasswordChangeError', 'Şifre değiştirilirken bir hata oluştu.'));
+            self.passwordModalErrorMessage(error.message || T('Account.PasswordChangeError', 'Şifre değiştirilirken bir hata oluştu.'));
         })
         .finally(() => {
             self.isSaving(false);
@@ -288,12 +293,14 @@ function UsersViewModel() {
     self.closePasswordModal = function() {
         self.isPasswordModalOpen(false);
         self.passwordChangeUser(null);
+        self.passwordModalErrorMessage('');
     };
 
     // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingUser(null);
+        self.modalErrorMessage('');
     };
 
     // Initialize

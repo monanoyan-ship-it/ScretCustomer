@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/reports")]
 [Authorize(Roles = "Admin,TeamLeader")]
-public class ReportsApiController : ControllerBase
+public class ReportsApiController : BaseApiController
 {
     private readonly IReportService _reportService;
     private readonly ILogger<ReportsApiController> _logger;
@@ -17,7 +17,8 @@ public class ReportsApiController : ControllerBase
     public ReportsApiController(
         IReportService reportService,
         ILogger<ReportsApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _reportService = reportService;
         _logger = logger;
@@ -38,7 +39,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations report");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
 
@@ -52,14 +53,14 @@ public class ReportsApiController : ControllerBase
         {
             var result = await _reportService.GetEvaluationDetailAsync(evaluationId);
             if (result == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Evaluation.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
 
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluation detail {EvaluationId}", evaluationId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.EvaluationDetailLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.EvaluationDetailLoadError"), ex));
         }
     }
 
@@ -77,7 +78,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading summary report");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SummaryLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SummaryLoadError"), ex));
         }
     }
 
@@ -95,7 +96,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting evaluations to Excel");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ExcelExportError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ExcelExportError"), ex));
         }
     }
 
@@ -113,7 +114,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting detailed evaluations to Excel");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.DetailedExcelExportError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.DetailedExcelExportError"), ex));
         }
     }
 
@@ -146,7 +147,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading penalties report");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.PenaltiesLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.PenaltiesLoadError"), ex));
         }
     }
 
@@ -177,7 +178,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting penalties to Excel");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.PenaltiesExportError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.PenaltiesExportError"), ex));
         }
     }
 
@@ -197,7 +198,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel list for report card");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadListError"), ex));
         }
     }
 
@@ -223,14 +224,14 @@ public class ReportsApiController : ControllerBase
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
             if (result == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.NotFound")));
 
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading personnel report card for {PersonnelId}", personnelId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ReportCardLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardLoadError"), ex));
         }
     }
 
@@ -260,7 +261,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting personnel report card for {PersonnelId}", personnelId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError"), ex));
         }
     }
 
@@ -303,7 +304,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading suggestions report");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SuggestionsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SuggestionsLoadError"), ex));
         }
     }
 
@@ -333,7 +334,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading top suggested questions");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.TopSuggestionsLoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.TopSuggestionsLoadError"), ex));
         }
     }
 
@@ -370,7 +371,7 @@ public class ReportsApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting suggestions to Excel");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Report.SuggestionsExportError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SuggestionsExportError"), ex));
         }
     }
 }

@@ -321,6 +321,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { modalErrorMessage(''); }"></button>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Permission.Permission", "Yetki") <span class="text-danger">*</span></label>
                         <select class="form-select" data-bind="value: newUserPermission.permissionId, options: permissions, optionsValue: 'id', optionsText: 'displayName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>

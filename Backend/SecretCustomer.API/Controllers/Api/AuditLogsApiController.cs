@@ -8,11 +8,13 @@ namespace SecretCustomer.API.Controllers.Api;
 [Route("api/auditlogs")]
 [ApiController]
 [Authorize(Roles = "Admin")]
-public class AuditLogsApiController : ControllerBase
+public class AuditLogsApiController : BaseApiController
 {
     private readonly IAuditLogService _auditLogService;
 
-    public AuditLogsApiController(IAuditLogService auditLogService)
+    public AuditLogsApiController(
+        IAuditLogService auditLogService,
+        IConfiguration configuration) : base(configuration)
     {
         _auditLogService = auditLogService;
     }

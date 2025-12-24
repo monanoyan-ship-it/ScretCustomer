@@ -14,6 +14,14 @@ public class CustomerService : ICustomerService
         _customerRepository = customerRepository;
     }
 
+    // DateTime'ı UTC'ye çevirir (PostgreSQL için gerekli)
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        if (dateTime == null) return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc) return dateTime;
+        return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
+    }
+
     public async Task<CustomerDto?> GetByIdAsync(Guid id)
     {
         var customer = await _customerRepository.GetByIdAsync(id, includeDetails: true);
@@ -62,8 +70,8 @@ public class CustomerService : ICustomerService
             Address = createCustomerDto.Address,
             City = createCustomerDto.City,
             IsActive = createCustomerDto.IsActive,
-            ContractStartDate = createCustomerDto.ContractStartDate,
-            ContractEndDate = createCustomerDto.ContractEndDate,
+            ContractStartDate = ToUtc(createCustomerDto.ContractStartDate),
+            ContractEndDate = ToUtc(createCustomerDto.ContractEndDate),
             Notes = createCustomerDto.Notes,
             CreatedAt = DateTime.UtcNow
         };
@@ -102,8 +110,8 @@ public class CustomerService : ICustomerService
         customer.Address = updateCustomerDto.Address;
         customer.City = updateCustomerDto.City;
         customer.IsActive = updateCustomerDto.IsActive;
-        customer.ContractStartDate = updateCustomerDto.ContractStartDate;
-        customer.ContractEndDate = updateCustomerDto.ContractEndDate;
+        customer.ContractStartDate = ToUtc(updateCustomerDto.ContractStartDate);
+        customer.ContractEndDate = ToUtc(updateCustomerDto.ContractEndDate);
         customer.Notes = updateCustomerDto.Notes;
 
         var updatedCustomer = await _customerRepository.UpdateAsync(customer);

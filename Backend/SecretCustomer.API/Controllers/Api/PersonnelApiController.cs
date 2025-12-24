@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [ApiController]
 [Route("api/personnel")]
 [Authorize(Roles = "Admin,TeamLeader")]
-public class PersonnelApiController : ControllerBase
+public class PersonnelApiController : BaseApiController
 {
     private readonly IPersonnelService _personnelService;
     private readonly ILogger<PersonnelApiController> _logger;
@@ -17,7 +17,8 @@ public class PersonnelApiController : ControllerBase
     public PersonnelApiController(
         IPersonnelService personnelService,
         ILogger<PersonnelApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IConfiguration configuration) : base(configuration)
     {
         _personnelService = personnelService;
         _logger = logger;
@@ -38,7 +39,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel list");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadListError"), ex));
         }
     }
 
@@ -52,14 +53,14 @@ public class PersonnelApiController : ControllerBase
         {
             var personnel = await _personnelService.GetByIdAsync(id);
             if (personnel == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.NotFound")));
 
             return Ok(personnel);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadError"), ex));
         }
     }
 
@@ -79,12 +80,12 @@ public class PersonnelApiController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating personnel");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.CreateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.CreateError"), ex));
         }
     }
 
@@ -101,18 +102,18 @@ public class PersonnelApiController : ControllerBase
 
             var personnel = await _personnelService.UpdateAsync(id, dto);
             if (personnel == null)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.NotFound")));
 
             return Ok(personnel);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating personnel {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.UpdateError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.UpdateError"), ex));
         }
     }
 
@@ -126,14 +127,14 @@ public class PersonnelApiController : ControllerBase
         {
             var result = await _personnelService.DeleteAsync(id);
             if (!result)
-                return NotFound(new { message = await _localizationService.GetResourceAsync("Api.Personnel.NotFound") });
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.NotFound")));
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Personnel.DeleteSuccess") });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting personnel {Id}", id);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.DeleteError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.DeleteError"), ex));
         }
     }
 
@@ -151,7 +152,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel by branch {BranchId}", branchId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadListError"), ex));
         }
     }
 
@@ -169,7 +170,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting personnel by customer {CustomerId}", customerId);
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.LoadListError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadListError"), ex));
         }
     }
 
@@ -187,7 +188,7 @@ public class PersonnelApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking TC Kimlik No");
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.Personnel.CheckError") });
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.CheckError"), ex));
         }
     }
 }
