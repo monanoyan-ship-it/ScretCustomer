@@ -46,6 +46,21 @@ Backend/
 - `DEVELOPMENT_PATTERNS.md` - Kod standartları ve pattern'ler
 - `is kapsam.docx` - Proje kapsamı
 
+## Production Publish
+
+**ÖNEMLİ:** Publish çıkarken mutlaka eski dosyaları temizle!
+
+```bash
+# Doğru publish komutu (eski dosyaları siler ve yeniden oluşturur)
+dotnet publish -c Release -o ./publish --self-contained false /p:DeleteExistingFiles=true
+
+# Veya manuel olarak önce sil:
+rmdir /s /q Backend\SecretCustomer.API\publish
+dotnet publish -c Release -o ./publish
+```
+
+**NOT:** `publish/` klasörü `.gitignore`'a eklenmiştir. Git'e commit edilmemelidir.
+
 ## Düzeltilmiş Modüller
 
 Bu modüller artık doğru SPA Modal Pattern'i kullanıyor:
