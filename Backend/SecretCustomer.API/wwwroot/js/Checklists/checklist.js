@@ -82,7 +82,7 @@ function ChecklistViewModel() {
                         order: ko.observable(q.order),
                         isRequired: ko.observable(q.isRequired),
                         allowNA: ko.observable(q.allowNA),
-                        options: ko.observable(q.optionsJson || ''),
+                        options: ko.observable(q.options ? JSON.stringify(q.options) : ''),
                         // Yeni alanlar
                         scoringType: ko.observable(q.scoringType || 'Scored'),
                         weightPoints: ko.observable(q.weightPoints || 1),
@@ -147,7 +147,7 @@ function ChecklistViewModel() {
                         order: ko.observable(q.order),
                         isRequired: ko.observable(q.isRequired),
                         allowNA: ko.observable(q.allowNA),
-                        options: ko.observable(q.optionsJson || ''),
+                        options: ko.observable(q.options ? JSON.stringify(q.options) : ''),
                         scoringType: ko.observable(q.scoringType || 'Scored'),
                         weightPoints: ko.observable(q.weightPoints || 1),
                         maxPoints: ko.observable(q.maxPoints || 100),
@@ -302,7 +302,8 @@ function ChecklistViewModel() {
     };
 
     self.deleteChecklist = function(checklist) {
-        showDeleteConfirm(checklist.name() + ' kontrol listesi', function() {
+        var checklistName = typeof checklist.name === 'function' ? checklist.name() : checklist.name;
+        showDeleteConfirm(checklistName + ' kontrol listesi', function() {
             apiService.delete('/checklists/' + checklist.id)
                 .then(function() {
                     self.checklists.remove(checklist);
@@ -383,7 +384,7 @@ function ChecklistViewModel() {
             validUntil: checklist.validUntil() || null,
             sections: checklist.sections().map(function(section, sIndex) {
                 return {
-                    id: section.id,
+                    id: section.id || null,
                     name: section.name(),
                     order: section.order(),
                     description: '',
@@ -392,15 +393,29 @@ function ChecklistViewModel() {
                     maxPoints: parseFloat(section.maxPoints()) || 100,
                     isActive: section.isActive(),
                     questions: section.questions().map(function(q, qIndex) {
+                        // Options string ise parse et, değilse olduğu gibi kullan
+                        var optionsValue = q.options();
+                        var parsedOptions = null;
+                        if (optionsValue) {
+                            if (typeof optionsValue === 'string') {
+                                try {
+                                    parsedOptions = JSON.parse(optionsValue);
+                                } catch (e) {
+                                    parsedOptions = null;
+                                }
+                            } else {
+                                parsedOptions = optionsValue;
+                            }
+                        }
                         return {
-                            id: q.id,
+                            id: q.id || null,
                             text: q.text(),
                             type: q.type(),
                             points: parseInt(q.points()) || 0,
                             order: q.order(),
                             isRequired: q.isRequired(),
                             allowNA: q.allowNA(),
-                            optionsJson: q.options(),
+                            options: parsedOptions,
                             // Yeni alanlar
                             scoringType: q.scoringType(),
                             weightPoints: parseFloat(q.weightPoints()) || 1,

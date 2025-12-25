@@ -116,6 +116,7 @@ function ProjectsViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
 
     // Data
     self.projects = ko.observableArray([]);

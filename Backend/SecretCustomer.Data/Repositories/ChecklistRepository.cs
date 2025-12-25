@@ -53,7 +53,30 @@ public class ChecklistRepository : IChecklistRepository
 
     public async Task<Checklist> UpdateAsync(Checklist checklist)
     {
-        _context.Checklists.Update(checklist);
+        // Entity zaten tracked durumda (GetByIdAsync ile yüklenmiş)
+        // Sadece yeni eklenen (Detached) entity'ler için state ayarla
+        foreach (var section in checklist.Sections)
+        {
+            var sectionEntry = _context.Entry(section);
+
+            // Eğer entity tracked değilse (yeni eklendiyse), Added olarak işaretle
+            if (sectionEntry.State == EntityState.Detached)
+            {
+                sectionEntry.State = EntityState.Added;
+            }
+
+            foreach (var question in section.Questions)
+            {
+                var questionEntry = _context.Entry(question);
+
+                // Eğer entity tracked değilse (yeni eklendiyse), Added olarak işaretle
+                if (questionEntry.State == EntityState.Detached)
+                {
+                    questionEntry.State = EntityState.Added;
+                }
+            }
+        }
+
         await _context.SaveChangesAsync();
         return checklist;
     }

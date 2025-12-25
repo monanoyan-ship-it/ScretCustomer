@@ -48,18 +48,20 @@ Backend/
 
 ## Production Publish
 
-**ÖNEMLİ:** Publish çıkarken mutlaka eski dosyaları temizle!
+**ÖNEMLİ:** Publish çıkarken mutlaka eski dosyaları temizle! (hem `publish` hem `obj` klasörü)
 
 ```bash
-# Doğru publish komutu (eski dosyaları siler ve yeniden oluşturur)
-dotnet publish -c Release -o ./publish --self-contained false /p:DeleteExistingFiles=true
-
-# Veya manuel olarak önce sil:
+# Önce eski klasörleri sil (iç içe publish sorununu önler):
 rmdir /s /q Backend\SecretCustomer.API\publish
-dotnet publish -c Release -o ./publish
+rmdir /s /q Backend\SecretCustomer.API\obj
+
+# Sonra publish çıkar:
+dotnet publish Backend\SecretCustomer.API\SecretCustomer.API.csproj -c Release -o Backend\SecretCustomer.API\publish --self-contained false
 ```
 
 **NOT:** `publish/` klasörü `.gitignore`'a eklenmiştir. Git'e commit edilmemelidir.
+
+**UYARI:** `obj` klasöründe eski publish cache dosyaları kalırsa, iç içe `publish/publish/publish/...` klasörleri oluşabilir. Bu yüzden publish öncesi obj klasörünü silmek önemlidir.
 
 ## Düzeltilmiş Modüller
 

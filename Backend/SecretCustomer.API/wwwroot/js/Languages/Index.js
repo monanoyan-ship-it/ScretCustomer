@@ -8,6 +8,7 @@ function LanguagesViewModel() {
     self.isSaving = ko.observable(false);
     self.isEditing = ko.observable(false);
     self.editingId = ko.observable(null);
+    self.modalErrorMessage = ko.observable('');
 
     // Form
     self.form = {
