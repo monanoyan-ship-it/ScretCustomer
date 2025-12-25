@@ -32,7 +32,7 @@ public class AssignmentService : IAssignmentService
 
     #region TEMEL CRUD
 
-    public async Task<AssignmentDto?> GetByIdAsync(Guid id)
+    public async Task<AssignmentDto?> GetByIdAsync(int id)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -47,7 +47,7 @@ public class AssignmentService : IAssignmentService
         return assignment == null ? null : MapToDto(assignment);
     }
 
-    public async Task<AssignmentDetailDto?> GetDetailByIdAsync(Guid id)
+    public async Task<AssignmentDetailDto?> GetDetailByIdAsync(int id)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -196,7 +196,7 @@ public class AssignmentService : IAssignmentService
         return await GetByProjectIdAsync(dto.ProjectId);
     }
 
-    public async Task UpdateAsync(Guid id, UpdateAssignmentDto dto)
+    public async Task UpdateAsync(int id, UpdateAssignmentDto dto)
     {
         var assignment = await _context.Assignments.FindAsync(id);
         if (assignment == null || assignment.IsDeleted)
@@ -216,7 +216,7 @@ public class AssignmentService : IAssignmentService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var assignment = await _context.Assignments.FindAsync(id);
         if (assignment == null) return false;
@@ -231,7 +231,7 @@ public class AssignmentService : IAssignmentService
 
     #region FİLTRELEME
 
-    public async Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(Guid projectId)
+    public async Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(int projectId)
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
@@ -248,7 +248,7 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(int userId)
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
@@ -264,7 +264,7 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> GetByBranchIdAsync(Guid branchId)
+    public async Task<IEnumerable<AssignmentDto>> GetByBranchIdAsync(int branchId)
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
@@ -280,7 +280,7 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(Guid fieldWorkerId)
+    public async Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(int fieldWorkerId)
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
@@ -347,7 +347,7 @@ public class AssignmentService : IAssignmentService
 
     #region DURUM YÖNETİMİ
 
-    public async Task<AssignmentDto> CompleteAssignmentAsync(Guid id)
+    public async Task<AssignmentDto> CompleteAssignmentAsync(int id)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -369,7 +369,7 @@ public class AssignmentService : IAssignmentService
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
-    public async Task<AssignmentDto> CancelAssignmentAsync(Guid id, string? reason)
+    public async Task<AssignmentDto> CancelAssignmentAsync(int id, string? reason)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -390,7 +390,7 @@ public class AssignmentService : IAssignmentService
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
-    public async Task<AssignmentDto> ReassignAsync(Guid id, ReassignAssignmentDto dto)
+    public async Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -480,7 +480,7 @@ public class AssignmentService : IAssignmentService
         return await GetByProjectIdAsync(dto.ProjectId);
     }
 
-    public async Task<int> DeleteByProjectIdAsync(Guid projectId)
+    public async Task<int> DeleteByProjectIdAsync(int projectId)
     {
         var assignments = await _context.Assignments
             .Where(a => a.ProjectId == projectId && !a.IsDeleted && !a.IsCompleted)
@@ -500,7 +500,7 @@ public class AssignmentService : IAssignmentService
 
     #region İSTATİSTİKLER
 
-    public async Task<AssignmentSummaryDto> GetSummaryAsync(Guid? projectId = null)
+    public async Task<AssignmentSummaryDto> GetSummaryAsync(int? projectId = null)
     {
         var query = _context.Assignments
             .Include(a => a.Evaluations)
@@ -554,7 +554,7 @@ public class AssignmentService : IAssignmentService
         });
     }
 
-    public async Task<IEnumerable<BranchAssignmentSummaryDto>> GetBranchSummariesAsync(Guid projectId)
+    public async Task<IEnumerable<BranchAssignmentSummaryDto>> GetBranchSummariesAsync(int projectId)
     {
         var assignments = await _context.Assignments
             .Include(a => a.Branch)

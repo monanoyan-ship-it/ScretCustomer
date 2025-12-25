@@ -8,7 +8,7 @@ namespace SecretCustomer.Core.DTOs.Personnel;
 /// </summary>
 public class PersonnelDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}";
@@ -32,11 +32,11 @@ public class PersonnelDto
     public string? Notes { get; set; }
 
     // Branch info
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
 
     // Customer info
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
 
     // Stats
@@ -92,9 +92,9 @@ public class CreatePersonnelDto
 
     public string? Notes { get; set; }
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 }
 
 /// <summary>
@@ -110,8 +110,8 @@ public class UpdatePersonnelDto : CreatePersonnelDto
 public class PersonnelFilterDto
 {
     public string? SearchTerm { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? CustomerId { get; set; }
     public bool? IsActive { get; set; }
     public Gender? Gender { get; set; }
     public string? Department { get; set; }

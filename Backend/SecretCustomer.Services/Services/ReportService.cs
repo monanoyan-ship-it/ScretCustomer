@@ -76,7 +76,7 @@ public class ReportService : IReportService
         };
     }
 
-    public async Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(Guid evaluationId)
+    public async Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)

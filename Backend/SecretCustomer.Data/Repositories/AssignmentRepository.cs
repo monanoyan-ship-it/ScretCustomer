@@ -13,7 +13,7 @@ public class AssignmentRepository : IAssignmentRepository
         _context = context;
     }
 
-    public async Task<Assignment?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Assignment?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Assignments.AsQueryable();
 
@@ -59,7 +59,7 @@ public class AssignmentRepository : IAssignmentRepository
         return await query.FirstOrDefaultAsync(a => a.UniqueLink == uniqueLink);
     }
 
-    public async Task<IEnumerable<Assignment>> GetByProjectIdAsync(Guid projectId)
+    public async Task<IEnumerable<Assignment>> GetByProjectIdAsync(int projectId)
     {
         return await _context.Assignments
             .Include(a => a.Branch)
@@ -69,7 +69,7 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Assignment>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<Assignment>> GetByUserIdAsync(int userId)
     {
         return await _context.Assignments
             .Include(a => a.Project)
@@ -80,7 +80,7 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Assignment>> GetByBranchIdAsync(Guid branchId)
+    public async Task<IEnumerable<Assignment>> GetByBranchIdAsync(int branchId)
     {
         return await _context.Assignments
             .Include(a => a.Project)
@@ -90,7 +90,7 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Assignment>> GetByFieldWorkerIdAsync(Guid fieldWorkerId)
+    public async Task<IEnumerable<Assignment>> GetByFieldWorkerIdAsync(int fieldWorkerId)
     {
         return await _context.Assignments
             .Include(a => a.Project)
@@ -123,7 +123,7 @@ public class AssignmentRepository : IAssignmentRepository
         return assignment;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var assignment = await _context.Assignments.FindAsync(id);
         if (assignment == null) return false;
@@ -133,7 +133,7 @@ public class AssignmentRepository : IAssignmentRepository
         return true;
     }
 
-    public async Task<bool> ExistsByEmailAsync(Guid projectId, string email)
+    public async Task<bool> ExistsByEmailAsync(int projectId, string email)
     {
         return await _context.Assignments
             .AnyAsync(a => a.ProjectId == projectId && a.ExternalEmail == email && !a.IsCompleted);

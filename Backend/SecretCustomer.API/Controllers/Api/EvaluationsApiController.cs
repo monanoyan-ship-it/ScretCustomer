@@ -47,9 +47,9 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Degerlendirme detayini getirir
     /// </summary>
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -69,9 +69,9 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Atama bazli degerlendirme getirir
     /// </summary>
-    [HttpGet("assignment/{assignmentId:guid}")]
+    [HttpGet("assignment/{assignmentId:int}")]
     [Authorize]
-    public async Task<IActionResult> GetByAssignment(Guid assignmentId)
+    public async Task<IActionResult> GetByAssignment(int assignmentId)
     {
         try
         {
@@ -88,9 +88,9 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Proje bazli degerlendirmeleri getirir
     /// </summary>
-    [HttpGet("project/{projectId:guid}")]
+    [HttpGet("project/{projectId:int}")]
     [Authorize(Policy = "CanEvaluate")]
-    public async Task<IActionResult> GetByProject(Guid projectId)
+    public async Task<IActionResult> GetByProject(int projectId)
     {
         try
         {
@@ -114,7 +114,7 @@ public class EvaluationsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
@@ -132,9 +132,9 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Degerlendirme formunu yukler (checklist bilgileriyle)
     /// </summary>
-    [HttpGet("form/{assignmentId:guid}")]
+    [HttpGet("form/{assignmentId:int}")]
     [Authorize]
-    public async Task<IActionResult> GetEvaluationForm(Guid assignmentId)
+    public async Task<IActionResult> GetEvaluationForm(int assignmentId)
     {
         try
         {
@@ -154,9 +154,9 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Mevcut degerlendirme formunu yukler (duzenleme icin)
     /// </summary>
-    [HttpGet("form/edit/{evaluationId:guid}")]
+    [HttpGet("form/edit/{evaluationId:int}")]
     [Authorize]
-    public async Task<IActionResult> GetExistingEvaluationForm(Guid evaluationId)
+    public async Task<IActionResult> GetExistingEvaluationForm(int evaluationId)
     {
         try
         {
@@ -186,7 +186,7 @@ public class EvaluationsApiController : BaseApiController
             if (!dto.EvaluatorId.HasValue)
             {
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
                 {
                     dto.EvaluatorId = userId;
                 }
@@ -223,7 +223,7 @@ public class EvaluationsApiController : BaseApiController
             if (!dto.EvaluatorId.HasValue)
             {
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
                 {
                     dto.EvaluatorId = userId;
                 }
@@ -260,7 +260,7 @@ public class EvaluationsApiController : BaseApiController
             if (!dto.EvaluatorId.HasValue)
             {
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
                 {
                     dto.EvaluatorId = userId;
                 }
@@ -319,14 +319,14 @@ public class EvaluationsApiController : BaseApiController
     /// Kapatilmis degerlendirmeyi taslaga alir (Admin yetkisi gerektirir)
     /// Video 2: "Kapatılan Formu Taslağa Alma" özelliği
     /// </summary>
-    [HttpPost("{id:guid}/revert-to-draft")]
+    [HttpPost("{id:int}/revert-to-draft")]
     [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> RevertToDraft(Guid id, [FromBody] RevertToDraftRequest? request)
+    public async Task<IActionResult> RevertToDraft(int id, [FromBody] RevertToDraftRequest? request)
     {
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
@@ -356,14 +356,14 @@ public class EvaluationsApiController : BaseApiController
     /// <summary>
     /// Degerlendirmeyi iptal eder
     /// </summary>
-    [HttpPost("{id:guid}/cancel")]
+    [HttpPost("{id:int}/cancel")]
     [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> CancelEvaluation(Guid id, [FromBody] CancelEvaluationRequest? request)
+    public async Task<IActionResult> CancelEvaluation(int id, [FromBody] CancelEvaluationRequest? request)
     {
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }

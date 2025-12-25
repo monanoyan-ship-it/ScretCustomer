@@ -6,7 +6,7 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Soru", Description = "Anket soruları için Excel import/export", IsAvailable = true)]
 public class Question : BaseEntity
 {
-    public Guid SectionId { get; set; }
+    public int SectionId { get; set; }
     public Section Section { get; set; } = null!;
 
     [ExcelColumn("Soru Metni", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,

@@ -22,7 +22,7 @@ public class ExcelTemplateService : IExcelTemplateService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<ExcelTemplate?> GetByIdAsync(Guid id, bool includeColumns = false)
+    public async Task<ExcelTemplate?> GetByIdAsync(int id, bool includeColumns = false)
     {
         return await _repository.GetByIdAsync(id, includeColumns);
     }
@@ -75,17 +75,17 @@ public class ExcelTemplateService : IExcelTemplateService
         return await _repository.UpdateAsync(template);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         return await _repository.DeleteAsync(id);
     }
 
-    public async Task<bool> ExistsAsync(Guid id)
+    public async Task<bool> ExistsAsync(int id)
     {
         return await _repository.ExistsAsync(id);
     }
 
-    public async Task<byte[]> GenerateTemplateExcelAsync(Guid templateId)
+    public async Task<byte[]> GenerateTemplateExcelAsync(int templateId)
     {
         // Get template with columns
         var template = await _repository.GetByIdAsync(templateId, includeColumns: true);
@@ -137,7 +137,7 @@ public class ExcelTemplateService : IExcelTemplateService
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    public async Task<ExcelParseResult> ParseExcelAsync(Guid templateId, byte[] fileContent)
+    public async Task<ExcelParseResult> ParseExcelAsync(int templateId, byte[] fileContent)
     {
         // Get template with columns
         var template = await _repository.GetByIdAsync(templateId, includeColumns: true);

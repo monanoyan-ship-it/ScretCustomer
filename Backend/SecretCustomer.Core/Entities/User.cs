@@ -41,18 +41,18 @@ public class User : BaseEntity
     public DateTime? LastLoginAt { get; set; }
 
     // Language Preference
-    public Guid? PreferredLanguageId { get; set; }
+    public int? PreferredLanguageId { get; set; }
     public Language? PreferredLanguage { get; set; }
 
     // Password Reset
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiry { get; set; }
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public Branch? Branch { get; set; }
 
     // Organization Unit
-    public Guid? OrganizationUnitId { get; set; }
+    public int? OrganizationUnitId { get; set; }
     public OrganizationUnit? OrganizationUnit { get; set; }
 
     // Navigation properties

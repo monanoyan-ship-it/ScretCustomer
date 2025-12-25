@@ -6,7 +6,7 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Müşteri Personeli", Description = "Müşteri personelleri için Excel import/export", IsAvailable = true)]
 public class CustomerPersonnel : BaseEntity
 {
-    public Guid CustomerId { get; set; }
+    public int CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
 
     [ExcelColumn("Kullanıcı Adı", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
@@ -54,7 +54,7 @@ public class CustomerPersonnel : BaseEntity
     public string? Notes { get; set; }
 
     // Language Preference
-    public Guid? PreferredLanguageId { get; set; }
+    public int? PreferredLanguageId { get; set; }
     public Language? PreferredLanguage { get; set; }
 
     // Computed Property

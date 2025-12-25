@@ -5,19 +5,19 @@ namespace SecretCustomer.Core.DTOs.Approval;
 /// </summary>
 public class ApprovalDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string ApprovalType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
-    public Guid RequestedByUserId { get; set; }
+    public int RequestedByUserId { get; set; }
     public string? RequestedByUserName { get; set; }
-    public Guid? ApproverUserId { get; set; }
+    public int? ApproverUserId { get; set; }
     public string? ApproverUserName { get; set; }
-    public Guid? ApprovedByUserId { get; set; }
+    public int? ApprovedByUserId { get; set; }
     public string? ApprovedByUserName { get; set; }
     public DateTime RequestedAt { get; set; }
     public DateTime? DueDate { get; set; }
@@ -35,7 +35,7 @@ public class ApprovalDto
 /// </summary>
 public class ApprovalListDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string ApprovalType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -55,9 +55,9 @@ public class CreateApprovalDto
     public string ApprovalType { get; set; } = "General";
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
-    public Guid? ApproverUserId { get; set; }
+    public int? ApproverUserId { get; set; }
     public DateTime? DueDate { get; set; }
     public string Priority { get; set; } = "Normal";
     public int? AutoApproveHours { get; set; }
@@ -81,8 +81,8 @@ public class ApprovalFilterDto
     public string? ApprovalType { get; set; }
     public string? Status { get; set; }
     public string? Priority { get; set; }
-    public Guid? RequestedByUserId { get; set; }
-    public Guid? ApproverUserId { get; set; }
+    public int? RequestedByUserId { get; set; }
+    public int? ApproverUserId { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? IsOverdue { get; set; }

@@ -13,14 +13,14 @@ public class AnswerRepository : IAnswerRepository
         _context = context;
     }
 
-    public async Task<Answer?> GetByIdAsync(Guid id)
+    public async Task<Answer?> GetByIdAsync(int id)
     {
         return await _context.Answers
             .Include(a => a.Question)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
     }
 
-    public async Task<IEnumerable<Answer>> GetByEvaluationIdAsync(Guid evaluationId)
+    public async Task<IEnumerable<Answer>> GetByEvaluationIdAsync(int evaluationId)
     {
         return await _context.Answers
             .Include(a => a.Question)
@@ -44,7 +44,7 @@ public class AnswerRepository : IAnswerRepository
         return answer;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var answer = await _context.Answers.FindAsync(id);
         if (answer == null) return false;
@@ -55,7 +55,7 @@ public class AnswerRepository : IAnswerRepository
         return true;
     }
 
-    public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(Guid questionId)
+    public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId)
     {
         return await _context.Answers
             .Include(a => a.Evaluation)

@@ -33,10 +33,10 @@ public class MeetingsApiController : BaseApiController
         _localizationService = localizationService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantı detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetMeeting(Guid id)
+    public async Task<IActionResult> GetMeeting(int id)
     {
         var meeting = await _context.Meetings
             .Include(m => m.Organizer)
@@ -191,7 +191,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantı güncelle
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMeeting(Guid id, [FromBody] UpdateMeetingDto dto)
+    public async Task<IActionResult> UpdateMeeting(int id, [FromBody] UpdateMeetingDto dto)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -225,7 +225,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıyı sil
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMeeting(Guid id)
+    public async Task<IActionResult> DeleteMeeting(int id)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -241,7 +241,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıyı başlat
     /// </summary>
     [HttpPost("{id}/start")]
-    public async Task<IActionResult> StartMeeting(Guid id)
+    public async Task<IActionResult> StartMeeting(int id)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -258,7 +258,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıyı tamamla
     /// </summary>
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> CompleteMeeting(Guid id, [FromBody] CompleteMeetingDto dto)
+    public async Task<IActionResult> CompleteMeeting(int id, [FromBody] CompleteMeetingDto dto)
     {
         var meeting = await _context.Meetings
             .Include(m => m.Participants)
@@ -294,7 +294,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıyı iptal et
     /// </summary>
     [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelMeeting(Guid id, [FromBody] CancelMeetingRequest? request)
+    public async Task<IActionResult> CancelMeeting(int id, [FromBody] CancelMeetingRequest? request)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -313,7 +313,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıyı ertele
     /// </summary>
     [HttpPost("{id}/postpone")]
-    public async Task<IActionResult> PostponeMeeting(Guid id, [FromBody] PostponeMeetingRequest request)
+    public async Task<IActionResult> PostponeMeeting(int id, [FromBody] PostponeMeetingRequest request)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -336,7 +336,7 @@ public class MeetingsApiController : BaseApiController
     /// Katılımcı ekle
     /// </summary>
     [HttpPost("{id}/participants")]
-    public async Task<IActionResult> AddParticipant(Guid id, [FromBody] CreateMeetingParticipantDto dto)
+    public async Task<IActionResult> AddParticipant(int id, [FromBody] CreateMeetingParticipantDto dto)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -362,7 +362,7 @@ public class MeetingsApiController : BaseApiController
     /// Katılımcı sil
     /// </summary>
     [HttpDelete("{id}/participants/{participantId}")]
-    public async Task<IActionResult> RemoveParticipant(Guid id, Guid participantId)
+    public async Task<IActionResult> RemoveParticipant(int id, int participantId)
     {
         var participant = await _context.MeetingParticipants
             .FirstOrDefaultAsync(p => p.Id == participantId && p.MeetingId == id);
@@ -380,7 +380,7 @@ public class MeetingsApiController : BaseApiController
     /// Toplantıya yanıt ver (Kabul/Reddet)
     /// </summary>
     [HttpPost("{id}/respond")]
-    public async Task<IActionResult> RespondToMeeting(Guid id, [FromBody] RespondToMeetingDto dto)
+    public async Task<IActionResult> RespondToMeeting(int id, [FromBody] RespondToMeetingDto dto)
     {
         var currentUserId = GetCurrentUserId();
 
@@ -405,7 +405,7 @@ public class MeetingsApiController : BaseApiController
     /// Dosya yükle
     /// </summary>
     [HttpPost("{id}/attachments")]
-    public async Task<IActionResult> UploadAttachment(Guid id, IFormFile file, [FromForm] string? description)
+    public async Task<IActionResult> UploadAttachment(int id, IFormFile file, [FromForm] string? description)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null)
@@ -451,7 +451,7 @@ public class MeetingsApiController : BaseApiController
     /// Dosya indir
     /// </summary>
     [HttpGet("{id}/attachments/{attachmentId}/download")]
-    public async Task<IActionResult> DownloadAttachment(Guid id, Guid attachmentId)
+    public async Task<IActionResult> DownloadAttachment(int id, int attachmentId)
     {
         var attachment = await _context.MeetingAttachments
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);
@@ -470,7 +470,7 @@ public class MeetingsApiController : BaseApiController
     /// Dosya sil
     /// </summary>
     [HttpDelete("{id}/attachments/{attachmentId}")]
-    public async Task<IActionResult> DeleteAttachment(Guid id, Guid attachmentId)
+    public async Task<IActionResult> DeleteAttachment(int id, int attachmentId)
     {
         var attachment = await _context.MeetingAttachments
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MeetingId == id);

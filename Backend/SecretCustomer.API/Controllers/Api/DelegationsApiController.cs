@@ -39,7 +39,7 @@ public class DelegationsApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -62,7 +62,7 @@ public class DelegationsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized();
             }
@@ -82,7 +82,7 @@ public class DelegationsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized();
             }
@@ -102,7 +102,7 @@ public class DelegationsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized();
             }
@@ -122,10 +122,10 @@ public class DelegationsApiController : BaseApiController
         try
         {
             // If delegator is not specified, use current user
-            if (dto.DelegatorUserId == Guid.Empty)
+            if (dto.DelegatorUserId == 0)
             {
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
                 {
                     return Unauthorized();
                 }
@@ -142,7 +142,7 @@ public class DelegationsApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDelegationDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateDelegationDto dto)
     {
         try
         {
@@ -157,12 +157,12 @@ public class DelegationsApiController : BaseApiController
 
     [HttpPost("{id}/approve")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Approve(Guid id, [FromBody] ApproveDelegationDto dto)
+    public async Task<IActionResult> Approve(int id, [FromBody] ApproveDelegationDto dto)
     {
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized();
             }
@@ -177,7 +177,7 @@ public class DelegationsApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {

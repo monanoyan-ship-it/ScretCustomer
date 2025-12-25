@@ -5,17 +5,17 @@ namespace SecretCustomer.Core.DTOs.Notification;
 /// </summary>
 public class NotificationDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string NotificationType { get; set; } = string.Empty;
     public string Channel { get; set; } = string.Empty;
     public string Priority { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-    public Guid RecipientUserId { get; set; }
+    public int RecipientUserId { get; set; }
     public string? RecipientUserName { get; set; }
-    public Guid? SenderUserId { get; set; }
+    public int? SenderUserId { get; set; }
     public string? SenderUserName { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
     public string? ActionUrl { get; set; }
     public bool IsRead { get; set; }
@@ -32,7 +32,7 @@ public class NotificationDto
 /// </summary>
 public class NotificationListDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string NotificationType { get; set; } = string.Empty;
     public string Priority { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
@@ -63,8 +63,8 @@ public class CreateNotificationDto
     public string Priority { get; set; } = "Normal";
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-    public Guid RecipientUserId { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public int RecipientUserId { get; set; }
+    public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
     public string? ActionUrl { get; set; }
     public DateTime? ScheduledAt { get; set; }
@@ -82,8 +82,8 @@ public class CreateBulkNotificationDto
     public string Priority { get; set; } = "Normal";
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-    public List<Guid> RecipientUserIds { get; set; } = new();
-    public Guid? RelatedEntityId { get; set; }
+    public List<int> RecipientUserIds { get; set; } = new();
+    public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
     public string? ActionUrl { get; set; }
     public DateTime? ScheduledAt { get; set; }
@@ -121,8 +121,8 @@ public class NotificationSummaryDto
 /// </summary>
 public class NotificationSettingDto
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
     public string NotificationType { get; set; } = string.Empty;
     public bool InAppEnabled { get; set; }
     public bool EmailEnabled { get; set; }

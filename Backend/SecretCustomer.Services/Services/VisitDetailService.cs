@@ -44,7 +44,7 @@ public class VisitDetailService : IVisitDetailService
             .ToListAsync();
     }
 
-    public async Task<VisitSectorDto?> GetSectorByIdAsync(Guid id)
+    public async Task<VisitSectorDto?> GetSectorByIdAsync(int id)
     {
         return await _context.VisitSectors
             .Where(s => s.Id == id)
@@ -104,7 +104,7 @@ public class VisitDetailService : IVisitDetailService
         return (await GetSectorByIdAsync(sector.Id))!;
     }
 
-    public async Task<VisitSectorDto> UpdateSectorAsync(Guid id, SaveVisitSectorDto dto)
+    public async Task<VisitSectorDto> UpdateSectorAsync(int id, SaveVisitSectorDto dto)
     {
         var sector = await _context.VisitSectors.FindAsync(id)
             ?? throw new KeyNotFoundException("Sektör bulunamadı.");
@@ -128,7 +128,7 @@ public class VisitDetailService : IVisitDetailService
         return (await GetSectorByIdAsync(id))!;
     }
 
-    public async Task DeleteSectorAsync(Guid id)
+    public async Task DeleteSectorAsync(int id)
     {
         var sector = await _context.VisitSectors.FindAsync(id)
             ?? throw new KeyNotFoundException("Sektör bulunamadı.");
@@ -158,7 +158,7 @@ public class VisitDetailService : IVisitDetailService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsBySectorAsync(Guid? sectorId)
+    public async Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsBySectorAsync(int? sectorId)
     {
         return await _context.VisitFieldDefinitions
             .Include(f => f.Sector)
@@ -169,7 +169,7 @@ public class VisitDetailService : IVisitDetailService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsForVisitAsync(Guid? sectorId)
+    public async Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsForVisitAsync(int? sectorId)
     {
         // Ortak alanlar (SectorId = null) + sektöre özel alanlar
         return await _context.VisitFieldDefinitions
@@ -181,7 +181,7 @@ public class VisitDetailService : IVisitDetailService
             .ToListAsync();
     }
 
-    public async Task<Dictionary<VisitFieldCategory, List<VisitFieldDefinitionDto>>> GetFieldDefinitionsGroupedAsync(Guid? sectorId)
+    public async Task<Dictionary<VisitFieldCategory, List<VisitFieldDefinitionDto>>> GetFieldDefinitionsGroupedAsync(int? sectorId)
     {
         var fields = await GetFieldDefinitionsForVisitAsync(sectorId);
         return fields
@@ -189,7 +189,7 @@ public class VisitDetailService : IVisitDetailService
             .ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    public async Task<VisitFieldDefinitionDto?> GetFieldDefinitionByIdAsync(Guid id)
+    public async Task<VisitFieldDefinitionDto?> GetFieldDefinitionByIdAsync(int id)
     {
         return await _context.VisitFieldDefinitions
             .Include(f => f.Sector)
@@ -239,7 +239,7 @@ public class VisitDetailService : IVisitDetailService
         return (await GetFieldDefinitionByIdAsync(field.Id))!;
     }
 
-    public async Task<VisitFieldDefinitionDto> UpdateFieldDefinitionAsync(Guid id, SaveVisitFieldDefinitionDto dto)
+    public async Task<VisitFieldDefinitionDto> UpdateFieldDefinitionAsync(int id, SaveVisitFieldDefinitionDto dto)
     {
         var field = await _context.VisitFieldDefinitions.FindAsync(id)
             ?? throw new KeyNotFoundException("Alan tanımı bulunamadı.");
@@ -273,7 +273,7 @@ public class VisitDetailService : IVisitDetailService
         return (await GetFieldDefinitionByIdAsync(id))!;
     }
 
-    public async Task DeleteFieldDefinitionAsync(Guid id)
+    public async Task DeleteFieldDefinitionAsync(int id)
     {
         var field = await _context.VisitFieldDefinitions.FindAsync(id)
             ?? throw new KeyNotFoundException("Alan tanımı bulunamadı.");
@@ -291,7 +291,7 @@ public class VisitDetailService : IVisitDetailService
 
     // ===== DEĞER İŞLEMLERİ =====
 
-    public async Task<IEnumerable<VisitDetailValueDto>> GetVisitDetailsAsync(Guid customerVisitId)
+    public async Task<IEnumerable<VisitDetailValueDto>> GetVisitDetailsAsync(int customerVisitId)
     {
         var visitExists = await _context.CustomerVisits.AnyAsync(v => v.Id == customerVisitId);
         if (!visitExists)
@@ -350,7 +350,7 @@ public class VisitDetailService : IVisitDetailService
         _logger.LogInformation("Visit details saved for {CustomerVisitId}, {Count} values", dto.CustomerVisitId, dto.Values.Count);
     }
 
-    public async Task UpdateFieldValueAsync(Guid customerVisitId, Guid fieldDefinitionId, object? value)
+    public async Task UpdateFieldValueAsync(int customerVisitId, int fieldDefinitionId, object? value)
     {
         var visitExists = await _context.CustomerVisits.AnyAsync(v => v.Id == customerVisitId);
         if (!visitExists)
@@ -373,14 +373,14 @@ public class VisitDetailService : IVisitDetailService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<VisitDetailSummaryDto> GetVisitSummaryAsync(Guid customerVisitId)
+    public async Task<VisitDetailSummaryDto> GetVisitSummaryAsync(int customerVisitId)
     {
         var visit = await _context.CustomerVisits
             .FirstOrDefaultAsync(v => v.Id == customerVisitId)
             ?? throw new KeyNotFoundException("Ziyaret bulunamadı.");
 
         // TODO: CustomerVisit'e SectorId eklendiğinde burayı güncelleyelim
-        Guid? sectorId = null;
+        int? sectorId = null;
 
         var allFields = await GetFieldDefinitionsForVisitAsync(sectorId);
         var values = await _context.VisitDetailValues
@@ -416,7 +416,7 @@ public class VisitDetailService : IVisitDetailService
 
     // ===== SORGULAMA VE İSTATİSTİK =====
 
-    public async Task<IEnumerable<Guid>> FilterVisitsByFieldValueAsync(Guid fieldDefinitionId, object? value, string @operator = "eq")
+    public async Task<IEnumerable<int>> FilterVisitsByFieldValueAsync(int fieldDefinitionId, object? value, string @operator = "eq")
     {
         var query = _context.VisitDetailValues
             .Where(v => v.FieldDefinitionId == fieldDefinitionId);
@@ -436,7 +436,7 @@ public class VisitDetailService : IVisitDetailService
         return await query.Select(v => v.CustomerVisitId).Distinct().ToListAsync();
     }
 
-    public async Task<FieldStatisticsDto> GetFieldStatisticsAsync(Guid fieldDefinitionId, Guid? projectId = null, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<FieldStatisticsDto> GetFieldStatisticsAsync(int fieldDefinitionId, int? projectId = null, DateTime? fromDate = null, DateTime? toDate = null)
     {
         var field = await _context.VisitFieldDefinitions.FindAsync(fieldDefinitionId)
             ?? throw new KeyNotFoundException("Alan tanımı bulunamadı.");
@@ -488,7 +488,7 @@ public class VisitDetailService : IVisitDetailService
         return stats;
     }
 
-    public async Task<IEnumerable<VisitComparisonDto>> CompareVisitsAsync(IEnumerable<Guid> customerVisitIds)
+    public async Task<IEnumerable<VisitComparisonDto>> CompareVisitsAsync(IEnumerable<int> customerVisitIds)
     {
         var visitIdList = customerVisitIds.ToList();
 

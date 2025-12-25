@@ -10,13 +10,13 @@ public class UserPermission : BaseEntity
     /// <summary>
     /// Kullanıcı ID
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public User User { get; set; } = null!;
 
     /// <summary>
     /// Yetki ID
     /// </summary>
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
     public Permission Permission { get; set; } = null!;
 
     /// <summary>

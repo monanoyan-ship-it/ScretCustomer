@@ -8,9 +8,9 @@ public interface IAuthService
     Task<LoginResponseDto> RegisterAsync(RegisterDto dto);
 
     // Profile methods
-    Task<UserProfileDto?> GetProfileAsync(Guid userId);
-    Task<UserProfileDto?> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
-    Task<ChangePasswordResultDto> ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
+    Task<UserProfileDto?> GetProfileAsync(int userId);
+    Task<UserProfileDto?> UpdateProfileAsync(int userId, UpdateProfileDto dto);
+    Task<ChangePasswordResultDto> ChangePasswordAsync(int userId, ChangePasswordDto dto);
 
     // Password Reset methods
     Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto dto);
@@ -21,12 +21,12 @@ public interface IAuthService
     /// <summary>
     /// Müşteri olarak görüntülemeye başla
     /// </summary>
-    Task<ImpersonationResultDto> StartImpersonationAsync(Guid adminUserId, Guid customerId);
+    Task<ImpersonationResultDto> StartImpersonationAsync(int adminUserId, int customerId);
 
     /// <summary>
     /// Müşteri olarak görüntülemeyi sonlandır
     /// </summary>
-    Task<ImpersonationResultDto> EndImpersonationAsync(Guid originalUserId);
+    Task<ImpersonationResultDto> EndImpersonationAsync(int originalUserId);
 
     /// <summary>
     /// İmpersonation için müşteri listesini getir

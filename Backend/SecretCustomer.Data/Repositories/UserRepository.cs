@@ -40,7 +40,7 @@ public class UserRepository : IUserRepository
     }
 
     // CRUD operations
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users
             .Include(u => u.Branch)
@@ -66,7 +66,7 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<User>> GetByBranchAsync(Guid branchId)
+    public async Task<IEnumerable<User>> GetByBranchAsync(int branchId)
     {
         return await _context.Users
             .Include(u => u.Branch)
@@ -101,7 +101,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var user = await _context.Users.FindAsync(id);
         if (user != null)
@@ -112,7 +112,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> ChangePasswordAsync(Guid userId, string newPasswordHash)
+    public async Task<bool> ChangePasswordAsync(int userId, string newPasswordHash)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)

@@ -5,10 +5,10 @@ namespace SecretCustomer.Core.DTOs.Report;
 /// </summary>
 public class ReportFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? EvaluatorId { get; set; }
-    public Guid? ChecklistId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? BranchId { get; set; }
+    public int? EvaluatorId { get; set; }
+    public int? ChecklistId { get; set; }
     public string? Region { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
@@ -22,8 +22,8 @@ public class ReportFilterDto
 /// </summary>
 public class EvaluationReportDto
 {
-    public Guid EvaluationId { get; set; }
-    public Guid AssignmentId { get; set; }
+    public int EvaluationId { get; set; }
+    public int AssignmentId { get; set; }
 
     // Project
     public string ProjectName { get; set; } = string.Empty;
@@ -138,7 +138,7 @@ public class SummaryReportDto
 
 public class ProjectSummaryReportDto
 {
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public int EvaluationCount { get; set; }
     public decimal AverageScore { get; set; }
@@ -146,7 +146,7 @@ public class ProjectSummaryReportDto
 
 public class BranchSummaryReportDto
 {
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public string? Region { get; set; }
     public int EvaluationCount { get; set; }
@@ -155,7 +155,7 @@ public class BranchSummaryReportDto
 
 public class EvaluatorSummaryReportDto
 {
-    public Guid EvaluatorId { get; set; }
+    public int EvaluatorId { get; set; }
     public string EvaluatorName { get; set; } = string.Empty;
     public int EvaluationCount { get; set; }
     public decimal AverageScore { get; set; }
@@ -178,8 +178,8 @@ public class ExcelExportDto
 /// </summary>
 public class PenaltyFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? BranchId { get; set; }
     public string? PenaltyType { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
@@ -213,9 +213,9 @@ public class PenaltySummaryDto
 /// </summary>
 public class PenaltyDetailDto
 {
-    public Guid EvaluationId { get; set; }
-    public Guid AnswerId { get; set; }
-    public Guid QuestionId { get; set; }
+    public int EvaluationId { get; set; }
+    public int AnswerId { get; set; }
+    public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string SectionName { get; set; } = string.Empty;
     public string PenaltyType { get; set; } = string.Empty;
@@ -233,7 +233,7 @@ public class PenaltyDetailDto
 /// </summary>
 public class PenaltyQuestionDto
 {
-    public Guid QuestionId { get; set; }
+    public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
     public string SectionName { get; set; } = string.Empty;
@@ -247,7 +247,7 @@ public class PenaltyQuestionDto
 /// </summary>
 public class PenaltyBranchDto
 {
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public string? Region { get; set; }
     public int YellowCardCount { get; set; }
@@ -275,8 +275,8 @@ public class PenaltyMonthlyTrendDto
 /// </summary>
 public class PersonnelReportCardFilterDto
 {
-    public Guid PersonnelId { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int PersonnelId { get; set; }
+    public int? ProjectId { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
 }
@@ -287,7 +287,7 @@ public class PersonnelReportCardFilterDto
 public class PersonnelReportCardDto
 {
     // Personel bilgileri
-    public Guid PersonnelId { get; set; }
+    public int PersonnelId { get; set; }
     public string PersonnelName { get; set; } = string.Empty;
     public string? Title { get; set; }
     public string? Department { get; set; }
@@ -347,7 +347,7 @@ public class PersonnelSectionPerformanceDto
 /// </summary>
 public class PersonnelEvaluationSummaryDto
 {
-    public Guid EvaluationId { get; set; }
+    public int EvaluationId { get; set; }
     public DateTime? EvaluationDate { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
@@ -376,7 +376,7 @@ public class PersonnelStrengthWeaknessDto
 /// </summary>
 public class PersonnelListItemDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
     public string? BranchName { get; set; }
@@ -389,11 +389,11 @@ public class PersonnelListItemDto
 /// </summary>
 public class SuggestionsFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? ChecklistId { get; set; }
-    public Guid? EvaluatorId { get; set; }
-    public Guid? PersonnelId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? BranchId { get; set; }
+    public int? ChecklistId { get; set; }
+    public int? EvaluatorId { get; set; }
+    public int? PersonnelId { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? SearchText { get; set; }
@@ -430,9 +430,9 @@ public class SuggestionsSummaryDto
 /// </summary>
 public class SuggestionDetailDto
 {
-    public Guid EvaluationId { get; set; }
-    public Guid AnswerId { get; set; }
-    public Guid QuestionId { get; set; }
+    public int EvaluationId { get; set; }
+    public int AnswerId { get; set; }
+    public int QuestionId { get; set; }
 
     // Soru bilgileri
     public string QuestionText { get; set; } = string.Empty;
@@ -471,7 +471,7 @@ public class SuggestionDetailDto
 /// </summary>
 public class QuestionSuggestionSummaryDto
 {
-    public Guid QuestionId { get; set; }
+    public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string SectionName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;

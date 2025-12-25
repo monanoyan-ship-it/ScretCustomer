@@ -4,7 +4,7 @@ namespace SecretCustomer.Core.DTOs.FieldWorker;
 
 public class UpdateFieldWorkerDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     [Required(ErrorMessage = "Ad alanı zorunludur.")]
     [MaxLength(100, ErrorMessage = "Ad en fazla 100 karakter olabilir.")]

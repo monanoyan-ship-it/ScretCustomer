@@ -13,7 +13,7 @@ public class CustomerRepository : ICustomerRepository
         _context = context;
     }
 
-    public async Task<Customer?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Customer?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Customers
             .Where(c => !c.IsDeleted)
@@ -91,7 +91,7 @@ public class CustomerRepository : ICustomerRepository
         return customer;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var customer = await _context.Customers.FindAsync(id);
         if (customer != null)
@@ -101,13 +101,13 @@ public class CustomerRepository : ICustomerRepository
         }
     }
 
-    public async Task<bool> ExistsByTaxNumberAsync(string taxNumber, Guid? excludeId = null)
+    public async Task<bool> ExistsByTaxNumberAsync(string taxNumber, int? excludeId = null)
     {
         return await _context.Customers
             .AnyAsync(c => !c.IsDeleted && c.TaxNumber == taxNumber && (excludeId == null || c.Id != excludeId));
     }
 
-    public async Task<bool> ExistsByEmailAsync(string email, Guid? excludeId = null)
+    public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
     {
         if (string.IsNullOrEmpty(email)) return false;
 

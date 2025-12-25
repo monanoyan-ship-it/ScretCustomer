@@ -30,7 +30,7 @@ public class MyAssignmentsController : Controller
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var userName = User.FindFirstValue(ClaimTypes.Name) ?? await _localizationService.GetResourceAsync("Common.User");
 
             // Get field worker by user id

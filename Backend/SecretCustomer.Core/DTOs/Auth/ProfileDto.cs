@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.DTOs.Auth;
 /// </summary>
 public class UserProfileDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
@@ -16,7 +16,7 @@ public class UserProfileDto
     public string? PhoneNumber { get; set; }
     public string Role { get; set; } = string.Empty;
     public string? BranchName { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
 }

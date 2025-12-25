@@ -9,10 +9,10 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Cevap", Description = "Anket cevapları için Excel import/export", IsAvailable = true)]
 public class Answer : BaseEntity
 {
-    public Guid EvaluationId { get; set; }
+    public int EvaluationId { get; set; }
     public Evaluation Evaluation { get; set; } = null!;
 
-    public Guid QuestionId { get; set; }
+    public int QuestionId { get; set; }
     public Question Question { get; set; } = null!;
 
     [ExcelColumn("Cevap (Metin)", 1, ColumnType = ExcelColumnType.Text,

@@ -46,7 +46,7 @@ public class LocalizationService : ILocalizationService
         return languages!;
     }
 
-    public async Task<Language?> GetLanguageByIdAsync(Guid id)
+    public async Task<Language?> GetLanguageByIdAsync(int id)
     {
         return await _context.Languages.FindAsync(id);
     }
@@ -110,7 +110,7 @@ public class LocalizationService : ILocalizationService
         return existing;
     }
 
-    public async Task DeleteLanguageAsync(Guid id)
+    public async Task DeleteLanguageAsync(int id)
     {
         var language = await _context.Languages.FindAsync(id);
         if (language == null)
@@ -134,7 +134,7 @@ public class LocalizationService : ILocalizationService
 
     #region Resource Operations
 
-    public async Task<string> GetResourceAsync(string resourceName, Guid? languageId = null, string? defaultValue = null)
+    public async Task<string> GetResourceAsync(string resourceName, int? languageId = null, string? defaultValue = null)
     {
         var langId = languageId ?? GetCurrentLanguageId();
         var cacheKey = $"{CACHE_KEY_PREFIX}{langId}_{resourceName}";
@@ -162,7 +162,7 @@ public class LocalizationService : ILocalizationService
         return await GetResourceAsync(resourceName, language.Id, defaultValue);
     }
 
-    public async Task<Dictionary<string, string>> GetAllResourcesAsync(Guid languageId)
+    public async Task<Dictionary<string, string>> GetAllResourcesAsync(int languageId)
     {
         var cacheKey = $"{CACHE_KEY_PREFIX}all_{languageId}";
 
@@ -178,7 +178,7 @@ public class LocalizationService : ILocalizationService
         return resources!;
     }
 
-    public async Task<Dictionary<string, string>> GetResourcesByPrefixAsync(string prefix, Guid? languageId = null)
+    public async Task<Dictionary<string, string>> GetResourcesByPrefixAsync(string prefix, int? languageId = null)
     {
         var langId = languageId ?? GetCurrentLanguageId();
 
@@ -187,13 +187,13 @@ public class LocalizationService : ILocalizationService
             .ToDictionaryAsync(r => r.ResourceName, r => r.ResourceValue);
     }
 
-    public async Task<LocaleStringResource?> GetResourceByNameAsync(string resourceName, Guid languageId)
+    public async Task<LocaleStringResource?> GetResourceByNameAsync(string resourceName, int languageId)
     {
         return await _context.LocaleStringResources
             .FirstOrDefaultAsync(r => r.LanguageId == languageId && r.ResourceName == resourceName);
     }
 
-    public async Task<IEnumerable<LocaleStringResource>> GetResourcesByLanguageAsync(Guid languageId)
+    public async Task<IEnumerable<LocaleStringResource>> GetResourcesByLanguageAsync(int languageId)
     {
         return await _context.LocaleStringResources
             .Where(r => r.LanguageId == languageId)
@@ -201,7 +201,7 @@ public class LocalizationService : ILocalizationService
             .ToListAsync();
     }
 
-    public async Task<LocaleStringResource> SetResourceAsync(Guid languageId, string resourceName, string resourceValue)
+    public async Task<LocaleStringResource> SetResourceAsync(int languageId, string resourceName, string resourceValue)
     {
         var existing = await GetResourceByNameAsync(resourceName, languageId);
 
@@ -227,7 +227,7 @@ public class LocalizationService : ILocalizationService
         return existing;
     }
 
-    public async Task DeleteResourceAsync(Guid resourceId)
+    public async Task DeleteResourceAsync(int resourceId)
     {
         var resource = await _context.LocaleStringResources.FindAsync(resourceId);
         if (resource != null)
@@ -238,7 +238,7 @@ public class LocalizationService : ILocalizationService
         }
     }
 
-    public async Task DeleteResourceByNameAsync(string resourceName, Guid languageId)
+    public async Task DeleteResourceByNameAsync(string resourceName, int languageId)
     {
         var resource = await GetResourceByNameAsync(resourceName, languageId);
         if (resource != null)
@@ -253,7 +253,7 @@ public class LocalizationService : ILocalizationService
 
     #region Bulk Operations
 
-    public async Task ImportResourcesAsync(Guid languageId, Dictionary<string, string> resources)
+    public async Task ImportResourcesAsync(int languageId, Dictionary<string, string> resources)
     {
         foreach (var kvp in resources)
         {
@@ -261,7 +261,7 @@ public class LocalizationService : ILocalizationService
         }
     }
 
-    public async Task<Dictionary<string, string>> ExportResourcesAsync(Guid languageId)
+    public async Task<Dictionary<string, string>> ExportResourcesAsync(int languageId)
     {
         return await GetAllResourcesAsync(languageId);
     }
@@ -270,18 +270,18 @@ public class LocalizationService : ILocalizationService
 
     #region Current Language
 
-    public Guid GetCurrentLanguageId()
+    public int GetCurrentLanguageId()
     {
         // 1. Cookie'den dene (en öncelikli - kullanıcı seçimi)
         var cookie = _httpContextAccessor.HttpContext?.Request.Cookies["Language"];
-        if (Guid.TryParse(cookie, out var cookieLangId))
+        if (int.TryParse(cookie, out var cookieLangId))
             return cookieLangId;
 
         // 2. Kullanıcının kayıtlı dil tercihinden dene
         var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value
             ?? _httpContextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        if (Guid.TryParse(userIdClaim, out var userId))
+        if (int.TryParse(userIdClaim, out var userId))
         {
             // Normal kullanıcı mı kontrol et
             var user = _context.Users.FirstOrDefault(u => u.Id == userId);
@@ -298,7 +298,7 @@ public class LocalizationService : ILocalizationService
         var defaultLang = _context.Languages.FirstOrDefault(l => l.IsDefault && l.IsActive)
             ?? _context.Languages.FirstOrDefault(l => l.IsActive);
 
-        return defaultLang?.Id ?? Guid.Empty;
+        return defaultLang?.Id ?? 0;
     }
 
     public string GetCurrentLanguageCode()
@@ -308,7 +308,7 @@ public class LocalizationService : ILocalizationService
         return lang?.UniqueSeoCode ?? "tr";
     }
 
-    public void SetCurrentLanguage(Guid languageId)
+    public void SetCurrentLanguage(int languageId)
     {
         // Cookie'ye kaydet
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", languageId.ToString(),
@@ -328,12 +328,12 @@ public class LocalizationService : ILocalizationService
     /// <summary>
     /// Kullanıcının dil tercihini veritabanına kaydeder
     /// </summary>
-    private void SaveUserLanguagePreference(Guid languageId)
+    private void SaveUserLanguagePreference(int languageId)
     {
         var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value
             ?? _httpContextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        if (!int.TryParse(userIdClaim, out var userId))
             return;
 
         // Normal kullanıcı mı kontrol et
@@ -357,7 +357,7 @@ public class LocalizationService : ILocalizationService
     /// <summary>
     /// Kullanıcının kayıtlı dil tercihini cookie'ye uygular (login sonrası çağrılır)
     /// </summary>
-    public void ApplyUserLanguagePreference(Guid userId)
+    public void ApplyUserLanguagePreference(int userId)
     {
         // Normal kullanıcı mı kontrol et
         var user = _context.Users.FirstOrDefault(u => u.Id == userId);
@@ -387,7 +387,7 @@ public class LocalizationService : ILocalizationService
         _cache.Remove($"{LANGUAGES_CACHE_KEY}_false");
     }
 
-    private void ClearResourceCache(Guid languageId, string resourceName)
+    private void ClearResourceCache(int languageId, string resourceName)
     {
         _cache.Remove($"{CACHE_KEY_PREFIX}{languageId}_{resourceName}");
         _cache.Remove($"{CACHE_KEY_PREFIX}all_{languageId}");
@@ -401,7 +401,7 @@ public class LocalizationService : ILocalizationService
     /// XML dosyasından çevirileri içe aktarır
     /// Format: NopCommerce tarzı LocaleResource XML
     /// </summary>
-    public async Task<int> ImportFromXmlAsync(Guid languageId, string xmlContent)
+    public async Task<int> ImportFromXmlAsync(int languageId, string xmlContent)
     {
         var doc = XDocument.Parse(xmlContent);
         var resources = doc.Descendants("LocaleResource");
@@ -428,7 +428,7 @@ public class LocalizationService : ILocalizationService
     /// <summary>
     /// XML dosyasından çevirileri içe aktarır (dosya yolu ile)
     /// </summary>
-    public async Task<int> ImportFromXmlFileAsync(Guid languageId, string filePath)
+    public async Task<int> ImportFromXmlFileAsync(int languageId, string filePath)
     {
         if (!File.Exists(filePath))
             throw new FileNotFoundException($"XML dosyası bulunamadı: {filePath}");
@@ -441,7 +441,7 @@ public class LocalizationService : ILocalizationService
     /// Dil koduna göre varsayılan XML dosyasından çevirileri içe aktarır
     /// App_Data/Localization/resources.{languageCode}.xml
     /// </summary>
-    public async Task<int> ImportFromDefaultXmlAsync(Guid languageId, string basePath)
+    public async Task<int> ImportFromDefaultXmlAsync(int languageId, string basePath)
     {
         var language = await GetLanguageByIdAsync(languageId);
         if (language == null)
@@ -456,7 +456,7 @@ public class LocalizationService : ILocalizationService
     /// <summary>
     /// Çevirileri XML formatında dışa aktarır
     /// </summary>
-    public async Task<string> ExportToXmlAsync(Guid languageId)
+    public async Task<string> ExportToXmlAsync(int languageId)
     {
         var language = await GetLanguageByIdAsync(languageId);
         if (language == null)

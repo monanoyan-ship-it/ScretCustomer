@@ -2,7 +2,7 @@ namespace SecretCustomer.API.DTOs;
 
 public class ExcelTemplateDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string EntityType { get; set; } = string.Empty;
@@ -16,7 +16,7 @@ public class ExcelTemplateDto
 
 public class ExcelTemplateSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string EntityType { get; set; } = string.Empty;
@@ -56,7 +56,7 @@ public class UpdateExcelTemplateDto
 
 public class UpdateExcelColumnDto
 {
-    public Guid? Id { get; set; }  // Null for new columns
+    public int? Id { get; set; }  // Null for new columns
     public string ColumnName { get; set; } = string.Empty;
     public string PropertyName { get; set; } = string.Empty;
     public Core.Enums.ExcelColumnType ColumnType { get; set; }

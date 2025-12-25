@@ -31,7 +31,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 
         // User ID'yi al
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             _logger.LogWarning("User ID claim not found or invalid");
             return;

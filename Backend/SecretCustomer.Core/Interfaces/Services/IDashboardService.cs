@@ -5,14 +5,14 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IDashboardService
 {
     Task<DashboardStatsDto> GetAdminDashboardAsync(DateTime? startDate = null, DateTime? endDate = null);
-    Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(Guid branchId, DateTime? startDate = null, DateTime? endDate = null);
-    Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(Guid userId);
-    Task<ScorecardDto> GetScorecardAsync(Guid userId);
+    Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(int branchId, DateTime? startDate = null, DateTime? endDate = null);
+    Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(int userId);
+    Task<ScorecardDto> GetScorecardAsync(int userId);
 }
 
 public class RepresentativeEvaluationDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string BranchName { get; set; } = string.Empty;
     public decimal? ScorePercentage { get; set; }

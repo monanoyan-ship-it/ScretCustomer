@@ -100,7 +100,7 @@ public class Training : BaseEntity
     /// <summary>
     /// Eğitmen ID
     /// </summary>
-    public Guid? TrainerId { get; set; }
+    public int? TrainerId { get; set; }
 
     /// <summary>
     /// Eğitmen
@@ -120,7 +120,7 @@ public class Training : BaseEntity
     /// <summary>
     /// Oluşturan kullanıcı ID
     /// </summary>
-    public Guid? CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
 
     /// <summary>
     /// Oluşturan kullanıcı
@@ -130,7 +130,7 @@ public class Training : BaseEntity
     /// <summary>
     /// İlişkili proje ID
     /// </summary>
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
 
     /// <summary>
     /// İlişkili proje
@@ -140,7 +140,7 @@ public class Training : BaseEntity
     /// <summary>
     /// İlişkili müşteri ID
     /// </summary>
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 
     /// <summary>
     /// İlişkili müşteri
@@ -181,7 +181,7 @@ public class TrainingParticipant : BaseEntity
     /// <summary>
     /// Eğitim ID
     /// </summary>
-    public Guid TrainingId { get; set; }
+    public int TrainingId { get; set; }
 
     /// <summary>
     /// Eğitim
@@ -191,7 +191,7 @@ public class TrainingParticipant : BaseEntity
     /// <summary>
     /// Kullanıcı ID
     /// </summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>
     /// Kullanıcı
@@ -267,7 +267,7 @@ public class TrainingMaterial : BaseEntity
     /// <summary>
     /// Eğitim ID
     /// </summary>
-    public Guid TrainingId { get; set; }
+    public int TrainingId { get; set; }
 
     /// <summary>
     /// Eğitim
@@ -322,7 +322,7 @@ public class TrainingMaterial : BaseEntity
     /// <summary>
     /// Yükleyen kullanıcı ID
     /// </summary>
-    public Guid? UploadedByUserId { get; set; }
+    public int? UploadedByUserId { get; set; }
 
     /// <summary>
     /// Yükleyen kullanıcı

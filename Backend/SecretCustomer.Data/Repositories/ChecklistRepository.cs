@@ -13,7 +13,7 @@ public class ChecklistRepository : IChecklistRepository
         _context = context;
     }
 
-    public async Task<Checklist?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Checklist?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
@@ -53,35 +53,12 @@ public class ChecklistRepository : IChecklistRepository
 
     public async Task<Checklist> UpdateAsync(Checklist checklist)
     {
-        // Entity zaten tracked durumda (GetByIdAsync ile yüklenmiş)
-        // Sadece yeni eklenen (Detached) entity'ler için state ayarla
-        foreach (var section in checklist.Sections)
-        {
-            var sectionEntry = _context.Entry(section);
-
-            // Eğer entity tracked değilse (yeni eklendiyse), Added olarak işaretle
-            if (sectionEntry.State == EntityState.Detached)
-            {
-                sectionEntry.State = EntityState.Added;
-            }
-
-            foreach (var question in section.Questions)
-            {
-                var questionEntry = _context.Entry(question);
-
-                // Eğer entity tracked değilse (yeni eklendiyse), Added olarak işaretle
-                if (questionEntry.State == EntityState.Detached)
-                {
-                    questionEntry.State = EntityState.Added;
-                }
-            }
-        }
-
+        // Entity zaten tracked - EF Core değişiklikleri otomatik algılar
         await _context.SaveChangesAsync();
         return checklist;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var checklist = await _context.Checklists.FindAsync(id);
         if (checklist == null) return false;
@@ -91,7 +68,7 @@ public class ChecklistRepository : IChecklistRepository
         return true;
     }
 
-    public async Task<bool> ExistsAsync(Guid id)
+    public async Task<bool> ExistsAsync(int id)
     {
         return await _context.Checklists.AnyAsync(c => c.Id == id);
     }

@@ -13,7 +13,7 @@ public class DashboardStatsDto
 
 public class TopBranchDto
 {
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public decimal AverageScore { get; set; }
     public int EvaluationCount { get; set; }
@@ -30,7 +30,7 @@ public class MonthlyTrendDto
 
 public class BranchComparisonDto
 {
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public string Region { get; set; } = string.Empty;
     public decimal AverageScore { get; set; }
@@ -74,7 +74,7 @@ public class ScorecardDto
 
 public class RecentEvaluationDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string BranchName { get; set; } = string.Empty;
     public decimal? ScorePercentage { get; set; }

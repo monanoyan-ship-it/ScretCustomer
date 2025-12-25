@@ -56,7 +56,7 @@ public class BranchesApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -101,7 +101,7 @@ public class BranchesApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBranchDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateBranchDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -131,7 +131,7 @@ public class BranchesApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {

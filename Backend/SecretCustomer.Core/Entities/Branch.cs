@@ -34,6 +34,6 @@ public class Branch : BaseEntity
     public ICollection<User> Users { get; set; } = new List<User>();
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 }

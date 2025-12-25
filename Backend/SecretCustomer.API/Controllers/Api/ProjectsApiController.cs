@@ -70,7 +70,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -93,7 +93,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet("{id}/detail")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetDetail(Guid id)
+    public async Task<IActionResult> GetDetail(int id)
     {
         try
         {
@@ -140,7 +140,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateProjectDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] CreateProjectDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -168,7 +168,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -195,7 +195,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/status")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateProjectStatusDto dto)
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateProjectStatusDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -227,7 +227,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/start")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> StartProject(Guid id)
+    public async Task<IActionResult> StartProject(int id)
     {
         try
         {
@@ -254,7 +254,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/pause")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> PauseProject(Guid id)
+    public async Task<IActionResult> PauseProject(int id)
     {
         try
         {
@@ -281,7 +281,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/complete")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CompleteProject(Guid id)
+    public async Task<IActionResult> CompleteProject(int id)
     {
         try
         {
@@ -308,7 +308,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/cancel")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CancelProject(Guid id, [FromBody] CancelProjectDto? dto = null)
+    public async Task<IActionResult> CancelProject(int id, [FromBody] CancelProjectDto? dto = null)
     {
         try
         {
@@ -335,7 +335,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/close")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CloseProject(Guid id)
+    public async Task<IActionResult> CloseProject(int id)
     {
         try
         {
@@ -362,7 +362,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/team")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ManageTeam(Guid id, [FromBody] ManageProjectTeamDto dto)
+    public async Task<IActionResult> ManageTeam(int id, [FromBody] ManageProjectTeamDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -394,7 +394,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/branches")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ManageBranches(Guid id, [FromBody] ManageProjectBranchesDto dto)
+    public async Task<IActionResult> ManageBranches(int id, [FromBody] ManageProjectBranchesDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -426,7 +426,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet("{id}/statistics")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetStatistics(Guid id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    public async Task<IActionResult> GetStatistics(int id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         try
         {
@@ -449,7 +449,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet("by-customer/{customerId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByCustomer(Guid customerId)
+    public async Task<IActionResult> GetByCustomer(int customerId)
     {
         try
         {
@@ -468,7 +468,7 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet("by-manager/{managerId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByManager(Guid managerId)
+    public async Task<IActionResult> GetByManager(int managerId)
     {
         try
         {

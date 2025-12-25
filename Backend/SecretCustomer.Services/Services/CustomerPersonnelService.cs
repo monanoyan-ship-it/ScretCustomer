@@ -19,7 +19,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         _customerRepository = customerRepository;
     }
 
-    public async Task<CustomerPersonnelDto?> GetByIdAsync(Guid id)
+    public async Task<CustomerPersonnelDto?> GetByIdAsync(int id)
     {
         var personnel = await _personnelRepository.GetByIdAsync(id, includeDetails: true);
         return personnel == null ? null : MapToDto(personnel);
@@ -31,7 +31,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         return personnel.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<CustomerPersonnelDto>> GetByCustomerIdAsync(Guid customerId, bool includeInactive = false)
+    public async Task<IEnumerable<CustomerPersonnelDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false)
     {
         var personnel = await _personnelRepository.GetByCustomerIdAsync(customerId, includeInactive);
         return personnel.Select(MapToDto);
@@ -88,7 +88,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         return MapToDto(result!);
     }
 
-    public async Task<CustomerPersonnelDto> UpdateAsync(Guid id, UpdateCustomerPersonnelDto updateDto)
+    public async Task<CustomerPersonnelDto> UpdateAsync(int id, UpdateCustomerPersonnelDto updateDto)
     {
         var personnel = await _personnelRepository.GetByIdAsync(id, includeDetails: true);
         if (personnel == null)
@@ -135,7 +135,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         return MapToDto(result!);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var personnel = await _personnelRepository.GetByIdAsync(id);
         if (personnel == null)
@@ -146,7 +146,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         await _personnelRepository.DeleteAsync(id);
     }
 
-    public async Task ChangePasswordAsync(Guid personnelId, CustomerPersonnelChangePasswordDto changePasswordDto)
+    public async Task ChangePasswordAsync(int personnelId, CustomerPersonnelChangePasswordDto changePasswordDto)
     {
         var personnel = await _personnelRepository.GetByIdAsync(personnelId);
         if (personnel == null)
@@ -167,7 +167,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         await _personnelRepository.UpdateAsync(personnel);
     }
 
-    public async Task ResetPasswordAsync(Guid personnelId, AdminResetPasswordDto resetPasswordDto)
+    public async Task ResetPasswordAsync(int personnelId, AdminResetPasswordDto resetPasswordDto)
     {
         var personnel = await _personnelRepository.GetByIdAsync(personnelId);
         if (personnel == null)

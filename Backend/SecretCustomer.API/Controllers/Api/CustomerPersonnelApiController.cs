@@ -41,7 +41,7 @@ public class CustomerPersonnelApiController : BaseApiController
     }
 
     [HttpGet("by-customer/{customerId}")]
-    public async Task<IActionResult> GetByCustomerId(Guid customerId, [FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetByCustomerId(int customerId, [FromQuery] bool includeInactive = false)
     {
         try
         {
@@ -56,7 +56,7 @@ public class CustomerPersonnelApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -112,7 +112,7 @@ public class CustomerPersonnelApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCustomerPersonnelDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerPersonnelDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -148,7 +148,7 @@ public class CustomerPersonnelApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -169,7 +169,7 @@ public class CustomerPersonnelApiController : BaseApiController
 
     [HttpPost("{id}/change-password")]
     [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
-    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] CustomerPersonnelChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword(int id, [FromBody] CustomerPersonnelChangePasswordDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -209,7 +209,7 @@ public class CustomerPersonnelApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/reset-password")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] AdminResetPasswordDto dto)
+    public async Task<IActionResult> ResetPassword(int id, [FromBody] AdminResetPasswordDto dto)
     {
         if (!ModelState.IsValid)
         {

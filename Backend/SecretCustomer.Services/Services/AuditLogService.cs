@@ -18,14 +18,14 @@ public class AuditLogService : IAuditLogService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    private (Guid? userId, string? userName, string? ipAddress, string? userAgent, string? requestUrl, string? httpMethod) GetRequestInfo()
+    private (int? userId, string? userName, string? ipAddress, string? userAgent, string? requestUrl, string? httpMethod) GetRequestInfo()
     {
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext == null)
             return (null, null, null, null, null, null);
 
         var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userId = Guid.TryParse(userIdClaim, out var uid) ? uid : (Guid?)null;
+        var userId = int.TryParse(userIdClaim, out var uid) ? uid : (int?)null;
         var userName = httpContext.User.FindFirst(ClaimTypes.Name)?.Value;
 
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
@@ -129,7 +129,7 @@ public class AuditLogService : IAuditLogService
         await _context.SaveChangesAsync();
     }
 
-    public async Task LogLoginAsync(Guid userId, string userName, bool success, string? failReason = null)
+    public async Task LogLoginAsync(int userId, string userName, bool success, string? failReason = null)
     {
         var (_, _, ipAddress, userAgent, requestUrl, httpMethod) = GetRequestInfo();
 
@@ -152,7 +152,7 @@ public class AuditLogService : IAuditLogService
         await _context.SaveChangesAsync();
     }
 
-    public async Task LogLogoutAsync(Guid userId, string userName)
+    public async Task LogLogoutAsync(int userId, string userName)
     {
         var (_, _, ipAddress, userAgent, requestUrl, httpMethod) = GetRequestInfo();
 
@@ -200,7 +200,7 @@ public class AuditLogService : IAuditLogService
     public async Task<IEnumerable<AuditLog>> GetLogsAsync(
         LogType? logType = null,
         string? category = null,
-        Guid? userId = null,
+        int? userId = null,
         DateTime? fromDate = null,
         DateTime? toDate = null,
         int page = 1,
@@ -233,7 +233,7 @@ public class AuditLogService : IAuditLogService
     public async Task<int> GetLogsCountAsync(
         LogType? logType = null,
         string? category = null,
-        Guid? userId = null,
+        int? userId = null,
         DateTime? fromDate = null,
         DateTime? toDate = null)
     {

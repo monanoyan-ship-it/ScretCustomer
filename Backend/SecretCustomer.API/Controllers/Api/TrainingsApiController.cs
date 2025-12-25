@@ -33,10 +33,10 @@ public class TrainingsApiController : BaseApiController
         _localizationService = localizationService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitim detayını getir
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTraining(Guid id)
+    public async Task<IActionResult> GetTraining(int id)
     {
         var training = await _context.Trainings
             .Include(t => t.Trainer)
@@ -253,7 +253,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi güncelle
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTraining(Guid id, [FromBody] UpdateTrainingDto dto)
+    public async Task<IActionResult> UpdateTraining(int id, [FromBody] UpdateTrainingDto dto)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -293,7 +293,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi sil
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTraining(Guid id)
+    public async Task<IActionResult> DeleteTraining(int id)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -309,7 +309,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi başlat
     /// </summary>
     [HttpPost("{id}/start")]
-    public async Task<IActionResult> StartTraining(Guid id)
+    public async Task<IActionResult> StartTraining(int id)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -327,7 +327,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi tamamla
     /// </summary>
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> CompleteTraining(Guid id, [FromBody] CompleteTrainingDto dto)
+    public async Task<IActionResult> CompleteTraining(int id, [FromBody] CompleteTrainingDto dto)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -345,7 +345,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi iptal et
     /// </summary>
     [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelTraining(Guid id)
+    public async Task<IActionResult> CancelTraining(int id)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -360,7 +360,7 @@ public class TrainingsApiController : BaseApiController
     /// Eğitimi ertele
     /// </summary>
     [HttpPost("{id}/postpone")]
-    public async Task<IActionResult> PostponeTraining(Guid id, [FromBody] DateTime? newDate)
+    public async Task<IActionResult> PostponeTraining(int id, [FromBody] DateTime? newDate)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -380,7 +380,7 @@ public class TrainingsApiController : BaseApiController
     /// Katılımcı ekle
     /// </summary>
     [HttpPost("{id}/participants")]
-    public async Task<IActionResult> AddParticipant(Guid id, [FromBody] AddTrainingParticipantDto dto)
+    public async Task<IActionResult> AddParticipant(int id, [FromBody] AddTrainingParticipantDto dto)
     {
         var training = await _context.Trainings.Include(t => t.Participants).FirstOrDefaultAsync(t => t.Id == id);
         if (training == null)
@@ -416,7 +416,7 @@ public class TrainingsApiController : BaseApiController
     /// Katılımcı durumunu güncelle
     /// </summary>
     [HttpPut("{id}/participants/{participantId}")]
-    public async Task<IActionResult> UpdateParticipantStatus(Guid id, Guid participantId, [FromBody] UpdateParticipantStatusDto dto)
+    public async Task<IActionResult> UpdateParticipantStatus(int id, int participantId, [FromBody] UpdateParticipantStatusDto dto)
     {
         var participant = await _context.TrainingParticipants.FirstOrDefaultAsync(p => p.Id == participantId && p.TrainingId == id);
         if (participant == null)
@@ -442,7 +442,7 @@ public class TrainingsApiController : BaseApiController
     /// Sertifika ver
     /// </summary>
     [HttpPost("{id}/participants/{participantId}/certificate")]
-    public async Task<IActionResult> IssueCertificate(Guid id, Guid participantId)
+    public async Task<IActionResult> IssueCertificate(int id, int participantId)
     {
         var participant = await _context.TrainingParticipants.FirstOrDefaultAsync(p => p.Id == participantId && p.TrainingId == id);
         if (participant == null)
@@ -460,7 +460,7 @@ public class TrainingsApiController : BaseApiController
     /// Katılımcı sil
     /// </summary>
     [HttpDelete("{id}/participants/{participantId}")]
-    public async Task<IActionResult> RemoveParticipant(Guid id, Guid participantId)
+    public async Task<IActionResult> RemoveParticipant(int id, int participantId)
     {
         var participant = await _context.TrainingParticipants.FirstOrDefaultAsync(p => p.Id == participantId && p.TrainingId == id);
         if (participant == null)
@@ -480,7 +480,7 @@ public class TrainingsApiController : BaseApiController
     /// Materyal ekle (dosya ile)
     /// </summary>
     [HttpPost("{id}/materials")]
-    public async Task<IActionResult> AddMaterial(Guid id, [FromForm] IFormFile? file, [FromForm] string name, [FromForm] string? description, [FromForm] string? externalUrl, [FromForm] int sortOrder = 0, [FromForm] bool isRequired = false)
+    public async Task<IActionResult> AddMaterial(int id, [FromForm] IFormFile? file, [FromForm] string name, [FromForm] string? description, [FromForm] string? externalUrl, [FromForm] int sortOrder = 0, [FromForm] bool isRequired = false)
     {
         var training = await _context.Trainings.FindAsync(id);
         if (training == null)
@@ -526,7 +526,7 @@ public class TrainingsApiController : BaseApiController
     /// Materyal indir
     /// </summary>
     [HttpGet("{id}/materials/{materialId}/download")]
-    public async Task<IActionResult> DownloadMaterial(Guid id, Guid materialId)
+    public async Task<IActionResult> DownloadMaterial(int id, int materialId)
     {
         var material = await _context.TrainingMaterials.FirstOrDefaultAsync(m => m.Id == materialId && m.TrainingId == id);
         if (material == null || string.IsNullOrEmpty(material.FilePath))
@@ -543,7 +543,7 @@ public class TrainingsApiController : BaseApiController
     /// Materyal sil
     /// </summary>
     [HttpDelete("{id}/materials/{materialId}")]
-    public async Task<IActionResult> DeleteMaterial(Guid id, Guid materialId)
+    public async Task<IActionResult> DeleteMaterial(int id, int materialId)
     {
         var material = await _context.TrainingMaterials.FirstOrDefaultAsync(m => m.Id == materialId && m.TrainingId == id);
         if (material == null)

@@ -53,7 +53,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Sektör detayını getirir
     /// </summary>
     [HttpGet("sectors/{id}")]
-    public async Task<IActionResult> GetSectorById(Guid id)
+    public async Task<IActionResult> GetSectorById(int id)
     {
         try
         {
@@ -97,7 +97,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpPut("sectors/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateSector(Guid id, [FromBody] SaveVisitSectorDto dto)
+    public async Task<IActionResult> UpdateSector(int id, [FromBody] SaveVisitSectorDto dto)
     {
         try
         {
@@ -124,7 +124,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpDelete("sectors/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteSector(Guid id)
+    public async Task<IActionResult> DeleteSector(int id)
     {
         try
         {
@@ -172,7 +172,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Sektöre göre alan tanımlarını getirir
     /// </summary>
     [HttpGet("fields/sector/{sectorId}")]
-    public async Task<IActionResult> GetFieldDefinitionsBySector(Guid sectorId)
+    public async Task<IActionResult> GetFieldDefinitionsBySector(int sectorId)
     {
         try
         {
@@ -208,7 +208,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Bir ziyaret için geçerli alanları getirir (ortak + sektöre özel)
     /// </summary>
     [HttpGet("fields/for-visit")]
-    public async Task<IActionResult> GetFieldDefinitionsForVisit([FromQuery] Guid? sectorId)
+    public async Task<IActionResult> GetFieldDefinitionsForVisit([FromQuery] int? sectorId)
     {
         try
         {
@@ -226,7 +226,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Kategorilere göre gruplu alan tanımlarını getirir
     /// </summary>
     [HttpGet("fields/grouped")]
-    public async Task<IActionResult> GetFieldDefinitionsGrouped([FromQuery] Guid? sectorId)
+    public async Task<IActionResult> GetFieldDefinitionsGrouped([FromQuery] int? sectorId)
     {
         try
         {
@@ -244,7 +244,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Alan tanımı detayını getirir
     /// </summary>
     [HttpGet("fields/{id}")]
-    public async Task<IActionResult> GetFieldDefinitionById(Guid id)
+    public async Task<IActionResult> GetFieldDefinitionById(int id)
     {
         try
         {
@@ -292,7 +292,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpPut("fields/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateFieldDefinition(Guid id, [FromBody] SaveVisitFieldDefinitionDto dto)
+    public async Task<IActionResult> UpdateFieldDefinition(int id, [FromBody] SaveVisitFieldDefinitionDto dto)
     {
         try
         {
@@ -319,7 +319,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpDelete("fields/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteFieldDefinition(Guid id)
+    public async Task<IActionResult> DeleteFieldDefinition(int id)
     {
         try
         {
@@ -349,7 +349,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Bir ziyaretin tüm detaylarını getirir
     /// </summary>
     [HttpGet("values/{customerVisitId}")]
-    public async Task<IActionResult> GetVisitDetails(Guid customerVisitId)
+    public async Task<IActionResult> GetVisitDetails(int customerVisitId)
     {
         try
         {
@@ -371,7 +371,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Bir ziyaretin detay özetini getirir
     /// </summary>
     [HttpGet("values/{customerVisitId}/summary")]
-    public async Task<IActionResult> GetVisitSummary(Guid customerVisitId)
+    public async Task<IActionResult> GetVisitSummary(int customerVisitId)
     {
         try
         {
@@ -419,7 +419,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpPut("values/{customerVisitId}/field/{fieldDefinitionId}")]
     [Authorize(Roles = "Admin,TeamLeader,CustomerRepresentative,FieldWorker")]
-    public async Task<IActionResult> UpdateFieldValue(Guid customerVisitId, Guid fieldDefinitionId, [FromBody] object? value)
+    public async Task<IActionResult> UpdateFieldValue(int customerVisitId, int fieldDefinitionId, [FromBody] object? value)
     {
         try
         {
@@ -447,7 +447,7 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpGet("filter")]
     public async Task<IActionResult> FilterVisitsByFieldValue(
-        [FromQuery] Guid fieldDefinitionId,
+        [FromQuery] int fieldDefinitionId,
         [FromQuery] string? value,
         [FromQuery] string @operator = "eq")
     {
@@ -468,8 +468,8 @@ public class VisitDetailsApiController : BaseApiController
     /// </summary>
     [HttpGet("statistics/{fieldDefinitionId}")]
     public async Task<IActionResult> GetFieldStatistics(
-        Guid fieldDefinitionId,
-        [FromQuery] Guid? projectId = null,
+        int fieldDefinitionId,
+        [FromQuery] int? projectId = null,
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null)
     {
@@ -493,7 +493,7 @@ public class VisitDetailsApiController : BaseApiController
     /// Birden fazla ziyareti karşılaştırır
     /// </summary>
     [HttpPost("compare")]
-    public async Task<IActionResult> CompareVisits([FromBody] IEnumerable<Guid> customerVisitIds)
+    public async Task<IActionResult> CompareVisits([FromBody] IEnumerable<int> customerVisitIds)
     {
         try
         {

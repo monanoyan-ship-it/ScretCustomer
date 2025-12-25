@@ -2,9 +2,9 @@ namespace SecretCustomer.Core.DTOs.Evaluation;
 
 public class EvaluationDto
 {
-    public Guid Id { get; set; }
-    public Guid AssignmentId { get; set; }
-    public Guid? EvaluatorId { get; set; }
+    public int Id { get; set; }
+    public int AssignmentId { get; set; }
+    public int? EvaluatorId { get; set; }
     public string? EvaluatorName { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal? TotalScore { get; set; }
@@ -39,7 +39,7 @@ public class EvaluationDto
     /// <summary>
     /// Değerlendirilen personel ID
     /// </summary>
-    public Guid? EvaluatedPersonnelId { get; set; }
+    public int? EvaluatedPersonnelId { get; set; }
 
     /// <summary>
     /// Değerlendirilen personel adı
@@ -86,8 +86,8 @@ public class EvaluationDto
 
 public class AnswerDto
 {
-    public Guid Id { get; set; }
-    public Guid QuestionId { get; set; }
+    public int Id { get; set; }
+    public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string? QuestionType { get; set; }
     public string? AnswerText { get; set; }

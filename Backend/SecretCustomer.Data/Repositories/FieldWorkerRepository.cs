@@ -13,14 +13,14 @@ public class FieldWorkerRepository : IFieldWorkerRepository
         _context = context;
     }
 
-    public async Task<FieldWorker?> GetByIdAsync(Guid id)
+    public async Task<FieldWorker?> GetByIdAsync(int id)
     {
         return await _context.FieldWorkers
             .Include(fw => fw.User)
             .FirstOrDefaultAsync(fw => fw.Id == id);
     }
 
-    public async Task<FieldWorker?> GetByUserIdAsync(Guid userId)
+    public async Task<FieldWorker?> GetByUserIdAsync(int userId)
     {
         return await _context.FieldWorkers
             .Include(fw => fw.User)
@@ -69,7 +69,7 @@ public class FieldWorkerRepository : IFieldWorkerRepository
         return fieldWorker;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var fieldWorker = await _context.FieldWorkers.FindAsync(id);
         if (fieldWorker != null)
@@ -80,7 +80,7 @@ public class FieldWorkerRepository : IFieldWorkerRepository
         }
     }
 
-    public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, Guid? excludeId = null)
+    public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, int? excludeId = null)
     {
         var query = _context.FieldWorkers.Where(fw => fw.PhoneNumber == phoneNumber);
 

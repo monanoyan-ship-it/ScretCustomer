@@ -39,7 +39,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// Soruya ait dosyaları listele
     /// </summary>
     [HttpGet("question/{questionId}")]
-    public async Task<IActionResult> GetByQuestion(Guid questionId)
+    public async Task<IActionResult> GetByQuestion(int questionId)
     {
         try
         {
@@ -77,7 +77,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// </summary>
     [HttpPost("question/{questionId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Upload(Guid questionId, IFormFile file, [FromForm] string? description)
+    public async Task<IActionResult> Upload(int questionId, IFormFile file, [FromForm] string? description)
     {
         try
         {
@@ -126,8 +126,8 @@ public class QuestionAttachmentsApiController : BaseApiController
 
             // Kullanıcı ID
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Guid? userId = null;
-            if (Guid.TryParse(userIdClaim, out var parsedUserId))
+            int? userId = null;
+            if (int.TryParse(userIdClaim, out var parsedUserId))
             {
                 userId = parsedUserId;
             }
@@ -185,7 +185,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// Dosya indir
     /// </summary>
     [HttpGet("{id}/download")]
-    public async Task<IActionResult> Download(Guid id)
+    public async Task<IActionResult> Download(int id)
     {
         try
         {
@@ -216,7 +216,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -254,7 +254,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// </summary>
     [HttpPut("{id}/order")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] int newOrder)
+    public async Task<IActionResult> UpdateOrder(int id, [FromBody] int newOrder)
     {
         try
         {

@@ -18,19 +18,19 @@ public class Delegation : BaseEntity
     public string? Description { get; set; }
 
     // Vekalet veren (Delegator)
-    public Guid DelegatorUserId { get; set; }
+    public int DelegatorUserId { get; set; }
     public User DelegatorUser { get; set; } = null!;
 
     // Vekalet veren birim (opsiyonel)
-    public Guid? DelegatorOrganizationUnitId { get; set; }
+    public int? DelegatorOrganizationUnitId { get; set; }
     public OrganizationUnit? DelegatorOrganizationUnit { get; set; }
 
     // Vekalet alan (Delegatee)
-    public Guid DelegateeUserId { get; set; }
+    public int DelegateeUserId { get; set; }
     public User DelegateeUser { get; set; } = null!;
 
     // Vekalet alan birim (opsiyonel)
-    public Guid? DelegateeOrganizationUnitId { get; set; }
+    public int? DelegateeOrganizationUnitId { get; set; }
     public OrganizationUnit? DelegateeOrganizationUnit { get; set; }
 
     [ExcelColumn("Başlangıç Tarihi", 3, IsRequired = true, ColumnType = ExcelColumnType.Date,
@@ -68,6 +68,6 @@ public class Delegation : BaseEntity
     // Onay durumu
     public bool IsApproved { get; set; } = false;
     public DateTime? ApprovedAt { get; set; }
-    public Guid? ApprovedByUserId { get; set; }
+    public int? ApprovedByUserId { get; set; }
     public User? ApprovedByUser { get; set; }
 }

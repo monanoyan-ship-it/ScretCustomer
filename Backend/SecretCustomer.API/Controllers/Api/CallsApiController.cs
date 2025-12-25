@@ -33,10 +33,10 @@ public class CallsApiController : BaseApiController
         _localizationService = localizationService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     private string GenerateReferenceNumber()
@@ -142,7 +142,7 @@ public class CallsApiController : BaseApiController
     /// Çağrı detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCall(Guid id)
+    public async Task<IActionResult> GetCall(int id)
     {
         var call = await _context.Calls
             .Include(c => c.Project)
@@ -201,7 +201,7 @@ public class CallsApiController : BaseApiController
     /// Çağrı güncelle
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCall(Guid id, [FromBody] UpdateCallDto dto)
+    public async Task<IActionResult> UpdateCall(int id, [FromBody] UpdateCallDto dto)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -236,7 +236,7 @@ public class CallsApiController : BaseApiController
     /// Çağrıyı sil
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCall(Guid id)
+    public async Task<IActionResult> DeleteCall(int id)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -252,7 +252,7 @@ public class CallsApiController : BaseApiController
     /// Çağrıyı başlat
     /// </summary>
     [HttpPost("{id}/start")]
-    public async Task<IActionResult> StartCall(Guid id, [FromBody] StartCallDto? dto)
+    public async Task<IActionResult> StartCall(int id, [FromBody] StartCallDto? dto)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -269,7 +269,7 @@ public class CallsApiController : BaseApiController
     /// Çağrıyı tamamla
     /// </summary>
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> CompleteCall(Guid id, [FromBody] CompleteCallDto dto)
+    public async Task<IActionResult> CompleteCall(int id, [FromBody] CompleteCallDto dto)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -302,7 +302,7 @@ public class CallsApiController : BaseApiController
     /// Çağrıyı cevapsız olarak işaretle
     /// </summary>
     [HttpPost("{id}/missed")]
-    public async Task<IActionResult> MarkAsMissed(Guid id)
+    public async Task<IActionResult> MarkAsMissed(int id)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -318,7 +318,7 @@ public class CallsApiController : BaseApiController
     /// Geri aramayı tamamla
     /// </summary>
     [HttpPost("{id}/callback-complete")]
-    public async Task<IActionResult> CompleteCallback(Guid id)
+    public async Task<IActionResult> CompleteCallback(int id)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -336,7 +336,7 @@ public class CallsApiController : BaseApiController
     /// Çağrı kaydı yükle
     /// </summary>
     [HttpPost("{id}/recording")]
-    public async Task<IActionResult> UploadRecording(Guid id, IFormFile file)
+    public async Task<IActionResult> UploadRecording(int id, IFormFile file)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -371,7 +371,7 @@ public class CallsApiController : BaseApiController
     /// Çağrı kaydını indir
     /// </summary>
     [HttpGet("{id}/recording")]
-    public async Task<IActionResult> DownloadRecording(Guid id)
+    public async Task<IActionResult> DownloadRecording(int id)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -395,7 +395,7 @@ public class CallsApiController : BaseApiController
     /// Dosya yükle
     /// </summary>
     [HttpPost("{id}/attachments")]
-    public async Task<IActionResult> UploadAttachment(Guid id, IFormFile file, [FromForm] string? description)
+    public async Task<IActionResult> UploadAttachment(int id, IFormFile file, [FromForm] string? description)
     {
         var call = await _context.Calls.FindAsync(id);
         if (call == null)
@@ -440,7 +440,7 @@ public class CallsApiController : BaseApiController
     /// Dosya indir
     /// </summary>
     [HttpGet("{id}/attachments/{attachmentId}/download")]
-    public async Task<IActionResult> DownloadAttachment(Guid id, Guid attachmentId)
+    public async Task<IActionResult> DownloadAttachment(int id, int attachmentId)
     {
         var attachment = await _context.CallAttachments
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);
@@ -459,7 +459,7 @@ public class CallsApiController : BaseApiController
     /// Dosya sil
     /// </summary>
     [HttpDelete("{id}/attachments/{attachmentId}")]
-    public async Task<IActionResult> DeleteAttachment(Guid id, Guid attachmentId)
+    public async Task<IActionResult> DeleteAttachment(int id, int attachmentId)
     {
         var attachment = await _context.CallAttachments
             .FirstOrDefaultAsync(a => a.Id == attachmentId && a.CallId == id);

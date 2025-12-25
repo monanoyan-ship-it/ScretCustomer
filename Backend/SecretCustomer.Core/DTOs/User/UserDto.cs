@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.User;
 
 public class UserDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
@@ -14,7 +14,7 @@ public class UserDto
     public UserRole Role { get; set; }
     public string RoleName => Role.ToString();
     public bool IsActive { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -47,7 +47,7 @@ public class CreateUserDto
 
     public bool IsActive { get; set; } = true;
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 }
 
 public class UpdateUserDto
@@ -69,5 +69,5 @@ public class UpdateUserDto
 
     public bool IsActive { get; set; }
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 }

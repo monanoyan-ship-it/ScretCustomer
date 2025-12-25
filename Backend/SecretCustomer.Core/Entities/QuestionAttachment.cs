@@ -8,7 +8,7 @@ public class QuestionAttachment : BaseEntity
     /// <summary>
     /// Soru ID
     /// </summary>
-    public Guid QuestionId { get; set; }
+    public int QuestionId { get; set; }
     public Question Question { get; set; } = null!;
 
     /// <summary>
@@ -49,6 +49,6 @@ public class QuestionAttachment : BaseEntity
     /// <summary>
     /// Yükleyen kullanıcı
     /// </summary>
-    public Guid? UploadedByUserId { get; set; }
+    public int? UploadedByUserId { get; set; }
     public User? UploadedByUser { get; set; }
 }

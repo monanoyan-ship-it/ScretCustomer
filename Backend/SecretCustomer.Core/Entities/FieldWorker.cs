@@ -35,7 +35,7 @@ public class FieldWorker : BaseEntity
     public string? Notes { get; set; }
 
     // User relationship - saha çalışanı aynı zamanda sistem kullanıcısıdır
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
     public User? User { get; set; }
 
     // Navigation properties

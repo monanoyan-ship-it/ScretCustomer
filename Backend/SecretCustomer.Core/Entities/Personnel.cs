@@ -68,10 +68,10 @@ public class Personnel : BaseEntity
     public string? Notes { get; set; }
 
     // Foreign Keys
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public Branch? Branch { get; set; }
 
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 
     // Computed Property

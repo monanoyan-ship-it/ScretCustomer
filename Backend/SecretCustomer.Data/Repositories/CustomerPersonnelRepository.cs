@@ -13,7 +13,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         _context = context;
     }
 
-    public async Task<CustomerPersonnel?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<CustomerPersonnel?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.CustomerPersonnel.AsQueryable();
 
@@ -46,7 +46,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<CustomerPersonnel>> GetByCustomerIdAsync(Guid customerId, bool includeInactive = false)
+    public async Task<IEnumerable<CustomerPersonnel>> GetByCustomerIdAsync(int customerId, bool includeInactive = false)
     {
         var query = _context.CustomerPersonnel
             .Include(p => p.Customer)
@@ -94,7 +94,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         return personnel;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var personnel = await _context.CustomerPersonnel.FindAsync(id);
         if (personnel != null)
@@ -104,13 +104,13 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         }
     }
 
-    public async Task<bool> ExistsByUsernameAsync(string username, Guid? excludeId = null)
+    public async Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null)
     {
         return await _context.CustomerPersonnel
             .AnyAsync(p => p.Username == username && (excludeId == null || p.Id != excludeId));
     }
 
-    public async Task<bool> ExistsByEmailAsync(string email, Guid? excludeId = null)
+    public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
     {
         return await _context.CustomerPersonnel
             .AnyAsync(p => p.Email == email && (excludeId == null || p.Id != excludeId));

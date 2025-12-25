@@ -11,7 +11,7 @@ public class VisitFieldDefinition : BaseEntity
     /// <summary>
     /// Bağlı olduğu sektör (null ise tüm sektörler için geçerli - ortak alan)
     /// </summary>
-    public Guid? SectorId { get; set; }
+    public int? SectorId { get; set; }
     public VisitSector? Sector { get; set; }
 
     /// <summary>

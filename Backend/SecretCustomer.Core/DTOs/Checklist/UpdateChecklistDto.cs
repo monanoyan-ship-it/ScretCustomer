@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.Checklist;
 public class UpdateChecklistDto
 {
     [Required]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     [Required]
     [MaxLength(255)]
@@ -38,7 +38,7 @@ public class UpdateChecklistDto
 
 public class UpdateSectionDto
 {
-    public Guid? Id { get; set; }
+    public int? Id { get; set; }
 
     [Required]
     [MaxLength(255)]
@@ -60,7 +60,7 @@ public class UpdateSectionDto
 
 public class UpdateQuestionDto
 {
-    public Guid? Id { get; set; }
+    public int? Id { get; set; }
 
     [Required]
     [MaxLength(1000)]

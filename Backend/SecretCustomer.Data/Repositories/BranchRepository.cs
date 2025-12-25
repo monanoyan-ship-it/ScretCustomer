@@ -13,7 +13,7 @@ public class BranchRepository : IBranchRepository
         _context = context;
     }
 
-    public async Task<Branch?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Branch?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Branches.AsQueryable();
 
@@ -97,7 +97,7 @@ public class BranchRepository : IBranchRepository
         return branch;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var branch = await _context.Branches.FindAsync(id);
         if (branch != null)
@@ -108,7 +108,7 @@ public class BranchRepository : IBranchRepository
         }
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null)
+    public async Task<bool> ExistsByCodeAsync(string code, int? excludeId = null)
     {
         var query = _context.Branches.Where(b => b.Code == code);
 

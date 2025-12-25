@@ -41,7 +41,7 @@ public class FieldWorkersApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -86,7 +86,7 @@ public class FieldWorkersApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFieldWorkerDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateFieldWorkerDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -117,7 +117,7 @@ public class FieldWorkersApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {

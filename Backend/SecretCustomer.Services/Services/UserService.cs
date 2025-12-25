@@ -17,7 +17,7 @@ public class UserService : IUserService
         _auditLogService = auditLogService;
     }
 
-    public async Task<UserDto?> GetByIdAsync(Guid id)
+    public async Task<UserDto?> GetByIdAsync(int id)
     {
         var user = await _userRepository.GetByIdAsync(id);
         return user == null ? null : MapToDto(user);
@@ -35,7 +35,7 @@ public class UserService : IUserService
         return users.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<UserDto>> GetByBranchAsync(Guid branchId)
+    public async Task<IEnumerable<UserDto>> GetByBranchAsync(int branchId)
     {
         var users = await _userRepository.GetByBranchAsync(branchId);
         return users.Select(MapToDto);
@@ -85,7 +85,7 @@ public class UserService : IUserService
         return MapToDto(createdUser);
     }
 
-    public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto updateUserDto)
+    public async Task<UserDto> UpdateAsync(int id, UpdateUserDto updateUserDto)
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null)
@@ -118,7 +118,7 @@ public class UserService : IUserService
         return MapToDto(updatedUser);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null)
@@ -134,7 +134,7 @@ public class UserService : IUserService
             "UserService");
     }
 
-    public async Task<bool> ChangePasswordAsync(Guid userId, string newPassword)
+    public async Task<bool> ChangePasswordAsync(int userId, string newPassword)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -156,7 +156,7 @@ public class UserService : IUserService
         return result;
     }
 
-    public async Task<bool> AdminChangePasswordAsync(Guid userId, string newPassword)
+    public async Task<bool> AdminChangePasswordAsync(int userId, string newPassword)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -179,7 +179,7 @@ public class UserService : IUserService
     }
 
     // Branch assignment
-    public async Task<UserDto> AssignToBranchAsync(Guid userId, Guid branchId)
+    public async Task<UserDto> AssignToBranchAsync(int userId, int branchId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -192,7 +192,7 @@ public class UserService : IUserService
         return MapToDto(updatedUser);
     }
 
-    public async Task<UserDto> RemoveFromBranchAsync(Guid userId)
+    public async Task<UserDto> RemoveFromBranchAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -205,7 +205,7 @@ public class UserService : IUserService
         return MapToDto(updatedUser);
     }
 
-    public async Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<Guid> userIds, Guid branchId)
+    public async Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<int> userIds, int branchId)
     {
         var updatedUsers = new List<UserDto>();
 

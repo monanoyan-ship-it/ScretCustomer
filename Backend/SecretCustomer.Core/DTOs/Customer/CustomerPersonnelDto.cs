@@ -5,8 +5,8 @@ namespace SecretCustomer.Core.DTOs.Customer;
 
 public class CustomerPersonnelDto
 {
-    public Guid Id { get; set; }
-    public Guid CustomerId { get; set; }
+    public int Id { get; set; }
+    public int CustomerId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -28,7 +28,7 @@ public class CustomerPersonnelDto
 public class CreateCustomerPersonnelDto
 {
     [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
-    public Guid CustomerId { get; set; }
+    public int CustomerId { get; set; }
 
     [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
     [StringLength(100)]

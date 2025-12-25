@@ -49,7 +49,7 @@ public class ChecklistsApiController : BaseApiController
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin,TeamLeader,Evaluator")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -99,7 +99,7 @@ public class ChecklistsApiController : BaseApiController
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateChecklistDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateChecklistDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -108,6 +108,18 @@ public class ChecklistsApiController : BaseApiController
 
         try
         {
+            // Debug: Gelen veriyi logla
+            _logger.LogInformation("UPDATE Checklist {Id} - Sections: {SectionCount}", id, dto.Sections?.Count ?? 0);
+            foreach (var section in dto.Sections ?? new List<UpdateSectionDto>())
+            {
+                _logger.LogInformation("  Section: Id={SectionId}, Name={Name}, Questions={QuestionCount}",
+                    section.Id, section.Name, section.Questions?.Count ?? 0);
+                foreach (var q in section.Questions ?? new List<UpdateQuestionDto>())
+                {
+                    _logger.LogInformation("    Question: Id={QuestionId}, Text={Text}", q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)));
+                }
+            }
+
             dto.Id = id;
             var checklist = await _checklistService.UpdateAsync(dto);
             if (checklist == null)
@@ -116,6 +128,24 @@ public class ChecklistsApiController : BaseApiController
             }
 
             return Ok(checklist);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+        {
+            // Detaylı hata mesajı
+            var entries = ex.Entries.Select(e => new {
+                Entity = e.Entity.GetType().Name,
+                State = e.State.ToString(),
+                Id = e.Property("Id")?.CurrentValue?.ToString() ?? "null"
+            }).ToList();
+
+            _logger.LogError(ex, "Concurrency error updating checklist {Id}. Affected entities: {@Entries}", id, entries);
+
+            return StatusCode(500, new {
+                message = "Veritabanı güncelleme hatası",
+                error = ex.Message,
+                affectedEntities = entries,
+                hint = "Muhtemelen güncellenmeye çalışılan kayıt veritabanında yok veya silinmiş."
+            });
         }
         catch (Exception ex)
         {
@@ -126,7 +156,7 @@ public class ChecklistsApiController : BaseApiController
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -147,7 +177,7 @@ public class ChecklistsApiController : BaseApiController
 
     [HttpPost("{id}/clone")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Clone(Guid id, [FromBody] string newName)
+    public async Task<IActionResult> Clone(int id, [FromBody] string newName)
     {
         try
         {

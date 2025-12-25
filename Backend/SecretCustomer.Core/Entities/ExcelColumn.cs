@@ -4,7 +4,7 @@ namespace SecretCustomer.Core.Entities;
 
 public class ExcelColumn : BaseEntity
 {
-    public Guid ExcelTemplateId { get; set; }
+    public int ExcelTemplateId { get; set; }
     public ExcelTemplate ExcelTemplate { get; set; } = null!;
 
     public string ColumnName { get; set; } = string.Empty;  // Excel'de görünecek başlık

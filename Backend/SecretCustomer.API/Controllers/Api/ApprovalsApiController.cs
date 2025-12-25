@@ -29,10 +29,10 @@ public class ApprovalsApiController : BaseApiController
         _auditLogService = auditLogService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public class ApprovalsApiController : BaseApiController
     /// Onay detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetApproval(Guid id)
+    public async Task<IActionResult> GetApproval(int id)
     {
         var approval = await _context.Approvals
             .Include(a => a.RequestedByUser)
@@ -234,7 +234,7 @@ public class ApprovalsApiController : BaseApiController
     /// Onay yanıtı ver
     /// </summary>
     [HttpPost("{id}/respond")]
-    public async Task<IActionResult> RespondToApproval(Guid id, [FromBody] ApprovalResponseDto dto)
+    public async Task<IActionResult> RespondToApproval(int id, [FromBody] ApprovalResponseDto dto)
     {
         var approval = await _context.Approvals.FindAsync(id);
         if (approval == null)
@@ -281,7 +281,7 @@ public class ApprovalsApiController : BaseApiController
     /// Onay talebini iptal et
     /// </summary>
     [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelApproval(Guid id)
+    public async Task<IActionResult> CancelApproval(int id)
     {
         var approval = await _context.Approvals.FindAsync(id);
         if (approval == null)

@@ -9,7 +9,7 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Bölüm", Description = "Kontrol listesi bölümleri için Excel import/export", IsAvailable = true)]
 public class Section : BaseEntity
 {
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
     [ExcelColumn("Bölüm Adı", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,

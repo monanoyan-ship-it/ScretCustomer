@@ -47,7 +47,7 @@ public class PersonnelApiController : BaseApiController
     /// Personel detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -93,7 +93,7 @@ public class PersonnelApiController : BaseApiController
     /// Personel güncelle
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePersonnelDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdatePersonnelDto dto)
     {
         try
         {
@@ -121,7 +121,7 @@ public class PersonnelApiController : BaseApiController
     /// Personel sil
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -142,7 +142,7 @@ public class PersonnelApiController : BaseApiController
     /// Şubeye göre personel listesi
     /// </summary>
     [HttpGet("branch/{branchId}")]
-    public async Task<IActionResult> GetByBranch(Guid branchId)
+    public async Task<IActionResult> GetByBranch(int branchId)
     {
         try
         {
@@ -160,7 +160,7 @@ public class PersonnelApiController : BaseApiController
     /// Müşteriye göre personel listesi
     /// </summary>
     [HttpGet("customer/{customerId}")]
-    public async Task<IActionResult> GetByCustomer(Guid customerId)
+    public async Task<IActionResult> GetByCustomer(int customerId)
     {
         try
         {
@@ -178,7 +178,7 @@ public class PersonnelApiController : BaseApiController
     /// TC Kimlik No kontrolü
     /// </summary>
     [HttpGet("check-tc/{tcKimlikNo}")]
-    public async Task<IActionResult> CheckTcKimlikNo(string tcKimlikNo, [FromQuery] Guid? excludeId)
+    public async Task<IActionResult> CheckTcKimlikNo(string tcKimlikNo, [FromQuery] int? excludeId)
     {
         try
         {

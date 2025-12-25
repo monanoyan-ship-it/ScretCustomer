@@ -53,7 +53,7 @@ public class ExcelTemplatesApiController : BaseApiController
     /// Get Excel template by ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ExcelTemplateDto>> GetById(Guid id)
+    public async Task<ActionResult<ExcelTemplateDto>> GetById(int id)
     {
         var template = await _excelTemplateService.GetByIdAsync(id, includeColumns: true);
 
@@ -91,7 +91,6 @@ public class ExcelTemplatesApiController : BaseApiController
         {
             var template = new ExcelTemplate
             {
-                Id = Guid.NewGuid(),
                 Name = createDto.Name,
                 Description = createDto.Description,
                 EntityType = createDto.EntityType,
@@ -100,7 +99,6 @@ public class ExcelTemplatesApiController : BaseApiController
                 IsActive = true,
                 Columns = createDto.Columns.Select(c => new ExcelColumn
                 {
-                    Id = Guid.NewGuid(),
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
                     ColumnType = c.ColumnType,
@@ -134,7 +132,7 @@ public class ExcelTemplatesApiController : BaseApiController
     /// </summary>
     [HttpPut("{id}")]
     public async Task<ActionResult<ExcelTemplateDto>> Update(
-        Guid id,
+        int id,
         [FromBody] UpdateExcelTemplateDto updateDto)
     {
         try
@@ -150,7 +148,7 @@ public class ExcelTemplatesApiController : BaseApiController
                 HasHeader = updateDto.HasHeader,
                 Columns = updateDto.Columns.Select(c => new ExcelColumn
                 {
-                    Id = c.Id ?? Guid.NewGuid(),
+                    Id = c.Id ?? 0,
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
                     ColumnType = c.ColumnType,
@@ -187,7 +185,7 @@ public class ExcelTemplatesApiController : BaseApiController
     /// Delete Excel template (soft delete)
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<ActionResult> Delete(int id)
     {
         var result = await _excelTemplateService.DeleteAsync(id);
 
@@ -203,7 +201,7 @@ public class ExcelTemplatesApiController : BaseApiController
     /// Generate and download sample Excel file based on template
     /// </summary>
     [HttpGet("{id}/export")]
-    public async Task<IActionResult> ExportTemplate(Guid id)
+    public async Task<IActionResult> ExportTemplate(int id)
     {
         try
         {
@@ -232,7 +230,7 @@ public class ExcelTemplatesApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/import")]
     public async Task<ActionResult<ExcelParseResultDto>> ImportExcel(
-        Guid id,
+        int id,
         IFormFile file)
     {
         if (file == null || file.Length == 0)

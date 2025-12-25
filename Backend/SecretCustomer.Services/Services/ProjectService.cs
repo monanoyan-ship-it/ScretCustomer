@@ -38,7 +38,7 @@ public class ProjectService : IProjectService
         return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
     }
 
-    public async Task<ProjectDto?> GetByIdAsync(Guid id)
+    public async Task<ProjectDto?> GetByIdAsync(int id)
     {
         var project = await _context.Projects
             .Include(p => p.Checklist)
@@ -53,7 +53,7 @@ public class ProjectService : IProjectService
         return project == null ? null : MapToDto(project);
     }
 
-    public async Task<ProjectDetailDto?> GetDetailByIdAsync(Guid id)
+    public async Task<ProjectDetailDto?> GetDetailByIdAsync(int id)
     {
         var project = await _context.Projects
             .Include(p => p.Checklist)
@@ -194,7 +194,7 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<ProjectDto> UpdateAsync(Guid id, CreateProjectDto dto)
+    public async Task<ProjectDto> UpdateAsync(int id, CreateProjectDto dto)
     {
         var project = await _context.Projects
             .Include(p => p.ProjectBranches)
@@ -237,7 +237,7 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
@@ -249,7 +249,7 @@ public class ProjectService : IProjectService
         return true;
     }
 
-    public async Task<ProjectDto> CloseProjectAsync(Guid id)
+    public async Task<ProjectDto> CloseProjectAsync(int id)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
@@ -263,7 +263,7 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<ProjectDto> UpdateStatusAsync(Guid id, UpdateProjectStatusDto dto)
+    public async Task<ProjectDto> UpdateStatusAsync(int id, UpdateProjectStatusDto dto)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
@@ -282,17 +282,17 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<ProjectDto> StartProjectAsync(Guid id)
+    public async Task<ProjectDto> StartProjectAsync(int id)
     {
         return await UpdateStatusAsync(id, new UpdateProjectStatusDto { Status = "Active", Notes = "Proje baslatildi" });
     }
 
-    public async Task<ProjectDto> PauseProjectAsync(Guid id)
+    public async Task<ProjectDto> PauseProjectAsync(int id)
     {
         return await UpdateStatusAsync(id, new UpdateProjectStatusDto { Status = "Paused", Notes = "Proje duraklatildi" });
     }
 
-    public async Task<ProjectDto> CompleteProjectAsync(Guid id)
+    public async Task<ProjectDto> CompleteProjectAsync(int id)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
@@ -307,7 +307,7 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<ProjectDto> CancelProjectAsync(Guid id, string? reason)
+    public async Task<ProjectDto> CancelProjectAsync(int id, string? reason)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
@@ -322,7 +322,7 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
-    public async Task<ProjectDetailDto> ManageTeamAsync(Guid projectId, ManageProjectTeamDto dto)
+    public async Task<ProjectDetailDto> ManageTeamAsync(int projectId, ManageProjectTeamDto dto)
     {
         var project = await _context.Projects
             .Include(p => p.TeamMembers)
@@ -360,7 +360,7 @@ public class ProjectService : IProjectService
         return await GetDetailByIdAsync(projectId) ?? throw new KeyNotFoundException("Project not found after update");
     }
 
-    public async Task<ProjectDetailDto> ManageBranchesAsync(Guid projectId, ManageProjectBranchesDto dto)
+    public async Task<ProjectDetailDto> ManageBranchesAsync(int projectId, ManageProjectBranchesDto dto)
     {
         var project = await _context.Projects
             .Include(p => p.ProjectBranches)
@@ -399,7 +399,7 @@ public class ProjectService : IProjectService
         return await GetDetailByIdAsync(projectId) ?? throw new KeyNotFoundException("Project not found after update");
     }
 
-    public async Task<ProjectDetailDto> GetStatisticsAsync(Guid projectId, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<ProjectDetailDto> GetStatisticsAsync(int projectId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var detail = await GetDetailByIdAsync(projectId);
         if (detail == null)
@@ -433,7 +433,7 @@ public class ProjectService : IProjectService
         return detail;
     }
 
-    public async Task<IEnumerable<ProjectDto>> GetByCustomerIdAsync(Guid customerId)
+    public async Task<IEnumerable<ProjectDto>> GetByCustomerIdAsync(int customerId)
     {
         var projects = await _context.Projects
             .Include(p => p.Checklist)
@@ -445,7 +445,7 @@ public class ProjectService : IProjectService
         return projects.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<ProjectDto>> GetByManagerIdAsync(Guid managerId)
+    public async Task<IEnumerable<ProjectDto>> GetByManagerIdAsync(int managerId)
     {
         var projects = await _context.Projects
             .Include(p => p.Checklist)

@@ -9,7 +9,7 @@ namespace SecretCustomer.Core.DTOs.Visit;
 /// </summary>
 public class VisitSectorDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -39,8 +39,8 @@ public class SaveVisitSectorDto
 /// </summary>
 public class VisitFieldDefinitionDto
 {
-    public Guid Id { get; set; }
-    public Guid? SectorId { get; set; }
+    public int Id { get; set; }
+    public int? SectorId { get; set; }
     public string? SectorName { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -66,7 +66,7 @@ public class VisitFieldDefinitionDto
 /// </summary>
 public class SaveVisitFieldDefinitionDto
 {
-    public Guid? SectorId { get; set; }
+    public int? SectorId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -90,9 +90,9 @@ public class SaveVisitFieldDefinitionDto
 /// </summary>
 public class VisitDetailValueDto
 {
-    public Guid Id { get; set; }
-    public Guid CustomerVisitId { get; set; }
-    public Guid FieldDefinitionId { get; set; }
+    public int Id { get; set; }
+    public int CustomerVisitId { get; set; }
+    public int FieldDefinitionId { get; set; }
     public string FieldCode { get; set; } = string.Empty;
     public string FieldName { get; set; } = string.Empty;
     public VisitFieldCategory Category { get; set; }
@@ -116,7 +116,7 @@ public class VisitDetailValueDto
 /// </summary>
 public class SaveVisitDetailsDto
 {
-    public Guid CustomerVisitId { get; set; }
+    public int CustomerVisitId { get; set; }
     public List<VisitDetailValueInputDto> Values { get; set; } = new();
 }
 
@@ -125,7 +125,7 @@ public class SaveVisitDetailsDto
 /// </summary>
 public class VisitDetailValueInputDto
 {
-    public Guid FieldDefinitionId { get; set; }
+    public int FieldDefinitionId { get; set; }
     public object? Value { get; set; }
 }
 
@@ -136,8 +136,8 @@ public class VisitDetailValueInputDto
 /// </summary>
 public class VisitDetailSummaryDto
 {
-    public Guid CustomerVisitId { get; set; }
-    public Guid? SectorId { get; set; }
+    public int CustomerVisitId { get; set; }
+    public int? SectorId { get; set; }
     public string SectorName { get; set; } = string.Empty;
     public int TotalFields { get; set; }
     public int FilledFields { get; set; }
@@ -161,7 +161,7 @@ public class CategorySummaryDto
 /// </summary>
 public class FieldStatisticsDto
 {
-    public Guid FieldDefinitionId { get; set; }
+    public int FieldDefinitionId { get; set; }
     public string FieldCode { get; set; } = string.Empty;
     public string FieldName { get; set; } = string.Empty;
     public VisitFieldType FieldType { get; set; }
@@ -187,7 +187,7 @@ public class FieldStatisticsDto
 /// </summary>
 public class VisitComparisonDto
 {
-    public Guid FieldDefinitionId { get; set; }
+    public int FieldDefinitionId { get; set; }
     public string FieldCode { get; set; } = string.Empty;
     public string FieldName { get; set; } = string.Empty;
     public List<VisitComparisonValueDto> Values { get; set; } = new();
@@ -201,6 +201,6 @@ public class VisitComparisonDto
 /// </summary>
 public class VisitComparisonValueDto
 {
-    public Guid CustomerVisitId { get; set; }
+    public int CustomerVisitId { get; set; }
     public object? Value { get; set; }
 }

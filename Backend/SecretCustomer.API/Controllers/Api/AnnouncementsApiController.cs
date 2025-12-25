@@ -136,7 +136,7 @@ public class AnnouncementsApiController : BaseApiController
     /// Tek duyuru detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -226,8 +226,8 @@ public class AnnouncementsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Guid? userId = null;
-            if (Guid.TryParse(userIdClaim, out var parsedUserId))
+            int? userId = null;
+            if (int.TryParse(userIdClaim, out var parsedUserId))
             {
                 userId = parsedUserId;
             }
@@ -280,7 +280,7 @@ public class AnnouncementsApiController : BaseApiController
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateAnnouncementDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] CreateAnnouncementDto dto)
     {
         try
         {
@@ -320,7 +320,7 @@ public class AnnouncementsApiController : BaseApiController
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {

@@ -14,7 +14,7 @@ public class CreateProjectDto
     public string? Description { get; set; }
 
     [Required]
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
 
     [Required]
     public string ProjectType { get; set; } = "MysteryShopping";
@@ -43,7 +43,7 @@ public class CreateProjectDto
     public bool AutoGenerateReports { get; set; } = false;
 
     // Yonetici
-    public Guid? ProjectManagerId { get; set; }
+    public int? ProjectManagerId { get; set; }
 
     // Diger
     public decimal? MinimumScoreThreshold { get; set; }
@@ -52,7 +52,7 @@ public class CreateProjectDto
     public string? Notes { get; set; }
 
     // Musteri
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 
     // Hedef Subeler
     public List<CreateProjectBranchDto>? Branches { get; set; }
@@ -64,7 +64,7 @@ public class CreateProjectDto
 public class CreateProjectBranchDto
 {
     [Required]
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public int? TargetCount { get; set; }
     public int Priority { get; set; } = 0;
 }
@@ -72,7 +72,7 @@ public class CreateProjectBranchDto
 public class CreateProjectTeamMemberDto
 {
     [Required]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public string Role { get; set; } = "Evaluator";
 }
 
@@ -91,8 +91,8 @@ public class UpdateProjectStatusDto
 /// </summary>
 public class ManageProjectTeamDto
 {
-    public List<Guid> AddUserIds { get; set; } = new();
-    public List<Guid> RemoveUserIds { get; set; } = new();
+    public List<int> AddUserIds { get; set; } = new();
+    public List<int> RemoveUserIds { get; set; } = new();
 }
 
 /// <summary>
@@ -101,5 +101,5 @@ public class ManageProjectTeamDto
 public class ManageProjectBranchesDto
 {
     public List<CreateProjectBranchDto> AddBranches { get; set; } = new();
-    public List<Guid> RemoveBranchIds { get; set; } = new();
+    public List<int> RemoveBranchIds { get; set; } = new();
 }

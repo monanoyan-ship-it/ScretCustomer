@@ -7,12 +7,12 @@ namespace SecretCustomer.Core.DTOs.CustomerVisit;
 /// </summary>
 public class CustomerVisitDto
 {
-    public Guid Id { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int Id { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
-    public Guid VisitorUserId { get; set; }
+    public int VisitorUserId { get; set; }
     public string? VisitorUserName { get; set; }
     public VisitType VisitType { get; set; }
     public string VisitTypeName => VisitType.ToString();
@@ -36,9 +36,9 @@ public class CustomerVisitDto
     public bool RequiresFollowUp { get; set; }
     public string? FollowUpNotes { get; set; }
     public DateTime? FollowUpDate { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public string? ProjectName { get; set; }
-    public Guid? EvaluationId { get; set; }
+    public int? EvaluationId { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<CustomerVisitAttachmentDto> Attachments { get; set; } = new();
 }
@@ -48,8 +48,8 @@ public class CustomerVisitDto
 /// </summary>
 public class CreateCustomerVisitDto
 {
-    public Guid? CustomerId { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? BranchId { get; set; }
     public VisitType VisitType { get; set; } = VisitType.Routine;
     public DateTime PlannedDate { get; set; }
     public string? PlannedTime { get; set; }
@@ -58,7 +58,7 @@ public class CreateCustomerVisitDto
     public string? ContactPersonTitle { get; set; }
     public string? ContactPersonPhone { get; set; }
     public string? Address { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
 }
 
 /// <summary>
@@ -86,8 +86,8 @@ public class CompleteCustomerVisitDto
 /// </summary>
 public class CustomerVisitAttachmentDto
 {
-    public Guid Id { get; set; }
-    public Guid CustomerVisitId { get; set; }
+    public int Id { get; set; }
+    public int CustomerVisitId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
     public long FileSize { get; set; }
@@ -104,7 +104,7 @@ public class CustomerVisitAttachmentDto
 /// </summary>
 public class CustomerVisitSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string? CustomerName { get; set; }
     public string? BranchName { get; set; }
     public string? VisitorUserName { get; set; }
@@ -121,9 +121,9 @@ public class CustomerVisitSummaryDto
 /// </summary>
 public class CustomerVisitFilterDto
 {
-    public Guid? CustomerId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? VisitorUserId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? VisitorUserId { get; set; }
     public VisitType? VisitType { get; set; }
     public VisitStatus? Status { get; set; }
     public DateTime? FromDate { get; set; }

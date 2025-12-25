@@ -11,7 +11,7 @@ public class FormController : Controller
     /// Public değerlendirme formu sayfası
     /// UniqueLink ile erişilir (QR kod taraması)
     /// </summary>
-    public IActionResult Index(Guid id)
+    public IActionResult Index(int id)
     {
         ViewBag.UniqueLink = id;
         return View();

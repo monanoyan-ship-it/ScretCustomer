@@ -5,9 +5,9 @@ namespace SecretCustomer.Core.DTOs.Evaluation;
 public class SubmitEvaluationDto
 {
     [Required]
-    public Guid AssignmentId { get; set; }
+    public int AssignmentId { get; set; }
 
-    public Guid? EvaluatorId { get; set; }
+    public int? EvaluatorId { get; set; }
 
     [Required]
     public List<SubmitAnswerDto> Answers { get; set; } = new();
@@ -39,7 +39,7 @@ public class SubmitEvaluationDto
     /// <summary>
     /// Değerlendirilen personel ID
     /// </summary>
-    public Guid? EvaluatedPersonnelId { get; set; }
+    public int? EvaluatedPersonnelId { get; set; }
 
     /// <summary>
     /// Tanımsız personel adı
@@ -70,7 +70,7 @@ public class SubmitEvaluationDto
 public class SubmitAnswerDto
 {
     [Required]
-    public Guid QuestionId { get; set; }
+    public int QuestionId { get; set; }
 
     public string? AnswerText { get; set; }
 
@@ -112,9 +112,9 @@ public class SubmitAnswerDto
 public class StartEvaluationDto
 {
     [Required]
-    public Guid AssignmentId { get; set; }
+    public int AssignmentId { get; set; }
 
-    public Guid? EvaluatorId { get; set; }
+    public int? EvaluatorId { get; set; }
 
     /// <summary>
     /// Çağrı ID/numarası
@@ -129,7 +129,7 @@ public class StartEvaluationDto
     /// <summary>
     /// Değerlendirilen personel ID
     /// </summary>
-    public Guid? EvaluatedPersonnelId { get; set; }
+    public int? EvaluatedPersonnelId { get; set; }
 
     /// <summary>
     /// Tanımsız personel adı
@@ -143,7 +143,7 @@ public class StartEvaluationDto
 public class UpdateDraftDto
 {
     [Required]
-    public Guid EvaluationId { get; set; }
+    public int EvaluationId { get; set; }
 
     public List<SubmitAnswerDto> Answers { get; set; } = new();
 

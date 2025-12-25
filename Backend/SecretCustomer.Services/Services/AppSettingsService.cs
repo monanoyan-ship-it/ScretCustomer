@@ -15,7 +15,7 @@ public class AppSettingsService : IAppSettingsService
         _context = context;
     }
 
-    public async Task<AppSettings?> GetByKeyAsync(string key, Guid? entityId = null, string? entityType = null)
+    public async Task<AppSettings?> GetByKeyAsync(string key, int? entityId = null, string? entityType = null)
     {
         return await _context.AppSettings
             .FirstOrDefaultAsync(s => s.Key == key && s.EntityId == entityId && s.EntityType == entityType);
@@ -40,7 +40,7 @@ public class AppSettingsService : IAppSettingsService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<AppSettings>> GetByEntityAsync(Guid entityId, string entityType)
+    public async Task<IEnumerable<AppSettings>> GetByEntityAsync(int entityId, string entityType)
     {
         return await _context.AppSettings
             .Where(s => s.EntityId == entityId && s.EntityType == entityType)
@@ -50,7 +50,7 @@ public class AppSettingsService : IAppSettingsService
     }
 
     public async Task<AppSettings> SetAsync(string key, string value, SettingValueType valueType = SettingValueType.String,
-        string category = "General", string? description = null, Guid? entityId = null, string? entityType = null)
+        string category = "General", string? description = null, int? entityId = null, string? entityType = null)
     {
         var setting = await GetByKeyAsync(key, entityId, entityType);
 
@@ -79,7 +79,7 @@ public class AppSettingsService : IAppSettingsService
         return setting;
     }
 
-    public async Task DeleteAsync(string key, Guid? entityId = null, string? entityType = null)
+    public async Task DeleteAsync(string key, int? entityId = null, string? entityType = null)
     {
         var setting = await GetByKeyAsync(key, entityId, entityType);
         if (setting != null && !setting.IsSystem)

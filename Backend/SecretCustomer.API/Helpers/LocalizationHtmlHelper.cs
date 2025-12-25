@@ -18,7 +18,7 @@ public static class LocalizationHtmlHelper
         if (localizationService == null)
             return new HtmlString(defaultValue ?? resourceName);
 
-        Guid? langId = null; // Explicitly typed as Guid?
+        int? langId = null; // Explicitly typed as int?
         var value = localizationService.GetResourceAsync(resourceName, langId, defaultValue).GetAwaiter().GetResult();
         return new HtmlString(value);
     }
@@ -26,7 +26,7 @@ public static class LocalizationHtmlHelper
     /// <summary>
     /// Belirli bir dil için çeviri
     /// </summary>
-    public static IHtmlContent T(this IHtmlHelper htmlHelper, string resourceName, Guid languageId, string? defaultValue = null)
+    public static IHtmlContent T(this IHtmlHelper htmlHelper, string resourceName, int languageId, string? defaultValue = null)
     {
         var localizationService = htmlHelper.ViewContext.HttpContext.RequestServices
             .GetService<ILocalizationService>();
@@ -77,12 +77,12 @@ public static class LocalizationHtmlHelper
     /// <summary>
     /// Mevcut dil ID'sini al
     /// </summary>
-    public static Guid CurrentLanguageId(this IHtmlHelper htmlHelper)
+    public static int CurrentLanguageId(this IHtmlHelper htmlHelper)
     {
         var localizationService = htmlHelper.ViewContext.HttpContext.RequestServices
             .GetService<ILocalizationService>();
 
-        return localizationService?.GetCurrentLanguageId() ?? Guid.Empty;
+        return localizationService?.GetCurrentLanguageId() ?? 0;
     }
 
     /// <summary>

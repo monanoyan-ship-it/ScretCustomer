@@ -2,9 +2,9 @@ namespace SecretCustomer.Core.Interfaces.Services;
 
 public interface IFileUploadService
 {
-    Task<FileUploadResult> UploadAnswerAttachmentAsync(Guid answerId, Stream fileStream, string fileName, string contentType);
-    Task<bool> DeleteAnswerAttachmentAsync(Guid answerId);
-    Task<(Stream FileStream, string FileName, string ContentType)?> GetAnswerAttachmentAsync(Guid answerId);
+    Task<FileUploadResult> UploadAnswerAttachmentAsync(int answerId, Stream fileStream, string fileName, string contentType);
+    Task<bool> DeleteAnswerAttachmentAsync(int answerId);
+    Task<(Stream FileStream, string FileName, string ContentType)?> GetAnswerAttachmentAsync(int answerId);
 }
 
 public class FileUploadResult

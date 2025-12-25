@@ -4,10 +4,10 @@ namespace SecretCustomer.Core.Entities;
 
 public class CustomerPersonnelTaskAssignment : BaseEntity
 {
-    public Guid PersonnelId { get; set; }
+    public int PersonnelId { get; set; }
     public CustomerPersonnel Personnel { get; set; } = null!;
 
-    public Guid TaskListId { get; set; }
+    public int TaskListId { get; set; }
     public CustomerTaskList TaskList { get; set; } = null!;
 
     /// <summary>

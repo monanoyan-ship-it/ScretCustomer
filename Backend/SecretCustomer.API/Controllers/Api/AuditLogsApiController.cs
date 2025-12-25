@@ -23,7 +23,7 @@ public class AuditLogsApiController : BaseApiController
     public async Task<IActionResult> GetLogs(
         [FromQuery] LogType? logType = null,
         [FromQuery] string? category = null,
-        [FromQuery] Guid? userId = null,
+        [FromQuery] int? userId = null,
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] int page = 1,

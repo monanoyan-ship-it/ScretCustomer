@@ -8,17 +8,17 @@ public interface IPermissionService
     /// <summary>
     /// Kullanıcının belirli bir yetkiye sahip olup olmadığını kontrol eder
     /// </summary>
-    Task<bool> HasPermissionAsync(Guid userId, string permissionCode);
+    Task<bool> HasPermissionAsync(int userId, string permissionCode);
 
     /// <summary>
     /// Kullanıcının belirli bir yetkiye sahip olup olmadığını ve scope kontrolü yapar
     /// </summary>
-    Task<bool> HasPermissionAsync(Guid userId, string permissionCode, PermissionScope requiredScope);
+    Task<bool> HasPermissionAsync(int userId, string permissionCode, PermissionScope requiredScope);
 
     /// <summary>
     /// Kullanıcının tüm yetkilerini getirir (Rol + Kullanıcı özeli kombinasyonu)
     /// </summary>
-    Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId);
+    Task<IEnumerable<Permission>> GetUserPermissionsAsync(int userId);
 
     /// <summary>
     /// Rolün tüm yetkilerini getirir
@@ -28,22 +28,22 @@ public interface IPermissionService
     /// <summary>
     /// Role yetki ekler veya günceller
     /// </summary>
-    Task GrantRolePermissionAsync(UserRole role, Guid permissionId, PermissionScope scope = PermissionScope.All);
+    Task GrantRolePermissionAsync(UserRole role, int permissionId, PermissionScope scope = PermissionScope.All);
 
     /// <summary>
     /// Rolden yetki kaldırır
     /// </summary>
-    Task RevokeRolePermissionAsync(UserRole role, Guid permissionId);
+    Task RevokeRolePermissionAsync(UserRole role, int permissionId);
 
     /// <summary>
     /// Kullanıcıya özel yetki ekler veya günceller
     /// </summary>
-    Task GrantUserPermissionAsync(Guid userId, Guid permissionId, bool isGranted, PermissionScope scope = PermissionScope.All);
+    Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, PermissionScope scope = PermissionScope.All);
 
     /// <summary>
     /// Kullanıcıdan özel yetkiyi kaldırır
     /// </summary>
-    Task RevokeUserPermissionAsync(Guid userId, Guid permissionId);
+    Task RevokeUserPermissionAsync(int userId, int permissionId);
 
     /// <summary>
     /// Tüm permission'ları getirir

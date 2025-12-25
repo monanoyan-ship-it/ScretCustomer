@@ -5,12 +5,12 @@ namespace SecretCustomer.Core.Entities;
 /// </summary>
 public class LocaleStringResource
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public int Id { get; set; }
 
     /// <summary>
     /// Dil ID
     /// </summary>
-    public Guid LanguageId { get; set; }
+    public int LanguageId { get; set; }
 
     /// <summary>
     /// Kaynak anahtarı (örn: "Login.Title", "Common.Save", "Menu.Dashboard")

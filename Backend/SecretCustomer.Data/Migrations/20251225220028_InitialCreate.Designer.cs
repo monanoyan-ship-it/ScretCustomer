@@ -12,8 +12,8 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251214132302_AddLocalizationTables")]
-    partial class AddLocalizationTables
+    [Migration("20251225220028_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,9 +27,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Announcement", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -41,8 +43,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("timestamp with time zone");
@@ -90,9 +92,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Answer", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AnswerNumeric")
                         .HasColumnType("integer");
@@ -120,8 +124,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
-                    b.Property<Guid>("EvaluationId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("EvaluationId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("GivenPoints")
                         .HasColumnType("numeric");
@@ -138,8 +142,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("QuestionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RecommendationNotes")
                         .HasColumnType("text");
@@ -161,9 +165,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.AppSettings", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -178,8 +184,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("EntityId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("EntityType")
                         .HasColumnType("text");
@@ -208,9 +214,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Approval", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AdditionalData")
                         .HasColumnType("text");
@@ -221,11 +229,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("ApprovalType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("ApprovedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ApprovedByUserId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("ApproverUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ApproverUserId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("AutoApproveHours")
                         .HasColumnType("integer");
@@ -252,8 +260,8 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("RelatedEntityId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("RelatedEntityId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RelatedEntityType")
                         .HasColumnType("text");
@@ -261,8 +269,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("RequestedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("RequestedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("RequiredApprovalLevels")
                         .HasColumnType("integer");
@@ -299,24 +307,26 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Assignment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("AssignedCustomerPersonnelId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid?>("AssignedFieldWorkerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("AssignedCustomerPersonnelId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("AssignedUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("AssignedFieldWorkerId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("AssignedUserId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ChecklistId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -338,8 +348,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("FieldWorkerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("FieldWorkerId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
@@ -347,8 +357,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UniqueLink")
                         .IsRequired()
@@ -383,11 +393,97 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("Assignments");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExceptionType")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("HttpMethod")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("LogType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("RecordId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("StackTrace")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TableName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("LogType");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("TableName", "RecordId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -405,8 +501,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -436,15 +532,17 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Call", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("AssignedUserId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("AssignedUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("CallType")
                         .HasColumnType("integer");
@@ -473,11 +571,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -488,8 +586,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("EvaluationId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EvaluationId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ExternalCallId")
                         .HasColumnType("text");
@@ -506,8 +604,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RecordingFileName")
                         .HasColumnType("text");
@@ -565,12 +663,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CallAttachment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("CallId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CallId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ContentType")
                         .HasColumnType("text");
@@ -604,8 +704,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UploadedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -618,9 +718,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Checklist", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ChecklistType")
                         .HasColumnType("integer");
@@ -687,9 +789,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Customer", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -757,9 +861,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnel", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -767,8 +873,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Department")
                         .HasMaxLength(100)
@@ -808,6 +914,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int?>("PreferredLanguageId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
@@ -833,6 +942,8 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("PreferredLanguageId");
+
                     b.HasIndex("Username")
                         .IsUnique();
 
@@ -841,9 +952,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelPermission", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -864,8 +977,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("PermissionType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("PersonnelId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("PersonnelId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Scope")
                         .HasColumnType("integer");
@@ -891,9 +1004,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelTaskAssignment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AssignedDate")
                         .HasColumnType("timestamp with time zone");
@@ -920,11 +1035,11 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<Guid>("PersonnelId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("PersonnelId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("TaskListId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("TaskListId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -943,12 +1058,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerTaskList", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("ChecklistId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ChecklistId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -956,8 +1073,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
@@ -1006,9 +1123,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerVisit", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("ActualDate")
                         .HasColumnType("timestamp with time zone");
@@ -1016,8 +1135,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ContactPersonName")
                         .HasColumnType("text");
@@ -1034,8 +1153,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer");
@@ -1043,8 +1162,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("EvaluationId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EvaluationId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("FollowUpDate")
                         .HasColumnType("timestamp with time zone");
@@ -1073,8 +1192,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("PlannedTime")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Purpose")
                         .HasColumnType("text");
@@ -1097,8 +1216,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("VisitType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("VisitorUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("VisitorUserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1117,9 +1236,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerVisitAttachment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AttachmentType")
                         .HasColumnType("integer");
@@ -1134,8 +1255,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CustomerVisitId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CustomerVisitId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -1176,15 +1297,17 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Delegation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ApprovedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ApprovedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1192,20 +1315,20 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("DelegateeOrganizationUnitId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("DelegateeOrganizationUnitId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("DelegateeUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("DelegateeUserId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("DelegationType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("DelegatorOrganizationUnitId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("DelegatorOrganizationUnitId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("DelegatorUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("DelegatorUserId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -1260,12 +1383,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("AssignmentId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignmentId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("CallDate")
                         .HasColumnType("timestamp with time zone");
@@ -1291,8 +1416,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("EvaluatedPersonnelId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EvaluatedPersonnelId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("EvaluatedUnknownPersonnel")
                         .HasColumnType("text");
@@ -1300,8 +1425,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("EvaluationComment")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("EvaluatorId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EvaluatorId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("FormOpenedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1317,8 +1442,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<Guid?>("PersonnelId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("PersonnelId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("RedCardCount")
                         .HasColumnType("integer");
@@ -1361,9 +1486,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelColumn", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColumnName")
                         .IsRequired()
@@ -1384,8 +1511,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("DropdownOptions")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ExcelTemplateId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ExcelTemplateId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1421,9 +1548,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelTemplate", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1469,9 +1598,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.FieldWorker", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -1513,8 +1644,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1525,9 +1656,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1578,15 +1711,17 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.LocaleStringResource", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ResourceName")
                         .IsRequired()
@@ -1612,9 +1747,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Meeting", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("ActualDate")
                         .HasColumnType("timestamp with time zone");
@@ -1631,8 +1768,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Decisions")
                         .HasColumnType("text");
@@ -1667,8 +1804,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("OnlinePlatform")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OrganizerId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("OrganizerId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("PlannedDate")
                         .HasColumnType("timestamp with time zone");
@@ -1676,8 +1813,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("PlannedEndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ReminderHoursBefore")
                         .HasColumnType("integer");
@@ -1711,9 +1848,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.MeetingAttachment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContentType")
                         .HasColumnType("text");
@@ -1741,8 +1880,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("MeetingId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1750,8 +1889,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UploadedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1764,9 +1903,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.MeetingParticipant", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AttendanceNote")
                         .HasColumnType("text");
@@ -1789,8 +1930,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("MeetingId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("MeetingId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("RespondedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1807,8 +1948,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1821,9 +1962,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Notification", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionUrl")
                         .HasColumnType("text");
@@ -1871,11 +2014,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("RecipientUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("RecipientUserId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("RelatedEntityId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("RelatedEntityId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RelatedEntityType")
                         .HasColumnType("text");
@@ -1886,8 +2029,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("SendFailed")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("SenderUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("SenderUserId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("SentAt")
                         .HasColumnType("timestamp with time zone");
@@ -1913,9 +2056,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.NotificationSetting", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1947,8 +2092,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1959,12 +2104,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.OrganizationUnit", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Code")
                         .HasColumnType("text");
@@ -1987,8 +2134,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("ManagerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ManagerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1997,8 +2144,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("UnitType")
                         .HasColumnType("integer");
@@ -2022,9 +2169,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Permission", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -2078,15 +2227,17 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Personnel", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2094,8 +2245,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Department")
                         .HasColumnType("text");
@@ -2158,9 +2309,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Project", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal?>("ActualBudget")
                         .HasColumnType("numeric");
@@ -2171,8 +2324,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("AutoGenerateReports")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ChecklistId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Code")
                         .HasColumnType("text");
@@ -2186,8 +2339,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("DailyQuota")
                         .HasColumnType("integer");
@@ -2226,8 +2379,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Priority")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ProjectManagerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ProjectManagerId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ProjectType")
                         .HasColumnType("integer");
@@ -2269,12 +2422,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectBranch", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("BranchId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2291,8 +2446,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("TargetCount")
                         .HasColumnType("integer");
@@ -2314,9 +2469,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectTeamMember", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2333,8 +2490,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -2346,8 +2503,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -2360,9 +2517,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Question", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("AllowNA")
                         .HasColumnType("boolean");
@@ -2406,8 +2565,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("ScoringType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("SectionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("SectionId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -2435,9 +2594,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.QuestionAttachment", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContentType")
                         .IsRequired()
@@ -2469,8 +2630,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("QuestionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StoredFileName")
                         .IsRequired()
@@ -2482,8 +2643,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UploadedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -2496,9 +2657,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.RolePermission", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2516,8 +2679,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -2543,12 +2706,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Section", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChecklistId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2596,9 +2761,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Training", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -2616,8 +2783,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Currency")
                         .HasColumnType("text");
@@ -2625,8 +2792,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Curriculum")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -2670,8 +2837,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Prerequisites")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -2686,8 +2853,8 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("TrainerId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("TrainerId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TrainingType")
                         .HasColumnType("integer");
@@ -2713,9 +2880,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingMaterial", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContentType")
                         .HasColumnType("text");
@@ -2754,8 +2923,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TrainingId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("TrainingId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2763,8 +2932,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UploadedByUserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UploadedByUserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -2777,9 +2946,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingParticipant", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("AttendanceDate")
                         .HasColumnType("timestamp with time zone");
@@ -2826,8 +2997,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TrainingId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("TrainingId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2835,8 +3006,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -2849,12 +3020,14 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2886,8 +3059,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("OrganizationUnitId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("OrganizationUnitId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -2901,6 +3074,9 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
+
+                    b.Property<int?>("PreferredLanguageId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -2925,6 +3101,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("OrganizationUnitId");
 
+                    b.HasIndex("PreferredLanguageId");
+
                     b.HasIndex("Username")
                         .IsUnique();
 
@@ -2933,9 +3111,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.UserPermission", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2953,8 +3133,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Scope")
                         .HasColumnType("integer");
@@ -2965,8 +3145,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ValidFrom")
                         .HasColumnType("timestamp with time zone");
@@ -2982,6 +3162,210 @@ namespace SecretCustomer.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("UserPermissions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitDetailValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("BoolValue")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CustomerVisitId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DateTimeValue")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("DecimalValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<int>("FieldDefinitionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IntValue")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StringValue")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerVisitId");
+
+                    b.HasIndex("FieldDefinitionId");
+
+                    b.HasIndex("CustomerVisitId", "FieldDefinitionId")
+                        .IsUnique();
+
+                    b.HasIndex("FieldDefinitionId", "BoolValue");
+
+                    b.HasIndex("FieldDefinitionId", "IntValue");
+
+                    b.ToTable("VisitDetailValues", (string)null);
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("FieldType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HelpText")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaxLength")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MaxRating")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MaxValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("MinValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Placeholder")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("SectorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectorId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("SectorId", "Category", "SortOrder");
+
+                    b.ToTable("VisitFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitSector", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("IconClass")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("SortOrder");
+
+                    b.ToTable("VisitSectors", (string)null);
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Announcement", b =>
@@ -3160,7 +3544,13 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SecretCustomer.Core.Entities.Language", "PreferredLanguage")
+                        .WithMany()
+                        .HasForeignKey("PreferredLanguageId");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("PreferredLanguage");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelPermission", b =>
@@ -3664,9 +4054,15 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("OrganizationUnitId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SecretCustomer.Core.Entities.Language", "PreferredLanguage")
+                        .WithMany()
+                        .HasForeignKey("PreferredLanguageId");
+
                     b.Navigation("Branch");
 
                     b.Navigation("OrganizationUnit");
+
+                    b.Navigation("PreferredLanguage");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.UserPermission", b =>
@@ -3686,6 +4082,35 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitDetailValue", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerVisit", "CustomerVisit")
+                        .WithMany("DetailValues")
+                        .HasForeignKey("CustomerVisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.VisitFieldDefinition", "FieldDefinition")
+                        .WithMany("DetailValues")
+                        .HasForeignKey("FieldDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerVisit");
+
+                    b.Navigation("FieldDefinition");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.VisitSector", "Sector")
+                        .WithMany("FieldDefinitions")
+                        .HasForeignKey("SectorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Sector");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Assignment", b =>
@@ -3740,6 +4165,8 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerVisit", b =>
                 {
                     b.Navigation("Attachments");
+
+                    b.Navigation("DetailValues");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
@@ -3835,6 +4262,16 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("ManagedOrganizationUnits");
 
                     b.Navigation("UserPermissions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitFieldDefinition", b =>
+                {
+                    b.Navigation("DetailValues");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.VisitSector", b =>
+                {
+                    b.Navigation("FieldDefinitions");
                 });
 #pragma warning restore 612, 618
         }

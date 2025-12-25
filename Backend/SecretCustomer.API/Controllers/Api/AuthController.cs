@@ -139,7 +139,7 @@ public class AuthController : ControllerBase
         try
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.UserNotFound") });
             }
@@ -183,7 +183,7 @@ public class AuthController : ControllerBase
             {
                 // Eğer OriginalUserId yoksa, normal kullanıcı olarak devam et
                 var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(currentUserId) && Guid.TryParse(currentUserId, out var userId))
+                if (!string.IsNullOrEmpty(currentUserId) && int.TryParse(currentUserId, out var userId))
                 {
                     originalUserIdClaim = currentUserId;
                 }
@@ -193,7 +193,7 @@ public class AuthController : ControllerBase
                 }
             }
 
-            if (!Guid.TryParse(originalUserIdClaim, out var originalUserId))
+            if (!int.TryParse(originalUserIdClaim, out var originalUserId))
             {
                 return BadRequest(new { message = await _localizationService.GetResourceAsync("Auth.InvalidUserId") });
             }
@@ -238,10 +238,10 @@ public class AuthController : ControllerBase
         return Ok(new ImpersonationInfoDto
         {
             IsImpersonating = isImpersonating,
-            OriginalUserId = !string.IsNullOrEmpty(originalUserId) && Guid.TryParse(originalUserId, out var ouid) ? ouid : null,
+            OriginalUserId = !string.IsNullOrEmpty(originalUserId) && int.TryParse(originalUserId, out var ouid) ? ouid : null,
             OriginalUserName = originalUserName,
             OriginalRole = originalRole,
-            CustomerId = !string.IsNullOrEmpty(customerId) && Guid.TryParse(customerId, out var cid) ? cid : null,
+            CustomerId = !string.IsNullOrEmpty(customerId) && int.TryParse(customerId, out var cid) ? cid : null,
             CustomerName = customerName
         });
     }

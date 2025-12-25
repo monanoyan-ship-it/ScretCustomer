@@ -13,7 +13,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
         _context = context;
     }
 
-    public async Task<ExcelTemplate?> GetByIdAsync(Guid id, bool includeColumns = false)
+    public async Task<ExcelTemplate?> GetByIdAsync(int id, bool includeColumns = false)
     {
         var query = _context.ExcelTemplates.AsQueryable();
 
@@ -135,7 +135,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
         return existingTemplate;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var template = await _context.ExcelTemplates.FindAsync(id);
 
@@ -153,7 +153,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
         return true;
     }
 
-    public async Task<bool> ExistsAsync(Guid id)
+    public async Task<bool> ExistsAsync(int id)
     {
         return await _context.ExcelTemplates.AnyAsync(t => t.Id == id);
     }

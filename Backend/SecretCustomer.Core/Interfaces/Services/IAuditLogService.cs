@@ -21,15 +21,15 @@ public interface IAuditLogService
         string? oldValues = null, string? newValues = null, string? message = null);
 
     // Kullanıcı işlemleri logu
-    Task LogLoginAsync(Guid userId, string userName, bool success, string? failReason = null);
-    Task LogLogoutAsync(Guid userId, string userName);
+    Task LogLoginAsync(int userId, string userName, bool success, string? failReason = null);
+    Task LogLogoutAsync(int userId, string userName);
     Task LogAccessDeniedAsync(string resource, string? reason = null);
 
     // Log sorgulama
     Task<IEnumerable<AuditLog>> GetLogsAsync(
         LogType? logType = null,
         string? category = null,
-        Guid? userId = null,
+        int? userId = null,
         DateTime? fromDate = null,
         DateTime? toDate = null,
         int page = 1,
@@ -38,7 +38,7 @@ public interface IAuditLogService
     Task<int> GetLogsCountAsync(
         LogType? logType = null,
         string? category = null,
-        Guid? userId = null,
+        int? userId = null,
         DateTime? fromDate = null,
         DateTime? toDate = null);
 

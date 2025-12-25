@@ -2,11 +2,11 @@ namespace SecretCustomer.Core.DTOs.Project;
 
 public class ProjectDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
     public string ProjectType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -40,7 +40,7 @@ public class ProjectDto
     public DateTime? LastReportDate { get; set; }
 
     // Yonetici
-    public Guid? ProjectManagerId { get; set; }
+    public int? ProjectManagerId { get; set; }
     public string? ProjectManagerName { get; set; }
 
     // Diger
@@ -50,7 +50,7 @@ public class ProjectDto
     public string? Notes { get; set; }
 
     // Musteri
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
 
     // Kart sayilari
@@ -74,8 +74,8 @@ public class ProjectDetailDto : ProjectDto
 
 public class ProjectBranchDto
 {
-    public Guid Id { get; set; }
-    public Guid BranchId { get; set; }
+    public int Id { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public string? BranchCode { get; set; }
     public int? TargetCount { get; set; }
@@ -86,8 +86,8 @@ public class ProjectBranchDto
 
 public class ProjectTeamMemberDto
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string? Email { get; set; }
     public string Role { get; set; } = string.Empty;
@@ -111,7 +111,7 @@ public class ProjectStatisticDto
 /// </summary>
 public class ProjectSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string ProjectType { get; set; } = string.Empty;

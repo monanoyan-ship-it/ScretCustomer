@@ -50,7 +50,7 @@ public class JwtHelper
     /// <summary>
     /// Impersonation token olusturur - orijinal kullanici bilgilerini korur
     /// </summary>
-    public string GenerateImpersonationToken(User originalUser, Guid customerId, string customerName)
+    public string GenerateImpersonationToken(User originalUser, int customerId, string customerName)
     {
         var claims = new List<Claim>
         {

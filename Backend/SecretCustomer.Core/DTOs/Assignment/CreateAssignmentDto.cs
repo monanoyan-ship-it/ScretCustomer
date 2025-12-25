@@ -5,18 +5,18 @@ namespace SecretCustomer.Core.DTOs.Assignment;
 public class CreateAssignmentDto
 {
     [Required]
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
 
     [Required]
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
 
-    public Guid? AssignedFieldWorkerId { get; set; }
+    public int? AssignedFieldWorkerId { get; set; }
 
-    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public int? AssignedCustomerPersonnelId { get; set; }
 
     [EmailAddress]
     public string? ExternalEmail { get; set; }
@@ -33,18 +33,18 @@ public class CreateAssignmentDto
 public class UpdateAssignmentDto
 {
     [Required]
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
 
     [Required]
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
 
-    public Guid? AssignedFieldWorkerId { get; set; }
+    public int? AssignedFieldWorkerId { get; set; }
 
-    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public int? AssignedCustomerPersonnelId { get; set; }
 
     [EmailAddress]
     public string? ExternalEmail { get; set; }
@@ -64,10 +64,10 @@ public class UpdateAssignmentDto
 public class BulkAssignmentDto
 {
     [Required]
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
 
     [Required]
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
 
     [Required]
     public List<AssignmentItemDto> Assignments { get; set; } = new();
@@ -75,9 +75,9 @@ public class BulkAssignmentDto
 
 public class AssignmentItemDto
 {
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
-    public Guid? AssignedFieldWorkerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? AssignedUserId { get; set; }
+    public int? AssignedFieldWorkerId { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalName { get; set; }
     public DateTime DueDate { get; set; }
@@ -89,7 +89,7 @@ public class AssignmentItemDto
 public class BulkProjectAssignmentDto
 {
     [Required]
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
 
     [Required]
     public DateTime DueDate { get; set; }
@@ -97,7 +97,7 @@ public class BulkProjectAssignmentDto
     /// <summary>
     /// Atanacak kullanıcı (boş bırakılırsa tüm proje takımına eşit dağıtılır)
     /// </summary>
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
 
     /// <summary>
     /// Her şube için kaç atama oluşturulacak (default: 1)
@@ -107,7 +107,7 @@ public class BulkProjectAssignmentDto
     /// <summary>
     /// Sadece belirli şubeler için oluştur (boş ise tüm proje şubeleri)
     /// </summary>
-    public List<Guid>? BranchIds { get; set; }
+    public List<int>? BranchIds { get; set; }
 }
 
 /// <summary>
@@ -115,9 +115,9 @@ public class BulkProjectAssignmentDto
 /// </summary>
 public class ReassignAssignmentDto
 {
-    public Guid? NewAssignedUserId { get; set; }
-    public Guid? NewAssignedFieldWorkerId { get; set; }
-    public Guid? NewAssignedCustomerPersonnelId { get; set; }
+    public int? NewAssignedUserId { get; set; }
+    public int? NewAssignedFieldWorkerId { get; set; }
+    public int? NewAssignedCustomerPersonnelId { get; set; }
     public string? NewExternalEmail { get; set; }
     public string? NewExternalName { get; set; }
     public DateTime? NewDueDate { get; set; }
@@ -137,9 +137,9 @@ public class CancelAssignmentDto
 /// </summary>
 public class AssignmentFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? BranchId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? Status { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }

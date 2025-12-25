@@ -72,7 +72,7 @@ public class UsersApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -117,7 +117,7 @@ public class UsersApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -147,7 +147,7 @@ public class UsersApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -167,7 +167,7 @@ public class UsersApiController : BaseApiController
     }
 
     [HttpPost("{id}/change-password")]
-    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordDto dto)
     {
         if (!ModelState.IsValid)
         {

@@ -73,7 +73,7 @@ public class AuditLog
     public string? NewValues { get; set; }
 
     /// <summary>İşlemi yapan kullanıcı ID'si</summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>İşlemi yapan kullanıcı adı</summary>
     [MaxLength(100)]

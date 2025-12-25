@@ -18,7 +18,7 @@ public class Project : BaseEntity
         Description = "Proje hakkinda detayli aciklama", SampleValue = "Q1 donemi musteri memnuniyeti olcumu")]
     public string? Description { get; set; }
 
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
     [ExcelColumn("Proje Tipi", 4, IsRequired = true, ColumnType = ExcelColumnType.Dropdown,
@@ -124,7 +124,7 @@ public class Project : BaseEntity
     /// <summary>
     /// Proje yoneticisi ID
     /// </summary>
-    public Guid? ProjectManagerId { get; set; }
+    public int? ProjectManagerId { get; set; }
     public User? ProjectManager { get; set; }
 
     /// <summary>
@@ -158,7 +158,7 @@ public class Project : BaseEntity
     // Navigation properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 
     /// <summary>
@@ -177,10 +177,10 @@ public class Project : BaseEntity
 /// </summary>
 public class ProjectBranch : BaseEntity
 {
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
     public Project Project { get; set; } = null!;
 
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public Branch Branch { get; set; } = null!;
 
     /// <summary>
@@ -204,10 +204,10 @@ public class ProjectBranch : BaseEntity
 /// </summary>
 public class ProjectTeamMember : BaseEntity
 {
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
     public Project Project { get; set; } = null!;
 
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public User User { get; set; } = null!;
 
     /// <summary>

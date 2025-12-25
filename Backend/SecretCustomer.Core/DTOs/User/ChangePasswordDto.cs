@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.User;
 public class ChangePasswordDto
 {
     [Required(ErrorMessage = "Kullanıcı ID zorunludur.")]
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     [Required(ErrorMessage = "Yeni şifre zorunludur.")]
     [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]

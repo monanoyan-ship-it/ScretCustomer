@@ -7,18 +7,18 @@ namespace SecretCustomer.Core.DTOs.Organization;
 /// </summary>
 public class DelegationDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string? Title { get; set; }
     public string? Description { get; set; }
 
-    public Guid DelegatorUserId { get; set; }
+    public int DelegatorUserId { get; set; }
     public string DelegatorUserName { get; set; } = string.Empty;
-    public Guid? DelegatorOrganizationUnitId { get; set; }
+    public int? DelegatorOrganizationUnitId { get; set; }
     public string? DelegatorOrganizationUnitName { get; set; }
 
-    public Guid DelegateeUserId { get; set; }
+    public int DelegateeUserId { get; set; }
     public string DelegateeUserName { get; set; } = string.Empty;
-    public Guid? DelegateeOrganizationUnitId { get; set; }
+    public int? DelegateeOrganizationUnitId { get; set; }
     public string? DelegateeOrganizationUnitName { get; set; }
 
     public DateTime StartDate { get; set; }
@@ -33,7 +33,7 @@ public class DelegationDto
 
     public bool IsApproved { get; set; }
     public DateTime? ApprovedAt { get; set; }
-    public Guid? ApprovedByUserId { get; set; }
+    public int? ApprovedByUserId { get; set; }
     public string? ApprovedByUserName { get; set; }
 
     public DateTime CreatedAt { get; set; }
@@ -51,10 +51,10 @@ public class CreateDelegationDto
 {
     public string? Title { get; set; }
     public string? Description { get; set; }
-    public Guid DelegatorUserId { get; set; }
-    public Guid? DelegatorOrganizationUnitId { get; set; }
-    public Guid DelegateeUserId { get; set; }
-    public Guid? DelegateeOrganizationUnitId { get; set; }
+    public int DelegatorUserId { get; set; }
+    public int? DelegatorOrganizationUnitId { get; set; }
+    public int DelegateeUserId { get; set; }
+    public int? DelegateeOrganizationUnitId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public DelegationType DelegationType { get; set; } = DelegationType.Full;
@@ -70,8 +70,8 @@ public class UpdateDelegationDto
 {
     public string? Title { get; set; }
     public string? Description { get; set; }
-    public Guid DelegateeUserId { get; set; }
-    public Guid? DelegateeOrganizationUnitId { get; set; }
+    public int DelegateeUserId { get; set; }
+    public int? DelegateeOrganizationUnitId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool IsActive { get; set; }
@@ -96,8 +96,8 @@ public class ApproveDelegationDto
 public class DelegationFilterDto
 {
     public string? SearchTerm { get; set; }
-    public Guid? DelegatorUserId { get; set; }
-    public Guid? DelegateeUserId { get; set; }
+    public int? DelegatorUserId { get; set; }
+    public int? DelegateeUserId { get; set; }
     public DelegationType? DelegationType { get; set; }
     public DelegationReason? Reason { get; set; }
     public bool? IsActive { get; set; }

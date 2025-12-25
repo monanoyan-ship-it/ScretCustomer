@@ -43,7 +43,7 @@ public class LocalizationApiController : BaseApiController
     }
 
     [HttpGet("languages/{id}")]
-    public async Task<IActionResult> GetLanguage(Guid id)
+    public async Task<IActionResult> GetLanguage(int id)
     {
         var language = await _localizationService.GetLanguageByIdAsync(id);
         if (language == null)
@@ -85,7 +85,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpPut("languages/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateLanguage(Guid id, [FromBody] UpdateLanguageDto dto)
+    public async Task<IActionResult> UpdateLanguage(int id, [FromBody] UpdateLanguageDto dto)
     {
         var language = new Language
         {
@@ -106,7 +106,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpDelete("languages/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteLanguage(Guid id)
+    public async Task<IActionResult> DeleteLanguage(int id)
     {
         await _localizationService.DeleteLanguageAsync(id);
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.DeleteSuccess") });
@@ -175,7 +175,7 @@ public class LocalizationApiController : BaseApiController
     #region Resources
 
     [HttpGet("resources/{languageId}")]
-    public async Task<IActionResult> GetResources(Guid languageId)
+    public async Task<IActionResult> GetResources(int languageId)
     {
         var resources = await _localizationService.GetResourcesByLanguageAsync(languageId);
         return Ok(resources.Select(r => new
@@ -187,14 +187,14 @@ public class LocalizationApiController : BaseApiController
     }
 
     [HttpGet("resources/{languageId}/all")]
-    public async Task<IActionResult> GetAllResources(Guid languageId)
+    public async Task<IActionResult> GetAllResources(int languageId)
     {
         var resources = await _localizationService.GetAllResourcesAsync(languageId);
         return Ok(resources);
     }
 
     [HttpGet("resources/{languageId}/prefix/{prefix}")]
-    public async Task<IActionResult> GetResourcesByPrefix(Guid languageId, string prefix)
+    public async Task<IActionResult> GetResourcesByPrefix(int languageId, string prefix)
     {
         var resources = await _localizationService.GetResourcesByPrefixAsync(prefix, languageId);
         return Ok(resources);
@@ -202,7 +202,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpPost("resources/{languageId}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> SetResource(Guid languageId, [FromBody] SetResourceDto dto)
+    public async Task<IActionResult> SetResource(int languageId, [FromBody] SetResourceDto dto)
     {
         var result = await _localizationService.SetResourceAsync(languageId, dto.ResourceName, dto.ResourceValue);
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.SaveSuccess"), id = result.Id });
@@ -210,7 +210,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpDelete("resources/{resourceId}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteResource(Guid resourceId)
+    public async Task<IActionResult> DeleteResource(int resourceId)
     {
         await _localizationService.DeleteResourceAsync(resourceId);
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.DeleteSuccess") });
@@ -222,7 +222,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpPost("import/{languageId}/xml")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ImportFromXml(Guid languageId, [FromBody] ImportXmlDto dto)
+    public async Task<IActionResult> ImportFromXml(int languageId, [FromBody] ImportXmlDto dto)
     {
         try
         {
@@ -237,7 +237,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpPost("import/{languageId}/default")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ImportFromDefaultXml(Guid languageId)
+    public async Task<IActionResult> ImportFromDefaultXml(int languageId)
     {
         try
         {
@@ -257,7 +257,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpGet("export/{languageId}/xml")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ExportToXml(Guid languageId)
+    public async Task<IActionResult> ExportToXml(int languageId)
     {
         try
         {
@@ -325,7 +325,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpPost("current/{languageId}")]
     [AllowAnonymous]
-    public async Task<IActionResult> SetCurrentLanguage(Guid languageId)
+    public async Task<IActionResult> SetCurrentLanguage(int languageId)
     {
         _localizationService.SetCurrentLanguage(languageId);
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.ChangeSuccess") });
@@ -341,7 +341,7 @@ public class LocalizationApiController : BaseApiController
 
     [HttpGet("translate/{resourceName}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetTranslation(string resourceName, [FromQuery] Guid? languageId = null)
+    public async Task<IActionResult> GetTranslation(string resourceName, [FromQuery] int? languageId = null)
     {
         var value = await _localizationService.GetResourceAsync(resourceName, languageId);
         return Ok(new { resourceName, value });

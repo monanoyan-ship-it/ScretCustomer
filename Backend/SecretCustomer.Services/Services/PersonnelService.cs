@@ -97,7 +97,7 @@ public class PersonnelService : IPersonnelService
         };
     }
 
-    public async Task<PersonnelDto?> GetByIdAsync(Guid id)
+    public async Task<PersonnelDto?> GetByIdAsync(int id)
     {
         var personnel = await _context.Personnel
             .Include(p => p.Branch)
@@ -156,7 +156,7 @@ public class PersonnelService : IPersonnelService
         return (await GetByIdAsync(personnel.Id))!;
     }
 
-    public async Task<PersonnelDto?> UpdateAsync(Guid id, UpdatePersonnelDto dto)
+    public async Task<PersonnelDto?> UpdateAsync(int id, UpdatePersonnelDto dto)
     {
         var personnel = await _context.Personnel.FindAsync(id);
         if (personnel == null)
@@ -191,7 +191,7 @@ public class PersonnelService : IPersonnelService
         return await GetByIdAsync(id);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var personnel = await _context.Personnel.FindAsync(id);
         if (personnel == null)
@@ -202,7 +202,7 @@ public class PersonnelService : IPersonnelService
         return true;
     }
 
-    public async Task<List<PersonnelDto>> GetByBranchAsync(Guid branchId)
+    public async Task<List<PersonnelDto>> GetByBranchAsync(int branchId)
     {
         var personnel = await _context.Personnel
             .Include(p => p.Branch)
@@ -215,7 +215,7 @@ public class PersonnelService : IPersonnelService
         return personnel.Select(p => MapToDto(p, 0, null)).ToList();
     }
 
-    public async Task<List<PersonnelDto>> GetByCustomerAsync(Guid customerId)
+    public async Task<List<PersonnelDto>> GetByCustomerAsync(int customerId)
     {
         var personnel = await _context.Personnel
             .Include(p => p.Branch)
@@ -228,7 +228,7 @@ public class PersonnelService : IPersonnelService
         return personnel.Select(p => MapToDto(p, 0, null)).ToList();
     }
 
-    public async Task<bool> ExistsByTcKimlikNoAsync(string tcKimlikNo, Guid? excludeId = null)
+    public async Task<bool> ExistsByTcKimlikNoAsync(string tcKimlikNo, int? excludeId = null)
     {
         var query = _context.Personnel.Where(p => p.TcKimlikNo == tcKimlikNo);
         if (excludeId.HasValue)
@@ -236,7 +236,7 @@ public class PersonnelService : IPersonnelService
         return await query.AnyAsync();
     }
 
-    public async Task<bool> ExistsBySicilNoAsync(string sicilNo, Guid? excludeId = null)
+    public async Task<bool> ExistsBySicilNoAsync(string sicilNo, int? excludeId = null)
     {
         var query = _context.Personnel.Where(p => p.SicilNo == sicilNo);
         if (excludeId.HasValue)

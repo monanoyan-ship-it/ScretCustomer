@@ -15,7 +15,7 @@ public class RolePermission : BaseEntity
     /// <summary>
     /// Yetki ID
     /// </summary>
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
     public Permission Permission { get; set; } = null!;
 
     /// <summary>

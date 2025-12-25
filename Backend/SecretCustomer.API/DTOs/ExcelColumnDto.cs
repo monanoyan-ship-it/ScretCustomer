@@ -4,7 +4,7 @@ namespace SecretCustomer.API.DTOs;
 
 public class ExcelColumnDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ColumnName { get; set; } = string.Empty;
     public string PropertyName { get; set; } = string.Empty;
     public ExcelColumnType ColumnType { get; set; }

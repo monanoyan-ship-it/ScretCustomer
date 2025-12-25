@@ -107,7 +107,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Tek ziyaret detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -189,7 +189,7 @@ public class CustomerVisitsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
+            if (!int.TryParse(userIdClaim, out var userId))
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
 
             var visit = new CustomerVisit
@@ -228,7 +228,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,TeamLeader,CustomerRepresentative")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateCustomerVisitDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] CreateCustomerVisitDto dto)
     {
         try
         {
@@ -266,7 +266,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Ziyareti başlat
     /// </summary>
     [HttpPost("{id}/start")]
-    public async Task<IActionResult> Start(Guid id)
+    public async Task<IActionResult> Start(int id)
     {
         try
         {
@@ -296,7 +296,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Ziyareti tamamla
     /// </summary>
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> Complete(Guid id, [FromBody] CompleteCustomerVisitDto dto)
+    public async Task<IActionResult> Complete(int id, [FromBody] CompleteCustomerVisitDto dto)
     {
         try
         {
@@ -343,7 +343,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Ziyareti iptal et
     /// </summary>
     [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> Cancel(Guid id, [FromBody] string? reason)
+    public async Task<IActionResult> Cancel(int id, [FromBody] string? reason)
     {
         try
         {
@@ -375,7 +375,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -402,7 +402,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Ziyarete dosya ekle
     /// </summary>
     [HttpPost("{visitId}/attachments")]
-    public async Task<IActionResult> UploadAttachment(Guid visitId, IFormFile file, [FromForm] string? description, [FromForm] AttachmentType? attachmentType)
+    public async Task<IActionResult> UploadAttachment(int visitId, IFormFile file, [FromForm] string? description, [FromForm] AttachmentType? attachmentType)
     {
         try
         {
@@ -489,7 +489,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Dosya indir
     /// </summary>
     [HttpGet("attachments/{id}/download")]
-    public async Task<IActionResult> DownloadAttachment(Guid id)
+    public async Task<IActionResult> DownloadAttachment(int id)
     {
         try
         {
@@ -515,7 +515,7 @@ public class CustomerVisitsApiController : BaseApiController
     /// Dosya sil
     /// </summary>
     [HttpDelete("attachments/{id}")]
-    public async Task<IActionResult> DeleteAttachment(Guid id)
+    public async Task<IActionResult> DeleteAttachment(int id)
     {
         try
         {

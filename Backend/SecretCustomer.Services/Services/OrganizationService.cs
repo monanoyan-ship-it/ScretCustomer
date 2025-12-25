@@ -48,7 +48,7 @@ public class OrganizationService : IOrganizationService
         return units.Select(MapToOrganizationUnitDto).ToList();
     }
 
-    public async Task<OrganizationUnitDto?> GetOrganizationUnitByIdAsync(Guid id)
+    public async Task<OrganizationUnitDto?> GetOrganizationUnitByIdAsync(int id)
     {
         var unit = await _context.OrganizationUnits
             .Include(o => o.Parent)
@@ -179,7 +179,7 @@ public class OrganizationService : IOrganizationService
         return await GetOrganizationUnitByIdAsync(unit.Id) ?? MapToOrganizationUnitDto(unit);
     }
 
-    public async Task<OrganizationUnitDto> UpdateOrganizationUnitAsync(Guid id, UpdateOrganizationUnitDto dto)
+    public async Task<OrganizationUnitDto> UpdateOrganizationUnitAsync(int id, UpdateOrganizationUnitDto dto)
     {
         var unit = await _context.OrganizationUnits.FindAsync(id);
         if (unit == null)
@@ -236,7 +236,7 @@ public class OrganizationService : IOrganizationService
         return await GetOrganizationUnitByIdAsync(id) ?? MapToOrganizationUnitDto(unit);
     }
 
-    private async Task<bool> IsDescendantOfAsync(Guid potentialDescendantId, Guid ancestorId)
+    private async Task<bool> IsDescendantOfAsync(int potentialDescendantId, int ancestorId)
     {
         var current = await _context.OrganizationUnits.FindAsync(potentialDescendantId);
         while (current != null)
@@ -254,7 +254,7 @@ public class OrganizationService : IOrganizationService
         return false;
     }
 
-    private async Task UpdateDescendantLevelsAsync(Guid parentId, int levelDelta)
+    private async Task UpdateDescendantLevelsAsync(int parentId, int levelDelta)
     {
         var children = await _context.OrganizationUnits
             .Where(o => o.ParentId == parentId)
@@ -267,7 +267,7 @@ public class OrganizationService : IOrganizationService
         }
     }
 
-    public async Task<bool> DeleteOrganizationUnitAsync(Guid id)
+    public async Task<bool> DeleteOrganizationUnitAsync(int id)
     {
         var unit = await _context.OrganizationUnits
             .Include(o => o.Children)
@@ -296,7 +296,7 @@ public class OrganizationService : IOrganizationService
         return true;
     }
 
-    public async Task<List<OrganizationUnitDto>> GetChildrenAsync(Guid parentId)
+    public async Task<List<OrganizationUnitDto>> GetChildrenAsync(int parentId)
     {
         var children = await _context.OrganizationUnits
             .Include(o => o.Parent)
@@ -312,7 +312,7 @@ public class OrganizationService : IOrganizationService
         return children.Select(MapToOrganizationUnitDto).ToList();
     }
 
-    public async Task<bool> MoveOrganizationUnitAsync(Guid id, Guid? newParentId)
+    public async Task<bool> MoveOrganizationUnitAsync(int id, int? newParentId)
     {
         var unit = await _context.OrganizationUnits.FindAsync(id);
         if (unit == null)
@@ -412,7 +412,7 @@ public class OrganizationService : IOrganizationService
         return delegations.Select(MapToDelegationDto).ToList();
     }
 
-    public async Task<DelegationDto?> GetDelegationByIdAsync(Guid id)
+    public async Task<DelegationDto?> GetDelegationByIdAsync(int id)
     {
         var delegation = await _context.Delegations
             .Include(d => d.DelegatorUser)
@@ -572,7 +572,7 @@ public class OrganizationService : IOrganizationService
         return await GetDelegationByIdAsync(delegation.Id) ?? MapToDelegationDto(delegation);
     }
 
-    public async Task<DelegationDto> UpdateDelegationAsync(Guid id, UpdateDelegationDto dto)
+    public async Task<DelegationDto> UpdateDelegationAsync(int id, UpdateDelegationDto dto)
     {
         var delegation = await _context.Delegations.FindAsync(id);
         if (delegation == null)
@@ -602,7 +602,7 @@ public class OrganizationService : IOrganizationService
         return await GetDelegationByIdAsync(id) ?? MapToDelegationDto(delegation);
     }
 
-    public async Task<bool> DeleteDelegationAsync(Guid id)
+    public async Task<bool> DeleteDelegationAsync(int id)
     {
         var delegation = await _context.Delegations.FindAsync(id);
         if (delegation == null)
@@ -615,7 +615,7 @@ public class OrganizationService : IOrganizationService
         return true;
     }
 
-    public async Task<DelegationDto> ApproveDelegationAsync(Guid id, Guid approverUserId, ApproveDelegationDto dto)
+    public async Task<DelegationDto> ApproveDelegationAsync(int id, int approverUserId, ApproveDelegationDto dto)
     {
         var delegation = await _context.Delegations.FindAsync(id);
         if (delegation == null)
@@ -637,7 +637,7 @@ public class OrganizationService : IOrganizationService
         return await GetDelegationByIdAsync(id) ?? MapToDelegationDto(delegation);
     }
 
-    public async Task<List<DelegationDto>> GetActiveDelegationsForUserAsync(Guid userId)
+    public async Task<List<DelegationDto>> GetActiveDelegationsForUserAsync(int userId)
     {
         var now = DateTime.UtcNow;
         var delegations = await _context.Delegations
@@ -657,7 +657,7 @@ public class OrganizationService : IOrganizationService
         return delegations.Select(MapToDelegationDto).ToList();
     }
 
-    public async Task<List<DelegationDto>> GetDelegationsGivenByUserAsync(Guid userId)
+    public async Task<List<DelegationDto>> GetDelegationsGivenByUserAsync(int userId)
     {
         var delegations = await _context.Delegations
             .Include(d => d.DelegatorUser)
@@ -672,7 +672,7 @@ public class OrganizationService : IOrganizationService
         return delegations.Select(MapToDelegationDto).ToList();
     }
 
-    public async Task<List<DelegationDto>> GetDelegationsReceivedByUserAsync(Guid userId)
+    public async Task<List<DelegationDto>> GetDelegationsReceivedByUserAsync(int userId)
     {
         var delegations = await _context.Delegations
             .Include(d => d.DelegatorUser)

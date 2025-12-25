@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.DTOs.Organization;
 /// </summary>
 public class OrganizationUnitDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
     public string? Description { get; set; }
@@ -16,11 +16,11 @@ public class OrganizationUnitDto
     public int Level { get; set; }
     public int Order { get; set; }
     public bool IsActive { get; set; }
-    public Guid? ParentId { get; set; }
+    public int? ParentId { get; set; }
     public string? ParentName { get; set; }
-    public Guid? ManagerId { get; set; }
+    public int? ManagerId { get; set; }
     public string? ManagerName { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
     public int UserCount { get; set; }
     public int ChildCount { get; set; }
@@ -39,9 +39,9 @@ public class CreateOrganizationUnitDto
     public OrganizationUnitType UnitType { get; set; } = OrganizationUnitType.Department;
     public int Order { get; set; } = 0;
     public bool IsActive { get; set; } = true;
-    public Guid? ParentId { get; set; }
-    public Guid? ManagerId { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? ParentId { get; set; }
+    public int? ManagerId { get; set; }
+    public int? BranchId { get; set; }
 }
 
 /// <summary>
@@ -55,9 +55,9 @@ public class UpdateOrganizationUnitDto
     public OrganizationUnitType UnitType { get; set; }
     public int Order { get; set; }
     public bool IsActive { get; set; }
-    public Guid? ParentId { get; set; }
-    public Guid? ManagerId { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? ParentId { get; set; }
+    public int? ManagerId { get; set; }
+    public int? BranchId { get; set; }
 }
 
 /// <summary>
@@ -68,8 +68,8 @@ public class OrganizationUnitFilterDto
     public string? SearchTerm { get; set; }
     public OrganizationUnitType? UnitType { get; set; }
     public bool? IsActive { get; set; }
-    public Guid? ParentId { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? ParentId { get; set; }
+    public int? BranchId { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
 }
@@ -79,7 +79,7 @@ public class OrganizationUnitFilterDto
 /// </summary>
 public class OrganizationTreeNodeDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Code { get; set; }
     public OrganizationUnitType UnitType { get; set; }

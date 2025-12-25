@@ -10,19 +10,19 @@ public class CustomerVisit : BaseEntity
     /// <summary>
     /// Ziyaret edilen müşteri
     /// </summary>
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 
     /// <summary>
     /// Ziyaret edilen şube
     /// </summary>
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public Branch? Branch { get; set; }
 
     /// <summary>
     /// Ziyareti yapan kullanıcı
     /// </summary>
-    public Guid VisitorUserId { get; set; }
+    public int VisitorUserId { get; set; }
     public User VisitorUser { get; set; } = null!;
 
     /// <summary>
@@ -128,13 +128,13 @@ public class CustomerVisit : BaseEntity
     /// <summary>
     /// İlişkili proje
     /// </summary>
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public Project? Project { get; set; }
 
     /// <summary>
     /// İlişkili değerlendirme
     /// </summary>
-    public Guid? EvaluationId { get; set; }
+    public int? EvaluationId { get; set; }
     public Evaluation? Evaluation { get; set; }
 
     // Navigation properties
@@ -151,7 +151,7 @@ public class CustomerVisit : BaseEntity
 /// </summary>
 public class CustomerVisitAttachment : BaseEntity
 {
-    public Guid CustomerVisitId { get; set; }
+    public int CustomerVisitId { get; set; }
     public CustomerVisit CustomerVisit { get; set; } = null!;
 
     public string FileName { get; set; } = string.Empty;

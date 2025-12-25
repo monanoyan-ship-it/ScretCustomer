@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.Entities;
 /// </summary>
 public class CustomerPersonnelPermission : BaseEntity
 {
-    public Guid PersonnelId { get; set; }
+    public int PersonnelId { get; set; }
     public CustomerPersonnel Personnel { get; set; } = null!;
 
     /// <summary>

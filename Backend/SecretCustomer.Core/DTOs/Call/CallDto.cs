@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.Call;
 /// </summary>
 public class CallDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string CallType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -25,15 +25,15 @@ public class CallDto
     public string? RecordingFileName { get; set; }
     public bool HasRecording { get; set; }
     public string? ExternalCallId { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public string? ProjectName { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
-    public Guid? EvaluationId { get; set; }
+    public int? EvaluationId { get; set; }
     public string? Tags { get; set; }
     public bool RequiresCallback { get; set; }
     public DateTime? CallbackDate { get; set; }
@@ -51,7 +51,7 @@ public class CallDto
 /// </summary>
 public class CallListDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string CallType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -85,10 +85,10 @@ public class CreateCallDto
     public string? CallerName { get; set; }
     public string? CalledPhone { get; set; }
     public DateTime? ScheduledDate { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? Tags { get; set; }
 }
 
@@ -108,10 +108,10 @@ public class UpdateCallDto
     public DateTime? ScheduledDate { get; set; }
     public string? Notes { get; set; }
     public string? Outcome { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? Tags { get; set; }
     public bool RequiresCallback { get; set; }
     public DateTime? CallbackDate { get; set; }
@@ -153,8 +153,8 @@ public class UploadRecordingDto
 /// </summary>
 public class CallAttachmentDto
 {
-    public Guid Id { get; set; }
-    public Guid CallId { get; set; }
+    public int Id { get; set; }
+    public int CallId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public long FileSize { get; set; }
     public string? ContentType { get; set; }
@@ -169,10 +169,10 @@ public class CallAttachmentDto
 /// </summary>
 public class CallFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
-    public Guid? BranchId { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? BranchId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? CallType { get; set; }
     public string? Status { get; set; }
     public string? Priority { get; set; }

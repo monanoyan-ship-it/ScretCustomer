@@ -31,7 +31,7 @@ public class PermissionService : IPermissionService
     /// Kullanıcının belirli bir yetkiye sahip olup olmadığını kontrol eder
     /// Önce kullanıcı özel yetkilerine bakar, sonra rol yetkilerine
     /// </summary>
-    public async Task<bool> HasPermissionAsync(Guid userId, string permissionCode)
+    public async Task<bool> HasPermissionAsync(int userId, string permissionCode)
     {
         try
         {
@@ -79,7 +79,7 @@ public class PermissionService : IPermissionService
     /// <summary>
     /// Scope kontrolü ile yetki kontrolü
     /// </summary>
-    public async Task<bool> HasPermissionAsync(Guid userId, string permissionCode, PermissionScope requiredScope)
+    public async Task<bool> HasPermissionAsync(int userId, string permissionCode, PermissionScope requiredScope)
     {
         try
         {
@@ -121,7 +121,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId)
+    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -158,7 +158,7 @@ public class PermissionService : IPermissionService
             .ToListAsync();
     }
 
-    public async Task GrantRolePermissionAsync(UserRole role, Guid permissionId, PermissionScope scope = PermissionScope.All)
+    public async Task GrantRolePermissionAsync(UserRole role, int permissionId, PermissionScope scope = PermissionScope.All)
     {
         var permission = await _context.Permissions.FindAsync(permissionId);
         var existing = await _context.RolePermissions
@@ -189,7 +189,7 @@ public class PermissionService : IPermissionService
             "PermissionService");
     }
 
-    public async Task RevokeRolePermissionAsync(UserRole role, Guid permissionId)
+    public async Task RevokeRolePermissionAsync(UserRole role, int permissionId)
     {
         var permission = await _context.Permissions.FindAsync(permissionId);
         var rolePermission = await _context.RolePermissions
@@ -207,7 +207,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task GrantUserPermissionAsync(Guid userId, Guid permissionId, bool isGranted, PermissionScope scope = PermissionScope.All)
+    public async Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, PermissionScope scope = PermissionScope.All)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         var permission = await _context.Permissions.FindAsync(permissionId);
@@ -240,7 +240,7 @@ public class PermissionService : IPermissionService
             "PermissionService");
     }
 
-    public async Task RevokeUserPermissionAsync(Guid userId, Guid permissionId)
+    public async Task RevokeUserPermissionAsync(int userId, int permissionId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         var permission = await _context.Permissions.FindAsync(permissionId);

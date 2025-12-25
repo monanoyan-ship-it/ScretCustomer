@@ -22,7 +22,7 @@ public class CustomerService : ICustomerService
         return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
     }
 
-    public async Task<CustomerDto?> GetByIdAsync(Guid id)
+    public async Task<CustomerDto?> GetByIdAsync(int id)
     {
         var customer = await _customerRepository.GetByIdAsync(id, includeDetails: true);
         return customer == null ? null : MapToDto(customer);
@@ -80,7 +80,7 @@ public class CustomerService : ICustomerService
         return MapToDto(createdCustomer);
     }
 
-    public async Task<CustomerDto> UpdateAsync(Guid id, UpdateCustomerDto updateCustomerDto)
+    public async Task<CustomerDto> UpdateAsync(int id, UpdateCustomerDto updateCustomerDto)
     {
         var customer = await _customerRepository.GetByIdAsync(id);
         if (customer == null)
@@ -118,7 +118,7 @@ public class CustomerService : ICustomerService
         return MapToDto(updatedCustomer);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var customer = await _customerRepository.GetByIdAsync(id);
         if (customer == null)

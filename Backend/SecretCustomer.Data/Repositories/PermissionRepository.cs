@@ -14,7 +14,7 @@ public class PermissionRepository : IPermissionRepository
         _context = context;
     }
 
-    public async Task<Permission?> GetByIdAsync(Guid id)
+    public async Task<Permission?> GetByIdAsync(int id)
     {
         return await _context.Permissions
             .Include(p => p.RolePermissions)
@@ -57,7 +57,7 @@ public class PermissionRepository : IPermissionRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var permission = await _context.Permissions.FindAsync(id);
         if (permission != null)

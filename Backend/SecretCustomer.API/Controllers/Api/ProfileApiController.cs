@@ -26,10 +26,10 @@ public class ProfileApiController : BaseApiController
         _localizationService = localizationService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(userIdClaim!);
+        return int.Parse(userIdClaim!);
     }
 
     /// <summary>

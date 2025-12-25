@@ -27,7 +27,7 @@ public class CustomerPortalApiController : ControllerBase
         _localizationService = localizationService;
     }
 
-    private Guid? GetCustomerIdFromToken()
+    private int? GetCustomerIdFromToken()
     {
         // Authorization header'dan token'ı al
         var authHeader = Request.Headers["Authorization"].FirstOrDefault();
@@ -47,7 +47,7 @@ public class CustomerPortalApiController : ControllerBase
 
             _logger.LogInformation("[CustomerPortal] Token parsed. CustomerId: {CustomerId}", customerIdClaim);
 
-            if (Guid.TryParse(customerIdClaim, out var customerId))
+            if (int.TryParse(customerIdClaim, out var customerId))
                 return customerId;
         }
         catch (Exception ex)
@@ -58,11 +58,11 @@ public class CustomerPortalApiController : ControllerBase
         return null;
     }
 
-    private Guid? GetCustomerId()
+    private int? GetCustomerId()
     {
         // Önce User claims'den dene
         var customerIdClaim = User.FindFirst("CustomerId")?.Value;
-        if (Guid.TryParse(customerIdClaim, out var customerId))
+        if (int.TryParse(customerIdClaim, out var customerId))
             return customerId;
 
         // Yoksa token'dan manuel parse et

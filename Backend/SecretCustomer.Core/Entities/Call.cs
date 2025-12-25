@@ -105,7 +105,7 @@ public class Call : BaseEntity
     /// <summary>
     /// İlişkili proje ID
     /// </summary>
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
 
     /// <summary>
     /// İlişkili proje
@@ -115,7 +115,7 @@ public class Call : BaseEntity
     /// <summary>
     /// İlişkili müşteri ID
     /// </summary>
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 
     /// <summary>
     /// İlişkili müşteri
@@ -125,7 +125,7 @@ public class Call : BaseEntity
     /// <summary>
     /// İlişkili şube ID
     /// </summary>
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 
     /// <summary>
     /// İlişkili şube
@@ -135,7 +135,7 @@ public class Call : BaseEntity
     /// <summary>
     /// Atanan kullanıcı ID (çağrıyı alan/yapan)
     /// </summary>
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
 
     /// <summary>
     /// Atanan kullanıcı
@@ -145,7 +145,7 @@ public class Call : BaseEntity
     /// <summary>
     /// Oluşturan kullanıcı ID
     /// </summary>
-    public Guid? CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
 
     /// <summary>
     /// Oluşturan kullanıcı
@@ -155,7 +155,7 @@ public class Call : BaseEntity
     /// <summary>
     /// İlişkili değerlendirme ID
     /// </summary>
-    public Guid? EvaluationId { get; set; }
+    public int? EvaluationId { get; set; }
 
     /// <summary>
     /// İlişkili değerlendirme
@@ -201,7 +201,7 @@ public class CallAttachment : BaseEntity
     /// <summary>
     /// Çağrı ID
     /// </summary>
-    public Guid CallId { get; set; }
+    public int CallId { get; set; }
 
     /// <summary>
     /// Çağrı
@@ -236,7 +236,7 @@ public class CallAttachment : BaseEntity
     /// <summary>
     /// Yükleyen kullanıcı ID
     /// </summary>
-    public Guid? UploadedByUserId { get; set; }
+    public int? UploadedByUserId { get; set; }
 
     /// <summary>
     /// Yükleyen kullanıcı

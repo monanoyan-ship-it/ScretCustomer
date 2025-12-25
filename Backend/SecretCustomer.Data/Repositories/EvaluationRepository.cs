@@ -13,7 +13,7 @@ public class EvaluationRepository : IEvaluationRepository
         _context = context;
     }
 
-    public async Task<Evaluation?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Evaluation?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Evaluations.AsQueryable();
 
@@ -30,7 +30,7 @@ public class EvaluationRepository : IEvaluationRepository
         return await query.FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<Evaluation?> GetByAssignmentIdAsync(Guid assignmentId, bool includeDetails = false)
+    public async Task<Evaluation?> GetByAssignmentIdAsync(int assignmentId, bool includeDetails = false)
     {
         var query = _context.Evaluations.AsQueryable();
 
@@ -44,7 +44,7 @@ public class EvaluationRepository : IEvaluationRepository
         return await query.FirstOrDefaultAsync(e => e.AssignmentId == assignmentId);
     }
 
-    public async Task<IEnumerable<Evaluation>> GetByEvaluatorIdAsync(Guid evaluatorId)
+    public async Task<IEnumerable<Evaluation>> GetByEvaluatorIdAsync(int evaluatorId)
     {
         return await _context.Evaluations
             .Include(e => e.Assignment)
@@ -56,7 +56,7 @@ public class EvaluationRepository : IEvaluationRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Evaluation>> GetByBranchIdAsync(Guid branchId, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<IEnumerable<Evaluation>> GetByBranchIdAsync(int branchId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.Evaluations
             .Include(e => e.Assignment)

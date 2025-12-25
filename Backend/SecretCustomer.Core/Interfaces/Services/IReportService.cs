@@ -8,7 +8,7 @@ public interface IReportService
     Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter);
 
     // Değerlendirme detayı
-    Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(Guid evaluationId);
+    Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId);
 
     // Özet rapor
     Task<SummaryReportDto> GetSummaryReportAsync(ReportFilterDto filter);

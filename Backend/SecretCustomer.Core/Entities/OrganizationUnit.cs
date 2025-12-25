@@ -40,18 +40,18 @@ public class OrganizationUnit : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Hierarchy - Parent
-    public Guid? ParentId { get; set; }
+    public int? ParentId { get; set; }
     public OrganizationUnit? Parent { get; set; }
 
     // Hierarchy - Children
     public ICollection<OrganizationUnit> Children { get; set; } = new List<OrganizationUnit>();
 
     // Manager
-    public Guid? ManagerId { get; set; }
+    public int? ManagerId { get; set; }
     public User? Manager { get; set; }
 
     // Location/Branch association
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public Branch? Branch { get; set; }
 
     // Navigation

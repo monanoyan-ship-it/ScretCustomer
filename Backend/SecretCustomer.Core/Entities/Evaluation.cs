@@ -9,10 +9,10 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Değerlendirme", Description = "Değerlendirmeler için Excel import/export", IsAvailable = true)]
 public class Evaluation : BaseEntity
 {
-    public Guid AssignmentId { get; set; }
+    public int AssignmentId { get; set; }
     public Assignment Assignment { get; set; } = null!;
 
-    public Guid? EvaluatorId { get; set; }
+    public int? EvaluatorId { get; set; }
     public User? Evaluator { get; set; }
 
     [ExcelColumn("Durum", 1, ColumnType = ExcelColumnType.Dropdown,
@@ -78,7 +78,7 @@ public class Evaluation : BaseEntity
     /// <summary>
     /// Değerlendirilen tanımlı personel ID
     /// </summary>
-    public Guid? EvaluatedPersonnelId { get; set; }
+    public int? EvaluatedPersonnelId { get; set; }
 
     /// <summary>
     /// Değerlendirilen personel (Navigation Property)

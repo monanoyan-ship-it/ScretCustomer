@@ -2,20 +2,20 @@ namespace SecretCustomer.Core.DTOs.Assignment;
 
 public class AssignmentDto
 {
-    public Guid Id { get; set; }
-    public Guid ProjectId { get; set; }
+    public int Id { get; set; }
+    public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string? ProjectCode { get; set; }
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string? BranchName { get; set; }
     public string? BranchCode { get; set; }
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
-    public Guid? AssignedFieldWorkerId { get; set; }
+    public int? AssignedFieldWorkerId { get; set; }
     public string? AssignedFieldWorkerName { get; set; }
-    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public int? AssignedCustomerPersonnelId { get; set; }
     public string? AssignedCustomerPersonnelName { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalName { get; set; }
@@ -31,7 +31,7 @@ public class AssignmentDto
     public int DaysRemaining => (DueDate - DateTime.UtcNow).Days;
 
     // Evaluation Info
-    public Guid? EvaluationId { get; set; }
+    public int? EvaluationId { get; set; }
     public string? EvaluationStatus { get; set; }
     public decimal? EvaluationScore { get; set; }
     public int YellowCardCount { get; set; }
@@ -96,7 +96,7 @@ public class AssignmentSummaryDto
 /// </summary>
 public class ProjectAssignmentSummaryDto
 {
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public int TotalAssignments { get; set; }
     public int CompletedAssignments { get; set; }
@@ -109,7 +109,7 @@ public class ProjectAssignmentSummaryDto
 /// </summary>
 public class BranchAssignmentSummaryDto
 {
-    public Guid BranchId { get; set; }
+    public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public string? BranchCode { get; set; }
     public int TotalAssignments { get; set; }

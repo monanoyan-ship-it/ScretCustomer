@@ -6,22 +6,22 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Atama", Description = "Görev atamaları için Excel import/export", IsAvailable = false)]
 public class Assignment : BaseEntity
 {
-    public Guid ProjectId { get; set; }
+    public int ProjectId { get; set; }
     public Project Project { get; set; } = null!;
 
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
     public Branch? Branch { get; set; }
 
-    public Guid? AssignedUserId { get; set; }
+    public int? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 
-    public Guid? AssignedCustomerPersonnelId { get; set; }
+    public int? AssignedCustomerPersonnelId { get; set; }
     public CustomerPersonnel? AssignedCustomerPersonnel { get; set; }
 
-    public Guid? AssignedFieldWorkerId { get; set; }
+    public int? AssignedFieldWorkerId { get; set; }
     public FieldWorker? AssignedFieldWorker { get; set; }
 
     [ExcelColumn("Dış Müşteri E-postası", 1, ColumnType = ExcelColumnType.Email,

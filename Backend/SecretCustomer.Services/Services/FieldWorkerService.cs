@@ -19,13 +19,13 @@ public class FieldWorkerService : IFieldWorkerService
         _userRepository = userRepository;
     }
 
-    public async Task<FieldWorkerDto?> GetByIdAsync(Guid id)
+    public async Task<FieldWorkerDto?> GetByIdAsync(int id)
     {
         var fieldWorker = await _fieldWorkerRepository.GetByIdAsync(id);
         return fieldWorker == null ? null : MapToDto(fieldWorker);
     }
 
-    public async Task<FieldWorkerDto?> GetByUserIdAsync(Guid userId)
+    public async Task<FieldWorkerDto?> GetByUserIdAsync(int userId)
     {
         var fieldWorker = await _fieldWorkerRepository.GetByUserIdAsync(userId);
         return fieldWorker == null ? null : MapToDto(fieldWorker);
@@ -99,7 +99,7 @@ public class FieldWorkerService : IFieldWorkerService
         return MapToDto(reloadedFieldWorker!);
     }
 
-    public async Task<FieldWorkerDto> UpdateAsync(Guid id, UpdateFieldWorkerDto updateDto)
+    public async Task<FieldWorkerDto> UpdateAsync(int id, UpdateFieldWorkerDto updateDto)
     {
         var fieldWorker = await _fieldWorkerRepository.GetByIdAsync(id);
         if (fieldWorker == null)
@@ -137,7 +137,7 @@ public class FieldWorkerService : IFieldWorkerService
                 }
 
                 // Check if email is being changed and if it's already in use
-                if (!string.IsNullOrEmpty(updateDto.Email) && 
+                if (!string.IsNullOrEmpty(updateDto.Email) &&
                     user.Email != updateDto.Email &&
                     await _userRepository.ExistsByEmailAsync(updateDto.Email))
                 {
@@ -160,7 +160,7 @@ public class FieldWorkerService : IFieldWorkerService
         return MapToDto(reloadedFieldWorker!);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var fieldWorker = await _fieldWorkerRepository.GetByIdAsync(id);
         if (fieldWorker == null)

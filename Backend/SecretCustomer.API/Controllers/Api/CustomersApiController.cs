@@ -56,7 +56,7 @@ public class CustomersApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -101,7 +101,7 @@ public class CustomersApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCustomerDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -131,7 +131,7 @@ public class CustomersApiController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {

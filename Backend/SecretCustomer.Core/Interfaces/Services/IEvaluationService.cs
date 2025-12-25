@@ -4,11 +4,11 @@ namespace SecretCustomer.Core.Interfaces.Services;
 
 public interface IEvaluationService
 {
-    Task<EvaluationDto?> GetByIdAsync(Guid id);
-    Task<EvaluationDto?> GetByAssignmentIdAsync(Guid assignmentId);
-    Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(Guid evaluatorId);
+    Task<EvaluationDto?> GetByIdAsync(int id);
+    Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId);
+    Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId);
     Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto);
-    Task<EvaluationDto> StartEvaluationAsync(Guid assignmentId, Guid? evaluatorId);
+    Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId);
 
     // ===== YENİ METOTLAR - Çağrı Denetleme =====
 
@@ -30,12 +30,12 @@ public interface IEvaluationService
     /// <summary>
     /// Değerlendirme formunu yükle (checklist bilgileriyle birlikte)
     /// </summary>
-    Task<EvaluationFormDto?> GetEvaluationFormAsync(Guid assignmentId);
+    Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId);
 
     /// <summary>
     /// Mevcut değerlendirmeyi yükle (düzenleme için)
     /// </summary>
-    Task<EvaluationFormDto?> GetExistingEvaluationFormAsync(Guid evaluationId);
+    Task<EvaluationFormDto?> GetExistingEvaluationFormAsync(int evaluationId);
 
     /// <summary>
     /// Tüm değerlendirmeleri getir (yönetici için)
@@ -45,17 +45,17 @@ public interface IEvaluationService
     /// <summary>
     /// Proje bazlı değerlendirmeleri getir
     /// </summary>
-    Task<IEnumerable<EvaluationDto>> GetByProjectIdAsync(Guid projectId);
+    Task<IEnumerable<EvaluationDto>> GetByProjectIdAsync(int projectId);
 
     /// <summary>
     /// Kapatılmış değerlendirmeyi taslağa al (Admin yetkisi gerektirir)
     /// </summary>
-    Task<EvaluationDto> RevertToDraftAsync(Guid evaluationId, Guid revertedByUserId, string? reason = null);
+    Task<EvaluationDto> RevertToDraftAsync(int evaluationId, int revertedByUserId, string? reason = null);
 
     /// <summary>
     /// Değerlendirmeyi iptal et
     /// </summary>
-    Task<EvaluationDto> CancelEvaluationAsync(Guid evaluationId, Guid cancelledByUserId, string? reason = null);
+    Task<EvaluationDto> CancelEvaluationAsync(int evaluationId, int cancelledByUserId, string? reason = null);
 }
 
 /// <summary>
@@ -63,8 +63,8 @@ public interface IEvaluationService
 /// </summary>
 public class EvaluationFormDto
 {
-    public Guid AssignmentId { get; set; }
-    public Guid? EvaluationId { get; set; }
+    public int AssignmentId { get; set; }
+    public int? EvaluationId { get; set; }
     public string Status { get; set; } = "New";
 
     // Proje/Atama bilgileri
@@ -73,7 +73,7 @@ public class EvaluationFormDto
     public string? CustomerName { get; set; }
 
     // Checklist bilgileri
-    public Guid ChecklistId { get; set; }
+    public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
     public string? ChecklistType { get; set; }
     public string? ScoringMethod { get; set; }
@@ -84,7 +84,7 @@ public class EvaluationFormDto
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
     public int? DurationMinutes { get; set; }
-    public Guid? EvaluatedPersonnelId { get; set; }
+    public int? EvaluatedPersonnelId { get; set; }
     public string? EvaluatedUnknownPersonnel { get; set; }
     public string? EvaluationComment { get; set; }
 
@@ -100,14 +100,14 @@ public class EvaluationFormDto
 
 public class PersonnelOptionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
 }
 
 public class EvaluationSectionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Order { get; set; }
     public string? GroupType { get; set; }
@@ -118,7 +118,7 @@ public class EvaluationSectionDto
 
 public class EvaluationQuestionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Text { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public int Order { get; set; }

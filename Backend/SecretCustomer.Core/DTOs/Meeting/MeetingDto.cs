@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.Meeting;
 /// </summary>
 public class MeetingDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string MeetingType { get; set; } = string.Empty;
@@ -23,11 +23,11 @@ public class MeetingDto
     public string? Agenda { get; set; }
     public string? Minutes { get; set; }
     public string? Decisions { get; set; }
-    public Guid OrganizerId { get; set; }
+    public int OrganizerId { get; set; }
     public string? OrganizerName { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public string? ProjectName { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
     public int? ReminderHoursBefore { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -43,7 +43,7 @@ public class MeetingDto
 /// </summary>
 public class MeetingListDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string MeetingType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -74,8 +74,8 @@ public class CreateMeetingDto
     public string? OnlineLink { get; set; }
     public string? OnlinePlatform { get; set; }
     public string? Agenda { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
     public int? ReminderHoursBefore { get; set; } = 24;
     public List<CreateMeetingParticipantDto> Participants { get; set; } = new();
 }
@@ -100,8 +100,8 @@ public class UpdateMeetingDto
     public string? Agenda { get; set; }
     public string? Minutes { get; set; }
     public string? Decisions { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
     public int? ReminderHoursBefore { get; set; }
 }
 
@@ -123,9 +123,9 @@ public class CompleteMeetingDto
 /// </summary>
 public class MeetingParticipantDto
 {
-    public Guid Id { get; set; }
-    public Guid MeetingId { get; set; }
-    public Guid? UserId { get; set; }
+    public int Id { get; set; }
+    public int MeetingId { get; set; }
+    public int? UserId { get; set; }
     public string? UserName { get; set; }
     public string? UserEmail { get; set; }
     public string? ExternalName { get; set; }
@@ -144,7 +144,7 @@ public class MeetingParticipantDto
 /// </summary>
 public class CreateMeetingParticipantDto
 {
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
     public string? ExternalName { get; set; }
     public string? ExternalEmail { get; set; }
     public bool IsRequired { get; set; } = true;
@@ -164,7 +164,7 @@ public class RespondToMeetingDto
 /// </summary>
 public class UpdateParticipantAttendanceDto
 {
-    public Guid ParticipantId { get; set; }
+    public int ParticipantId { get; set; }
     public string Status { get; set; } = "Attended";
     public string? AttendanceNote { get; set; }
 }
@@ -174,8 +174,8 @@ public class UpdateParticipantAttendanceDto
 /// </summary>
 public class MeetingAttachmentDto
 {
-    public Guid Id { get; set; }
-    public Guid MeetingId { get; set; }
+    public int Id { get; set; }
+    public int MeetingId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public long FileSize { get; set; }
     public string? ContentType { get; set; }
@@ -190,9 +190,9 @@ public class MeetingAttachmentDto
 /// </summary>
 public class MeetingFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
-    public Guid? OrganizerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? OrganizerId { get; set; }
     public string? MeetingType { get; set; }
     public string? Status { get; set; }
     public DateTime? StartDate { get; set; }

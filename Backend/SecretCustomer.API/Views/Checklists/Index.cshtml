@@ -336,8 +336,8 @@
                                                 <label class="form-label"><i class="bi bi-paperclip"></i> @Html.T("Checklist.FileAttachments", "Dosya Ekleri")</label>
 
                                                 <!-- Mevcut Dosyalar -->
-                                                <div class="mb-2" data-bind="visible: attachments && attachments().length > 0">
-                                                    <div class="list-group list-group-flush" data-bind="foreach: attachments">
+                                                <div class="mb-2" data-bind="visible: _attachments && _attachments().length > 0">
+                                                    <div class="list-group list-group-flush" data-bind="foreach: _attachments">
                                                         <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
                                                             <div>
                                                                 <i class="bi bi-file-earmark me-1"></i>
@@ -353,8 +353,8 @@
 
                                                 <!-- Dosya Yükleme -->
                                                 <div class="input-group input-group-sm">
-                                                    <input type="file" class="form-control form-control-sm" data-bind="attr: { id: 'file-' + (id || 'new') }, event: { change: function(data, event) { $parents[2].uploadQuestionAttachment($data, event.target); } }" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
-                                                    <span class="input-group-text" data-bind="visible: isUploadingFile && isUploadingFile()">
+                                                    <input type="file" class="form-control form-control-sm" data-bind="attr: { id: 'file-' + (id() || 'new') }, event: { change: function(data, event) { $parents[2].uploadQuestionAttachment($data, event.target); } }" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+                                                    <span class="input-group-text" data-bind="visible: _isUploadingFile && _isUploadingFile()">
                                                         <span class="spinner-border spinner-border-sm"></span>
                                                     </span>
                                                 </div>

@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.DTOs.Announcement;
 /// </summary>
 public class AnnouncementDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string? Summary { get; set; }
@@ -45,7 +45,7 @@ public class CreateAnnouncementDto
 /// </summary>
 public class AnnouncementSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Summary { get; set; }
     public AnnouncementType Type { get; set; }

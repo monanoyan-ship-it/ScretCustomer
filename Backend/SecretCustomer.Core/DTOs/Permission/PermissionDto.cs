@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.DTOs.Permission;
 /// </summary>
 public class PermissionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public PermissionCategory Category { get; set; }
@@ -22,10 +22,10 @@ public class PermissionDto
 /// </summary>
 public class RolePermissionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public UserRole Role { get; set; }
     public string RoleName { get; set; } = string.Empty;
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
     public string PermissionCode { get; set; } = string.Empty;
     public string PermissionDisplayName { get; set; } = string.Empty;
     public bool IsGranted { get; set; }
@@ -39,10 +39,10 @@ public class RolePermissionDto
 /// </summary>
 public class UserPermissionDto
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
     public string PermissionCode { get; set; } = string.Empty;
     public string PermissionDisplayName { get; set; } = string.Empty;
     public bool IsGranted { get; set; }
@@ -59,7 +59,7 @@ public class UserPermissionDto
 public class GrantRolePermissionDto
 {
     public UserRole Role { get; set; }
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
     public bool IsGranted { get; set; } = true;
     public PermissionScope Scope { get; set; } = PermissionScope.All;
     public string? Notes { get; set; }
@@ -70,8 +70,8 @@ public class GrantRolePermissionDto
 /// </summary>
 public class GrantUserPermissionDto
 {
-    public Guid UserId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int UserId { get; set; }
+    public int PermissionId { get; set; }
     public bool IsGranted { get; set; } = true;
     public PermissionScope Scope { get; set; } = PermissionScope.All;
     public DateTime? ValidFrom { get; set; }
@@ -85,7 +85,7 @@ public class GrantUserPermissionDto
 public class BulkRolePermissionDto
 {
     public UserRole Role { get; set; }
-    public List<Guid> PermissionIds { get; set; } = new();
+    public List<int> PermissionIds { get; set; } = new();
     public PermissionScope Scope { get; set; } = PermissionScope.All;
 }
 
@@ -105,7 +105,7 @@ public class RolePermissionsSummaryDto
 /// </summary>
 public class UserPermissionsSummaryDto
 {
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public string RoleName { get; set; } = string.Empty;

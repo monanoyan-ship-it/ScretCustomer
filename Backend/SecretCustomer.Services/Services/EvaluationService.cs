@@ -38,19 +38,19 @@ public class EvaluationService : IEvaluationService
         return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
     }
 
-    public async Task<EvaluationDto?> GetByIdAsync(Guid id)
+    public async Task<EvaluationDto?> GetByIdAsync(int id)
     {
         var evaluation = await _evaluationRepository.GetByIdAsync(id, includeDetails: true);
         return evaluation == null ? null : await MapToDtoAsync(evaluation);
     }
 
-    public async Task<EvaluationDto?> GetByAssignmentIdAsync(Guid assignmentId)
+    public async Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId)
     {
         var evaluation = await _evaluationRepository.GetByAssignmentIdAsync(assignmentId, includeDetails: true);
         return evaluation == null ? null : await MapToDtoAsync(evaluation);
     }
 
-    public async Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(Guid evaluatorId)
+    public async Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId)
     {
         var evaluations = await _evaluationRepository.GetByEvaluatorIdAsync(evaluatorId);
         var result = new List<EvaluationDto>();
@@ -83,7 +83,7 @@ public class EvaluationService : IEvaluationService
         return result;
     }
 
-    public async Task<IEnumerable<EvaluationDto>> GetByProjectIdAsync(Guid projectId)
+    public async Task<IEnumerable<EvaluationDto>> GetByProjectIdAsync(int projectId)
     {
         var evaluations = await _context.Evaluations
             .Include(e => e.Evaluator)
@@ -103,7 +103,7 @@ public class EvaluationService : IEvaluationService
         return result;
     }
 
-    public async Task<EvaluationDto> StartEvaluationAsync(Guid assignmentId, Guid? evaluatorId)
+    public async Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);
         if (assignment == null)
@@ -198,7 +198,7 @@ public class EvaluationService : IEvaluationService
         return await MapToDtoAsync(evaluation);
     }
 
-    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(Guid assignmentId)
+    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
@@ -288,7 +288,7 @@ public class EvaluationService : IEvaluationService
         };
     }
 
-    public async Task<EvaluationFormDto?> GetExistingEvaluationFormAsync(Guid evaluationId)
+    public async Task<EvaluationFormDto?> GetExistingEvaluationFormAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)
@@ -548,7 +548,7 @@ public class EvaluationService : IEvaluationService
     /// <summary>
     /// Kapatılmış değerlendirmeyi taslağa al (Admin yetkisi gerektirir)
     /// </summary>
-    public async Task<EvaluationDto> RevertToDraftAsync(Guid evaluationId, Guid revertedByUserId, string? reason = null)
+    public async Task<EvaluationDto> RevertToDraftAsync(int evaluationId, int revertedByUserId, string? reason = null)
     {
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)
@@ -586,7 +586,7 @@ public class EvaluationService : IEvaluationService
     /// <summary>
     /// Değerlendirmeyi iptal et
     /// </summary>
-    public async Task<EvaluationDto> CancelEvaluationAsync(Guid evaluationId, Guid cancelledByUserId, string? reason = null)
+    public async Task<EvaluationDto> CancelEvaluationAsync(int evaluationId, int cancelledByUserId, string? reason = null)
     {
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)

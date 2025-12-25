@@ -24,7 +24,7 @@ public class ChecklistService : IChecklistService
         return DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc);
     }
 
-    public async Task<ChecklistDto?> GetByIdAsync(Guid id)
+    public async Task<ChecklistDto?> GetByIdAsync(int id)
     {
         var checklist = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
         return checklist == null ? null : MapToDto(checklist);
@@ -143,9 +143,10 @@ public class ChecklistService : IChecklistService
             }
             else
             {
-                // Add new section
+                // Add new section - 0 ile EF Core "Added" olarak algılar
                 existing.Sections.Add(new Section
                 {
+                    Id = 0,
                     Name = sectionDto.Name,
                     Description = sectionDto.Description,
                     Order = sectionDto.Order,
@@ -156,6 +157,7 @@ public class ChecklistService : IChecklistService
                     IsActive = sectionDto.IsActive,
                     Questions = sectionDto.Questions.Select(q => new Question
                     {
+                        Id = 0,
                         Text = q.Text,
                         Type = Enum.Parse<QuestionType>(q.Type),
                         Order = q.Order,
@@ -180,12 +182,12 @@ public class ChecklistService : IChecklistService
         return MapToDto(updated);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         return await _checklistRepository.DeleteAsync(id);
     }
 
-    public async Task<ChecklistDto> CloneChecklistAsync(Guid id, string newName)
+    public async Task<ChecklistDto> CloneChecklistAsync(int id, string newName)
     {
         var original = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
         if (original == null)
@@ -250,7 +252,6 @@ public class ChecklistService : IChecklistService
                     question.AllowNA = questionDto.AllowNA;
                     question.IsRequired = questionDto.IsRequired;
                     question.OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null;
-                    // Yeni alanlar
                     question.ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored;
                     question.WeightPoints = questionDto.WeightPoints;
                     question.MaxPoints = questionDto.MaxPoints;
@@ -259,12 +260,14 @@ public class ChecklistService : IChecklistService
                     question.HelpText = questionDto.HelpText;
                     question.PenaltyValue = questionDto.PenaltyValue;
                 }
+                // else: ID var ama bulunamadı - atla, hata loglanabilir
             }
             else
             {
-                // Add new question
+                // Add new question (ID null) - 0 ile EF Core "Added" olarak algılar
                 section.Questions.Add(new Question
                 {
+                    Id = 0,
                     Text = questionDto.Text,
                     Type = Enum.Parse<QuestionType>(questionDto.Type),
                     Order = questionDto.Order,
@@ -272,7 +275,6 @@ public class ChecklistService : IChecklistService
                     AllowNA = questionDto.AllowNA,
                     IsRequired = questionDto.IsRequired,
                     OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null,
-                    // Yeni alanlar
                     ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored,
                     WeightPoints = questionDto.WeightPoints,
                     MaxPoints = questionDto.MaxPoints,

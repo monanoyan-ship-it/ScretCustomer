@@ -35,7 +35,7 @@ public class Approval : BaseEntity
     /// <summary>
     /// İlişkili kayıt ID (generic)
     /// </summary>
-    public Guid? RelatedEntityId { get; set; }
+    public int? RelatedEntityId { get; set; }
 
     /// <summary>
     /// İlişkili kayıt türü
@@ -45,7 +45,7 @@ public class Approval : BaseEntity
     /// <summary>
     /// Talep eden kullanıcı ID
     /// </summary>
-    public Guid RequestedByUserId { get; set; }
+    public int RequestedByUserId { get; set; }
 
     /// <summary>
     /// Talep eden kullanıcı
@@ -55,7 +55,7 @@ public class Approval : BaseEntity
     /// <summary>
     /// Onaylayacak kullanıcı ID
     /// </summary>
-    public Guid? ApproverUserId { get; set; }
+    public int? ApproverUserId { get; set; }
 
     /// <summary>
     /// Onaylayacak kullanıcı
@@ -65,7 +65,7 @@ public class Approval : BaseEntity
     /// <summary>
     /// Onaylayan kullanıcı ID (gerçekleşen)
     /// </summary>
-    public Guid? ApprovedByUserId { get; set; }
+    public int? ApprovedByUserId { get; set; }
 
     /// <summary>
     /// Onaylayan kullanıcı
@@ -151,7 +151,7 @@ public class Notification : BaseEntity
     /// <summary>
     /// Alıcı kullanıcı ID
     /// </summary>
-    public Guid RecipientUserId { get; set; }
+    public int RecipientUserId { get; set; }
 
     /// <summary>
     /// Alıcı kullanıcı
@@ -161,7 +161,7 @@ public class Notification : BaseEntity
     /// <summary>
     /// Gönderen kullanıcı ID
     /// </summary>
-    public Guid? SenderUserId { get; set; }
+    public int? SenderUserId { get; set; }
 
     /// <summary>
     /// Gönderen kullanıcı
@@ -171,7 +171,7 @@ public class Notification : BaseEntity
     /// <summary>
     /// İlişkili kayıt ID
     /// </summary>
-    public Guid? RelatedEntityId { get; set; }
+    public int? RelatedEntityId { get; set; }
 
     /// <summary>
     /// İlişkili kayıt türü
@@ -242,7 +242,7 @@ public class NotificationSetting : BaseEntity
     /// <summary>
     /// Kullanıcı ID
     /// </summary>
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
     /// <summary>
     /// Kullanıcı

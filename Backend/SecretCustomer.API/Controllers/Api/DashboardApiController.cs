@@ -44,7 +44,7 @@ public class DashboardApiController : BaseApiController
     [HttpGet("team-leader/{branchId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
     public async Task<IActionResult> GetTeamLeaderDashboard(
-        Guid branchId,
+        int branchId,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
@@ -67,7 +67,7 @@ public class DashboardApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
             }
@@ -91,7 +91,7 @@ public class DashboardApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
             }

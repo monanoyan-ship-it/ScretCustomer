@@ -107,7 +107,7 @@ public class AccountController : Controller
         catch (UnauthorizedAccessException)
         {
             // Audit Log - Başarısız giriş
-            await _auditLogService.LogLoginAsync(Guid.Empty, model.Username, false, "Geçersiz kullanıcı adı veya şifre");
+            await _auditLogService.LogLoginAsync(0, model.Username, false, "Geçersiz kullanıcı adı veya şifre");
 
             _logger.LogWarning("Failed login attempt for user {Username}", model.Username);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.InvalidCredentials"));
@@ -132,7 +132,7 @@ public class AccountController : Controller
         // Audit Log - Çıkış
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
-        if (Guid.TryParse(userIdClaim, out var userId))
+        if (int.TryParse(userIdClaim, out var userId))
         {
             await _auditLogService.LogLogoutAsync(userId, userName);
         }

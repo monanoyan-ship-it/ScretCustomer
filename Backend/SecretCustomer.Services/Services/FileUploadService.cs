@@ -31,7 +31,7 @@ public class FileUploadService : IFileUploadService
         }
     }
 
-    public async Task<FileUploadResult> UploadAnswerAttachmentAsync(Guid answerId, Stream fileStream, string fileName, string contentType)
+    public async Task<FileUploadResult> UploadAnswerAttachmentAsync(int answerId, Stream fileStream, string fileName, string contentType)
     {
         try
         {
@@ -109,7 +109,7 @@ public class FileUploadService : IFileUploadService
         }
     }
 
-    public async Task<bool> DeleteAnswerAttachmentAsync(Guid answerId)
+    public async Task<bool> DeleteAnswerAttachmentAsync(int answerId)
     {
         try
         {
@@ -138,7 +138,7 @@ public class FileUploadService : IFileUploadService
         }
     }
 
-    public async Task<(Stream FileStream, string FileName, string ContentType)?> GetAnswerAttachmentAsync(Guid answerId)
+    public async Task<(Stream FileStream, string FileName, string ContentType)?> GetAnswerAttachmentAsync(int answerId)
     {
         try
         {

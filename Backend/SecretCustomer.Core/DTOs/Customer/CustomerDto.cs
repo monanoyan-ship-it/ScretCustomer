@@ -4,7 +4,7 @@ namespace SecretCustomer.Core.DTOs.Customer;
 
 public class CustomerDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public string TaxNumber { get; set; } = string.Empty;
     public string? Phone { get; set; }

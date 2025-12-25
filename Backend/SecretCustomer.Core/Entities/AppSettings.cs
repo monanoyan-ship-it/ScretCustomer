@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.Entities;
 /// </summary>
 public class AppSettings
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public int Id { get; set; }
 
     /// <summary>
     /// Ayar anahtarı (örn: "General.DemoMode", "Security.MaxLoginAttempts")
@@ -45,7 +45,7 @@ public class AppSettings
     /// <summary>
     /// Nesne ID'si (opsiyonel - müşteriye/projeye özel ayarlar için)
     /// </summary>
-    public Guid? EntityId { get; set; }
+    public int? EntityId { get; set; }
 
     /// <summary>
     /// Nesne tipi (opsiyonel - Customer, Project, Branch vb.)

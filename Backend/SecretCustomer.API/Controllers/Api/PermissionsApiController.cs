@@ -263,7 +263,7 @@ public class PermissionsApiController : BaseApiController
     /// Rolden yetki kaldırır
     /// </summary>
     [HttpDelete("roles/{role}/{permissionId}")]
-    public async Task<IActionResult> RevokeRolePermission(UserRole role, Guid permissionId)
+    public async Task<IActionResult> RevokeRolePermission(UserRole role, int permissionId)
     {
         try
         {
@@ -281,7 +281,7 @@ public class PermissionsApiController : BaseApiController
     /// Kullanıcının yetkilerini getirir
     /// </summary>
     [HttpGet("users/{userId}")]
-    public async Task<IActionResult> GetUserPermissions(Guid userId)
+    public async Task<IActionResult> GetUserPermissions(int userId)
     {
         try
         {
@@ -407,7 +407,7 @@ public class PermissionsApiController : BaseApiController
     /// Kullanıcıdan özel yetki kaldırır
     /// </summary>
     [HttpDelete("users/{userId}/{permissionId}")]
-    public async Task<IActionResult> RevokeUserPermission(Guid userId, Guid permissionId)
+    public async Task<IActionResult> RevokeUserPermission(int userId, int permissionId)
     {
         try
         {

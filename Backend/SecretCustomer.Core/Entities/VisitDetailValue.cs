@@ -9,13 +9,13 @@ public class VisitDetailValue : BaseEntity
     /// <summary>
     /// İlişkili müşteri ziyareti
     /// </summary>
-    public Guid CustomerVisitId { get; set; }
+    public int CustomerVisitId { get; set; }
     public CustomerVisit CustomerVisit { get; set; } = null!;
 
     /// <summary>
     /// Alan tanımı (dinamik)
     /// </summary>
-    public Guid FieldDefinitionId { get; set; }
+    public int FieldDefinitionId { get; set; }
     public VisitFieldDefinition FieldDefinition { get; set; } = null!;
 
     // ===== TYPED DEĞERLER (SQL sorgulanabilir) =====
@@ -109,11 +109,10 @@ public class VisitDetailValue : BaseEntity
     /// <summary>
     /// Yeni bir VisitDetailValue oluşturur
     /// </summary>
-    public static VisitDetailValue Create(Guid customerVisitId, Guid fieldDefinitionId, object? value)
+    public static VisitDetailValue Create(int customerVisitId, int fieldDefinitionId, object? value)
     {
         var detail = new VisitDetailValue
         {
-            Id = Guid.NewGuid(),
             CustomerVisitId = customerVisitId,
             FieldDefinitionId = fieldDefinitionId,
             CreatedAt = DateTime.UtcNow

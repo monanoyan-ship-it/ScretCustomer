@@ -7,7 +7,7 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Müşteri Görev Listesi", Description = "Müşterilere özel görev listeleri", IsAvailable = true)]
 public class CustomerTaskList : BaseEntity
 {
-    public Guid CustomerId { get; set; }
+    public int CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
 
     [ExcelColumn("Görev Adı", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
@@ -49,7 +49,7 @@ public class CustomerTaskList : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // İlgili Checklist (opsiyonel)
-    public Guid? ChecklistId { get; set; }
+    public int? ChecklistId { get; set; }
     public Checklist? Checklist { get; set; }
 
     // Navigation Properties

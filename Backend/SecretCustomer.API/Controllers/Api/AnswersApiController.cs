@@ -29,7 +29,7 @@ public class AnswersApiController : BaseApiController
     /// </summary>
     [HttpPost("{answerId}/attachment")]
     [RequestSizeLimit(52428800)] // 50 MB
-    public async Task<IActionResult> UploadAttachment(Guid answerId, IFormFile file)
+    public async Task<IActionResult> UploadAttachment(int answerId, IFormFile file)
     {
         try
         {
@@ -68,7 +68,7 @@ public class AnswersApiController : BaseApiController
     /// Cevabın ekli dosyasını siler
     /// </summary>
     [HttpDelete("{answerId}/attachment")]
-    public async Task<IActionResult> DeleteAttachment(Guid answerId)
+    public async Task<IActionResult> DeleteAttachment(int answerId)
     {
         try
         {
@@ -92,7 +92,7 @@ public class AnswersApiController : BaseApiController
     /// </summary>
     [HttpGet("{answerId}/attachment")]
     [AllowAnonymous] // QR kod ile erişim için
-    public async Task<IActionResult> DownloadAttachment(Guid answerId)
+    public async Task<IActionResult> DownloadAttachment(int answerId)
     {
         try
         {

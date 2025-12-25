@@ -95,7 +95,7 @@ public class Meeting : BaseEntity
     /// <summary>
     /// Organizatör kullanıcı ID
     /// </summary>
-    public Guid OrganizerId { get; set; }
+    public int OrganizerId { get; set; }
 
     /// <summary>
     /// Organizatör
@@ -105,7 +105,7 @@ public class Meeting : BaseEntity
     /// <summary>
     /// İlişkili proje ID
     /// </summary>
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
 
     /// <summary>
     /// İlişkili proje
@@ -115,7 +115,7 @@ public class Meeting : BaseEntity
     /// <summary>
     /// İlişkili müşteri ID
     /// </summary>
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 
     /// <summary>
     /// İlişkili müşteri
@@ -151,7 +151,7 @@ public class MeetingParticipant : BaseEntity
     /// <summary>
     /// Toplantı ID
     /// </summary>
-    public Guid MeetingId { get; set; }
+    public int MeetingId { get; set; }
 
     /// <summary>
     /// Toplantı
@@ -161,7 +161,7 @@ public class MeetingParticipant : BaseEntity
     /// <summary>
     /// Kullanıcı ID (sistem kullanıcısı ise)
     /// </summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>
     /// Kullanıcı
@@ -212,7 +212,7 @@ public class MeetingAttachment : BaseEntity
     /// <summary>
     /// Toplantı ID
     /// </summary>
-    public Guid MeetingId { get; set; }
+    public int MeetingId { get; set; }
 
     /// <summary>
     /// Toplantı
@@ -247,7 +247,7 @@ public class MeetingAttachment : BaseEntity
     /// <summary>
     /// Yükleyen kullanıcı ID
     /// </summary>
-    public Guid? UploadedByUserId { get; set; }
+    public int? UploadedByUserId { get; set; }
 
     /// <summary>
     /// Yükleyen kullanıcı

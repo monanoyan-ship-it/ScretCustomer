@@ -14,11 +14,11 @@ public class LoginDto
 public class LoginResponseDto
 {
     public string Token { get; set; } = string.Empty;
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 }
 
 public class RegisterDto
@@ -42,7 +42,7 @@ public class RegisterDto
     [Required]
     public string Role { get; set; } = string.Empty;
 
-    public Guid? BranchId { get; set; }
+    public int? BranchId { get; set; }
 }
 
 // Password Reset DTOs
@@ -91,7 +91,7 @@ public class ResetPasswordResultDto
 /// </summary>
 public class StartImpersonationDto
 {
-    public Guid CustomerId { get; set; }
+    public int CustomerId { get; set; }
 }
 
 /// <summary>
@@ -111,10 +111,10 @@ public class ImpersonationResultDto
 public class ImpersonationInfoDto
 {
     public bool IsImpersonating { get; set; }
-    public Guid? OriginalUserId { get; set; }
+    public int? OriginalUserId { get; set; }
     public string? OriginalUserName { get; set; }
     public string? OriginalRole { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
 }
 
@@ -123,7 +123,7 @@ public class ImpersonationInfoDto
 /// </summary>
 public class CustomerListItemDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public string? TaxNumber { get; set; }
     public bool IsActive { get; set; }

@@ -5,19 +5,19 @@ namespace SecretCustomer.Core.Interfaces.Services;
 
 public interface IUserService
 {
-    Task<UserDto?> GetByIdAsync(Guid id);
+    Task<UserDto?> GetByIdAsync(int id);
     Task<IEnumerable<UserDto>> GetAllAsync();
     Task<IEnumerable<UserDto>> GetByRoleAsync(UserRole role);
-    Task<IEnumerable<UserDto>> GetByBranchAsync(Guid branchId);
+    Task<IEnumerable<UserDto>> GetByBranchAsync(int branchId);
     Task<IEnumerable<UserDto>> GetActiveUsersAsync();
     Task<UserDto> CreateAsync(CreateUserDto createUserDto);
-    Task<UserDto> UpdateAsync(Guid id, UpdateUserDto updateUserDto);
-    Task DeleteAsync(Guid id);
-    Task<bool> ChangePasswordAsync(Guid userId, string newPassword);
-    Task<bool> AdminChangePasswordAsync(Guid userId, string newPassword);
+    Task<UserDto> UpdateAsync(int id, UpdateUserDto updateUserDto);
+    Task DeleteAsync(int id);
+    Task<bool> ChangePasswordAsync(int userId, string newPassword);
+    Task<bool> AdminChangePasswordAsync(int userId, string newPassword);
 
     // Branch assignment
-    Task<UserDto> AssignToBranchAsync(Guid userId, Guid branchId);
-    Task<UserDto> RemoveFromBranchAsync(Guid userId);
-    Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<Guid> userIds, Guid branchId);
+    Task<UserDto> AssignToBranchAsync(int userId, int branchId);
+    Task<UserDto> RemoveFromBranchAsync(int userId);
+    Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<int> userIds, int branchId);
 }

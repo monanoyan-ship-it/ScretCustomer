@@ -79,7 +79,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<UserProfileDto?> GetProfileAsync(Guid userId)
+    public async Task<UserProfileDto?> GetProfileAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -101,7 +101,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<UserProfileDto?> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+    public async Task<UserProfileDto?> UpdateProfileAsync(int userId, UpdateProfileDto dto)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -127,7 +127,7 @@ public class AuthService : IAuthService
         return await GetProfileAsync(userId);
     }
 
-    public async Task<ChangePasswordResultDto> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    public async Task<ChangePasswordResultDto> ChangePasswordAsync(int userId, ChangePasswordDto dto)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -291,7 +291,7 @@ public class AuthService : IAuthService
 
     // ===== IMPERSONATION (Video 17 - Firma Olarak Görüntüle) =====
 
-    public async Task<ImpersonationResultDto> StartImpersonationAsync(Guid adminUserId, Guid customerId)
+    public async Task<ImpersonationResultDto> StartImpersonationAsync(int adminUserId, int customerId)
     {
         // Kullaniciyi getir
         var user = await _userRepository.GetByIdAsync(adminUserId);
@@ -347,7 +347,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<ImpersonationResultDto> EndImpersonationAsync(Guid originalUserId)
+    public async Task<ImpersonationResultDto> EndImpersonationAsync(int originalUserId)
     {
         // Orijinal kullaniciyi getir
         var user = await _userRepository.GetByIdAsync(originalUserId);

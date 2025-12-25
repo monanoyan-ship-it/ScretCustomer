@@ -119,7 +119,7 @@ public class DashboardService : IDashboardService
         };
     }
 
-    public async Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(Guid branchId, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(int branchId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var evaluations = await _evaluationRepository.GetByBranchIdAsync(branchId, startDate, endDate);
         var completedEvaluations = evaluations.Where(e => e.ScorePercentage.HasValue).ToList();
@@ -167,7 +167,7 @@ public class DashboardService : IDashboardService
         };
     }
 
-    public async Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(Guid userId)
+    public async Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(int userId)
     {
         var evaluations = await _evaluationRepository.GetByEvaluatorIdAsync(userId);
 
@@ -184,7 +184,7 @@ public class DashboardService : IDashboardService
             .ToList();
     }
 
-    public async Task<ScorecardDto> GetScorecardAsync(Guid userId)
+    public async Task<ScorecardDto> GetScorecardAsync(int userId)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)

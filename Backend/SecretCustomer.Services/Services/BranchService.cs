@@ -14,7 +14,7 @@ public class BranchService : IBranchService
         _branchRepository = branchRepository;
     }
 
-    public async Task<BranchDto?> GetByIdAsync(Guid id)
+    public async Task<BranchDto?> GetByIdAsync(int id)
     {
         var branch = await _branchRepository.GetByIdAsync(id, includeDetails: true);
         return branch == null ? null : MapToDto(branch);
@@ -73,7 +73,7 @@ public class BranchService : IBranchService
         return MapToDto(createdBranch);
     }
 
-    public async Task<BranchDto> UpdateAsync(Guid id, UpdateBranchDto updateBranchDto)
+    public async Task<BranchDto> UpdateAsync(int id, UpdateBranchDto updateBranchDto)
     {
         var branch = await _branchRepository.GetByIdAsync(id);
         if (branch == null)
@@ -99,7 +99,7 @@ public class BranchService : IBranchService
         return MapToDto(updatedBranch);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         var branch = await _branchRepository.GetByIdAsync(id);
         if (branch == null)

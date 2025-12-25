@@ -5,13 +5,13 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IAppSettingsService
 {
     // Temel CRUD
-    Task<AppSettings?> GetByKeyAsync(string key, Guid? entityId = null, string? entityType = null);
+    Task<AppSettings?> GetByKeyAsync(string key, int? entityId = null, string? entityType = null);
     Task<IEnumerable<AppSettings>> GetByCategoryAsync(string category);
     Task<IEnumerable<AppSettings>> GetAllAsync();
-    Task<IEnumerable<AppSettings>> GetByEntityAsync(Guid entityId, string entityType);
+    Task<IEnumerable<AppSettings>> GetByEntityAsync(int entityId, string entityType);
     Task<AppSettings> SetAsync(string key, string value, SettingValueType valueType = SettingValueType.String,
-        string category = "General", string? description = null, Guid? entityId = null, string? entityType = null);
-    Task DeleteAsync(string key, Guid? entityId = null, string? entityType = null);
+        string category = "General", string? description = null, int? entityId = null, string? entityType = null);
+    Task DeleteAsync(string key, int? entityId = null, string? entityType = null);
 
     // Typed getters
     Task<string?> GetStringAsync(string key, string? defaultValue = null);

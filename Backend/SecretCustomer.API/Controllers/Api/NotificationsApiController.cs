@@ -27,10 +27,10 @@ public class NotificationsApiController : BaseApiController
         _localizationService = localizationService;
     }
 
-    private Guid GetCurrentUserId()
+    private int GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public class NotificationsApiController : BaseApiController
     /// Bildirim detayı
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetNotification(Guid id)
+    public async Task<IActionResult> GetNotification(int id)
     {
         var userId = GetCurrentUserId();
 
@@ -235,7 +235,7 @@ public class NotificationsApiController : BaseApiController
     /// Bildirimi okundu olarak işaretle
     /// </summary>
     [HttpPost("{id}/read")]
-    public async Task<IActionResult> MarkAsRead(Guid id)
+    public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = GetCurrentUserId();
 
@@ -282,7 +282,7 @@ public class NotificationsApiController : BaseApiController
     /// Bildirimi sil
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteNotification(Guid id)
+    public async Task<IActionResult> DeleteNotification(int id)
     {
         var userId = GetCurrentUserId();
 

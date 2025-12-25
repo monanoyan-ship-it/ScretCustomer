@@ -66,7 +66,7 @@ public class OrganizationUnitsApiController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -84,7 +84,7 @@ public class OrganizationUnitsApiController : BaseApiController
     }
 
     [HttpGet("{id}/children")]
-    public async Task<IActionResult> GetChildren(Guid id)
+    public async Task<IActionResult> GetChildren(int id)
     {
         try
         {
@@ -114,7 +114,7 @@ public class OrganizationUnitsApiController : BaseApiController
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOrganizationUnitDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateOrganizationUnitDto dto)
     {
         try
         {
@@ -129,7 +129,7 @@ public class OrganizationUnitsApiController : BaseApiController
 
     [HttpPut("{id}/move")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Move(Guid id, [FromBody] MoveOrganizationUnitRequest request)
+    public async Task<IActionResult> Move(int id, [FromBody] MoveOrganizationUnitRequest request)
     {
         try
         {
@@ -148,7 +148,7 @@ public class OrganizationUnitsApiController : BaseApiController
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -195,5 +195,5 @@ public class OrganizationUnitsApiController : BaseApiController
 
 public class MoveOrganizationUnitRequest
 {
-    public Guid? NewParentId { get; set; }
+    public int? NewParentId { get; set; }
 }

@@ -4,7 +4,7 @@ namespace SecretCustomer.Core.DTOs.Checklist;
 
 public class ChecklistDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsScored { get; set; }
@@ -29,7 +29,7 @@ public class ChecklistDto
 
 public class SectionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int Order { get; set; }
@@ -46,7 +46,7 @@ public class SectionDto
 
 public class QuestionDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Text { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public int Order { get; set; }

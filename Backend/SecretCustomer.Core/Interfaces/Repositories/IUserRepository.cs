@@ -12,13 +12,13 @@ public interface IUserRepository
     Task<bool> ExistsByEmailAsync(string email);
 
     // CRUD operations
-    Task<User?> GetByIdAsync(Guid id);
+    Task<User?> GetByIdAsync(int id);
     Task<IEnumerable<User>> GetAllAsync();
     Task<IEnumerable<User>> GetByRoleAsync(UserRole role);
-    Task<IEnumerable<User>> GetByBranchAsync(Guid branchId);
+    Task<IEnumerable<User>> GetByBranchAsync(int branchId);
     Task<IEnumerable<User>> GetActiveUsersAsync();
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);
-    Task DeleteAsync(Guid id);
-    Task<bool> ChangePasswordAsync(Guid userId, string newPasswordHash);
+    Task DeleteAsync(int id);
+    Task<bool> ChangePasswordAsync(int userId, string newPasswordHash);
 }

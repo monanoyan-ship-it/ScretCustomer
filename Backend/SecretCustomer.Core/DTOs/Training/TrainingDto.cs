@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.Training;
 /// </summary>
 public class TrainingDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -25,13 +25,13 @@ public class TrainingDto
     public string? Curriculum { get; set; }
     public string? Prerequisites { get; set; }
     public string? Objectives { get; set; }
-    public Guid? TrainerId { get; set; }
+    public int? TrainerId { get; set; }
     public string? TrainerName { get; set; }
     public string? ExternalTrainerName { get; set; }
     public string? ExternalTrainerCompany { get; set; }
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public string? ProjectName { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
     public decimal? Cost { get; set; }
     public string? Currency { get; set; }
@@ -49,7 +49,7 @@ public class TrainingDto
 /// </summary>
 public class TrainingListDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string TrainingType { get; set; } = string.Empty;
@@ -87,11 +87,11 @@ public class CreateTrainingDto
     public string? Curriculum { get; set; }
     public string? Prerequisites { get; set; }
     public string? Objectives { get; set; }
-    public Guid? TrainerId { get; set; }
+    public int? TrainerId { get; set; }
     public string? ExternalTrainerName { get; set; }
     public string? ExternalTrainerCompany { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
     public decimal? Cost { get; set; }
     public string? Currency { get; set; }
     public string? Tags { get; set; }
@@ -119,11 +119,11 @@ public class UpdateTrainingDto
     public string? Curriculum { get; set; }
     public string? Prerequisites { get; set; }
     public string? Objectives { get; set; }
-    public Guid? TrainerId { get; set; }
+    public int? TrainerId { get; set; }
     public string? ExternalTrainerName { get; set; }
     public string? ExternalTrainerCompany { get; set; }
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
     public decimal? Cost { get; set; }
     public string? Currency { get; set; }
     public string? Tags { get; set; }
@@ -142,9 +142,9 @@ public class CompleteTrainingDto
 /// </summary>
 public class TrainingParticipantDto
 {
-    public Guid Id { get; set; }
-    public Guid TrainingId { get; set; }
-    public Guid? UserId { get; set; }
+    public int Id { get; set; }
+    public int TrainingId { get; set; }
+    public int? UserId { get; set; }
     public string? UserName { get; set; }
     public string? ExternalName { get; set; }
     public string? ExternalEmail { get; set; }
@@ -166,7 +166,7 @@ public class TrainingParticipantDto
 /// </summary>
 public class AddTrainingParticipantDto
 {
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
     public string? ExternalName { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalPhone { get; set; }
@@ -189,8 +189,8 @@ public class UpdateParticipantStatusDto
 /// </summary>
 public class TrainingMaterialDto
 {
-    public Guid Id { get; set; }
-    public Guid TrainingId { get; set; }
+    public int Id { get; set; }
+    public int TrainingId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? FileName { get; set; }
@@ -221,9 +221,9 @@ public class AddTrainingMaterialDto
 /// </summary>
 public class TrainingFilterDto
 {
-    public Guid? ProjectId { get; set; }
-    public Guid? CustomerId { get; set; }
-    public Guid? TrainerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? TrainerId { get; set; }
     public string? TrainingType { get; set; }
     public string? Status { get; set; }
     public string? Category { get; set; }

@@ -12,33 +12,33 @@ public interface IVisitDetailService
     // ===== SEKTÖR İŞLEMLERİ =====
 
     Task<IEnumerable<VisitSectorDto>> GetAllSectorsAsync();
-    Task<VisitSectorDto?> GetSectorByIdAsync(Guid id);
+    Task<VisitSectorDto?> GetSectorByIdAsync(int id);
     Task<VisitSectorDto?> GetSectorByCodeAsync(string code);
     Task<VisitSectorDto> CreateSectorAsync(SaveVisitSectorDto dto);
-    Task<VisitSectorDto> UpdateSectorAsync(Guid id, SaveVisitSectorDto dto);
-    Task DeleteSectorAsync(Guid id);
+    Task<VisitSectorDto> UpdateSectorAsync(int id, SaveVisitSectorDto dto);
+    Task DeleteSectorAsync(int id);
 
     // ===== ALAN TANIMI İŞLEMLERİ =====
 
     Task<IEnumerable<VisitFieldDefinitionDto>> GetAllFieldDefinitionsAsync();
-    Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsBySectorAsync(Guid? sectorId);
-    Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsForVisitAsync(Guid? sectorId);
-    Task<Dictionary<VisitFieldCategory, List<VisitFieldDefinitionDto>>> GetFieldDefinitionsGroupedAsync(Guid? sectorId);
-    Task<VisitFieldDefinitionDto?> GetFieldDefinitionByIdAsync(Guid id);
+    Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsBySectorAsync(int? sectorId);
+    Task<IEnumerable<VisitFieldDefinitionDto>> GetFieldDefinitionsForVisitAsync(int? sectorId);
+    Task<Dictionary<VisitFieldCategory, List<VisitFieldDefinitionDto>>> GetFieldDefinitionsGroupedAsync(int? sectorId);
+    Task<VisitFieldDefinitionDto?> GetFieldDefinitionByIdAsync(int id);
     Task<VisitFieldDefinitionDto> CreateFieldDefinitionAsync(SaveVisitFieldDefinitionDto dto);
-    Task<VisitFieldDefinitionDto> UpdateFieldDefinitionAsync(Guid id, SaveVisitFieldDefinitionDto dto);
-    Task DeleteFieldDefinitionAsync(Guid id);
+    Task<VisitFieldDefinitionDto> UpdateFieldDefinitionAsync(int id, SaveVisitFieldDefinitionDto dto);
+    Task DeleteFieldDefinitionAsync(int id);
 
     // ===== DEĞER İŞLEMLERİ =====
 
-    Task<IEnumerable<VisitDetailValueDto>> GetVisitDetailsAsync(Guid customerVisitId);
+    Task<IEnumerable<VisitDetailValueDto>> GetVisitDetailsAsync(int customerVisitId);
     Task SaveVisitDetailsAsync(SaveVisitDetailsDto dto);
-    Task UpdateFieldValueAsync(Guid customerVisitId, Guid fieldDefinitionId, object? value);
-    Task<VisitDetailSummaryDto> GetVisitSummaryAsync(Guid customerVisitId);
+    Task UpdateFieldValueAsync(int customerVisitId, int fieldDefinitionId, object? value);
+    Task<VisitDetailSummaryDto> GetVisitSummaryAsync(int customerVisitId);
 
     // ===== SORGULAMA VE İSTATİSTİK =====
 
-    Task<IEnumerable<Guid>> FilterVisitsByFieldValueAsync(Guid fieldDefinitionId, object? value, string @operator = "eq");
-    Task<FieldStatisticsDto> GetFieldStatisticsAsync(Guid fieldDefinitionId, Guid? projectId = null, DateTime? fromDate = null, DateTime? toDate = null);
-    Task<IEnumerable<VisitComparisonDto>> CompareVisitsAsync(IEnumerable<Guid> customerVisitIds);
+    Task<IEnumerable<int>> FilterVisitsByFieldValueAsync(int fieldDefinitionId, object? value, string @operator = "eq");
+    Task<FieldStatisticsDto> GetFieldStatisticsAsync(int fieldDefinitionId, int? projectId = null, DateTime? fromDate = null, DateTime? toDate = null);
+    Task<IEnumerable<VisitComparisonDto>> CompareVisitsAsync(IEnumerable<int> customerVisitIds);
 }

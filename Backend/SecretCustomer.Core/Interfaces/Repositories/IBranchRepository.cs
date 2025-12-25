@@ -4,7 +4,7 @@ namespace SecretCustomer.Core.Interfaces.Repositories;
 
 public interface IBranchRepository
 {
-    Task<Branch?> GetByIdAsync(Guid id, bool includeDetails = false);
+    Task<Branch?> GetByIdAsync(int id, bool includeDetails = false);
     Task<IEnumerable<Branch>> GetAllAsync(bool includeInactive = false);
     Task<IEnumerable<Branch>> GetActiveAsync();
     Task<Branch?> GetByCodeAsync(string code);
@@ -12,6 +12,6 @@ public interface IBranchRepository
     Task<IEnumerable<Branch>> GetByCityAsync(string city);
     Task<Branch> CreateAsync(Branch branch);
     Task<Branch> UpdateAsync(Branch branch);
-    Task DeleteAsync(Guid id);
-    Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null);
+    Task DeleteAsync(int id);
+    Task<bool> ExistsByCodeAsync(string code, int? excludeId = null);
 }

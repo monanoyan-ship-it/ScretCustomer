@@ -5,8 +5,8 @@ namespace SecretCustomer.Core.DTOs.Question;
 /// </summary>
 public class QuestionAttachmentDto
 {
-    public Guid Id { get; set; }
-    public Guid QuestionId { get; set; }
+    public int Id { get; set; }
+    public int QuestionId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
     public long FileSize { get; set; }

@@ -61,6 +61,6 @@ public class Announcement : BaseEntity
     /// <summary>
     /// Oluşturan kullanıcı
     /// </summary>
-    public Guid? CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
     public User? CreatedByUser { get; set; }
 }

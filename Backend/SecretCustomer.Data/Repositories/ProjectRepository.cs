@@ -13,7 +13,7 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
-    public async Task<Project?> GetByIdAsync(Guid id, bool includeDetails = false)
+    public async Task<Project?> GetByIdAsync(int id, bool includeDetails = false)
     {
         var query = _context.Projects
             .Where(p => !p.IsDeleted)
@@ -59,7 +59,7 @@ public class ProjectRepository : IProjectRepository
         return project;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null) return false;
@@ -69,7 +69,7 @@ public class ProjectRepository : IProjectRepository
         return true;
     }
 
-    public async Task<bool> ExistsAsync(Guid id)
+    public async Task<bool> ExistsAsync(int id)
     {
         return await _context.Projects.AnyAsync(p => p.Id == id);
     }

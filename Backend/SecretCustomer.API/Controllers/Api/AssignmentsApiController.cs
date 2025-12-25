@@ -39,17 +39,17 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetAll([FromQuery] Guid? projectId = null, [FromQuery] Guid? branchId = null)
+    public async Task<IActionResult> GetAll([FromQuery] int? projectId = null, [FromQuery] int? branchId = null)
     {
         try
         {
             IEnumerable<AssignmentDto> assignments;
 
-            if (projectId.HasValue && projectId != Guid.Empty)
+            if (projectId.HasValue && projectId != 0)
             {
                 assignments = await _assignmentService.GetByProjectIdAsync(projectId.Value);
             }
-            else if (branchId.HasValue && branchId != Guid.Empty)
+            else if (branchId.HasValue && branchId != 0)
             {
                 assignments = await _assignmentService.GetByBranchIdAsync(branchId.Value);
             }
@@ -71,7 +71,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get assignment by ID - Users can only access their own assignments (except Admin/TeamLeader)
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
@@ -99,7 +99,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get assignment detail with evaluation info and history
     /// </summary>
     [HttpGet("{id}/detail")]
-    public async Task<IActionResult> GetDetail(Guid id)
+    public async Task<IActionResult> GetDetail(int id)
     {
         try
         {
@@ -185,7 +185,7 @@ public class AssignmentsApiController : BaseApiController
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAssignmentDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateAssignmentDto dto)
     {
         try
         {
@@ -201,7 +201,7 @@ public class AssignmentsApiController : BaseApiController
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
@@ -252,7 +252,7 @@ public class AssignmentsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
@@ -293,7 +293,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet("by-project/{projectId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByProject(Guid projectId)
+    public async Task<IActionResult> GetByProject(int projectId)
     {
         try
         {
@@ -312,7 +312,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet("by-branch/{branchId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByBranch(Guid branchId)
+    public async Task<IActionResult> GetByBranch(int branchId)
     {
         try
         {
@@ -331,7 +331,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet("by-fieldworker/{fieldWorkerId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByFieldWorker(Guid fieldWorkerId)
+    public async Task<IActionResult> GetByFieldWorker(int fieldWorkerId)
     {
         try
         {
@@ -353,7 +353,7 @@ public class AssignmentsApiController : BaseApiController
     /// Complete an assignment
     /// </summary>
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> Complete(Guid id)
+    public async Task<IActionResult> Complete(int id)
     {
         try
         {
@@ -383,7 +383,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/cancel")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Cancel(Guid id, [FromBody] CancelAssignmentDto dto)
+    public async Task<IActionResult> Cancel(int id, [FromBody] CancelAssignmentDto dto)
     {
         try
         {
@@ -402,7 +402,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpPost("{id}/reassign")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> Reassign(Guid id, [FromBody] ReassignAssignmentDto dto)
+    public async Task<IActionResult> Reassign(int id, [FromBody] ReassignAssignmentDto dto)
     {
         try
         {
@@ -448,7 +448,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpDelete("by-project/{projectId}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteByProject(Guid projectId)
+    public async Task<IActionResult> DeleteByProject(int projectId)
     {
         try
         {
@@ -472,7 +472,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet("summary")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetSummary([FromQuery] Guid? projectId = null)
+    public async Task<IActionResult> GetSummary([FromQuery] int? projectId = null)
     {
         try
         {
@@ -510,7 +510,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet("branch-summaries/{projectId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetBranchSummaries(Guid projectId)
+    public async Task<IActionResult> GetBranchSummaries(int projectId)
     {
         try
         {
@@ -572,7 +572,7 @@ public class AssignmentsApiController : BaseApiController
 
     [HttpGet("{id}/qr-code")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetQRCode(Guid id)
+    public async Task<IActionResult> GetQRCode(int id)
     {
         try
         {
@@ -597,7 +597,7 @@ public class AssignmentsApiController : BaseApiController
 
     [HttpGet("{id}/qr-code/base64")]
     [AllowAnonymous]
-    public async Task<ActionResult<object>> GetQRCodeBase64(Guid id)
+    public async Task<ActionResult<object>> GetQRCodeBase64(int id)
     {
         try
         {
@@ -630,7 +630,7 @@ public class AssignmentsApiController : BaseApiController
         var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             return false;
         }

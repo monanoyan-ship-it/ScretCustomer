@@ -31,7 +31,6 @@ public static class SeedData
             // 1. Admin User
             var adminUser = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "admin",
                 Email = "admin@secretcustomer.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
@@ -89,7 +88,6 @@ public static class SeedData
             // 1. Users (Admin, TeamLeader, Evaluator)
             var adminUser = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "admin",
                 Email = "admin@secretcustomer.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
@@ -102,7 +100,6 @@ public static class SeedData
 
             var teamLeader = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "teamleader",
                 Email = "teamleader@secretcustomer.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Leader@123"),
@@ -115,7 +112,6 @@ public static class SeedData
 
             var evaluator1 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "evaluator1",
                 Email = "evaluator1@secretcustomer.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
@@ -128,7 +124,6 @@ public static class SeedData
 
             var evaluator2 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "evaluator2",
                 Email = "evaluator2@secretcustomer.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
@@ -146,7 +141,6 @@ public static class SeedData
             // 1b. Field Worker Users - Saha çalışanları için sistem kullanıcıları
             var fieldWorkerUser1 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "ali.veli",
                 Email = "ali.veli@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -159,7 +153,6 @@ public static class SeedData
 
             var fieldWorkerUser2 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "zeynep.yildiz",
                 Email = "zeynep.yildiz@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -172,7 +165,6 @@ public static class SeedData
 
             var fieldWorkerUser3 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "murat.koc",
                 Email = "murat.koc@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -185,7 +177,6 @@ public static class SeedData
 
             var fieldWorkerUser4 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "elif.sahin",
                 Email = "elif.sahin@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -198,7 +189,6 @@ public static class SeedData
 
             var fieldWorkerUser5 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "burak.tekin",
                 Email = "burak.tekin@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -211,7 +201,6 @@ public static class SeedData
 
             var fieldWorkerUser6 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "selin.aydin",
                 Email = "selin.aydin@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -224,7 +213,6 @@ public static class SeedData
 
             var fieldWorkerUser7 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "emre.celik",
                 Email = "emre.celik@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -237,7 +225,6 @@ public static class SeedData
 
             var fieldWorkerUser8 = new User
             {
-                Id = Guid.NewGuid(),
                 Username = "ayse.kara",
                 Email = "ayse.kara@sahacalisani.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
@@ -248,7 +235,7 @@ public static class SeedData
                 CreatedAt = DateTime.UtcNow
             };
 
-            context.Users.AddRange(fieldWorkerUser1, fieldWorkerUser2, fieldWorkerUser3, 
+            context.Users.AddRange(fieldWorkerUser1, fieldWorkerUser2, fieldWorkerUser3,
                 fieldWorkerUser4, fieldWorkerUser5, fieldWorkerUser6, fieldWorkerUser7, fieldWorkerUser8);
             await context.SaveChangesAsync();
             logger.LogInformation("Field Worker Users created");
@@ -256,7 +243,6 @@ public static class SeedData
             // 2. Branches
             var branch1 = new Branch
             {
-                Id = Guid.NewGuid(),
                 Name = "İstanbul Kadıköy",
                 Address = "Kadıköy Meydanı No:1, Kadıköy",
                 City = "İstanbul",
@@ -266,7 +252,6 @@ public static class SeedData
 
             var branch2 = new Branch
             {
-                Id = Guid.NewGuid(),
                 Name = "Ankara Kızılay",
                 Address = "Kızılay Meydanı No:5, Çankaya",
                 City = "Ankara",
@@ -276,7 +261,6 @@ public static class SeedData
 
             var branch3 = new Branch
             {
-                Id = Guid.NewGuid(),
                 Name = "İzmir Alsancak",
                 Address = "Alsancak Sahil No:10, Konak",
                 City = "İzmir",
@@ -291,7 +275,6 @@ public static class SeedData
             // 3. Checklist
             var checklist = new Checklist
             {
-                Id = Guid.NewGuid(),
                 Name = "Restaurant Monthly Evaluation",
                 Description = "Standart aylık restaurant değerlendirme formu",
                 Version = 1,
@@ -306,7 +289,6 @@ public static class SeedData
             // 4. Sections
             var section1 = new Section
             {
-                Id = Guid.NewGuid(),
                 ChecklistId = checklist.Id,
                 Name = "Temizlik ve Hijyen",
                 Order = 1,
@@ -315,7 +297,6 @@ public static class SeedData
 
             var section2 = new Section
             {
-                Id = Guid.NewGuid(),
                 ChecklistId = checklist.Id,
                 Name = "Hizmet Kalitesi",
                 Order = 2,
@@ -324,7 +305,6 @@ public static class SeedData
 
             var section3 = new Section
             {
-                Id = Guid.NewGuid(),
                 ChecklistId = checklist.Id,
                 Name = "Ürün Kalitesi",
                 Order = 3,
@@ -341,7 +321,6 @@ public static class SeedData
                 // Temizlik ve Hijyen
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Masalar temiz mi?",
                     Type = QuestionType.Likert,
@@ -352,7 +331,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Tuvalet temizliği nasıl?",
                     Type = QuestionType.Star,
@@ -363,7 +341,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section1.Id,
                     Text = "Genel temizlik hakkında ek gözlemler",
                     Type = QuestionType.Text,
@@ -376,7 +353,6 @@ public static class SeedData
                 // Hizmet Kalitesi
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Karşılama nasıldı?",
                     Type = QuestionType.MultipleChoice,
@@ -388,7 +364,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Sipariş alma süresi uygun muydu?",
                     Type = QuestionType.Likert,
@@ -399,7 +374,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section2.Id,
                     Text = "Personel ilgisi nasıldı?",
                     Type = QuestionType.Star,
@@ -412,7 +386,6 @@ public static class SeedData
                 // Ürün Kalitesi
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Yemek sıcaklığı uygun muydu?",
                     Type = QuestionType.Likert,
@@ -423,7 +396,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Yemek lezzeti nasıldı?",
                     Type = QuestionType.Star,
@@ -434,7 +406,6 @@ public static class SeedData
                 },
                 new Question
                 {
-                    Id = Guid.NewGuid(),
                     SectionId = section3.Id,
                     Text = "Porsiyon büyüklüğü nasıldı?",
                     Type = QuestionType.MultipleChoice,
@@ -453,7 +424,6 @@ public static class SeedData
             // 6. Project
             var project = new Project
             {
-                Id = Guid.NewGuid(),
                 Name = "2025 Q1 Restaurant Evaluation",
                 Description = "2025 yılı 1. çeyrek restaurant değerlendirme projesi",
                 ChecklistId = checklist.Id,
@@ -471,7 +441,6 @@ public static class SeedData
             // 7. Sample Assignment (Internal)
             var assignment1 = new Assignment
             {
-                Id = Guid.NewGuid(),
                 ProjectId = project.Id,
                 BranchId = branch1.Id,
                 ChecklistId = checklist.Id,
@@ -482,7 +451,6 @@ public static class SeedData
 
             var assignment2 = new Assignment
             {
-                Id = Guid.NewGuid(),
                 ProjectId = project.Id,
                 BranchId = branch2.Id,
                 ChecklistId = checklist.Id,
@@ -494,7 +462,6 @@ public static class SeedData
             // Sample Assignment (External)
             var assignment3 = new Assignment
             {
-                Id = Guid.NewGuid(),
                 ProjectId = project.Id,
                 BranchId = branch3.Id,
                 ChecklistId = checklist.Id,
@@ -510,7 +477,6 @@ public static class SeedData
             // 7.5 Sample Evaluations
             var evaluation1 = new Evaluation
             {
-                Id = Guid.NewGuid(),
                 AssignmentId = assignment1.Id,
                 EvaluatorId = evaluator1.Id,
                 Status = Core.Enums.EvaluationStatus.Completed,
@@ -525,7 +491,6 @@ public static class SeedData
 
             var evaluation2 = new Evaluation
             {
-                Id = Guid.NewGuid(),
                 AssignmentId = assignment2.Id,
                 EvaluatorId = evaluator2.Id,
                 Status = Core.Enums.EvaluationStatus.Completed,
@@ -540,7 +505,6 @@ public static class SeedData
 
             var evaluation3 = new Evaluation
             {
-                Id = Guid.NewGuid(),
                 AssignmentId = assignment3.Id,
                 Status = Core.Enums.EvaluationStatus.Completed,
                 TotalScore = 78.0m,
@@ -555,7 +519,6 @@ public static class SeedData
             // Geçmiş aylardan ek değerlendirmeler
             var evaluation4 = new Evaluation
             {
-                Id = Guid.NewGuid(),
                 AssignmentId = assignment1.Id,
                 EvaluatorId = evaluator1.Id,
                 Status = Core.Enums.EvaluationStatus.Completed,
@@ -570,7 +533,6 @@ public static class SeedData
 
             var evaluation5 = new Evaluation
             {
-                Id = Guid.NewGuid(),
                 AssignmentId = assignment2.Id,
                 EvaluatorId = evaluator2.Id,
                 Status = Core.Enums.EvaluationStatus.Completed,
@@ -590,7 +552,6 @@ public static class SeedData
             // 8. Sample Customers
             var customer1 = new Customer
             {
-                Id = Guid.NewGuid(),
                 CompanyName = "ABC Perakende A.Ş.",
                 TaxNumber = "1234567890",
                 Phone = "0212 123 4567",
@@ -606,7 +567,6 @@ public static class SeedData
 
             var customer2 = new Customer
             {
-                Id = Guid.NewGuid(),
                 CompanyName = "XYZ Restaurant Grubu Ltd.",
                 TaxNumber = "9876543210",
                 Phone = "0216 456 7890",
@@ -622,7 +582,6 @@ public static class SeedData
 
             var customer3 = new Customer
             {
-                Id = Guid.NewGuid(),
                 CompanyName = "Otel Zincirleri A.Ş.",
                 TaxNumber = "5555666677",
                 Phone = "0242 111 2233",
@@ -643,7 +602,6 @@ public static class SeedData
             // 9. Sample Customer Personnel
             var personnel1 = new CustomerPersonnel
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer1.Id,
                 Username = "ahmet.yilmaz",
                 Email = "ahmet.yilmaz@abc.com",
@@ -661,7 +619,6 @@ public static class SeedData
 
             var personnel2 = new CustomerPersonnel
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer1.Id,
                 Username = "ayse.demir",
                 Email = "ayse.demir@abc.com",
@@ -679,7 +636,6 @@ public static class SeedData
 
             var personnel3 = new CustomerPersonnel
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer2.Id,
                 Username = "mehmet.kaya",
                 Email = "mehmet.kaya@xyz.com",
@@ -697,7 +653,6 @@ public static class SeedData
 
             var personnel4 = new CustomerPersonnel
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer2.Id,
                 Username = "fatma.ozturk",
                 Email = "fatma.ozturk@xyz.com",
@@ -715,7 +670,6 @@ public static class SeedData
 
             var personnel5 = new CustomerPersonnel
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer3.Id,
                 Username = "can.arslan",
                 Email = "can.arslan@otelzinciri.com",
@@ -738,7 +692,6 @@ public static class SeedData
             // 10. Sample Customer Task Lists
             var taskList1 = new CustomerTaskList
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer1.Id,
                 Name = "Ocak 2025 Şube Denetimleri",
                 Description = "Ocak ayı için tüm şubelerin kalite denetimi",
@@ -753,7 +706,6 @@ public static class SeedData
 
             var taskList2 = new CustomerTaskList
             {
-                Id = Guid.NewGuid(),
                 CustomerId = customer2.Id,
                 Name = "Hijyen ve Temizlik Kontrolü",
                 Description = "Restaurant şubelerinin hijyen standartları kontrolü",
@@ -773,7 +725,6 @@ public static class SeedData
             // 11. Sample Customer Personnel Task Assignments
             var taskAssignment1 = new CustomerPersonnelTaskAssignment
             {
-                Id = Guid.NewGuid(),
                 PersonnelId = personnel2.Id,
                 TaskListId = taskList1.Id,
                 AssignmentRole = TaskAssignmentRole.Owner,
@@ -785,7 +736,6 @@ public static class SeedData
 
             var taskAssignment2 = new CustomerPersonnelTaskAssignment
             {
-                Id = Guid.NewGuid(),
                 PersonnelId = personnel3.Id,
                 TaskListId = taskList2.Id,
                 AssignmentRole = TaskAssignmentRole.Owner,
@@ -797,7 +747,6 @@ public static class SeedData
 
             var taskAssignment3 = new CustomerPersonnelTaskAssignment
             {
-                Id = Guid.NewGuid(),
                 PersonnelId = personnel4.Id,
                 TaskListId = taskList2.Id,
                 AssignmentRole = TaskAssignmentRole.Assistant,
@@ -814,7 +763,6 @@ public static class SeedData
             // 12. Sample Field Workers (Saha Çalışanları)
             var fieldWorker1 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser1.Id,
                 FirstName = "Ali",
                 LastName = "Veli",
@@ -828,7 +776,6 @@ public static class SeedData
 
             var fieldWorker2 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser2.Id,
                 FirstName = "Zeynep",
                 LastName = "Yıldız",
@@ -842,7 +789,6 @@ public static class SeedData
 
             var fieldWorker3 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser3.Id,
                 FirstName = "Murat",
                 LastName = "Koç",
@@ -856,7 +802,6 @@ public static class SeedData
 
             var fieldWorker4 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser4.Id,
                 FirstName = "Elif",
                 LastName = "Şahin",
@@ -870,7 +815,6 @@ public static class SeedData
 
             var fieldWorker5 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser5.Id,
                 FirstName = "Burak",
                 LastName = "Tekin",
@@ -884,7 +828,6 @@ public static class SeedData
 
             var fieldWorker6 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser6.Id,
                 FirstName = "Selin",
                 LastName = "Aydın",
@@ -898,7 +841,6 @@ public static class SeedData
 
             var fieldWorker7 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser7.Id,
                 FirstName = "Emre",
                 LastName = "Çelik",
@@ -912,7 +854,6 @@ public static class SeedData
 
             var fieldWorker8 = new FieldWorker
             {
-                Id = Guid.NewGuid(),
                 UserId = fieldWorkerUser8.Id,
                 FirstName = "Ayşe",
                 LastName = "Kara",
@@ -932,7 +873,6 @@ public static class SeedData
             // 13. Sample Personnel (Şube Personeli - Değerlendirilen Kişiler)
             var branchPersonnel1 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Mehmet",
                 LastName = "Özkan",
                 TcKimlikNo = "11122233344",
@@ -953,7 +893,6 @@ public static class SeedData
 
             var branchPersonnel2 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Fatma",
                 LastName = "Yıldırım",
                 TcKimlikNo = "22233344455",
@@ -974,7 +913,6 @@ public static class SeedData
 
             var branchPersonnel3 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Ali",
                 LastName = "Kaya",
                 TcKimlikNo = "33344455566",
@@ -995,7 +933,6 @@ public static class SeedData
 
             var branchPersonnel4 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Selin",
                 LastName = "Aydın",
                 TcKimlikNo = "44455566677",
@@ -1016,7 +953,6 @@ public static class SeedData
 
             var branchPersonnel5 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Mustafa",
                 LastName = "Çelik",
                 TcKimlikNo = "55566677788",
@@ -1037,7 +973,6 @@ public static class SeedData
 
             var branchPersonnel6 = new Personnel
             {
-                Id = Guid.NewGuid(),
                 FirstName = "Zehra",
                 LastName = "Arslan",
                 TcKimlikNo = "66677788899",
@@ -1122,43 +1057,43 @@ public static class SeedData
         var permissions = new List<Permission>
         {
             // Users Management
-            new Permission { Id = Guid.NewGuid(), Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", Category = PermissionCategory.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", Category = PermissionCategory.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", Category = PermissionCategory.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Users.Delete", DisplayName = "Kullanıcı Sil", Category = PermissionCategory.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", Category = PermissionCategory.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", Category = PermissionCategory.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", Category = PermissionCategory.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", Category = PermissionCategory.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Delete", DisplayName = "Kullanıcı Sil", Category = PermissionCategory.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", Category = PermissionCategory.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
 
             // Projects
-            new Permission { Id = Guid.NewGuid(), Code = "Projects.View", DisplayName = "Projeleri Görüntüle", Category = PermissionCategory.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Projects.Create", DisplayName = "Proje Oluştur", Category = PermissionCategory.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Projects.Edit", DisplayName = "Proje Düzenle", Category = PermissionCategory.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Projects.Delete", DisplayName = "Proje Sil", Category = PermissionCategory.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", Category = PermissionCategory.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.View", DisplayName = "Projeleri Görüntüle", Category = PermissionCategory.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Create", DisplayName = "Proje Oluştur", Category = PermissionCategory.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Edit", DisplayName = "Proje Düzenle", Category = PermissionCategory.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Delete", DisplayName = "Proje Sil", Category = PermissionCategory.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", Category = PermissionCategory.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
 
             // Assignments
-            new Permission { Id = Guid.NewGuid(), Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", Category = PermissionCategory.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Create", DisplayName = "Atama Oluştur", Category = PermissionCategory.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Edit", DisplayName = "Atama Düzenle", Category = PermissionCategory.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Delete", DisplayName = "Atama Sil", Category = PermissionCategory.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", Category = PermissionCategory.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", Category = PermissionCategory.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Create", DisplayName = "Atama Oluştur", Category = PermissionCategory.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Edit", DisplayName = "Atama Düzenle", Category = PermissionCategory.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Delete", DisplayName = "Atama Sil", Category = PermissionCategory.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", Category = PermissionCategory.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
 
             // Checklists
-            new Permission { Id = Guid.NewGuid(), Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", Category = PermissionCategory.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", Category = PermissionCategory.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", Category = PermissionCategory.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", Category = PermissionCategory.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", Category = PermissionCategory.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", Category = PermissionCategory.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", Category = PermissionCategory.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", Category = PermissionCategory.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
 
             // Reports
-            new Permission { Id = Guid.NewGuid(), Code = "Reports.View", DisplayName = "Raporları Görüntüle", Category = PermissionCategory.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", Category = PermissionCategory.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Reports.Create", DisplayName = "Rapor Oluştur", Category = PermissionCategory.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.View", DisplayName = "Raporları Görüntüle", Category = PermissionCategory.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", Category = PermissionCategory.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Create", DisplayName = "Rapor Oluştur", Category = PermissionCategory.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
 
             // Dashboard
-            new Permission { Id = Guid.NewGuid(), Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", Category = PermissionCategory.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", Category = PermissionCategory.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
 
             // Permissions Management
-            new Permission { Id = Guid.NewGuid(), Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", Category = PermissionCategory.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
-            new Permission { Id = Guid.NewGuid(), Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", Category = PermissionCategory.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", Category = PermissionCategory.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", Category = PermissionCategory.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
         };
 
         context.Permissions.AddRange(permissions);
@@ -1171,7 +1106,6 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Id = Guid.NewGuid(),
                 Role = adminRole,
                 PermissionId = permission.Id,
                 IsGranted = true,
@@ -1192,7 +1126,6 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Id = Guid.NewGuid(),
                 Role = UserRole.TeamLeader,
                 PermissionId = permission.Id,
                 IsGranted = true,
@@ -1211,7 +1144,6 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Id = Guid.NewGuid(),
                 Role = UserRole.Evaluator,
                 PermissionId = permission.Id,
                 IsGranted = true,
@@ -1229,7 +1161,6 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Id = Guid.NewGuid(),
                 Role = UserRole.FieldWorker,
                 PermissionId = permission.Id,
                 IsGranted = true,
@@ -1370,7 +1301,6 @@ public static class SeedData
         {
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Türkçe",
                 LanguageCulture = "tr-TR",
                 UniqueSeoCode = "tr",
@@ -1383,7 +1313,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "English",
                 LanguageCulture = "en-US",
                 UniqueSeoCode = "en",
@@ -1396,7 +1325,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Español",
                 LanguageCulture = "es-ES",
                 UniqueSeoCode = "es",
@@ -1409,7 +1337,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Deutsch",
                 LanguageCulture = "de-DE",
                 UniqueSeoCode = "de",
@@ -1444,7 +1371,6 @@ public static class SeedData
         {
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Türkçe",
                 LanguageCulture = "tr-TR",
                 UniqueSeoCode = "tr",
@@ -1457,7 +1383,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "English",
                 LanguageCulture = "en-US",
                 UniqueSeoCode = "en",
@@ -1470,7 +1395,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Español",
                 LanguageCulture = "es-ES",
                 UniqueSeoCode = "es",
@@ -1483,7 +1407,6 @@ public static class SeedData
             },
             new Language
             {
-                Id = Guid.NewGuid(),
                 Name = "Deutsch",
                 LanguageCulture = "de-DE",
                 UniqueSeoCode = "de",
@@ -1525,7 +1448,6 @@ public static class SeedData
                         {
                             context.LocaleStringResources.Add(new LocaleStringResource
                             {
-                                Id = Guid.NewGuid(),
                                 LanguageId = language.Id,
                                 ResourceName = name,
                                 ResourceValue = value,

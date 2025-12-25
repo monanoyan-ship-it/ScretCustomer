@@ -26,7 +26,7 @@ public class UserServiceTests
     public async Task GetByIdAsync_ExistingUser_ReturnsUserDto()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = 1;
         var user = new User
         {
             Id = userId,
@@ -58,7 +58,7 @@ public class UserServiceTests
     public async Task GetByIdAsync_NonExistingUser_ReturnsNull()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = 999;
         _mockUserRepository
             .Setup(repo => repo.GetByIdAsync(userId))
             .ReturnsAsync((User?)null);
@@ -137,8 +137,8 @@ public class UserServiceTests
     public async Task AssignToBranchAsync_ValidUser_AssignsBranch()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var branchId = Guid.NewGuid();
+        var userId = 1;
+        var branchId = 10;
         var user = new User
         {
             Id = userId,
@@ -171,7 +171,7 @@ public class UserServiceTests
     public async Task DeleteAsync_NonExistingUser_ThrowsKeyNotFoundException()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = 999;
         _mockUserRepository
             .Setup(repo => repo.GetByIdAsync(userId))
             .ReturnsAsync((User?)null);

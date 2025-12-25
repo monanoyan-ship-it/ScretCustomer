@@ -47,7 +47,7 @@ public class ReportsApiController : BaseApiController
     /// Değerlendirme detayı
     /// </summary>
     [HttpGet("evaluations/{evaluationId}")]
-    public async Task<IActionResult> GetEvaluationDetail(Guid evaluationId)
+    public async Task<IActionResult> GetEvaluationDetail(int evaluationId)
     {
         try
         {
@@ -125,8 +125,8 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("penalties")]
     public async Task<IActionResult> GetPenaltiesReport(
-        [FromQuery] Guid? projectId,
-        [FromQuery] Guid? branchId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? branchId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -156,8 +156,8 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("penalties/export")]
     public async Task<IActionResult> ExportPenaltiesToExcel(
-        [FromQuery] Guid? projectId,
-        [FromQuery] Guid? branchId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? branchId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -205,10 +205,10 @@ public class ReportsApiController : BaseApiController
     /// <summary>
     /// Temsilci Karnesi raporunu getirir
     /// </summary>
-    [HttpGet("personnel-report-card/{personnelId:guid}")]
+    [HttpGet("personnel-report-card/{personnelId:int}")]
     public async Task<IActionResult> GetPersonnelReportCard(
-        Guid personnelId,
-        [FromQuery] Guid? projectId,
+        int personnelId,
+        [FromQuery] int? projectId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -238,10 +238,10 @@ public class ReportsApiController : BaseApiController
     /// <summary>
     /// Temsilci Karnesi PDF/Excel export
     /// </summary>
-    [HttpGet("personnel-report-card/{personnelId:guid}/export")]
+    [HttpGet("personnel-report-card/{personnelId:int}/export")]
     public async Task<IActionResult> ExportPersonnelReportCard(
-        Guid personnelId,
-        [FromQuery] Guid? projectId,
+        int personnelId,
+        [FromQuery] int? projectId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -272,11 +272,11 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions")]
     public async Task<IActionResult> GetSuggestionsReport(
-        [FromQuery] Guid? projectId,
-        [FromQuery] Guid? branchId,
-        [FromQuery] Guid? checklistId,
-        [FromQuery] Guid? evaluatorId,
-        [FromQuery] Guid? personnelId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? branchId,
+        [FromQuery] int? checklistId,
+        [FromQuery] int? evaluatorId,
+        [FromQuery] int? personnelId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] string? searchText,
@@ -313,8 +313,8 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions/top-questions")]
     public async Task<IActionResult> GetTopSuggestedQuestions(
-        [FromQuery] Guid? projectId,
-        [FromQuery] Guid? checklistId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? checklistId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 10)
@@ -343,11 +343,11 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions/export")]
     public async Task<IActionResult> ExportSuggestionsToExcel(
-        [FromQuery] Guid? projectId,
-        [FromQuery] Guid? branchId,
-        [FromQuery] Guid? checklistId,
-        [FromQuery] Guid? evaluatorId,
-        [FromQuery] Guid? personnelId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? branchId,
+        [FromQuery] int? checklistId,
+        [FromQuery] int? evaluatorId,
+        [FromQuery] int? personnelId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] string? searchText)
