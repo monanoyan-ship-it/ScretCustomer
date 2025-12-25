@@ -381,8 +381,16 @@ function ChecklistViewModel() {
         delete data.removeSection;
 
         // Boş string date alanlarını null'a çevir (backend DateTime? bekliyor)
-        if (data.validFrom === '' || data.validFrom === null) data.validFrom = null;
-        if (data.validUntil === '' || data.validUntil === null) data.validUntil = null;
+        // undefined, null, boş string, "null" string hepsini null yap
+        if (!data.validFrom || data.validFrom === '' || data.validFrom === 'null') {
+            data.validFrom = null;
+        }
+        if (!data.validUntil || data.validUntil === '' || data.validUntil === 'null') {
+            data.validUntil = null;
+        }
+
+        // DEBUG: API'ye giden veriyi logla
+        console.log('Checklist data to save:', JSON.stringify(data, null, 2));
 
         self.isSaving(true);
         self.modalErrorMessage('');
