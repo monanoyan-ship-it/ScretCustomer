@@ -608,17 +608,18 @@
 
                                                         <!-- Answer Input -->
                                                         <div class="mt-2" data-bind="with: $root.getAnswer(id)">
-                                                            <!-- ko if: $parent.type === 'Likert' || $parent.type === 'Star' || $parent.type === 'Rating' -->
-                                                            <div class="btn-group" role="group">
+                                                            <!-- Puanlı ve Cezalı sorular için Likert butonları (scoringType = Scored veya Penalty) -->
+                                                            <!-- ko if: $parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty' -->
+                                                            <div class="btn-group btn-group-sm" role="group">
                                                                 <!-- ko foreach: $root.getScoreOptions($parent.maxPoints) -->
                                                                 <button type="button" class="btn"
-                                                                        data-bind="click: function() { $parents[1].answerNumeric($data); },
-                                                                                   css: $parents[1].answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
+                                                                        data-bind="click: function() { $parent.answerNumeric($data); },
+                                                                                   css: $parent.answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
                                                                                    text: $data">
                                                                 </button>
                                                                 <!-- /ko -->
                                                             </div>
-                                                            <small class="text-muted ms-2" data-bind="text: '@Html.T("Evaluation.WeightInfo", "Ağırlık:")' + ' ' + $parent.weightPoints + ' ' + '@Html.T("Evaluation.Points", "puan")'"></small>
+                                                            <small class="text-muted ms-2" data-bind="text: '@Html.T("Evaluation.WeightInfo", "Ağırlık:")' + ' ' + $parents[1].weightPoints + ' ' + '@Html.T("Evaluation.Points", "puan")'"></small>
                                                             <!-- /ko -->
 
                                                             <!-- ko if: $parent.type === 'YesNo' -->
