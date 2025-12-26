@@ -141,6 +141,15 @@ function UsersViewModel() {
             return;
         }
 
+        // Username format validation (no spaces, no Turkish characters)
+        if (!u.id && u.username()) {
+            var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+            if (!usernameRegex.test(u.username())) {
+                toastr.warning(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+                return;
+            }
+        }
+
         if (!u.firstName() || u.firstName().trim() === '') {
             toastr.warning(T('User.FirstNameRequired', 'Ad alanı zorunludur!'));
             return;
@@ -161,6 +170,47 @@ function UsersViewModel() {
             return;
         }
 
+        // Check username/email uniqueness before saving (only for new users)
+        if (!u.id) {
+            self.isSaving(true);
+
+            // Check username
+            fetch('/api/users/check-username/' + encodeURIComponent(u.username()), { credentials: 'include' })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.exists) {
+                        self.isSaving(false);
+                        self.modalErrorMessage(T('User.UsernameExists', 'Bu kullanıcı adı zaten kullanılıyor.'));
+                        return Promise.reject('username_exists');
+                    }
+                    // Check email
+                    return fetch('/api/users/check-email/' + encodeURIComponent(u.email()), { credentials: 'include' });
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.exists) {
+                        self.isSaving(false);
+                        self.modalErrorMessage(T('User.EmailExists', 'Bu e-posta adresi zaten kullanılıyor.'));
+                        return Promise.reject('email_exists');
+                    }
+                    // All checks passed, proceed with save
+                    self.doSaveUser(u);
+                })
+                .catch(function(error) {
+                    if (error !== 'username_exists' && error !== 'email_exists') {
+                        console.error('Error checking uniqueness:', error);
+                        self.isSaving(false);
+                    }
+                });
+            return;
+        }
+
+        // For existing users, save directly
+        self.doSaveUser(u);
+    };
+
+    // Actual save operation
+    self.doSaveUser = function(u) {
         // Prepare DTO
         var dto = {
             firstName: u.firstName(),

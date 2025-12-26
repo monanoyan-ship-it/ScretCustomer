@@ -6,5 +6,6 @@ public enum QuestionType
     Likert = 2,
     Star = 3,
     Text = 4,
-    YesNo = 5
+    YesNo = 5,
+    Rating = 6
 }

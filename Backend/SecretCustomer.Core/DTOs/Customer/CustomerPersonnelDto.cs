@@ -32,6 +32,7 @@ public class CreateCustomerPersonnelDto
 
     [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
     [StringLength(100)]
+    [RegularExpression(@"^[a-zA-Z0-9_.-]+$", ErrorMessage = "Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.")]
     public string Username { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "E-posta zorunludur")]
@@ -74,6 +75,7 @@ public class UpdateCustomerPersonnelDto
 {
     [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
     [StringLength(100)]
+    [RegularExpression(@"^[a-zA-Z0-9_.-]+$", ErrorMessage = "Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.")]
     public string Username { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "E-posta zorunludur")]

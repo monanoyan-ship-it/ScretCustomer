@@ -154,6 +154,13 @@ function CustomerPersonnelViewModel(customerId) {
             return;
         }
 
+        // Username format validation (no spaces, no Turkish characters)
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(personnel.username)) {
+            self.modalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            return;
+        }
+
         if (!personnel.id && !personnel.password) {
             self.modalErrorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
@@ -167,6 +174,41 @@ function CustomerPersonnelViewModel(customerId) {
         self.isSaving(true);
         self.modalErrorMessage('');
 
+        // Check username/email uniqueness before saving
+        var excludeIdParam = personnel.id ? '?excludeId=' + personnel.id : '';
+
+        // Check username
+        fetch('/api/customer-personnel/check-username/' + encodeURIComponent(personnel.username) + excludeIdParam, { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    self.isSaving(false);
+                    self.modalErrorMessage(T('User.UsernameExists', 'Bu kullanıcı adı zaten kullanılıyor.'));
+                    return Promise.reject('username_exists');
+                }
+                // Check email
+                return fetch('/api/customer-personnel/check-email/' + encodeURIComponent(personnel.email) + excludeIdParam, { credentials: 'include' });
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    self.isSaving(false);
+                    self.modalErrorMessage(T('User.EmailExists', 'Bu e-posta adresi zaten kullanılıyor.'));
+                    return Promise.reject('email_exists');
+                }
+                // All checks passed, proceed with save
+                self.doSavePersonnel(personnel);
+            })
+            .catch(function(error) {
+                if (error !== 'username_exists' && error !== 'email_exists') {
+                    console.error('Error checking uniqueness:', error);
+                    self.isSaving(false);
+                }
+            });
+    };
+
+    // Actual save operation
+    self.doSavePersonnel = function(personnel) {
         // Backend'e gönderilecek veriyi hazırla
         var dataToSend = {
             customerId: personnel.customerId,

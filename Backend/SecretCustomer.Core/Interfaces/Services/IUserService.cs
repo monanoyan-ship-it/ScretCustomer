@@ -20,4 +20,8 @@ public interface IUserService
     Task<UserDto> AssignToBranchAsync(int userId, int branchId);
     Task<UserDto> RemoveFromBranchAsync(int userId);
     Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<int> userIds, int branchId);
+
+    // Uniqueness checks
+    Task<bool> ExistsByUsernameAsync(string username);
+    Task<bool> ExistsByEmailAsync(string email);
 }

@@ -223,6 +223,17 @@ public class UserService : IUserService
         return updatedUsers;
     }
 
+    // Uniqueness checks
+    public async Task<bool> ExistsByUsernameAsync(string username)
+    {
+        return await _userRepository.ExistsByUsernameAsync(username);
+    }
+
+    public async Task<bool> ExistsByEmailAsync(string email)
+    {
+        return await _userRepository.ExistsByEmailAsync(email);
+    }
+
     private static UserDto MapToDto(User user)
     {
         return new UserDto

@@ -204,6 +204,36 @@ public class CustomerPersonnelApiController : BaseApiController
         }
     }
 
+    [HttpGet("check-username/{username}")]
+    public async Task<IActionResult> CheckUsername(string username, [FromQuery] int? excludeId = null)
+    {
+        try
+        {
+            var exists = await _personnelService.ExistsByUsernameAsync(username, excludeId);
+            return Ok(new { exists });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking username {Username}", username);
+            return StatusCode(500, CreateErrorResponse("Kullanıcı adı kontrolü sırasında hata oluştu.", ex));
+        }
+    }
+
+    [HttpGet("check-email/{email}")]
+    public async Task<IActionResult> CheckEmail(string email, [FromQuery] int? excludeId = null)
+    {
+        try
+        {
+            var exists = await _personnelService.ExistsByEmailAsync(email, excludeId);
+            return Ok(new { exists });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking email {Email}", email);
+            return StatusCode(500, CreateErrorResponse("E-posta kontrolü sırasında hata oluştu.", ex));
+        }
+    }
+
     /// <summary>
     /// Admin tarafından şifre sıfırlama - eski şifre gerektirmez
     /// </summary>

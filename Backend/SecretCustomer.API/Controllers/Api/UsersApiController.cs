@@ -166,6 +166,36 @@ public class UsersApiController : BaseApiController
         }
     }
 
+    [HttpGet("check-username/{username}")]
+    public async Task<IActionResult> CheckUsername(string username)
+    {
+        try
+        {
+            var exists = await _userService.ExistsByUsernameAsync(username);
+            return Ok(new { exists });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking username {Username}", username);
+            return StatusCode(500, CreateErrorResponse("Kullanıcı adı kontrolü sırasında hata oluştu.", ex));
+        }
+    }
+
+    [HttpGet("check-email/{email}")]
+    public async Task<IActionResult> CheckEmail(string email)
+    {
+        try
+        {
+            var exists = await _userService.ExistsByEmailAsync(email);
+            return Ok(new { exists });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking email {Email}", email);
+            return StatusCode(500, CreateErrorResponse("E-posta kontrolü sırasında hata oluştu.", ex));
+        }
+    }
+
     [HttpPost("{id}/change-password")]
     public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordDto dto)
     {

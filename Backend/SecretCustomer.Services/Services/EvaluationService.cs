@@ -446,7 +446,9 @@ public class EvaluationService : IEvaluationService
             else
             {
                 // Normal puanlı sorular
-                totalMaxPoints += question.MaxPoints > 0 ? question.MaxPoints : question.Points;
+                // Müşteri isteği: ağırlık puanı (WeightPoints) sistemi
+                // Toplam max puan = ağırlık puanları toplamı
+                totalMaxPoints += question.WeightPoints > 0 ? question.WeightPoints : question.Points;
                 var earnedPoints = CalculateEarnedPoints(question, answer);
                 totalEarned += earnedPoints ?? 0;
             }
@@ -468,15 +470,20 @@ public class EvaluationService : IEvaluationService
         if (answer.GivenPoints.HasValue)
             return answer.GivenPoints.Value;
 
-        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : question.Points;
+        // Müşteri isteği: ağırlık puanı (WeightPoints) ve max skor (MaxPoints) sistemi
+        // Formül: (cevap / maxScore) * ağırlık
+        // Örnek: ağırlık=15, max=2, cevap=2 → (2/2) * 15 = 15 puan
+        var weight = question.WeightPoints > 0 ? question.WeightPoints : question.Points;
+        var maxScore = question.MaxPoints > 0 ? question.MaxPoints : 5;
 
         return question.Type switch
         {
-            QuestionType.MultipleChoice => maxPoints, // Doğru cevap için tam puan
-            QuestionType.Likert => (answer.AnswerNumeric ?? 0) * (maxPoints / 5.0m), // 1-5 ölçeği
-            QuestionType.Star => (answer.AnswerNumeric ?? 0) * (maxPoints / 5.0m), // 1-5 yıldız
+            QuestionType.MultipleChoice => weight, // Doğru cevap için tam puan (ağırlık)
+            QuestionType.Likert => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
+            QuestionType.Star => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
+            QuestionType.Rating => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
             QuestionType.YesNo => answer.AnswerText?.ToLower() == "evet" || answer.AnswerText?.ToLower() == "yes"
-                ? maxPoints : 0,
+                ? weight : 0,
             QuestionType.Text => null, // Metin soruları puansız
             _ => 0
         };

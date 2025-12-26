@@ -223,6 +223,17 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         };
     }
 
+    // Uniqueness checks
+    public async Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null)
+    {
+        return await _personnelRepository.ExistsByUsernameAsync(username, excludeId);
+    }
+
+    public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
+    {
+        return await _personnelRepository.ExistsByEmailAsync(email, excludeId);
+    }
+
     private static string GetRoleName(CustomerPersonnelRole role)
     {
         return role switch

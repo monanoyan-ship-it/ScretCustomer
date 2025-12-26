@@ -17,4 +17,8 @@ public interface ICustomerPersonnelService
 
     // Customer Portal Login
     Task<CustomerPersonnel?> AuthenticateAsync(string username, string password);
+
+    // Uniqueness checks
+    Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null);
+    Task<bool> ExistsByEmailAsync(string email, int? excludeId = null);
 }

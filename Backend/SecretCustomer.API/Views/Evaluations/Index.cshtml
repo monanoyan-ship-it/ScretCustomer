@@ -444,10 +444,10 @@
                     </div>
 
                     <!-- Error Message -->
-                    <div data-bind="visible: formErrorMessage" class="alert alert-danger alert-dismissible fade show">
+                    <div data-bind="visible: modalErrorMessage" class="alert alert-danger alert-dismissible fade show">
                         <i class="bi bi-exclamation-triangle"></i>
-                        <span data-bind="text: formErrorMessage"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { formErrorMessage(''); }"></button>
+                        <span data-bind="text: modalErrorMessage"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { modalErrorMessage(''); }"></button>
                     </div>
 
                     <!-- Success Message -->
@@ -498,7 +498,7 @@
                                             <div class="row g-3">
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.SelectPersonnel", "Personel Seç")</label>
-                                                    <select class="form-select" data-bind="value: evaluatedPersonnelId, options: formData().availablePersonnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
+                                                    <select class="form-select" data-bind="value: evaluatedPersonnelId, options: (formData() ? formData().availablePersonnel : []), optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.OrUnknownPersonnel", "veya Tanımsız Personel")</label>
@@ -544,6 +544,7 @@
                             </div>
 
                             <!-- Sections -->
+                            <!-- ko if: formData() -->
                             <div data-bind="foreach: formData().sections">
                                 <div class="card shadow-sm mb-4">
                                     <div class="card-header" data-bind="css: groupType === 'Penalty' ? 'bg-danger text-white' : (groupType === 'Unscored' ? 'bg-secondary text-white' : 'bg-light')">
@@ -607,16 +608,17 @@
 
                                                         <!-- Answer Input -->
                                                         <div class="mt-2" data-bind="with: $root.getAnswer(id)">
-                                                            <!-- ko if: $parent.type === 'Likert' || $parent.type === 'Star' -->
+                                                            <!-- ko if: $parent.type === 'Likert' || $parent.type === 'Star' || $parent.type === 'Rating' -->
                                                             <div class="btn-group" role="group">
-                                                                <!-- ko foreach: [1, 2, 3, 4, 5] -->
+                                                                <!-- ko foreach: $root.getScoreOptions($parent.maxPoints) -->
                                                                 <button type="button" class="btn"
-                                                                        data-bind="click: function() { $parent.answerNumeric($data); },
-                                                                                   css: $parent.answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
+                                                                        data-bind="click: function() { $parents[1].answerNumeric($data); },
+                                                                                   css: $parents[1].answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
                                                                                    text: $data">
                                                                 </button>
                                                                 <!-- /ko -->
                                                             </div>
+                                                            <small class="text-muted ms-2" data-bind="text: '@Html.T("Evaluation.WeightInfo", "Ağırlık:")' + ' ' + $parent.weightPoints + ' ' + '@Html.T("Evaluation.Points", "puan")'"></small>
                                                             <!-- /ko -->
 
                                                             <!-- ko if: $parent.type === 'YesNo' -->
@@ -707,6 +709,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- /ko -->
 
                             <!-- Evaluation Comment -->
                             <div class="card shadow-sm mb-4">

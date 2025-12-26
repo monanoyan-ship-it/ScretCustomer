@@ -53,6 +53,18 @@ function EvaluationsViewModel() {
     self.yellowCardCountCalc = ko.observable(0);
     self.redCardCountCalc = ko.observable(0);
 
+    // Helper: Generate score options array [0, 1, 2, ..., maxPoints]
+    // Müşteri isteği: ağırlık=15, max=2 ise → 0,1,2 seçenekleri
+    self.getScoreOptions = function(maxPoints) {
+        var max = parseInt(maxPoints) || 5;
+        if (max > 10) max = 10; // Max 10 seçenek göster (UI için)
+        var options = [];
+        for (var i = 0; i <= max; i++) {
+            options.push(i);
+        }
+        return options;
+    };
+
     // ========================
     // LIST COMPUTED
     // ========================
@@ -113,7 +125,7 @@ function EvaluationsViewModel() {
         self.errorMessage('');
 
         Promise.all([
-            fetch('/api/assignments', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/assignments/my-assignments', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/evaluations/evaluator', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
@@ -337,20 +349,24 @@ function EvaluationsViewModel() {
                 }
 
                 // Normal scored questions
-                var qMax = q.maxPoints || q.points || 0;
-                max += qMax;
+                // Müşteri isteği: ağırlık puanı (weightPoints) ve max skor (maxPoints) sistemi
+                // Örnek: ağırlık=15, max=2 → 0 seçilirse 0 puan, 1 seçilirse 7.5 puan, 2 seçilirse 15 puan
+                var weight = q.weightPoints || q.points || 0;
+                var maxScore = q.maxPoints || 5;
+                max += weight;  // Toplam maksimum puan = ağırlık puanları toplamı
 
-                // Use given points if available
+                // Use given points if available (manual override)
                 if (answer.givenPoints() !== null && answer.givenPoints() !== '') {
                     total += parseFloat(answer.givenPoints()) || 0;
-                } else if (answer.answerNumeric() !== null) {
-                    // Calculate based on Likert/Star scale
-                    total += (answer.answerNumeric() / 5) * qMax;
+                } else if (answer.answerNumeric() !== null && answer.answerNumeric() !== '') {
+                    // Likert/Rating hesaplaması: (cevap / maxScore) * ağırlık
+                    var numericValue = parseFloat(answer.answerNumeric()) || 0;
+                    total += (numericValue / maxScore) * weight;
                 } else if (answer.answerText()) {
-                    // YesNo type
+                    // YesNo type - Evet = tam puan, Hayır = 0 puan
                     var answerLower = answer.answerText().toLowerCase();
                     if (answerLower === 'evet' || answerLower === 'yes') {
-                        total += qMax;
+                        total += weight;
                     }
                 }
             });
