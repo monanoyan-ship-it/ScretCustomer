@@ -24,6 +24,7 @@ public interface IAssignmentService
     // ===== DURUM YÖNETİMİ =====
     Task<AssignmentDto> CompleteAssignmentAsync(int id);
     Task<AssignmentDto> CancelAssignmentAsync(int id, string? reason);
+    Task<AssignmentDto> ReopenAssignmentAsync(int id);
     Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto);
 
     // ===== TOPLU İŞLEMLER =====

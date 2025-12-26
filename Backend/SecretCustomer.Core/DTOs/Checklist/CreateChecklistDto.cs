@@ -46,7 +46,7 @@ public class CreateSectionDto
     // Yeni alanlar
     public string GroupType { get; set; } = "Scored";
     public decimal WeightPoints { get; set; } = 1;
-    public decimal MaxPoints { get; set; } = 100;
+    public decimal MaxPoints { get; set; } = 5; // Likert 0-5 için
     public bool IsActive { get; set; } = true;
 
     public List<CreateQuestionDto> Questions { get; set; } = new();
@@ -75,7 +75,7 @@ public class CreateQuestionDto
     // Yeni alanlar
     public string ScoringType { get; set; } = "Scored";
     public decimal WeightPoints { get; set; } = 1;
-    public decimal MaxPoints { get; set; } = 100;
+    public decimal MaxPoints { get; set; } = 5; // Likert 0-5 için
     public string PenaltyType { get; set; } = "None";
 
     [MaxLength(2000)]

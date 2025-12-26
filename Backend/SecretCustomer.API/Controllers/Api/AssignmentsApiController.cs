@@ -398,6 +398,33 @@ public class AssignmentsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Reopen a completed assignment
+    /// </summary>
+    [HttpPost("{id}/reopen")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> Reopen(int id)
+    {
+        try
+        {
+            var reopened = await _assignmentService.ReopenAssignmentAsync(id);
+            return Ok(reopened);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reopening assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Atama yeniden açılırken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Reassign an assignment to a different user
     /// </summary>
     [HttpPost("{id}/reassign")]

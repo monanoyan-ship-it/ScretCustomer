@@ -14,7 +14,7 @@
         </a>
         <hr>
 
-        <ul class="nav nav-pills flex-column mb-auto sidebar-nav">
+        <ul class="nav nav-pills flex-column flex-grow-1 sidebar-nav" style="overflow-y: auto; min-height: 0;">
             <!-- Dashboard - Not for FieldWorker -->
             <li class="nav-item" data-bind="visible: !isFieldWorker()">
                 <a href="/Dashboard/Index" class="nav-link text-white" data-bind="click: closeSidebar">

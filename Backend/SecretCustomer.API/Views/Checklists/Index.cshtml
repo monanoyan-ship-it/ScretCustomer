@@ -36,37 +36,57 @@
             </div>
         </div>
 
-        <!-- Checklist Cards -->
-        <div class="row" data-bind="foreach: checklists">
-            <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title" data-bind="text: name"></h5>
-                        <p class="card-text text-muted" data-bind="text: description || '@Html.T("Common.NoDescription", "Açıklama yok")'"></p>
-                        <div class="mb-3">
-                            <span class="badge bg-info">
-                                <span data-bind="text: (sections && sections.length) || 0"></span> @Html.T("Checklist.Section", "Bölüm")
-                            </span>
-                            <span class="badge bg-secondary ms-2">
-                                v<span data-bind="text: version || 1"></span>
-                            </span>
-                            <span class="badge ms-2" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
-                        </div>
-                        <div class="btn-group w-100">
-                            <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.viewChecklist" title="@Html.T("Common.View", "Görüntüle")">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.editChecklist" title="@Html.T("Common.Edit", "Düzenle")">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-info" data-bind="click: $parent.cloneChecklist" title="@Html.T("Checklist.Clone", "Klonla")">
-                                <i class="bi bi-files"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteChecklist" title="@Html.T("Common.Delete", "Sil")">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+        <!-- Checklist Table -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>@Html.T("Checklist.Name", "Adı")</th>
+                                <th>@Html.T("Checklist.Description", "Açıklama")</th>
+                                <th class="text-center">@Html.T("Checklist.Sections", "Bölüm")</th>
+                                <th class="text-center">@Html.T("Common.Version", "Versiyon")</th>
+                                <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                <th class="text-center" style="width: 150px;">@Html.T("Common.Actions", "İşlemler")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: checklists">
+                            <tr>
+                                <td>
+                                    <strong data-bind="text: name"></strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted" data-bind="text: description || '-'"></small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info" data-bind="text: (sections && sections.length) || 0"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">v<span data-bind="text: version || 1"></span></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" data-bind="click: $parent.viewChecklist" title="@Html.T("Common.View", "Görüntüle")">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" data-bind="click: $parent.editChecklist" title="@Html.T("Common.Edit", "Düzenle")">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info" data-bind="click: $parent.cloneChecklist" title="@Html.T("Checklist.Clone", "Klonla")">
+                                            <i class="bi bi-files"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" data-bind="click: $parent.deleteChecklist" title="@Html.T("Common.Delete", "Sil")">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -311,7 +331,7 @@
                                                     <label class="form-check-label">N/A</label>
                                                 </div>
                                             </div>
-                                            <div class="col-md-2 mb-2">
+                                            <div class="col-md-2 mb-2" data-bind="visible: $parent.questions().length > 1">
                                                 <label class="form-label d-block">&nbsp;</label>
                                                 <button type="button" class="btn btn-sm btn-danger w-100" data-bind="click: function() { $root.removeQuestion($data, $parent); }">
                                                     <i class="bi bi-trash"></i> @Html.T("Common.Delete", "Sil")

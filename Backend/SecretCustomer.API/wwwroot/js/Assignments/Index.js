@@ -581,6 +581,37 @@ function AssignmentsViewModel() {
         });
     };
 
+    // ===== Reopen Assignment =====
+    self.reopenAssignment = function(assignment) {
+        showConfirmModal({
+            title: T('Assignment.ReopenTitle', 'Atamayı Yeniden Aç'),
+            message: T('Assignment.ReopenConfirm', 'Bu tamamlanmış atamayı yeniden açmak istediğinizden emin misiniz? Değerlendirme tekrar düzenlenebilir hale gelecektir.'),
+            type: 'warning',
+            confirmText: T('Button.Reopen', 'Yeniden Aç'),
+            confirmIcon: 'bi-arrow-counterclockwise',
+            onConfirm: function() {
+                fetch('/api/assignments/' + assignment.id + '/reopen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error(T('Assignment.ReopenError', 'Yeniden açma başarısız'));
+                        return res.json();
+                    })
+                    .then(function(result) {
+                        toastr.success(T('Assignment.ReopenSuccess', 'Atama başarıyla yeniden açıldı.'));
+                        self.loadAssignments();
+                        self.loadSummary();
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        toastr.error(T('Assignment.ReopenProcessError', 'Atama yeniden açılırken bir hata oluştu.'));
+                    });
+            }
+        });
+    };
+
     // ===== View Detail =====
     self.viewDetail = function(assignment) {
         fetch('/api/assignments/' + assignment.id + '/detail', { credentials: 'include' })

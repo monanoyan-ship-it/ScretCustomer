@@ -390,6 +390,44 @@ public class AssignmentService : IAssignmentService
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
+    public async Task<AssignmentDto> ReopenAssignmentAsync(int id)
+    {
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .Include(a => a.Evaluations)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        if (assignment == null || assignment.IsDeleted)
+            throw new KeyNotFoundException($"Atama bulunamadı: {id}");
+
+        if (!assignment.IsCompleted)
+            throw new InvalidOperationException("Bu atama zaten açık durumda.");
+
+        // Assignment'ı yeniden aç
+        assignment.IsCompleted = false;
+        assignment.CompletedAt = null;
+        assignment.UpdatedAt = DateTime.UtcNow;
+
+        // İlişkili Evaluation'ları da InProgress yap
+        foreach (var evaluation in assignment.Evaluations)
+        {
+            if (evaluation.Status == Core.Enums.EvaluationStatus.Completed)
+            {
+                evaluation.Status = Core.Enums.EvaluationStatus.InProgress;
+                evaluation.CompletedAt = null;
+                evaluation.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Atama yeniden açıldı: {assignment.Project?.Name}",
+            "AssignmentService");
+
+        return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
+    }
+
     public async Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto)
     {
         var assignment = await _context.Assignments

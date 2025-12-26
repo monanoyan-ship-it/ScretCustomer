@@ -96,9 +96,9 @@
         'Role.FieldWorker': 'Saha Çalışanı',
         'Role.CustomerRepresentative': 'Müşteri Temsilcisi',
         'Role.CustomerManager': 'Müşteri Yöneticisi',
-        'Role.CustomerSupervisor': 'Müşteri Süpervizörü',
-        'Role.CustomerOperator': 'Müşteri Operatörü',
-        'Role.CustomerViewer': 'Müşteri Görüntüleyici',
+        'Role.CustomerSupervisor': 'Takım Lideri',
+        'Role.CustomerOperator': 'Değerlendirme Uzmanı',
+        'Role.CustomerViewer': 'Rapor Görüntüleyici',
 
         // Status
         'Status.Pending': 'Bekleyen',

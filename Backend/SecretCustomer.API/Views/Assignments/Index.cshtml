@@ -283,6 +283,11 @@
                                                         <i class="bi bi-x-circle"></i> @Html.T("Button.Cancel", "İptal Et")
                                                     </a>
                                                 </li>
+                                                <li data-bind="visible: status === 'Completed'">
+                                                    <a class="dropdown-item text-info" href="#" data-bind="click: $parent.reopenAssignment">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> @Html.T("Button.Reopen", "Yeniden Aç")
+                                                    </a>
+                                                </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item" href="#" data-bind="click: $parent.copyLink">

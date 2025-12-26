@@ -4008,13 +4008,13 @@
     <Value>Müşteri Yöneticisi</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Supervisor">
-    <Value>Müşteri Süpervizörü</Value>
+    <Value>Takım Lideri</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
-    <Value>Müşteri Operatörü</Value>
+    <Value>Değerlendirme Uzmanı</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Viewer">
-    <Value>Müşteri Görüntüleyici</Value>
+    <Value>Rapor Görüntüleyici</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.DepartmentPlaceholder">
     <Value>Kalite Kontrol</Value>

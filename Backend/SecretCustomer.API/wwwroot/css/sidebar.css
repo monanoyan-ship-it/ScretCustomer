@@ -7,13 +7,16 @@
     top: 0;
     z-index: 1040;
     transition: transform 0.3s ease-in-out;
-    overflow-y: auto;
+    overflow-x: hidden; /* Yatay taşmayı engelle */
+    overflow-y: auto; /* Dikey scroll */
 }
 
 /* Sidebar Navigation */
 .sidebar-nav {
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
+    overflow-y: auto; /* Dikey scroll */
+    overflow-x: hidden; /* Yatay taşmayı engelle */
+    flex-grow: 1; /* Kalan alanı doldur */
+    min-height: 0; /* Flex item için scroll çalışması için */
 }
 
 /* Sidebar Overlay */

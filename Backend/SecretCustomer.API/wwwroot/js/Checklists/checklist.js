@@ -15,7 +15,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     base.options = ko.observable(data.options ? (typeof data.options === 'string' ? data.options : JSON.stringify(data.options)) : '');
     base.scoringType = ko.observable(data.scoringType || 'Scored');
     base.weightPoints = ko.observable(data.weightPoints || 1);
-    base.maxPoints = ko.observable(data.maxPoints || 100);
+    base.maxPoints = ko.observable(data.maxPoints || 5); // Likert 0-5 için
     base.penaltyType = ko.observable(data.penaltyType || 'None');
     base.penaltyValue = ko.observable(data.penaltyValue || 0);
     base.recommendedNote = ko.observable(data.recommendedNote || '');
@@ -40,7 +40,7 @@ var SectionModel = function (data, loadAttachmentsFn) {
     base.order = ko.observable(data.order || 0);
     base.groupType = ko.observable(data.groupType || 'Scored');
     base.weightPoints = ko.observable(data.weightPoints || 1);
-    base.maxPoints = ko.observable(data.maxPoints || 100);
+    base.maxPoints = ko.observable(data.maxPoints || 5); // Likert 0-5 için
     base.isActive = ko.observable(data.isActive !== false);
 
     // Questions
@@ -49,16 +49,70 @@ var SectionModel = function (data, loadAttachmentsFn) {
     });
     base.questions = ko.observableArray(questions);
 
+    // Newfound uyumu: Eğer questions boşsa, otomatik olarak Section adıyla aynı isimde bir Question ekle
+    // Bu sayede kullanıcı sadece grup eklese bile değerlendirme yapılabilir
+    base._autoQuestion = null; // Otomatik eklenen soruyu takip et
+    if (base.questions().length === 0) {
+        base._autoQuestion = new QuestionModel({
+            text: base.name() || '', // Grup adıyla aynı
+            type: 'Rating', // Likert için uygun
+            order: 1,
+            points: 0,
+            isRequired: true,
+            allowNA: false,
+            scoringType: base.groupType(), // Grup tipiyle aynı
+            weightPoints: base.weightPoints(), // Grup ağırlığıyla aynı
+            maxPoints: base.maxPoints(), // Grup maks puanıyla aynı
+            penaltyType: base.groupType() === 'Penalty' ? 'YellowCard' : 'None'
+        });
+        base.questions.push(base._autoQuestion);
+    }
+
+    // Section adı değiştiğinde, otomatik eklenen sorunun text'ini de güncelle
+    base.name.subscribe(function (newName) {
+        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
+            base._autoQuestion.text(newName);
+        }
+    });
+
+    // Grup tipi değiştiğinde, otomatik eklenen sorunun scoringType'ını da güncelle
+    base.groupType.subscribe(function (newType) {
+        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
+            base._autoQuestion.scoringType(newType);
+            base._autoQuestion.penaltyType(newType === 'Penalty' ? 'YellowCard' : 'None');
+        }
+    });
+
+    // Ağırlık puanı değiştiğinde, otomatik eklenen sorunun weightPoints'ini de güncelle
+    base.weightPoints.subscribe(function (newWeight) {
+        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
+            base._autoQuestion.weightPoints(newWeight);
+        }
+    });
+
+    // Maks puan değiştiğinde, otomatik eklenen sorunun maxPoints'ini de güncelle
+    base.maxPoints.subscribe(function (newMax) {
+        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
+            base._autoQuestion.maxPoints(newMax);
+        }
+    });
+
     // Yeni soru ekle
     base.addQuestion = function () {
         base.questions.push(new QuestionModel({
             order: base.questions().length + 1
         }));
+        // Manuel soru eklendiğinde artık otomatik soru takibi yapma
+        base._autoQuestion = null;
     };
 
-    // Soru sil
+    // Soru sil - en az 1 soru kalmalı (UI'da buton gizleniyor, bu ekstra güvenlik)
     base.removeQuestion = function (question) {
+        if (base.questions().length <= 1) return; // Son soru silinemez
         base.questions.remove(question);
+        if (question === base._autoQuestion) {
+            base._autoQuestion = null;
+        }
     };
 };
 
