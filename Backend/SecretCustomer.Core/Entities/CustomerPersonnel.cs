@@ -41,7 +41,7 @@ public class CustomerPersonnel : BaseEntity
 
     [ExcelColumn("Rol", 8, IsRequired = true, ColumnType = ExcelColumnType.Dropdown,
         Description = "Personelin sistem rolü",
-        DropdownOptions = "[\"CustomerManager\", \"CustomerSupervisor\", \"CustomerOperator\", \"CustomerViewer\"]",
+        DropdownOptions = "[\"CustomerManager\", \"CustomerSupervisor\", \"CustomerOperator\"]",
         SampleValue = "CustomerManager")]
     public CustomerPersonnelRole Role { get; set; }
 
@@ -57,10 +57,41 @@ public class CustomerPersonnel : BaseEntity
     public int? PreferredLanguageId { get; set; }
     public Language? PreferredLanguage { get; set; }
 
+    // ===== YENİ: Organizasyon Bağlantısı =====
+
+    /// <summary>
+    /// Personelin birincil organizasyonu
+    /// </summary>
+    public int? OrganizationId { get; set; }
+    public CustomerOrganization? Organization { get; set; }
+
+    // ===== YENİ: Takım Lideri (Süpervizör) İlişkisi =====
+
+    /// <summary>
+    /// Bu personelin bağlı olduğu takım lideri
+    /// </summary>
+    public int? SupervisorId { get; set; }
+    public CustomerPersonnel? Supervisor { get; set; }
+
+    /// <summary>
+    /// Bu personele bağlı takım üyeleri
+    /// </summary>
+    public ICollection<CustomerPersonnel> TeamMembers { get; set; } = new List<CustomerPersonnel>();
+
     // Computed Property
     public string FullName => $"{FirstName} {LastName}";
 
     // Navigation Properties
     public ICollection<CustomerPersonnelTaskAssignment> TaskAssignments { get; set; } = new List<CustomerPersonnelTaskAssignment>();
     public ICollection<CustomerPersonnelPermission> Permissions { get; set; } = new List<CustomerPersonnelPermission>();
+
+    /// <summary>
+    /// Bu personelin yönettiği organizasyonlar (many-to-many)
+    /// </summary>
+    public ICollection<CustomerOrganizationManager> ManagedOrganizations { get; set; } = new List<CustomerOrganizationManager>();
+
+    /// <summary>
+    /// Bu personelin değerlendirebileceği organizasyonlar (many-to-many)
+    /// </summary>
+    public ICollection<CustomerPersonnelOrganizationAccess> OrganizationAccess { get; set; } = new List<CustomerPersonnelOrganizationAccess>();
 }

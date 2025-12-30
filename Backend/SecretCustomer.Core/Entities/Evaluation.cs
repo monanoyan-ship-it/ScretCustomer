@@ -76,7 +76,7 @@ public class Evaluation : BaseEntity
     public int? DurationMinutes { get; set; }
 
     /// <summary>
-    /// Değerlendirilen tanımlı personel ID
+    /// Değerlendirilen tanımlı personel ID (User - bizim şirket personeli)
     /// </summary>
     public int? EvaluatedPersonnelId { get; set; }
 
@@ -84,6 +84,28 @@ public class Evaluation : BaseEntity
     /// Değerlendirilen personel (Navigation Property)
     /// </summary>
     public User? EvaluatedPersonnel { get; set; }
+
+    // ===== YENİ: Müşteri Personeli Değerlendirmesi =====
+
+    /// <summary>
+    /// Değerlendirilen müşteri personeli ID (CustomerPersonnel - firma personeli)
+    /// </summary>
+    public int? EvaluatedCustomerPersonnelId { get; set; }
+
+    /// <summary>
+    /// Değerlendirilen müşteri personeli
+    /// </summary>
+    public CustomerPersonnel? EvaluatedCustomerPersonnel { get; set; }
+
+    /// <summary>
+    /// Değerlendirilen organizasyon ID
+    /// </summary>
+    public int? EvaluatedOrganizationId { get; set; }
+
+    /// <summary>
+    /// Değerlendirilen organizasyon
+    /// </summary>
+    public CustomerOrganization? EvaluatedOrganization { get; set; }
 
     /// <summary>
     /// Değerlendirilen tanımsız personel adı

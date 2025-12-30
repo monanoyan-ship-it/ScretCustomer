@@ -39,7 +39,7 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetAll([FromQuery] int? projectId = null, [FromQuery] int? branchId = null)
+    public async Task<IActionResult> GetAll([FromQuery] int? projectId = null)
     {
         try
         {
@@ -48,10 +48,6 @@ public class AssignmentsApiController : BaseApiController
             if (projectId.HasValue && projectId != 0)
             {
                 assignments = await _assignmentService.GetByProjectIdAsync(projectId.Value);
-            }
-            else if (branchId.HasValue && branchId != 0)
-            {
-                assignments = await _assignmentService.GetByBranchIdAsync(branchId.Value);
             }
             else
             {
@@ -308,25 +304,6 @@ public class AssignmentsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get assignments by branch
-    /// </summary>
-    [HttpGet("by-branch/{branchId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByBranch(int branchId)
-    {
-        try
-        {
-            var assignments = await _assignmentService.GetByBranchIdAsync(branchId);
-            return Ok(assignments);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading assignments for branch {BranchId}", branchId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.BranchLoadError"), ex));
-        }
-    }
-
-    /// <summary>
     /// Get assignments by field worker
     /// </summary>
     [HttpGet("by-fieldworker/{fieldWorkerId}")]
@@ -529,25 +506,6 @@ public class AssignmentsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error loading project summaries");
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectSummaryError"), ex));
-        }
-    }
-
-    /// <summary>
-    /// Get branch assignment summaries for a project
-    /// </summary>
-    [HttpGet("branch-summaries/{projectId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetBranchSummaries(int projectId)
-    {
-        try
-        {
-            var summaries = await _assignmentService.GetBranchSummariesAsync(projectId);
-            return Ok(summaries);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading branch summaries for project {ProjectId}", projectId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.BranchSummaryError"), ex));
         }
     }
 

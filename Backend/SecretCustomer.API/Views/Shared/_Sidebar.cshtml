@@ -43,11 +43,6 @@
                             </a>
                         </li>
                         <li>
-                            <a href="/Branches/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-building me-2"></i>@Html.T("Menu.Branches", "Şubeler")
-                            </a>
-                        </li>
-                        <li>
                             <a href="/ExcelTemplates/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-file-earmark-spreadsheet me-2"></i>@Html.T("Menu.ExcelTemplates", "Excel Şablonları")
                             </a>
@@ -85,17 +80,12 @@
                                 <i class="bi bi-briefcase me-2"></i>@Html.T("Menu.Customers", "Müşteriler")
                             </a>
                         </li>
-                        <li>
-                            <a href="/CustomerPersonnel/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-person-vcard me-2"></i>@Html.T("Menu.CustomerPersonnel", "Müşteri Personeli")
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </li>
 
-            <!-- Personnel - Team Leader Only (Not Admin) -->
-            <li class="nav-item" data-bind="visible: isTeamLeader() && !isAdmin()">
+            <!-- Personnel - QualitySpecialist Only (Not Admin) -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() && !isAdmin()">
                 <a href="/Personnel/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-person-badge-fill me-2"></i>
                     @Html.T("Menu.Personnel", "Personel")
@@ -139,7 +129,7 @@
                 </a>
                 <div class="collapse" id="menuOperations">
                     <ul class="nav flex-column ms-3 submenu">
-                        <li data-bind="visible: isAdmin || isTeamLeader">
+                        <li data-bind="visible: isAdmin || isQualitySpecialist">
                             <a href="/Assignments/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-clipboard me-2"></i>@Html.T("Menu.Assignments", "Atamalar")
                             </a>
@@ -149,7 +139,7 @@
                                 <i class="bi bi-list-task me-2"></i>@Html.T("Menu.MyTasks", "Görevlerim")
                             </a>
                         </li>
-                        <li data-bind="visible: isEvaluator || isAdmin">
+                        <li data-bind="visible: isQualitySpecialist || isAdmin">
                             <a href="/Evaluations/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-pencil-square me-2"></i>@Html.T("Menu.Evaluations", "Değerlendirmeler")
                             </a>
@@ -158,8 +148,8 @@
                 </div>
             </li>
 
-            <!-- ==================== AKTİVİTELER (Admin/TeamLeader Only) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin || isTeamLeader">
+            <!-- ==================== AKTİVİTELER (Admin/QualitySpecialist Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin || isQualitySpecialist">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuActivities" role="button" aria-expanded="false">
                     <span><i class="bi bi-calendar3 me-2"></i>@Html.T("Menu.Activities", "Aktiviteler")</span>
@@ -191,8 +181,8 @@
                 </div>
             </li>
 
-            <!-- ==================== RAPORLAR (Admin & TeamLeader) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin || isTeamLeader">
+            <!-- ==================== RAPORLAR (Admin & QualitySpecialist) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin || isQualitySpecialist">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuReports" role="button" aria-expanded="false">
                     <span><i class="bi bi-graph-up me-2"></i>@Html.T("Menu.ReportsMenu", "Raporlar")</span>
@@ -303,16 +293,12 @@
             return self.userRole() === 'Admin';
         });
 
-        self.isEvaluator = ko.computed(function() {
-            return self.userRole() === 'Evaluator' || self.userRole() === 'CustomerRepresentative';
+        self.isQualitySpecialist = ko.computed(function() {
+            return self.userRole() === 'QualitySpecialist';
         });
 
         self.isFieldWorker = ko.computed(function() {
             return self.userRole() === 'FieldWorker';
-        });
-
-        self.isTeamLeader = ko.computed(function() {
-            return self.userRole() === 'TeamLeader';
         });
 
         // Toggle sidebar

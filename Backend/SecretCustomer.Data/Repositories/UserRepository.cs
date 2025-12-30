@@ -18,14 +18,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
@@ -43,14 +41,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)
             .ToListAsync();
@@ -59,18 +55,7 @@ public class UserRepository : IUserRepository
     public async Task<IEnumerable<User>> GetByRoleAsync(UserRole role)
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .Where(u => u.Role == role)
-            .OrderBy(u => u.FirstName)
-            .ThenBy(u => u.LastName)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<User>> GetByBranchAsync(int branchId)
-    {
-        return await _context.Users
-            .Include(u => u.Branch)
-            .Where(u => u.BranchId == branchId)
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)
             .ToListAsync();
@@ -79,7 +64,6 @@ public class UserRepository : IUserRepository
     public async Task<IEnumerable<User>> GetActiveUsersAsync()
     {
         return await _context.Users
-            .Include(u => u.Branch)
             .Where(u => u.IsActive)
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)

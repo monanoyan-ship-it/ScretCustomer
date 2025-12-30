@@ -18,8 +18,8 @@ function DashboardViewModel() {
         return authService.isAdmin();
     });
 
-    self.isTeamLeader = ko.computed(function() {
-        return authService.isTeamLeader();
+    self.isQualitySpecialist = ko.computed(function() {
+        return authService.isQualitySpecialist();
     });
 
     self.formattedAverageScore = ko.computed(function() {
@@ -40,7 +40,7 @@ function DashboardViewModel() {
         self.errorMessage('');
 
         var endpoint = self.isAdmin() ? '/dashboard/admin' :
-                       self.isTeamLeader() ? '/dashboard/representative' :
+                       self.isQualitySpecialist() ? '/dashboard/representative' :
                        '/dashboard/representative';
 
         apiService.get(endpoint)

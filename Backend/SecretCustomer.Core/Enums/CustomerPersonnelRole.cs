@@ -6,22 +6,17 @@ namespace SecretCustomer.Core.Enums;
 public enum CustomerPersonnelRole
 {
     /// <summary>
-    /// Müşteri yöneticisi - tüm yetkilere sahip
+    /// Müşteri Yöneticisi - Tüm raporları görür (Firma Yetkilisi)
     /// </summary>
     CustomerManager = 1,
 
     /// <summary>
-    /// Müşteri süpervizörü - görev atama ve izleme yetkisi
+    /// Müşteri Süpervizörü - Kendi takımının raporlarını görür (Takım Lideri)
     /// </summary>
     CustomerSupervisor = 2,
 
     /// <summary>
-    /// Müşteri operatörü - görev yapma yetkisi
+    /// Müşteri Operatörü - Sadece kendi değerlerini görür (Değerlendirilecek personel)
     /// </summary>
-    CustomerOperator = 3,
-
-    /// <summary>
-    /// Müşteri görüntüleyici - sadece okuma yetkisi
-    /// </summary>
-    CustomerViewer = 4
+    CustomerOperator = 3
 }

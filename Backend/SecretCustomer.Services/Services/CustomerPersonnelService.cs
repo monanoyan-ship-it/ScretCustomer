@@ -241,7 +241,6 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             CustomerPersonnelRole.CustomerManager => "Müşteri Yöneticisi",
             CustomerPersonnelRole.CustomerSupervisor => "Müşteri Süpervizörü",
             CustomerPersonnelRole.CustomerOperator => "Müşteri Operatörü",
-            CustomerPersonnelRole.CustomerViewer => "Müşteri Görüntüleyici",
             _ => role.ToString()
         };
     }

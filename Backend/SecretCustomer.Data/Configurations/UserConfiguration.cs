@@ -31,10 +31,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Username).IsUnique();
         builder.HasIndex(u => u.Email).IsUnique();
-
-        builder.HasOne(u => u.Branch)
-            .WithMany(b => b.Users)
-            .HasForeignKey(u => u.BranchId)
-            .OnDelete(DeleteBehavior.SetNull);
     }
 }

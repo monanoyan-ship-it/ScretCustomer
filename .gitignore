@@ -69,3 +69,8 @@ Thumbs.db
 .claude/settings.local.json
 .env
 nul
+
+# Screenshots and media files
+**/ScreenShots/
+*.mp4
+*.wav

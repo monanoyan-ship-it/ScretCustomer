@@ -50,10 +50,6 @@ public class OrganizationUnit : BaseEntity
     public int? ManagerId { get; set; }
     public User? Manager { get; set; }
 
-    // Location/Branch association
-    public int? BranchId { get; set; }
-    public Branch? Branch { get; set; }
-
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();
     public ICollection<Delegation> DelegationsFrom { get; set; } = new List<Delegation>();

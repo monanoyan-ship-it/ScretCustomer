@@ -29,8 +29,7 @@ function CustomerPersonnelViewModel(customerId) {
     self.personnelRoles = [
         { value: 1, text: T('Role.CustomerManager', 'Müşteri Yöneticisi') },
         { value: 2, text: T('Role.CustomerSupervisor', 'Müşteri Süpervizörü') },
-        { value: 3, text: T('Role.CustomerOperator', 'Müşteri Operatörü') },
-        { value: 4, text: T('Role.CustomerViewer', 'Müşteri Görüntüleyici') }
+        { value: 3, text: T('Role.CustomerOperator', 'Müşteri Operatörü') }
     ];
 
     // Computed

@@ -46,7 +46,6 @@ public class ProjectService : IProjectService
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
-            .Include(p => p.ProjectBranches)
             .Include(p => p.TeamMembers)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
@@ -61,8 +60,6 @@ public class ProjectService : IProjectService
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
-            .Include(p => p.ProjectBranches)
-                .ThenInclude(pb => pb.Branch)
             .Include(p => p.TeamMembers)
                 .ThenInclude(tm => tm.User)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
@@ -81,7 +78,6 @@ public class ProjectService : IProjectService
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
-            .Include(p => p.ProjectBranches)
             .Include(p => p.TeamMembers)
             .Where(p => !p.IsDeleted);
 
@@ -161,21 +157,6 @@ public class ProjectService : IProjectService
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
 
-        // Add branches if provided
-        if (dto.Branches?.Any() == true)
-        {
-            foreach (var branchDto in dto.Branches)
-            {
-                project.ProjectBranches.Add(new ProjectBranch
-                {
-                    ProjectId = project.Id,
-                    BranchId = branchDto.BranchId,
-                    TargetCount = branchDto.TargetCount,
-                    Priority = branchDto.Priority
-                });
-            }
-        }
-
         // Add team members if provided
         if (dto.TeamMembers?.Any() == true)
         {
@@ -197,7 +178,6 @@ public class ProjectService : IProjectService
     public async Task<ProjectDto> UpdateAsync(int id, CreateProjectDto dto)
     {
         var project = await _context.Projects
-            .Include(p => p.ProjectBranches)
             .Include(p => p.TeamMembers)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
@@ -362,41 +342,8 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectDetailDto> ManageBranchesAsync(int projectId, ManageProjectBranchesDto dto)
     {
-        var project = await _context.Projects
-            .Include(p => p.ProjectBranches)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
-
-        if (project == null)
-            throw new KeyNotFoundException($"Project with ID {projectId} not found");
-
-        // Remove branches
-        foreach (var branchId in dto.RemoveBranchIds)
-        {
-            var branch = project.ProjectBranches.FirstOrDefault(b => b.BranchId == branchId);
-            if (branch != null)
-            {
-                branch.IsActive = false;
-                branch.IsDeleted = true;
-            }
-        }
-
-        // Add branches
-        foreach (var branchDto in dto.AddBranches)
-        {
-            if (!project.ProjectBranches.Any(b => b.BranchId == branchDto.BranchId && !b.IsDeleted))
-            {
-                project.ProjectBranches.Add(new ProjectBranch
-                {
-                    ProjectId = projectId,
-                    BranchId = branchDto.BranchId,
-                    TargetCount = branchDto.TargetCount,
-                    Priority = branchDto.Priority
-                });
-            }
-        }
-
-        await _context.SaveChangesAsync();
-        return await GetDetailByIdAsync(projectId) ?? throw new KeyNotFoundException("Project not found after update");
+        // Branch system removed - this method is deprecated
+        throw new NotSupportedException("Branch management is no longer supported.");
     }
 
     public async Task<ProjectDetailDto> GetStatisticsAsync(int projectId, DateTime? startDate = null, DateTime? endDate = null)
@@ -572,7 +519,7 @@ public class ProjectService : IProjectService
             TotalYellowCards = yellowCards,
             TotalRedCards = redCards,
             TeamMemberCount = project.TeamMembers?.Count(m => !m.IsDeleted) ?? 0,
-            TargetBranchCount = project.ProjectBranches?.Count(b => !b.IsDeleted) ?? 0
+            TargetBranchCount = 0 // Branch system removed
         };
     }
 
@@ -623,27 +570,8 @@ public class ProjectService : IProjectService
             TargetBranchCount = dto.TargetBranchCount
         };
 
-        // Map branches
-        detailDto.Branches = project.ProjectBranches?
-            .Where(pb => !pb.IsDeleted)
-            .Select(pb =>
-            {
-                var completedCount = project.Assignments?
-                    .Count(a => a.BranchId == pb.BranchId && a.IsCompleted) ?? 0;
-
-                return new ProjectBranchDto
-                {
-                    Id = pb.Id,
-                    BranchId = pb.BranchId,
-                    BranchName = pb.Branch?.Name ?? "",
-                    BranchCode = pb.Branch?.Code,
-                    TargetCount = pb.TargetCount,
-                    CompletedCount = completedCount,
-                    Priority = pb.Priority,
-                    IsActive = pb.IsActive
-                };
-            })
-            .ToList() ?? new List<ProjectBranchDto>();
+        // Branch system removed - return empty list
+        detailDto.Branches = new List<ProjectBranchDto>();
 
         // Map team members
         detailDto.TeamMembers = project.TeamMembers?

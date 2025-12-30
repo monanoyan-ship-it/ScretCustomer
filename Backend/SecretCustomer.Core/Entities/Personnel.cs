@@ -68,9 +68,6 @@ public class Personnel : BaseEntity
     public string? Notes { get; set; }
 
     // Foreign Keys
-    public int? BranchId { get; set; }
-    public Branch? Branch { get; set; }
-
     public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 

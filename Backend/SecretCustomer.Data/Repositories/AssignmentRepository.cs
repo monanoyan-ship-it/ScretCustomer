@@ -22,7 +22,6 @@ public class AssignmentRepository : IAssignmentRepository
             query = query
                 .Include(a => a.Project)
                 .Include(a => a.Checklist)
-                .Include(a => a.Branch)
                 .Include(a => a.AssignedUser);
         }
 
@@ -34,7 +33,6 @@ public class AssignmentRepository : IAssignmentRepository
         return await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Where(a => !a.IsDeleted)
@@ -52,8 +50,7 @@ public class AssignmentRepository : IAssignmentRepository
                 .Include(a => a.Project)
                 .Include(a => a.Checklist)
                     .ThenInclude(c => c.Sections.OrderBy(s => s.Order))
-                        .ThenInclude(s => s.Questions.OrderBy(q => q.Order))
-                .Include(a => a.Branch);
+                        .ThenInclude(s => s.Questions.OrderBy(q => q.Order));
         }
 
         return await query.FirstOrDefaultAsync(a => a.UniqueLink == uniqueLink);
@@ -62,7 +59,6 @@ public class AssignmentRepository : IAssignmentRepository
     public async Task<IEnumerable<Assignment>> GetByProjectIdAsync(int projectId)
     {
         return await _context.Assignments
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Where(a => a.ProjectId == projectId)
             .OrderBy(a => a.DueDate)
@@ -74,18 +70,7 @@ public class AssignmentRepository : IAssignmentRepository
         return await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Where(a => a.AssignedUserId == userId)
-            .OrderBy(a => a.DueDate)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<Assignment>> GetByBranchIdAsync(int branchId)
-    {
-        return await _context.Assignments
-            .Include(a => a.Project)
-            .Include(a => a.AssignedUser)
-            .Where(a => a.BranchId == branchId)
             .OrderBy(a => a.DueDate)
             .ToListAsync();
     }
@@ -95,7 +80,6 @@ public class AssignmentRepository : IAssignmentRepository
         return await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedFieldWorker)
             .Where(a => a.AssignedFieldWorkerId == fieldWorkerId)
             .OrderBy(a => a.DueDate)

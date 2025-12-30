@@ -48,7 +48,11 @@ public class Customer : BaseEntity
 
     // Navigation Properties
     public ICollection<CustomerPersonnel> Personnel { get; set; } = new List<CustomerPersonnel>();
-    public ICollection<Branch> Branches { get; set; } = new List<Branch>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();
     public ICollection<CustomerTaskList> TaskLists { get; set; } = new List<CustomerTaskList>();
+
+    /// <summary>
+    /// Firma altındaki organizasyonlar
+    /// </summary>
+    public ICollection<CustomerOrganization> Organizations { get; set; } = new List<CustomerOrganization>();
 }

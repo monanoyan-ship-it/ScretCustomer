@@ -21,7 +21,6 @@ public class EvaluationRepository : IEvaluationRepository
         {
             query = query
                 .Include(e => e.Assignment)
-                    .ThenInclude(a => a.Branch)
                 .Include(e => e.Evaluator)
                 .Include(e => e.Answers)
                     .ThenInclude(a => a.Question);
@@ -49,33 +48,15 @@ public class EvaluationRepository : IEvaluationRepository
         return await _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Where(e => e.EvaluatorId == evaluatorId)
             .OrderByDescending(e => e.CompletedAt)
             .ToListAsync();
-    }
-
-    public async Task<IEnumerable<Evaluation>> GetByBranchIdAsync(int branchId, DateTime? startDate = null, DateTime? endDate = null)
-    {
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-            .Where(e => e.Assignment.BranchId == branchId);
-
-        if (startDate.HasValue)
-            query = query.Where(e => e.CompletedAt >= startDate.Value);
-
-        if (endDate.HasValue)
-            query = query.Where(e => e.CompletedAt <= endDate.Value);
-
-        return await query.ToListAsync();
     }
 
     public async Task<IEnumerable<Evaluation>> GetAllAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.Evaluations
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .AsQueryable();
 
         if (startDate.HasValue)

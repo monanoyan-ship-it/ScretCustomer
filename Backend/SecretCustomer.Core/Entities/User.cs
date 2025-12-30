@@ -48,9 +48,6 @@ public class User : BaseEntity
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiry { get; set; }
 
-    public int? BranchId { get; set; }
-    public Branch? Branch { get; set; }
-
     // Organization Unit
     public int? OrganizationUnitId { get; set; }
     public OrganizationUnit? OrganizationUnit { get; set; }

@@ -37,7 +37,6 @@ public class AssignmentService : IAssignmentService
         var assignment = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -52,7 +51,6 @@ public class AssignmentService : IAssignmentService
         var assignment = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -71,9 +69,6 @@ public class AssignmentService : IAssignmentService
             ProjectCode = dto.ProjectCode,
             ChecklistId = dto.ChecklistId,
             ChecklistName = dto.ChecklistName,
-            BranchId = dto.BranchId,
-            BranchName = dto.BranchName,
-            BranchCode = dto.BranchCode,
             AssignedUserId = dto.AssignedUserId,
             AssignedUserName = dto.AssignedUserName,
             AssignedFieldWorkerId = dto.AssignedFieldWorkerId,
@@ -114,7 +109,6 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -148,7 +142,6 @@ public class AssignmentService : IAssignmentService
         {
             ProjectId = dto.ProjectId,
             ChecklistId = dto.ChecklistId,
-            BranchId = dto.BranchId,
             AssignedUserId = dto.AssignedUserId,
             AssignedFieldWorkerId = dto.AssignedFieldWorkerId,
             AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId,
@@ -180,7 +173,6 @@ public class AssignmentService : IAssignmentService
         {
             ProjectId = dto.ProjectId,
             ChecklistId = dto.ChecklistId,
-            BranchId = a.BranchId,
             AssignedUserId = a.AssignedUserId,
             AssignedFieldWorkerId = a.AssignedFieldWorkerId,
             ExternalEmail = a.ExternalEmail,
@@ -204,7 +196,6 @@ public class AssignmentService : IAssignmentService
 
         assignment.ProjectId = dto.ProjectId;
         assignment.ChecklistId = dto.ChecklistId;
-        assignment.BranchId = dto.BranchId;
         assignment.AssignedUserId = dto.AssignedUserId;
         assignment.AssignedFieldWorkerId = dto.AssignedFieldWorkerId;
         assignment.AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId;
@@ -236,7 +227,6 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -253,27 +243,10 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.Evaluations)
             .Where(a => (a.AssignedUserId == userId || a.AssignedFieldWorker!.UserId == userId) && !a.IsDeleted)
-            .OrderByDescending(a => a.CreatedAt)
-            .ToListAsync();
-
-        return assignments.Select(MapToDto);
-    }
-
-    public async Task<IEnumerable<AssignmentDto>> GetByBranchIdAsync(int branchId)
-    {
-        var assignments = await _context.Assignments
-            .Include(a => a.Project)
-            .Include(a => a.Checklist)
-            .Include(a => a.Branch)
-            .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
-            .Include(a => a.Evaluations)
-            .Where(a => a.BranchId == branchId && !a.IsDeleted)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
 
@@ -285,7 +258,6 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.Evaluations)
             .Where(a => a.AssignedFieldWorkerId == fieldWorkerId && !a.IsDeleted)
@@ -300,7 +272,6 @@ public class AssignmentService : IAssignmentService
         var query = _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -310,9 +281,6 @@ public class AssignmentService : IAssignmentService
 
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.ProjectId == filter.ProjectId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(a => a.BranchId == filter.BranchId.Value);
 
         if (filter.AssignedUserId.HasValue)
             query = query.Where(a => a.AssignedUserId == filter.AssignedUserId.Value);
@@ -334,7 +302,6 @@ public class AssignmentService : IAssignmentService
             var term = filter.SearchTerm.ToLower();
             query = query.Where(a =>
                 (a.Project != null && a.Project.Name.ToLower().Contains(term)) ||
-                (a.Branch != null && a.Branch.Name.ToLower().Contains(term)) ||
                 (a.ExternalEmail != null && a.ExternalEmail.ToLower().Contains(term)) ||
                 (a.ExternalName != null && a.ExternalName.ToLower().Contains(term)));
         }
@@ -363,7 +330,7 @@ public class AssignmentService : IAssignmentService
 
         // Audit Log
         await _auditLogService.LogInfoAsync(
-            $"Atama tamamlandı: {assignment.Project?.Name} - {assignment.Branch?.Name ?? "Şube yok"}",
+            $"Atama tamamlandı: {assignment.Project?.Name}",
             "AssignmentService");
 
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
@@ -474,48 +441,8 @@ public class AssignmentService : IAssignmentService
 
     public async Task<IEnumerable<AssignmentDto>> CreateForProjectBranchesAsync(BulkProjectAssignmentDto dto)
     {
-        var project = await _context.Projects
-            .Include(p => p.ProjectBranches)
-                .ThenInclude(pb => pb.Branch)
-            .Include(p => p.Checklist)
-            .FirstOrDefaultAsync(p => p.Id == dto.ProjectId && !p.IsDeleted);
-
-        if (project == null)
-            throw new KeyNotFoundException($"Proje bulunamadı: {dto.ProjectId}");
-
-        var branches = project.ProjectBranches
-            .Where(pb => !pb.IsDeleted && pb.IsActive)
-            .ToList();
-
-        if (dto.BranchIds?.Any() == true)
-            branches = branches.Where(pb => dto.BranchIds.Contains(pb.BranchId)).ToList();
-
-        if (!branches.Any())
-            throw new InvalidOperationException("Atama yapılacak şube bulunamadı.");
-
-        var assignments = new List<Assignment>();
-
-        foreach (var branch in branches)
-        {
-            for (int i = 0; i < dto.AssignmentsPerBranch; i++)
-            {
-                assignments.Add(new Assignment
-                {
-                    ProjectId = dto.ProjectId,
-                    ChecklistId = project.ChecklistId,
-                    BranchId = branch.BranchId,
-                    AssignedUserId = dto.AssignedUserId,
-                    UniqueLink = Guid.NewGuid().ToString(),
-                    DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
-                    IsCompleted = false
-                });
-            }
-        }
-
-        await _context.Assignments.AddRangeAsync(assignments);
-        await _context.SaveChangesAsync();
-
-        return await GetByProjectIdAsync(dto.ProjectId);
+        // Branch system removed - this method is deprecated
+        throw new NotSupportedException("Branch-based bulk assignment creation is no longer supported.");
     }
 
     public async Task<int> DeleteByProjectIdAsync(int projectId)
@@ -592,39 +519,6 @@ public class AssignmentService : IAssignmentService
         });
     }
 
-    public async Task<IEnumerable<BranchAssignmentSummaryDto>> GetBranchSummariesAsync(int projectId)
-    {
-        var assignments = await _context.Assignments
-            .Include(a => a.Branch)
-            .Include(a => a.Evaluations)
-            .Where(a => a.ProjectId == projectId && !a.IsDeleted && a.BranchId.HasValue)
-            .ToListAsync();
-
-        return assignments
-            .GroupBy(a => new { a.BranchId, BranchName = a.Branch?.Name ?? "", BranchCode = a.Branch?.Code })
-            .Select(g =>
-            {
-                var completed = g.Where(a => a.IsCompleted).ToList();
-                var scores = completed
-                    .SelectMany(a => a.Evaluations)
-                    .Where(e => e.ScorePercentage.HasValue)
-                    .Select(e => e.ScorePercentage!.Value)
-                    .ToList();
-
-                return new BranchAssignmentSummaryDto
-                {
-                    BranchId = g.Key.BranchId!.Value,
-                    BranchName = g.Key.BranchName,
-                    BranchCode = g.Key.BranchCode,
-                    TotalAssignments = g.Count(),
-                    CompletedAssignments = completed.Count,
-                    AverageScore = scores.Any() ? Math.Round(scores.Average(), 1) : 0,
-                    YellowCards = completed.SelectMany(a => a.Evaluations).Sum(e => e.YellowCardCount),
-                    RedCards = completed.SelectMany(a => a.Evaluations).Sum(e => e.RedCardCount)
-                };
-            });
-    }
-
     #endregion
 
     #region SÜRESI DOLANLAR
@@ -634,7 +528,6 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate < DateTime.UtcNow)
@@ -650,7 +543,6 @@ public class AssignmentService : IAssignmentService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-            .Include(a => a.Branch)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedFieldWorker)
             .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate >= DateTime.UtcNow && a.DueDate <= deadline)
@@ -691,9 +583,6 @@ public class AssignmentService : IAssignmentService
             ProjectCode = assignment.Project?.Code,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",
-            BranchId = assignment.BranchId,
-            BranchName = assignment.Branch?.Name,
-            BranchCode = assignment.Branch?.Code,
             AssignedUserId = assignment.AssignedUserId,
             AssignedUserName = assignment.AssignedUser != null
                 ? $"{assignment.AssignedUser.FirstName} {assignment.AssignedUser.LastName}"

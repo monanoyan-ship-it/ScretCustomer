@@ -3,8 +3,6 @@ namespace SecretCustomer.Core.Enums;
 public enum UserRole
 {
     Admin = 1,
-    TeamLeader = 2,
-    Evaluator = 3,
-    CustomerRepresentative = 4,
-    FieldWorker = 5
+    QualitySpecialist = 2,  // Kalite Uzmanı - Değerlendirme, dönem açma, personel yükleme
+    FieldWorker = 3         // Saha Çalışanı - Sahada checklist puanlar
 }

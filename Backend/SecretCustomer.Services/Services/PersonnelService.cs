@@ -26,7 +26,6 @@ public class PersonnelService : IPersonnelService
     public async Task<PagedPersonnelResult> GetAllAsync(PersonnelFilterDto filter)
     {
         var query = _context.Personnel
-            .Include(p => p.Branch)
             .Include(p => p.Customer)
             .AsQueryable();
 
@@ -42,9 +41,6 @@ public class PersonnelService : IPersonnelService
                 (p.SicilNo != null && p.SicilNo.ToLower().Contains(term)) ||
                 (p.Email != null && p.Email.ToLower().Contains(term)));
         }
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(p => p.BranchId == filter.BranchId.Value);
 
         if (filter.CustomerId.HasValue)
             query = query.Where(p => p.CustomerId == filter.CustomerId.Value);
@@ -100,7 +96,6 @@ public class PersonnelService : IPersonnelService
     public async Task<PersonnelDto?> GetByIdAsync(int id)
     {
         var personnel = await _context.Personnel
-            .Include(p => p.Branch)
             .Include(p => p.Customer)
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -146,7 +141,6 @@ public class PersonnelService : IPersonnelService
             Department = dto.Department,
             IsActive = dto.IsActive,
             Notes = dto.Notes,
-            BranchId = dto.BranchId,
             CustomerId = dto.CustomerId
         };
 
@@ -183,7 +177,6 @@ public class PersonnelService : IPersonnelService
         personnel.Department = dto.Department;
         personnel.IsActive = dto.IsActive;
         personnel.Notes = dto.Notes;
-        personnel.BranchId = dto.BranchId;
         personnel.CustomerId = dto.CustomerId;
 
         await _context.SaveChangesAsync();
@@ -204,21 +197,13 @@ public class PersonnelService : IPersonnelService
 
     public async Task<List<PersonnelDto>> GetByBranchAsync(int branchId)
     {
-        var personnel = await _context.Personnel
-            .Include(p => p.Branch)
-            .Include(p => p.Customer)
-            .Where(p => p.BranchId == branchId && p.IsActive)
-            .OrderBy(p => p.LastName)
-            .ThenBy(p => p.FirstName)
-            .ToListAsync();
-
-        return personnel.Select(p => MapToDto(p, 0, null)).ToList();
+        // Branch system removed - return empty list
+        return new List<PersonnelDto>();
     }
 
     public async Task<List<PersonnelDto>> GetByCustomerAsync(int customerId)
     {
         var personnel = await _context.Personnel
-            .Include(p => p.Branch)
             .Include(p => p.Customer)
             .Where(p => p.CustomerId == customerId && p.IsActive)
             .OrderBy(p => p.LastName)
@@ -263,8 +248,8 @@ public class PersonnelService : IPersonnelService
             Department = personnel.Department,
             IsActive = personnel.IsActive,
             Notes = personnel.Notes,
-            BranchId = personnel.BranchId,
-            BranchName = personnel.Branch?.Name,
+            BranchId = null, // Branch system removed
+            BranchName = null,
             CustomerId = personnel.CustomerId,
             CustomerName = personnel.Customer?.CompanyName,
             EvaluationCount = evaluationCount,

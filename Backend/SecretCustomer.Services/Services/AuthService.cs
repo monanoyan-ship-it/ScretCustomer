@@ -40,8 +40,7 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Username = user.Username,
             FullName = $"{user.FirstName} {user.LastName}",
-            Role = user.Role.ToString(),
-            BranchId = user.BranchId
+            Role = user.Role.ToString()
         };
     }
 
@@ -61,8 +60,7 @@ public class AuthService : IAuthService
             PasswordHash = HashPassword(dto.Password),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            Role = Enum.Parse<UserRole>(dto.Role),
-            BranchId = dto.BranchId
+            Role = Enum.Parse<UserRole>(dto.Role)
         };
 
         var created = await _userRepository.CreateAsync(user);
@@ -74,8 +72,7 @@ public class AuthService : IAuthService
             UserId = created.Id,
             Username = created.Username,
             FullName = $"{created.FirstName} {created.LastName}",
-            Role = created.Role.ToString(),
-            BranchId = created.BranchId
+            Role = created.Role.ToString()
         };
     }
 
@@ -94,8 +91,6 @@ public class AuthService : IAuthService
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber,
             Role = user.Role.ToString(),
-            BranchId = user.BranchId,
-            BranchName = user.Branch?.Name,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt
         };

@@ -17,7 +17,6 @@ public interface IAssignmentService
     // ===== FİLTRELEME =====
     Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(int projectId);
     Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(int userId);
-    Task<IEnumerable<AssignmentDto>> GetByBranchIdAsync(int branchId);
     Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(int fieldWorkerId);
     Task<IEnumerable<AssignmentDto>> GetFilteredAsync(AssignmentFilterDto filter);
 
@@ -34,7 +33,6 @@ public interface IAssignmentService
     // ===== İSTATİSTİKLER =====
     Task<AssignmentSummaryDto> GetSummaryAsync(int? projectId = null);
     Task<IEnumerable<ProjectAssignmentSummaryDto>> GetProjectSummariesAsync();
-    Task<IEnumerable<BranchAssignmentSummaryDto>> GetBranchSummariesAsync(int projectId);
 
     // ===== SÜRESI DOLANLAR =====
     Task<IEnumerable<AssignmentDto>> GetExpiredAsync();

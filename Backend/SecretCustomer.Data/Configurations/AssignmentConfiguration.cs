@@ -32,11 +32,6 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
             .HasForeignKey(a => a.ChecklistId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(a => a.Branch)
-            .WithMany(b => b.Assignments)
-            .HasForeignKey(a => a.BranchId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         builder.HasOne(a => a.AssignedUser)
             .WithMany(u => u.Assignments)
             .HasForeignKey(a => a.AssignedUserId)

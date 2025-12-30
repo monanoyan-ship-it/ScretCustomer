@@ -15,7 +15,6 @@ public interface IUserRepository
     Task<User?> GetByIdAsync(int id);
     Task<IEnumerable<User>> GetAllAsync();
     Task<IEnumerable<User>> GetByRoleAsync(UserRole role);
-    Task<IEnumerable<User>> GetByBranchAsync(int branchId);
     Task<IEnumerable<User>> GetActiveUsersAsync();
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);

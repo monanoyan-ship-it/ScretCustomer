@@ -53,7 +53,6 @@ public class CallsApiController : BaseApiController
         var query = _context.Calls
             .Include(c => c.Project)
             .Include(c => c.Customer)
-            .Include(c => c.Branch)
             .Include(c => c.AssignedUser)
             .AsQueryable();
 
@@ -63,9 +62,6 @@ public class CallsApiController : BaseApiController
 
         if (filter.CustomerId.HasValue)
             query = query.Where(c => c.CustomerId == filter.CustomerId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(c => c.BranchId == filter.BranchId.Value);
 
         if (filter.AssignedUserId.HasValue)
             query = query.Where(c => c.AssignedUserId == filter.AssignedUserId.Value);
@@ -120,7 +116,6 @@ public class CallsApiController : BaseApiController
                 StartTime = c.StartTime,
                 DurationSeconds = c.DurationSeconds,
                 ProjectName = c.Project != null ? c.Project.Name : null,
-                BranchName = c.Branch != null ? c.Branch.Name : null,
                 AssignedUserName = c.AssignedUser != null ? c.AssignedUser.FirstName + " " + c.AssignedUser.LastName : null,
                 RequiresCallback = c.RequiresCallback,
                 CallbackCompleted = c.CallbackCompleted,
@@ -147,7 +142,6 @@ public class CallsApiController : BaseApiController
         var call = await _context.Calls
             .Include(c => c.Project)
             .Include(c => c.Customer)
-            .Include(c => c.Branch)
             .Include(c => c.AssignedUser)
             .Include(c => c.CreatedByUser)
             .Include(c => c.Attachments)
@@ -183,7 +177,6 @@ public class CallsApiController : BaseApiController
             ScheduledDate = dto.ScheduledDate,
             ProjectId = dto.ProjectId,
             CustomerId = dto.CustomerId,
-            BranchId = dto.BranchId,
             AssignedUserId = dto.AssignedUserId ?? currentUserId,
             CreatedByUserId = currentUserId,
             Tags = dto.Tags
@@ -220,7 +213,6 @@ public class CallsApiController : BaseApiController
         call.Outcome = dto.Outcome;
         call.ProjectId = dto.ProjectId;
         call.CustomerId = dto.CustomerId;
-        call.BranchId = dto.BranchId;
         call.AssignedUserId = dto.AssignedUserId;
         call.Tags = dto.Tags;
         call.RequiresCallback = dto.RequiresCallback;
@@ -486,7 +478,6 @@ public class CallsApiController : BaseApiController
 
         var recent = await _context.Calls
             .Include(c => c.Project)
-            .Include(c => c.Branch)
             .Include(c => c.AssignedUser)
             .OrderByDescending(c => c.StartTime ?? c.CreatedAt)
             .Take(10)
@@ -518,7 +509,6 @@ public class CallsApiController : BaseApiController
                 StartTime = c.StartTime,
                 DurationSeconds = c.DurationSeconds,
                 ProjectName = c.Project?.Name,
-                BranchName = c.Branch?.Name,
                 AssignedUserName = c.AssignedUser != null ? $"{c.AssignedUser.FirstName} {c.AssignedUser.LastName}" : null,
                 RequiresCallback = c.RequiresCallback,
                 CallbackCompleted = c.CallbackCompleted,
@@ -559,8 +549,6 @@ public class CallsApiController : BaseApiController
             ProjectName = call.Project?.Name,
             CustomerId = call.CustomerId,
             CustomerName = call.Customer?.CompanyName,
-            BranchId = call.BranchId,
-            BranchName = call.Branch?.Name,
             AssignedUserId = call.AssignedUserId,
             AssignedUserName = call.AssignedUser != null ? $"{call.AssignedUser.FirstName} {call.AssignedUser.LastName}" : null,
             EvaluationId = call.EvaluationId,

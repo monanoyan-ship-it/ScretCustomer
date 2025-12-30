@@ -8,9 +8,6 @@ public class AssignmentDto
     public string? ProjectCode { get; set; }
     public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
-    public int? BranchId { get; set; }
-    public string? BranchName { get; set; }
-    public string? BranchCode { get; set; }
     public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
     public int? AssignedFieldWorkerId { get; set; }
@@ -104,17 +101,3 @@ public class ProjectAssignmentSummaryDto
     public decimal CompletionPercentage { get; set; }
 }
 
-/// <summary>
-/// Şube bazlı atama özeti
-/// </summary>
-public class BranchAssignmentSummaryDto
-{
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string? BranchCode { get; set; }
-    public int TotalAssignments { get; set; }
-    public int CompletedAssignments { get; set; }
-    public decimal AverageScore { get; set; }
-    public int YellowCards { get; set; }
-    public int RedCards { get; set; }
-}

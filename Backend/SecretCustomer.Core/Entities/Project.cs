@@ -162,41 +162,9 @@ public class Project : BaseEntity
     public Customer? Customer { get; set; }
 
     /// <summary>
-    /// Proje subeleri (hedef subeler)
-    /// </summary>
-    public ICollection<ProjectBranch> ProjectBranches { get; set; } = new List<ProjectBranch>();
-
-    /// <summary>
     /// Proje takimi (atanan kullanicilar)
     /// </summary>
     public ICollection<ProjectTeamMember> TeamMembers { get; set; } = new List<ProjectTeamMember>();
-}
-
-/// <summary>
-/// Projeye atanan sube
-/// </summary>
-public class ProjectBranch : BaseEntity
-{
-    public int ProjectId { get; set; }
-    public Project Project { get; set; } = null!;
-
-    public int BranchId { get; set; }
-    public Branch Branch { get; set; } = null!;
-
-    /// <summary>
-    /// Sube icin hedef degerlendirme sayisi
-    /// </summary>
-    public int? TargetCount { get; set; }
-
-    /// <summary>
-    /// Sube onceligi
-    /// </summary>
-    public int Priority { get; set; } = 0;
-
-    /// <summary>
-    /// Aktif mi?
-    /// </summary>
-    public bool IsActive { get; set; } = true;
 }
 
 /// <summary>

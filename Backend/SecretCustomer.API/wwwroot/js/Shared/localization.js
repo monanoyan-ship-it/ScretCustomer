@@ -89,16 +89,14 @@
         'Account.ProfileUpdated': 'Profil bilgileriniz başarıyla güncellendi.',
         'Account.ProfileUpdateError': 'Profil güncellenirken bir hata oluştu.',
 
-        // Roles
+        // Roles - Bizim Şirket Personeli
         'Role.Admin': 'Yönetici',
-        'Role.TeamLeader': 'Takım Lideri',
-        'Role.Evaluator': 'Değerlendirici',
+        'Role.QualitySpecialist': 'Kalite Uzmanı',
         'Role.FieldWorker': 'Saha Çalışanı',
-        'Role.CustomerRepresentative': 'Müşteri Temsilcisi',
+        // Roles - Müşteri Personeli
         'Role.CustomerManager': 'Müşteri Yöneticisi',
-        'Role.CustomerSupervisor': 'Takım Lideri',
-        'Role.CustomerOperator': 'Değerlendirme Uzmanı',
-        'Role.CustomerViewer': 'Rapor Görüntüleyici',
+        'Role.CustomerSupervisor': 'Müşteri Süpervizörü',
+        'Role.CustomerOperator': 'Müşteri Operatörü',
 
         // Status
         'Status.Pending': 'Bekleyen',

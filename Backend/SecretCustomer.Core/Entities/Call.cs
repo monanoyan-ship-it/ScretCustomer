@@ -123,16 +123,6 @@ public class Call : BaseEntity
     public Customer? Customer { get; set; }
 
     /// <summary>
-    /// İlişkili şube ID
-    /// </summary>
-    public int? BranchId { get; set; }
-
-    /// <summary>
-    /// İlişkili şube
-    /// </summary>
-    public Branch? Branch { get; set; }
-
-    /// <summary>
     /// Atanan kullanıcı ID (çağrıyı alan/yapan)
     /// </summary>
     public int? AssignedUserId { get; set; }

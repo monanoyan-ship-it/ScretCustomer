@@ -46,7 +46,6 @@ public class CustomerVisitsApiController : BaseApiController
         {
             var query = _context.CustomerVisits
                 .Include(v => v.Customer)
-                .Include(v => v.Branch)
                 .Include(v => v.VisitorUser)
                 .Include(v => v.Project)
                 .Include(v => v.Attachments.Where(a => !a.IsDeleted))
@@ -55,9 +54,6 @@ public class CustomerVisitsApiController : BaseApiController
             // Apply filters
             if (filter.CustomerId.HasValue)
                 query = query.Where(v => v.CustomerId == filter.CustomerId);
-
-            if (filter.BranchId.HasValue)
-                query = query.Where(v => v.BranchId == filter.BranchId);
 
             if (filter.VisitorUserId.HasValue)
                 query = query.Where(v => v.VisitorUserId == filter.VisitorUserId);
@@ -83,7 +79,6 @@ public class CustomerVisitsApiController : BaseApiController
                 {
                     Id = v.Id,
                     CustomerName = v.Customer != null ? v.Customer.CompanyName : null,
-                    BranchName = v.Branch != null ? v.Branch.Name : null,
                     VisitorUserName = v.VisitorUser.FirstName + " " + v.VisitorUser.LastName,
                     VisitType = v.VisitType,
                     Status = v.Status,
@@ -113,7 +108,6 @@ public class CustomerVisitsApiController : BaseApiController
         {
             var visit = await _context.CustomerVisits
                 .Include(v => v.Customer)
-                .Include(v => v.Branch)
                 .Include(v => v.VisitorUser)
                 .Include(v => v.Project)
                 .Include(v => v.Attachments.Where(a => !a.IsDeleted))
@@ -127,8 +121,6 @@ public class CustomerVisitsApiController : BaseApiController
                 Id = visit.Id,
                 CustomerId = visit.CustomerId,
                 CustomerName = visit.Customer?.CompanyName,
-                BranchId = visit.BranchId,
-                BranchName = visit.Branch?.Name,
                 VisitorUserId = visit.VisitorUserId,
                 VisitorUserName = $"{visit.VisitorUser.FirstName} {visit.VisitorUser.LastName}",
                 VisitType = visit.VisitType,
@@ -195,7 +187,6 @@ public class CustomerVisitsApiController : BaseApiController
             var visit = new CustomerVisit
             {
                 CustomerId = dto.CustomerId,
-                BranchId = dto.BranchId,
                 VisitorUserId = userId,
                 VisitType = dto.VisitType,
                 Status = VisitStatus.Planned,
@@ -237,7 +228,6 @@ public class CustomerVisitsApiController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerVisit.NotFound")));
 
             visit.CustomerId = dto.CustomerId;
-            visit.BranchId = dto.BranchId;
             visit.VisitType = dto.VisitType;
             visit.PlannedDate = dto.PlannedDate;
             visit.PlannedTime = dto.PlannedTime;

@@ -67,8 +67,6 @@ public class EvaluationService : IEvaluationService
             .Include(e => e.Evaluator)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Where(e => !e.IsDeleted)
             .OrderByDescending(e => e.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -89,8 +87,6 @@ public class EvaluationService : IEvaluationService
             .Include(e => e.Evaluator)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Where(e => !e.IsDeleted && e.Assignment.ProjectId == projectId)
             .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
@@ -203,7 +199,6 @@ public class EvaluationService : IEvaluationService
         var assignment = await _context.Assignments
             .Include(a => a.Project)
                 .ThenInclude(p => p.Customer)
-            .Include(a => a.Branch)
             .Include(a => a.Checklist)
                 .ThenInclude(c => c.Sections.Where(s => s.IsActive))
                     .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted))
@@ -234,7 +229,7 @@ public class EvaluationService : IEvaluationService
             EvaluationId = existingEvaluation?.Id,
             Status = existingEvaluation?.Status.ToString() ?? "New",
             ProjectName = assignment.Project?.Name ?? "",
-            BranchName = assignment.Branch?.Name ?? "",
+            BranchName = "",
             CustomerName = assignment.Project?.Customer?.CompanyName,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",
@@ -629,7 +624,6 @@ public class EvaluationService : IEvaluationService
                 .Reference(e => e.Assignment)
                 .Query()
                 .Include(a => a.Project)
-                .Include(a => a.Branch)
                 .Include(a => a.Checklist)
                 .LoadAsync();
         }
@@ -672,7 +666,7 @@ public class EvaluationService : IEvaluationService
             ControlDate = evaluation.ControlDate,
             ControlTime = evaluation.ControlTime,
             ProjectName = evaluation.Assignment?.Project?.Name,
-            BranchName = evaluation.Assignment?.Branch?.Name,
+            BranchName = null,
             ChecklistName = evaluation.Assignment?.Checklist?.Name,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };

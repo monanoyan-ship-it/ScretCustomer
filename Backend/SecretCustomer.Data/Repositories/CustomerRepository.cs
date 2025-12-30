@@ -23,7 +23,6 @@ public class CustomerRepository : ICustomerRepository
         {
             query = query
                 .Include(c => c.Personnel)
-                .Include(c => c.Branches)
                 .Include(c => c.Projects)
                 .Include(c => c.TaskLists);
         }
@@ -36,7 +35,6 @@ public class CustomerRepository : ICustomerRepository
         var query = _context.Customers
             .Where(c => !c.IsDeleted)
             .Include(c => c.Personnel)
-            .Include(c => c.Branches)
             .Include(c => c.Projects)
             .AsQueryable();
 
@@ -55,7 +53,6 @@ public class CustomerRepository : ICustomerRepository
         return await _context.Customers
             .Where(c => !c.IsDeleted && c.IsActive)
             .Include(c => c.Personnel)
-            .Include(c => c.Branches)
             .Include(c => c.Projects)
             .OrderBy(c => c.CompanyName)
             .ToListAsync();

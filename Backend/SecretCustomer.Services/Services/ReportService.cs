@@ -22,8 +22,6 @@ public class ReportService : IReportService
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
-            .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
@@ -33,17 +31,11 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
-        if (filter.BranchId.HasValue)
-            query = query.Where(e => e.Assignment.BranchId == filter.BranchId.Value);
-
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
 
         if (filter.ChecklistId.HasValue)
             query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
-
-        if (!string.IsNullOrEmpty(filter.Region))
-            query = query.Where(e => e.Assignment.Branch != null && e.Assignment.Branch.Region == filter.Region);
 
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
@@ -82,8 +74,6 @@ public class ReportService : IReportService
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
-            .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
@@ -101,9 +91,9 @@ public class ReportService : IReportService
             AssignmentId = evaluation.AssignmentId,
             ProjectName = evaluation.Assignment.Project?.Name ?? "",
             ProjectCode = evaluation.Assignment.Project?.Code,
-            BranchName = evaluation.Assignment.Branch?.Name,
-            BranchCode = evaluation.Assignment.Branch?.Code,
-            Region = evaluation.Assignment.Branch?.Region,
+            BranchName = null,
+            BranchCode = null,
+            Region = null,
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
@@ -157,17 +147,12 @@ public class ReportService : IReportService
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Include(e => e.Evaluator)
             .AsQueryable();
 
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(e => e.Assignment.BranchId == filter.BranchId.Value);
 
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
@@ -209,21 +194,7 @@ public class ReportService : IReportService
                 })
                 .OrderByDescending(p => p.EvaluationCount)
                 .ToList(),
-            BranchSummaries = evaluations
-                .Where(e => e.Assignment.Branch != null)
-                .GroupBy(e => e.Assignment.Branch!)
-                .Select(g => new BranchSummaryReportDto
-                {
-                    BranchId = g.Key.Id,
-                    BranchName = g.Key.Name,
-                    Region = g.Key.Region,
-                    EvaluationCount = g.Count(),
-                    AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
-                        ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
-                        : 0
-                })
-                .OrderByDescending(b => b.EvaluationCount)
-                .ToList(),
+            BranchSummaries = new List<BranchSummaryReportDto>(), // Branch system removed
             EvaluatorSummaries = evaluations
                 .Where(e => e.Evaluator != null)
                 .GroupBy(e => e.Evaluator!)
@@ -320,8 +291,6 @@ public class ReportService : IReportService
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
-            .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
@@ -333,9 +302,6 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(e => e.Assignment.BranchId == filter.BranchId.Value);
 
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
@@ -380,7 +346,7 @@ public class ReportService : IReportService
 
                 detailSheet.Cell(detailRow, 1).Value = evaluation.Id.ToString();
                 detailSheet.Cell(detailRow, 2).Value = evaluation.Assignment.Project?.Name ?? "";
-                detailSheet.Cell(detailRow, 3).Value = evaluation.Assignment.Branch?.Name ?? "";
+                detailSheet.Cell(detailRow, 3).Value = "";
                 detailSheet.Cell(detailRow, 4).Value = answer.Question.Section?.Name ?? "";
                 detailSheet.Cell(detailRow, 5).Value = answer.Question.Order;
                 detailSheet.Cell(detailRow, 6).Value = answer.Question.Text;
@@ -416,9 +382,9 @@ public class ReportService : IReportService
             AssignmentId = evaluation.AssignmentId,
             ProjectName = evaluation.Assignment.Project?.Name ?? "",
             ProjectCode = evaluation.Assignment.Project?.Code,
-            BranchName = evaluation.Assignment.Branch?.Name,
-            BranchCode = evaluation.Assignment.Branch?.Code,
-            Region = evaluation.Assignment.Branch?.Region,
+            BranchName = null,
+            BranchCode = null,
+            Region = null,
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
@@ -451,9 +417,6 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.Assignment)
                     .ThenInclude(a => a.Project)
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Branch)
-            .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedPersonnel)
@@ -466,9 +429,6 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.BranchId == filter.BranchId.Value);
 
         if (!string.IsNullOrEmpty(filter.PenaltyType) && Enum.TryParse<PenaltyType>(filter.PenaltyType, out var penaltyType))
             query = query.Where(a => a.AppliedPenaltyType == penaltyType);
@@ -502,8 +462,8 @@ public class ReportService : IReportService
                 SectionName = a.Question?.Section?.Name ?? "",
                 PenaltyType = a.AppliedPenaltyType.ToString(),
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-                BranchName = a.Evaluation.Assignment.Branch?.Name,
-                Region = a.Evaluation.Assignment.Branch?.Region,
+                BranchName = null,
+                Region = null,
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
@@ -533,22 +493,8 @@ public class ReportService : IReportService
             .Take(10)
             .ToList();
 
-        // Top penalty branches
-        var topBranches = penaltyAnswers
-            .Where(a => a.Evaluation.Assignment.Branch != null)
-            .GroupBy(a => a.Evaluation.Assignment.Branch!)
-            .Select(g => new PenaltyBranchDto
-            {
-                BranchId = g.Key.Id,
-                BranchName = g.Key.Name,
-                Region = g.Key.Region,
-                YellowCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.YellowCard),
-                RedCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.RedCard),
-                TotalPenalties = g.Count()
-            })
-            .OrderByDescending(b => b.TotalPenalties)
-            .Take(10)
-            .ToList();
+        // Top penalty branches - Branch system removed, return empty list
+        var topBranches = new List<PenaltyBranchDto>();
 
         // Monthly trend (last 12 months)
         var monthlyTrend = penaltyAnswers
@@ -725,15 +671,12 @@ public class ReportService : IReportService
         // Değerlendirmede bulunan personelleri getir (EvaluatedPersonnel = User entity)
         var personnelFromEvaluations = await _context.Evaluations
             .Include(e => e.EvaluatedPersonnel)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Where(e => e.EvaluatedPersonnelId != null && e.Status == EvaluationStatus.Completed)
             .Select(e => new
             {
                 e.EvaluatedPersonnelId,
                 e.EvaluatedPersonnel!.FirstName,
-                e.EvaluatedPersonnel.LastName,
-                BranchName = e.Assignment.Branch != null ? e.Assignment.Branch.Name : null
+                e.EvaluatedPersonnel.LastName
             })
             .Distinct()
             .ToListAsync();
@@ -745,7 +688,7 @@ public class ReportService : IReportService
                 Id = g.Key!.Value,
                 Name = $"{g.First().FirstName} {g.First().LastName}",
                 Title = null, // User entity'de Title yok
-                BranchName = g.First().BranchName
+                BranchName = null
             })
             .OrderBy(p => p.Name)
             .ToList();
@@ -755,7 +698,6 @@ public class ReportService : IReportService
     {
         // EvaluatedPersonnel aslında User entity'sine işaret ediyor
         var user = await _context.Users
-            .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.Id == filter.PersonnelId);
 
         if (user == null)
@@ -764,8 +706,6 @@ public class ReportService : IReportService
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
@@ -794,8 +734,8 @@ public class ReportService : IReportService
                 PersonnelName = $"{user.FirstName} {user.LastName}",
                 Title = user.Role.ToString(), // User'da Title yok, Role kullanılabilir
                 Department = null,
-                BranchName = user.Branch?.Name,
-                Region = user.Branch?.Region
+                BranchName = null,
+                Region = null
             };
         }
 
@@ -885,8 +825,8 @@ public class ReportService : IReportService
             PersonnelName = $"{user.FirstName} {user.LastName}",
             Title = user.Role.ToString(),
             Department = null,
-            BranchName = user.Branch?.Name,
-            Region = user.Branch?.Region,
+            BranchName = null,
+            Region = null,
             TotalEvaluations = evaluations.Count,
             AverageScore = completedScores.Any() ? Math.Round(completedScores.Average(), 2) : 0,
             BestScore = completedScores.Any() ? completedScores.Max() : 0,
@@ -1074,9 +1014,6 @@ public class ReportService : IReportService
                     .ThenInclude(a => a.Project)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Branch)
-            .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
                     .ThenInclude(a => a.Checklist)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
@@ -1091,9 +1028,6 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
-
-        if (filter.BranchId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.BranchId == filter.BranchId.Value);
 
         if (filter.ChecklistId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ChecklistId == filter.ChecklistId.Value);
@@ -1164,8 +1098,8 @@ public class ReportService : IReportService
                 ? Math.Round((a.EarnedPoints.Value / a.Question.MaxPoints) * 100, 1)
                 : null,
             ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-            BranchName = a.Evaluation.Assignment.Branch?.Name,
-            Region = a.Evaluation.Assignment.Branch?.Region,
+            BranchName = null,
+            Region = null,
             EvaluatorName = a.Evaluation.Evaluator != null
                 ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                 : null,

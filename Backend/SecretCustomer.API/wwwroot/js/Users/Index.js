@@ -8,7 +8,7 @@ function UserEditViewModel(data) {
     self.lastName = ko.observable(data.lastName || '');
     self.email = ko.observable(data.email || '');
     self.password = ko.observable('');
-    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '3'); // Default: Evaluator
+    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2'); // Default: QualitySpecialist
     self.branchId = ko.observable(data.branchId || null);
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
 }
@@ -48,15 +48,11 @@ function UsersViewModel() {
         const roleNames = {
             // Numeric values
             1: T('Role.Admin', 'Admin'),
-            2: T('Role.TeamLeader', 'Takım Lideri'),
-            3: T('Role.Evaluator', 'Değerlendirici'),
-            4: T('Role.CustomerRepresentative', 'Müşteri Temsilcisi'),
-            5: T('Role.FieldWorker', 'Saha Çalışanı'),
+            2: T('Role.QualitySpecialist', 'Kalite Uzmanı'),
+            3: T('Role.FieldWorker', 'Saha Çalışanı'),
             // String values (enum names)
             'Admin': T('Role.Admin', 'Admin'),
-            'TeamLeader': T('Role.TeamLeader', 'Takım Lideri'),
-            'Evaluator': T('Role.Evaluator', 'Değerlendirici'),
-            'CustomerRepresentative': T('Role.CustomerRepresentative', 'Müşteri Temsilcisi'),
+            'QualitySpecialist': T('Role.QualitySpecialist', 'Kalite Uzmanı'),
             'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı')
         };
         return roleNames[role] || T('Common.Unknown', 'Bilinmiyor');
@@ -68,14 +64,10 @@ function UsersViewModel() {
             1: 'bg-danger',
             2: 'bg-primary',
             3: 'bg-success',
-            4: 'bg-info',
-            5: 'bg-warning text-dark',
             // String values (enum names)
             'Admin': 'bg-danger',
-            'TeamLeader': 'bg-primary',
-            'Evaluator': 'bg-success',
-            'CustomerRepresentative': 'bg-info',
-            'FieldWorker': 'bg-warning text-dark'
+            'QualitySpecialist': 'bg-primary',
+            'FieldWorker': 'bg-success'
         };
         return roleClasses[role] || 'bg-secondary';
     };

@@ -145,7 +145,7 @@ public class CustomerService : ICustomerService
             ContractEndDate = customer.ContractEndDate,
             Notes = customer.Notes,
             PersonnelCount = customer.Personnel?.Count ?? 0,
-            BranchCount = customer.Branches?.Count ?? 0,
+            BranchCount = 0, // Branch system removed
             ProjectCount = customer.Projects?.Count ?? 0,
             CreatedAt = customer.CreatedAt,
             UpdatedAt = customer.UpdatedAt

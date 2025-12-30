@@ -100,13 +100,14 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var branchCount = await _context.Branches
-            .CountAsync(b => b.CustomerId == customerId);
+        // Branch system removed - use projects instead
+        var projectCount = await _context.Projects
+            .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId)
             .ToListAsync();
 
         var totalEvaluations = evaluations.Count;
@@ -119,7 +120,8 @@ public class CustomerPortalApiController : ControllerBase
 
         return Ok(new
         {
-            branchCount,
+            branchCount = 0, // Branch system removed
+            projectCount,
             totalEvaluations,
             averageScore = Math.Round(averageScore, 1),
             thisMonthEvaluations
@@ -141,8 +143,8 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId && e.CreatedAt >= startDate)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId && e.CreatedAt >= startDate)
             .ToListAsync();
 
         var monthlyData = new List<object>();
@@ -178,8 +180,8 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId && e.TotalScore.HasValue)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId && e.TotalScore.HasValue)
             .Select(e => e.TotalScore!.Value)
             .ToListAsync();
 
@@ -195,20 +197,7 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// TEST: Tüm branch'leri getir (CustomerId ile birlikte)
-    /// </summary>
-    [HttpGet("test-branches")]
-    [AllowAnonymous]
-    public async Task<IActionResult> TestBranches()
-    {
-        var branches = await _context.Branches
-            .Select(b => new { b.Id, b.Name, b.CustomerId, b.IsActive })
-            .ToListAsync();
-        return Ok(branches);
-    }
-
-    /// <summary>
-    /// Müşterinin şubeleri
+    /// Müşterinin projeleri (Branch system removed)
     /// </summary>
     [HttpGet("branches")]
     public async Task<IActionResult> GetBranches()
@@ -217,26 +206,27 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var branches = await _context.Branches
-            .Where(b => b.CustomerId == customerId && b.IsActive)
-            .Select(b => new
+        // Branch system removed - return projects instead
+        var projects = await _context.Projects
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
+            .Select(p => new
             {
-                b.Id,
-                b.Name,
-                b.Code,
-                b.City,
-                b.Address,
-                b.IsActive,
+                Id = p.Id,
+                Name = p.Name,
+                Code = p.Code,
+                City = "",
+                Address = "",
+                IsActive = p.IsActive,
                 evaluationCount = _context.Evaluations
-                    .Count(e => e.Assignment.BranchId == b.Id),
+                    .Count(e => e.Assignment.ProjectId == p.Id),
                 averageScore = _context.Evaluations
-                    .Where(e => e.Assignment.BranchId == b.Id && e.TotalScore.HasValue)
+                    .Where(e => e.Assignment.ProjectId == p.Id && e.TotalScore.HasValue)
                     .Average(e => (double?)e.TotalScore) ?? 0
             })
-            .OrderBy(b => b.Name)
+            .OrderBy(p => p.Name)
             .ToListAsync();
 
-        return Ok(branches);
+        return Ok(projects);
     }
 
     /// <summary>
@@ -251,17 +241,17 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
+                .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId)
             .OrderByDescending(e => e.CreatedAt)
             .Take(count)
             .Select(e => new
             {
                 e.Id,
                 evaluationDate = e.CreatedAt,
-                branchName = e.Assignment!.Branch!.Name,
+                branchName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
                 score = e.TotalScore ?? 0,
                 status = e.Status.ToString(),
@@ -284,10 +274,10 @@ public class CustomerPortalApiController : ControllerBase
 
         var query = _context.Evaluations
             .Include(e => e.Assignment)
-                .ThenInclude(a => a.Branch)
+                .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId);
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId);
 
         var totalCount = await query.CountAsync();
 
@@ -299,7 +289,7 @@ public class CustomerPortalApiController : ControllerBase
             {
                 e.Id,
                 evaluationDate = e.CreatedAt,
-                branchName = e.Assignment!.Branch!.Name,
+                branchName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
                 score = e.TotalScore ?? 0,
                 status = e.Status.ToString(),
@@ -331,7 +321,7 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Şube performans raporu
+    /// Proje performans raporu (Branch system removed)
     /// </summary>
     [HttpGet("reports/branch-performance")]
     public async Task<IActionResult> GetBranchPerformance([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
@@ -349,37 +339,37 @@ public class CustomerPortalApiController : ControllerBase
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
-        var branches = await _context.Branches
-            .Where(b => b.CustomerId == customerId && b.IsActive)
+        var projects = await _context.Projects
+            .Where(p => p.CustomerId == customerId && !p.IsDeleted)
             .ToListAsync();
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
                 && e.Status == Core.Enums.EvaluationStatus.Completed)
             .ToListAsync();
 
-        var branchPerformance = branches.Select(b =>
+        var projectPerformance = projects.Select(p =>
         {
-            var branchEvals = evaluations.Where(e => e.Assignment.BranchId == b.Id).ToList();
+            var projectEvals = evaluations.Where(e => e.Assignment.ProjectId == p.Id).ToList();
             return new
             {
-                branchId = b.Id,
-                branchName = b.Name,
-                city = b.City,
-                evaluationCount = branchEvals.Count,
-                averageScore = branchEvals.Any() ? Math.Round(branchEvals.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
-                minScore = branchEvals.Any() ? branchEvals.Min(e => e.TotalScore ?? 0) : 0,
-                maxScore = branchEvals.Any() ? branchEvals.Max(e => e.TotalScore ?? 0) : 0
+                branchId = p.Id,
+                branchName = p.Name,
+                city = "",
+                evaluationCount = projectEvals.Count,
+                averageScore = projectEvals.Any() ? Math.Round(projectEvals.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
+                minScore = projectEvals.Any() ? projectEvals.Min(e => e.TotalScore ?? 0) : 0,
+                maxScore = projectEvals.Any() ? projectEvals.Max(e => e.TotalScore ?? 0) : 0
             };
         })
         .OrderByDescending(b => b.averageScore)
         .ToList();
 
-        return Ok(branchPerformance);
+        return Ok(projectPerformance);
     }
 
     /// <summary>
@@ -398,26 +388,26 @@ public class CustomerPortalApiController : ControllerBase
         if (start.Kind == DateTimeKind.Unspecified)
             start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
         if (end.Kind == DateTimeKind.Unspecified)
-            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc); // Günün sonuna ayarla
+            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
                 && e.Status == Core.Enums.EvaluationStatus.Completed)
             .ToListAsync();
 
-        var branchCount = await _context.Branches
-            .CountAsync(b => b.CustomerId == customerId && b.IsActive);
+        var projectCount = await _context.Projects
+            .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
 
         var summary = new
         {
             periodStart = start,
             periodEnd = end,
             totalEvaluations = evaluations.Count,
-            branchCount,
+            branchCount = projectCount, // Using project count instead
             averageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
             minScore = evaluations.Any() ? evaluations.Min(e => e.TotalScore ?? 0) : 0,
             maxScore = evaluations.Any() ? evaluations.Max(e => e.TotalScore ?? 0) : 0,
@@ -450,8 +440,8 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
-            .ThenInclude(a => a.Branch)
-            .Where(e => e.Assignment != null && e.Assignment.Branch != null && e.Assignment.Branch.CustomerId == customerId
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
                 && e.Status == Core.Enums.EvaluationStatus.Completed)

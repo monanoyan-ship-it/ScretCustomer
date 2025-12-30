@@ -14,12 +14,6 @@ public class CustomerVisit : BaseEntity
     public Customer? Customer { get; set; }
 
     /// <summary>
-    /// Ziyaret edilen şube
-    /// </summary>
-    public int? BranchId { get; set; }
-    public Branch? Branch { get; set; }
-
-    /// <summary>
     /// Ziyareti yapan kullanıcı
     /// </summary>
     public int VisitorUserId { get; set; }

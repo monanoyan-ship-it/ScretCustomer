@@ -14,8 +14,6 @@ public class UserDto
     public UserRole Role { get; set; }
     public string RoleName => Role.ToString();
     public bool IsActive { get; set; }
-    public int? BranchId { get; set; }
-    public string? BranchName { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
@@ -47,8 +45,6 @@ public class CreateUserDto
     public UserRole Role { get; set; }
 
     public bool IsActive { get; set; } = true;
-
-    public int? BranchId { get; set; }
 }
 
 public class UpdateUserDto
@@ -69,6 +65,4 @@ public class UpdateUserDto
     public UserRole Role { get; set; }
 
     public bool IsActive { get; set; }
-
-    public int? BranchId { get; set; }
 }

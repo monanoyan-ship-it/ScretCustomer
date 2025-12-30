@@ -35,12 +35,6 @@ public class UserService : IUserService
         return users.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<UserDto>> GetByBranchAsync(int branchId)
-    {
-        var users = await _userRepository.GetByBranchAsync(branchId);
-        return users.Select(MapToDto);
-    }
-
     public async Task<IEnumerable<UserDto>> GetActiveUsersAsync()
     {
         var users = await _userRepository.GetActiveUsersAsync();
@@ -71,7 +65,6 @@ public class UserService : IUserService
             LastName = createUserDto.LastName,
             Role = createUserDto.Role,
             IsActive = createUserDto.IsActive,
-            BranchId = createUserDto.BranchId,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -106,7 +99,6 @@ public class UserService : IUserService
         user.LastName = updateUserDto.LastName;
         user.Role = updateUserDto.Role;
         user.IsActive = updateUserDto.IsActive;
-        user.BranchId = updateUserDto.BranchId;
 
         var updatedUser = await _userRepository.UpdateAsync(user);
 
@@ -178,51 +170,6 @@ public class UserService : IUserService
         return result;
     }
 
-    // Branch assignment
-    public async Task<UserDto> AssignToBranchAsync(int userId, int branchId)
-    {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"User with ID {userId} not found");
-        }
-
-        user.BranchId = branchId;
-        var updatedUser = await _userRepository.UpdateAsync(user);
-        return MapToDto(updatedUser);
-    }
-
-    public async Task<UserDto> RemoveFromBranchAsync(int userId)
-    {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"User with ID {userId} not found");
-        }
-
-        user.BranchId = null;
-        var updatedUser = await _userRepository.UpdateAsync(user);
-        return MapToDto(updatedUser);
-    }
-
-    public async Task<IEnumerable<UserDto>> AssignMultipleToBranchAsync(List<int> userIds, int branchId)
-    {
-        var updatedUsers = new List<UserDto>();
-
-        foreach (var userId in userIds)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user != null)
-            {
-                user.BranchId = branchId;
-                var updatedUser = await _userRepository.UpdateAsync(user);
-                updatedUsers.Add(MapToDto(updatedUser));
-            }
-        }
-
-        return updatedUsers;
-    }
-
     // Uniqueness checks
     public async Task<bool> ExistsByUsernameAsync(string username)
     {
@@ -245,8 +192,6 @@ public class UserService : IUserService
             LastName = user.LastName,
             Role = user.Role,
             IsActive = user.IsActive,
-            BranchId = user.BranchId,
-            BranchName = user.Branch?.Name,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt
         };

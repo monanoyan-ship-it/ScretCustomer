@@ -34,7 +34,7 @@ public class UserServiceTests
             Email = "test@example.com",
             FirstName = "Test",
             LastName = "User",
-            Role = UserRole.Evaluator,
+            Role = UserRole.QualitySpecialist,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -81,7 +81,7 @@ public class UserServiceTests
             Password = "Password123!",
             FirstName = "New",
             LastName = "User",
-            Role = UserRole.Evaluator,
+            Role = UserRole.QualitySpecialist,
             IsActive = true
         };
 
@@ -120,7 +120,7 @@ public class UserServiceTests
             Password = "Password123!",
             FirstName = "New",
             LastName = "User",
-            Role = UserRole.Evaluator
+            Role = UserRole.QualitySpecialist
         };
 
         _mockUserRepository
@@ -131,40 +131,6 @@ public class UserServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await _userService.CreateAsync(createDto)
         );
-    }
-
-    [Fact]
-    public async Task AssignToBranchAsync_ValidUser_AssignsBranch()
-    {
-        // Arrange
-        var userId = 1;
-        var branchId = 10;
-        var user = new User
-        {
-            Id = userId,
-            Username = "testuser",
-            Email = "test@example.com",
-            FirstName = "Test",
-            LastName = "User",
-            Role = UserRole.Evaluator,
-            IsActive = true,
-            BranchId = null
-        };
-
-        _mockUserRepository
-            .Setup(repo => repo.GetByIdAsync(userId))
-            .ReturnsAsync(user);
-
-        _mockUserRepository
-            .Setup(repo => repo.UpdateAsync(It.IsAny<User>()))
-            .ReturnsAsync((User u) => u);
-
-        // Act
-        var result = await _userService.AssignToBranchAsync(userId, branchId);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.BranchId.Should().Be(branchId);
     }
 
     [Fact]

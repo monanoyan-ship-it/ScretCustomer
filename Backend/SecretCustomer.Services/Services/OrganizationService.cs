@@ -37,7 +37,6 @@ public class OrganizationService : IOrganizationService
         var units = await _context.OrganizationUnits
             .Include(o => o.Parent)
             .Include(o => o.Manager)
-            .Include(o => o.Branch)
             .Include(o => o.Users)
             .Include(o => o.Children)
             .OrderBy(o => o.Level)
@@ -53,7 +52,6 @@ public class OrganizationService : IOrganizationService
         var unit = await _context.OrganizationUnits
             .Include(o => o.Parent)
             .Include(o => o.Manager)
-            .Include(o => o.Branch)
             .Include(o => o.Users)
             .Include(o => o.Children)
             .FirstOrDefaultAsync(o => o.Id == id);
@@ -99,7 +97,6 @@ public class OrganizationService : IOrganizationService
         var query = _context.OrganizationUnits
             .Include(o => o.Parent)
             .Include(o => o.Manager)
-            .Include(o => o.Branch)
             .Include(o => o.Users)
             .Include(o => o.Children)
             .AsQueryable();
@@ -127,11 +124,6 @@ public class OrganizationService : IOrganizationService
         if (filter.ParentId.HasValue)
         {
             query = query.Where(o => o.ParentId == filter.ParentId.Value);
-        }
-
-        if (filter.BranchId.HasValue)
-        {
-            query = query.Where(o => o.BranchId == filter.BranchId.Value);
         }
 
         // Order and paginate
@@ -169,8 +161,7 @@ public class OrganizationService : IOrganizationService
             Order = dto.Order,
             IsActive = dto.IsActive,
             ParentId = dto.ParentId,
-            ManagerId = dto.ManagerId,
-            BranchId = dto.BranchId
+            ManagerId = dto.ManagerId
         };
 
         _context.OrganizationUnits.Add(unit);
@@ -229,7 +220,6 @@ public class OrganizationService : IOrganizationService
         unit.IsActive = dto.IsActive;
         unit.ParentId = dto.ParentId;
         unit.ManagerId = dto.ManagerId;
-        unit.BranchId = dto.BranchId;
 
         await _context.SaveChangesAsync();
 
@@ -301,7 +291,6 @@ public class OrganizationService : IOrganizationService
         var children = await _context.OrganizationUnits
             .Include(o => o.Parent)
             .Include(o => o.Manager)
-            .Include(o => o.Branch)
             .Include(o => o.Users)
             .Include(o => o.Children)
             .Where(o => o.ParentId == parentId)
@@ -373,8 +362,8 @@ public class OrganizationService : IOrganizationService
             ParentName = unit.Parent?.Name,
             ManagerId = unit.ManagerId,
             ManagerName = unit.Manager != null ? $"{unit.Manager.FirstName} {unit.Manager.LastName}" : null,
-            BranchId = unit.BranchId,
-            BranchName = unit.Branch?.Name,
+            BranchId = null, // Branch system removed
+            BranchName = null,
             UserCount = unit.Users?.Count ?? 0,
             ChildCount = unit.Children?.Count ?? 0,
             CreatedAt = unit.CreatedAt

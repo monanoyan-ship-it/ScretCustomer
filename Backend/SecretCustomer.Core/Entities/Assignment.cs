@@ -12,9 +12,6 @@ public class Assignment : BaseEntity
     public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
-    public int? BranchId { get; set; }
-    public Branch? Branch { get; set; }
-
     public int? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 

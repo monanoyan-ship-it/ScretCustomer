@@ -170,10 +170,8 @@ function ProfileViewModel() {
     self.getRoleText = function(role) {
         var roles = {
             'Admin': T('Role.Admin', 'Yönetici'),
-            'TeamLeader': T('Role.TeamLeader', 'Takım Lideri'),
-            'Evaluator': T('Role.Evaluator', 'Değerlendirici'),
-            'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı'),
-            'CustomerRepresentative': T('Role.CustomerRepresentative', 'Müşteri Temsilcisi')
+            'QualitySpecialist': T('Role.QualitySpecialist', 'Kalite Uzmanı'),
+            'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı')
         };
         return roles[role] || role;
     };

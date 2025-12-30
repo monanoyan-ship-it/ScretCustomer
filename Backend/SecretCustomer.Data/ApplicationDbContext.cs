@@ -12,7 +12,6 @@ public class ApplicationDbContext : DbContext
 
     // DbSets
     public DbSet<User> Users { get; set; }
-    public DbSet<Branch> Branches { get; set; }
     public DbSet<Checklist> Checklists { get; set; }
     public DbSet<Section> Sections { get; set; }
     public DbSet<Question> Questions { get; set; }
@@ -31,13 +30,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomerPersonnelTaskAssignment> CustomerPersonnelTaskAssignments { get; set; }
     public DbSet<CustomerPersonnelPermission> CustomerPersonnelPermissions { get; set; }
 
+    // Customer Organization DbSets (Yeni Hiyerarşi)
+    public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
+    public DbSet<CustomerOrganizationManager> CustomerOrganizationManagers { get; set; }
+    public DbSet<CustomerPersonnelOrganizationAccess> CustomerPersonnelOrganizationAccess { get; set; }
+
     // Permission Management DbSets
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserPermission> UserPermissions { get; set; }
 
     // Project Management DbSets
-    public DbSet<ProjectBranch> ProjectBranches { get; set; }
     public DbSet<ProjectTeamMember> ProjectTeamMembers { get; set; }
 
     // Personnel Management DbSets
@@ -100,7 +103,6 @@ public class ApplicationDbContext : DbContext
 
         // Global query filter for soft delete
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Branch>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Checklist>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Section>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Question>().HasQueryFilter(e => !e.IsDeleted);
@@ -119,13 +121,17 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CustomerPersonnelTaskAssignment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelPermission>().HasQueryFilter(e => !e.IsDeleted);
 
+        // Customer Organization Entities (Yeni Hiyerarşi)
+        modelBuilder.Entity<CustomerOrganization>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerOrganizationManager>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>().HasQueryFilter(e => !e.IsDeleted);
+
         // Permission Management Entities
         modelBuilder.Entity<Permission>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<RolePermission>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<UserPermission>().HasQueryFilter(e => !e.IsDeleted);
 
         // Project Management Entities
-        modelBuilder.Entity<ProjectBranch>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ProjectTeamMember>().HasQueryFilter(e => !e.IsDeleted);
 
         // Personnel Management Entities
@@ -219,6 +225,69 @@ public class ApplicationDbContext : DbContext
             .HasOne(u => u.OrganizationUnit)
             .WithMany(o => o.Users)
             .HasForeignKey(u => u.OrganizationUnitId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // ===== YENİ: CustomerOrganization İlişkileri =====
+
+        // CustomerOrganization self-referencing (Parent-Children)
+        modelBuilder.Entity<CustomerOrganization>()
+            .HasOne(o => o.Parent)
+            .WithMany(o => o.Children)
+            .HasForeignKey(o => o.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // CustomerPersonnel self-referencing (Supervisor-TeamMembers)
+        modelBuilder.Entity<CustomerPersonnel>()
+            .HasOne(p => p.Supervisor)
+            .WithMany(p => p.TeamMembers)
+            .HasForeignKey(p => p.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // CustomerPersonnel-Organization relationship
+        modelBuilder.Entity<CustomerPersonnel>()
+            .HasOne(p => p.Organization)
+            .WithMany(o => o.Personnel)
+            .HasForeignKey(p => p.OrganizationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // CustomerOrganizationManager (many-to-many: Personnel yönettiği organizasyonlar)
+        modelBuilder.Entity<CustomerOrganizationManager>()
+            .HasOne(m => m.CustomerPersonnel)
+            .WithMany(p => p.ManagedOrganizations)
+            .HasForeignKey(m => m.CustomerPersonnelId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CustomerOrganizationManager>()
+            .HasOne(m => m.CustomerOrganization)
+            .WithMany(o => o.Managers)
+            .HasForeignKey(m => m.CustomerOrganizationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // CustomerPersonnelOrganizationAccess (many-to-many: Personnel değerlendirebileceği organizasyonlar)
+        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>()
+            .HasOne(a => a.CustomerPersonnel)
+            .WithMany(p => p.OrganizationAccess)
+            .HasForeignKey(a => a.CustomerPersonnelId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>()
+            .HasOne(a => a.CustomerOrganization)
+            .WithMany(o => o.EvaluatorAccess)
+            .HasForeignKey(a => a.CustomerOrganizationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Evaluation - EvaluatedCustomerPersonnel relationship
+        modelBuilder.Entity<Evaluation>()
+            .HasOne(e => e.EvaluatedCustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(e => e.EvaluatedCustomerPersonnelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Evaluation - EvaluatedOrganization relationship
+        modelBuilder.Entity<Evaluation>()
+            .HasOne(e => e.EvaluatedOrganization)
+            .WithMany()
+            .HasForeignKey(e => e.EvaluatedOrganizationId)
             .OnDelete(DeleteBehavior.SetNull);
 
         // AuditLog indexleri (hızlı sorgu için)

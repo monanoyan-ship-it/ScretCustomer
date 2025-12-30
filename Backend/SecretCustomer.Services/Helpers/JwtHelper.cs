@@ -29,8 +29,7 @@ public class JwtHelper
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("BranchId", user.BranchId?.ToString() ?? "")
+            new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -58,7 +57,6 @@ public class JwtHelper
             new Claim(ClaimTypes.Name, originalUser.Username),
             new Claim(ClaimTypes.Email, originalUser.Email),
             new Claim(ClaimTypes.Role, originalUser.Role.ToString()),
-            new Claim("BranchId", originalUser.BranchId?.ToString() ?? ""),
             // Impersonation claims
             new Claim("IsImpersonating", "true"),
             new Claim("ImpersonatedCustomerId", customerId.ToString()),

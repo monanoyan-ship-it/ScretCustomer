@@ -504,9 +504,7 @@ public class PermissionsApiController : BaseApiController
     private static string GetRoleName(UserRole role) => role switch
     {
         UserRole.Admin => "Yönetici",
-        UserRole.TeamLeader => "Takım Lideri",
-        UserRole.Evaluator => "Değerlendirici",
-        UserRole.CustomerRepresentative => "Müşteri Temsilcisi",
+        UserRole.QualitySpecialist => "Kalite Uzmanı",
         UserRole.FieldWorker => "Saha Çalışanı",
         _ => role.ToString()
     };

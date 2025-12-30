@@ -42,12 +42,12 @@ var authService = (function() {
             return this.hasRole('Admin');
         },
 
-        isTeamLeader: function() {
-            return this.hasRole('TeamLeader');
+        isQualitySpecialist: function() {
+            return this.hasRole('QualitySpecialist');
         },
 
-        isEvaluator: function() {
-            return this.hasRole('Evaluator');
+        isFieldWorker: function() {
+            return this.hasRole('FieldWorker');
         },
 
         getCurrentUser: function() {

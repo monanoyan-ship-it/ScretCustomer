@@ -105,7 +105,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Leader@123"),
                 FirstName = "Team",
                 LastName = "Leader",
-                Role = UserRole.TeamLeader,
+                Role = UserRole.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -117,7 +117,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
                 FirstName = "John",
                 LastName = "Evaluator",
-                Role = UserRole.Evaluator,
+                Role = UserRole.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -129,7 +129,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
                 FirstName = "Jane",
                 LastName = "Evaluator",
-                Role = UserRole.Evaluator,
+                Role = UserRole.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -240,39 +240,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Field Worker Users created");
 
-            // 2. Branches
-            var branch1 = new Branch
-            {
-                Name = "İstanbul Kadıköy",
-                Address = "Kadıköy Meydanı No:1, Kadıköy",
-                City = "İstanbul",
-                Region = "Marmara",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var branch2 = new Branch
-            {
-                Name = "Ankara Kızılay",
-                Address = "Kızılay Meydanı No:5, Çankaya",
-                City = "Ankara",
-                Region = "İç Anadolu",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var branch3 = new Branch
-            {
-                Name = "İzmir Alsancak",
-                Address = "Alsancak Sahil No:10, Konak",
-                City = "İzmir",
-                Region = "Ege",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Branches.AddRange(branch1, branch2, branch3);
-            await context.SaveChangesAsync();
-            logger.LogInformation("Branches created");
-
-            // 3. Checklist
+            // 2. Checklist
             var checklist = new Checklist
             {
                 Name = "Restaurant Monthly Evaluation",
@@ -286,7 +254,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Checklist created");
 
-            // 4. Sections
+            // 3. Sections
             var section1 = new Section
             {
                 ChecklistId = checklist.Id,
@@ -315,7 +283,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Sections created");
 
-            // 5. Questions
+            // 4. Questions
             var questions = new List<Question>
             {
                 // Temizlik ve Hijyen
@@ -421,7 +389,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Questions created");
 
-            // 6. Project
+            // 5. Project
             var project = new Project
             {
                 Name = "2025 Q1 Restaurant Evaluation",
@@ -438,11 +406,10 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Project created");
 
-            // 7. Sample Assignment (Internal)
+            // 6. Sample Assignment (Internal)
             var assignment1 = new Assignment
             {
                 ProjectId = project.Id,
-                BranchId = branch1.Id,
                 ChecklistId = checklist.Id,
                 AssignedUserId = evaluator1.Id,
                 DueDate = DateTime.UtcNow.AddDays(7),
@@ -452,7 +419,6 @@ public static class SeedData
             var assignment2 = new Assignment
             {
                 ProjectId = project.Id,
-                BranchId = branch2.Id,
                 ChecklistId = checklist.Id,
                 AssignedUserId = evaluator2.Id,
                 DueDate = DateTime.UtcNow.AddDays(7),
@@ -463,7 +429,6 @@ public static class SeedData
             var assignment3 = new Assignment
             {
                 ProjectId = project.Id,
-                BranchId = branch3.Id,
                 ChecklistId = checklist.Id,
                 UniqueLink = Guid.NewGuid().ToString("N"),
                 DueDate = DateTime.UtcNow.AddDays(14),
@@ -474,7 +439,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Assignments created");
 
-            // 7.5 Sample Evaluations
+            // 7. Sample Evaluations
             var evaluation1 = new Evaluation
             {
                 AssignmentId = assignment1.Id,
@@ -549,7 +514,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Evaluations created (5 sample evaluations)");
 
-            // 8. Sample Customers
+            // 8. Customers
             var customer1 = new Customer
             {
                 CompanyName = "ABC Perakende A.Ş.",
@@ -599,7 +564,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Customers created");
 
-            // 9. Sample Customer Personnel
+            // 9. Customer Personnel
             var personnel1 = new CustomerPersonnel
             {
                 CustomerId = customer1.Id,
@@ -689,7 +654,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Customer Personnel created");
 
-            // 10. Sample Customer Task Lists
+            // 10. Customer Task Lists
             var taskList1 = new CustomerTaskList
             {
                 CustomerId = customer1.Id,
@@ -722,7 +687,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Customer Task Lists created");
 
-            // 11. Sample Customer Personnel Task Assignments
+            // 11. Customer Personnel Task Assignments
             var taskAssignment1 = new CustomerPersonnelTaskAssignment
             {
                 PersonnelId = personnel2.Id,
@@ -760,7 +725,7 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Customer Personnel Task Assignments created");
 
-            // 12. Sample Field Workers (Saha Çalışanları)
+            // 12. Field Workers (Saha Çalışanları)
             var fieldWorker1 = new FieldWorker
             {
                 UserId = fieldWorkerUser1.Id,
@@ -886,7 +851,6 @@ public static class SeedData
                 PhoneNumber = "0532 111 2233",
                 Department = "Müşteri Hizmetleri",
                 IsActive = true,
-                BranchId = branch1.Id,
                 CustomerId = customer1.Id,
                 Notes = "Deneyimli müşteri temsilcisi"
             };
@@ -906,7 +870,6 @@ public static class SeedData
                 PhoneNumber = "0533 222 3344",
                 Department = "Kasa",
                 IsActive = true,
-                BranchId = branch1.Id,
                 CustomerId = customer1.Id,
                 Notes = "Kasa operasyonlarında uzman"
             };
@@ -926,7 +889,6 @@ public static class SeedData
                 PhoneNumber = "0534 333 4455",
                 Department = "Yönetim",
                 IsActive = true,
-                BranchId = branch2.Id,
                 CustomerId = customer1.Id,
                 Notes = "10 yıllık deneyimli şube müdürü"
             };
@@ -946,7 +908,6 @@ public static class SeedData
                 PhoneNumber = "0535 444 5566",
                 Department = "Servis",
                 IsActive = true,
-                BranchId = branch3.Id,
                 CustomerId = customer2.Id,
                 Notes = "Yeni başlayan garson"
             };
@@ -966,7 +927,6 @@ public static class SeedData
                 PhoneNumber = "0536 555 6677",
                 Department = "Mutfak",
                 IsActive = true,
-                BranchId = branch2.Id,
                 CustomerId = customer2.Id,
                 Notes = "Deneyimli şef"
             };
@@ -986,25 +946,19 @@ public static class SeedData
                 PhoneNumber = "0537 666 7788",
                 Department = "Resepsiyon",
                 IsActive = true,
-                BranchId = branch3.Id,
                 CustomerId = customer3.Id,
                 Notes = "İngilizce ve Almanca biliyor"
             };
 
             context.Personnel.AddRange(branchPersonnel1, branchPersonnel2, branchPersonnel3, branchPersonnel4, branchPersonnel5, branchPersonnel6);
             await context.SaveChangesAsync();
-            logger.LogInformation("Branch Personnel created");
+            logger.LogInformation("Personnel created");
 
-            // 13. Link all branches to customers
-            branch1.CustomerId = customer1.Id;  // ABC Şirketi - İstanbul Kadıköy
-            branch2.CustomerId = customer1.Id;  // ABC Şirketi - Ankara Kızılay
-            branch3.CustomerId = customer2.Id;  // XYZ Holding - İzmir Alsancak
+            // 13. Link project to customer
             project.CustomerId = customer1.Id;
-
-            context.Branches.UpdateRange(branch1, branch2, branch3);
             context.Projects.Update(project);
             await context.SaveChangesAsync();
-            logger.LogInformation("Linked branches and projects to customers");
+            logger.LogInformation("Linked project to customer");
 
             // 14. Permissions - RBAC System
             await SeedPermissionsAsync(context, logger);
@@ -1126,7 +1080,7 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Role = UserRole.TeamLeader,
+                Role = UserRole.QualitySpecialist,
                 PermissionId = permission.Id,
                 IsGranted = true,
                 Scope = PermissionScope.Branch,
@@ -1144,7 +1098,7 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Role = UserRole.Evaluator,
+                Role = UserRole.QualitySpecialist,
                 PermissionId = permission.Id,
                 IsGranted = true,
                 Scope = PermissionScope.Own,

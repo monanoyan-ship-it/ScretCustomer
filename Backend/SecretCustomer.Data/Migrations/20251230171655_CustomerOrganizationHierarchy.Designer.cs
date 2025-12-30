@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251230171655_CustomerOrganizationHierarchy")]
+    partial class CustomerOrganizationHierarchy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -319,6 +322,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("AssignedUserId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChecklistId")
                         .HasColumnType("integer");
 
@@ -372,6 +378,8 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("AssignedFieldWorkerId");
 
                     b.HasIndex("AssignedUserId");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("ChecklistId");
 
@@ -469,6 +477,59 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Branches");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Call", b =>
                 {
                     b.Property<int>("Id")
@@ -478,6 +539,9 @@ namespace SecretCustomer.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AssignedUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("BranchId")
                         .HasColumnType("integer");
 
                     b.Property<int>("CallType")
@@ -583,6 +647,8 @@ namespace SecretCustomer.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedUserId");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("CreatedByUserId");
 
@@ -1224,6 +1290,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ContactPersonName")
                         .HasColumnType("text");
 
@@ -1306,6 +1375,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("CustomerId");
 
@@ -2204,6 +2275,9 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Code")
                         .HasColumnType("text");
 
@@ -2248,6 +2322,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("ManagerId");
 
@@ -2325,6 +2401,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2385,6 +2464,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("CustomerId");
 
@@ -2502,6 +2583,53 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("ProjectManagerId");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectBranch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TargetCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectBranches");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectTeamMember", b =>
@@ -3063,6 +3191,9 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -3127,6 +3258,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -3468,6 +3601,11 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("AssignedUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany("Assignments")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SecretCustomer.Core.Entities.Checklist", "Checklist")
                         .WithMany("Assignments")
                         .HasForeignKey("ChecklistId")
@@ -3490,9 +3628,21 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Navigation("AssignedUser");
 
+                    b.Navigation("Branch");
+
                     b.Navigation("Checklist");
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
+                        .WithMany("Branches")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Call", b =>
@@ -3500,6 +3650,10 @@ namespace SecretCustomer.Data.Migrations
                     b.HasOne("SecretCustomer.Core.Entities.User", "AssignedUser")
                         .WithMany()
                         .HasForeignKey("AssignedUserId");
+
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
 
                     b.HasOne("SecretCustomer.Core.Entities.User", "CreatedByUser")
                         .WithMany()
@@ -3518,6 +3672,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("ProjectId");
 
                     b.Navigation("AssignedUser");
+
+                    b.Navigation("Branch");
 
                     b.Navigation("CreatedByUser");
 
@@ -3682,6 +3838,10 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerVisit", b =>
                 {
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
                     b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId");
@@ -3699,6 +3859,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("VisitorUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Branch");
 
                     b.Navigation("Customer");
 
@@ -3920,6 +4082,10 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.OrganizationUnit", b =>
                 {
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
                     b.HasOne("SecretCustomer.Core.Entities.User", "Manager")
                         .WithMany("ManagedOrganizationUnits")
                         .HasForeignKey("ManagerId")
@@ -3930,6 +4096,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Branch");
+
                     b.Navigation("Manager");
 
                     b.Navigation("Parent");
@@ -3937,9 +4105,15 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Personnel", b =>
                 {
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
                     b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId");
+
+                    b.Navigation("Branch");
 
                     b.Navigation("Customer");
                 });
@@ -3966,6 +4140,25 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("ProjectManager");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectBranch", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.Project", "Project")
+                        .WithMany("ProjectBranches")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ProjectTeamMember", b =>
@@ -4100,6 +4293,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.User", b =>
                 {
+                    b.HasOne("SecretCustomer.Core.Entities.Branch", "Branch")
+                        .WithMany("Users")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SecretCustomer.Core.Entities.OrganizationUnit", "OrganizationUnit")
                         .WithMany("Users")
                         .HasForeignKey("OrganizationUnitId")
@@ -4108,6 +4306,8 @@ namespace SecretCustomer.Data.Migrations
                     b.HasOne("SecretCustomer.Core.Entities.Language", "PreferredLanguage")
                         .WithMany()
                         .HasForeignKey("PreferredLanguageId");
+
+                    b.Navigation("Branch");
 
                     b.Navigation("OrganizationUnit");
 
@@ -4167,6 +4367,13 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Evaluations");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Branch", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Call", b =>
                 {
                     b.Navigation("Attachments");
@@ -4183,6 +4390,8 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Customer", b =>
                 {
+                    b.Navigation("Branches");
+
                     b.Navigation("Organizations");
 
                     b.Navigation("Personnel");
@@ -4281,6 +4490,8 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.Project", b =>
                 {
                     b.Navigation("Assignments");
+
+                    b.Navigation("ProjectBranches");
 
                     b.Navigation("TeamMembers");
                 });

@@ -297,10 +297,6 @@ public class ExcelTemplatesApiController : BaseApiController
                     template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.User>(
                         dto.TemplateName, dto.Description);
                     break;
-                case "branch":
-                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Branch>(
-                        dto.TemplateName, dto.Description);
-                    break;
                 case "fieldworker":
                     template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.FieldWorker>(
                         dto.TemplateName, dto.Description);
@@ -361,9 +357,6 @@ public class ExcelTemplatesApiController : BaseApiController
             {
                 case "user":
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.User>();
-                    break;
-                case "branch":
-                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Branch>();
                     break;
                 case "fieldworker":
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.FieldWorker>();
