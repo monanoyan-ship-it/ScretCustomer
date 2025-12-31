@@ -6,6 +6,7 @@ public interface IChecklistRepository
 {
     Task<Checklist?> GetByIdAsync(int id, bool includeDetails = false);
     Task<IEnumerable<Checklist>> GetAllAsync(bool includeInactive = false);
+    Task<IEnumerable<Checklist>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false);
     Task<Checklist> CreateAsync(Checklist checklist);
     Task<Checklist> UpdateAsync(Checklist checklist);
     Task<bool> DeleteAsync(int id);

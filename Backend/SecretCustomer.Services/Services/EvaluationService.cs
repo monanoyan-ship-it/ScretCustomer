@@ -244,39 +244,49 @@ public class EvaluationService : IEvaluationService
             EvaluatedUnknownPersonnel = existingEvaluation?.EvaluatedUnknownPersonnel,
             EvaluationComment = existingEvaluation?.EvaluationComment,
             AvailablePersonnel = personnel,
-            Sections = assignment.Checklist?.Sections
-                .OrderBy(s => s.Order)
-                .Select(s => new EvaluationSectionDto
+            // Sorular direkt checklist'e bağlı (Section kaldırıldı)
+            Sections = new List<EvaluationSectionDto>
+            {
+                new EvaluationSectionDto
                 {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Order = s.Order,
-                    GroupType = s.GroupType.ToString(),
-                    WeightPoints = s.WeightPoints,
-                    MaxPoints = s.MaxPoints,
-                    Questions = s.Questions
+                    Id = 0,
+                    Name = "Sorular",
+                    Order = 1,
+                    WeightPoints = assignment.Checklist?.Questions.Sum(q => q.WeightPoints) ?? 0,
+                    MaxPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
+                    Questions = assignment.Checklist?.Questions
+                        .Where(q => !q.IsDeleted)
                         .OrderBy(q => q.Order)
                         .Select(q => new EvaluationQuestionDto
                         {
                             Id = q.Id,
                             Text = q.Text,
-                            Type = q.Type.ToString(),
                             Order = q.Order,
-                            Points = q.Points,
                             IsRequired = q.IsRequired,
                             AllowNA = q.AllowNA,
-                            OptionsJson = q.OptionsJson,
                             ScoringType = q.ScoringType.ToString(),
                             WeightPoints = q.WeightPoints,
-                            MaxPoints = q.MaxPoints,
+                            ScaleSteps = q.ScaleSteps,
                             PenaltyType = q.PenaltyType.ToString(),
                             PenaltyValue = q.PenaltyValue,
                             RecommendedNote = q.RecommendedNote,
-                            HelpText = q.HelpText
+                            HelpText = q.HelpText,
+                            SubCriteria = q.SubCriteria?
+                                .Where(sc => !sc.IsDeleted && sc.IsActive)
+                                .OrderBy(sc => sc.Order)
+                                .Select(sc => new EvaluationSubCriteriaDto
+                                {
+                                    Id = sc.Id,
+                                    Description = sc.Description,
+                                    Order = sc.Order,
+                                    WeightPoints = sc.WeightPoints,
+                                    IsActive = sc.IsActive
+                                })
+                                .ToList()
                         })
-                        .ToList()
-                })
-                .ToList() ?? new List<EvaluationSectionDto>(),
+                        .ToList() ?? new List<EvaluationQuestionDto>()
+                }
+            },
             ExistingAnswers = existingEvaluation?.Answers
                 .Select(a => MapAnswerToDto(a))
                 .ToList() ?? new List<AnswerDto>()
@@ -441,9 +451,9 @@ public class EvaluationService : IEvaluationService
             else
             {
                 // Normal puanlı sorular
-                // Müşteri isteği: ağırlık puanı (WeightPoints) sistemi
+                // Ağırlık puanı (WeightPoints) sistemi
                 // Toplam max puan = ağırlık puanları toplamı
-                totalMaxPoints += question.WeightPoints > 0 ? question.WeightPoints : question.Points;
+                totalMaxPoints += question.WeightPoints;
                 var earnedPoints = CalculateEarnedPoints(question, answer);
                 totalEarned += earnedPoints ?? 0;
             }
@@ -465,23 +475,33 @@ public class EvaluationService : IEvaluationService
         if (answer.GivenPoints.HasValue)
             return answer.GivenPoints.Value;
 
-        // Müşteri isteği: ağırlık puanı (WeightPoints) ve max skor (MaxPoints) sistemi
-        // Formül: (cevap / maxScore) * ağırlık
-        // Örnek: ağırlık=15, max=2, cevap=2 → (2/2) * 15 = 15 puan
-        var weight = question.WeightPoints > 0 ? question.WeightPoints : question.Points;
-        var maxScore = question.MaxPoints > 0 ? question.MaxPoints : 5;
+        // Puansız sorular için null döndür
+        if (question.ScoringType == ScoringType.Unscored)
+            return null;
 
-        return question.Type switch
+        // Cezalı sorular ayrıca işleniyor
+        if (question.ScoringType == ScoringType.Penalty)
+            return 0;
+
+        // Ağırlık puanı ve kırılım sayısı sistemi
+        // Formül: (cevap / ScaleSteps) * WeightPoints
+        // Örnek: ağırlık=10, kırılım=4, cevap=4 → (4/4) * 10 = 10 puan
+        // Örnek: ağırlık=10, kırılım=4, cevap=3 → (3/4) * 10 = 7.5 puan
+        var weight = question.WeightPoints;
+        var scaleSteps = question.ScaleSteps > 0 ? question.ScaleSteps : 4;
+
+        // ScaleSteps = 1 ise Evet/Hayır tipi: 0 veya tam puan
+        if (scaleSteps == 1)
         {
-            QuestionType.MultipleChoice => weight, // Doğru cevap için tam puan (ağırlık)
-            QuestionType.Likert => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
-            QuestionType.Star => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
-            QuestionType.Rating => ((answer.AnswerNumeric ?? 0) / maxScore) * weight,
-            QuestionType.YesNo => answer.AnswerText?.ToLower() == "evet" || answer.AnswerText?.ToLower() == "yes"
-                ? weight : 0,
-            QuestionType.Text => null, // Metin soruları puansız
-            _ => 0
-        };
+            var answered = answer.AnswerNumeric > 0 ||
+                answer.AnswerText?.ToLower() == "evet" ||
+                answer.AnswerText?.ToLower() == "yes";
+            return answered ? weight : 0;
+        }
+
+        // ScaleSteps > 1 için orantılı hesaplama
+        var answerValue = answer.AnswerNumeric ?? 0;
+        return (answerValue / scaleSteps) * weight;
     }
 
     private Answer CreateAnswerFromDto(SubmitAnswerDto dto)
@@ -524,7 +544,7 @@ public class EvaluationService : IEvaluationService
             Id = a.Id,
             QuestionId = a.QuestionId,
             QuestionText = a.Question?.Text ?? "",
-            QuestionType = a.Question?.Type.ToString(),
+            QuestionType = a.Question?.ScoringType.ToString(), // ScoringType kullanılıyor
             AnswerText = a.AnswerText,
             AnswerNumeric = a.AnswerNumeric,
             IsNA = a.IsNA,
@@ -538,7 +558,7 @@ public class EvaluationService : IEvaluationService
             SectionOrder = a.Question?.Section?.Order,
             SectionName = a.Question?.Section?.Name,
             QuestionOrder = a.Question?.Order,
-            MaxPoints = a.Question?.MaxPoints,
+            MaxPoints = a.Question?.WeightPoints, // WeightPoints kullanılıyor
             ScoringType = a.Question?.ScoringType.ToString(),
             PenaltyType = a.Question?.PenaltyType.ToString(),
             PenaltyValue = a.Question?.PenaltyValue,

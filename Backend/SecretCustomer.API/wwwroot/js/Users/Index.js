@@ -9,7 +9,6 @@ function UserEditViewModel(data) {
     self.email = ko.observable(data.email || '');
     self.password = ko.observable('');
     self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2'); // Default: QualitySpecialist
-    self.branchId = ko.observable(data.branchId || null);
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
 }
 
@@ -33,7 +32,6 @@ function UsersViewModel() {
 
     // Data
     self.users = ko.observableArray([]);
-    self.branches = ko.observableArray([]);
     self.editingUser = ko.observable(null);
     self.passwordChangeUser = ko.observable(null);
 
@@ -91,21 +89,6 @@ function UsersViewModel() {
             })
             .finally(() => {
                 self.isLoading(false);
-            });
-    };
-
-    // Load branches
-    self.loadBranches = function() {
-        fetch('/api/branches/active', { credentials: 'include' })
-            .then(response => {
-                if (!response.ok) throw new Error('Şubeler yüklenemedi');
-                return response.json();
-            })
-            .then(data => {
-                self.branches(data);
-            })
-            .catch(error => {
-                console.error('Error loading branches:', error);
             });
     };
 
@@ -209,7 +192,6 @@ function UsersViewModel() {
             lastName: u.lastName(),
             email: u.email(),
             role: parseInt(u.role()),
-            branchId: u.branchId() || null,
             isActive: u.isActive()
         };
 
@@ -347,7 +329,6 @@ function UsersViewModel() {
 
     // Initialize
     self.loadUsers();
-    self.loadBranches();
 }
 
 // Apply bindings

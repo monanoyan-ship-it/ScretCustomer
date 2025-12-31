@@ -123,7 +123,7 @@ public class ReportService : IReportService
                     SectionName = g.Key.Name,
                     Order = g.Key.Order,
                     SectionScore = g.Sum(a => a.EarnedPoints ?? 0),
-                    SectionMaxScore = g.Sum(a => a.Question!.Points),
+                    SectionMaxScore = g.Sum(a => a.Question!.WeightPoints),
                     Questions = g.OrderBy(a => a.Question!.Order).Select(a => new QuestionAnswerReportDto
                     {
                         QuestionText = a.Question!.Text,
@@ -132,7 +132,7 @@ public class ReportService : IReportService
                         AnswerNumeric = a.AnswerNumeric,
                         IsNA = a.IsNA,
                         GivenPoints = a.EarnedPoints,
-                        MaxPoints = a.Question.Points,
+                        MaxPoints = a.Question.WeightPoints,
                         PenaltyType = a.AppliedPenaltyType.ToString(),
                         Notes = a.Notes
                     }).ToList()
@@ -354,7 +354,7 @@ public class ReportService : IReportService
                 detailSheet.Cell(detailRow, 8).Value = answer.AnswerNumeric ?? 0;
                 detailSheet.Cell(detailRow, 9).Value = answer.IsNA ? "Evet" : "Hayır";
                 detailSheet.Cell(detailRow, 10).Value = answer.EarnedPoints ?? 0;
-                detailSheet.Cell(detailRow, 11).Value = answer.Question.Points;
+                detailSheet.Cell(detailRow, 11).Value = answer.Question.WeightPoints;
                 detailSheet.Cell(detailRow, 12).Value = answer.AppliedPenaltyType.ToString();
                 detailSheet.Cell(detailRow, 13).Value = answer.Notes ?? "";
                 detailRow++;
@@ -772,9 +772,9 @@ public class ReportService : IReportService
                 SectionName = g.Key,
                 EvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count(),
                 AverageScore = g.Sum(a => a.EarnedPoints ?? 0),
-                MaxPossibleScore = g.Sum(a => a.Question!.Points),
-                PercentageScore = g.Sum(a => a.Question!.Points) > 0
-                    ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.Points) * 100, 2)
+                MaxPossibleScore = g.Sum(a => a.Question!.WeightPoints),
+                PercentageScore = g.Sum(a => a.Question!.WeightPoints) > 0
+                    ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.WeightPoints) * 100, 2)
                     : 0
             })
             .OrderByDescending(s => s.PercentageScore)
@@ -807,9 +807,9 @@ public class ReportService : IReportService
                 QuestionText = g.Key.Text,
                 SectionName = g.Key.SectionName,
                 AverageScore = g.Sum(a => a.EarnedPoints ?? 0),
-                MaxScore = g.Sum(a => a.Question!.Points),
-                PercentageScore = g.Sum(a => a.Question!.Points) > 0
-                    ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.Points) * 100, 2)
+                MaxScore = g.Sum(a => a.Question!.WeightPoints),
+                PercentageScore = g.Sum(a => a.Question!.WeightPoints) > 0
+                    ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.WeightPoints) * 100, 2)
                     : 0,
                 EvaluationCount = g.Count()
             })
@@ -1093,9 +1093,9 @@ public class ReportService : IReportService
             Notes = a.Notes,
             RecommendationNotes = a.RecommendationNotes,
             GivenPoints = a.EarnedPoints,
-            MaxPoints = a.Question?.MaxPoints ?? a.Question?.Points ?? 0,
-            PercentageScore = a.Question?.MaxPoints > 0 && a.EarnedPoints.HasValue
-                ? Math.Round((a.EarnedPoints.Value / a.Question.MaxPoints) * 100, 1)
+            MaxPoints = a.Question?.WeightPoints ?? 0,
+            PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
+                ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
                 : null,
             ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
             BranchName = null,
@@ -1165,9 +1165,9 @@ public class ReportService : IReportService
                 SectionName = g.Key.SectionName,
                 ChecklistName = g.Key.ChecklistName,
                 SuggestionCount = g.Count(),
-                AverageScore = g.Where(a => a.EarnedPoints.HasValue && a.Question?.MaxPoints > 0).Any()
-                    ? Math.Round(g.Where(a => a.EarnedPoints.HasValue && a.Question?.MaxPoints > 0)
-                        .Average(a => (a.EarnedPoints!.Value / a.Question!.MaxPoints) * 100), 1)
+                AverageScore = g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0).Any()
+                    ? Math.Round(g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0)
+                        .Average(a => (a.EarnedPoints!.Value / a.Question!.WeightPoints) * 100), 1)
                     : 0
             })
             .OrderByDescending(q => q.SuggestionCount)

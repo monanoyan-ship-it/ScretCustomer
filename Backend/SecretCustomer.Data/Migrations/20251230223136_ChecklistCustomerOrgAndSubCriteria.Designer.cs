@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251230223136_ChecklistCustomerOrgAndSubCriteria")]
+    partial class ChecklistCustomerOrgAndSubCriteria
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -736,9 +739,6 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<bool>("IsScored")
                         .HasColumnType("boolean");
-
-                    b.Property<int>("LikertScale")
-                        .HasColumnType("integer");
 
                     b.Property<decimal>("MaxTotalPoints")
                         .HasColumnType("numeric");
@@ -2620,9 +2620,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("AllowNA")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ChecklistId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2630,14 +2627,19 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("HelpText")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean");
+
+                    b.Property<decimal>("MaxPoints")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("OptionsJson")
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("Order")
                         .HasColumnType("integer");
@@ -2648,23 +2650,25 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<decimal>("PenaltyValue")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("RecommendedNote")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<int>("ScaleSteps")
+                    b.Property<int>("Points")
                         .HasColumnType("integer");
+
+                    b.Property<string>("RecommendedNote")
+                        .HasColumnType("text");
 
                     b.Property<int>("ScoringType")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("SectionId")
+                    b.Property<int>("SectionId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2676,8 +2680,6 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChecklistId");
 
                     b.HasIndex("SectionId");
 
@@ -4124,18 +4126,11 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Question", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.Checklist", "Checklist")
-                        .WithMany("Questions")
-                        .HasForeignKey("ChecklistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SecretCustomer.Core.Entities.Section", "Section")
                         .WithMany("Questions")
                         .HasForeignKey("SectionId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Checklist");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Section");
                 });
@@ -4335,8 +4330,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Assignments");
 
                     b.Navigation("Projects");
-
-                    b.Navigation("Questions");
 
                     b.Navigation("Sections");
                 });

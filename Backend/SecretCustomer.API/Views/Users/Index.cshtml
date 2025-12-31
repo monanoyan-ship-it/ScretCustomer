@@ -46,7 +46,6 @@
                             <th>@Html.T("User.FullName", "Ad Soyad")</th>
                             <th>@Html.T("User.Email", "E-posta")</th>
                             <th>@Html.T("User.Role", "Rol")</th>
-                            <th>@Html.T("Common.Branch", "Şube")</th>
                             <th>@Html.T("Common.Status", "Durum")</th>
                             <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
@@ -59,7 +58,6 @@
                             <td>
                                 <span class="badge" data-bind="css: $parent.getRoleBadgeClass(role), text: $parent.getRoleDisplayName(role)"></span>
                             </td>
-                            <td data-bind="text: branchName || '-'"></td>
                             <td>
                                 <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                             </td>
@@ -132,19 +130,13 @@
                         <input type="password" class="form-control" data-bind="value: password" placeholder="@Html.T("User.PasswordPlaceholder", "En az 6 karakter")" />
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.Role", "Rol") <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: role">
-                                <option value="1">@Html.T("User.Admin", "Admin")</option>
-                                <option value="2">@Html.T("User.QualitySpecialist", "Kalite Uzmanı")</option>
-                                <option value="3">@Html.T("User.FieldWorker", "Saha Çalışanı")</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("Common.Branch", "Şube")</label>
-                            <select class="form-select" data-bind="options: $parent.branches, optionsText: 'name', optionsValue: 'id', value: branchId, optionsCaption: '@Html.T("User.SelectBranch", "-- Şube Seçin --")'"></select>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("User.Role", "Rol") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: role">
+                            <option value="1">@Html.T("User.Admin", "Admin")</option>
+                            <option value="2">@Html.T("User.QualitySpecialist", "Kalite Uzmanı")</option>
+                            <option value="3">@Html.T("User.FieldWorker", "Saha Çalışanı")</option>
+                        </select>
                     </div>
 
                     <div class="form-check">

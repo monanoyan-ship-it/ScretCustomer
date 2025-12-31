@@ -1,4 +1,3 @@
-using System.Text.Json;
 using SecretCustomer.Core.DTOs.Checklist;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -36,6 +35,12 @@ public class ChecklistService : IChecklistService
         return checklists.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<ChecklistDto>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    {
+        var checklists = await _checklistRepository.GetFilteredAsync(searchText, customerId, customerOrganizationId, includeInactive);
+        return checklists.Select(MapToDto);
+    }
+
     public async Task<ChecklistDto> CreateAsync(CreateChecklistDto dto)
     {
         var checklist = new Checklist
@@ -45,43 +50,41 @@ public class ChecklistService : IChecklistService
             IsScored = dto.IsScored,
             IsActive = true,
             Version = 1,
-            // Yeni alanlar
+            // Kontrol listesi ayarları
             ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance,
             ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum,
+            LikertScale = dto.LikertScale,
             MaxTotalPoints = dto.MaxTotalPoints,
             Code = dto.Code,
             TemplateName = dto.TemplateName,
             ValidFrom = ToUtc(dto.ValidFrom),
             ValidUntil = ToUtc(dto.ValidUntil),
             EstimatedDurationMinutes = dto.EstimatedDurationMinutes,
-            Sections = dto.Sections.Select(s => new Section
+            // Firma ve Organizasyon
+            CustomerId = dto.CustomerId,
+            CustomerOrganizationId = dto.CustomerOrganizationId,
+            // Sorular - Direkt checklist'e bağlı
+            Questions = dto.Questions.Select(q => new Question
             {
-                Name = s.Name,
-                Description = s.Description,
-                Order = s.Order,
-                // Yeni alanlar
-                GroupType = Enum.TryParse<ScoringType>(s.GroupType, out var gType) ? gType : ScoringType.Scored,
-                WeightPoints = s.WeightPoints,
-                MaxPoints = s.MaxPoints,
-                IsActive = s.IsActive,
-                Questions = s.Questions.Select(q => new Question
+                Text = q.Text,
+                Order = q.Order,
+                ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                WeightPoints = q.WeightPoints,
+                ScaleSteps = q.ScaleSteps,
+                PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                PenaltyValue = q.PenaltyValue,
+                AllowNA = q.AllowNA,
+                IsRequired = q.IsRequired,
+                RecommendedNote = q.RecommendedNote,
+                HelpText = q.HelpText,
+                // Alt Kriterler
+                SubCriteria = q.SubCriteria?.Select(sc => new QuestionSubCriteria
                 {
-                    Text = q.Text,
-                    Type = Enum.Parse<QuestionType>(q.Type),
-                    Order = q.Order,
-                    Points = q.Points,
-                    AllowNA = q.AllowNA,
-                    IsRequired = q.IsRequired,
-                    OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null,
-                    // Yeni alanlar
-                    ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
-                    WeightPoints = q.WeightPoints,
-                    MaxPoints = q.MaxPoints,
-                    PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
-                    RecommendedNote = q.RecommendedNote,
-                    HelpText = q.HelpText,
-                    PenaltyValue = q.PenaltyValue
-                }).ToList()
+                    Description = sc.Description,
+                    Order = sc.Order,
+                    WeightPoints = sc.WeightPoints,
+                    IsActive = sc.IsActive
+                }).ToList() ?? new List<QuestionSubCriteria>()
             }).ToList()
         };
 
@@ -99,84 +102,22 @@ public class ChecklistService : IChecklistService
         existing.Description = dto.Description;
         existing.IsScored = dto.IsScored;
         existing.IsActive = dto.IsActive;
-        // Yeni alanlar
+        // Kontrol listesi ayarları
         existing.ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance;
         existing.ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum;
+        existing.LikertScale = dto.LikertScale;
         existing.MaxTotalPoints = dto.MaxTotalPoints;
         existing.Code = dto.Code;
         existing.TemplateName = dto.TemplateName;
         existing.ValidFrom = ToUtc(dto.ValidFrom);
         existing.ValidUntil = ToUtc(dto.ValidUntil);
         existing.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
+        // Firma ve Organizasyon
+        existing.CustomerId = dto.CustomerId;
+        existing.CustomerOrganizationId = dto.CustomerOrganizationId;
 
-        // Update sections
-        var existingSectionIds = existing.Sections.Select(s => s.Id).ToHashSet();
-        var dtoSectionIds = dto.Sections.Where(s => s.Id.HasValue).Select(s => s.Id!.Value).ToHashSet();
-
-        // Remove deleted sections
-        var sectionsToRemove = existing.Sections.Where(s => !dtoSectionIds.Contains(s.Id)).ToList();
-        foreach (var section in sectionsToRemove)
-        {
-            section.IsDeleted = true;
-        }
-
-        // Update or add sections
-        foreach (var sectionDto in dto.Sections)
-        {
-            if (sectionDto.Id.HasValue)
-            {
-                // Update existing section
-                var section = existing.Sections.FirstOrDefault(s => s.Id == sectionDto.Id.Value);
-                if (section != null)
-                {
-                    section.Name = sectionDto.Name;
-                    section.Description = sectionDto.Description;
-                    section.Order = sectionDto.Order;
-                    // Yeni alanlar
-                    section.GroupType = Enum.TryParse<ScoringType>(sectionDto.GroupType, out var gType) ? gType : ScoringType.Scored;
-                    section.WeightPoints = sectionDto.WeightPoints;
-                    section.MaxPoints = sectionDto.MaxPoints;
-                    section.IsActive = sectionDto.IsActive;
-
-                    UpdateQuestions(section, sectionDto.Questions);
-                }
-            }
-            else
-            {
-                // Add new section - 0 ile EF Core "Added" olarak algılar
-                existing.Sections.Add(new Section
-                {
-                    Id = 0,
-                    Name = sectionDto.Name,
-                    Description = sectionDto.Description,
-                    Order = sectionDto.Order,
-                    // Yeni alanlar
-                    GroupType = Enum.TryParse<ScoringType>(sectionDto.GroupType, out var gType) ? gType : ScoringType.Scored,
-                    WeightPoints = sectionDto.WeightPoints,
-                    MaxPoints = sectionDto.MaxPoints,
-                    IsActive = sectionDto.IsActive,
-                    Questions = sectionDto.Questions.Select(q => new Question
-                    {
-                        Id = 0,
-                        Text = q.Text,
-                        Type = Enum.Parse<QuestionType>(q.Type),
-                        Order = q.Order,
-                        Points = q.Points,
-                        AllowNA = q.AllowNA,
-                        IsRequired = q.IsRequired,
-                        OptionsJson = q.Options != null ? JsonSerializer.Serialize(q.Options) : null,
-                        // Yeni alanlar
-                        ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
-                        WeightPoints = q.WeightPoints,
-                        MaxPoints = q.MaxPoints,
-                        PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
-                        RecommendedNote = q.RecommendedNote,
-                        HelpText = q.HelpText,
-                        PenaltyValue = q.PenaltyValue
-                    }).ToList()
-                });
-            }
-        }
+        // Soruları güncelle
+        UpdateQuestions(existing, dto.Questions);
 
         var updated = await _checklistRepository.UpdateAsync(existing);
         return MapToDto(updated);
@@ -202,20 +143,39 @@ public class ChecklistService : IChecklistService
             IsScored = original.IsScored,
             IsActive = true,
             Version = versionCount + 1,
-            Sections = original.Sections.Select(s => new Section
+            // Kontrol listesi ayarları
+            ChecklistType = original.ChecklistType,
+            ScoringMethod = original.ScoringMethod,
+            LikertScale = original.LikertScale,
+            MaxTotalPoints = original.MaxTotalPoints,
+            Code = original.Code,
+            TemplateName = original.TemplateName,
+            ValidFrom = original.ValidFrom,
+            ValidUntil = original.ValidUntil,
+            EstimatedDurationMinutes = original.EstimatedDurationMinutes,
+            CustomerId = original.CustomerId,
+            CustomerOrganizationId = original.CustomerOrganizationId,
+            // Soruları kopyala
+            Questions = original.Questions.Select(q => new Question
             {
-                Name = s.Name,
-                Description = s.Description,
-                Order = s.Order,
-                Questions = s.Questions.Select(q => new Question
+                Text = q.Text,
+                Order = q.Order,
+                ScoringType = q.ScoringType,
+                WeightPoints = q.WeightPoints,
+                ScaleSteps = q.ScaleSteps,
+                PenaltyType = q.PenaltyType,
+                PenaltyValue = q.PenaltyValue,
+                AllowNA = q.AllowNA,
+                IsRequired = q.IsRequired,
+                RecommendedNote = q.RecommendedNote,
+                HelpText = q.HelpText,
+                // Alt Kriterleri de kopyala
+                SubCriteria = q.SubCriteria.Select(sc => new QuestionSubCriteria
                 {
-                    Text = q.Text,
-                    Type = q.Type,
-                    Order = q.Order,
-                    Points = q.Points,
-                    AllowNA = q.AllowNA,
-                    IsRequired = q.IsRequired,
-                    OptionsJson = q.OptionsJson
+                    Description = sc.Description,
+                    Order = sc.Order,
+                    WeightPoints = sc.WeightPoints,
+                    IsActive = sc.IsActive
                 }).ToList()
             }).ToList()
         };
@@ -224,84 +184,117 @@ public class ChecklistService : IChecklistService
         return MapToDto(created);
     }
 
-    private void UpdateQuestions(Section section, List<UpdateQuestionDto> questionDtos)
+    private void UpdateQuestions(Checklist checklist, List<UpdateQuestionDto> questionDtos)
     {
-        var existingQuestionIds = section.Questions.Select(q => q.Id).ToHashSet();
+        var existingQuestionIds = checklist.Questions.Select(q => q.Id).ToHashSet();
         var dtoQuestionIds = questionDtos.Where(q => q.Id.HasValue).Select(q => q.Id!.Value).ToHashSet();
 
-        // Remove deleted questions
-        var questionsToRemove = section.Questions.Where(q => !dtoQuestionIds.Contains(q.Id)).ToList();
+        // Silinen soruları işaretle
+        var questionsToRemove = checklist.Questions.Where(q => !dtoQuestionIds.Contains(q.Id)).ToList();
         foreach (var question in questionsToRemove)
         {
             question.IsDeleted = true;
         }
 
-        // Update or add questions
+        // Güncelle veya ekle
         foreach (var questionDto in questionDtos)
         {
             if (questionDto.Id.HasValue)
             {
-                // Update existing question
-                var question = section.Questions.FirstOrDefault(q => q.Id == questionDto.Id.Value);
+                // Mevcut soruyu güncelle
+                var question = checklist.Questions.FirstOrDefault(q => q.Id == questionDto.Id.Value);
                 if (question != null)
                 {
                     question.Text = questionDto.Text;
-                    question.Type = Enum.Parse<QuestionType>(questionDto.Type);
                     question.Order = questionDto.Order;
-                    question.Points = questionDto.Points;
-                    question.AllowNA = questionDto.AllowNA;
-                    question.IsRequired = questionDto.IsRequired;
-                    question.OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null;
                     question.ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored;
                     question.WeightPoints = questionDto.WeightPoints;
-                    question.MaxPoints = questionDto.MaxPoints;
+                    question.ScaleSteps = questionDto.ScaleSteps;
                     question.PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None;
+                    question.PenaltyValue = questionDto.PenaltyValue;
+                    question.AllowNA = questionDto.AllowNA;
+                    question.IsRequired = questionDto.IsRequired;
                     question.RecommendedNote = questionDto.RecommendedNote;
                     question.HelpText = questionDto.HelpText;
-                    question.PenaltyValue = questionDto.PenaltyValue;
+
+                    // Alt Kriterleri güncelle
+                    UpdateSubCriteria(question, questionDto.SubCriteria);
                 }
-                // else: ID var ama bulunamadı - atla, hata loglanabilir
             }
             else
             {
-                // Add new question (ID null) - 0 ile EF Core "Added" olarak algılar
-                section.Questions.Add(new Question
+                // Yeni soru ekle
+                checklist.Questions.Add(new Question
                 {
                     Id = 0,
+                    ChecklistId = checklist.Id,
                     Text = questionDto.Text,
-                    Type = Enum.Parse<QuestionType>(questionDto.Type),
                     Order = questionDto.Order,
-                    Points = questionDto.Points,
-                    AllowNA = questionDto.AllowNA,
-                    IsRequired = questionDto.IsRequired,
-                    OptionsJson = questionDto.Options != null ? JsonSerializer.Serialize(questionDto.Options) : null,
                     ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored,
                     WeightPoints = questionDto.WeightPoints,
-                    MaxPoints = questionDto.MaxPoints,
+                    ScaleSteps = questionDto.ScaleSteps,
                     PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                    PenaltyValue = questionDto.PenaltyValue,
+                    AllowNA = questionDto.AllowNA,
+                    IsRequired = questionDto.IsRequired,
                     RecommendedNote = questionDto.RecommendedNote,
                     HelpText = questionDto.HelpText,
-                    PenaltyValue = questionDto.PenaltyValue
+                    // Alt Kriterler
+                    SubCriteria = questionDto.SubCriteria?.Select(sc => new QuestionSubCriteria
+                    {
+                        Id = 0,
+                        Description = sc.Description,
+                        Order = sc.Order,
+                        WeightPoints = sc.WeightPoints,
+                        IsActive = sc.IsActive
+                    }).ToList() ?? new List<QuestionSubCriteria>()
                 });
             }
         }
     }
 
-    private List<QuestionOptionDto>? ParseQuestionOptions(string? optionsJson)
+    private void UpdateSubCriteria(Question question, List<UpdateSubCriteriaDto>? subCriteriaDtos)
     {
-        if (string.IsNullOrWhiteSpace(optionsJson))
-            return null;
+        if (subCriteriaDtos == null)
+            return;
 
-        try
+        var existingSubCriteriaIds = question.SubCriteria.Select(sc => sc.Id).ToHashSet();
+        var dtoSubCriteriaIds = subCriteriaDtos.Where(sc => sc.Id.HasValue).Select(sc => sc.Id!.Value).ToHashSet();
+
+        // Silinen alt kriterleri işaretle
+        var subCriteriaToRemove = question.SubCriteria.Where(sc => !dtoSubCriteriaIds.Contains(sc.Id)).ToList();
+        foreach (var subCriteria in subCriteriaToRemove)
         {
-            // Try to deserialize as List<QuestionOptionDto>
-            return JsonSerializer.Deserialize<List<QuestionOptionDto>>(optionsJson);
+            subCriteria.IsDeleted = true;
         }
-        catch (JsonException)
+
+        // Güncelle veya ekle
+        foreach (var scDto in subCriteriaDtos)
         {
-            // If that fails, it might be a simple string or comma-separated values
-            // Return null for now - frontend will handle it
-            return null;
+            if (scDto.Id.HasValue)
+            {
+                // Mevcut alt kriteri güncelle
+                var subCriteria = question.SubCriteria.FirstOrDefault(sc => sc.Id == scDto.Id.Value);
+                if (subCriteria != null)
+                {
+                    subCriteria.Description = scDto.Description;
+                    subCriteria.Order = scDto.Order;
+                    subCriteria.WeightPoints = scDto.WeightPoints;
+                    subCriteria.IsActive = scDto.IsActive;
+                }
+            }
+            else
+            {
+                // Yeni alt kriter ekle
+                question.SubCriteria.Add(new QuestionSubCriteria
+                {
+                    Id = 0,
+                    Description = scDto.Description,
+                    Order = scDto.Order,
+                    WeightPoints = scDto.WeightPoints,
+                    IsActive = scDto.IsActive
+                });
+            }
         }
     }
 
@@ -316,51 +309,51 @@ public class ChecklistService : IChecklistService
             IsActive = checklist.IsActive,
             Version = checklist.Version,
             CreatedAt = checklist.CreatedAt,
-            // Yeni alanlar
+            // Kontrol listesi ayarları
             ChecklistType = checklist.ChecklistType.ToString(),
             ChecklistTypeName = GetChecklistTypeName(checklist.ChecklistType),
             ScoringMethod = checklist.ScoringMethod.ToString(),
             ScoringMethodName = GetScoringMethodName(checklist.ScoringMethod),
+            LikertScale = checklist.LikertScale,
             MaxTotalPoints = checklist.MaxTotalPoints,
             Code = checklist.Code,
             TemplateName = checklist.TemplateName,
             ValidFrom = checklist.ValidFrom,
             ValidUntil = checklist.ValidUntil,
             EstimatedDurationMinutes = checklist.EstimatedDurationMinutes,
-            Sections = checklist.Sections.OrderBy(s => s.Order).Select(s => new SectionDto
+            // Firma ve Organizasyon
+            CustomerId = checklist.CustomerId,
+            CustomerName = checklist.Customer?.CompanyName,
+            CustomerOrganizationId = checklist.CustomerOrganizationId,
+            CustomerOrganizationName = checklist.CustomerOrganization?.Name,
+            // Sorular - Direkt checklist'e bağlı
+            Questions = checklist.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto
             {
-                Id = s.Id,
-                Name = s.Name,
-                Description = s.Description,
-                Order = s.Order,
-                // Yeni alanlar
-                GroupType = s.GroupType.ToString(),
-                GroupTypeName = GetScoringTypeName(s.GroupType),
-                WeightPoints = s.WeightPoints,
-                MaxPoints = s.MaxPoints,
-                IsActive = s.IsActive,
-                Questions = s.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto
+                Id = q.Id,
+                Text = q.Text,
+                Order = q.Order,
+                ScoringType = q.ScoringType.ToString(),
+                ScoringTypeName = GetScoringTypeName(q.ScoringType),
+                WeightPoints = q.WeightPoints,
+                ScaleSteps = q.ScaleSteps,
+                PenaltyType = q.PenaltyType.ToString(),
+                PenaltyTypeName = GetPenaltyTypeName(q.PenaltyType),
+                PenaltyValue = q.PenaltyValue,
+                AllowNA = q.AllowNA,
+                IsRequired = q.IsRequired,
+                RecommendedNote = q.RecommendedNote,
+                HelpText = q.HelpText,
+                // Alt Kriterler
+                SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
                 {
-                    Id = q.Id,
-                    Text = q.Text,
-                    Type = q.Type.ToString(),
-                    Order = q.Order,
-                    Points = q.Points,
-                    AllowNA = q.AllowNA,
-                    IsRequired = q.IsRequired,
-                    Options = ParseQuestionOptions(q.OptionsJson),
-                    // Yeni alanlar
-                    ScoringType = q.ScoringType.ToString(),
-                    ScoringTypeName = GetScoringTypeName(q.ScoringType),
-                    WeightPoints = q.WeightPoints,
-                    MaxPoints = q.MaxPoints,
-                    PenaltyType = q.PenaltyType.ToString(),
-                    PenaltyTypeName = GetPenaltyTypeName(q.PenaltyType),
-                    RecommendedNote = q.RecommendedNote,
-                    HelpText = q.HelpText,
-                    PenaltyValue = q.PenaltyValue
+                    Id = sc.Id,
+                    Description = sc.Description,
+                    Order = sc.Order,
+                    WeightPoints = sc.WeightPoints,
+                    IsActive = sc.IsActive
                 }).ToList()
-            }).ToList()
+            }).ToList(),
+            QuestionCount = checklist.Questions.Count
         };
     }
 

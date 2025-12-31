@@ -14,12 +14,23 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
             .IsRequired()
             .HasMaxLength(1000);
 
-        builder.Property(q => q.OptionsJson)
-            .HasColumnType("jsonb"); // PostgreSQL JSON tipi
+        builder.Property(q => q.RecommendedNote)
+            .HasMaxLength(2000);
 
+        builder.Property(q => q.HelpText)
+            .HasMaxLength(1000);
+
+        // Checklist ilişkisi (yeni ana ilişki)
+        builder.HasOne(q => q.Checklist)
+            .WithMany(c => c.Questions)
+            .HasForeignKey(q => q.ChecklistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Section ilişkisi (geriye uyumluluk - opsiyonel)
         builder.HasOne(q => q.Section)
             .WithMany(s => s.Questions)
             .HasForeignKey(q => q.SectionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
     }
 }

@@ -81,4 +81,7 @@ public class Answer : BaseEntity
         DropdownOptions = "[\"None\", \"YellowCard\", \"RedCard\"]",
         SampleValue = "None")]
     public PenaltyType AppliedPenaltyType { get; set; } = PenaltyType.None;
+
+    // Navigation - Bu cevap için seçilen alt kriterler
+    public ICollection<AnswerSubCriteriaSelection> SubCriteriaSelections { get; set; } = new List<AnswerSubCriteriaSelection>();
 }

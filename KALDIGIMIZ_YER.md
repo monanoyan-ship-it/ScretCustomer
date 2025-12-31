@@ -1,8 +1,60 @@
-# Kaldığımız Yer - 30 Aralık 2025
+# Kaldığımız Yer - 31 Aralık 2025
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (30 Aralık 2025 - Son Güncelleme)
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - Son Güncelleme)
+
+### Checklist Yapısı Refaktör (31 Aralık 2025)
+
+**BÜYÜK DEĞİŞİKLİK:** Section/Grup katmanı kaldırıldı!
+
+#### Önceki Yapı (Eski)
+```
+Checklist → Sections → Questions → SubCriteria
+```
+
+#### Yeni Yapı (Şu An)
+```
+Checklist → Questions → SubCriteria
+```
+
+#### Yapılan Değişiklikler
+
+**Entity Değişiklikleri:**
+- Question entity'e `ChecklistId` eklendi (direkt bağlantı)
+- Question entity'e `ScaleSteps` eklendi (1-4 kırılım sayısı)
+- Checklist entity'e `LikertScale` eklendi (0-5 ölçeği)
+- Question'dan `Type`, `Points`, `MaxPoints`, `OptionsJson` kaldırıldı
+- `SectionId` nullable yapıldı (geriye uyumluluk için)
+
+**Yeni Puanlama Sistemi:**
+- `LikertScale` (Checklist seviyesi): 0-5 değerlendirme ölçeği
+- `WeightPoints` (Soru seviyesi): Ağırlık puanı
+- `ScaleSteps` (Soru seviyesi): 1-4 kırılım (Evet/Hayır için 1, detaylı için 4)
+- `ScoringType`: Scored (Puanlı), Unscored (Puansız), Penalty (Cezalı)
+- Formül: `(cevap / ScaleSteps) * WeightPoints`
+
+**Migration:**
+- `DirectQuestionChecklistStructure` migration oluşturuldu
+- Mevcut sorular için ChecklistId otomatik dolduruldu (Section'dan alınarak)
+
+**Güncellenen Dosyalar:**
+- `Question.cs`, `Checklist.cs` - Entity güncellemeleri
+- `ChecklistDto.cs`, `UpdateChecklistDto.cs` - DTO güncellemeleri
+- `ChecklistRepository.cs` - Questions direkt include
+- `ChecklistService.cs` - Section'sız mapping
+- `EvaluationService.cs` - Yeni puanlama formülü
+- `ReportService.cs` - WeightPoints kullanımı
+- `QuestionConfiguration.cs` - Yeni ilişki yapılandırması
+- `SeedData.cs` - Yeni alanlarla seed data
+- `Views/Checklists/Index.cshtml` - Tamamıyla yeniden yazıldı
+- `wwwroot/js/Checklists/checklist.js` - SectionModel kaldırıldı
+
+**Build Durumu:** ✅ Başarılı
+
+---
+
+## ✅ TAMAMLANAN İŞLER (30 Aralık 2025)
 
 ### Backend Değişiklikleri
 1. **UserRole enum** → 3 rol: `Admin`, `QualitySpecialist`, `FieldWorker`

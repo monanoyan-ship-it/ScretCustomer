@@ -283,104 +283,140 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Sections created");
 
-            // 4. Questions
+            // 4. Questions - Direkt checklist'e bağlı
             var questions = new List<Question>
             {
-                // Temizlik ve Hijyen
+                // Temizlik ve Hijyen Kriterleri
                 new Question
                 {
-                    SectionId = section1.Id,
+                    ChecklistId = checklist.Id,
+                    SectionId = section1.Id, // Geriye uyumluluk için
                     Text = "Masalar temiz mi?",
-                    Type = QuestionType.Likert,
-                    Points = 5,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 5,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
+                    IsRequired = true,
                     Order = 1,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section1.Id,
                     Text = "Tuvalet temizliği nasıl?",
-                    Type = QuestionType.Star,
-                    Points = 10,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 10,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
+                    IsRequired = true,
                     Order = 2,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section1.Id,
                     Text = "Genel temizlik hakkında ek gözlemler",
-                    Type = QuestionType.Text,
-                    Points = 0,
-                    AllowNA = false,
+                    ScoringType = ScoringType.Unscored, // Puansız - sadece yorum
+                    WeightPoints = 0,
+                    ScaleSteps = 1,
+                    PenaltyType = PenaltyType.None,
+                    AllowNA = true,
+                    IsRequired = false,
                     Order = 3,
                     CreatedAt = DateTime.UtcNow
                 },
 
-                // Hizmet Kalitesi
+                // Hizmet Kalitesi Kriterleri
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section2.Id,
                     Text = "Karşılama nasıldı?",
-                    Type = QuestionType.MultipleChoice,
-                    Points = 5,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 5,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
-                    OptionsJson = JsonSerializer.Serialize(new[] { "Mükemmel", "İyi", "Orta", "Kötü" }),
-                    Order = 1,
+                    IsRequired = true,
+                    Order = 4,
+                    HelpText = "Müşteri girişinde karşılama kalitesini değerlendirin",
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section2.Id,
                     Text = "Sipariş alma süresi uygun muydu?",
-                    Type = QuestionType.Likert,
-                    Points = 5,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 5,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = true,
-                    Order = 2,
+                    IsRequired = true,
+                    Order = 5,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section2.Id,
                     Text = "Personel ilgisi nasıldı?",
-                    Type = QuestionType.Star,
-                    Points = 10,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 10,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
-                    Order = 3,
+                    IsRequired = true,
+                    Order = 6,
                     CreatedAt = DateTime.UtcNow
                 },
 
-                // Ürün Kalitesi
+                // Ürün Kalitesi Kriterleri
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section3.Id,
                     Text = "Yemek sıcaklığı uygun muydu?",
-                    Type = QuestionType.Likert,
-                    Points = 5,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 5,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
-                    Order = 1,
+                    IsRequired = true,
+                    Order = 7,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section3.Id,
                     Text = "Yemek lezzeti nasıldı?",
-                    Type = QuestionType.Star,
-                    Points = 15,
+                    ScoringType = ScoringType.Scored,
+                    WeightPoints = 15,
+                    ScaleSteps = 4,
+                    PenaltyType = PenaltyType.None,
                     AllowNA = false,
-                    Order = 2,
+                    IsRequired = true,
+                    Order = 8,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Question
                 {
+                    ChecklistId = checklist.Id,
                     SectionId = section3.Id,
-                    Text = "Porsiyon büyüklüğü nasıldı?",
-                    Type = QuestionType.MultipleChoice,
-                    Points = 5,
+                    Text = "Porsiyon büyüklüğü uygun mu?",
+                    ScoringType = ScoringType.Penalty, // Cezalı soru örneği
+                    WeightPoints = 5,
+                    ScaleSteps = 2,
+                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyValue = 10,
                     AllowNA = true,
-                    OptionsJson = JsonSerializer.Serialize(new[] { "Çok Büyük", "Uygun", "Küçük", "Çok Küçük" }),
-                    Order = 3,
+                    IsRequired = true,
+                    Order = 9,
                     CreatedAt = DateTime.UtcNow
                 }
             };

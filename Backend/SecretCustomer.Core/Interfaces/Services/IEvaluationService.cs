@@ -120,19 +120,41 @@ public class EvaluationQuestionDto
 {
     public int Id { get; set; }
     public string Text { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
     public int Order { get; set; }
-    public int Points { get; set; }
     public bool IsRequired { get; set; }
     public bool AllowNA { get; set; }
-    public string? OptionsJson { get; set; }
 
-    // Yeni alanlar
-    public string? ScoringType { get; set; }
+    /// <summary>
+    /// Puanlama tipi: Scored, Unscored, Penalty
+    /// </summary>
+    public string ScoringType { get; set; } = "Scored";
+
+    /// <summary>
+    /// Ağırlık puanı
+    /// </summary>
     public decimal WeightPoints { get; set; }
-    public decimal MaxPoints { get; set; }
+
+    /// <summary>
+    /// Kırılım sayısı / Ölçek (1, 2, 3, 4)
+    /// </summary>
+    public int ScaleSteps { get; set; } = 4;
+
     public string? PenaltyType { get; set; }
     public decimal PenaltyValue { get; set; }
     public string? RecommendedNote { get; set; }
     public string? HelpText { get; set; }
+
+    /// <summary>
+    /// Alt Kriterler/Öneriler
+    /// </summary>
+    public List<EvaluationSubCriteriaDto>? SubCriteria { get; set; }
+}
+
+public class EvaluationSubCriteriaDto
+{
+    public int Id { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int Order { get; set; }
+    public decimal WeightPoints { get; set; }
+    public bool IsActive { get; set; } = true;
 }

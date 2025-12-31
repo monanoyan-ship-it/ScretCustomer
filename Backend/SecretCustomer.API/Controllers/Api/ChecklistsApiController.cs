@@ -26,15 +26,27 @@ public class ChecklistsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get all checklists - Admin, TeamLeader, and Evaluator can access
+    /// Get all checklists with optional filtering - Admin, TeamLeader, and Evaluator can access
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader,Evaluator")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search = null,
+        [FromQuery] int? customerId = null,
+        [FromQuery] int? customerOrganizationId = null,
+        [FromQuery] bool includeInactive = false)
     {
         try
         {
-            var checklists = await _checklistService.GetAllAsync();
+            // Eğer herhangi bir filtre varsa, filtrelenmiş sonuçları getir
+            if (!string.IsNullOrWhiteSpace(search) || customerId.HasValue || customerOrganizationId.HasValue)
+            {
+                var filteredChecklists = await _checklistService.GetFilteredAsync(search, customerId, customerOrganizationId, includeInactive);
+                return Ok(filteredChecklists);
+            }
+
+            // Filtre yoksa tüm listeyi getir
+            var checklists = await _checklistService.GetAllAsync(includeInactive);
             return Ok(checklists);
         }
         catch (Exception ex)
@@ -62,8 +74,8 @@ public class ChecklistsApiController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
-            _logger.LogInformation("Successfully loaded checklist {Id} with {SectionCount} sections",
-                id, checklist.Sections?.Count ?? 0);
+            _logger.LogInformation("Successfully loaded checklist {Id} with {QuestionCount} questions",
+                id, checklist.Questions?.Count ?? 0);
 
             return Ok(checklist);
         }
@@ -109,15 +121,11 @@ public class ChecklistsApiController : BaseApiController
         try
         {
             // Debug: Gelen veriyi logla
-            _logger.LogInformation("UPDATE Checklist {Id} - Sections: {SectionCount}", id, dto.Sections?.Count ?? 0);
-            foreach (var section in dto.Sections ?? new List<UpdateSectionDto>())
+            _logger.LogInformation("UPDATE Checklist {Id} - Questions: {QuestionCount}", id, dto.Questions?.Count ?? 0);
+            foreach (var q in dto.Questions ?? new List<UpdateQuestionDto>())
             {
-                _logger.LogInformation("  Section: Id={SectionId}, Name={Name}, Questions={QuestionCount}",
-                    section.Id, section.Name, section.Questions?.Count ?? 0);
-                foreach (var q in section.Questions ?? new List<UpdateQuestionDto>())
-                {
-                    _logger.LogInformation("    Question: Id={QuestionId}, Text={Text}", q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)));
-                }
+                _logger.LogInformation("  Question: Id={QuestionId}, Text={Text}, SubCriteria={SubCriteriaCount}",
+                    q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)), q.SubCriteria?.Count ?? 0);
             }
 
             dto.Id = id;

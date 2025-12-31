@@ -18,9 +18,17 @@ public class UpdateChecklistDto
 
     public bool IsActive { get; set; }
 
-    // Yeni alanlar
+    // Kontrol listesi tipi
     public string ChecklistType { get; set; } = "CallPerformance";
+
+    // Puanlama yöntemi
     public string ScoringMethod { get; set; } = "Maximum";
+
+    /// <summary>
+    /// Likert Ölçeği - Puanlama için maksimum değer (örn: 5 = 0-5 arası)
+    /// </summary>
+    public int LikertScale { get; set; } = 5;
+
     public decimal MaxTotalPoints { get; set; } = 100;
 
     [MaxLength(50)]
@@ -33,28 +41,13 @@ public class UpdateChecklistDto
     public DateTime? ValidUntil { get; set; }
     public int? EstimatedDurationMinutes { get; set; }
 
-    public List<UpdateSectionDto> Sections { get; set; } = new();
-}
+    // Firma ve Organizasyon
+    public int? CustomerId { get; set; }
+    public int? CustomerOrganizationId { get; set; }
 
-public class UpdateSectionDto
-{
-    public int? Id { get; set; }
-
-    [Required]
-    [MaxLength(255)]
-    public string Name { get; set; } = string.Empty;
-
-    [MaxLength(1000)]
-    public string? Description { get; set; }
-
-    public int Order { get; set; }
-
-    // Yeni alanlar
-    public string GroupType { get; set; } = "Scored";
-    public decimal WeightPoints { get; set; } = 1;
-    public decimal MaxPoints { get; set; } = 5; // Likert 0-5 için
-    public bool IsActive { get; set; } = true;
-
+    /// <summary>
+    /// Sorular - Direkt checklist'e bağlı (Section yok!)
+    /// </summary>
     public List<UpdateQuestionDto> Questions { get; set; } = new();
 }
 
@@ -66,25 +59,33 @@ public class UpdateQuestionDto
     [MaxLength(1000)]
     public string Text { get; set; } = string.Empty;
 
-    [Required]
-    public string Type { get; set; } = string.Empty;
-
     public int Order { get; set; }
 
-    [Range(0, 1000)]
-    public int Points { get; set; }
+    /// <summary>
+    /// Puanlama tipi: Scored (Puanlı), Unscored (Puansız), Penalty (Cezalı)
+    /// </summary>
+    public string ScoringType { get; set; } = "Scored";
+
+    /// <summary>
+    /// Ağırlık puanı - Bu sorunun toplam skora etkisi (varsayılan 10)
+    /// </summary>
+    public decimal WeightPoints { get; set; } = 10;
+
+    /// <summary>
+    /// Kırılım sayısı / Ölçek - Bu soru kaç kırılımlı? (1, 2, 3, 4)
+    /// </summary>
+    public int ScaleSteps { get; set; } = 4;
+
+    /// <summary>
+    /// Ceza tipi: None, YellowCard, RedCard
+    /// </summary>
+    public string PenaltyType { get; set; } = "None";
+
+    public decimal PenaltyValue { get; set; } = 0;
 
     public bool AllowNA { get; set; }
 
     public bool IsRequired { get; set; }
-
-    public List<QuestionOptionDto>? Options { get; set; }
-
-    // Yeni alanlar
-    public string ScoringType { get; set; } = "Scored";
-    public decimal WeightPoints { get; set; } = 1;
-    public decimal MaxPoints { get; set; } = 5; // Likert 0-5 için
-    public string PenaltyType { get; set; } = "None";
 
     [MaxLength(2000)]
     public string? RecommendedNote { get; set; }
@@ -92,5 +93,26 @@ public class UpdateQuestionDto
     [MaxLength(1000)]
     public string? HelpText { get; set; }
 
-    public decimal PenaltyValue { get; set; } = 0;
+    /// <summary>
+    /// Alt Kriterler/Öneriler
+    /// </summary>
+    public List<UpdateSubCriteriaDto>? SubCriteria { get; set; }
+}
+
+/// <summary>
+/// Alt kriter/öneri güncelleme DTO'su
+/// </summary>
+public class UpdateSubCriteriaDto
+{
+    public int? Id { get; set; }
+
+    [Required]
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
+
+    public int Order { get; set; }
+
+    public decimal WeightPoints { get; set; } = 1;
+
+    public bool IsActive { get; set; } = true;
 }

@@ -10,6 +10,36 @@
         </button>
     </div>
 
+    <!-- Arama ve Filtreleme -->
+    <div class="card mb-4">
+        <div class="card-body py-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label mb-1">@Html.T("Common.Search", "Ara")</label>
+                    <input type="text" class="form-control" data-bind="value: searchText, valueUpdate: 'afterkeydown', event: { keypress: function(data, event) { if (event.keyCode === 13) { search(); return false; } return true; } }" placeholder="@Html.T("Checklist.SearchPlaceholder", "İsim, açıklama veya kod...")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">@Html.T("Common.Customer", "Firma")</label>
+                    <select class="form-select" data-bind="value: filterCustomerId, options: customers, optionsText: 'companyName', optionsValue: 'id', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">@Html.T("Common.Organization", "Organizasyon")</label>
+                    <select class="form-select" data-bind="value: filterOrganizationId, options: filterOrganizations, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.All", "Tümü")', enable: filterCustomerId()"></select>
+                </div>
+                <div class="col-md-2">
+                    <div class="btn-group w-100">
+                        <button type="button" class="btn btn-primary" data-bind="click: search">
+                            <i class="bi bi-search"></i> @Html.T("Common.Search", "Ara")
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bind="click: clearFilters" title="@Html.T("Common.ClearFilters", "Filtreleri Temizle")">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
@@ -44,8 +74,9 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>@Html.T("Checklist.Name", "Adı")</th>
-                                <th>@Html.T("Checklist.Description", "Açıklama")</th>
-                                <th class="text-center">@Html.T("Checklist.Sections", "Bölüm")</th>
+                                <th>@Html.T("Common.Customer", "Firma")</th>
+                                <th class="text-center">@Html.T("Checklist.Questions", "Soru")</th>
+                                <th class="text-center">@Html.T("Checklist.LikertScale", "Ölçek")</th>
                                 <th class="text-center">@Html.T("Common.Version", "Versiyon")</th>
                                 <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                 <th class="text-center" style="width: 150px;">@Html.T("Common.Actions", "İşlemler")</th>
@@ -55,12 +86,24 @@
                             <tr>
                                 <td>
                                     <strong data-bind="text: name"></strong>
+                                    <br /><small class="text-muted" data-bind="text: description || ''"></small>
                                 </td>
                                 <td>
-                                    <small class="text-muted" data-bind="text: description || '-'"></small>
+                                    <!-- ko if: customerName -->
+                                    <span data-bind="text: customerName"></span>
+                                    <!-- ko if: customerOrganizationName -->
+                                    <br /><small class="text-muted" data-bind="text: customerOrganizationName"></small>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: customerName -->
+                                    <span class="badge bg-light text-dark">@Html.T("Checklist.General", "Genel")</span>
+                                    <!-- /ko -->
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-info" data-bind="text: (sections && sections.length) || 0"></span>
+                                    <span class="badge bg-info" data-bind="text: questionCount || (questions && questions.length) || 0"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary" data-bind="text: '0-' + (likertScale || 5)"></span>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-secondary">v<span data-bind="text: version || 1"></span></span>
@@ -126,7 +169,7 @@
                     <li class="nav-item">
                         <a class="nav-link" data-bind="css: { active: wizardStep() === 2 }, click: function() { wizardStep(2); }">
                             <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': wizardStep() === 2, 'bg-secondary': wizardStep() !== 2 }">2</span>
-                            @Html.T("Checklist.Step2.ChecklistItems", "Kontrol Listesi")
+                            @Html.T("Checklist.Step2.Questions", "Sorular")
                         </a>
                     </li>
                     <li class="nav-item">
@@ -194,6 +237,17 @@
 
                     <div class="row">
                         <div class="col-md-3 mb-3">
+                            <label class="form-label">@Html.T("Checklist.LikertScale", "Likert Ölçeği")</label>
+                            <select class="form-select" data-bind="value: likertScale">
+                                <option value="3">0-3</option>
+                                <option value="4">0-4</option>
+                                <option value="5">0-5</option>
+                                <option value="7">0-7</option>
+                                <option value="10">0-10</option>
+                            </select>
+                            <small class="text-muted">@Html.T("Checklist.LikertScaleHelp", "Değerlendirme ölçeği")</small>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.MaxTotalPoints", "Maks. Toplam Puan")</label>
                             <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" />
                         </div>
@@ -205,186 +259,209 @@
                             <label class="form-label">@Html.T("Checklist.ValidFrom", "Geçerlilik Başlangıç")</label>
                             <input type="date" class="form-control" data-bind="value: validFrom" />
                         </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.ValidUntil", "Geçerlilik Bitiş")</label>
                             <input type="date" class="form-control" data-bind="value: validUntil" />
                         </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-3">
-                            <div class="form-check">
+                            <div class="form-check mt-4">
                                 <input type="checkbox" class="form-check-input" data-bind="checked: isScored" id="isScored" />
                                 <label class="form-check-label" for="isScored">@Html.T("Checklist.IsScored", "Puanlı")</label>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-check">
+                            <div class="form-check mt-4">
                                 <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
                                 <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                             </div>
                         </div>
                     </div>
+
+                    <hr class="my-3" />
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-building"></i> @Html.T("Checklist.CustomerAndOrg", "Firma ve Organizasyon")</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Customer", "Firma")</label>
+                            <select class="form-select" data-bind="value: $root.selectedCustomerId, options: $root.customers, optionsText: 'companyName', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectCustomer", "-- Firma Seçin (Genel) --")'"></select>
+                            <small class="text-muted">@Html.T("Checklist.CustomerHelp", "Boş bırakılırsa tüm firmalar için geçerli olur")</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Organization", "Organizasyon/Şube")</label>
+                            <select class="form-select" data-bind="value: customerOrganizationId, options: $root.organizations, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOrg", "-- Organizasyon Seçin (Tümü) --")', enable: $root.selectedCustomerId()"></select>
+                            <small class="text-muted">@Html.T("Checklist.OrgHelp", "Boş bırakılırsa seçili firmadaki tüm organizasyonlar için geçerli olur")</small>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Step 2: Kontrol Listesi (Bölümler ve Sorular) -->
+                <!-- Step 2: Sorular (Direkt Checklist'e Bağlı) -->
                 <div data-bind="visible: $parent.wizardStep() === 2">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="border-bottom pb-2 mb-0"><i class="bi bi-list-check"></i> @Html.T("Checklist.GroupsAndQuestions", "Kontrol Grupları ve Sorular")</h6>
-                        <button type="button" class="btn btn-sm btn-success" data-bind="click: $parent.addSection">
-                            <i class="bi bi-plus-circle"></i> @Html.T("Checklist.AddGroup", "Grup Ekle")
+                        <h6 class="border-bottom pb-2 mb-0"><i class="bi bi-list-check"></i> @Html.T("Checklist.Questions", "Sorular")</h6>
+                        <button type="button" class="btn btn-sm btn-success" data-bind="click: addQuestion">
+                            <i class="bi bi-plus-circle"></i> @Html.T("Checklist.AddQuestion", "Soru Ekle")
                         </button>
                     </div>
 
-                    <!-- Sections -->
-                    <div data-bind="foreach: sections">
-                        <div class="card mb-3">
-                            <div class="card-header" data-bind="css: { 'bg-light': groupType() === 'Scored', 'bg-warning': groupType() === 'Penalty', 'bg-secondary text-white': groupType() === 'Unscored' }">
-                                <div class="row align-items-center">
-                                    <div class="col-md-4">
-                                        <input type="text" class="form-control form-control-sm" data-bind="value: name" placeholder="@Html.T("Checklist.GroupNamePlaceholder", "Grup adı")" />
-                                    </div>
-                                    <div class="col-md-2">
-                                        <select class="form-select form-select-sm" data-bind="value: groupType">
-                                            <option value="Scored">@Html.T("Checklist.GroupType.Scored", "Puanlı")</option>
-                                            <option value="Unscored">@Html.T("Checklist.GroupType.Unscored", "Puansız")</option>
-                                            <option value="Penalty">@Html.T("Checklist.GroupType.Penalty", "Cezalı")</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" placeholder="@Html.T("Checklist.Weight", "Ağırlık")" title="@Html.T("Checklist.WeightPoints", "Ağırlık Puanı")" />
-                                    </div>
-                                    <div class="col-md-2">
-                                        <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" placeholder="@Html.T("Checklist.Max", "Maks")" title="@Html.T("Checklist.MaxPoints", "Maks Puan")" />
-                                    </div>
-                                    <div class="col-md-2 text-end">
-                                        <button type="button" class="btn btn-sm btn-primary" data-bind="click: $parents[1].addQuestion">
-                                            <i class="bi bi-plus"></i> @Html.T("Checklist.Question", "Soru")
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bind="click: $parents[1].removeSection">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                    <!-- Questions -->
+                    <div data-bind="foreach: questions">
+                        <div class="card mb-3" data-bind="css: { 'border-warning': penaltyType() === 'YellowCard', 'border-danger': penaltyType() === 'RedCard' }">
+                            <div class="card-header d-flex justify-content-between align-items-center py-2" data-bind="css: { 'bg-light': scoringType() === 'Scored', 'bg-warning': scoringType() === 'Penalty', 'bg-secondary text-white': scoringType() === 'Unscored' }">
+                                <span>
+                                    <i class="bi bi-question-circle me-1"></i>
+                                    <strong>@Html.T("Checklist.Question", "Soru") #<span data-bind="text: $index() + 1"></span></strong>
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removeQuestion">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </div>
                             <div class="card-body">
-                                <div data-bind="visible: questions().length === 0" class="text-muted text-center py-3">
-                                    @Html.T("Checklist.NoQuestionsInGroup", "Bu grupta henüz soru bulunmamaktadır.")
+                                <div class="row">
+                                    <div class="col-md-8 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" data-bind="value: text" placeholder="@Html.T("Checklist.QuestionTextPlaceholder", "Soru metni")" />
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.Scoring", "Puanlama")</label>
+                                        <select class="form-select" data-bind="value: scoringType">
+                                            <option value="Scored">@Html.T("Checklist.ScoringType.Scored", "Puanlı")</option>
+                                            <option value="Unscored">@Html.T("Checklist.ScoringType.Unscored", "Puansız")</option>
+                                            <option value="Penalty">@Html.T("Checklist.ScoringType.Penalty", "Cezalı")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.Order", "Sıra")</label>
+                                        <input type="number" class="form-control" data-bind="value: order" min="1" />
+                                    </div>
                                 </div>
 
-                                <!-- Questions -->
-                                <div data-bind="foreach: questions">
-                                    <div class="border rounded p-3 mb-2" data-bind="css: { 'border-warning': penaltyType() === 'YellowCard', 'border-danger': penaltyType() === 'RedCard' }">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.QuestionText", "Soru Metni")</label>
-                                                <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="@Html.T("Checklist.QuestionTextPlaceholder", "Soru metni")" />
-                                            </div>
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.QuestionType", "Tip")</label>
-                                                <select class="form-select form-select-sm" data-bind="value: type">
-                                                    <option value="Likert">@Html.T("Checklist.QuestionType.Likert", "Likert (1-5)")</option>
-                                                    <option value="Star">@Html.T("Checklist.QuestionType.Star", "Yıldız (1-5)")</option>
-                                                    <option value="MultipleChoice">@Html.T("Checklist.QuestionType.MultipleChoice", "Çoktan Seçmeli")</option>
-                                                    <option value="Text">@Html.T("Checklist.QuestionType.Text", "Metin")</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.Scoring", "Puanlama")</label>
-                                                <select class="form-select form-select-sm" data-bind="value: scoringType">
-                                                    <option value="Scored">@Html.T("Checklist.GroupType.Scored", "Puanlı")</option>
-                                                    <option value="Unscored">@Html.T("Checklist.GroupType.Unscored", "Puansız")</option>
-                                                    <option value="Penalty">@Html.T("Checklist.GroupType.Penalty", "Cezalı")</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
-                                                <label class="form-label">@Html.T("Checklist.PenaltyType", "Ceza Tipi")</label>
-                                                <select class="form-select form-select-sm" data-bind="value: penaltyType">
-                                                    <option value="None">@Html.T("Checklist.PenaltyType.None", "Yok")</option>
-                                                    <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
-                                                    <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
-                                                </select>
-                                            </div>
+                                <div class="row">
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.WeightPoints", "Ağırlık Puanı")</label>
+                                        <input type="number" class="form-control" data-bind="value: weightPoints" min="0" step="0.1" />
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.ScaleSteps", "Kırılım")</label>
+                                        <input type="number" class="form-control" data-bind="value: scaleSteps" min="1" max="10" />
+                                        <small class="text-muted">@Html.T("Checklist.ScaleStepsHelp", "1=Evet/Hayır, 4=Detaylı")</small>
+                                    </div>
+                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
+                                        <label class="form-label">@Html.T("Checklist.PenaltyType", "Ceza Tipi")</label>
+                                        <select class="form-select" data-bind="value: penaltyType">
+                                            <option value="None">@Html.T("Checklist.PenaltyType.None", "Yok")</option>
+                                            <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
+                                            <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
+                                        <label class="form-label">@Html.T("Checklist.PenaltyValue", "Ceza Değeri")</label>
+                                        <input type="number" class="form-control" data-bind="value: penaltyValue" min="0" />
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label d-block">&nbsp;</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" data-bind="checked: allowNA" />
+                                            <label class="form-check-label">@Html.T("Checklist.AllowNA", "N/A İzin Ver")</label>
                                         </div>
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label d-block">&nbsp;</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" data-bind="checked: isRequired" />
+                                            <label class="form-check-label">@Html.T("Checklist.Required", "Zorunlu")</label>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                        <div class="row">
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.Weight", "Ağırlık")</label>
-                                                <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" />
-                                            </div>
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.MaxPoints", "Maks Puan")</label>
-                                                <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" min="0" />
-                                            </div>
-                                            <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
-                                                <label class="form-label">@Html.T("Checklist.PenaltyValue", "Ceza Değeri")</label>
-                                                <input type="number" class="form-control form-control-sm" data-bind="value: penaltyValue" min="0" />
-                                            </div>
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.Order", "Sıra")</label>
-                                                <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
-                                            </div>
-                                            <div class="col-md-2 mb-2">
-                                                <label class="form-label d-block">&nbsp;</label>
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" data-bind="checked: allowNA" />
-                                                    <label class="form-check-label">N/A</label>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.RecommendedNote", "Önerilen Açıklama")</label>
+                                        <input type="text" class="form-control form-control-sm" data-bind="value: recommendedNote" placeholder="@Html.T("Checklist.RecommendedNotePlaceholder", "Değerlendirici için öneri")" />
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.HelpText", "Yardımcı Metin")</label>
+                                        <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="@Html.T("Checklist.HelpTextPlaceholder", "Soru hakkında ipucu")" />
+                                    </div>
+                                </div>
+
+                                <!-- Dosya Ekleri -->
+                                <div class="row mt-2" data-bind="visible: id">
+                                    <div class="col-12">
+                                        <label class="form-label"><i class="bi bi-paperclip"></i> @Html.T("Checklist.FileAttachments", "Dosya Ekleri")</label>
+
+                                        <!-- Mevcut Dosyalar -->
+                                        <div class="mb-2" data-bind="visible: _attachments && _attachments().length > 0">
+                                            <div class="list-group list-group-flush" data-bind="foreach: _attachments">
+                                                <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
+                                                    <div>
+                                                        <i class="bi bi-file-earmark me-1"></i>
+                                                        <a data-bind="attr: { href: downloadUrl || ('/api/question-attachments/' + id + '/download') }, text: fileName" target="_blank" class="text-decoration-none"></a>
+                                                        <small class="text-muted ms-2" data-bind="text: fileSizeFormatted || ''"></small>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger py-0" data-bind="click: function() { $root.removeQuestionAttachment($data, $parent); }">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-2 mb-2" data-bind="visible: $parent.questions().length > 1">
-                                                <label class="form-label d-block">&nbsp;</label>
-                                                <button type="button" class="btn btn-sm btn-danger w-100" data-bind="click: function() { $root.removeQuestion($data, $parent); }">
-                                                    <i class="bi bi-trash"></i> @Html.T("Common.Delete", "Sil")
-                                                </button>
-                                            </div>
                                         </div>
 
-                                        <div class="row">
-                                            <div class="col-md-6 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.RecommendedNote", "Önerilen Açıklama")</label>
-                                                <input type="text" class="form-control form-control-sm" data-bind="value: recommendedNote" placeholder="@Html.T("Checklist.RecommendedNotePlaceholder", "Değerlendirici için öneri")" />
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <label class="form-label">@Html.T("Checklist.HelpText", "Yardımcı Metin")</label>
-                                                <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="@Html.T("Checklist.HelpTextPlaceholder", "Soru hakkında ipucu")" />
-                                            </div>
+                                        <!-- Dosya Yükleme -->
+                                        <div class="input-group input-group-sm">
+                                            <input type="file" class="form-control form-control-sm" data-bind="attr: { id: 'file-' + (id() || 'new-' + $index()) }, event: { change: function(data, event) { $root.uploadQuestionAttachment($data, event.target); } }" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+                                            <span class="input-group-text" data-bind="visible: _isUploadingFile && _isUploadingFile()">
+                                                <span class="spinner-border spinner-border-sm"></span>
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">@Html.T("Checklist.FileUploadInfo", "Maks 10MB. İzin verilen: jpg, png, gif, pdf, doc, docx, xls, xlsx, txt")</small>
+                                    </div>
+                                </div>
+                                <div class="row mt-2" data-bind="visible: !id">
+                                    <div class="col-12">
+                                        <small class="text-muted"><i class="bi bi-info-circle"></i> @Html.T("Checklist.SaveBeforeAttaching", "Dosya eklemek için önce kontrol listesini kaydedin.")</small>
+                                    </div>
+                                </div>
+
+                                <!-- Alt Kriterler / Öneriler -->
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <label class="form-label mb-0">
+                                                <i class="bi bi-list-check"></i> @Html.T("Checklist.SubCriteria", "Alt Kriterler/Öneriler")
+                                                <small class="text-muted ms-1" data-bind="visible: subCriteria && subCriteria().length > 0, text: '(' + (subCriteria ? subCriteria().length : 0) + ')'"></small>
+                                            </label>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: function() { _showSubCriteria(!_showSubCriteria()); }">
+                                                <i class="bi" data-bind="css: { 'bi-chevron-down': !_showSubCriteria(), 'bi-chevron-up': _showSubCriteria() }"></i>
+                                            </button>
                                         </div>
 
-                                        <!-- Dosya Ekleri -->
-                                        <div class="row mt-2" data-bind="visible: id">
-                                            <div class="col-12">
-                                                <label class="form-label"><i class="bi bi-paperclip"></i> @Html.T("Checklist.FileAttachments", "Dosya Ekleri")</label>
-
-                                                <!-- Mevcut Dosyalar -->
-                                                <div class="mb-2" data-bind="visible: _attachments && _attachments().length > 0">
-                                                    <div class="list-group list-group-flush" data-bind="foreach: _attachments">
-                                                        <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
-                                                            <div>
-                                                                <i class="bi bi-file-earmark me-1"></i>
-                                                                <a data-bind="attr: { href: downloadUrl || ('/api/question-attachments/' + id + '/download') }, text: fileName" target="_blank" class="text-decoration-none"></a>
-                                                                <small class="text-muted ms-2" data-bind="text: fileSizeFormatted || ''"></small>
-                                                            </div>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger py-0" data-bind="click: function() { $parents[3].removeQuestionAttachment($data, $parent); }">
-                                                                <i class="bi bi-x"></i>
-                                                            </button>
-                                                        </div>
+                                        <div class="mt-2" data-bind="visible: _showSubCriteria">
+                                            <!-- Mevcut Alt Kriterler -->
+                                            <div data-bind="foreach: subCriteria">
+                                                <div class="row mb-1 align-items-center">
+                                                    <div class="col-md-6">
+                                                        <input type="text" class="form-control form-control-sm" data-bind="value: description" placeholder="@Html.T("Checklist.SubCriteriaDescription", "Alt kriter açıklaması")" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPoints", "Ağırlık Puanı")" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" title="@Html.T("Checklist.Order", "Sıra")" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger w-100" data-bind="click: function() { $parent.removeSubCriteria($data); }">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <!-- Dosya Yükleme -->
-                                                <div class="input-group input-group-sm">
-                                                    <input type="file" class="form-control form-control-sm" data-bind="attr: { id: 'file-' + (id() || 'new') }, event: { change: function(data, event) { $parents[2].uploadQuestionAttachment($data, event.target); } }" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
-                                                    <span class="input-group-text" data-bind="visible: _isUploadingFile && _isUploadingFile()">
-                                                        <span class="spinner-border spinner-border-sm"></span>
-                                                    </span>
-                                                </div>
-                                                <small class="text-muted">@Html.T("Checklist.FileUploadInfo", "Maks 10MB. İzin verilen: jpg, png, gif, pdf, doc, docx, xls, xlsx, txt")</small>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2" data-bind="visible: !id">
-                                            <div class="col-12">
-                                                <small class="text-muted"><i class="bi bi-info-circle"></i> @Html.T("Checklist.SaveBeforeAttaching", "Dosya eklemek için önce kontrol listesini kaydedin.")</small>
-                                            </div>
+                                            <!-- Yeni Alt Kriter Ekle Butonu -->
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" data-bind="click: addSubCriteria">
+                                                <i class="bi bi-plus"></i> @Html.T("Checklist.AddSubCriteria", "Alt Kriter Ekle")
+                                            </button>
+                                            <small class="text-muted d-block mt-1">@Html.T("Checklist.SubCriteriaHelp", "Alt kriterler değerlendirme sırasında puan düşürme nedeni olarak seçilebilir.")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -392,8 +469,8 @@
                         </div>
                     </div>
 
-                    <div data-bind="visible: sections().length === 0" class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i> @Html.T("Checklist.NoGroupsWarning", "Henüz grup eklenmemiş. Lütfen en az bir grup ve soru ekleyin.")
+                    <div data-bind="visible: questions().length === 0" class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> @Html.T("Checklist.NoQuestionsWarning", "Henüz soru eklenmemiş. Lütfen en az bir soru ekleyin.")
                     </div>
                 </div>
 
@@ -410,14 +487,15 @@
                                     <i class="bi bi-exclamation-triangle"></i> @Html.T("Checklist.YellowCardCriteria", "Sarı Kart Kriterleri")
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">@Html.T("Checklist.YellowCardInfo", "Sarı kart verilmesi gereken durumlar kontrol grubunda \"Cezalı\" tip ile tanımlanır.")</p>
-                                    <ul class="list-unstyled" data-bind="foreach: sections">
-                                        <!-- ko foreach: questions -->
+                                    <p class="text-muted">@Html.T("Checklist.YellowCardInfo", "Sarı kart verilmesi gereken durumlar \"Cezalı\" tip ile tanımlanır.")</p>
+                                    <ul class="list-unstyled" data-bind="foreach: questions">
                                         <!-- ko if: penaltyType() === 'YellowCard' -->
                                         <li><i class="bi bi-check text-warning"></i> <span data-bind="text: text"></span></li>
                                         <!-- /ko -->
-                                        <!-- /ko -->
                                     </ul>
+                                    <p class="text-muted" data-bind="visible: questions().filter(function(q) { return q.penaltyType() === 'YellowCard'; }).length === 0">
+                                        <i class="bi bi-dash"></i> @Html.T("Checklist.NoYellowCard", "Sarı kart sorusu tanımlanmamış.")
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -427,14 +505,15 @@
                                     <i class="bi bi-x-circle"></i> @Html.T("Checklist.RedCardCriteria", "Kırmızı Kart Kriterleri")
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">@Html.T("Checklist.RedCardInfo", "Kırmızı kart verilmesi gereken durumlar kontrol grubunda \"Cezalı\" tip ile tanımlanır.")</p>
-                                    <ul class="list-unstyled" data-bind="foreach: sections">
-                                        <!-- ko foreach: questions -->
+                                    <p class="text-muted">@Html.T("Checklist.RedCardInfo", "Kırmızı kart verilmesi gereken durumlar \"Cezalı\" tip ile tanımlanır.")</p>
+                                    <ul class="list-unstyled" data-bind="foreach: questions">
                                         <!-- ko if: penaltyType() === 'RedCard' -->
                                         <li><i class="bi bi-x text-danger"></i> <span data-bind="text: text"></span></li>
                                         <!-- /ko -->
-                                        <!-- /ko -->
                                     </ul>
+                                    <p class="text-muted" data-bind="visible: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).length === 0">
+                                        <i class="bi bi-dash"></i> @Html.T("Checklist.NoRedCard", "Kırmızı kart sorusu tanımlanmamış.")
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -452,38 +531,48 @@
                                 <tr><th>@Html.T("Checklist.TemplateName", "Şablon"):</th><td data-bind="text: templateName || '-'"></td></tr>
                                 <tr><th>@Html.T("Checklist.Type", "Tip"):</th><td data-bind="text: checklistType"></td></tr>
                                 <tr><th>@Html.T("Checklist.ScoringMethod", "Puanlama Yöntemi"):</th><td data-bind="text: scoringMethod"></td></tr>
+                                <tr><th>@Html.T("Checklist.LikertScale", "Likert Ölçeği"):</th><td>0-<span data-bind="text: likertScale"></span></td></tr>
                                 <tr><th>@Html.T("Checklist.MaxTotalPoints", "Maks. Puan"):</th><td data-bind="text: maxTotalPoints"></td></tr>
+                                <tr><th>@Html.T("Common.Customer", "Firma"):</th><td data-bind="text: $parent.getSelectedCustomerName() || '@Html.T("Checklist.General", "Genel")'"></td></tr>
+                                <tr><th>@Html.T("Common.Organization", "Organizasyon"):</th><td data-bind="text: $parent.getSelectedOrganizationName() || '@Html.T("Checklist.AllOrgs", "Tümü")'"></td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-sm">
-                                <tr><th>@Html.T("Checklist.TotalGroups", "Toplam Grup"):</th><td data-bind="text: sections().length"></td></tr>
-                                <tr><th>@Html.T("Checklist.TotalQuestions", "Toplam Soru"):</th><td data-bind="text: $parent.getTotalQuestions()"></td></tr>
-                                <tr><th>@Html.T("Checklist.YellowCardQuestions", "Sarı Kart Sorusu"):</th><td data-bind="text: $parent.getYellowCardCount()"></td></tr>
-                                <tr><th>@Html.T("Checklist.RedCardQuestions", "Kırmızı Kart Sorusu"):</th><td data-bind="text: $parent.getRedCardCount()"></td></tr>
+                                <tr><th>@Html.T("Checklist.TotalQuestions", "Toplam Soru"):</th><td data-bind="text: questions().length"></td></tr>
+                                <tr><th>@Html.T("Checklist.ScoredQuestions", "Puanlı Soru"):</th><td data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored'; }).length"></td></tr>
+                                <tr><th>@Html.T("Checklist.YellowCardQuestions", "Sarı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'YellowCard'; }).length"></td></tr>
+                                <tr><th>@Html.T("Checklist.RedCardQuestions", "Kırmızı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).length"></td></tr>
+                                <tr><th>@Html.T("Checklist.TotalWeightPoints", "Toplam Ağırlık Puanı"):</th><td data-bind="text: questions().reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></td></tr>
                                 <tr><th>@Html.T("Checklist.EstimatedDuration", "Tahmini Süre"):</th><td><span data-bind="text: estimatedDurationMinutes || '-'"></span> @Html.T("Checklist.Minutes", "dk")</td></tr>
                                 <tr><th>@Html.T("Common.Status", "Durum"):</th><td><span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span></td></tr>
                             </table>
                         </div>
                     </div>
 
-                    <h6 class="mt-4">@Html.T("Checklist.GroupAndQuestionSummary", "Grup ve Soru Özeti")</h6>
+                    <h6 class="mt-4">@Html.T("Checklist.QuestionSummary", "Soru Özeti")</h6>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead class="table-light">
                                 <tr>
-                                    <th>@Html.T("Checklist.GroupName", "Grup Adı")</th>
-                                    <th>@Html.T("Checklist.QuestionType", "Tip")</th>
-                                    <th>@Html.T("Checklist.Weight", "Ağırlık")</th>
-                                    <th>@Html.T("Checklist.QuestionCount", "Soru Sayısı")</th>
+                                    <th>#</th>
+                                    <th>@Html.T("Checklist.QuestionText", "Soru")</th>
+                                    <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
+                                    <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
+                                    <th>@Html.T("Checklist.ScaleSteps", "Kırılım")</th>
+                                    <th>@Html.T("Checklist.SubCriteria", "Alt Kriter")</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: sections">
+                            <tbody data-bind="foreach: questions">
                                 <tr>
-                                    <td data-bind="text: name"></td>
-                                    <td><span class="badge" data-bind="css: { 'bg-success': groupType() === 'Scored', 'bg-warning': groupType() === 'Penalty', 'bg-secondary': groupType() === 'Unscored' }, text: groupType"></span></td>
+                                    <td data-bind="text: $index() + 1"></td>
+                                    <td data-bind="text: text"></td>
+                                    <td>
+                                        <span class="badge" data-bind="css: { 'bg-success': scoringType() === 'Scored', 'bg-warning': scoringType() === 'Penalty', 'bg-secondary': scoringType() === 'Unscored' }, text: scoringType"></span>
+                                    </td>
                                     <td data-bind="text: weightPoints"></td>
-                                    <td data-bind="text: questions().length"></td>
+                                    <td data-bind="text: scaleSteps"></td>
+                                    <td data-bind="text: (subCriteria && subCriteria().length) || 0"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -527,46 +616,49 @@
                 <p class="text-muted" data-bind="text: description || '@Html.T("Common.NoDescription", "Açıklama yok")'"></p>
                 <div class="mb-3">
                     <span class="badge bg-secondary">@Html.T("Checklist.Version", "Versiyon"): <span data-bind="text: version"></span></span>
-                    <span class="badge bg-info ms-2"><span data-bind="text: (sections && sections.length) || 0"></span> @Html.T("Checklist.Section", "Bölüm")</span>
+                    <span class="badge bg-info ms-2"><span data-bind="text: questionCount || (questions && questions.length) || 0"></span> @Html.T("Checklist.Questions", "Soru")</span>
+                    <span class="badge bg-primary ms-2">@Html.T("Checklist.LikertScale", "Ölçek"): 0-<span data-bind="text: likertScale || 5"></span></span>
                 </div>
 
                 <hr>
 
-                <!-- Sections (Read-only) -->
-                <div data-bind="foreach: sections || []">
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
-                            <h6 class="mb-0" data-bind="text: name"></h6>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>@Html.T("Checklist.Question", "Soru")</th>
-                                        <th>@Html.T("Checklist.QuestionType", "Tip")</th>
-                                        <th>@Html.T("Common.Score", "Puan")</th>
-                                        <th>N/A</th>
-                                    </tr>
-                                </thead>
-                                <tbody data-bind="foreach: questions">
-                                    <tr>
-                                        <td data-bind="text: text"></td>
-                                        <td><span class="badge bg-info" data-bind="text: type"></span></td>
-                                        <td data-bind="text: points"></td>
-                                        <td>
-                                            <span data-bind="visible: allowNA" class="text-success">
-                                                <i class="bi bi-check-circle-fill"></i>
-                                            </span>
-                                            <span data-bind="visible: !allowNA" class="text-muted">
-                                                <i class="bi bi-dash-circle"></i>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <!-- Questions (Read-only) -->
+                <table class="table table-sm table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>@Html.T("Checklist.QuestionText", "Soru")</th>
+                            <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
+                            <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
+                            <th>@Html.T("Checklist.ScaleSteps", "Kırılım")</th>
+                            <th>N/A</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: questions || []">
+                        <tr>
+                            <td data-bind="text: $index() + 1"></td>
+                            <td>
+                                <span data-bind="text: text"></span>
+                                <!-- ko if: subCriteria && subCriteria.length > 0 -->
+                                <br /><small class="text-muted"><i class="bi bi-list-check"></i> <span data-bind="text: subCriteria.length"></span> @Html.T("Checklist.SubCriteria", "alt kriter")</small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: { 'bg-success': scoringType === 'Scored', 'bg-warning': scoringType === 'Penalty', 'bg-secondary': scoringType === 'Unscored' }, text: scoringTypeName || scoringType"></span>
+                            </td>
+                            <td data-bind="text: weightPoints"></td>
+                            <td data-bind="text: scaleSteps"></td>
+                            <td>
+                                <span data-bind="visible: allowNA" class="text-success">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </span>
+                                <span data-bind="visible: !allowNA" class="text-muted">
+                                    <i class="bi bi-dash-circle"></i>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeViewModal">

@@ -17,13 +17,15 @@ public class ChecklistRepository : IChecklistRepository
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
+            .Include(c => c.Customer)
+            .Include(c => c.CustomerOrganization)
             .AsQueryable();
 
         if (includeDetails)
         {
             query = query
-                .Include(c => c.Sections.Where(s => !s.IsDeleted).OrderBy(s => s.Order))
-                    .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted).OrderBy(q => q.Order));
+                .Include(c => c.Questions.Where(q => !q.IsDeleted).OrderBy(q => q.Order))
+                    .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted).OrderBy(sc => sc.Order));
         }
 
         return await query.FirstOrDefaultAsync(c => c.Id == id);
@@ -33,12 +35,53 @@ public class ChecklistRepository : IChecklistRepository
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
-            .Include(c => c.Sections.Where(s => !s.IsDeleted))
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+            .Include(c => c.Customer)
+            .Include(c => c.CustomerOrganization)
             .AsQueryable();
 
         if (!includeInactive)
         {
             query = query.Where(c => c.IsActive);
+        }
+
+        return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Checklist>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    {
+        var query = _context.Checklists
+            .Where(c => !c.IsDeleted)
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+            .Include(c => c.Customer)
+            .Include(c => c.CustomerOrganization)
+            .AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(c => c.IsActive);
+        }
+
+        // Metin araması (isim veya açıklama)
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var search = searchText.ToLower();
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(search) ||
+                (c.Description != null && c.Description.ToLower().Contains(search)) ||
+                (c.Code != null && c.Code.ToLower().Contains(search)));
+        }
+
+        // Firma filtresi
+        if (customerId.HasValue)
+        {
+            query = query.Where(c => c.CustomerId == customerId.Value);
+        }
+
+        // Organizasyon filtresi
+        if (customerOrganizationId.HasValue)
+        {
+            query = query.Where(c => c.CustomerOrganizationId == customerOrganizationId.Value);
         }
 
         return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();

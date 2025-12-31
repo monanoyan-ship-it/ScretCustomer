@@ -1,25 +1,59 @@
 // Checklist ViewModel - Model Pattern ile Gelismis Kontrol Listesi Yonetimi
+// YENİ YAPI: Checklist -> Questions -> SubCriteria (Section kaldırıldı)
 
-// Question Model
+// SubCriteria Model - Alt Kriter/Öneri
+var SubCriteriaModel = function (data) {
+    let base = this;
+    data = data || {};
+
+    base.id = ko.observable(data.id || null);
+    base.description = ko.observable(data.description || '');
+    base.order = ko.observable(data.order || 0);
+    base.weightPoints = ko.observable(data.weightPoints || 1);
+    base.isActive = ko.observable(data.isActive !== false);
+};
+
+// Question Model - Direkt Checklist'e bağlı
 var QuestionModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
 
     base.id = ko.observable(data.id || null);
     base.text = ko.observable(data.text || '');
-    base.type = ko.observable(data.type || 'Likert');
-    base.points = ko.observable(data.points || 1);
     base.order = ko.observable(data.order || 0);
     base.isRequired = ko.observable(data.isRequired !== false);
     base.allowNA = ko.observable(data.allowNA || false);
-    base.options = ko.observable(data.options ? (typeof data.options === 'string' ? data.options : JSON.stringify(data.options)) : '');
+
+    // Puanlama alanları
     base.scoringType = ko.observable(data.scoringType || 'Scored');
-    base.weightPoints = ko.observable(data.weightPoints || 1);
-    base.maxPoints = ko.observable(data.maxPoints || 5); // Likert 0-5 için
+    base.weightPoints = ko.observable(data.weightPoints || 10); // Varsayılan 10 (5 soru = 50, 10 soru = 100)
+    base.scaleSteps = ko.observable(data.scaleSteps || 4); // Kırılım sayısı (1=Evet/Hayır, 4=Detaylı)
     base.penaltyType = ko.observable(data.penaltyType || 'None');
     base.penaltyValue = ko.observable(data.penaltyValue || 0);
     base.recommendedNote = ko.observable(data.recommendedNote || '');
     base.helpText = ko.observable(data.helpText || '');
+
+    // Alt Kriterler/Öneriler
+    let subCriteria = (data.subCriteria || []).map(function (sc) {
+        return new SubCriteriaModel(sc);
+    });
+    base.subCriteria = ko.observableArray(subCriteria);
+
+    // Alt kriter toggle
+    base._showSubCriteria = ko.observable(subCriteria.length > 0);
+
+    // Yeni alt kriter ekle
+    base.addSubCriteria = function () {
+        base.subCriteria.push(new SubCriteriaModel({
+            order: base.subCriteria().length + 1
+        }));
+        base._showSubCriteria(true);
+    };
+
+    // Alt kriter sil
+    base.removeSubCriteria = function (subCriteria) {
+        base.subCriteria.remove(subCriteria);
+    };
 
     // Mevcut dosya eklerini yükle (API'ye gönderilmeyecek)
     base._attachments = ko.observableArray([]);
@@ -29,94 +63,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     }
 };
 
-// Section Model
-var SectionModel = function (data, loadAttachmentsFn) {
-    let base = this;
-    data = data || {};
-
-    base.id = ko.observable(data.id || null);
-    base.name = ko.observable(data.name || '');
-    base.description = ko.observable(data.description || '');
-    base.order = ko.observable(data.order || 0);
-    base.groupType = ko.observable(data.groupType || 'Scored');
-    base.weightPoints = ko.observable(data.weightPoints || 1);
-    base.maxPoints = ko.observable(data.maxPoints || 5); // Likert 0-5 için
-    base.isActive = ko.observable(data.isActive !== false);
-
-    // Questions
-    let questions = (data.questions || []).map(function (q) {
-        return new QuestionModel(q, loadAttachmentsFn);
-    });
-    base.questions = ko.observableArray(questions);
-
-    // Newfound uyumu: Eğer questions boşsa, otomatik olarak Section adıyla aynı isimde bir Question ekle
-    // Bu sayede kullanıcı sadece grup eklese bile değerlendirme yapılabilir
-    base._autoQuestion = null; // Otomatik eklenen soruyu takip et
-    if (base.questions().length === 0) {
-        base._autoQuestion = new QuestionModel({
-            text: base.name() || '', // Grup adıyla aynı
-            type: 'Rating', // Likert için uygun
-            order: 1,
-            points: 0,
-            isRequired: true,
-            allowNA: false,
-            scoringType: base.groupType(), // Grup tipiyle aynı
-            weightPoints: base.weightPoints(), // Grup ağırlığıyla aynı
-            maxPoints: base.maxPoints(), // Grup maks puanıyla aynı
-            penaltyType: base.groupType() === 'Penalty' ? 'YellowCard' : 'None'
-        });
-        base.questions.push(base._autoQuestion);
-    }
-
-    // Section adı değiştiğinde, otomatik eklenen sorunun text'ini de güncelle
-    base.name.subscribe(function (newName) {
-        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
-            base._autoQuestion.text(newName);
-        }
-    });
-
-    // Grup tipi değiştiğinde, otomatik eklenen sorunun scoringType'ını da güncelle
-    base.groupType.subscribe(function (newType) {
-        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
-            base._autoQuestion.scoringType(newType);
-            base._autoQuestion.penaltyType(newType === 'Penalty' ? 'YellowCard' : 'None');
-        }
-    });
-
-    // Ağırlık puanı değiştiğinde, otomatik eklenen sorunun weightPoints'ini de güncelle
-    base.weightPoints.subscribe(function (newWeight) {
-        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
-            base._autoQuestion.weightPoints(newWeight);
-        }
-    });
-
-    // Maks puan değiştiğinde, otomatik eklenen sorunun maxPoints'ini de güncelle
-    base.maxPoints.subscribe(function (newMax) {
-        if (base._autoQuestion && base.questions().length === 1 && base.questions()[0] === base._autoQuestion) {
-            base._autoQuestion.maxPoints(newMax);
-        }
-    });
-
-    // Yeni soru ekle
-    base.addQuestion = function () {
-        base.questions.push(new QuestionModel({
-            order: base.questions().length + 1
-        }));
-        // Manuel soru eklendiğinde artık otomatik soru takibi yapma
-        base._autoQuestion = null;
-    };
-
-    // Soru sil - en az 1 soru kalmalı (UI'da buton gizleniyor, bu ekstra güvenlik)
-    base.removeQuestion = function (question) {
-        if (base.questions().length <= 1) return; // Son soru silinemez
-        base.questions.remove(question);
-        if (question === base._autoQuestion) {
-            base._autoQuestion = null;
-        }
-    };
-};
-
-// Checklist Model
+// Checklist Model - Sorular direkt checklist'e bağlı
 var ChecklistModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
@@ -131,27 +78,31 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     base.templateName = ko.observable(data.templateName || '');
     base.checklistType = ko.observable(data.checklistType || 'CallPerformance');
     base.scoringMethod = ko.observable(data.scoringMethod || 'Maximum');
+    base.likertScale = ko.observable(data.likertScale || 5); // Likert ölçeği (0-5)
     base.maxTotalPoints = ko.observable(data.maxTotalPoints || 100);
     base.estimatedDurationMinutes = ko.observable(data.estimatedDurationMinutes || 30);
     base.validFrom = ko.observable(data.validFrom ? data.validFrom.split('T')[0] : '');
     base.validUntil = ko.observable(data.validUntil ? data.validUntil.split('T')[0] : '');
+    // Firma ve Organizasyon
+    base.customerId = ko.observable(data.customerId || null);
+    base.customerOrganizationId = ko.observable(data.customerOrganizationId || null);
 
-    // Sections
-    let sections = (data.sections || []).map(function (s) {
-        return new SectionModel(s, loadAttachmentsFn);
+    // Questions - Direkt checklist'e bağlı
+    let questions = (data.questions || []).map(function (q) {
+        return new QuestionModel(q, loadAttachmentsFn);
     });
-    base.sections = ko.observableArray(sections);
+    base.questions = ko.observableArray(questions);
 
-    // Yeni section ekle
-    base.addSection = function () {
-        base.sections.push(new SectionModel({
-            order: base.sections().length + 1
+    // Yeni soru ekle
+    base.addQuestion = function () {
+        base.questions.push(new QuestionModel({
+            order: base.questions().length + 1
         }));
     };
 
-    // Section sil
-    base.removeSection = function (section) {
-        base.sections.remove(section);
+    // Soru sil
+    base.removeQuestion = function (question) {
+        base.questions.remove(question);
     };
 };
 
@@ -170,6 +121,79 @@ function ChecklistViewModel() {
     self.viewingChecklist = ko.observable(null);
     self.isSaving = ko.observable(false);
     self.wizardStep = ko.observable(1);
+
+    // Firma ve Organizasyon listesi
+    self.customers = ko.observableArray([]);
+    self.organizations = ko.observableArray([]);
+    self.selectedCustomerId = ko.observable(null);
+
+    // Arama/Filtreleme
+    self.searchText = ko.observable('');
+    self.filterCustomerId = ko.observable(null);
+    self.filterOrganizationId = ko.observable(null);
+    self.filterOrganizations = ko.observableArray([]);
+
+    // Filtre firma değiştiğinde organizasyonları yükle
+    self.filterCustomerId.subscribe(function (customerId) {
+        if (customerId) {
+            apiService.get('/customer-organizations/by-customer/' + customerId)
+                .then(function (data) {
+                    self.filterOrganizations(data);
+                })
+                .catch(function () {
+                    self.filterOrganizations([]);
+                });
+        } else {
+            self.filterOrganizations([]);
+            self.filterOrganizationId(null);
+        }
+    });
+
+    // Firma değiştiğinde organizasyonları yükle
+    self.selectedCustomerId.subscribe(function (customerId) {
+        if (customerId) {
+            self.loadOrganizations(customerId);
+            // Checklist'teki customerId'yi güncelle
+            if (self.editingChecklist()) {
+                self.editingChecklist().customerId(customerId);
+                // Firma değiştiğinde organizasyon seçimini sıfırla
+                self.editingChecklist().customerOrganizationId(null);
+            }
+        } else {
+            self.organizations([]);
+            if (self.editingChecklist()) {
+                self.editingChecklist().customerId(null);
+                self.editingChecklist().customerOrganizationId(null);
+            }
+        }
+    });
+
+    // Firma listesini yükle
+    self.loadCustomers = function () {
+        apiService.get('/customers')
+            .then(function (data) {
+                self.customers(data);
+            })
+            .catch(function (error) {
+                console.error('Load customers error:', error);
+            });
+    };
+
+    // Organizasyon listesini yükle
+    self.loadOrganizations = function (customerId) {
+        if (!customerId) {
+            self.organizations([]);
+            return;
+        }
+        apiService.get('/customer-organizations/by-customer/' + customerId)
+            .then(function (data) {
+                self.organizations(data);
+            })
+            .catch(function (error) {
+                console.error('Load organizations error:', error);
+                self.organizations([]);
+            });
+    };
 
     // Dosya ekleri yükleme fonksiyonu
     self.loadQuestionAttachments = function (question) {
@@ -191,7 +215,19 @@ function ChecklistViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
-        apiService.get('/checklists')
+        // Query parametrelerini oluştur
+        var params = [];
+        var search = self.searchText();
+        var customerId = self.filterCustomerId();
+        var orgId = self.filterOrganizationId();
+
+        if (search) params.push('search=' + encodeURIComponent(search));
+        if (customerId) params.push('customerId=' + customerId);
+        if (orgId) params.push('customerOrganizationId=' + orgId);
+
+        var url = '/checklists' + (params.length > 0 ? '?' + params.join('&') : '');
+
+        apiService.get(url)
             .then(function (data) {
                 self.checklists(data);
             })
@@ -204,9 +240,24 @@ function ChecklistViewModel() {
             });
     };
 
+    // Arama fonksiyonu
+    self.search = function () {
+        self.loadChecklists();
+    };
+
+    // Filtreleri temizle
+    self.clearFilters = function () {
+        self.searchText('');
+        self.filterCustomerId(null);
+        self.filterOrganizationId(null);
+        self.loadChecklists();
+    };
+
     self.createNew = function () {
         self.modalErrorMessage('');
         self.wizardStep(1);
+        self.selectedCustomerId(null);
+        self.organizations([]);
         self.editingChecklist(new ChecklistModel());
         self.isModalOpen(true);
     };
@@ -225,6 +276,14 @@ function ChecklistViewModel() {
         apiService.get('/checklists/' + checklist.id)
             .then(function (fullChecklist) {
                 self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
+                // Firma ve organizasyon seçimini ayarla
+                if (fullChecklist.customerId) {
+                    self.loadOrganizations(fullChecklist.customerId);
+                    self.selectedCustomerId(fullChecklist.customerId);
+                } else {
+                    self.selectedCustomerId(null);
+                    self.organizations([]);
+                }
                 self.isModalOpen(true);
             })
             .catch(function (error) {
@@ -252,15 +311,24 @@ function ChecklistViewModel() {
                 cloneData.validFrom = '';
                 cloneData.validUntil = '';
                 cloneData.version = 1;
-                // Section ve Question ID'lerini temizle
-                (cloneData.sections || []).forEach(function (s) {
-                    s.id = null;
-                    (s.questions || []).forEach(function (q) {
-                        q.id = null;
+                // Question ve SubCriteria ID'lerini temizle
+                (cloneData.questions || []).forEach(function (q) {
+                    q.id = null;
+                    // SubCriteria ID'lerini de temizle
+                    (q.subCriteria || []).forEach(function (sc) {
+                        sc.id = null;
                     });
                 });
 
                 self.editingChecklist(new ChecklistModel(cloneData));
+                // Firma ve organizasyon seçimini ayarla (klonlama sırasında korunur)
+                if (fullChecklist.customerId) {
+                    self.loadOrganizations(fullChecklist.customerId);
+                    self.selectedCustomerId(fullChecklist.customerId);
+                } else {
+                    self.selectedCustomerId(null);
+                    self.organizations([]);
+                }
                 self.isModalOpen(true);
             })
             .catch(function (error) {
@@ -272,22 +340,14 @@ function ChecklistViewModel() {
             });
     };
 
-    self.addSection = function () {
+    self.addQuestion = function () {
         if (!self.editingChecklist()) return;
-        self.editingChecklist().addSection();
+        self.editingChecklist().addQuestion();
     };
 
-    self.removeSection = function (section) {
+    self.removeQuestion = function (question) {
         if (!self.editingChecklist()) return;
-        self.editingChecklist().removeSection(section);
-    };
-
-    self.addQuestion = function (section) {
-        section.addQuestion();
-    };
-
-    self.removeQuestion = function (question, section) {
-        section.removeQuestion(question);
+        self.editingChecklist().removeQuestion(question);
     };
 
     // Dosya yükleme fonksiyonları
@@ -377,20 +437,14 @@ function ChecklistViewModel() {
     // Helper functions for summary
     self.getTotalQuestions = function () {
         if (!self.editingChecklist()) return 0;
-        var total = 0;
-        self.editingChecklist().sections().forEach(function (s) {
-            total += s.questions().length;
-        });
-        return total;
+        return self.editingChecklist().questions().length;
     };
 
     self.getYellowCardCount = function () {
         if (!self.editingChecklist()) return 0;
         var count = 0;
-        self.editingChecklist().sections().forEach(function (s) {
-            s.questions().forEach(function (q) {
-                if (q.penaltyType() === 'YellowCard') count++;
-            });
+        self.editingChecklist().questions().forEach(function (q) {
+            if (q.penaltyType() === 'YellowCard') count++;
         });
         return count;
     };
@@ -398,12 +452,37 @@ function ChecklistViewModel() {
     self.getRedCardCount = function () {
         if (!self.editingChecklist()) return 0;
         var count = 0;
-        self.editingChecklist().sections().forEach(function (s) {
-            s.questions().forEach(function (q) {
-                if (q.penaltyType() === 'RedCard') count++;
-            });
+        self.editingChecklist().questions().forEach(function (q) {
+            if (q.penaltyType() === 'RedCard') count++;
         });
         return count;
+    };
+
+    // Toplam ağırlık puanı hesapla
+    self.getTotalWeightPoints = function () {
+        if (!self.editingChecklist()) return 0;
+        var total = 0;
+        self.editingChecklist().questions().forEach(function (q) {
+            total += parseFloat(q.weightPoints()) || 0;
+        });
+        return total;
+    };
+
+    // Seçili firma adını getir
+    self.getSelectedCustomerName = function () {
+        var customerId = self.selectedCustomerId();
+        if (!customerId) return null;
+        var customer = self.customers().find(function (c) { return c.id === customerId; });
+        return customer ? customer.companyName : null;
+    };
+
+    // Seçili organizasyon adını getir
+    self.getSelectedOrganizationName = function () {
+        if (!self.editingChecklist()) return null;
+        var orgId = self.editingChecklist().customerOrganizationId();
+        if (!orgId) return null;
+        var org = self.organizations().find(function (o) { return o.id === orgId; });
+        return org ? org.name : null;
     };
 
     self.saveChecklist = function () {
@@ -412,30 +491,22 @@ function ChecklistViewModel() {
         var checklist = self.editingChecklist();
         var data = ko.toJS(checklist);
 
-        // _ ile baslayan internal alanlari temizle ve options'i parse et
-        data.sections.forEach(function (s) {
-            s.questions.forEach(function (q) {
-                delete q._attachments;
-                delete q._isUploadingFile;
-                // Options: boş veya string ise düzelt
-                if (!q.options || q.options === '') {
-                    q.options = null;
-                } else if (typeof q.options === 'string') {
-                    try {
-                        q.options = JSON.parse(q.options);
-                    } catch (e) {
-                        q.options = null;
-                    }
-                }
-            });
-            delete s.addQuestion;
-            delete s.removeQuestion;
+        // _ ile baslayan internal alanlari temizle
+        data.questions.forEach(function (q) {
+            delete q._attachments;
+            delete q._isUploadingFile;
+            delete q._showSubCriteria;
+            delete q.addSubCriteria;
+            delete q.removeSubCriteria;
+            // SubCriteria: boş array ise null yap
+            if (q.subCriteria && q.subCriteria.length === 0) {
+                q.subCriteria = null;
+            }
         });
-        delete data.addSection;
-        delete data.removeSection;
+        delete data.addQuestion;
+        delete data.removeQuestion;
 
         // Boş string date alanlarını null'a çevir (backend DateTime? bekliyor)
-        // undefined, null, boş string, "null" string hepsini null yap
         if (!data.validFrom || data.validFrom === '' || data.validFrom === 'null') {
             data.validFrom = null;
         }
@@ -484,6 +555,7 @@ function ChecklistViewModel() {
 
     // Initialize
     self.loadChecklists();
+    self.loadCustomers();
 }
 
 // Apply bindings when DOM is ready

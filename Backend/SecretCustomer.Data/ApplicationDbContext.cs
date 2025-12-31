@@ -53,6 +53,10 @@ public class ApplicationDbContext : DbContext
     // Question Attachments
     public DbSet<QuestionAttachment> QuestionAttachments { get; set; }
 
+    // Question Sub Criteria (Alt Kriterler/Öneriler)
+    public DbSet<QuestionSubCriteria> QuestionSubCriteria { get; set; }
+    public DbSet<AnswerSubCriteriaSelection> AnswerSubCriteriaSelections { get; set; }
+
     // Announcements
     public DbSet<Announcement> Announcements { get; set; }
 
@@ -143,6 +147,10 @@ public class ApplicationDbContext : DbContext
 
         // Question Attachments
         modelBuilder.Entity<QuestionAttachment>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Question Sub Criteria
+        modelBuilder.Entity<QuestionSubCriteria>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<AnswerSubCriteriaSelection>().HasQueryFilter(e => !e.IsDeleted);
 
         // Announcements
         modelBuilder.Entity<Announcement>().HasQueryFilter(e => !e.IsDeleted);
@@ -289,6 +297,41 @@ public class ApplicationDbContext : DbContext
             .WithMany()
             .HasForeignKey(e => e.EvaluatedOrganizationId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // ===== Checklist -> Questions İlişkisi (Section kaldırıldı) =====
+        modelBuilder.Entity<Question>()
+            .HasOne(q => q.Checklist)
+            .WithMany(c => c.Questions)
+            .HasForeignKey(q => q.ChecklistId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Section ilişkisi (geriye uyumluluk - opsiyonel)
+        modelBuilder.Entity<Question>()
+            .HasOne(q => q.Section)
+            .WithMany(s => s.Questions)
+            .HasForeignKey(q => q.SectionId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
+        // ===== QuestionSubCriteria İlişkileri =====
+        modelBuilder.Entity<QuestionSubCriteria>()
+            .HasOne(sc => sc.Question)
+            .WithMany(q => q.SubCriteria)
+            .HasForeignKey(sc => sc.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ===== AnswerSubCriteriaSelection İlişkileri =====
+        modelBuilder.Entity<AnswerSubCriteriaSelection>()
+            .HasOne(s => s.Answer)
+            .WithMany(a => a.SubCriteriaSelections)
+            .HasForeignKey(s => s.AnswerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AnswerSubCriteriaSelection>()
+            .HasOne(s => s.SubCriteria)
+            .WithMany(sc => sc.Selections)
+            .HasForeignKey(s => s.SubCriteriaId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // AuditLog indexleri (hızlı sorgu için)
         modelBuilder.Entity<AuditLog>()

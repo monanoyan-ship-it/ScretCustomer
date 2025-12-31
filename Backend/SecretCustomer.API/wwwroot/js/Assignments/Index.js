@@ -7,7 +7,6 @@ function AssignmentEditViewModel(data) {
 
     self.id = ko.observable(data.id || null);
     self.projectId = ko.observable(data.projectId || '');
-    self.branchId = ko.observable(data.branchId || '');
     self.checklistId = ko.observable(data.checklistId || '');
     self.assignedUserId = ko.observable(data.assignedUserId || '');
     self.assignedFieldWorkerId = ko.observable(data.assignedFieldWorkerId || '');
@@ -27,7 +26,6 @@ function AssignmentEditViewModel(data) {
         var dto = {
             projectId: self.projectId(),
             checklistId: self.checklistId(),
-            branchId: self.branchId() || null,
             dueDate: self.dueDate(),
             notes: self.notes() || null
         };
@@ -59,13 +57,13 @@ function BulkAssignmentViewModel() {
 
     self.projectId = ko.observable('');
     self.dueDate = ko.observable('');
-    self.assignmentsPerBranch = ko.observable(1);
+    self.assignmentCount = ko.observable(1);
     self.assignedUserId = ko.observable('');
 
     self.reset = function() {
         self.projectId('');
         self.dueDate('');
-        self.assignmentsPerBranch(1);
+        self.assignmentCount(1);
         self.assignedUserId('');
     };
 }
@@ -128,11 +126,9 @@ function AssignmentsViewModel() {
     // ===== Data =====
     self.assignments = ko.observableArray([]);
     self.availableProjects = ko.observableArray([]);
-    self.availableBranches = ko.observableArray([]);
     self.availableChecklists = ko.observableArray([]);
     self.availableEvaluators = ko.observableArray([]);
     self.availableFieldWorkers = ko.observableArray([]);
-    self.projectBranches = ko.observableArray([]);
     self.projectChecklists = ko.observableArray([]);
 
     // Summary
@@ -175,7 +171,6 @@ function AssignmentsViewModel() {
 
     // Bulk Assignment
     self.bulkAssignment = ko.observable(new BulkAssignmentViewModel());
-    self.bulkBranchCount = ko.observable(0);
 
     // Reassign
     self.reassignData = ko.observable(new ReassignViewModel());
@@ -229,15 +224,6 @@ function AssignmentsViewModel() {
                 self.availableProjects(data.filter(function(p) { return p.isActive; }));
             })
             .catch(function(error) { console.error('Error loading projects:', error); });
-    };
-
-    self.loadBranches = function() {
-        fetch('/api/branches', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.availableBranches(data);
-            })
-            .catch(function(error) { console.error('Error loading branches:', error); });
     };
 
     self.loadChecklists = function() {
@@ -319,7 +305,6 @@ function AssignmentsViewModel() {
     self.createNew = function() {
         self.isEditing(false);
         self.editingAssignment(new AssignmentEditViewModel());
-        self.projectBranches([]);
         self.projectChecklists([]);
         self.modalErrorMessage('');
         self.isModalOpen(true);
@@ -331,18 +316,9 @@ function AssignmentsViewModel() {
 
         var projectId = assignment.projectId();
         if (!projectId) {
-            self.projectBranches([]);
             self.projectChecklists([]);
             return;
         }
-
-        // Load branches for the project
-        fetch('/api/projects/' + projectId + '/branches', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.projectBranches(data);
-            })
-            .catch(function(error) { console.error('Error loading project branches:', error); });
 
         // Load checklists for the project
         fetch('/api/checklists?projectId=' + projectId, { credentials: 'include' })
@@ -434,27 +410,8 @@ function AssignmentsViewModel() {
     // ===== Bulk Assignment =====
     self.openBulkAssignmentModal = function() {
         self.bulkAssignment().reset();
-        self.bulkBranchCount(0);
         var modal = new bootstrap.Modal(document.getElementById('bulkAssignmentModal'));
         modal.show();
-    };
-
-    self.onBulkProjectChange = function() {
-        var projectId = self.bulkAssignment().projectId();
-        if (!projectId) {
-            self.bulkBranchCount(0);
-            return;
-        }
-
-        fetch('/api/projects/' + projectId + '/branches', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.bulkBranchCount(data.length);
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.bulkBranchCount(0);
-            });
     };
 
     self.createBulkAssignments = function() {
@@ -473,7 +430,7 @@ function AssignmentsViewModel() {
         var dto = {
             projectId: bulk.projectId(),
             dueDate: bulk.dueDate(),
-            assignmentsPerBranch: parseInt(bulk.assignmentsPerBranch()) || 1,
+            assignmentCount: parseInt(bulk.assignmentCount()) || 1,
             assignedUserId: bulk.assignedUserId() || null
         };
 
@@ -613,10 +570,14 @@ function AssignmentsViewModel() {
     };
 
     // ===== View Detail =====
-    self.viewDetail = function(assignment) {
+    self.showDetail = function(assignment) {
         fetch('/api/assignments/' + assignment.id + '/detail', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Detail API error: ' + res.status);
+                return res.json();
+            })
             .then(function(data) {
+                console.log('Detail data:', data);
                 self.selectedDetail(data);
                 var modal = new bootstrap.Modal(document.getElementById('detailModal'));
                 modal.show();
@@ -725,19 +686,10 @@ function AssignmentsViewModel() {
         return self.isEditing() ? T('Button.Update', 'Güncelle') : T('Button.Create', 'Oluştur');
     };
 
-    self.getBulkInfoText = function(assignmentsPerBranch) {
-        var branchCount = self.bulkBranchCount();
-        var totalAssignments = branchCount * (assignmentsPerBranch || 1);
-        return T('Assignment.BulkInfoText', 'Seçilen projede <strong>{0}</strong> şube bulunmaktadır. Toplam <strong>{1}</strong> atama oluşturulacaktır.')
-            .replace('{0}', branchCount)
-            .replace('{1}', totalAssignments);
-    };
-
     // ===== Initialize =====
     self.loadAssignments();
     self.loadSummary();
     self.loadProjects();
-    self.loadBranches();
     self.loadChecklists();
     self.loadEvaluators();
     self.loadFieldWorkers();
