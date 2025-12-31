@@ -17,17 +17,23 @@
     overflow-x: hidden; /* Yatay taşmayı engelle */
     flex-grow: 1; /* Kalan alanı doldur */
     min-height: 0; /* Flex item için scroll çalışması için */
-    width: 100%; /* Sabit genişlik */
+    width: 100% !important; /* Sabit genişlik */
+    max-width: 100% !important;
+    flex-wrap: nowrap !important; /* Kesinlikle sarma yapma */
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 /* Nav pills container */
 .sidebar-nav.nav-pills {
-    width: 100%;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
 }
 
 /* Flex column düzeni sabit kalsın */
 .sidebar-nav.flex-column {
-    align-items: stretch; /* Tüm itemlar tam genişlikte */
+    align-items: stretch !important; /* Tüm itemlar tam genişlikte */
+    flex-wrap: nowrap !important;
 }
 
 /* Sidebar Overlay */
@@ -88,12 +94,21 @@
 /* Nav item genişliğini sabitle - açılınca sağa kaymasın */
 .sidebar-nav > .nav-item {
     position: relative;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-bottom: 0.15rem;
+    left: 0 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box;
 }
 
 /* Collapse içeriği taşmasın */
-.sidebar-nav .collapse {
-    width: 100%;
+.sidebar-nav .collapse,
+.sidebar-nav .collapsing {
+    width: 100% !important;
+    margin-left: 0 !important;
+    left: 0 !important;
 }
 
 .submenu .nav-link {
@@ -145,23 +160,11 @@
     opacity: 0.8;
 }
 
-/* Spacing between menu groups - sabit genişlik */
-.sidebar-nav > .nav-item {
-    margin-bottom: 0.15rem;
-    box-sizing: border-box;
-    flex-shrink: 0;
-}
-
 /* Nav link'lerin genişliği sabit kalsın */
 .sidebar-nav .nav-link {
     box-sizing: border-box;
-    width: 100%;
-}
-
-/* Collapse açılınca diğer itemları etkilemesin */
-.sidebar-nav .collapse,
-.sidebar-nav .collapsing {
-    box-sizing: border-box;
+    width: 100% !important;
+    margin-left: 0 !important;
 }
 
 /* Custom Scrollbar for Sidebar */
