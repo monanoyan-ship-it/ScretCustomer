@@ -17,6 +17,17 @@
     overflow-x: hidden; /* Yatay taşmayı engelle */
     flex-grow: 1; /* Kalan alanı doldur */
     min-height: 0; /* Flex item için scroll çalışması için */
+    width: 100%; /* Sabit genişlik */
+}
+
+/* Nav pills container */
+.sidebar-nav.nav-pills {
+    width: 100%;
+}
+
+/* Flex column düzeni sabit kalsın */
+.sidebar-nav.flex-column {
+    align-items: stretch; /* Tüm itemlar tam genişlikte */
 }
 
 /* Sidebar Overlay */
@@ -71,6 +82,18 @@
     border-left: 2px solid rgba(255, 255, 255, 0.2);
     padding-left: 0.5rem;
     margin-top: 0.25rem;
+    margin-left: 1rem !important; /* ms-3 yerine sabit margin */
+}
+
+/* Nav item genişliğini sabitle - açılınca sağa kaymasın */
+.sidebar-nav > .nav-item {
+    position: relative;
+    width: 100%;
+}
+
+/* Collapse içeriği taşmasın */
+.sidebar-nav .collapse {
+    width: 100%;
 }
 
 .submenu .nav-link {
@@ -91,7 +114,7 @@
     color: #fff !important;
     font-weight: 500;
     border-left: 3px solid #0d6efd;
-    margin-left: -3px;
+    padding-left: calc(0.75rem - 3px); /* Border için padding ayarla, margin kullanma */
 }
 
 /* Parent Menu Item Styling */
@@ -122,9 +145,23 @@
     opacity: 0.8;
 }
 
-/* Spacing between menu groups */
+/* Spacing between menu groups - sabit genişlik */
 .sidebar-nav > .nav-item {
     margin-bottom: 0.15rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* Nav link'lerin genişliği sabit kalsın */
+.sidebar-nav .nav-link {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Collapse açılınca diğer itemları etkilemesin */
+.sidebar-nav .collapse,
+.sidebar-nav .collapsing {
+    box-sizing: border-box;
 }
 
 /* Custom Scrollbar for Sidebar */
