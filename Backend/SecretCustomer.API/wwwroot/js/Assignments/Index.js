@@ -68,6 +68,39 @@ function BulkAssignmentViewModel() {
     };
 }
 
+// Period Form ViewModel
+function PeriodFormViewModel(data) {
+    var self = this;
+    data = data || {};
+
+    self.assignmentId = ko.observable(data.assignmentId || null);
+    self.name = ko.observable(data.name || '');
+    self.startDate = ko.observable(data.startDate ? data.startDate.split('T')[0] : '');
+    self.endDate = ko.observable(data.endDate ? data.endDate.split('T')[0] : '');
+    self.targetCount = ko.observable(data.targetCount || 5);
+    self.notes = ko.observable(data.notes || '');
+
+    self.reset = function(assignmentId) {
+        self.assignmentId(assignmentId || null);
+        self.name('');
+        self.startDate('');
+        self.endDate('');
+        self.targetCount(5);
+        self.notes('');
+    };
+
+    self.toDTO = function() {
+        return {
+            assignmentId: self.assignmentId(),
+            name: self.name(),
+            startDate: self.startDate(),
+            endDate: self.endDate(),
+            targetCount: parseInt(self.targetCount()) || 5,
+            notes: self.notes() || null
+        };
+    };
+}
+
 // Reassign ViewModel
 function ReassignViewModel() {
     var self = this;
@@ -174,6 +207,11 @@ function AssignmentsViewModel() {
 
     // Reassign
     self.reassignData = ko.observable(new ReassignViewModel());
+
+    // Period Form
+    self.periodForm = ko.observable(new PeriodFormViewModel());
+    self.periodModalError = ko.observable('');
+    self.isSavingPeriod = ko.observable(false);
 
     // QR Code
     self.qrCodeImage = ko.observable('');
@@ -567,6 +605,99 @@ function AssignmentsViewModel() {
                     });
             }
         });
+    };
+
+    // ===== Period Management =====
+    self.openAddPeriodModal = function() {
+        var detail = self.selectedDetail();
+        if (!detail || !detail.id) {
+            toastr.warning(T('Assignment.SelectFirst', 'Önce bir atama seçmelisiniz!'));
+            return;
+        }
+
+        // Reset form with assignment ID
+        self.periodForm().reset(detail.id);
+        self.periodModalError('');
+
+        // Auto-generate period name (current month)
+        var now = new Date();
+        var monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        self.periodForm().name(monthNames[now.getMonth()] + ' ' + now.getFullYear());
+
+        // Auto-set start/end dates (current month)
+        var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        var endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        self.periodForm().startDate(startOfMonth.toISOString().split('T')[0]);
+        self.periodForm().endDate(endOfMonth.toISOString().split('T')[0]);
+
+        var modal = new bootstrap.Modal(document.getElementById('addPeriodModal'));
+        modal.show();
+    };
+
+    self.savePeriod = function() {
+        var form = self.periodForm();
+
+        // Validation
+        if (!form.name()) {
+            self.periodModalError(T('Period.NameRequired', 'Dönem adı zorunludur!'));
+            return;
+        }
+
+        if (!form.startDate()) {
+            self.periodModalError(T('Period.StartDateRequired', 'Başlangıç tarihi zorunludur!'));
+            return;
+        }
+
+        if (!form.endDate()) {
+            self.periodModalError(T('Period.EndDateRequired', 'Bitiş tarihi zorunludur!'));
+            return;
+        }
+
+        if (new Date(form.startDate()) >= new Date(form.endDate())) {
+            self.periodModalError(T('Period.InvalidDateRange', 'Bitiş tarihi başlangıç tarihinden sonra olmalıdır!'));
+            return;
+        }
+
+        if (!form.targetCount() || form.targetCount() < 1) {
+            self.periodModalError(T('Period.TargetRequired', 'Hedef değerlendirme sayısı en az 1 olmalıdır!'));
+            return;
+        }
+
+        var dto = form.toDTO();
+        var assignmentId = form.assignmentId();
+
+        self.isSavingPeriod(true);
+        self.periodModalError('');
+
+        fetch('/api/assignments/' + assignmentId + '/periods', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+            .then(function(res) {
+                if (!res.ok) {
+                    return res.json().then(function(err) {
+                        throw new Error(err.message || T('Period.CreateError', 'Dönem oluşturulamadı'));
+                    });
+                }
+                return res.json();
+            })
+            .then(function(data) {
+                toastr.success(T('Period.CreateSuccess', 'Dönem başarıyla oluşturuldu.'));
+                bootstrap.Modal.getInstance(document.getElementById('addPeriodModal')).hide();
+
+                // Refresh detail modal to show new period
+                self.showDetail({ id: assignmentId });
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.periodModalError(error.message || T('Period.CreateError', 'Dönem oluşturulurken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isSavingPeriod(false);
+            });
     };
 
     // ===== View Detail =====

@@ -7,6 +7,11 @@ public class SubmitEvaluationDto
     [Required]
     public int AssignmentId { get; set; }
 
+    /// <summary>
+    /// Değerlendirmenin ait olduğu dönem
+    /// </summary>
+    public int? AssignmentPeriodId { get; set; }
+
     public int? EvaluatorId { get; set; }
 
     [Required]
@@ -113,6 +118,11 @@ public class StartEvaluationDto
 {
     [Required]
     public int AssignmentId { get; set; }
+
+    /// <summary>
+    /// Değerlendirmenin ait olduğu dönem
+    /// </summary>
+    public int? AssignmentPeriodId { get; set; }
 
     public int? EvaluatorId { get; set; }
 

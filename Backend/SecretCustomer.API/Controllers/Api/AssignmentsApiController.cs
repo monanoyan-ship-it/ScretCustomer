@@ -605,6 +605,158 @@ public class AssignmentsApiController : BaseApiController
 
     #endregion
 
+    #region DÖNEMLER (PERIODS)
+
+    /// <summary>
+    /// Get periods for an assignment
+    /// </summary>
+    [HttpGet("{id}/periods")]
+    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    public async Task<IActionResult> GetPeriods(int id)
+    {
+        try
+        {
+            var periods = await _assignmentService.GetPeriodsAsync(id);
+            return Ok(periods);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading periods for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Create a new period for an assignment
+    /// </summary>
+    [HttpPost("{id}/periods")]
+    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    public async Task<IActionResult> CreatePeriod(int id, [FromBody] Core.DTOs.AssignmentPeriod.CreateAssignmentPeriodDto dto)
+    {
+        try
+        {
+            dto.AssignmentId = id;
+            var period = await _assignmentService.CreatePeriodAsync(dto);
+            return Ok(period);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating period for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Dönem oluşturulurken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Update a period
+    /// </summary>
+    [HttpPut("{id}/periods/{periodId}")]
+    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    public async Task<IActionResult> UpdatePeriod(int id, int periodId, [FromBody] Core.DTOs.AssignmentPeriod.UpdateAssignmentPeriodDto dto)
+    {
+        try
+        {
+            dto.Id = periodId;
+            var period = await _assignmentService.UpdatePeriodAsync(dto);
+            return Ok(period);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating period {PeriodId}", periodId);
+            return StatusCode(500, CreateErrorResponse("Dönem güncellenirken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Close a period
+    /// </summary>
+    [HttpPost("{id}/periods/{periodId}/close")]
+    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    public async Task<IActionResult> ClosePeriod(int id, int periodId)
+    {
+        try
+        {
+            var period = await _assignmentService.ClosePeriodAsync(periodId);
+            return Ok(period);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error closing period {PeriodId}", periodId);
+            return StatusCode(500, CreateErrorResponse("Dönem kapatılırken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Reopen a closed period
+    /// </summary>
+    [HttpPost("{id}/periods/{periodId}/reopen")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> ReopenPeriod(int id, int periodId)
+    {
+        try
+        {
+            var period = await _assignmentService.ReopenPeriodAsync(periodId);
+            return Ok(period);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reopening period {PeriodId}", periodId);
+            return StatusCode(500, CreateErrorResponse("Dönem yeniden açılırken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Delete a period
+    /// </summary>
+    [HttpDelete("{id}/periods/{periodId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeletePeriod(int id, int periodId)
+    {
+        try
+        {
+            await _assignmentService.DeletePeriodAsync(periodId);
+            return Ok(new { message = "Dönem başarıyla silindi." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting period {PeriodId}", periodId);
+            return StatusCode(500, CreateErrorResponse("Dönem silinirken bir hata oluştu.", ex));
+        }
+    }
+
+    #endregion
+
     #region HELPER METHODS
 
     /// <summary>

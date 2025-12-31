@@ -720,6 +720,62 @@
 
     <partial name="_DeleteConfirmationModal" />
 
+    <!-- Add Period Modal -->
+    <div class="modal fade" id="addPeriodModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-plus"></i> @Html.T("Period.Add", "Dönem Ekle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: periodForm">
+                    <!-- Modal Hata Mesajı -->
+                    <div data-bind="visible: $root.periodModalError()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.periodModalError()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.periodModalError(''); }"></button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Period.Name", "Dönem Adı") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" placeholder="@Html.T("Period.NamePlaceholder", "Örn: Aralık 2025")" data-bind="value: name">
+                        <small class="text-muted">@Html.T("Period.NameHint", "Aylık dönem ismi girin (Örn: Ocak 2025)")</small>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Period.StartDate", "Başlangıç Tarihi") <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: startDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Period.EndDate", "Bitiş Tarihi") <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: endDate">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Period.TargetCount", "Hedef Değerlendirme Sayısı") <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" min="1" max="100" data-bind="value: targetCount">
+                        <small class="text-muted">@Html.T("Period.TargetCountHint", "Bu dönemde yapılması gereken değerlendirme sayısı")</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>
+                        <textarea class="form-control" rows="2" placeholder="@Html.T("Common.OptionalNotes", "İsteğe bağlı notlar...")" data-bind="value: notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.savePeriod, disable: $root.isSavingPeriod">
+                        <span data-bind="visible: !$root.isSavingPeriod()">
+                            <i class="bi bi-check-circle"></i> @Html.T("Button.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: $root.isSavingPeriod">
+                            <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Saving", "Kaydediliyor...")
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div> <!-- End of assignments-app -->
 
 @section Scripts {

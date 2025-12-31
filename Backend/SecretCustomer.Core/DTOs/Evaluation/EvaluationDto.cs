@@ -4,6 +4,8 @@ public class EvaluationDto
 {
     public int Id { get; set; }
     public int AssignmentId { get; set; }
+    public int? AssignmentPeriodId { get; set; }
+    public string? AssignmentPeriodName { get; set; }
     public int? EvaluatorId { get; set; }
     public string? EvaluatorName { get; set; }
     public string Status { get; set; } = string.Empty;

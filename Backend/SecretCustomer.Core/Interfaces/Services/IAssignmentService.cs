@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Assignment;
+using SecretCustomer.Core.DTOs.AssignmentPeriod;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -37,4 +38,12 @@ public interface IAssignmentService
     // ===== SÜRESI DOLANLAR =====
     Task<IEnumerable<AssignmentDto>> GetExpiredAsync();
     Task<IEnumerable<AssignmentDto>> GetUpcomingDueAsync(int daysAhead = 3);
+
+    // ===== DÖNEMLER (PERIODS) =====
+    Task<IEnumerable<AssignmentPeriodDto>> GetPeriodsAsync(int assignmentId);
+    Task<AssignmentPeriodDto> CreatePeriodAsync(CreateAssignmentPeriodDto dto);
+    Task<AssignmentPeriodDto> UpdatePeriodAsync(UpdateAssignmentPeriodDto dto);
+    Task<AssignmentPeriodDto> ClosePeriodAsync(int periodId);
+    Task<AssignmentPeriodDto> ReopenPeriodAsync(int periodId);
+    Task DeletePeriodAsync(int periodId);
 }

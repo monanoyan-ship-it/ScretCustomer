@@ -633,4 +633,164 @@ public class AssignmentService : IAssignmentService
     }
 
     #endregion
+
+    #region DÖNEMLER (PERIODS)
+
+    public async Task<IEnumerable<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto>> GetPeriodsAsync(int assignmentId)
+    {
+        var assignment = await _context.Assignments
+            .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            throw new KeyNotFoundException("Atama bulunamadı");
+
+        var periods = await _context.AssignmentPeriods
+            .Include(p => p.Evaluations)
+            .Include(p => p.CreatedByUser)
+            .Where(p => p.AssignmentId == assignmentId && !p.IsDeleted)
+            .OrderByDescending(p => p.StartDate)
+            .ToListAsync();
+
+        return periods.Select(MapPeriodToDto);
+    }
+
+    public async Task<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto> CreatePeriodAsync(Core.DTOs.AssignmentPeriod.CreateAssignmentPeriodDto dto)
+    {
+        var assignment = await _context.Assignments
+            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            throw new KeyNotFoundException("Atama bulunamadı");
+
+        // Aynı tarih aralığında dönem var mı kontrol et
+        var overlapping = await _context.AssignmentPeriods
+            .AnyAsync(p => p.AssignmentId == dto.AssignmentId && !p.IsDeleted &&
+                ((dto.StartDate >= p.StartDate && dto.StartDate <= p.EndDate) ||
+                 (dto.EndDate >= p.StartDate && dto.EndDate <= p.EndDate)));
+
+        if (overlapping)
+            throw new InvalidOperationException("Bu tarih aralığında zaten bir dönem mevcut");
+
+        var period = new Core.Entities.AssignmentPeriod
+        {
+            AssignmentId = dto.AssignmentId,
+            Name = dto.Name,
+            StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
+            EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc),
+            TargetCount = dto.TargetCount,
+            Notes = dto.Notes,
+            Status = Core.Entities.PeriodStatus.Open,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.AssignmentPeriods.Add(period);
+        await _context.SaveChangesAsync();
+
+        return MapPeriodToDto(period);
+    }
+
+    public async Task<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto> UpdatePeriodAsync(Core.DTOs.AssignmentPeriod.UpdateAssignmentPeriodDto dto)
+    {
+        var period = await _context.AssignmentPeriods
+            .Include(p => p.Evaluations)
+            .FirstOrDefaultAsync(p => p.Id == dto.Id && !p.IsDeleted);
+
+        if (period == null)
+            throw new KeyNotFoundException("Dönem bulunamadı");
+
+        period.Name = dto.Name;
+        period.StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc);
+        period.EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc);
+        period.TargetCount = dto.TargetCount;
+        period.Notes = dto.Notes;
+        period.Status = Enum.Parse<Core.Entities.PeriodStatus>(dto.Status);
+        period.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return MapPeriodToDto(period);
+    }
+
+    public async Task<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto> ClosePeriodAsync(int periodId)
+    {
+        var period = await _context.AssignmentPeriods
+            .Include(p => p.Evaluations)
+            .FirstOrDefaultAsync(p => p.Id == periodId && !p.IsDeleted);
+
+        if (period == null)
+            throw new KeyNotFoundException("Dönem bulunamadı");
+
+        period.Status = Core.Entities.PeriodStatus.Closed;
+        period.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return MapPeriodToDto(period);
+    }
+
+    public async Task<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto> ReopenPeriodAsync(int periodId)
+    {
+        var period = await _context.AssignmentPeriods
+            .Include(p => p.Evaluations)
+            .FirstOrDefaultAsync(p => p.Id == periodId && !p.IsDeleted);
+
+        if (period == null)
+            throw new KeyNotFoundException("Dönem bulunamadı");
+
+        period.Status = Core.Entities.PeriodStatus.Open;
+        period.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return MapPeriodToDto(period);
+    }
+
+    public async Task DeletePeriodAsync(int periodId)
+    {
+        var period = await _context.AssignmentPeriods
+            .Include(p => p.Evaluations)
+            .FirstOrDefaultAsync(p => p.Id == periodId && !p.IsDeleted);
+
+        if (period == null)
+            throw new KeyNotFoundException("Dönem bulunamadı");
+
+        if (period.Evaluations.Any(e => !e.IsDeleted))
+            throw new InvalidOperationException("Bu dönemde değerlendirmeler var, silinemez");
+
+        period.IsDeleted = true;
+        period.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
+
+    private Core.DTOs.AssignmentPeriod.AssignmentPeriodDto MapPeriodToDto(Core.Entities.AssignmentPeriod period)
+    {
+        var completedEvaluations = period.Evaluations?
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .ToList() ?? new List<Core.Entities.Evaluation>();
+
+        return new Core.DTOs.AssignmentPeriod.AssignmentPeriodDto
+        {
+            Id = period.Id,
+            AssignmentId = period.AssignmentId,
+            Name = period.Name,
+            StartDate = period.StartDate,
+            EndDate = period.EndDate,
+            Status = period.Status.ToString(),
+            StatusName = period.Status == Core.Entities.PeriodStatus.Open ? "Açık" : "Kapalı",
+            TargetCount = period.TargetCount,
+            CompletedCount = completedEvaluations.Count,
+            AverageScore = completedEvaluations.Any(e => e.ScorePercentage.HasValue)
+                ? completedEvaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage)
+                : null,
+            Notes = period.Notes,
+            CreatedByUserId = period.CreatedByUserId,
+            CreatedByUserName = period.CreatedByUser != null
+                ? $"{period.CreatedByUser.FirstName} {period.CreatedByUser.LastName}"
+                : null,
+            CreatedAt = period.CreatedAt
+        };
+    }
+
+    #endregion
 }

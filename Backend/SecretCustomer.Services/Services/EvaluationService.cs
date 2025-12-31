@@ -140,6 +140,7 @@ public class EvaluationService : IEvaluationService
         var evaluation = new Evaluation
         {
             AssignmentId = dto.AssignmentId,
+            AssignmentPeriodId = dto.AssignmentPeriodId,
             EvaluatorId = dto.EvaluatorId,
             Status = EvaluationStatus.InProgress,
             StartedAt = DateTime.UtcNow,
@@ -212,14 +213,52 @@ public class EvaluationService : IEvaluationService
             .Include(e => e.Answers)
             .FirstOrDefaultAsync(e => e.AssignmentId == assignmentId && !e.IsDeleted);
 
-        // Get available personnel for this branch
-        var personnel = await _context.Users
-            .Where(u => !u.IsDeleted && u.IsActive)
-            .Select(u => new PersonnelOptionDto
+        // Get available personnel based on checklist's customer/organization
+        // Personel, checklist'te belirtilen firma ve organizasyondan seçilir
+        // Süpervizör olmayan kullanıcılar listelenir
+        var personnelQuery = _context.CustomerPersonnel
+            .Where(cp => !cp.IsDeleted && cp.IsActive);
+
+        // Checklist'te firma belirtilmişse o firmaya göre filtrele
+        if (assignment.Checklist?.CustomerId.HasValue == true)
+        {
+            personnelQuery = personnelQuery.Where(cp => cp.CustomerId == assignment.Checklist.CustomerId);
+        }
+
+        // Checklist'te organizasyon belirtilmişse o organizasyona göre filtrele
+        if (assignment.Checklist?.CustomerOrganizationId.HasValue == true)
+        {
+            personnelQuery = personnelQuery.Where(cp =>
+                cp.OrganizationId == assignment.Checklist.CustomerOrganizationId ||
+                cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == assignment.Checklist.CustomerOrganizationId));
+        }
+
+        // Süpervizörleri hariç tut (CustomerSupervisor rolü)
+        personnelQuery = personnelQuery.Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor);
+
+        var personnel = await personnelQuery
+            .Select(cp => new PersonnelOptionDto
             {
-                Id = u.Id,
-                Name = $"{u.FirstName} {u.LastName}",
-                Title = u.Role.ToString()
+                Id = cp.Id,
+                Name = $"{cp.FirstName} {cp.LastName}",
+                Title = cp.Title ?? cp.Role.ToString()
+            })
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+
+        // Get available periods for this assignment (only Open periods)
+        var periods = await _context.AssignmentPeriods
+            .Where(p => p.AssignmentId == assignmentId && !p.IsDeleted)
+            .OrderByDescending(p => p.StartDate)
+            .Select(p => new PeriodOptionDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Status = p.Status.ToString(),
+                TargetCount = p.TargetCount,
+                CompletedCount = p.CompletedCount
             })
             .ToListAsync();
 
@@ -244,6 +283,8 @@ public class EvaluationService : IEvaluationService
             EvaluatedUnknownPersonnel = existingEvaluation?.EvaluatedUnknownPersonnel,
             EvaluationComment = existingEvaluation?.EvaluationComment,
             AvailablePersonnel = personnel,
+            SelectedPeriodId = existingEvaluation?.AssignmentPeriodId,
+            AvailablePeriods = periods,
             // Sorular direkt checklist'e bağlı (Section kaldırıldı)
             Sections = new List<EvaluationSectionDto>
             {
@@ -332,12 +373,18 @@ public class EvaluationService : IEvaluationService
             evaluation = new Evaluation
             {
                 AssignmentId = dto.AssignmentId,
+                AssignmentPeriodId = dto.AssignmentPeriodId,
                 EvaluatorId = dto.EvaluatorId,
                 Status = EvaluationStatus.InProgress,
                 StartedAt = DateTime.UtcNow,
                 FormOpenedAt = dto.FormOpenedAt ?? DateTime.UtcNow
             };
             _context.Evaluations.Add(evaluation);
+        }
+        else if (dto.AssignmentPeriodId.HasValue && !evaluation.AssignmentPeriodId.HasValue)
+        {
+            // Update period if not set
+            evaluation.AssignmentPeriodId = dto.AssignmentPeriodId;
         }
 
         // Get all questions from checklist
@@ -658,10 +705,22 @@ public class EvaluationService : IEvaluationService
             evaluatedPersonnelName = personnel;
         }
 
+        // Load period name if exists
+        string? periodName = null;
+        if (evaluation.AssignmentPeriodId.HasValue)
+        {
+            periodName = await _context.AssignmentPeriods
+                .Where(p => p.Id == evaluation.AssignmentPeriodId.Value)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync();
+        }
+
         return new EvaluationDto
         {
             Id = evaluation.Id,
             AssignmentId = evaluation.AssignmentId,
+            AssignmentPeriodId = evaluation.AssignmentPeriodId,
+            AssignmentPeriodName = periodName,
             EvaluatorId = evaluation.EvaluatorId,
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"

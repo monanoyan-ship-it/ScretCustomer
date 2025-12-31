@@ -91,6 +91,10 @@ public class EvaluationFormDto
     // Personel listesi (değerlendirme için)
     public List<PersonnelOptionDto> AvailablePersonnel { get; set; } = new();
 
+    // Dönem bilgileri
+    public int? SelectedPeriodId { get; set; }
+    public List<PeriodOptionDto> AvailablePeriods { get; set; } = new();
+
     // Bölümler ve sorular
     public List<EvaluationSectionDto> Sections { get; set; } = new();
 
@@ -103,6 +107,17 @@ public class PersonnelOptionDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
+}
+
+public class PeriodOptionDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string Status { get; set; } = "Open";
+    public int TargetCount { get; set; }
+    public int CompletedCount { get; set; }
 }
 
 public class EvaluationSectionDto
