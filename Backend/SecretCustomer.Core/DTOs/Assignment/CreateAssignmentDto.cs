@@ -14,8 +14,6 @@ public class CreateAssignmentDto
 
     public int? AssignedUserId { get; set; }
 
-    public int? AssignedFieldWorkerId { get; set; }
-
     public int? AssignedCustomerPersonnelId { get; set; }
 
     [EmailAddress]
@@ -41,8 +39,6 @@ public class UpdateAssignmentDto
     public int? BranchId { get; set; }
 
     public int? AssignedUserId { get; set; }
-
-    public int? AssignedFieldWorkerId { get; set; }
 
     public int? AssignedCustomerPersonnelId { get; set; }
 
@@ -77,7 +73,6 @@ public class AssignmentItemDto
 {
     public int? BranchId { get; set; }
     public int? AssignedUserId { get; set; }
-    public int? AssignedFieldWorkerId { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalName { get; set; }
     public DateTime DueDate { get; set; }
@@ -116,7 +111,6 @@ public class BulkProjectAssignmentDto
 public class ReassignAssignmentDto
 {
     public int? NewAssignedUserId { get; set; }
-    public int? NewAssignedFieldWorkerId { get; set; }
     public int? NewAssignedCustomerPersonnelId { get; set; }
     public string? NewExternalEmail { get; set; }
     public string? NewExternalName { get; set; }

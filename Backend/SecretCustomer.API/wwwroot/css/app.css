@@ -1,5 +1,21 @@
 /* Custom styles for Secret Customer App */
 
+/* ===== Toastr Fixed Position - Modal içinde formu kaydırmasın ===== */
+#toast-container {
+    position: fixed !important;
+    z-index: 9999 !important;
+    pointer-events: none;
+}
+
+#toast-container > div {
+    pointer-events: auto;
+}
+
+#toast-container.toast-top-right {
+    top: 12px !important;
+    right: 12px !important;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;

@@ -18,7 +18,6 @@ public interface IAssignmentService
     // ===== FİLTRELEME =====
     Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(int projectId);
     Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(int userId);
-    Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(int fieldWorkerId);
     Task<IEnumerable<AssignmentDto>> GetFilteredAsync(AssignmentFilterDto filter);
 
     // ===== DURUM YÖNETİMİ =====

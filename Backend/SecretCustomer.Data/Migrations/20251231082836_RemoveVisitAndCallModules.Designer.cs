@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251231082836_RemoveVisitAndCallModules")]
+    partial class RemoveVisitAndCallModules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -357,6 +360,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("AssignedCustomerPersonnelId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("AssignedFieldWorkerId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("AssignedUserId")
                         .HasColumnType("integer");
 
@@ -383,6 +389,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int?>("FieldWorkerId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
@@ -407,9 +416,13 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("AssignedCustomerPersonnelId");
 
+                    b.HasIndex("AssignedFieldWorkerId");
+
                     b.HasIndex("AssignedUserId");
 
                     b.HasIndex("ChecklistId");
+
+                    b.HasIndex("FieldWorkerId");
 
                     b.HasIndex("ProjectId");
 
@@ -1139,6 +1152,92 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("CustomerTaskLists", (string)null);
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Delegation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ApprovedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DelegateeOrganizationUnitId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DelegateeUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DelegationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DelegatorOrganizationUnitId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DelegatorUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PermissionScope")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedByUserId");
+
+                    b.HasIndex("DelegateeOrganizationUnitId");
+
+                    b.HasIndex("DelegateeUserId");
+
+                    b.HasIndex("DelegatorOrganizationUnitId");
+
+                    b.HasIndex("DelegatorUserId");
+
+                    b.ToTable("Delegations");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
                 {
                     b.Property<int>("Id")
@@ -1367,6 +1466,64 @@ namespace SecretCustomer.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExcelTemplates");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.FieldWorker", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FieldWorkers");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>
@@ -1815,6 +1972,66 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("NotificationSettings");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.OrganizationUnit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ManagerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UnitType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("OrganizationUnits");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Permission", b =>
@@ -2698,6 +2915,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("OrganizationUnitId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -2732,6 +2952,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("OrganizationUnitId");
 
                     b.HasIndex("PreferredLanguageId");
 
@@ -2873,6 +3095,11 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("AssignedCustomerPersonnelId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SecretCustomer.Core.Entities.FieldWorker", "AssignedFieldWorker")
+                        .WithMany()
+                        .HasForeignKey("AssignedFieldWorkerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SecretCustomer.Core.Entities.User", "AssignedUser")
                         .WithMany("Assignments")
                         .HasForeignKey("AssignedUserId")
@@ -2884,6 +3111,10 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SecretCustomer.Core.Entities.FieldWorker", null)
+                        .WithMany("Assignments")
+                        .HasForeignKey("FieldWorkerId");
+
                     b.HasOne("SecretCustomer.Core.Entities.Project", "Project")
                         .WithMany("Assignments")
                         .HasForeignKey("ProjectId")
@@ -2891,6 +3122,8 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("AssignedCustomerPersonnel");
+
+                    b.Navigation("AssignedFieldWorker");
 
                     b.Navigation("AssignedUser");
 
@@ -3066,6 +3299,46 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.Delegation", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.User", "ApprovedByUser")
+                        .WithMany("DelegationsApproved")
+                        .HasForeignKey("ApprovedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SecretCustomer.Core.Entities.OrganizationUnit", "DelegateeOrganizationUnit")
+                        .WithMany("DelegationsTo")
+                        .HasForeignKey("DelegateeOrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SecretCustomer.Core.Entities.User", "DelegateeUser")
+                        .WithMany("DelegationsReceived")
+                        .HasForeignKey("DelegateeUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.OrganizationUnit", "DelegatorOrganizationUnit")
+                        .WithMany("DelegationsFrom")
+                        .HasForeignKey("DelegatorOrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SecretCustomer.Core.Entities.User", "DelegatorUser")
+                        .WithMany("DelegationsGiven")
+                        .HasForeignKey("DelegatorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("DelegateeOrganizationUnit");
+
+                    b.Navigation("DelegateeUser");
+
+                    b.Navigation("DelegatorOrganizationUnit");
+
+                    b.Navigation("DelegatorUser");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.Assignment", "Assignment")
@@ -3123,6 +3396,15 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ExcelTemplate");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.FieldWorker", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.LocaleStringResource", b =>
@@ -3219,6 +3501,23 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.OrganizationUnit", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.User", "Manager")
+                        .WithMany("ManagedOrganizationUnits")
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SecretCustomer.Core.Entities.OrganizationUnit", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Personnel", b =>
@@ -3404,9 +3703,16 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.User", b =>
                 {
+                    b.HasOne("SecretCustomer.Core.Entities.OrganizationUnit", "OrganizationUnit")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SecretCustomer.Core.Entities.Language", "PreferredLanguage")
                         .WithMany()
                         .HasForeignKey("PreferredLanguageId");
+
+                    b.Navigation("OrganizationUnit");
 
                     b.Navigation("PreferredLanguage");
                 });
@@ -3508,6 +3814,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Columns");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.FieldWorker", b =>
+                {
+                    b.Navigation("Assignments");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>
                 {
                     b.Navigation("LocaleStringResources");
@@ -3518,6 +3829,17 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.OrganizationUnit", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("DelegationsFrom");
+
+                    b.Navigation("DelegationsTo");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Permission", b =>
@@ -3569,7 +3891,15 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.Navigation("Assignments");
 
+                    b.Navigation("DelegationsApproved");
+
+                    b.Navigation("DelegationsGiven");
+
+                    b.Navigation("DelegationsReceived");
+
                     b.Navigation("Evaluations");
+
+                    b.Navigation("ManagedOrganizationUnits");
 
                     b.Navigation("UserPermissions");
                 });

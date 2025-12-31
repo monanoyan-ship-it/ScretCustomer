@@ -12,21 +12,18 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AssignmentsApiController : BaseApiController
 {
     private readonly IAssignmentService _assignmentService;
-    private readonly IFieldWorkerService _fieldWorkerService;
     private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<AssignmentsApiController> _logger;
     private readonly ILocalizationService _localizationService;
 
     public AssignmentsApiController(
         IAssignmentService assignmentService,
-        IFieldWorkerService fieldWorkerService,
         IQRCodeService qrCodeService,
         ILogger<AssignmentsApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _assignmentService = assignmentService;
-        _fieldWorkerService = fieldWorkerService;
         _qrCodeService = qrCodeService;
         _logger = logger;
         _localizationService = localizationService;
@@ -253,27 +250,8 @@ public class AssignmentsApiController : BaseApiController
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            IEnumerable<AssignmentDto> assignments;
-
-            if (userRole == "FieldWorker")
-            {
-                // FieldWorker için kendi saha çalışanı ID'sini bul
-                var fieldWorker = await _fieldWorkerService.GetByUserIdAsync(userId);
-                if (fieldWorker != null)
-                {
-                    assignments = await _assignmentService.GetByFieldWorkerIdAsync(fieldWorker.Id);
-                }
-                else
-                {
-                    assignments = Enumerable.Empty<AssignmentDto>();
-                }
-            }
-            else
-            {
-                // User ID ile ara
-                assignments = await _assignmentService.GetByUserIdAsync(userId);
-            }
+            // User ID ile kendi atamalarını getir
+            var assignments = await _assignmentService.GetByUserIdAsync(userId);
 
             return Ok(assignments);
         }
@@ -304,21 +282,21 @@ public class AssignmentsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get assignments by field worker
+    /// Get assignments by user
     /// </summary>
-    [HttpGet("by-fieldworker/{fieldWorkerId}")]
+    [HttpGet("by-user/{userId}")]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetByFieldWorker(int fieldWorkerId)
+    public async Task<IActionResult> GetByUser(int userId)
     {
         try
         {
-            var assignments = await _assignmentService.GetByFieldWorkerIdAsync(fieldWorkerId);
+            var assignments = await _assignmentService.GetByUserIdAsync(userId);
             return Ok(assignments);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments for field worker {FieldWorkerId}", fieldWorkerId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.FieldWorkerLoadError"), ex));
+            _logger.LogError(ex, "Error loading assignments for user {UserId}", userId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.UserLoadError"), ex));
         }
     }
 
@@ -762,42 +740,30 @@ public class AssignmentsApiController : BaseApiController
     /// <summary>
     /// Check if current user is authorized to access the assignment
     /// </summary>
-    private async Task<bool> IsAuthorizedForAssignment(AssignmentDto assignment)
+    private Task<bool> IsAuthorizedForAssignment(AssignmentDto assignment)
     {
         var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         // Admin ve TeamLeader her şeyi görebilir
         if (userRole == "Admin" || userRole == "TeamLeader")
         {
-            return true;
+            return Task.FromResult(true);
         }
 
-        // FieldWorker ise sadece kendi assignment'ını görebilir
-        if (userRole == "FieldWorker")
-        {
-            var fieldWorker = await _fieldWorkerService.GetByUserIdAsync(userId);
-            if (fieldWorker == null || assignment.AssignedFieldWorkerId != fieldWorker.Id)
-            {
-                _logger.LogWarning("FieldWorker {UserId} attempted to access unauthorized assignment {AssignmentId}", userId, assignment.Id);
-                return false;
-            }
-            return true;
-        }
-
-        // Diğer roller için sadece kendine atanmış assignment'ları görebilir
+        // Kullanıcı sadece kendine atanmış assignment'ları görebilir
         if (assignment.AssignedUserId != userId)
         {
             _logger.LogWarning("User {UserId} attempted to access unauthorized assignment {AssignmentId}", userId, assignment.Id);
-            return false;
+            return Task.FromResult(false);
         }
 
-        return true;
+        return Task.FromResult(true);
     }
 
     #endregion

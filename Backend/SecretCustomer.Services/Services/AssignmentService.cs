@@ -38,7 +38,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
@@ -52,7 +51,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
                 .ThenInclude(e => e.Evaluator)
@@ -73,8 +71,6 @@ public class AssignmentService : IAssignmentService
             ChecklistName = dto.ChecklistName,
             AssignedUserId = dto.AssignedUserId,
             AssignedUserName = dto.AssignedUserName,
-            AssignedFieldWorkerId = dto.AssignedFieldWorkerId,
-            AssignedFieldWorkerName = dto.AssignedFieldWorkerName,
             AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId,
             AssignedCustomerPersonnelName = dto.AssignedCustomerPersonnelName,
             ExternalEmail = dto.ExternalEmail,
@@ -131,7 +127,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
             .Where(a => !a.IsDeleted)
@@ -164,7 +159,6 @@ public class AssignmentService : IAssignmentService
             ProjectId = dto.ProjectId,
             ChecklistId = dto.ChecklistId,
             AssignedUserId = dto.AssignedUserId,
-            AssignedFieldWorkerId = dto.AssignedFieldWorkerId,
             AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId,
             ExternalEmail = dto.ExternalEmail,
             ExternalName = dto.ExternalName,
@@ -195,7 +189,6 @@ public class AssignmentService : IAssignmentService
             ProjectId = dto.ProjectId,
             ChecklistId = dto.ChecklistId,
             AssignedUserId = a.AssignedUserId,
-            AssignedFieldWorkerId = a.AssignedFieldWorkerId,
             ExternalEmail = a.ExternalEmail,
             ExternalName = a.ExternalName,
             UniqueLink = Guid.NewGuid().ToString(),
@@ -218,7 +211,6 @@ public class AssignmentService : IAssignmentService
         assignment.ProjectId = dto.ProjectId;
         assignment.ChecklistId = dto.ChecklistId;
         assignment.AssignedUserId = dto.AssignedUserId;
-        assignment.AssignedFieldWorkerId = dto.AssignedFieldWorkerId;
         assignment.AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId;
         assignment.ExternalEmail = dto.ExternalEmail;
         assignment.ExternalName = dto.ExternalName;
@@ -249,7 +241,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
             .Where(a => a.ProjectId == projectId && !a.IsDeleted)
@@ -265,23 +256,8 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.Evaluations)
-            .Where(a => (a.AssignedUserId == userId || a.AssignedFieldWorker!.UserId == userId) && !a.IsDeleted)
-            .OrderByDescending(a => a.CreatedAt)
-            .ToListAsync();
-
-        return assignments.Select(MapToDto);
-    }
-
-    public async Task<IEnumerable<AssignmentDto>> GetByFieldWorkerIdAsync(int fieldWorkerId)
-    {
-        var assignments = await _context.Assignments
-            .Include(a => a.Project)
-            .Include(a => a.Checklist)
-            .Include(a => a.AssignedFieldWorker)
-            .Include(a => a.Evaluations)
-            .Where(a => a.AssignedFieldWorkerId == fieldWorkerId && !a.IsDeleted)
+            .Where(a => a.AssignedUserId == userId && !a.IsDeleted)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
 
@@ -294,7 +270,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
             .Where(a => !a.IsDeleted)
@@ -430,9 +405,6 @@ public class AssignmentService : IAssignmentService
         if (dto.NewAssignedUserId.HasValue)
             assignment.AssignedUserId = dto.NewAssignedUserId;
 
-        if (dto.NewAssignedFieldWorkerId.HasValue)
-            assignment.AssignedFieldWorkerId = dto.NewAssignedFieldWorkerId;
-
         if (dto.NewAssignedCustomerPersonnelId.HasValue)
             assignment.AssignedCustomerPersonnelId = dto.NewAssignedCustomerPersonnelId;
 
@@ -550,7 +522,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate < DateTime.UtcNow)
             .OrderBy(a => a.DueDate)
             .ToListAsync();
@@ -565,7 +536,6 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.AssignedFieldWorker)
             .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate >= DateTime.UtcNow && a.DueDate <= deadline)
             .OrderBy(a => a.DueDate)
             .ToListAsync();
@@ -607,10 +577,6 @@ public class AssignmentService : IAssignmentService
             AssignedUserId = assignment.AssignedUserId,
             AssignedUserName = assignment.AssignedUser != null
                 ? $"{assignment.AssignedUser.FirstName} {assignment.AssignedUser.LastName}"
-                : null,
-            AssignedFieldWorkerId = assignment.AssignedFieldWorkerId,
-            AssignedFieldWorkerName = assignment.AssignedFieldWorker != null
-                ? $"{assignment.AssignedFieldWorker.FirstName} {assignment.AssignedFieldWorker.LastName}"
                 : null,
             AssignedCustomerPersonnelId = assignment.AssignedCustomerPersonnelId,
             AssignedCustomerPersonnelName = assignment.AssignedCustomerPersonnel != null

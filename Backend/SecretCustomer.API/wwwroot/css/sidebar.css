@@ -167,22 +167,46 @@
     margin-left: 0 !important;
 }
 
-/* Custom Scrollbar for Sidebar */
-.sidebar::-webkit-scrollbar {
-    width: 6px;
+/* Custom Scrollbar for Sidebar - Webkit (Chrome, Edge, Safari) */
+.sidebar::-webkit-scrollbar,
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
 }
 
-.sidebar::-webkit-scrollbar-track {
+.sidebar::-webkit-scrollbar-track,
+.sidebar-nav::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
 }
 
-.sidebar::-webkit-scrollbar-thumb:hover {
+.sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox scrollbar */
+.sidebar,
+.sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Scrollbar sadece hover'da görünsün */
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar:hover::-webkit-scrollbar-thumb,
+.sidebar-nav:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Smooth collapse animation */

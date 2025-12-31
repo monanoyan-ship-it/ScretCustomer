@@ -149,7 +149,6 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IFieldWorkerRepository, FieldWorkerRepository>();
 builder.Services.AddScoped<IExcelTemplateRepository, ExcelTemplateRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerPersonnelRepository, CustomerPersonnelRepository>();
@@ -166,7 +165,6 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerPersonnelService, CustomerPersonnelService>();
@@ -176,9 +174,7 @@ builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
-builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
-builder.Services.AddScoped<IVisitDetailService, VisitDetailService>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

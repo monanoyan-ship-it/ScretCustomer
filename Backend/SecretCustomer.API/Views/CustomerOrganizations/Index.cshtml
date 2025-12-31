@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = Html.T("CustomerOrganization.Title", "Müşteri Organizasyonları");
+}
+
+<div id="customer-orgs-app" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-diagram-3 me-2"></i>@Html.T("CustomerOrganization.Title", "Müşteri Organizasyonları")</h2>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Error Message -->
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
+        <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Main Content -->
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Left Panel: Customer List -->
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-building me-2"></i>@Html.T("CustomerOrganization.Customers", "Müşteriler")
+                </div>
+                <div class="card-body p-0">
+                    <!-- Search -->
+                    <div class="p-2 border-bottom">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="@Html.T("Common.Search", "Ara...")"
+                                   data-bind="value: customerSearchText, valueUpdate: 'afterkeydown'" />
+                        </div>
+                    </div>
+
+                    <!-- Customer List -->
+                    <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
+                        <div data-bind="visible: filteredCustomers().length === 0" class="text-center text-muted py-3">
+                            <i class="bi bi-info-circle"></i> @Html.T("CustomerOrganization.NoCustomers", "Müşteri bulunamadı")
+                        </div>
+                        <!-- ko foreach: filteredCustomers -->
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                           data-bind="click: $parent.selectCustomer, css: { 'active': $parent.selectedCustomer() && $parent.selectedCustomer().id === id }">
+                            <div>
+                                <div class="fw-semibold" data-bind="text: companyName"></div>
+                                <small class="text-muted">
+                                    <span data-bind="text: organizationCount || 0"></span> @Html.T("CustomerOrganization.OrgCount", "organizasyon")
+                                </small>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Organizations & Details -->
+        <div class="col-md-9">
+            <!-- No Customer Selected -->
+            <div data-bind="visible: !selectedCustomer()" class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-arrow-left-circle display-4 text-muted mb-3 d-block"></i>
+                    <p class="text-muted">@Html.T("CustomerOrganization.SelectCustomer", "Organizasyonları görmek için sol taraftan bir müşteri seçin")</p>
+                </div>
+            </div>
+
+            <!-- Customer Selected -->
+            <div data-bind="visible: selectedCustomer">
+                <!-- Customer Info Header -->
+                <div class="card shadow mb-3">
+                    <div class="card-body bg-gradient py-3" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                        <div class="row align-items-center text-white">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                                        <i class="bi bi-building fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-0" data-bind="text: selectedCustomer() ? selectedCustomer().companyName : ''"></h4>
+                                        <small class="opacity-75" data-bind="text: selectedCustomer() ? selectedCustomer().city : ''"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-light btn-sm me-2" data-bind="click: createNewOrganization">
+                                    <i class="bi bi-plus-circle me-1"></i>@Html.T("CustomerOrganization.NewOrganization", "Yeni Organizasyon")
+                                </button>
+                                <a class="btn btn-outline-light btn-sm" data-bind="attr: { href: '/Reports/Index?customerId=' + (selectedCustomer() ? selectedCustomer().id : '') }">
+                                    <i class="bi bi-graph-up me-1"></i>@Html.T("CustomerOrganization.ViewReports", "Raporları Görüntüle")
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organizations Loading -->
+                <div data-bind="visible: isLoadingOrganizations" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+
+                <!-- Organizations List -->
+                <div data-bind="visible: !isLoadingOrganizations()">
+                    <!-- Empty State -->
+                    <div data-bind="visible: organizations().length === 0" class="card shadow">
+                        <div class="card-body text-center py-4">
+                            <i class="bi bi-diagram-3 display-4 text-muted mb-3 d-block"></i>
+                            <p class="text-muted">@Html.T("CustomerOrganization.NoOrganizations", "Bu müşteriye ait organizasyon bulunmamaktadır.")</p>
+                            <button class="btn btn-primary" data-bind="click: createNewOrganization">
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("CustomerOrganization.CreateFirst", "İlk Organizasyonu Oluştur")
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Organizations Grid -->
+                    <div data-bind="visible: organizations().length > 0" class="row">
+                        <!-- ko foreach: organizations -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-diagram-3 me-2"></i>
+                                        <span class="fw-semibold" data-bind="text: name"></span>
+                                    </div>
+                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2" data-bind="visible: code">
+                                        <small class="text-muted">@Html.T("CustomerOrganization.Code", "Kod"):</small>
+                                        <span class="badge bg-secondary" data-bind="text: code"></span>
+                                    </div>
+                                    <div class="mb-2" data-bind="visible: description">
+                                        <small class="text-muted d-block">@Html.T("CustomerOrganization.Description", "Açıklama"):</small>
+                                        <small data-bind="text: description"></small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-info me-1">
+                                                <i class="bi bi-people me-1"></i><span data-bind="text: personnelCount"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <div class="btn-group btn-group-sm w-100">
+                                        <a class="btn btn-outline-info" data-bind="attr: { href: '/Reports/Index?organizationId=' + id }" title="@Html.T("CustomerOrganization.ViewReports", "Raporlar")">
+                                            <i class="bi bi-graph-up"></i> @Html.T("Common.Reports", "Raporlar")
+                                        </a>
+                                        <button class="btn btn-outline-primary" data-bind="click: $parent.editOrganization" title="@Html.T("Common.Edit", "Düzenle")">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" data-bind="click: $parent.deleteOrganization" title="@Html.T("Common.Delete", "Sil")">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" data-bind="with: editingOrganization">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <!-- ko ifnot: id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("CustomerOrganization.NewOrganization", "Yeni Organizasyon")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("CustomerOrganization.EditOrganization", "Organizasyon Düzenle")
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Modal Error Message -->
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerOrganization.Name", "Organizasyon Adı") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("CustomerOrganization.NamePlaceholder", "Concentrix, Teleperform vb.")" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerOrganization.Code", "Organizasyon Kodu")</label>
+                        <input type="text" class="form-control" data-bind="value: code" placeholder="CONC-001" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerOrganization.Description", "Açıklama")</label>
+                        <textarea class="form-control" data-bind="value: description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerOrganization.Order", "Sıralama")</label>
+                        <input type="number" class="form-control" data-bind="value: order" min="0" />
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="orgIsActive" />
+                        <label class="form-check-label" for="orgIsActive">@Html.T("Common.Active", "Aktif")</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveOrganization, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            @Html.T("Common.Saving", "Kaydediliyor...")
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
+
+    <partial name="_DeleteConfirmationModal" />
+</div>
+
+@section Scripts {
+    <script src="~/js/Shared/app.config.js"></script>
+    <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
+    <script src="~/js/CustomerOrganizations/Index.js"></script>
+}

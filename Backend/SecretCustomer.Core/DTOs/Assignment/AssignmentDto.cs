@@ -10,8 +10,6 @@ public class AssignmentDto
     public string ChecklistName { get; set; } = string.Empty;
     public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
-    public int? AssignedFieldWorkerId { get; set; }
-    public string? AssignedFieldWorkerName { get; set; }
     public int? AssignedCustomerPersonnelId { get; set; }
     public string? AssignedCustomerPersonnelName { get; set; }
     public string? ExternalEmail { get; set; }
@@ -36,14 +34,12 @@ public class AssignmentDto
 
     // Assignee display name
     public string AssigneeName => AssignedUserName
-        ?? AssignedFieldWorkerName
         ?? AssignedCustomerPersonnelName
         ?? ExternalName
         ?? ExternalEmail
         ?? "Atanmamış";
 
     public string AssigneeType => AssignedUserId.HasValue ? "User"
-        : AssignedFieldWorkerId.HasValue ? "FieldWorker"
         : AssignedCustomerPersonnelId.HasValue ? "CustomerPersonnel"
         : !string.IsNullOrEmpty(ExternalEmail) ? "External"
         : "Unassigned";

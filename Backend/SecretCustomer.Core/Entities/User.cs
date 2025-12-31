@@ -48,24 +48,8 @@ public class User : BaseEntity
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiry { get; set; }
 
-    // Organization Unit
-    public int? OrganizationUnitId { get; set; }
-    public OrganizationUnit? OrganizationUnit { get; set; }
-
     // Navigation properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
-
-    // Delegation - Verdiği vekaletler
-    public ICollection<Delegation> DelegationsGiven { get; set; } = new List<Delegation>();
-
-    // Delegation - Aldığı vekaletler
-    public ICollection<Delegation> DelegationsReceived { get; set; } = new List<Delegation>();
-
-    // Delegation - Onayladığı vekaletler
-    public ICollection<Delegation> DelegationsApproved { get; set; } = new List<Delegation>();
-
-    // Organization Unit - Yönettiği birimler
-    public ICollection<OrganizationUnit> ManagedOrganizationUnits { get; set; } = new List<OrganizationUnit>();
 }
