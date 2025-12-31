@@ -12,6 +12,12 @@ public class Evaluation : BaseEntity
     public int AssignmentId { get; set; }
     public Assignment Assignment { get; set; } = null!;
 
+    /// <summary>
+    /// Hangi döneme ait (opsiyonel - dönem olmadan da değerlendirme yapılabilir)
+    /// </summary>
+    public int? AssignmentPeriodId { get; set; }
+    public AssignmentPeriod? AssignmentPeriod { get; set; }
+
     public int? EvaluatorId { get; set; }
     public User? Evaluator { get; set; }
 

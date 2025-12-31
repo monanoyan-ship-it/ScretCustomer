@@ -47,4 +47,5 @@ public class Assignment : BaseEntity
 
     // Navigation properties
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
+    public ICollection<AssignmentPeriod> Periods { get; set; } = new List<AssignmentPeriod>();
 }

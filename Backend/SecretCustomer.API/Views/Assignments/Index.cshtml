@@ -562,7 +562,56 @@
                             - <span data-bind="text: $data.evaluationDate ? new Date($data.evaluationDate).toLocaleString('tr-TR') : ''"></span>
                         </span>
                     </div>
+                    <!-- Dönemler -->
+                    <div data-bind="visible: $data.periods && $data.periods.length > 0">
+                        <hr>
+                        <h6><i class="bi bi-calendar-range"></i> @Html.T("Assignment.Periods", "Dönemler")</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Period.Name", "Dönem")</th>
+                                        <th>@Html.T("Period.DateRange", "Tarih Aralığı")</th>
+                                        <th class="text-center">@Html.T("Period.Progress", "İlerleme")</th>
+                                        <th class="text-center">@Html.T("Common.Average", "Ortalama")</th>
+                                        <th>@Html.T("Common.Status", "Durum")</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: periods">
+                                    <tr>
+                                        <td data-bind="text: name"></td>
+                                        <td>
+                                            <small>
+                                                <span data-bind="text: new Date(startDate).toLocaleDateString('tr-TR')"></span>
+                                                -
+                                                <span data-bind="text: new Date(endDate).toLocaleDateString('tr-TR')"></span>
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary" data-bind="text: completedCount + ' / ' + targetCount"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span data-bind="visible: averageScore !== null && averageScore !== undefined, text: averageScore ? averageScore.toFixed(1) + '%' : '-'" class="fw-bold"></span>
+                                            <span data-bind="visible: averageScore === null || averageScore === undefined" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? 'Açık' : 'Kapalı'"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Henüz dönem yok mesajı -->
+                    <div data-bind="visible: !$data.periods || $data.periods.length === 0" class="text-center text-muted py-3">
+                        <i class="bi bi-calendar-x fs-3"></i>
+                        <p class="mb-0 mt-2">@Html.T("Assignment.NoPeriods", "Henüz dönem açılmamış")</p>
+                        <small>@Html.T("Assignment.AddPeriodHint", "Dönem eklemek için 'Dönem Ekle' butonunu kullanın")</small>
+                    </div>
+
                     <div data-bind="visible: $data.history && $data.history.length > 0">
+                        <hr>
                         <h6><i class="bi bi-clock-history"></i> @Html.T("Common.History", "Geçmiş")</h6>
                         <table class="table table-sm">
                             <thead>
@@ -587,6 +636,9 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
                     <!-- ko with: selectedDetail -->
+                    <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.openAddPeriodModal">
+                        <i class="bi bi-calendar-plus me-1"></i>@Html.T("Period.Add", "Dönem Ekle")
+                    </button>
                     <a class="btn btn-primary" data-bind="attr: { href: '/Evaluations/Form/' + id }, visible: status !== 'Completed' && status !== 'Cancelled'">
                         <i class="bi bi-clipboard-check me-1"></i>@Html.T("Button.Evaluate", "Değerlendir")
                     </a>

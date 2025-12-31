@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Project> Projects { get; set; }
     public DbSet<Assignment> Assignments { get; set; }
     public DbSet<Evaluation> Evaluations { get; set; }
+    public DbSet<AssignmentPeriod> AssignmentPeriods { get; set; }
     public DbSet<Answer> Answers { get; set; }
     public DbSet<FieldWorker> FieldWorkers { get; set; }
     public DbSet<ExcelTemplate> ExcelTemplates { get; set; }

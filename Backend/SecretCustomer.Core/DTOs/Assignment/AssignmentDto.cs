@@ -58,6 +58,26 @@ public class AssignmentDetailDto : AssignmentDto
     public DateTime? EvaluationDate { get; set; }
     public string? EvaluationNotes { get; set; }
     public List<AssignmentHistoryDto> History { get; set; } = new();
+
+    /// <summary>
+    /// Bu atamaya ait dönemler
+    /// </summary>
+    public List<AssignmentPeriodSummaryDto> Periods { get; set; } = new();
+}
+
+/// <summary>
+/// Dönem özet DTO - Assignment detail için
+/// </summary>
+public class AssignmentPeriodSummaryDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string Status { get; set; } = "Open";
+    public int TargetCount { get; set; }
+    public int CompletedCount { get; set; }
+    public decimal? AverageScore { get; set; }
 }
 
 /// <summary>

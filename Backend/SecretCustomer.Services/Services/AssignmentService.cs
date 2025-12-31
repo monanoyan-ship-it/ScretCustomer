@@ -56,6 +56,8 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
                 .ThenInclude(e => e.Evaluator)
+            .Include(a => a.Periods)
+                .ThenInclude(p => p.Evaluations)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
 
         if (assignment == null) return null;
@@ -100,6 +102,25 @@ public class AssignmentService : IAssignmentService
             detailDto.EvaluationDate = evaluation.CreatedAt;
             detailDto.EvaluationNotes = evaluation.Notes;
         }
+
+        // Get periods with statistics
+        detailDto.Periods = assignment.Periods
+            .Where(p => !p.IsDeleted)
+            .OrderByDescending(p => p.StartDate)
+            .Select(p => new AssignmentPeriodSummaryDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Status = p.Status.ToString(),
+                TargetCount = p.TargetCount,
+                CompletedCount = p.Evaluations.Count(e => !e.IsDeleted && e.Status == Core.Enums.EvaluationStatus.Completed),
+                AverageScore = p.Evaluations
+                    .Where(e => !e.IsDeleted && e.Status == Core.Enums.EvaluationStatus.Completed && e.ScorePercentage.HasValue)
+                    .Average(e => e.ScorePercentage)
+            })
+            .ToList();
 
         return detailDto;
     }
