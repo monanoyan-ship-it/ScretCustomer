@@ -1,8 +1,40 @@
-# Kaldığımız Yer - 31 Aralık 2025 (Gece Güncellemesi)
+# Kaldığımız Yer - 31 Aralık 2025 (Son Güncelleme: 18:30)
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 Gece - Son Güncelleme)
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - En Son)
+
+### Modül Temizliği ve FieldWorker Kaldırma
+
+**Kaldırılan Modüller:**
+- FieldWorker entity ve ilgili tüm dosyalar (Controller, Service, Repository, DTO, View, JS)
+- Organization modülü (OrganizationUnit, Delegation)
+- Visit modülü (VisitDetails, CustomerVisit, VisitSector, VisitFieldDefinition)
+- Calls modülü
+
+**Assignment Yapısı Güncellendi:**
+- Assignment artık doğrudan User'a bağlı (`AssignedUserId`)
+- `AssignedFieldWorkerId` kaldırıldı
+- `GetByFieldWorkerIdAsync` metodu `GetByUserIdAsync` olarak değiştirildi
+
+**Sidebar Sadeleştirildi:**
+- "İşlemler" menüsü kaldırıldı
+- "Görevlerim" ve "Değerlendirmeler" üst seviye menü öğeleri olarak taşındı
+- "Saha Çalışanları" menü öğesi kaldırıldı
+
+**Yeni Eklenenler:**
+- CustomerOrganizations controller/view eklendi (Müşteri Organizasyonları yönetimi)
+
+**Migration:**
+- `RemoveVisitAndCallModules`
+- `RemoveOrganizationUnitAndDelegation`
+- `RemoveFieldWorkerEntity`
+
+**Commit:** `845b0b7` - FieldWorker entity kaldırıldı, modül temizliği yapıldı
+
+---
+
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 Gece - Önceki)
 
 ### AssignmentPeriod (Dönem) Sistemi
 
@@ -338,6 +370,11 @@ public CustomerPersonnel? EvaluatedCustomerPersonnel { get; set; }
 - ❌ Personel menüsü (hiyerarşi içine taşınacak)
 - ✅ ~~Eski UserRole'ler (TeamLeader, Evaluator, CustomerRepresentative, FieldWorker)~~ KALDIRILDI
 - ✅ ~~Branch sistemi (Şubeler)~~ KALDIRILDI - 30 Aralık 2025
+- ✅ ~~FieldWorker entity~~ KALDIRILDI - 31 Aralık 2025
+- ✅ ~~Organization modülü (OrganizationUnit, Delegation)~~ KALDIRILDI - 31 Aralık 2025
+- ✅ ~~Visit modülü (VisitDetails, CustomerVisit)~~ KALDIRILDI - 31 Aralık 2025
+- ✅ ~~Calls modülü~~ KALDIRILDI - 31 Aralık 2025
+- ✅ ~~İşlemler menüsü~~ KALDIRILDI - 31 Aralık 2025
 
 ---
 
