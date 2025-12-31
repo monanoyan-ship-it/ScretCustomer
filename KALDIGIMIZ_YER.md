@@ -1,8 +1,40 @@
-# Kaldığımız Yer - 31 Aralık 2025
+# Kaldığımız Yer - 31 Aralık 2025 (Gece Güncellemesi)
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - Son Güncelleme)
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 Gece - Son Güncelleme)
+
+### AssignmentPeriod (Dönem) Sistemi
+
+**Yeni Entity ve API:**
+- `AssignmentPeriod` entity oluşturuldu (Ad, Başlangıç/Bitiş tarihi, Hedef sayısı, Durum)
+- `PeriodStatus` enum: Open, Closed
+- Evaluation entity'ye `AssignmentPeriodId` eklendi
+- Assignment entity'ye `Periods` navigation property eklendi
+
+**API Endpoints:**
+- `GET /api/assignments/{id}/periods` - Dönemleri listele
+- `POST /api/assignments/{id}/periods` - Yeni dönem oluştur
+- `PUT /api/assignments/{id}/periods/{periodId}` - Dönem güncelle
+- `POST /api/assignments/{id}/periods/{periodId}/close` - Dönemi kapat
+- `POST /api/assignments/{id}/periods/{periodId}/reopen` - Dönemi yeniden aç
+- `DELETE /api/assignments/{id}/periods/{periodId}` - Dönem sil
+
+**UI Değişiklikleri:**
+- Assignment detay modalında dönem tablosu gösteriliyor
+- "Dönem Ekle" butonu ve modal eklendi (otomatik ay adı ve tarih)
+- Değerlendirme formuna dönem seçimi eklendi (`AvailablePeriods`, `SelectedPeriodId`)
+
+**Personel Seçimi Geliştirmesi:**
+- Değerlendirmede personel seçimi artık checklist'in `CustomerId` ve `CustomerOrganizationId` alanlarına göre filtreleniyor
+- Süpervizör (CustomerSupervisor) rolündeki personeller hariç tutuluyor
+- Sadece ilgili firma/organizasyonun operatörleri listeleniyor
+
+**Migration:** `AssignmentPeriods` migration oluşturuldu
+
+---
+
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - Önceki)
 
 ### Checklist Yapısı Refaktör (31 Aralık 2025)
 
