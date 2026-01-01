@@ -16,6 +16,50 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         _context = context;
     }
 
+    public async Task<object> DebugCheckPersonnelAsync()
+    {
+        // Tüm organizasyonları ve personel sayılarını getir
+        var orgs = await _context.CustomerOrganizations
+            .Include(o => o.Personnel)
+            .Select(o => new
+            {
+                OrgId = o.Id,
+                OrgName = o.Name,
+                CustomerName = o.Customer != null ? o.Customer.CompanyName : "",
+                PersonnelCollectionCount = o.Personnel.Count,
+                PersonnelIds = o.Personnel.Select(p => p.Id).ToList()
+            })
+            .ToListAsync();
+
+        // Tüm personellerin OrganizationId'lerini getir
+        var personnel = await _context.CustomerPersonnel
+            .Select(p => new
+            {
+                PersonnelId = p.Id,
+                FullName = p.FirstName + " " + p.LastName,
+                Role = (int)p.Role,
+                RoleName = p.Role.ToString(),
+                SupervisorId = p.SupervisorId,
+                SupervisorName = p.Supervisor != null ? p.Supervisor.FirstName + " " + p.Supervisor.LastName : "NULL",
+                OrganizationId = p.OrganizationId,
+                OrganizationName = p.Organization != null ? p.Organization.Name : "NULL"
+            })
+            .ToListAsync();
+
+        return new
+        {
+            Organizations = orgs,
+            Personnel = personnel,
+            Summary = new
+            {
+                TotalOrgs = orgs.Count,
+                TotalPersonnel = personnel.Count,
+                PersonnelWithOrg = personnel.Count(p => p.OrganizationId != null),
+                PersonnelWithoutOrg = personnel.Count(p => p.OrganizationId == null)
+            }
+        };
+    }
+
     public async Task<CustomerOrganizationDto?> GetByIdAsync(int id)
     {
         var org = await _context.CustomerOrganizations
@@ -204,6 +248,82 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         await _context.SaveChangesAsync();
     }
 
+    public async Task MoveOrganizationAsync(int organizationId, int? newParentId)
+    {
+        var org = await _context.CustomerOrganizations.FindAsync(organizationId);
+        if (org == null)
+        {
+            throw new KeyNotFoundException($"Organizasyon bulunamadı (ID: {organizationId})");
+        }
+
+        // Kendisine taşınamaz
+        if (newParentId.HasValue && newParentId.Value == organizationId)
+        {
+            throw new InvalidOperationException("Organizasyon kendisinin altına taşınamaz");
+        }
+
+        // Yeni parent kontrolü
+        int newLevel = 0;
+        if (newParentId.HasValue)
+        {
+            var newParent = await _context.CustomerOrganizations.FindAsync(newParentId.Value);
+            if (newParent == null)
+            {
+                throw new KeyNotFoundException($"Hedef organizasyon bulunamadı (ID: {newParentId})");
+            }
+            if (newParent.CustomerId != org.CustomerId)
+            {
+                throw new InvalidOperationException("Farklı müşteriye ait organizasyona taşınamaz");
+            }
+
+            // Kendi alt organizasyonlarına taşınamaz (döngüsel referans)
+            if (await IsDescendantOfAsync(newParentId.Value, organizationId))
+            {
+                throw new InvalidOperationException("Organizasyon kendi alt organizasyonlarına taşınamaz");
+            }
+
+            newLevel = newParent.Level + 1;
+        }
+
+        // Parent ve level güncelle
+        org.ParentId = newParentId;
+        org.Level = newLevel;
+        org.UpdatedAt = DateTime.UtcNow;
+
+        // Alt organizasyonların level'larını güncelle
+        await UpdateChildrenLevelsAsync(organizationId, newLevel + 1);
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task<bool> IsDescendantOfAsync(int potentialParentId, int ancestorId)
+    {
+        var current = await _context.CustomerOrganizations.FindAsync(potentialParentId);
+        while (current != null && current.ParentId.HasValue)
+        {
+            if (current.ParentId.Value == ancestorId)
+            {
+                return true;
+            }
+            current = await _context.CustomerOrganizations.FindAsync(current.ParentId.Value);
+        }
+        return false;
+    }
+
+    private async Task UpdateChildrenLevelsAsync(int parentId, int level)
+    {
+        var children = await _context.CustomerOrganizations
+            .Where(o => o.ParentId == parentId)
+            .ToListAsync();
+
+        foreach (var child in children)
+        {
+            child.Level = level;
+            child.UpdatedAt = DateTime.UtcNow;
+            await UpdateChildrenLevelsAsync(child.Id, level + 1);
+        }
+    }
+
     public async Task<OrganizationPersonnelListDto> GetPersonnelByOrganizationIdAsync(int organizationId)
     {
         var org = await _context.CustomerOrganizations
@@ -226,9 +346,10 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             .Select(p => MapToPersonnelItem(p, personnel))
             .ToList();
 
-        // Bağımsız operatörler (süpervizörü olmayan)
+        // Bağımsız operatörler (süpervizörü olmayan VEYA süpervizörü farklı organizasyonda)
         var independentOperators = personnel
-            .Where(p => p.Role == CustomerPersonnelRole.CustomerOperator && p.SupervisorId == null)
+            .Where(p => p.Role == CustomerPersonnelRole.CustomerOperator &&
+                       (p.SupervisorId == null || !personnel.Any(s => s.Id == p.SupervisorId)))
             .Select(p => MapToPersonnelItem(p, personnel))
             .ToList();
 

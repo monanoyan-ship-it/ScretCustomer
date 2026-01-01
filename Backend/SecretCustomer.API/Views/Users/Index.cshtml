@@ -6,9 +6,26 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>@Html.T("User.Title", "Kullanıcılar")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle"></i> @Html.T("User.NewUser", "Yeni Kullanıcı")
+            <i class="bi bi-plus-circle"></i>
+            <span data-bind="text: activeTab() === 'users' ? '@Html.T("User.NewUser", "Yeni Kullanıcı")' : '@Html.T("CustomerPersonnel.New", "Yeni Müşteri Personeli")'"></span>
         </button>
     </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'users' }, click: function() { switchTab('users'); }">
+                <i class="bi bi-person-gear me-2"></i>@Html.T("User.SystemUsers", "Sistem Kullanıcıları")
+                <span class="badge bg-primary ms-2" data-bind="text: users().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'customerPersonnel' }, click: function() { switchTab('customerPersonnel'); }">
+                <i class="bi bi-people me-2"></i>@Html.T("CustomerPersonnel.Title", "Müşteri Personeli")
+                <span class="badge bg-info ms-2" data-bind="text: customerPersonnel().length"></span>
+            </a>
+        </li>
+    </ul>
 
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
@@ -27,16 +44,16 @@
         <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
     </div>
 
-    <!-- Users Table -->
-    <div data-bind="visible: !isLoading()">
+    <!-- ==================== SISTEM KULLANICILARI TAB ==================== -->
+    <div data-bind="visible: !isLoading() && activeTab() === 'users'">
         <!-- Empty State -->
         <div data-bind="visible: users().length === 0">
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> @Html.T("User.NoUsers", "Henüz kullanıcı bulunmamaktadır.")
+                <i class="bi bi-info-circle"></i> @Html.T("User.NoUsers", "Henüz sistem kullanıcısı bulunmamaktadır.")
             </div>
         </div>
 
-        <!-- Table -->
+        <!-- Users Table -->
         <div data-bind="visible: users().length > 0" class="card shadow">
             <div class="card-body">
                 <table class="table table-hover">
@@ -79,7 +96,77 @@
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
+    <!-- ==================== MÜŞTERİ PERSONELİ TAB ==================== -->
+    <div data-bind="visible: !isLoading() && activeTab() === 'customerPersonnel'">
+        <!-- Filter -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm" data-bind="value: selectedCustomerId, options: customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("CustomerPersonnel.AllCustomers", "Tüm Müşteriler")'"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: filteredCustomerPersonnel().length === 0">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> @Html.T("CustomerPersonnel.NoPersonnel", "Müşteri personeli bulunmamaktadır.")
+            </div>
+        </div>
+
+        <!-- Customer Personnel Table -->
+        <div data-bind="visible: filteredCustomerPersonnel().length > 0" class="card shadow">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>@Html.T("User.Username", "Kullanıcı Adı")</th>
+                            <th>@Html.T("User.FullName", "Ad Soyad")</th>
+                            <th>@Html.T("CustomerPersonnel.Customer", "Müşteri")</th>
+                            <th>@Html.T("User.Email", "E-posta")</th>
+                            <th>@Html.T("User.Role", "Rol")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th>@Html.T("Common.Actions", "İşlemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: filteredCustomerPersonnel">
+                        <tr>
+                            <td><strong data-bind="text: username"></strong></td>
+                            <td data-bind="text: firstName + ' ' + lastName"></td>
+                            <td>
+                                <span class="badge bg-secondary" data-bind="text: customerName"></span>
+                            </td>
+                            <td data-bind="text: email"></td>
+                            <td>
+                                <span class="badge" data-bind="css: $parent.getCustomerRoleBadgeClass(role), text: $parent.getCustomerRoleDisplayName(role)"></span>
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" data-bind="click: $parent.editCustomerPersonnel" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info me-1" data-bind="click: $parent.changeCustomerPersonnelPassword" title="@Html.T("User.ChangePassword", "Şifre Değiştir")">
+                                    <i class="bi bi-key"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteCustomerPersonnel" title="@Html.T("Common.Delete", "Sil")">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== USER MODAL ==================== -->
     <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" data-bind="with: editingUser">
@@ -95,14 +182,12 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Modal Hata Mesajı -->
                     <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         <span data-bind="text: $root.modalErrorMessage()"></span>
                         <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
                     </div>
 
-                    <!-- Username (only for create) -->
                     <div class="mb-3" data-bind="visible: !id">
                         <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" data-bind="value: username" placeholder="johndoe" />
@@ -111,20 +196,19 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.FirstName", "Ad") <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="@Html.T("User.FirstNamePlaceholder", "Ahmet")" />
+                            <input type="text" class="form-control" data-bind="value: firstName" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.LastName", "Soyad") <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="@Html.T("User.LastNamePlaceholder", "Yılmaz")" />
+                            <input type="text" class="form-control" data-bind="value: lastName" />
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">@Html.T("User.Email", "E-posta") <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" data-bind="value: email" placeholder="ahmet@example.com" />
+                        <input type="email" class="form-control" data-bind="value: email" />
                     </div>
 
-                    <!-- Password (only for create) -->
                     <div class="mb-3" data-bind="visible: !id">
                         <label class="form-label">@Html.T("User.Password", "Şifre") <span class="text-danger">*</span></label>
                         <input type="password" class="form-control" data-bind="value: password" placeholder="@Html.T("User.PasswordPlaceholder", "En az 6 karakter")" />
@@ -140,8 +224,8 @@
                     </div>
 
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
-                        <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="userIsActive" />
+                        <label class="form-check-label" for="userIsActive">@Html.T("Common.Active", "Aktif")</label>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -154,7 +238,6 @@
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
                 </div>
@@ -163,18 +246,114 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
-    <!-- Change Password Modal -->
+    <!-- ==================== CUSTOMER PERSONNEL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isCustomerPersonnelModalOpen }, style: { display: isCustomerPersonnelModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingCustomerPersonnel">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <!-- ko ifnot: id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("CustomerPersonnel.New", "Yeni Müşteri Personeli")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("CustomerPersonnel.Edit", "Müşteri Personeli Düzenle")
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeCustomerPersonnelModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span data-bind="text: $root.modalErrorMessage()"></span>
+                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerPersonnel.Customer", "Müşteri") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: customerId, options: $root.customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("CustomerPersonnel.SelectCustomer", "Müşteri Seçin...")'"></select>
+                    </div>
+
+                    <div class="mb-3" data-bind="visible: !id">
+                        <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: username" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("User.FirstName", "Ad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: firstName" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("User.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: lastName" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("User.Email", "E-posta") <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" data-bind="value: email" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("User.Phone", "Telefon")</label>
+                            <input type="text" class="form-control" data-bind="value: phoneNumber" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3" data-bind="visible: !id">
+                        <label class="form-label">@Html.T("User.Password", "Şifre") <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" data-bind="value: password" placeholder="@Html.T("User.PasswordPlaceholder", "En az 6 karakter")" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("User.Role", "Rol") <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: role">
+                                <option value="1">@Html.T("CustomerPersonnel.Manager", "Müşteri Yöneticisi")</option>
+                                <option value="2">@Html.T("CustomerPersonnel.Supervisor", "Müşteri Süpervizörü")</option>
+                                <option value="3">@Html.T("CustomerPersonnel.Operator", "Müşteri Operatörü")</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("CustomerPersonnel.Department", "Departman")</label>
+                            <input type="text" class="form-control" data-bind="value: department" />
+                        </div>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="cpIsActive" />
+                        <label class="form-check-label" for="cpIsActive">@Html.T("Common.Active", "Aktif")</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeCustomerPersonnelModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-info" data-bind="click: $parent.saveCustomerPersonnel, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isCustomerPersonnelModalOpen }, style: { display: isCustomerPersonnelModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- ==================== PASSWORD MODAL ==================== -->
     <div class="modal fade" data-bind="css: { show: isPasswordModalOpen }, style: { display: isPasswordModalOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content" data-bind="with: passwordChangeUser">
-                <div class="modal-header bg-info text-white">
+                <div class="modal-header bg-warning">
                     <h5 class="modal-title">
                         <i class="bi bi-key me-2"></i>@Html.T("User.ChangePassword", "Şifre Değiştir")
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closePasswordModal"></button>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closePasswordModal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Modal Hata Mesajı -->
                     <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         <span data-bind="text: $root.modalErrorMessage()"></span>
@@ -186,24 +365,23 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("User.NewPassword", "Yeni Şifre") <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="@Html.T("User.PasswordPlaceholder", "En az 6 karakter")" />
+                        <input type="password" class="form-control" data-bind="value: newPassword" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("User.ConfirmPassword", "Yeni Şifre (Tekrar)") <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" data-bind="value: newPasswordConfirm" placeholder="@Html.T("User.ConfirmPasswordPlaceholder", "Şifreyi tekrar girin")" />
+                        <input type="password" class="form-control" data-bind="value: newPasswordConfirm" />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bind="click: $parent.closePasswordModal">
                         <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
                     </button>
-                    <button type="button" class="btn btn-info" data-bind="click: $parent.savePassword, disable: $parent.isSaving">
+                    <button type="button" class="btn btn-warning" data-bind="click: $parent.savePassword, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">
                             <i class="bi bi-check-circle me-2"></i>@Html.T("User.ChangePasswordBtn", "Şifreyi Değiştir")
                         </span>
                         <span data-bind="visible: $parent.isSaving">
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            @Html.T("User.Changing", "Değiştiriliyor...")
                         </span>
                     </button>
                 </div>
@@ -214,7 +392,7 @@
 
     <partial name="_DeleteConfirmationModal" />
 
-</div> <!-- End of users-app -->
+</div>
 
 @section Scripts {
     <script src="~/js/Shared/delete-confirmation.js"></script>

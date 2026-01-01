@@ -148,6 +148,11 @@ function ReassignViewModel() {
 function AssignmentsViewModel() {
     var self = this;
 
+    // ===== User Role (from global) =====
+    self.isAdmin = ko.observable(window.userRole === 'Admin');
+    self.isQualitySpecialist = ko.observable(window.userRole === 'QualitySpecialist');
+    self.isFieldWorker = ko.observable(window.userRole === 'FieldWorker');
+
     // ===== State =====
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
@@ -282,13 +287,10 @@ function AssignmentsViewModel() {
             .catch(function(error) { console.error('Error loading evaluators:', error); });
     };
 
+    // FieldWorker modülü kaldırıldı - artık sadece User'lar kullanılıyor
     self.loadFieldWorkers = function() {
-        fetch('/api/fieldworkers', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.availableFieldWorkers(data);
-            })
-            .catch(function(error) { console.error('Error loading field workers:', error); });
+        // FieldWorker API artık mevcut değil, boş array set et
+        self.availableFieldWorkers([]);
     };
 
     // ===== Filter Methods =====

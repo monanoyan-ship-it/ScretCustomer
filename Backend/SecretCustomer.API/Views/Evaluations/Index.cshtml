@@ -496,13 +496,33 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-3">
+                                                <!-- Organizasyon Seçimi (ZORUNLU) -->
+                                                <div class="col-12">
+                                                    <label class="form-label">
+                                                        @Html.T("Evaluation.SelectOrganization", "Organizasyon Seç")
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select" data-bind="value: selectedOrganizationId, options: (formData() ? formData().availableOrganizations : []), optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectOrganizationPlaceholder", "-- Önce Organizasyon Seçin --")'"></select>
+                                                    <small class="text-muted">@Html.T("Evaluation.OrganizationRequired", "Personel seçmek için önce organizasyon seçmelisiniz.")</small>
+                                                </div>
+                                                <!-- Personel Seçimi -->
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.SelectPersonnel", "Personel Seç")</label>
-                                                    <select class="form-select" data-bind="value: evaluatedPersonnelId, options: (formData() ? formData().availablePersonnel : []), optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
+                                                    <div class="input-group">
+                                                        <select class="form-select" data-bind="value: evaluatedPersonnelId, options: availablePersonnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")', enable: selectedOrganizationId()"></select>
+                                                        <!-- ko if: isLoadingPersonnel() -->
+                                                        <span class="input-group-text">
+                                                            <span class="spinner-border spinner-border-sm"></span>
+                                                        </span>
+                                                        <!-- /ko -->
+                                                    </div>
+                                                    <!-- ko if: !selectedOrganizationId() -->
+                                                    <small class="text-warning"><i class="bi bi-exclamation-triangle"></i> @Html.T("Evaluation.SelectOrganizationFirst", "Önce organizasyon seçin")</small>
+                                                    <!-- /ko -->
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.OrUnknownPersonnel", "veya Tanımsız Personel")</label>
-                                                    <input type="text" class="form-control" data-bind="value: evaluatedUnknownPersonnel" placeholder="@Html.T("Evaluation.UnknownPersonnelPlaceholder", "Tanımsız personel adı")">
+                                                    <input type="text" class="form-control" data-bind="value: evaluatedUnknownPersonnel, enable: selectedOrganizationId()" placeholder="@Html.T("Evaluation.UnknownPersonnelPlaceholder", "Tanımsız personel adı")">
                                                 </div>
                                             </div>
                                         </div>

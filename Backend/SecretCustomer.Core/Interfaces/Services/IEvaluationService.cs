@@ -56,6 +56,11 @@ public interface IEvaluationService
     /// Değerlendirmeyi iptal et
     /// </summary>
     Task<EvaluationDto> CancelEvaluationAsync(int evaluationId, int cancelledByUserId, string? reason = null);
+
+    /// <summary>
+    /// Organizasyona göre personel listesi getir
+    /// </summary>
+    Task<List<PersonnelOptionDto>> GetPersonnelByOrganizationAsync(int organizationId);
 }
 
 /// <summary>
@@ -88,7 +93,13 @@ public class EvaluationFormDto
     public string? EvaluatedUnknownPersonnel { get; set; }
     public string? EvaluationComment { get; set; }
 
-    // Personel listesi (değerlendirme için)
+    // Organizasyon listesi (değerlendirme için - ZORUNLU seçim)
+    public List<OrganizationOptionDto> AvailableOrganizations { get; set; } = new();
+
+    // Seçili organizasyon
+    public int? SelectedOrganizationId { get; set; }
+
+    // Personel listesi (organizasyon seçildikten sonra doldurulur)
     public List<PersonnelOptionDto> AvailablePersonnel { get; set; } = new();
 
     // Dönem bilgileri
@@ -102,11 +113,21 @@ public class EvaluationFormDto
     public List<AnswerDto> ExistingAnswers { get; set; } = new();
 }
 
+public class OrganizationOptionDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Code { get; set; }
+    public int Level { get; set; }
+    public int PersonnelCount { get; set; }
+}
+
 public class PersonnelOptionDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
+    public int? OrganizationId { get; set; }
 }
 
 public class PeriodOptionDto

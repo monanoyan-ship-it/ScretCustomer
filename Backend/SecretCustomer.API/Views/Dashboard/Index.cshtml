@@ -35,6 +35,201 @@
 
     <!-- Dashboard Content -->
     <div data-bind="visible: !isLoading()">
+        <!-- Daily Metrics Row (Günlük Dinleme) -->
+        <div class="row mb-4">
+            <!-- Bugün -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.Today", "Bugün")</h6>
+                                <h2 class="mb-0" data-bind="text: dailyMetrics().todayEvaluations"></h2>
+                                <small class="text-white-50">@Html.T("Dashboard.Evaluation", "Değerlendirme")</small>
+                            </div>
+                            <i class="bi bi-headphones fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Günlük Hedef -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card shadow h-100" data-bind="css: dailyMetrics().dailyTargetPercentage >= 100 ? 'bg-success text-white' : 'bg-light'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h6 class="mb-1" data-bind="css: dailyMetrics().dailyTargetPercentage >= 100 ? 'text-white-50' : 'text-muted'">@Html.T("Dashboard.DailyTarget", "Günlük Hedef")</h6>
+                                <h4 class="mb-0">
+                                    <span data-bind="text: dailyMetrics().todayEvaluations"></span> /
+                                    <span data-bind="text: dailyMetrics().dailyTarget"></span>
+                                </h4>
+                            </div>
+                            <i class="bi bi-bullseye fs-1 opacity-50"></i>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar" role="progressbar"
+                                 data-bind="style: { width: Math.min(100, dailyMetrics().dailyTargetPercentage) + '%' },
+                                            css: dailyMetrics().dailyTargetPercentage >= 100 ? 'bg-white' : (dailyMetrics().dailyTargetPercentage >= 50 ? 'bg-success' : 'bg-warning')">
+                            </div>
+                        </div>
+                        <small data-bind="text: dailyMetrics().dailyTargetPercentage.toFixed(1) + '%', css: dailyMetrics().dailyTargetPercentage >= 100 ? 'text-white-50' : 'text-muted'"></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bu Hafta -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-info text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ThisWeek", "Bu Hafta")</h6>
+                                <h2 class="mb-0" data-bind="text: dailyMetrics().thisWeekEvaluations"></h2>
+                                <small class="text-white-50">Ort: <span data-bind="text: dailyMetrics().thisWeekAverageScore.toFixed(1)"></span>%</small>
+                            </div>
+                            <i class="bi bi-calendar-week fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bu Ay -->
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-secondary text-white shadow h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ThisMonth", "Bu Ay")</h6>
+                                <h2 class="mb-0" data-bind="text: dailyMetrics().thisMonthEvaluations"></h2>
+                                <small class="text-white-50">@Html.T("Dashboard.Total", "Toplam")</small>
+                            </div>
+                            <i class="bi bi-calendar-month fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hedef Takibi & Haftalık Trend Row -->
+        <div class="row mb-4">
+            <!-- Dönem Hedefi -->
+            <div class="col-xl-4 mb-4" data-bind="visible: targetProgress().currentPeriodName">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-flag"></i> @Html.T("Dashboard.PeriodTarget", "Dönem Hedefi")</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3" data-bind="text: targetProgress().currentPeriodName"></h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>@Html.T("Dashboard.Completed", "Tamamlanan")</span>
+                            <strong>
+                                <span data-bind="text: targetProgress().periodCompleted"></span> /
+                                <span data-bind="text: targetProgress().periodTarget"></span>
+                            </strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar"
+                                 data-bind="style: { width: targetProgress().periodPercentage + '%' },
+                                            css: targetProgress().periodPercentage >= 100 ? 'bg-success' : (targetProgress().periodPercentage >= 75 ? 'bg-info' : (targetProgress().periodPercentage >= 50 ? 'bg-warning' : 'bg-danger'))">
+                                <span data-bind="text: targetProgress().periodPercentage.toFixed(1) + '%'"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>@Html.T("Dashboard.Remaining", "Kalan"): <strong data-bind="text: targetProgress().remaining"></strong></span>
+                            <span data-bind="text: formatDate(targetProgress().periodEndDate) + ' bitiş'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Haftalık Trend Chart -->
+            <div class="col-xl-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-line"></i> @Html.T("Dashboard.WeeklyTrend", "Son 7 Gün")</h5>
+                        <span class="badge bg-primary">@Html.T("Dashboard.DailyTarget", "Günlük Hedef"): <span data-bind="text: dailyMetrics().dailyTarget"></span></span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dailyTrendChart" style="max-height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Evaluators Row -->
+        <div class="row mb-4">
+            <!-- Bugün En Çok Dinleyen -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> @Html.T("Dashboard.TopEvaluatorsToday", "Bugün En Çok Dinleyenler")</h5>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
+                        <div data-bind="visible: userPerformance().topEvaluatorsToday.length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">@Html.T("Dashboard.NoDataToday", "Bugün henüz dinleme yapılmadı")</p>
+                        </div>
+                        <table class="table table-sm table-hover mb-0" data-bind="visible: userPerformance().topEvaluatorsToday.length > 0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>@Html.T("Common.User", "Kullanıcı")</th>
+                                    <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
+                                    <th class="text-end">@Html.T("Common.Average", "Ortalama")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: userPerformance().topEvaluatorsToday">
+                                <tr>
+                                    <td>
+                                        <span class="badge" data-bind="css: $index() < 3 ? 'bg-success' : 'bg-secondary', text: $index() + 1"></span>
+                                    </td>
+                                    <td data-bind="text: userName"></td>
+                                    <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
+                                    <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bu Ay En Çok Dinleyen -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-award"></i> @Html.T("Dashboard.TopEvaluatorsMonth", "Bu Ay En Çok Dinleyenler")</h5>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
+                        <div data-bind="visible: userPerformance().topEvaluatorsMonth.length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
+                        </div>
+                        <table class="table table-sm table-hover mb-0" data-bind="visible: userPerformance().topEvaluatorsMonth.length > 0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>@Html.T("Common.User", "Kullanıcı")</th>
+                                    <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
+                                    <th class="text-end">@Html.T("Common.Average", "Ortalama")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: userPerformance().topEvaluatorsMonth">
+                                <tr>
+                                    <td>
+                                        <span class="badge" data-bind="css: $index() < 3 ? 'bg-primary' : 'bg-secondary', text: $index() + 1"></span>
+                                    </td>
+                                    <td data-bind="text: userName"></td>
+                                    <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
+                                    <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Scorecard & Announcements Row -->
         <div class="row mb-4">
             <!-- Scorecard -->

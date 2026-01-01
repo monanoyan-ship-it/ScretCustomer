@@ -19,6 +19,11 @@ public class LoginResponseDto
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public int? BranchId { get; set; }
+
+    // CustomerPersonnel için ek alanlar
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public bool IsCustomerPersonnel => CustomerId.HasValue;
 }
 
 public class RegisterDto

@@ -67,12 +67,7 @@
                     <ul class="nav flex-column submenu">
                         <li>
                             <a href="/Users/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-person-badge me-2"></i>@Html.T("Menu.Users", "Kullanıcılar")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/Personnel/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-person-badge-fill me-2"></i>@Html.T("Menu.Personnel", "Personel")
+                                <i class="bi bi-person-gear me-2"></i>@Html.T("Menu.Users", "Kullanıcılar")
                             </a>
                         </li>
                         <li>
@@ -87,14 +82,6 @@
                         </li>
                     </ul>
                 </div>
-            </li>
-
-            <!-- Personnel - QualitySpecialist Only (Not Admin) -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist() && !isAdmin()">
-                <a href="/Personnel/Index" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-person-badge-fill me-2"></i>
-                    @Html.T("Menu.Personnel", "Personel")
-                </a>
             </li>
 
             <!-- Görevlerim - FieldWorker Only -->

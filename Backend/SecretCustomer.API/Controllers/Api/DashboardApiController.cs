@@ -105,4 +105,65 @@ public class DashboardApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Dashboard.ScorecardLoadError"), ex));
         }
     }
+
+    /// <summary>
+    /// Günlük dinleme metrikleri
+    /// </summary>
+    [HttpGet("daily-metrics")]
+    public async Task<IActionResult> GetDailyMetrics()
+    {
+        try
+        {
+            var metrics = await _dashboardService.GetDailyMetricsAsync();
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading daily metrics");
+            return StatusCode(500, CreateErrorResponse("Günlük metrikler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcı performans metrikleri
+    /// </summary>
+    [HttpGet("user-performance")]
+    public async Task<IActionResult> GetUserPerformance()
+    {
+        try
+        {
+            int? currentUserId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+            {
+                currentUserId = userId;
+            }
+
+            var performance = await _dashboardService.GetUserPerformanceAsync(currentUserId);
+            return Ok(performance);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading user performance");
+            return StatusCode(500, CreateErrorResponse("Kullanıcı performansı yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Hedef takip metrikleri
+    /// </summary>
+    [HttpGet("target-progress")]
+    public async Task<IActionResult> GetTargetProgress()
+    {
+        try
+        {
+            var progress = await _dashboardService.GetTargetProgressAsync();
+            return Ok(progress);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading target progress");
+            return StatusCode(500, CreateErrorResponse("Hedef bilgileri yüklenirken hata oluştu", ex));
+        }
+    }
 }

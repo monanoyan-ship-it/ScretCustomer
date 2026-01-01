@@ -64,6 +64,24 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<CustomerPersonnel>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false)
+    {
+        var query = _context.CustomerPersonnel
+            .Include(p => p.Customer)
+            .Include(p => p.Organization)
+            .Where(p => p.OrganizationId == organizationId);
+
+        if (!includeInactive)
+        {
+            query = query.Where(p => p.IsActive);
+        }
+
+        return await query
+            .OrderBy(p => p.FirstName)
+            .ThenBy(p => p.LastName)
+            .ToListAsync();
+    }
+
     public async Task<CustomerPersonnel?> GetByUsernameAsync(string username)
     {
         return await _context.CustomerPersonnel

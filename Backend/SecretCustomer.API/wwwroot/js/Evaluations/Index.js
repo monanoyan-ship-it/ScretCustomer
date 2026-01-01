@@ -39,9 +39,45 @@ function EvaluationsViewModel() {
     self.callDate = ko.observable('');
     self.durationMinutes = ko.observable(null);
     self.controlTime = ko.observable('');
+    self.selectedOrganizationId = ko.observable(null);
+    self.availablePersonnel = ko.observableArray([]);
+    self.isLoadingPersonnel = ko.observable(false);
     self.evaluatedPersonnelId = ko.observable(null);
     self.evaluatedUnknownPersonnel = ko.observable('');
     self.evaluationComment = ko.observable('');
+
+    // Organizasyon seçildiğinde personel listesini yükle
+    self.selectedOrganizationId.subscribe(function(orgId) {
+        if (!orgId) {
+            self.availablePersonnel([]);
+            self.evaluatedPersonnelId(null);
+            return;
+        }
+        self.loadPersonnelByOrganization(orgId);
+    });
+
+    // Organizasyona göre personel listesi yükle
+    self.loadPersonnelByOrganization = function(organizationId) {
+        self.isLoadingPersonnel(true);
+        self.availablePersonnel([]);
+        self.evaluatedPersonnelId(null);
+
+        fetch('/api/evaluations/personnel-by-org/' + organizationId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Personel yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.availablePersonnel(data || []);
+            })
+            .catch(function(error) {
+                console.error('Personnel loading error:', error);
+                self.availablePersonnel([]);
+            })
+            .finally(function() {
+                self.isLoadingPersonnel(false);
+            });
+    };
 
     // Answers dictionary (questionId -> answer observable)
     self.answers = {};
@@ -205,6 +241,8 @@ function EvaluationsViewModel() {
         self.callDate('');
         self.durationMinutes(null);
         self.controlTime('');
+        self.selectedOrganizationId(null);
+        self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
         self.evaluationComment('');
@@ -276,9 +314,22 @@ function EvaluationsViewModel() {
                 if (data.callId) self.callId(data.callId);
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
                 if (data.durationMinutes) self.durationMinutes(data.durationMinutes);
-                if (data.evaluatedPersonnelId) self.evaluatedPersonnelId(data.evaluatedPersonnelId);
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
+
+                // Mevcut seçili organizasyonu ve personeli yükle
+                if (data.selectedOrganizationId) {
+                    // Önce personel listesini yükle, sonra organizasyonu set et
+                    self.availablePersonnel(data.availablePersonnel || []);
+                    self.selectedOrganizationId(data.selectedOrganizationId);
+                    if (data.evaluatedPersonnelId) {
+                        self.evaluatedPersonnelId(data.evaluatedPersonnelId);
+                    }
+                } else if (data.evaluatedPersonnelId) {
+                    // Eski kayıtlar için (organizasyon seçilmemiş)
+                    self.availablePersonnel(data.availablePersonnel || []);
+                    self.evaluatedPersonnelId(data.evaluatedPersonnelId);
+                }
 
                 // Load existing answers
                 if (data.existingAnswers && data.existingAnswers.length > 0) {
@@ -406,6 +457,7 @@ function EvaluationsViewModel() {
             callId: self.callId() || null,
             callDate: self.callDate() || null,
             durationMinutes: self.durationMinutes() ? parseInt(self.durationMinutes()) : null,
+            evaluatedOrganizationId: self.selectedOrganizationId() || null,
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
             controlDate: new Date().toISOString().split('T')[0],
@@ -446,6 +498,12 @@ function EvaluationsViewModel() {
 
     // Submit evaluation
     self.submitEvaluation = function() {
+        // Organizasyon seçimi zorunlu kontrolü
+        if (!self.selectedOrganizationId()) {
+            self.modalErrorMessage(T('Evaluation.OrganizationRequired', 'Lütfen bir organizasyon seçin.'));
+            return;
+        }
+
         // Validate required questions
         var hasError = false;
         self.formData().sections.forEach(function(section) {

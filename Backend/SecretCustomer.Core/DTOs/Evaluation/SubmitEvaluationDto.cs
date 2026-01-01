@@ -42,6 +42,11 @@ public class SubmitEvaluationDto
     public int? DurationMinutes { get; set; }
 
     /// <summary>
+    /// Değerlendirilen organizasyon ID (ZORUNLU)
+    /// </summary>
+    public int? EvaluatedOrganizationId { get; set; }
+
+    /// <summary>
     /// Değerlendirilen personel ID
     /// </summary>
     public int? EvaluatedPersonnelId { get; set; }

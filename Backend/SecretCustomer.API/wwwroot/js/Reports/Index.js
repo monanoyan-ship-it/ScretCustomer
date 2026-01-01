@@ -144,16 +144,18 @@ function ReportsViewModel() {
             })
             .catch(function(error) { console.error('Error loading projects:', error); });
 
-        // Branches
-        fetch('/api/branches', { credentials: 'include' })
+        // Branches modülü kaldırıldı - CustomerOrganizations kullanılıyor
+        fetch('/api/customer-organizations', { credentials: 'include' })
             .then(function(res) { return res.json(); })
             .then(function(data) {
-                self.branches(data);
-                // Extract unique regions
-                var regions = [...new Set(data.map(function(b) { return b.region; }).filter(Boolean))];
-                self.regions(regions);
+                self.branches(data || []);
+                self.regions([]);
             })
-            .catch(function(error) { console.error('Error loading branches:', error); });
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+                self.branches([]);
+                self.regions([]);
+            });
 
         // Evaluators (role 3)
         fetch('/api/users/role/3', { credentials: 'include' })

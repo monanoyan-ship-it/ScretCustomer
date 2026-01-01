@@ -11,11 +11,17 @@ public class UserDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}";
+    public string? PhoneNumber { get; set; }
     public UserRole Role { get; set; }
     public string RoleName => Role.ToString();
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+
+    // İstatistikler
+    public int AssignmentCount { get; set; }
+    public int EvaluationCount { get; set; }
 }
 
 public class CreateUserDto
@@ -60,6 +66,9 @@ public class UpdateUserDto
     [Required]
     [StringLength(50)]
     public string LastName { get; set; } = string.Empty;
+
+    [StringLength(20)]
+    public string? PhoneNumber { get; set; }
 
     [Required]
     public UserRole Role { get; set; }

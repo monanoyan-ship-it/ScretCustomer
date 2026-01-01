@@ -37,7 +37,7 @@
                     </div>
 
                     <!-- Customer List -->
-                    <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
+                    <div class="list-group list-group-flush" style="max-height: 70vh; overflow-y: auto;">
                         <div data-bind="visible: filteredCustomers().length === 0" class="text-center text-muted py-3">
                             <i class="bi bi-info-circle"></i> @Html.T("CustomerOrganization.NoCustomers", "Müşteri bulunamadı")
                         </div>
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <!-- Right Panel: Organizations & Details -->
+        <!-- Right Panel: Organizations -->
         <div class="col-md-9">
             <!-- No Customer Selected -->
             <div data-bind="visible: !selectedCustomer()" class="card shadow">
@@ -86,12 +86,9 @@
                                 </div>
                             </div>
                             <div class="col-md-6 text-end">
-                                <button class="btn btn-light btn-sm me-2" data-bind="click: createNewOrganization">
+                                <button class="btn btn-light btn-sm" data-bind="click: createNewOrganization">
                                     <i class="bi bi-plus-circle me-1"></i>@Html.T("CustomerOrganization.NewOrganization", "Yeni Organizasyon")
                                 </button>
-                                <a class="btn btn-outline-light btn-sm" data-bind="attr: { href: '/Reports/Index?customerId=' + (selectedCustomer() ? selectedCustomer().id : '') }">
-                                    <i class="bi bi-graph-up me-1"></i>@Html.T("CustomerOrganization.ViewReports", "Raporları Görüntüle")
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -115,51 +112,102 @@
                         </div>
                     </div>
 
-                    <!-- Organizations Grid -->
-                    <div data-bind="visible: organizations().length > 0" class="row">
-                        <!-- ko foreach: organizations -->
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-diagram-3 me-2"></i>
+                    <!-- Organizations with Personnel -->
+                    <div data-bind="visible: organizations().length > 0" class="card shadow">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>@Html.T("CustomerOrganization.List", "Organizasyonlar")</h6>
+                            <small class="text-muted">
+                                <i class="bi bi-arrows-move me-1"></i>Personeli sürükleyip başka organizasyona bırakabilirsiniz
+                            </small>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <!-- ko foreach: organizations -->
+                            <div class="org-item" data-bind="
+                                event: {
+                                    dragover: function(data, e) { $root.onOrgDragOver(data, e); },
+                                    dragleave: function(data, e) { $root.onOrgDragLeave(data, e); },
+                                    drop: function(data, e) { $root.onOrgDrop(data, e); }
+                                },
+                                css: { 'drop-target': $root.dropTargetOrgId() === id }
+                            ">
+                                <!-- Organization Row -->
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                     data-bind="click: $root.toggleOrganization, css: { 'bg-light': isSelected() }">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi me-2" data-bind="css: isSelected() ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+                                        <i class="bi bi-diagram-3 text-primary me-2"></i>
                                         <span class="fw-semibold" data-bind="text: name"></span>
+                                        <span class="badge bg-secondary ms-2" data-bind="text: code, visible: code"></span>
+                                        <span class="badge bg-info ms-2" data-bind="visible: personnelCount > 0">
+                                            <i class="bi bi-people"></i> <span data-bind="text: personnelCount"></span>
+                                        </span>
+                                        <span class="badge ms-2" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
                                     </div>
-                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-2" data-bind="visible: code">
-                                        <small class="text-muted">@Html.T("CustomerOrganization.Code", "Kod"):</small>
-                                        <span class="badge bg-secondary" data-bind="text: code"></span>
-                                    </div>
-                                    <div class="mb-2" data-bind="visible: description">
-                                        <small class="text-muted d-block">@Html.T("CustomerOrganization.Description", "Açıklama"):</small>
-                                        <small data-bind="text: description"></small>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="badge bg-info me-1">
-                                                <i class="bi bi-people me-1"></i><span data-bind="text: personnelCount"></span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-light">
-                                    <div class="btn-group btn-group-sm w-100">
-                                        <a class="btn btn-outline-info" data-bind="attr: { href: '/Reports/Index?organizationId=' + id }" title="@Html.T("CustomerOrganization.ViewReports", "Raporlar")">
-                                            <i class="bi bi-graph-up"></i> @Html.T("Common.Reports", "Raporlar")
-                                        </a>
-                                        <button class="btn btn-outline-primary" data-bind="click: $parent.editOrganization" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1" title="Düzenle"
+                                                data-bind="click: function(data, event) { $root.editOrganization(data, event); }">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-outline-danger" data-bind="click: $parent.deleteOrganization" title="@Html.T("Common.Delete", "Sil")">
+                                        <button class="btn btn-sm btn-outline-danger" title="Sil"
+                                                data-bind="click: function(data, event) { $root.deleteOrganization(data, event); }">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- Personnel Panel (expanded) -->
+                                <div class="personnel-panel" data-bind="visible: isSelected()">
+                                    <!-- Loading -->
+                                    <div data-bind="visible: $root.isLoadingPersonnel" class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    </div>
+
+                                    <!-- Personnel List -->
+                                    <div data-bind="visible: !$root.isLoadingPersonnel()">
+                                        <!-- Empty -->
+                                        <div data-bind="visible: $root.personnel().length === 0" class="text-center text-muted py-3 bg-light">
+                                            <i class="bi bi-person-x"></i> Bu organizasyonda personel bulunmuyor
+                                        </div>
+
+                                        <!-- Personnel Table -->
+                                        <table data-bind="visible: $root.personnel().length > 0" class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 30px;"></th>
+                                                    <th>@Html.T("CustomerPersonnel.Name", "Ad Soyad")</th>
+                                                    <th>@Html.T("CustomerPersonnel.Title", "Ünvan")</th>
+                                                    <th>@Html.T("CustomerPersonnel.Role", "Rol")</th>
+                                                    <th>@Html.T("Common.Status", "Durum")</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody data-bind="foreach: $root.personnel">
+                                                <tr class="personnel-row" draggable="true" data-bind="
+                                                    event: {
+                                                        dragstart: function(data, e) { $root.onPersonnelDragStart(data, e); }
+                                                    }
+                                                ">
+                                                    <td class="text-center">
+                                                        <i class="bi bi-grip-vertical text-muted drag-handle"></i>
+                                                    </td>
+                                                    <td>
+                                                        <i class="bi bi-person text-primary me-1"></i>
+                                                        <span data-bind="text: fullName"></span>
+                                                    </td>
+                                                    <td data-bind="text: $data.title || '-'"></td>
+                                                    <td>
+                                                        <span class="badge bg-secondary" data-bind="text: roleName"></span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
+                            <!-- /ko -->
                         </div>
-                        <!-- /ko -->
                     </div>
                 </div>
             </div>
@@ -231,6 +279,46 @@
 
     <partial name="_DeleteConfirmationModal" />
 </div>
+
+<style>
+    .org-item {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .org-item:last-child {
+        border-bottom: none;
+    }
+
+    .org-item.drop-target {
+        background-color: #cfe2ff !important;
+        border: 2px dashed #0d6efd;
+    }
+
+    .personnel-panel {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .personnel-row {
+        cursor: grab;
+    }
+
+    .personnel-row:active {
+        cursor: grabbing;
+    }
+
+    .personnel-row.dragging {
+        opacity: 0.5;
+    }
+
+    .drag-handle {
+        cursor: grab;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+</style>
 
 @section Scripts {
     <script src="~/js/Shared/app.config.js"></script>

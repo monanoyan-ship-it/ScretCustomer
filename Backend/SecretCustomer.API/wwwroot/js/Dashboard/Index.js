@@ -39,6 +39,39 @@ function DashboardViewModel() {
         recentEvaluations: []
     });
 
+    // Daily metrics data (Günlük dinleme metrikleri)
+    self.dailyMetrics = ko.observable({
+        todayEvaluations: 0,
+        thisWeekEvaluations: 0,
+        thisMonthEvaluations: 0,
+        dailyTarget: 55,
+        dailyTargetPercentage: 0,
+        todayAverageScore: 0,
+        thisWeekAverageScore: 0,
+        dailyTrends: []
+    });
+
+    // User performance data (Kullanıcı performansı)
+    self.userPerformance = ko.observable({
+        topEvaluatorsToday: [],
+        topEvaluatorsMonth: [],
+        userRankings: []
+    });
+
+    // Target progress data (Hedef takibi)
+    self.targetProgress = ko.observable({
+        currentPeriodName: null,
+        periodStartDate: null,
+        periodEndDate: null,
+        periodTarget: 0,
+        periodCompleted: 0,
+        periodPercentage: 0,
+        remaining: 0,
+        dailyTarget: 55,
+        todayCompleted: 0,
+        projectTargets: []
+    });
+
     // Announcements
     self.announcements = ko.observableArray([]);
 
@@ -357,10 +390,134 @@ function DashboardViewModel() {
         return date.toLocaleDateString('tr-TR');
     };
 
+    // Load daily metrics
+    self.loadDailyMetrics = function() {
+        fetch('/api/dashboard/daily-metrics', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Daily metrics load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.dailyMetrics(data);
+                self.updateDailyTrendChart(data.dailyTrends || []);
+            })
+            .catch(function(error) {
+                console.error('Daily metrics error:', error);
+            });
+    };
+
+    // Load user performance
+    self.loadUserPerformance = function() {
+        fetch('/api/dashboard/user-performance', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('User performance load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.userPerformance(data);
+            })
+            .catch(function(error) {
+                console.error('User performance error:', error);
+            });
+    };
+
+    // Load target progress
+    self.loadTargetProgress = function() {
+        fetch('/api/dashboard/target-progress', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Target progress load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.targetProgress(data);
+            })
+            .catch(function(error) {
+                console.error('Target progress error:', error);
+            });
+    };
+
+    // Daily Trend Chart (last 7 days)
+    var dailyTrendChart = null;
+    self.updateDailyTrendChart = function(dailyTrends) {
+        var ctx = document.getElementById('dailyTrendChart');
+        if (!ctx) return;
+
+        if (dailyTrendChart) {
+            dailyTrendChart.destroy();
+        }
+
+        var labels = dailyTrends.map(function(d) { return d.dayName; });
+        var counts = dailyTrends.map(function(d) { return d.evaluationCount; });
+        var target = self.dailyMetrics().dailyTarget || 55;
+
+        dailyTrendChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: T('Dashboard.EvaluationCount', 'Değerlendirme'),
+                        data: counts,
+                        backgroundColor: counts.map(function(c) {
+                            return c >= target ? 'rgba(40, 167, 69, 0.7)' : 'rgba(255, 193, 7, 0.7)';
+                        }),
+                        borderColor: counts.map(function(c) {
+                            return c >= target ? 'rgb(40, 167, 69)' : 'rgb(255, 193, 7)';
+                        }),
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    annotation: {
+                        annotations: {
+                            targetLine: {
+                                type: 'line',
+                                yMin: target,
+                                yMax: target,
+                                borderColor: 'rgb(220, 53, 69)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    enabled: true,
+                                    content: T('Dashboard.Target', 'Hedef') + ': ' + target
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: T('Dashboard.EvaluationCount', 'Değerlendirme')
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    // Calculate target bar color
+    self.getTargetBarColor = function(percentage) {
+        if (percentage >= 100) return 'bg-success';
+        if (percentage >= 75) return 'bg-info';
+        if (percentage >= 50) return 'bg-warning';
+        return 'bg-danger';
+    };
+
     // Initialize
     self.loadDashboard();
     self.loadScorecard();
     self.loadAnnouncements();
+    self.loadDailyMetrics();
+    self.loadUserPerformance();
+    self.loadTargetProgress();
 }
 
 // Apply bindings when document is ready

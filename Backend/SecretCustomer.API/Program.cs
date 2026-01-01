@@ -175,6 +175,7 @@ builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

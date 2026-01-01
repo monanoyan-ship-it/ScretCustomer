@@ -26,6 +26,23 @@ public class CustomerOrganizationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// DEBUG: Organizasyon ve personel ilişkisini kontrol et
+    /// </summary>
+    [HttpGet("debug/check-personnel")]
+    public async Task<IActionResult> DebugCheckPersonnel()
+    {
+        try
+        {
+            var result = await _organizationService.DebugCheckPersonnelAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Müşteriye ait organizasyonları getir
     /// </summary>
     [HttpGet("by-customer/{customerId}")]
@@ -146,6 +163,34 @@ public class CustomerOrganizationsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error updating organization {Id}", id);
             return StatusCode(500, CreateErrorResponse("Organizasyon güncellenirken bir hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Organizasyonun parent'ını değiştir (Drag & Drop için)
+    /// </summary>
+    [HttpPut("{id}/move")]
+    public async Task<IActionResult> MoveOrganization(int id, [FromBody] MoveOrganizationDto dto)
+    {
+        try
+        {
+            await _organizationService.MoveOrganizationAsync(id, dto.NewParentId);
+            return Ok(new { message = "Organizasyon taşındı" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Organization {Id} not found", id);
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Cannot move organization {Id} to parent {ParentId}", id, dto.NewParentId);
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error moving organization {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Organizasyon taşınırken bir hata oluştu", ex));
         }
     }
 
@@ -347,4 +392,9 @@ public class TransferAndRemoveDto
 {
     public int PersonnelIdToRemove { get; set; }
     public int NewSupervisorId { get; set; }
+}
+
+public class MoveOrganizationDto
+{
+    public int? NewParentId { get; set; }
 }

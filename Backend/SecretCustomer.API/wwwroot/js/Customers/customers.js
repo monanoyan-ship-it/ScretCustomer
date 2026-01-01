@@ -516,10 +516,8 @@ function CustomersViewModel() {
     // Load customer managers (role = 1)
     self.loadCustomerManagers = function(customerId) {
         self.customerManagers([]);
-        var pool = self.personnelPool();
         // Filter from pool (role 1 = CustomerManager)
-        fetch('/api/customer-organizations/personnel-pool/' + customerId)
-            .then(function(r) { return r.json(); })
+        ApiService.get('/customer-organizations/personnel-pool/' + customerId)
             .then(function(data) {
                 var managers = (data || []).filter(function(p) { return p.role === 1; });
                 self.customerManagers(managers);
@@ -619,11 +617,7 @@ function CustomersViewModel() {
         self.isLoadingOrganizations(true);
         self.orgModalErrorMessage('');
 
-        fetch('/api/customer-organizations/by-customer/' + customerId)
-            .then(function(r) {
-                if (!r.ok) throw new Error('Organizasyonlar yüklenemedi');
-                return r.json();
-            })
+        ApiService.get('/customer-organizations/by-customer/' + customerId)
             .then(function(data) {
                 self.organizations(data || []);
             })
@@ -638,11 +632,7 @@ function CustomersViewModel() {
 
     // Load personnel pool for customer
     self.loadPersonnelPool = function(customerId) {
-        fetch('/api/customer-organizations/personnel-pool/' + customerId)
-            .then(function(r) {
-                if (!r.ok) throw new Error('Personel havuzu yüklenemedi');
-                return r.json();
-            })
+        ApiService.get('/customer-organizations/personnel-pool/' + customerId)
             .then(function(data) {
                 self.personnelPool(data || []);
             })
@@ -662,11 +652,7 @@ function CustomersViewModel() {
     self.loadOrgPersonnel = function(organizationId) {
         self.isLoadingOrgPersonnel(true);
 
-        fetch('/api/customer-organizations/' + organizationId + '/personnel')
-            .then(function(r) {
-                if (!r.ok) throw new Error('Personeller yüklenemedi');
-                return r.json();
-            })
+        ApiService.get('/customer-organizations/' + organizationId + '/personnel')
             .then(function(data) {
                 self.orgPersonnelList(data || { supervisors: [], operators: [] });
             })
@@ -736,30 +722,26 @@ function CustomersViewModel() {
             customerId: org.customerId
         };
 
-        var url = org.id ? '/api/customer-organizations/' + org.id : '/api/customer-organizations';
-        var method = org.id ? 'PUT' : 'POST';
+        var promise;
+        if (org.id) {
+            promise = ApiService.put('/customer-organizations/' + org.id, data);
+        } else {
+            promise = ApiService.post('/customer-organizations', data);
+        }
 
-        fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(function(r) {
-            if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Kaydetme hatası'); });
-            return r.json();
-        })
-        .then(function() {
-            self.orgModalSuccessMessage(org.id ? T('Organization.UpdateSuccess', 'Organizasyon güncellendi.') : T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.'));
-            self.closeOrgFormModal();
-            self.loadOrganizations(self.selectedCustomerForOrg().id);
-        })
-        .catch(function(error) {
-            console.error('Error saving organization:', error);
-            self.orgModalErrorMessage(T('Organization.SaveError', 'Organizasyon kaydedilirken bir hata oluştu.') + ' ' + error.message);
-        })
-        .finally(function() {
-            self.isSavingOrg(false);
-        });
+        promise
+            .then(function() {
+                self.orgModalSuccessMessage(org.id ? T('Organization.UpdateSuccess', 'Organizasyon güncellendi.') : T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.'));
+                self.closeOrgFormModal();
+                self.loadOrganizations(self.selectedCustomerForOrg().id);
+            })
+            .catch(function(error) {
+                console.error('Error saving organization:', error);
+                self.orgModalErrorMessage(T('Organization.SaveError', 'Organizasyon kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isSavingOrg(false);
+            });
     };
 
     // Delete organization
@@ -767,9 +749,8 @@ function CustomersViewModel() {
         deleteConfirmation.show(
             '"' + org.name + '" ' + T('Organization.DeleteConfirm', 'organizasyonunu silmek istediğinizden emin misiniz?'),
             function() {
-                fetch('/api/customer-organizations/' + org.id, { method: 'DELETE' })
-                    .then(function(r) {
-                        if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Silme hatası'); });
+                ApiService.delete('/customer-organizations/' + org.id)
+                    .then(function() {
                         self.orgModalSuccessMessage(T('Organization.DeleteSuccess', 'Organizasyon silindi.'));
                         self.loadOrganizations(self.selectedCustomerForOrg().id);
                         if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
@@ -779,7 +760,7 @@ function CustomersViewModel() {
                     })
                     .catch(function(error) {
                         console.error('Error deleting organization:', error);
-                        self.orgModalErrorMessage(T('Organization.DeleteError', 'Organizasyon silinirken bir hata oluştu.') + ' ' + error.message);
+                        self.orgModalErrorMessage(T('Organization.DeleteError', 'Organizasyon silinirken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -791,17 +772,9 @@ function CustomersViewModel() {
         var org = self.selectedOrganization();
         if (!personnelId || !org) return;
 
-        fetch('/api/customer-organizations/assign-personnel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                personnelId: personnelId,
-                organizationId: org.id
-            })
-        })
-        .then(function(r) {
-            if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Atama hatası'); });
-            return r.json();
+        ApiService.post('/customer-organizations/assign-personnel', {
+            personnelId: personnelId,
+            organizationId: org.id
         })
         .then(function() {
             self.orgModalSuccessMessage(T('Personnel.AssignSuccess', 'Personel organizasyona atandı.'));
@@ -812,7 +785,7 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error assigning personnel:', error);
-            self.orgModalErrorMessage(T('Personnel.AssignError', 'Personel atanırken bir hata oluştu.') + ' ' + error.message);
+            self.orgModalErrorMessage(T('Personnel.AssignError', 'Personel atanırken bir hata oluştu.') + ' ' + (error.message || ''));
         });
     };
 
@@ -911,9 +884,8 @@ function CustomersViewModel() {
         deleteConfirmation.show(
             '"' + personnel.fullName + '" ' + T('Personnel.RemoveFromOrgConfirm', 'personelini organizasyondan çıkarmak istediğinizden emin misiniz?'),
             function() {
-                fetch('/api/customer-organizations/' + org.id + '/personnel/' + personnel.id, { method: 'DELETE' })
-                    .then(function(r) {
-                        if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Çıkarma hatası'); });
+                ApiService.delete('/customer-organizations/' + org.id + '/personnel/' + personnel.id)
+                    .then(function() {
                         self.orgModalSuccessMessage(T('Personnel.RemoveSuccess', 'Personel organizasyondan çıkarıldı.'));
                         self.loadOrgPersonnel(org.id);
                         self.loadOrganizations(self.selectedCustomerForOrg().id);
@@ -921,7 +893,7 @@ function CustomersViewModel() {
                     })
                     .catch(function(error) {
                         console.error('Error removing personnel:', error);
-                        self.orgModalErrorMessage(T('Personnel.RemoveError', 'Personel çıkarılırken bir hata oluştu.') + ' ' + error.message);
+                        self.orgModalErrorMessage(T('Personnel.RemoveError', 'Personel çıkarılırken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -947,17 +919,9 @@ function CustomersViewModel() {
         self.orgModalErrorMessage('');
 
         // API call to transfer and remove
-        fetch('/api/customer-organizations/' + org.id + '/transfer-and-remove', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                personnelIdToRemove: personnel.id,
-                newSupervisorId: delegateId
-            })
-        })
-        .then(function(r) {
-            if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Transfer hatası'); });
-            return r.json();
+        ApiService.post('/customer-organizations/' + org.id + '/transfer-and-remove', {
+            personnelIdToRemove: personnel.id,
+            newSupervisorId: delegateId
         })
         .then(function() {
             self.orgModalSuccessMessage(T('Personnel.TransferSuccess', 'Ekip üyeleri devredildi ve personel organizasyondan çıkarıldı.'));
@@ -968,7 +932,7 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error transferring and removing:', error);
-            self.orgModalErrorMessage(T('Personnel.TransferError', 'Transfer işlemi sırasında bir hata oluştu.') + ' ' + error.message);
+            self.orgModalErrorMessage(T('Personnel.TransferError', 'Transfer işlemi sırasında bir hata oluştu.') + ' ' + (error.message || ''));
         })
         .finally(function() {
             self.isRemovingWithDelegate(false);
@@ -1028,18 +992,10 @@ function CustomersViewModel() {
         })
         .then(function(newPersonnel) {
             // Then assign to organization
-            return fetch('/api/customer-organizations/assign-personnel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    personnelId: newPersonnel.id,
-                    organizationId: org.id
-                })
+            return ApiService.post('/customer-organizations/assign-personnel', {
+                personnelId: newPersonnel.id,
+                organizationId: org.id
             });
-        })
-        .then(function(r) {
-            if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Atama hatası'); });
-            return r.json();
         })
         .then(function() {
             self.orgModalSuccessMessage(T('Personnel.SupervisorCreated', 'Yönetici/Süpervizör oluşturuldu ve atandı.'));
@@ -1112,19 +1068,11 @@ function CustomersViewModel() {
         })
         .then(function(newPersonnel) {
             // Then assign to organization with supervisor
-            return fetch('/api/customer-organizations/assign-personnel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    personnelId: newPersonnel.id,
-                    organizationId: org.id,
-                    supervisorId: supervisor.id
-                })
+            return ApiService.post('/customer-organizations/assign-personnel', {
+                personnelId: newPersonnel.id,
+                organizationId: org.id,
+                supervisorId: supervisor.id
             });
-        })
-        .then(function(r) {
-            if (!r.ok) return r.json().then(function(err) { throw new Error(err.message || 'Atama hatası'); });
-            return r.json();
         })
         .then(function() {
             self.orgModalSuccessMessage(T('Personnel.OperatorCreated', 'Operatör oluşturuldu ve atandı.'));

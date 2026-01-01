@@ -68,14 +68,15 @@ function SuggestionsViewModel() {
                 console.error('Error loading projects:', error);
             });
 
-        // Load branches
-        fetch('/api/branches', { credentials: 'include' })
+        // Branches modülü kaldırıldı - CustomerOrganizations kullanılıyor
+        fetch('/api/customer-organizations', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                self.branches(data);
+                self.branches(data || []);
             })
             .catch(function(error) {
-                console.error('Error loading branches:', error);
+                console.error('Error loading organizations:', error);
+                self.branches([]);
             });
 
         // Load checklists

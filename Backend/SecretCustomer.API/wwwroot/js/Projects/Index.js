@@ -225,11 +225,9 @@ function ProjectsViewModel() {
             .then(function(data) { self.users(data || []); })
             .catch(function() { console.error('Users could not be loaded'); });
 
-        // Load branches
-        fetch('/api/branches', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) { self.branches(data || []); })
-            .catch(function() { console.error('Branches could not be loaded'); });
+        // Branches modülü kaldırıldı - CustomerOrganizations kullanılıyor
+        // self.branches artık kullanılmıyor
+        self.branches([]);
     };
 
     // Load projects

@@ -37,6 +37,26 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         return personnel.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<CustomerPersonnelDto>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false)
+    {
+        var personnel = await _personnelRepository.GetByOrganizationIdAsync(organizationId, includeInactive);
+        return personnel.Select(MapToDto);
+    }
+
+    public async Task ChangeOrganizationAsync(int personnelId, int newOrganizationId)
+    {
+        var personnel = await _personnelRepository.GetByIdAsync(personnelId);
+        if (personnel == null)
+        {
+            throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelId})");
+        }
+
+        personnel.OrganizationId = newOrganizationId;
+        personnel.UpdatedAt = DateTime.UtcNow;
+
+        await _personnelRepository.UpdateAsync(personnel);
+    }
+
     public async Task<CustomerPersonnelDto?> GetByUsernameAsync(string username)
     {
         var personnel = await _personnelRepository.GetByUsernameAsync(username);

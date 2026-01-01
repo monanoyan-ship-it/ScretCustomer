@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Dashboard;
+using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 using System.Globalization;
 using static SecretCustomer.Core.Interfaces.Services.IDashboardService;
 
@@ -12,11 +14,19 @@ public class DashboardService : IDashboardService
 {
     private readonly IEvaluationRepository _evaluationRepository;
     private readonly IUserRepository _userRepository;
+    private readonly ISystemSettingService _systemSettingService;
+    private readonly ApplicationDbContext _context;
 
-    public DashboardService(IEvaluationRepository evaluationRepository, IUserRepository userRepository)
+    public DashboardService(
+        IEvaluationRepository evaluationRepository,
+        IUserRepository userRepository,
+        ISystemSettingService systemSettingService,
+        ApplicationDbContext context)
     {
         _evaluationRepository = evaluationRepository;
         _userRepository = userRepository;
+        _systemSettingService = systemSettingService;
+        _context = context;
     }
 
     public async Task<DashboardStatsDto> GetAdminDashboardAsync(DateTime? startDate = null, DateTime? endDate = null)
@@ -200,6 +210,303 @@ public class DashboardService : IDashboardService
             UserRank = userRank > 0 ? userRank : totalUsers,
             TotalUsers = totalUsers > 0 ? totalUsers : 1,
             RecentEvaluations = recentEvaluations
+        };
+    }
+
+    /// <summary>
+    /// Günlük dinleme metriklerini getirir
+    /// </summary>
+    public async Task<DailyMetricsDto> GetDailyMetricsAsync()
+    {
+        var now = DateTime.UtcNow;
+        var today = now.Date;
+        var weekStart = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+        if (today.DayOfWeek == DayOfWeek.Sunday) weekStart = weekStart.AddDays(-7);
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Günlük hedef
+        var dailyTarget = await _systemSettingService.GetIntValueAsync(SystemSettingKeys.DailyEvaluationTarget, 55);
+
+        // Bugün
+        var todayEvaluations = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .ToListAsync();
+
+        var todayCount = todayEvaluations.Count;
+        var todayAverage = todayEvaluations.Any()
+            ? todayEvaluations.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Bu hafta
+        var weekEvaluations = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= weekStart && e.CompletedAt.Value.Date <= today)
+            .ToListAsync();
+
+        var weekCount = weekEvaluations.Count;
+        var weekAverage = weekEvaluations.Any()
+            ? weekEvaluations.Average(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        // Bu ay
+        var monthEvaluations = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .CountAsync();
+
+        // Günlük hedef yüzdesi
+        var dailyPercentage = dailyTarget > 0 ? Math.Min(100, (decimal)todayCount / dailyTarget * 100) : 0;
+
+        // Son 7 günün trend verileri
+        var last7Days = Enumerable.Range(0, 7)
+            .Select(i => today.AddDays(-6 + i))
+            .ToList();
+
+        var trendData = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= today.AddDays(-6))
+            .GroupBy(e => e.CompletedAt!.Value.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Count = g.Count(),
+                Average = g.Average(e => e.ScorePercentage ?? 0)
+            })
+            .ToListAsync();
+
+        var dailyTrends = last7Days.Select(date =>
+        {
+            var data = trendData.FirstOrDefault(t => t.Date == date);
+            return new DailyTrendDto
+            {
+                Date = date,
+                DayName = CultureInfo.GetCultureInfo("tr-TR").DateTimeFormat.GetAbbreviatedDayName(date.DayOfWeek),
+                EvaluationCount = data?.Count ?? 0,
+                AverageScore = Math.Round(data?.Average ?? 0, 2)
+            };
+        }).ToList();
+
+        return new DailyMetricsDto
+        {
+            TodayEvaluations = todayCount,
+            ThisWeekEvaluations = weekCount,
+            ThisMonthEvaluations = monthEvaluations,
+            DailyTarget = dailyTarget,
+            DailyTargetPercentage = Math.Round(dailyPercentage, 1),
+            TodayAverageScore = Math.Round(todayAverage, 2),
+            ThisWeekAverageScore = Math.Round(weekAverage, 2),
+            DailyTrends = dailyTrends
+        };
+    }
+
+    /// <summary>
+    /// Kullanıcı performans metriklerini getirir
+    /// </summary>
+    public async Task<UserPerformanceDto> GetUserPerformanceAsync(int? currentUserId = null)
+    {
+        var now = DateTime.UtcNow;
+        var today = now.Date;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Bugün en çok değerlendirme yapanlar
+        var topToday = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                Count = g.Count(),
+                Average = g.Average(e => e.ScorePercentage ?? 0)
+            })
+            .OrderByDescending(x => x.Count)
+            .Take(10)
+            .ToListAsync();
+
+        var topTodayUserIds = topToday.Select(t => t.UserId).ToList();
+        var topTodayUsers = await _context.Users
+            .Where(u => topTodayUserIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+        var topEvaluatorsToday = topToday.Select(t => new TopEvaluatorDto
+        {
+            UserId = t.UserId,
+            UserName = topTodayUsers.GetValueOrDefault(t.UserId, "Bilinmeyen"),
+            EvaluationCount = t.Count,
+            AverageScore = Math.Round(t.Average, 2)
+        }).ToList();
+
+        // Bu ay en çok değerlendirme yapanlar
+        var topMonth = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                Count = g.Count(),
+                Average = g.Average(e => e.ScorePercentage ?? 0)
+            })
+            .OrderByDescending(x => x.Count)
+            .Take(10)
+            .ToListAsync();
+
+        var topMonthUserIds = topMonth.Select(t => t.UserId).ToList();
+        var topMonthUsers = await _context.Users
+            .Where(u => topMonthUserIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+        var topEvaluatorsMonth = topMonth.Select(t => new TopEvaluatorDto
+        {
+            UserId = t.UserId,
+            UserName = topMonthUsers.GetValueOrDefault(t.UserId, "Bilinmeyen"),
+            EvaluationCount = t.Count,
+            AverageScore = Math.Round(t.Average, 2)
+        }).ToList();
+
+        // Kullanıcı sıralaması (aylık)
+        var rankData = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                Count = g.Count(),
+                Average = g.Average(e => e.ScorePercentage ?? 0)
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync();
+
+        var allRankUserIds = rankData.Select(r => r.UserId).ToList();
+        var allRankUsers = await _context.Users
+            .Where(u => allRankUserIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+        var userRankings = rankData.Select((r, index) => new UserRankingDto
+        {
+            Rank = index + 1,
+            UserId = r.UserId,
+            UserName = allRankUsers.GetValueOrDefault(r.UserId, "Bilinmeyen"),
+            EvaluationCount = r.Count,
+            AverageScore = Math.Round(r.Average, 2),
+            IsCurrentUser = currentUserId.HasValue && r.UserId == currentUserId.Value
+        }).ToList();
+
+        return new UserPerformanceDto
+        {
+            TopEvaluatorsToday = topEvaluatorsToday,
+            TopEvaluatorsMonth = topEvaluatorsMonth,
+            UserRankings = userRankings
+        };
+    }
+
+    /// <summary>
+    /// Hedef takip metriklerini getirir
+    /// </summary>
+    public async Task<TargetProgressDto> GetTargetProgressAsync()
+    {
+        var now = DateTime.UtcNow;
+        var today = now.Date;
+
+        // Günlük hedef
+        var dailyTarget = await _systemSettingService.GetIntValueAsync(SystemSettingKeys.DailyEvaluationTarget, 55);
+
+        // Bugün yapılanlar
+        var todayCompleted = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .CountAsync();
+
+        // Aktif dönem
+        var activePeriod = await _context.AssignmentPeriods
+            .Where(p => !p.IsDeleted && p.Status == PeriodStatus.Open)
+            .Where(p => p.StartDate <= now && p.EndDate >= now)
+            .FirstOrDefaultAsync();
+
+        string? periodName = null;
+        DateTime? periodStart = null;
+        DateTime? periodEnd = null;
+        int periodTarget = 0;
+        int periodCompleted = 0;
+        decimal periodPercentage = 0;
+
+        if (activePeriod != null)
+        {
+            periodName = activePeriod.Name;
+            periodStart = activePeriod.StartDate;
+            periodEnd = activePeriod.EndDate;
+            periodTarget = activePeriod.TargetCount;
+
+            // Dönemdeki tamamlanan değerlendirmeler
+            periodCompleted = await _context.Evaluations
+                .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+                .Where(e => e.CompletedAt.HasValue &&
+                           e.CompletedAt.Value >= activePeriod.StartDate &&
+                           e.CompletedAt.Value <= activePeriod.EndDate)
+                .CountAsync();
+
+            periodPercentage = periodTarget > 0 ? Math.Min(100, (decimal)periodCompleted / periodTarget * 100) : 0;
+        }
+
+        // Proje bazlı hedefler (aktif projeler)
+        var activeProjects = await _context.Projects
+            .Where(p => !p.IsDeleted && p.IsActive)
+            .Where(p => p.EndDate >= today)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.ChecklistId
+            })
+            .ToListAsync();
+
+        var projectIds = activeProjects.Select(p => p.Id).ToList();
+
+        // Her proje için tamamlanan değerlendirmeler
+        var projectCompletedCounts = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.Assignment != null)
+            .Where(e => projectIds.Contains(e.Assignment!.ProjectId))
+            .GroupBy(e => e.Assignment!.ProjectId)
+            .Select(g => new { ProjectId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ProjectId, x => x.Count);
+
+        // Her proje için hedef (atama sayısı)
+        var projectTargetCounts = await _context.Assignments
+            .Where(a => !a.IsDeleted)
+            .Where(a => projectIds.Contains(a.ProjectId))
+            .GroupBy(a => a.ProjectId)
+            .Select(g => new { ProjectId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ProjectId, x => x.Count);
+
+        var projectTargets = activeProjects.Select(p =>
+        {
+            var completed = projectCompletedCounts.GetValueOrDefault(p.Id, 0);
+            var target = projectTargetCounts.GetValueOrDefault(p.Id, 0);
+            return new ProjectTargetDto
+            {
+                ProjectId = p.Id,
+                ProjectName = p.Name,
+                Target = target,
+                Completed = completed,
+                Percentage = target > 0 ? Math.Round((decimal)completed / target * 100, 1) : 0
+            };
+        }).ToList();
+
+        return new TargetProgressDto
+        {
+            CurrentPeriodName = periodName,
+            PeriodStartDate = periodStart,
+            PeriodEndDate = periodEnd,
+            PeriodTarget = periodTarget,
+            PeriodCompleted = periodCompleted,
+            PeriodPercentage = Math.Round(periodPercentage, 1),
+            Remaining = Math.Max(0, periodTarget - periodCompleted),
+            DailyTarget = dailyTarget,
+            TodayCompleted = todayCompleted,
+            ProjectTargets = projectTargets
         };
     }
 }

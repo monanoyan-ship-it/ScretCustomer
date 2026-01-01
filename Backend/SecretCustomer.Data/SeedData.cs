@@ -51,7 +51,10 @@ public static class SeedData
             // 3. App Settings
             await SeedAppSettingsAsync(context, logger);
 
-            // 4. Languages with XML import
+            // 4. System Settings (Dashboard hedefleri, vb.)
+            await SeedSystemSettingsAsync(context, logger);
+
+            // 5. Languages with XML import
             await SeedLanguagesWithImportAsync(context, logger, basePath);
 
             logger.LogInformation("===========================================");
@@ -417,6 +420,92 @@ public static class SeedData
                     AllowNA = true,
                     IsRequired = true,
                     Order = 9,
+                    HelpText = "SARI KART: Porsiyon standart boyutun altındaysa 10 puan düşülür",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // ========== CEZALI SORULAR ÖRNEKLERİ ==========
+                // SARI KART: Hafif ihlaller - düşük puan kesintisi
+                new Question
+                {
+                    ChecklistId = checklist.Id,
+                    SectionId = section1.Id, // Temizlik
+                    Text = "Personel isim kartı takıyor mu?",
+                    ScoringType = ScoringType.Penalty,
+                    WeightPoints = 0, // Cezalı sorularda ağırlık puanı 0
+                    ScaleSteps = 2, // Evet/Hayır
+                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyValue = 5, // 5 puan düşürülür
+                    AllowNA = false,
+                    IsRequired = true,
+                    Order = 10,
+                    HelpText = "SARI KART: İsim kartı yoksa toplam puandan 5 puan düşülür",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Question
+                {
+                    ChecklistId = checklist.Id,
+                    SectionId = section2.Id, // Hizmet
+                    Text = "Müşteriye güler yüzle yaklaşıldı mı?",
+                    ScoringType = ScoringType.Penalty,
+                    WeightPoints = 0,
+                    ScaleSteps = 2,
+                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyValue = 8,
+                    AllowNA = false,
+                    IsRequired = true,
+                    Order = 11,
+                    HelpText = "SARI KART: Güler yüz yoksa 8 puan düşülür",
+                    CreatedAt = DateTime.UtcNow
+                },
+
+                // KIRMIZI KART: Ciddi ihlaller - yüksek puan kesintisi veya sıfırlama
+                new Question
+                {
+                    ChecklistId = checklist.Id,
+                    SectionId = section1.Id, // Temizlik
+                    Text = "Hijyen kurallarına uyuluyor mu? (Eldiven, bone vb.)",
+                    ScoringType = ScoringType.Penalty,
+                    WeightPoints = 0,
+                    ScaleSteps = 2,
+                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyValue = 25, // Ciddi ceza
+                    AllowNA = false,
+                    IsRequired = true,
+                    Order = 12,
+                    HelpText = "KIRMIZI KART: Hijyen ihlali tespit edilirse 25 puan düşülür",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Question
+                {
+                    ChecklistId = checklist.Id,
+                    SectionId = section2.Id, // Hizmet
+                    Text = "Müşteriye saygısız davranış var mı?",
+                    ScoringType = ScoringType.Penalty,
+                    WeightPoints = 0,
+                    ScaleSteps = 2,
+                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyValue = 50, // Çok ciddi - yarım puan
+                    AllowNA = false,
+                    IsRequired = true,
+                    Order = 13,
+                    HelpText = "KIRMIZI KART: Saygısız davranış tespit edilirse 50 puan düşülür",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Question
+                {
+                    ChecklistId = checklist.Id,
+                    SectionId = section3.Id, // Ürün
+                    Text = "Bozuk/bayat ürün servisi var mı?",
+                    ScoringType = ScoringType.Penalty,
+                    WeightPoints = 0,
+                    ScaleSteps = 2,
+                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyValue = 100, // Tam sıfırlama
+                    AllowNA = false,
+                    IsRequired = true,
+                    Order = 14,
+                    HelpText = "KIRMIZI KART: Bozuk ürün servisi = DEĞERLENDİRME SIFIRLANIR",
                     CreatedAt = DateTime.UtcNow
                 }
             };
@@ -892,7 +981,10 @@ public static class SeedData
             // 15. App Settings - Varsayılan Ayarlar
             await SeedAppSettingsAsync(context, logger);
 
-            // 16. Languages - Çoklu Dil Desteği
+            // 16. System Settings - Dashboard hedefleri vb.
+            await SeedSystemSettingsAsync(context, logger);
+
+            // 17. Languages - Çoklu Dil Desteği
             await SeedLanguagesAsync(context, logger);
 
             logger.LogInformation("Database seed completed successfully!");
@@ -994,15 +1086,15 @@ public static class SeedData
             });
         }
 
-        // TeamLeader permissions
-        var teamLeaderPermissions = permissions.Where(p =>
+        // QualitySpecialist permissions (hem TeamLeader hem Evaluator için)
+        var qualitySpecialistPermissions = permissions.Where(p =>
             p.Code.StartsWith("Projects.") ||
             p.Code.StartsWith("Assignments.") ||
             p.Code.StartsWith("Checklists.View") ||
             p.Code.StartsWith("Reports.") ||
             p.Code.StartsWith("Dashboard.")).ToList();
 
-        foreach (var permission in teamLeaderPermissions)
+        foreach (var permission in qualitySpecialistPermissions)
         {
             context.RolePermissions.Add(new RolePermission
             {
@@ -1010,24 +1102,6 @@ public static class SeedData
                 PermissionId = permission.Id,
                 IsGranted = true,
                 Scope = PermissionScope.Branch,
-                CreatedAt = DateTime.UtcNow
-            });
-        }
-
-        // Evaluator permissions
-        var evaluatorPermissions = permissions.Where(p =>
-            p.Code == "Checklists.View" ||
-            p.Code == "Assignments.View" ||
-            p.Code == "Dashboard.View").ToList();
-
-        foreach (var permission in evaluatorPermissions)
-        {
-            context.RolePermissions.Add(new RolePermission
-            {
-                Role = UserRole.QualitySpecialist,
-                PermissionId = permission.Id,
-                IsGranted = true,
-                Scope = PermissionScope.Own,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -1239,6 +1313,61 @@ public static class SeedData
     /// <summary>
     /// Dilleri oluşturur ve XML dosyalarından çevirileri import eder
     /// </summary>
+    private static async Task SeedSystemSettingsAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (await context.SystemSettings.AnyAsync())
+        {
+            logger.LogInformation("System settings already exist, skipping...");
+            return;
+        }
+
+        var settings = new List<SystemSetting>
+        {
+            // Dashboard Settings
+            new SystemSetting
+            {
+                Key = SystemSettingKeys.DailyEvaluationTarget,
+                Value = "55",
+                ValueType = "int",
+                Category = "Dashboard",
+                Description = "Günlük değerlendirme hedefi",
+                CreatedAt = DateTime.UtcNow
+            },
+            new SystemSetting
+            {
+                Key = SystemSettingKeys.DefaultPeriodTarget,
+                Value = "1000",
+                ValueType = "int",
+                Category = "Dashboard",
+                Description = "Varsayılan dönem hedefi (AssignmentPeriod için)",
+                CreatedAt = DateTime.UtcNow
+            },
+            // Evaluation Settings
+            new SystemSetting
+            {
+                Key = "Evaluation.RequireOrganizationSelection",
+                Value = "true",
+                ValueType = "bool",
+                Category = "Evaluation",
+                Description = "Değerlendirmede organizasyon seçimi zorunlu mu?",
+                CreatedAt = DateTime.UtcNow
+            },
+            new SystemSetting
+            {
+                Key = "Evaluation.AllowAutoSave",
+                Value = "true",
+                ValueType = "bool",
+                Category = "Evaluation",
+                Description = "Değerlendirmede otomatik kaydetme aktif mi?",
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        context.SystemSettings.AddRange(settings);
+        await context.SaveChangesAsync();
+        logger.LogInformation("System settings created ({Count} settings)", settings.Count);
+    }
+
     private static async Task SeedLanguagesWithImportAsync(ApplicationDbContext context, ILogger logger, string basePath)
     {
         if (await context.Languages.AnyAsync())

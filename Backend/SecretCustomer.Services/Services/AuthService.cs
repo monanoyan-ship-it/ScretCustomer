@@ -24,24 +24,60 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
+        // Önce User tablosunu kontrol et (bizim personelimiz)
         var user = await _userRepository.GetByUsernameAsync(dto.Username);
-        if (user == null)
-            throw new UnauthorizedAccessException("Invalid username or password");
-
-        // Simple password check (in production, use BCrypt or similar)
-        if (!VerifyPassword(dto.Password, user.PasswordHash))
-            throw new UnauthorizedAccessException("Invalid username or password");
-
-        var token = _jwtHelper.GenerateToken(user);
-
-        return new LoginResponseDto
+        if (user != null)
         {
-            Token = token,
-            UserId = user.Id,
-            Username = user.Username,
-            FullName = $"{user.FirstName} {user.LastName}",
-            Role = user.Role.ToString()
-        };
+            if (!VerifyPassword(dto.Password, user.PasswordHash))
+                throw new UnauthorizedAccessException("Kullanıcı adı veya şifre hatalı");
+
+            if (!user.IsActive)
+                throw new UnauthorizedAccessException("Hesabınız pasif durumda. Yöneticinize başvurun.");
+
+            // Son giriş tarihini güncelle
+            user.LastLoginAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+
+            var token = _jwtHelper.GenerateToken(user);
+
+            return new LoginResponseDto
+            {
+                Token = token,
+                UserId = user.Id,
+                Username = user.Username,
+                FullName = $"{user.FirstName} {user.LastName}",
+                Role = user.Role.ToString()
+            };
+        }
+
+        // User bulunamadıysa CustomerPersonnel tablosunu kontrol et (müşteri personeli)
+        var customerPersonnel = await _context.CustomerPersonnel
+            .Include(cp => cp.Customer)
+            .FirstOrDefaultAsync(cp => cp.Username == dto.Username && !cp.IsDeleted);
+
+        if (customerPersonnel != null)
+        {
+            if (!VerifyPassword(dto.Password, customerPersonnel.PasswordHash))
+                throw new UnauthorizedAccessException("Kullanıcı adı veya şifre hatalı");
+
+            if (!customerPersonnel.IsActive)
+                throw new UnauthorizedAccessException("Hesabınız pasif durumda. Yöneticinize başvurun.");
+
+            var token = _jwtHelper.GenerateCustomerPersonnelToken(customerPersonnel);
+
+            return new LoginResponseDto
+            {
+                Token = token,
+                UserId = customerPersonnel.Id,
+                Username = customerPersonnel.Username,
+                FullName = customerPersonnel.FullName,
+                Role = customerPersonnel.Role.ToString(),
+                CustomerId = customerPersonnel.CustomerId,
+                CustomerName = customerPersonnel.Customer?.CompanyName
+            };
+        }
+
+        throw new UnauthorizedAccessException("Kullanıcı adı veya şifre hatalı");
     }
 
     public async Task<LoginResponseDto> RegisterAsync(RegisterDto dto)

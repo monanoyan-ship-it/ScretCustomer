@@ -572,8 +572,7 @@
                                     <tr>
                                         <th>@Html.T("Period.Name", "Dönem")</th>
                                         <th>@Html.T("Period.DateRange", "Tarih Aralığı")</th>
-                                        <th class="text-center">@Html.T("Period.Progress", "İlerleme")</th>
-                                        <th class="text-center">@Html.T("Common.Average", "Ortalama")</th>
+                                        <th class="text-center">@Html.T("Period.DailyTarget", "Günlük Hedef")</th>
                                         <th>@Html.T("Common.Status", "Durum")</th>
                                     </tr>
                                 </thead>
@@ -588,11 +587,7 @@
                                             </small>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-secondary" data-bind="text: completedCount + ' / ' + targetCount"></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span data-bind="visible: averageScore !== null && averageScore !== undefined, text: averageScore ? averageScore.toFixed(1) + '%' : '-'" class="fw-bold"></span>
-                                            <span data-bind="visible: averageScore === null || averageScore === undefined" class="text-muted">-</span>
+                                            <span class="badge bg-info" data-bind="text: targetCount"></span>
                                         </td>
                                         <td>
                                             <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? 'Açık' : 'Kapalı'"></span>
@@ -639,7 +634,8 @@
                     <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.openAddPeriodModal">
                         <i class="bi bi-calendar-plus me-1"></i>@Html.T("Period.Add", "Dönem Ekle")
                     </button>
-                    <a class="btn btn-primary" data-bind="attr: { href: '/Evaluations/Form/' + id }, visible: status !== 'Completed' && status !== 'Cancelled'">
+                    <!-- Değerlendir butonu sadece QualitySpecialist ve FieldWorker için -->
+                    <a class="btn btn-primary" data-bind="attr: { href: '/Evaluations/Form/' + id }, visible: status !== 'Completed' && status !== 'Cancelled' && !$root.isAdmin()">
                         <i class="bi bi-clipboard-check me-1"></i>@Html.T("Button.Evaluate", "Değerlendir")
                     </a>
                     <!-- /ko -->
@@ -752,9 +748,9 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("Period.TargetCount", "Hedef Değerlendirme Sayısı") <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("Period.DailyTarget", "Günlük Hedef") <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" min="1" max="100" data-bind="value: targetCount">
-                        <small class="text-muted">@Html.T("Period.TargetCountHint", "Bu dönemde yapılması gereken değerlendirme sayısı")</small>
+                        <small class="text-muted">@Html.T("Period.DailyTargetHint", "Günlük yapılması gereken değerlendirme sayısı")</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>

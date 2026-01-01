@@ -107,3 +107,6 @@ var apiService = (function() {
         }
     };
 })();
+
+// Alias for backward compatibility
+var ApiService = apiService;

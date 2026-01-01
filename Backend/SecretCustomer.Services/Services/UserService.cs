@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 
 namespace SecretCustomer.Services.Services;
 
@@ -10,11 +12,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IAuditLogService _auditLogService;
+    private readonly ApplicationDbContext _context;
 
-    public UserService(IUserRepository userRepository, IAuditLogService auditLogService)
+    public UserService(IUserRepository userRepository, IAuditLogService auditLogService, ApplicationDbContext context)
     {
         _userRepository = userRepository;
         _auditLogService = auditLogService;
+        _context = context;
     }
 
     public async Task<UserDto?> GetByIdAsync(int id)
@@ -26,19 +30,36 @@ public class UserService : IUserService
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
         var users = await _userRepository.GetAllAsync();
-        return users.Select(MapToDto);
+        var userIds = users.Select(u => u.Id).ToList();
+
+        // İstatistikleri çek
+        var assignmentStats = await _context.Assignments
+            .Where(a => a.AssignedUserId.HasValue && userIds.Contains(a.AssignedUserId.Value))
+            .GroupBy(a => a.AssignedUserId!.Value)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        var evaluationStats = await _context.Evaluations
+            .Where(e => e.EvaluatorId.HasValue && userIds.Contains(e.EvaluatorId.Value))
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        return users.Select(u => MapToDto(u,
+            assignmentStats.GetValueOrDefault(u.Id, 0),
+            evaluationStats.GetValueOrDefault(u.Id, 0))).ToList();
     }
 
     public async Task<IEnumerable<UserDto>> GetByRoleAsync(UserRole role)
     {
         var users = await _userRepository.GetByRoleAsync(role);
-        return users.Select(MapToDto);
+        return users.Select(u => MapToDto(u)).ToList();
     }
 
     public async Task<IEnumerable<UserDto>> GetActiveUsersAsync()
     {
         var users = await _userRepository.GetActiveUsersAsync();
-        return users.Select(MapToDto);
+        return users.Select(u => MapToDto(u)).ToList();
     }
 
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
@@ -97,6 +118,7 @@ public class UserService : IUserService
         user.Email = updateUserDto.Email;
         user.FirstName = updateUserDto.FirstName;
         user.LastName = updateUserDto.LastName;
+        user.PhoneNumber = updateUserDto.PhoneNumber;
         user.Role = updateUserDto.Role;
         user.IsActive = updateUserDto.IsActive;
 
@@ -181,7 +203,7 @@ public class UserService : IUserService
         return await _userRepository.ExistsByEmailAsync(email);
     }
 
-    private static UserDto MapToDto(User user)
+    private static UserDto MapToDto(User user, int assignmentCount = 0, int evaluationCount = 0)
     {
         return new UserDto
         {
@@ -190,10 +212,14 @@ public class UserService : IUserService
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
             Role = user.Role,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
+            UpdatedAt = user.UpdatedAt,
+            LastLoginAt = user.LastLoginAt,
+            AssignmentCount = assignmentCount,
+            EvaluationCount = evaluationCount
         };
     }
 }

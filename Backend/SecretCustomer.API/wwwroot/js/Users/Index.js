@@ -1,3 +1,4 @@
+// ===== User Edit ViewModel =====
 function UserEditViewModel(data) {
     var self = this;
     data = data || {};
@@ -8,185 +9,215 @@ function UserEditViewModel(data) {
     self.lastName = ko.observable(data.lastName || '');
     self.email = ko.observable(data.email || '');
     self.password = ko.observable('');
-    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2'); // Default: QualitySpecialist
+    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2');
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
 }
 
-function PasswordChangeViewModel(user) {
+// ===== Customer Personnel Edit ViewModel =====
+function CustomerPersonnelEditViewModel(data) {
     var self = this;
-    
+    data = data || {};
+
+    self.id = data.id || null;
+    self.customerId = ko.observable(data.customerId || '');
+    self.username = ko.observable(data.username || '');
+    self.firstName = ko.observable(data.firstName || '');
+    self.lastName = ko.observable(data.lastName || '');
+    self.email = ko.observable(data.email || '');
+    self.phoneNumber = ko.observable(data.phoneNumber || '');
+    self.department = ko.observable(data.department || '');
+    self.password = ko.observable('');
+    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '1');
+    self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+}
+
+// ===== Password Change ViewModel =====
+function PasswordChangeViewModel(user, isCustomerPersonnel) {
+    var self = this;
+
     self.userId = user.id;
     self.username = user.username;
+    self.isCustomerPersonnel = isCustomerPersonnel || false;
     self.newPassword = ko.observable('');
     self.newPasswordConfirm = ko.observable('');
 }
 
+// ===== Main ViewModel =====
 function UsersViewModel() {
     var self = this;
 
-    // State
+    // ===== Tab State =====
+    self.activeTab = ko.observable('users');
+
+    // ===== State =====
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
+    self.modalErrorMessage = ko.observable('');
 
-    // Data
+    // ===== Data =====
     self.users = ko.observableArray([]);
+    self.customerPersonnel = ko.observableArray([]);
+    self.customers = ko.observableArray([]);
+
+    // ===== Filter =====
+    self.selectedCustomerId = ko.observable('');
+    self.searchText = ko.observable('');
+
+    // ===== Editing State =====
     self.editingUser = ko.observable(null);
+    self.editingCustomerPersonnel = ko.observable(null);
     self.passwordChangeUser = ko.observable(null);
 
-    // Modal state
+    // ===== Modal State =====
     self.isModalOpen = ko.observable(false);
+    self.isCustomerPersonnelModalOpen = ko.observable(false);
     self.isPasswordModalOpen = ko.observable(false);
-    self.modalErrorMessage = ko.observable('');
-    self.passwordModalErrorMessage = ko.observable('');
 
-    // Role display helpers - handle both numeric and string enum values
+    // ===== Filtered Customer Personnel =====
+    self.filteredCustomerPersonnel = ko.computed(function() {
+        var list = self.customerPersonnel();
+        var customerId = self.selectedCustomerId();
+        var search = (self.searchText() || '').toLowerCase();
+
+        if (customerId) {
+            list = list.filter(function(p) {
+                return p.customerId == customerId;
+            });
+        }
+
+        if (search) {
+            list = list.filter(function(p) {
+                return (p.username || '').toLowerCase().indexOf(search) >= 0 ||
+                       (p.firstName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (p.lastName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (p.email || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        return list;
+    });
+
+    // ===== Tab Switch =====
+    self.switchTab = function(tab) {
+        self.activeTab(tab);
+        self.errorMessage('');
+        self.successMessage('');
+    };
+
+    // ===== Role Display Helpers (System Users) =====
     self.getRoleDisplayName = function(role) {
-        const roleNames = {
-            // Numeric values
-            1: T('Role.Admin', 'Admin'),
-            2: T('Role.QualitySpecialist', 'Kalite Uzmanı'),
-            3: T('Role.FieldWorker', 'Saha Çalışanı'),
-            // String values (enum names)
-            'Admin': T('Role.Admin', 'Admin'),
-            'QualitySpecialist': T('Role.QualitySpecialist', 'Kalite Uzmanı'),
-            'FieldWorker': T('Role.FieldWorker', 'Saha Çalışanı')
+        var roleNames = {
+            1: 'Admin', 2: 'Kalite Uzmanı', 3: 'Saha Çalışanı',
+            'Admin': 'Admin', 'QualitySpecialist': 'Kalite Uzmanı', 'FieldWorker': 'Saha Çalışanı'
         };
-        return roleNames[role] || T('Common.Unknown', 'Bilinmiyor');
+        return roleNames[role] || 'Bilinmiyor';
     };
 
     self.getRoleBadgeClass = function(role) {
-        const roleClasses = {
-            // Numeric values
-            1: 'bg-danger',
-            2: 'bg-primary',
-            3: 'bg-success',
-            // String values (enum names)
-            'Admin': 'bg-danger',
-            'QualitySpecialist': 'bg-primary',
-            'FieldWorker': 'bg-success'
+        var roleClasses = {
+            1: 'bg-danger', 2: 'bg-primary', 3: 'bg-success',
+            'Admin': 'bg-danger', 'QualitySpecialist': 'bg-primary', 'FieldWorker': 'bg-success'
         };
         return roleClasses[role] || 'bg-secondary';
     };
 
-    // Load users
-    self.loadUsers = function() {
-        self.isLoading(true);
-        self.errorMessage('');
-
-        fetch('/api/users', { credentials: 'include' })
-            .then(response => {
-                if (!response.ok) throw new Error(T('Message.LoadError', 'Yükleme başarısız'));
-                return response.json();
-            })
-            .then(data => {
-                self.users(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                self.errorMessage(T('User.LoadError', 'Kullanıcılar yüklenirken bir hata oluştu.'));
-            })
-            .finally(() => {
-                self.isLoading(false);
-            });
+    // ===== Role Display Helpers (Customer Personnel) =====
+    self.getCustomerRoleDisplayName = function(role) {
+        var roleNames = {
+            1: 'Müşteri Yöneticisi', 2: 'Müşteri Süpervizörü', 3: 'Müşteri Operatörü',
+            'CustomerManager': 'Müşteri Yöneticisi', 'CustomerSupervisor': 'Müşteri Süpervizörü', 'CustomerOperator': 'Müşteri Operatörü'
+        };
+        return roleNames[role] || 'Bilinmiyor';
     };
 
-    // Create new user
+    self.getCustomerRoleBadgeClass = function(role) {
+        var roleClasses = {
+            1: 'bg-info', 2: 'bg-warning', 3: 'bg-secondary',
+            'CustomerManager': 'bg-info', 'CustomerSupervisor': 'bg-warning', 'CustomerOperator': 'bg-secondary'
+        };
+        return roleClasses[role] || 'bg-secondary';
+    };
+
+    // ===== Load Data =====
+    self.loadUsers = function() {
+        fetch('/api/users', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.users(data || []); })
+            .catch(function(err) { console.error('Error loading users:', err); });
+    };
+
+    self.loadCustomerPersonnel = function() {
+        fetch('/api/customer-personnel', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.customerPersonnel(data || []); })
+            .catch(function(err) { console.error('Error loading customer personnel:', err); });
+    };
+
+    self.loadCustomers = function() {
+        fetch('/api/customers', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.customers(data || []); })
+            .catch(function(err) { console.error('Error loading customers:', err); });
+    };
+
+    self.loadAll = function() {
+        self.isLoading(true);
+        Promise.all([
+            fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/customers', { credentials: 'include' }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            self.users(results[0] || []);
+            self.customerPersonnel(results[1] || []);
+            self.customers(results[2] || []);
+        })
+        .catch(function(err) {
+            console.error('Error loading data:', err);
+            self.errorMessage('Veriler yüklenirken bir hata oluştu.');
+        })
+        .finally(function() {
+            self.isLoading(false);
+        });
+    };
+
+    // ===== Create New =====
     self.createNew = function() {
         self.modalErrorMessage('');
-        self.editingUser(new UserEditViewModel());
-        self.isModalOpen(true);
+        if (self.activeTab() === 'users') {
+            self.editingUser(new UserEditViewModel());
+            self.isModalOpen(true);
+        } else {
+            self.editingCustomerPersonnel(new CustomerPersonnelEditViewModel());
+            self.isCustomerPersonnelModalOpen(true);
+        }
     };
 
-    // Edit existing user
+    // ===== User CRUD =====
     self.editUser = function(user) {
         self.modalErrorMessage('');
         self.editingUser(new UserEditViewModel(user));
         self.isModalOpen(true);
     };
 
-    // Save user
     self.saveUser = function() {
         var u = self.editingUser();
 
-        // Validation
         if (!u.id && (!u.username() || u.username().trim() === '')) {
-            toastr.warning(T('User.UsernameRequired', 'Kullanıcı adı zorunludur!'));
+            toastr.warning('Kullanıcı adı zorunludur!');
+            return;
+        }
+        if (!u.firstName() || !u.lastName() || !u.email()) {
+            toastr.warning('Ad, Soyad ve E-posta zorunludur!');
+            return;
+        }
+        if (!u.id && (!u.password() || u.password().length < 6)) {
+            toastr.warning('Şifre en az 6 karakter olmalıdır!');
             return;
         }
 
-        // Username format validation (no spaces, no Turkish characters)
-        if (!u.id && u.username()) {
-            var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
-            if (!usernameRegex.test(u.username())) {
-                toastr.warning(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
-                return;
-            }
-        }
-
-        if (!u.firstName() || u.firstName().trim() === '') {
-            toastr.warning(T('User.FirstNameRequired', 'Ad alanı zorunludur!'));
-            return;
-        }
-
-        if (!u.lastName() || u.lastName().trim() === '') {
-            toastr.warning(T('User.LastNameRequired', 'Soyad alanı zorunludur!'));
-            return;
-        }
-
-        if (!u.email() || u.email().trim() === '') {
-            toastr.warning(T('User.EmailRequired', 'E-posta alanı zorunludur!'));
-            return;
-        }
-
-        if (!u.id && (!u.password() || u.password().trim().length < 6)) {
-            toastr.warning(T('User.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır!'));
-            return;
-        }
-
-        // Check username/email uniqueness before saving (only for new users)
-        if (!u.id) {
-            self.isSaving(true);
-
-            // Check username
-            fetch('/api/users/check-username/' + encodeURIComponent(u.username()), { credentials: 'include' })
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.exists) {
-                        self.isSaving(false);
-                        self.modalErrorMessage(T('User.UsernameExists', 'Bu kullanıcı adı zaten kullanılıyor.'));
-                        return Promise.reject('username_exists');
-                    }
-                    // Check email
-                    return fetch('/api/users/check-email/' + encodeURIComponent(u.email()), { credentials: 'include' });
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.exists) {
-                        self.isSaving(false);
-                        self.modalErrorMessage(T('User.EmailExists', 'Bu e-posta adresi zaten kullanılıyor.'));
-                        return Promise.reject('email_exists');
-                    }
-                    // All checks passed, proceed with save
-                    self.doSaveUser(u);
-                })
-                .catch(function(error) {
-                    if (error !== 'username_exists' && error !== 'email_exists') {
-                        console.error('Error checking uniqueness:', error);
-                        self.isSaving(false);
-                    }
-                });
-            return;
-        }
-
-        // For existing users, save directly
-        self.doSaveUser(u);
-    };
-
-    // Actual save operation
-    self.doSaveUser = function(u) {
-        // Prepare DTO
         var dto = {
             firstName: u.firstName(),
             lastName: u.lastName(),
@@ -210,128 +241,195 @@ function UsersViewModel() {
             credentials: 'include',
             body: JSON.stringify(dto)
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.message || 'Kayıt başarısız');
-                });
-            }
-            return response.json();
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
         })
-        .then(data => {
-            self.successMessage(T('User.SaveSuccess', 'Kullanıcı başarıyla kaydedildi.'));
+        .then(function() {
+            toastr.success('Kullanıcı başarıyla kaydedildi.');
             self.closeModal();
             self.loadUsers();
         })
-        .catch(error => {
-            console.error('Error:', error);
-            self.modalErrorMessage(error.message || T('User.SaveError', 'Kullanıcı kaydedilirken bir hata oluştu.'));
+        .catch(function(err) {
+            self.modalErrorMessage(err.message);
         })
-        .finally(() => {
+        .finally(function() {
             self.isSaving(false);
         });
     };
 
-    // Delete user
     self.deleteUser = function(user) {
         showDeleteConfirm(user.firstName + ' ' + user.lastName, function() {
-            fetch('/api/users/' + user.id, {
-                method: 'DELETE',
-                credentials: 'include'
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(T('Message.DeleteError', 'Silme başarısız'));
-                self.successMessage(T('User.DeleteSuccess', 'Kullanıcı başarıyla silindi.'));
-                self.users.remove(user);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                self.errorMessage(T('User.DeleteError', 'Kullanıcı silinirken bir hata oluştu.'));
-            });
-        });
-    };
-
-    // Change password
-    self.changePassword = function(user) {
-        self.passwordModalErrorMessage('');
-        self.passwordChangeUser(new PasswordChangeViewModel(user));
-        self.isPasswordModalOpen(true);
-    };
-
-    // Save password
-    self.savePassword = function() {
-        var pwdUser = self.passwordChangeUser();
-
-        // Validation
-        if (!pwdUser.newPassword() || pwdUser.newPassword().trim() === '') {
-            toastr.warning(T('Validation.Required', 'Yeni şifre boş olamaz!'));
-            return;
-        }
-
-        if (pwdUser.newPassword().length < 6) {
-            toastr.warning(T('User.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır!'));
-            return;
-        }
-
-        if (pwdUser.newPassword() !== pwdUser.newPasswordConfirm()) {
-            toastr.warning(T('Validation.PasswordMismatch', 'Şifreler eşleşmiyor!'));
-            return;
-        }
-        
-        self.isSaving(true);
-        self.errorMessage('');
-        
-        const dto = {
-            userId: pwdUser.userId,
-            newPassword: pwdUser.newPassword()
-        };
-        
-        fetch('/api/users/' + pwdUser.userId + '/change-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.message || 'Şifre değiştirilemedi');
+            fetch('/api/users/' + user.id, { method: 'DELETE', credentials: 'include' })
+                .then(function() {
+                    toastr.success('Kullanıcı silindi.');
+                    self.users.remove(user);
+                })
+                .catch(function(err) {
+                    toastr.error('Silme hatası.');
                 });
-            }
-            return response.json();
-        })
-        .then(data => {
-            self.successMessage(T('Account.PasswordChanged', 'Şifre başarıyla değiştirildi.'));
-            self.closePasswordModal();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            self.passwordModalErrorMessage(error.message || T('Account.PasswordChangeError', 'Şifre değiştirilirken bir hata oluştu.'));
-        })
-        .finally(() => {
-            self.isSaving(false);
         });
     };
 
-    // Close password modal
-    self.closePasswordModal = function() {
-        self.isPasswordModalOpen(false);
-        self.passwordChangeUser(null);
-        self.passwordModalErrorMessage('');
-    };
-
-    // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingUser(null);
         self.modalErrorMessage('');
     };
 
-    // Initialize
-    self.loadUsers();
+    // ===== Customer Personnel CRUD =====
+    self.editCustomerPersonnel = function(cp) {
+        self.modalErrorMessage('');
+        self.editingCustomerPersonnel(new CustomerPersonnelEditViewModel(cp));
+        self.isCustomerPersonnelModalOpen(true);
+    };
+
+    self.saveCustomerPersonnel = function() {
+        var cp = self.editingCustomerPersonnel();
+
+        if (!cp.customerId()) {
+            toastr.warning('Müşteri seçimi zorunludur!');
+            return;
+        }
+        if (!cp.id && (!cp.username() || cp.username().trim() === '')) {
+            toastr.warning('Kullanıcı adı zorunludur!');
+            return;
+        }
+        if (!cp.firstName() || !cp.lastName() || !cp.email()) {
+            toastr.warning('Ad, Soyad ve E-posta zorunludur!');
+            return;
+        }
+        if (!cp.id && (!cp.password() || cp.password().length < 6)) {
+            toastr.warning('Şifre en az 6 karakter olmalıdır!');
+            return;
+        }
+
+        var dto = {
+            customerId: parseInt(cp.customerId()),
+            firstName: cp.firstName(),
+            lastName: cp.lastName(),
+            email: cp.email(),
+            phoneNumber: cp.phoneNumber(),
+            department: cp.department(),
+            role: parseInt(cp.role()),
+            isActive: cp.isActive()
+        };
+
+        if (!cp.id) {
+            dto.username = cp.username();
+            dto.password = cp.password();
+        }
+
+        self.isSaving(true);
+        var endpoint = cp.id ? '/api/customer-personnel/' + cp.id : '/api/customer-personnel';
+        var method = cp.id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function() {
+            toastr.success('Müşteri personeli başarıyla kaydedildi.');
+            self.closeCustomerPersonnelModal();
+            self.loadCustomerPersonnel();
+        })
+        .catch(function(err) {
+            self.modalErrorMessage(err.message);
+        })
+        .finally(function() {
+            self.isSaving(false);
+        });
+    };
+
+    self.deleteCustomerPersonnel = function(cp) {
+        showDeleteConfirm(cp.firstName + ' ' + cp.lastName, function() {
+            fetch('/api/customer-personnel/' + cp.id, { method: 'DELETE', credentials: 'include' })
+                .then(function() {
+                    toastr.success('Müşteri personeli silindi.');
+                    self.customerPersonnel.remove(cp);
+                })
+                .catch(function(err) {
+                    toastr.error('Silme hatası.');
+                });
+        });
+    };
+
+    self.closeCustomerPersonnelModal = function() {
+        self.isCustomerPersonnelModalOpen(false);
+        self.editingCustomerPersonnel(null);
+        self.modalErrorMessage('');
+    };
+
+    // ===== Password Change =====
+    self.changePassword = function(user) {
+        self.modalErrorMessage('');
+        self.passwordChangeUser(new PasswordChangeViewModel(user, false));
+        self.isPasswordModalOpen(true);
+    };
+
+    self.changeCustomerPersonnelPassword = function(cp) {
+        self.modalErrorMessage('');
+        self.passwordChangeUser(new PasswordChangeViewModel(cp, true));
+        self.isPasswordModalOpen(true);
+    };
+
+    self.savePassword = function() {
+        var pwdUser = self.passwordChangeUser();
+
+        if (!pwdUser.newPassword() || pwdUser.newPassword().length < 6) {
+            toastr.warning('Şifre en az 6 karakter olmalıdır!');
+            return;
+        }
+        if (pwdUser.newPassword() !== pwdUser.newPasswordConfirm()) {
+            toastr.warning('Şifreler eşleşmiyor!');
+            return;
+        }
+
+        self.isSaving(true);
+
+        var endpoint = pwdUser.isCustomerPersonnel
+            ? '/api/customer-personnel/' + pwdUser.userId + '/change-password'
+            : '/api/users/' + pwdUser.userId + '/change-password';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ newPassword: pwdUser.newPassword() })
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function() {
+            toastr.success('Şifre başarıyla değiştirildi.');
+            self.closePasswordModal();
+        })
+        .catch(function(err) {
+            self.modalErrorMessage(err.message);
+        })
+        .finally(function() {
+            self.isSaving(false);
+        });
+    };
+
+    self.closePasswordModal = function() {
+        self.isPasswordModalOpen(false);
+        self.passwordChangeUser(null);
+        self.modalErrorMessage('');
+    };
+
+    // ===== Initialize =====
+    self.loadAll();
 }
 
-// Apply bindings
+// ===== Apply Bindings =====
 $(document).ready(function() {
     ko.applyBindings(new UsersViewModel(), document.getElementById('users-app'));
 });

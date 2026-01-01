@@ -628,11 +628,15 @@ public class AssignmentService : IAssignmentService
         if (assignment == null)
             throw new KeyNotFoundException("Atama bulunamadı");
 
+        // Tarihleri UTC'ye çevir
+        var startDateUtc = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc);
+        var endDateUtc = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc);
+
         // Aynı tarih aralığında dönem var mı kontrol et
         var overlapping = await _context.AssignmentPeriods
             .AnyAsync(p => p.AssignmentId == dto.AssignmentId && !p.IsDeleted &&
-                ((dto.StartDate >= p.StartDate && dto.StartDate <= p.EndDate) ||
-                 (dto.EndDate >= p.StartDate && dto.EndDate <= p.EndDate)));
+                ((startDateUtc >= p.StartDate && startDateUtc <= p.EndDate) ||
+                 (endDateUtc >= p.StartDate && endDateUtc <= p.EndDate)));
 
         if (overlapping)
             throw new InvalidOperationException("Bu tarih aralığında zaten bir dönem mevcut");
@@ -641,8 +645,8 @@ public class AssignmentService : IAssignmentService
         {
             AssignmentId = dto.AssignmentId,
             Name = dto.Name,
-            StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
-            EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc),
+            StartDate = startDateUtc,
+            EndDate = endDateUtc,
             TargetCount = dto.TargetCount,
             Notes = dto.Notes,
             Status = Core.Entities.PeriodStatus.Open,
@@ -652,7 +656,24 @@ public class AssignmentService : IAssignmentService
         _context.AssignmentPeriods.Add(period);
         await _context.SaveChangesAsync();
 
-        return MapPeriodToDto(period);
+        // Reload to get the ID
+        return new Core.DTOs.AssignmentPeriod.AssignmentPeriodDto
+        {
+            Id = period.Id,
+            AssignmentId = period.AssignmentId,
+            Name = period.Name,
+            StartDate = period.StartDate,
+            EndDate = period.EndDate,
+            Status = period.Status.ToString(),
+            StatusName = period.Status == Core.Entities.PeriodStatus.Open ? "Açık" : "Kapalı",
+            TargetCount = period.TargetCount,
+            CompletedCount = 0,
+            AverageScore = null,
+            Notes = period.Notes,
+            CreatedByUserId = period.CreatedByUserId,
+            CreatedByUserName = null,
+            CreatedAt = period.CreatedAt
+        };
     }
 
     public async Task<Core.DTOs.AssignmentPeriod.AssignmentPeriodDto> UpdatePeriodAsync(Core.DTOs.AssignmentPeriod.UpdateAssignmentPeriodDto dto)

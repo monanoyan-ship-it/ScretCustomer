@@ -174,6 +174,25 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Organizasyona gore personel listesi getirir
+    /// </summary>
+    [HttpGet("personnel-by-org/{organizationId:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetPersonnelByOrganization(int organizationId)
+    {
+        try
+        {
+            var personnel = await _evaluationService.GetPersonnelByOrganizationAsync(organizationId);
+            return Ok(personnel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading personnel for organization {OrganizationId}", organizationId);
+            return StatusCode(500, CreateErrorResponse("Personel listesi yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
     /// Degerlendirme baslatir
     /// </summary>
     [HttpPost("start")]

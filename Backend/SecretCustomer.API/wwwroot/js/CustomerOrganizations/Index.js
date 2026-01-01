@@ -12,9 +12,18 @@ function CustomerOrganizationsViewModel() {
     self.customerSearchText = ko.observable('');
     self.selectedCustomer = ko.observable(null);
 
-    // Organizations
+    // Organizations (flat list)
     self.organizations = ko.observableArray([]);
     self.isLoadingOrganizations = ko.observable(false);
+
+    // Selected Organization & Personnel
+    self.selectedOrganization = ko.observable(null);
+    self.personnel = ko.observableArray([]);
+    self.isLoadingPersonnel = ko.observable(false);
+
+    // Drag & Drop
+    self.draggedPersonnel = ko.observable(null);
+    self.dropTargetOrgId = ko.observable(null);
 
     // Modal
     self.isModalOpen = ko.observable(false);
@@ -37,9 +46,8 @@ function CustomerOrganizationsViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
-        ApiService.get('/api/customers')
+        ApiService.get('/customers')
             .then(function(data) {
-                // Add organization count to each customer
                 var customersWithCount = data.map(function(c) {
                     c.organizationCount = c.organizationCount || 0;
                     return c;
@@ -58,6 +66,8 @@ function CustomerOrganizationsViewModel() {
     // Select customer
     self.selectCustomer = function(customer) {
         self.selectedCustomer(customer);
+        self.selectedOrganization(null);
+        self.personnel([]);
         self.loadOrganizations(customer.id);
     };
 
@@ -66,10 +76,14 @@ function CustomerOrganizationsViewModel() {
         self.isLoadingOrganizations(true);
         self.organizations([]);
 
-        ApiService.get('/api/customer-organizations/by-customer/' + customerId + '?includeInactive=true')
+        ApiService.get('/customer-organizations/by-customer/' + customerId + '?includeInactive=true')
             .then(function(data) {
-                self.organizations(data || []);
-                // Update customer's organization count
+                // Add isSelected observable to each org
+                var orgs = (data || []).map(function(org) {
+                    org.isSelected = ko.observable(false);
+                    return org;
+                });
+                self.organizations(orgs);
                 if (self.selectedCustomer()) {
                     self.selectedCustomer().organizationCount = data.length;
                 }
@@ -80,6 +94,140 @@ function CustomerOrganizationsViewModel() {
             })
             .finally(function() {
                 self.isLoadingOrganizations(false);
+            });
+    };
+
+    // Toggle organization - show/hide personnel
+    self.toggleOrganization = function(org) {
+        var wasSelected = org.isSelected();
+
+        // Deselect all organizations
+        self.organizations().forEach(function(o) {
+            o.isSelected(false);
+        });
+
+        if (!wasSelected) {
+            org.isSelected(true);
+            self.selectedOrganization(org);
+            self.loadPersonnel(org.id);
+        } else {
+            self.selectedOrganization(null);
+            self.personnel([]);
+        }
+    };
+
+    // Load personnel for organization (same endpoint as Customers page)
+    self.loadPersonnel = function(organizationId) {
+        self.isLoadingPersonnel(true);
+        self.personnel([]);
+
+        ApiService.get('/customer-organizations/' + organizationId + '/personnel')
+            .then(function(data) {
+                // Flatten hierarchical data to flat list
+                var allPersonnel = [];
+
+                // Add supervisors and their team members
+                if (data && data.supervisors) {
+                    data.supervisors.forEach(function(sup) {
+                        allPersonnel.push({
+                            id: sup.id,
+                            fullName: sup.fullName,
+                            title: sup.title || '',
+                            roleName: sup.roleName,
+                            isActive: sup.isActive !== false
+                        });
+                        // Add team members
+                        if (sup.teamMembers) {
+                            sup.teamMembers.forEach(function(tm) {
+                                allPersonnel.push({
+                                    id: tm.id,
+                                    fullName: tm.fullName,
+                                    title: tm.title || '',
+                                    roleName: tm.roleName,
+                                    isActive: tm.isActive !== false
+                                });
+                            });
+                        }
+                    });
+                }
+
+                // Add independent operators
+                if (data && data.operators) {
+                    data.operators.forEach(function(op) {
+                        allPersonnel.push({
+                            id: op.id,
+                            fullName: op.fullName,
+                            title: op.title || '',
+                            roleName: op.roleName,
+                            isActive: op.isActive !== false
+                        });
+                    });
+                }
+
+                self.personnel(allPersonnel);
+            })
+            .catch(function(error) {
+                console.error('Error loading personnel:', error);
+                toastr.error('Personeller yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoadingPersonnel(false);
+            });
+    };
+
+    // ========== DRAG & DROP FOR PERSONNEL ==========
+
+    self.onPersonnelDragStart = function(person, event) {
+        var e = event.originalEvent || event;
+        self.draggedPersonnel(person);
+        e.target.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', person.id);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    self.onOrgDragOver = function(org, event) {
+        var e = event.originalEvent || event;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (self.draggedPersonnel() && self.selectedOrganization() && self.selectedOrganization().id !== org.id) {
+            self.dropTargetOrgId(org.id);
+        }
+    };
+
+    self.onOrgDragLeave = function(org, event) {
+        self.dropTargetOrgId(null);
+    };
+
+    self.onOrgDrop = function(org, event) {
+        var e = event.originalEvent || event;
+        e.preventDefault();
+        self.dropTargetOrgId(null);
+
+        var draggedPerson = self.draggedPersonnel();
+        if (!draggedPerson || !self.selectedOrganization() || self.selectedOrganization().id === org.id) {
+            self.draggedPersonnel(null);
+            return;
+        }
+
+        // Change organization
+        self.changePersonnelOrganization(draggedPerson.id, org.id, org.name);
+        self.draggedPersonnel(null);
+    };
+
+    self.changePersonnelOrganization = function(personnelId, newOrgId, newOrgName) {
+        ApiService.put('/customer-personnel/' + personnelId + '/change-organization', { newOrganizationId: newOrgId })
+            .then(function() {
+                toastr.success('Personel "' + newOrgName + '" organizasyonuna taşındı.');
+                // Reload current org's personnel
+                if (self.selectedOrganization()) {
+                    self.loadPersonnel(self.selectedOrganization().id);
+                }
+                // Update personnel counts
+                self.loadOrganizations(self.selectedCustomer().id);
+            })
+            .catch(function(error) {
+                console.error('Error changing organization:', error);
+                toastr.error(error.message || 'Organizasyon değiştirme sırasında hata oluştu.');
             });
     };
 
@@ -104,18 +252,29 @@ function CustomerOrganizationsViewModel() {
     };
 
     // Edit organization
-    self.editOrganization = function(org) {
-        self.editingOrganization({
-            id: org.id,
-            name: ko.observable(org.name),
-            code: ko.observable(org.code || ''),
-            description: ko.observable(org.description || ''),
-            order: ko.observable(org.order || 0),
-            isActive: ko.observable(org.isActive),
-            customerId: org.customerId
-        });
-        self.modalErrorMessage('');
-        self.isModalOpen(true);
+    self.editOrganization = function(org, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        ApiService.get('/customer-organizations/' + org.id)
+            .then(function(data) {
+                self.editingOrganization({
+                    id: data.id,
+                    name: ko.observable(data.name),
+                    code: ko.observable(data.code || ''),
+                    description: ko.observable(data.description || ''),
+                    order: ko.observable(data.order || 0),
+                    isActive: ko.observable(data.isActive),
+                    customerId: data.customerId
+                });
+                self.modalErrorMessage('');
+                self.isModalOpen(true);
+            })
+            .catch(function(error) {
+                console.error('Error loading organization:', error);
+                toastr.error('Organizasyon yüklenirken hata oluştu.');
+            });
     };
 
     // Save organization
@@ -143,11 +302,9 @@ function CustomerOrganizationsViewModel() {
 
         var promise;
         if (org.id) {
-            // Update
-            promise = ApiService.put('/api/customer-organizations/' + org.id, data);
+            promise = ApiService.put('/customer-organizations/' + org.id, data);
         } else {
-            // Create
-            promise = ApiService.post('/api/customer-organizations', data);
+            promise = ApiService.post('/customer-organizations', data);
         }
 
         promise
@@ -170,14 +327,22 @@ function CustomerOrganizationsViewModel() {
     };
 
     // Delete organization
-    self.deleteOrganization = function(org) {
+    self.deleteOrganization = function(org, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
         showDeleteConfirmation(
             'Organizasyon Sil',
             '"' + org.name + '" organizasyonunu silmek istediğinize emin misiniz?',
             function() {
-                ApiService.delete('/api/customer-organizations/' + org.id)
+                ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
                         self.loadOrganizations(self.selectedCustomer().id);
+                        if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
+                            self.selectedOrganization(null);
+                            self.personnel([]);
+                        }
                         toastr.success('Organizasyon silindi.');
                     })
                     .catch(function(error) {

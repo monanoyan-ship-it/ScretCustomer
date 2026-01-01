@@ -213,38 +213,39 @@ public class EvaluationService : IEvaluationService
             .Include(e => e.Answers)
             .FirstOrDefaultAsync(e => e.AssignmentId == assignmentId && !e.IsDeleted);
 
-        // Get available personnel based on checklist's customer/organization
-        // Personel, checklist'te belirtilen firma ve organizasyondan seçilir
-        // Süpervizör olmayan kullanıcılar listelenir
-        var personnelQuery = _context.CustomerPersonnel
-            .Where(cp => !cp.IsDeleted && cp.IsActive);
+        // Get available organizations based on checklist's customer
+        // Organizasyon seçimi ZORUNLU - önce organizasyon seç, sonra personel
+        var organizationsQuery = _context.CustomerOrganizations
+            .Where(co => !co.IsDeleted && co.IsActive);
 
         // Checklist'te firma belirtilmişse o firmaya göre filtrele
         if (assignment.Checklist?.CustomerId.HasValue == true)
         {
-            personnelQuery = personnelQuery.Where(cp => cp.CustomerId == assignment.Checklist.CustomerId);
+            organizationsQuery = organizationsQuery.Where(co => co.CustomerId == assignment.Checklist.CustomerId);
         }
 
-        // Checklist'te organizasyon belirtilmişse o organizasyona göre filtrele
-        if (assignment.Checklist?.CustomerOrganizationId.HasValue == true)
-        {
-            personnelQuery = personnelQuery.Where(cp =>
-                cp.OrganizationId == assignment.Checklist.CustomerOrganizationId ||
-                cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == assignment.Checklist.CustomerOrganizationId));
-        }
-
-        // Süpervizörleri hariç tut (CustomerSupervisor rolü)
-        personnelQuery = personnelQuery.Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor);
-
-        var personnel = await personnelQuery
-            .Select(cp => new PersonnelOptionDto
+        var organizations = await organizationsQuery
+            .Select(co => new OrganizationOptionDto
             {
-                Id = cp.Id,
-                Name = $"{cp.FirstName} {cp.LastName}",
-                Title = cp.Title ?? cp.Role.ToString()
+                Id = co.Id,
+                Name = co.Name,
+                Code = co.Code,
+                Level = co.Level,
+                PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
             })
-            .OrderBy(p => p.Name)
+            .OrderBy(o => o.Level)
+            .ThenBy(o => o.Name)
             .ToListAsync();
+
+        // Personel listesi başlangıçta boş - organizasyon seçildikten sonra API ile doldurulacak
+        var personnel = new List<PersonnelOptionDto>();
+
+        // Eğer mevcut değerlendirmede organizasyon seçiliyse, o organizasyonun personelini yükle
+        int? selectedOrganizationId = existingEvaluation?.EvaluatedOrganizationId;
+        if (selectedOrganizationId.HasValue)
+        {
+            personnel = await GetPersonnelByOrganizationAsync(selectedOrganizationId.Value);
+        }
 
         // Get available periods for this assignment (only Open periods)
         var periods = await _context.AssignmentPeriods
@@ -282,6 +283,8 @@ public class EvaluationService : IEvaluationService
             EvaluatedPersonnelId = existingEvaluation?.EvaluatedPersonnelId,
             EvaluatedUnknownPersonnel = existingEvaluation?.EvaluatedUnknownPersonnel,
             EvaluationComment = existingEvaluation?.EvaluationComment,
+            AvailableOrganizations = organizations,
+            SelectedOrganizationId = selectedOrganizationId,
             AvailablePersonnel = personnel,
             SelectedPeriodId = existingEvaluation?.AssignmentPeriodId,
             AvailablePeriods = periods,
@@ -432,6 +435,7 @@ public class EvaluationService : IEvaluationService
         evaluation.CallId = dto.CallId;
         evaluation.CallDate = ToUtc(dto.CallDate);
         evaluation.DurationMinutes = dto.DurationMinutes;
+        evaluation.EvaluatedOrganizationId = dto.EvaluatedOrganizationId;
         evaluation.EvaluatedPersonnelId = dto.EvaluatedPersonnelId;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
         evaluation.ControlDate = ToUtc(dto.ControlDate);
@@ -749,5 +753,29 @@ public class EvaluationService : IEvaluationService
             ChecklistName = evaluation.Assignment?.Checklist?.Name,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };
+    }
+
+    /// <summary>
+    /// Organizasyona göre personel listesi getir
+    /// </summary>
+    public async Task<List<PersonnelOptionDto>> GetPersonnelByOrganizationAsync(int organizationId)
+    {
+        var personnel = await _context.CustomerPersonnel
+            .Where(cp => !cp.IsDeleted && cp.IsActive)
+            .Where(cp => cp.OrganizationId == organizationId ||
+                         cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == organizationId))
+            // Süpervizörleri hariç tut
+            .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+            .Select(cp => new PersonnelOptionDto
+            {
+                Id = cp.Id,
+                Name = $"{cp.FirstName} {cp.LastName}",
+                Title = cp.Title ?? cp.Role.ToString(),
+                OrganizationId = cp.OrganizationId
+            })
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+
+        return personnel;
     }
 }

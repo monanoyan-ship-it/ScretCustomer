@@ -1,8 +1,59 @@
-# Kaldığımız Yer - 31 Aralık 2025 (Son Güncelleme: 18:30)
+# Kaldığımız Yer - 1 Ocak 2026 (Son Güncelleme)
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - En Son)
+## ✅ TAMAMLANAN İŞLER (1 Ocak 2026)
+
+### Faz 1: Değerlendirme Akışı Güncellemesi
+
+**Cascade Dropdown (Önce Organizasyon, Sonra Personel):**
+- `EvaluationFormDto`'ya `AvailableOrganizations` eklendi
+- Yeni endpoint: `GET /api/evaluations/personnel-by-org/{organizationId}`
+- `SubmitEvaluationDto`'ya `EvaluatedOrganizationId` eklendi
+- Frontend: Organizasyon seçimi ZORUNLU yapıldı
+- Organizasyon seçilmeden personel listesi gösterilmiyor
+
+### Faz 2: Dashboard Metrikleri
+
+**Yeni Entity: SystemSetting**
+- Sistem ayarları için key-value tablosu
+- `DailyEvaluationTarget = 55` varsayılan değer
+- SystemSettingService ve API controller oluşturuldu
+
+**Yeni Dashboard Widget'ları:**
+- Günlük dinleme metrikleri (Bugün, Bu Hafta, Bu Ay)
+- Günlük hedef progress bar
+- Son 7 günün trend grafiği
+- En çok dinleyen kullanıcılar (bugün ve bu ay)
+- Dönem hedef takibi
+
+**Yeni API Endpoint'leri:**
+- `GET /api/dashboard/daily-metrics`
+- `GET /api/dashboard/user-performance`
+- `GET /api/dashboard/target-progress`
+
+### Faz 3: Hiyerarşi Görünümü (Tree View)
+
+**Tree View Özellikleri:**
+- Organizasyonlar ağaç yapısında gösteriliyor
+- Expand/collapse toggle
+- Drag & drop ile parent değiştirme
+- Alt organizasyon ekleme butonu
+- Düzenle ve sil butonları her node'da
+
+**Backend:**
+- `MoveOrganizationAsync` metodu eklendi (ICustomerOrganizationService)
+- `PUT /api/customer-organizations/{id}/move` endpoint'i eklendi
+- Döngüsel referans kontrolü mevcut
+
+**Frontend:**
+- KnockoutJS template kullanımı (recursive tree)
+- Native HTML5 drag & drop API
+- CSS stilleri eklendi
+
+---
+
+## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - Önceki)
 
 ### Modül Temizliği ve FieldWorker Kaldırma
 
@@ -404,13 +455,13 @@ public CustomerPersonnel? EvaluatedCustomerPersonnel { get; set; }
 ### Öncelik 2 - UI Değişiklikleri
 - [x] Organizasyon yönetimi ekranı (CustomerOrganization CRUD) ✅ TAMAMLANDI
 - [x] Personel-Organizasyon ilişkilendirme ekranı ✅ TAMAMLANDI
-- [ ] Hiyerarşi görünümü (tree yapısı) - İsteğe bağlı
-- [ ] Değerlendirme akışını güncelle (önce org seç, sonra personel)
+- [x] Hiyerarşi görünümü (tree yapısı) ✅ TAMAMLANDI (1 Ocak 2026)
+- [x] Değerlendirme akışını güncelle (önce org seç, sonra personel) ✅ TAMAMLANDI (1 Ocak 2026)
 
 ### Öncelik 3 - Dashboard
-- [ ] Günlük dinleme metrikleri
-- [ ] Kişi bazlı performans
-- [ ] Hedef takibi
+- [x] Günlük dinleme metrikleri ✅ TAMAMLANDI (1 Ocak 2026)
+- [x] Kişi bazlı performans ✅ TAMAMLANDI (1 Ocak 2026)
+- [x] Hedef takibi ✅ TAMAMLANDI (1 Ocak 2026)
 
 ---
 

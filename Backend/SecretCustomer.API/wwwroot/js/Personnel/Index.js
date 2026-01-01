@@ -1,4 +1,4 @@
-// Personnel ViewModel
+// Personnel ViewModel - Bizim Personelimiz (Users)
 function PersonnelViewModel() {
     var self = this;
 
@@ -7,74 +7,89 @@ function PersonnelViewModel() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
-    self.modalErrorMessage = ko.observable(''); // Modal içi hata mesajı
+    self.modalErrorMessage = ko.observable('');
 
     // Data
     self.personnel = ko.observableArray([]);
-    self.branches = ko.observableArray([]);
-    self.customers = ko.observableArray([]);
 
     // Filter
     self.filter = {
         searchTerm: ko.observable(''),
-        branchId: ko.observable(''),
-        customerId: ko.observable(''),
-        isActive: ko.observable(''),
-        page: ko.observable(1),
-        pageSize: ko.observable(20)
+        role: ko.observable(''),
+        isActive: ko.observable('')
     };
 
-    // Pagination info
-    self.paginationInfo = ko.observable({
-        totalCount: 0,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPreviousPage: false
-    });
+    // Filtered personnel
+    self.filteredPersonnel = ko.computed(function() {
+        var list = self.personnel();
+        var search = (self.filter.searchTerm() || '').toLowerCase();
+        var role = self.filter.role();
+        var isActive = self.filter.isActive();
 
-    // Page numbers
-    self.pageNumbers = ko.computed(function() {
-        var total = self.paginationInfo().totalPages;
-        var current = self.filter.page();
-        var pages = [];
-        var start = Math.max(1, current - 2);
-        var end = Math.min(total, current + 2);
-        for (var i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
+        return list.filter(function(p) {
+            // Search filter
+            if (search) {
+                var match = (p.firstName || '').toLowerCase().indexOf(search) > -1 ||
+                           (p.lastName || '').toLowerCase().indexOf(search) > -1 ||
+                           (p.username || '').toLowerCase().indexOf(search) > -1 ||
+                           (p.email || '').toLowerCase().indexOf(search) > -1;
+                if (!match) return false;
+            }
+
+            // Role filter
+            if (role !== '' && p.role !== parseInt(role)) {
+                return false;
+            }
+
+            // Status filter
+            if (isActive === 'true' && !p.isActive) return false;
+            if (isActive === 'false' && p.isActive) return false;
+
+            return true;
+        });
     });
 
     // Editing personnel
     self.editingPersonnel = ko.observable(null);
     self.modal = null;
 
+    // Password change
+    self.passwordUserId = ko.observable(null);
+    self.newPassword = ko.observable('');
+    self.confirmPassword = ko.observable('');
+    self.passwordError = ko.observable('');
+    self.isSavingPassword = ko.observable(false);
+    self.passwordModal = null;
+
+    // Role helpers
+    self.getRoleName = function(role) {
+        var roles = {
+            0: 'Admin',
+            1: 'Manager',
+            2: 'Kalite Uzmanı',
+            3: 'Saha Çalışanı'
+        };
+        return roles[role] || role;
+    };
+
+    self.getRoleBadgeClass = function(role) {
+        var classes = {
+            0: 'bg-danger',      // Admin - kırmızı
+            1: 'bg-primary',     // Manager - mavi
+            2: 'bg-info',        // QualitySpecialist - açık mavi
+            3: 'bg-secondary'    // FieldWorker - gri
+        };
+        return classes[role] || 'bg-secondary';
+    };
+
     // Load personnel
     self.loadPersonnel = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        var params = new URLSearchParams();
-        if (self.filter.searchTerm()) params.append('searchTerm', self.filter.searchTerm());
-        if (self.filter.branchId()) params.append('branchId', self.filter.branchId());
-        if (self.filter.customerId()) params.append('customerId', self.filter.customerId());
-        if (self.filter.isActive() !== '') params.append('isActive', self.filter.isActive());
-        params.append('page', self.filter.page());
-        params.append('pageSize', self.filter.pageSize());
-
-        fetch('/api/personnel?' + params.toString(), { credentials: 'include' })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Veriler yüklenemedi');
-                return response.json();
-            })
+        ApiService.get('/users')
             .then(function(data) {
-                self.personnel(data.items);
-                self.paginationInfo({
-                    totalCount: data.totalCount,
-                    totalPages: data.totalPages,
-                    hasNextPage: data.hasNextPage,
-                    hasPreviousPage: data.hasPreviousPage
-                });
+                self.personnel(data || []);
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -85,55 +100,17 @@ function PersonnelViewModel() {
             });
     };
 
-    // Load filter options
-    self.loadFilterOptions = function() {
-        // Branches
-        fetch('/api/branches', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) { self.branches(data); })
-            .catch(function(error) { console.error('Error loading branches:', error); });
-
-        // Customers
-        fetch('/api/customers', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) { self.customers(data); })
-            .catch(function(error) { console.error('Error loading customers:', error); });
-    };
-
     // Apply filters
     self.applyFilters = function() {
-        self.filter.page(1);
-        self.loadPersonnel();
+        // Filters are applied via computed, just trigger update
+        self.filter.searchTerm.valueHasMutated();
     };
 
     // Clear filters
     self.clearFilters = function() {
         self.filter.searchTerm('');
-        self.filter.branchId('');
-        self.filter.customerId('');
+        self.filter.role('');
         self.filter.isActive('');
-        self.filter.page(1);
-        self.loadPersonnel();
-    };
-
-    // Pagination
-    self.previousPage = function() {
-        if (self.paginationInfo().hasPreviousPage) {
-            self.filter.page(self.filter.page() - 1);
-            self.loadPersonnel();
-        }
-    };
-
-    self.nextPage = function() {
-        if (self.paginationInfo().hasNextPage) {
-            self.filter.page(self.filter.page() + 1);
-            self.loadPersonnel();
-        }
-    };
-
-    self.goToPage = function(page) {
-        self.filter.page(page);
-        self.loadPersonnel();
     };
 
     // Create new
@@ -141,47 +118,31 @@ function PersonnelViewModel() {
         self.modalErrorMessage('');
         self.editingPersonnel({
             id: null,
+            username: ko.observable(''),
             firstName: ko.observable(''),
             lastName: ko.observable(''),
-            tcKimlikNo: ko.observable(''),
-            erpNo: ko.observable(''),
-            sicilNo: ko.observable(''),
-            title: ko.observable(''),
-            gender: ko.observable(0),
-            birthDate: ko.observable(''),
-            hireDate: ko.observable(''),
             email: ko.observable(''),
             phoneNumber: ko.observable(''),
-            department: ko.observable(''),
-            isActive: ko.observable(true),
-            notes: ko.observable(''),
-            branchId: ko.observable(''),
-            customerId: ko.observable('')
+            role: ko.observable(3), // Default: FieldWorker
+            password: ko.observable(''),
+            isActive: ko.observable(true)
         });
         self.showModal();
     };
 
     // Edit personnel
-    self.editPersonnel = function(personnel) {
+    self.editPersonnel = function(person) {
         self.modalErrorMessage('');
         self.editingPersonnel({
-            id: personnel.id,
-            firstName: ko.observable(personnel.firstName),
-            lastName: ko.observable(personnel.lastName),
-            tcKimlikNo: ko.observable(personnel.tcKimlikNo || ''),
-            erpNo: ko.observable(personnel.erpNo || ''),
-            sicilNo: ko.observable(personnel.sicilNo || ''),
-            title: ko.observable(personnel.title || ''),
-            gender: ko.observable(personnel.gender),
-            birthDate: ko.observable(personnel.birthDate ? personnel.birthDate.split('T')[0] : ''),
-            hireDate: ko.observable(personnel.hireDate ? personnel.hireDate.split('T')[0] : ''),
-            email: ko.observable(personnel.email || ''),
-            phoneNumber: ko.observable(personnel.phoneNumber || ''),
-            department: ko.observable(personnel.department || ''),
-            isActive: ko.observable(personnel.isActive),
-            notes: ko.observable(personnel.notes || ''),
-            branchId: ko.observable(personnel.branchId || ''),
-            customerId: ko.observable(personnel.customerId || '')
+            id: person.id,
+            username: ko.observable(person.username),
+            firstName: ko.observable(person.firstName),
+            lastName: ko.observable(person.lastName),
+            email: ko.observable(person.email),
+            phoneNumber: ko.observable(person.phoneNumber || ''),
+            role: ko.observable(person.role),
+            password: ko.observable(''),
+            isActive: ko.observable(person.isActive)
         });
         self.showModal();
     };
@@ -196,50 +157,53 @@ function PersonnelViewModel() {
             self.modalErrorMessage('Ad ve Soyad alanları zorunludur.');
             return;
         }
+        if (!editing.email()) {
+            self.modalErrorMessage('E-posta alanı zorunludur.');
+            return;
+        }
+        if (!editing.id && !editing.username()) {
+            self.modalErrorMessage('Kullanıcı adı zorunludur.');
+            return;
+        }
+        if (!editing.id && !editing.password()) {
+            self.modalErrorMessage('Şifre zorunludur.');
+            return;
+        }
+        if (!editing.id && editing.password().length < 6) {
+            self.modalErrorMessage('Şifre en az 6 karakter olmalıdır.');
+            return;
+        }
 
         self.isSaving(true);
         self.modalErrorMessage('');
 
-        var dto = {
-            firstName: editing.firstName(),
-            lastName: editing.lastName(),
-            tcKimlikNo: editing.tcKimlikNo() || null,
-            erpNo: editing.erpNo() || null,
-            sicilNo: editing.sicilNo() || null,
-            title: editing.title() || null,
-            gender: parseInt(editing.gender()) || 0,
-            birthDate: editing.birthDate() || null,
-            hireDate: editing.hireDate() || null,
-            email: editing.email() || null,
-            phoneNumber: editing.phoneNumber() || null,
-            department: editing.department() || null,
-            isActive: editing.isActive(),
-            notes: editing.notes() || null,
-            branchId: editing.branchId() || null,
-            customerId: editing.customerId() || null
-        };
+        var promise;
+        if (editing.id) {
+            // Update
+            var updateDto = {
+                email: editing.email(),
+                firstName: editing.firstName(),
+                lastName: editing.lastName(),
+                phoneNumber: editing.phoneNumber() || null,
+                role: parseInt(editing.role()),
+                isActive: editing.isActive()
+            };
+            promise = ApiService.put('/users/' + editing.id, updateDto);
+        } else {
+            // Create
+            var createDto = {
+                username: editing.username(),
+                email: editing.email(),
+                password: editing.password(),
+                firstName: editing.firstName(),
+                lastName: editing.lastName(),
+                role: parseInt(editing.role()),
+                isActive: editing.isActive()
+            };
+            promise = ApiService.post('/users', createDto);
+        }
 
-        var url = editing.id ? '/api/personnel/' + editing.id : '/api/personnel';
-        var method = editing.id ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        console.error('Server error response:', err);
-                        var errorMsg = err.message || 'İşlem başarısız';
-                        if (err.error) errorMsg += ' - ' + err.error;
-                        if (err.innerException) errorMsg += ' (' + err.innerException + ')';
-                        throw new Error(errorMsg);
-                    });
-                }
-                return response.json();
-            })
+        promise
             .then(function(data) {
                 self.successMessage(editing.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
                 self.hideModal();
@@ -255,25 +219,65 @@ function PersonnelViewModel() {
     };
 
     // Delete personnel
-    self.deletePersonnel = function(personnel) {
-        showDeleteConfirm(personnel.fullName, function() {
-            fetch('/api/personnel/' + personnel.id, {
-                method: 'DELETE',
-                credentials: 'include'
+    self.deletePersonnel = function(person) {
+        showDeleteConfirmation(
+            'Personel Sil',
+            '"' + person.fullName + '" personelini silmek istediğinize emin misiniz?',
+            function() {
+                ApiService.delete('/users/' + person.id)
+                    .then(function() {
+                        self.successMessage('Personel başarıyla silindi.');
+                        self.loadPersonnel();
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        self.errorMessage(error.message || 'Personel silinirken bir hata oluştu.');
+                    });
+            }
+        );
+    };
+
+    // Change password
+    self.changePassword = function(person) {
+        self.passwordUserId(person.id);
+        self.newPassword('');
+        self.confirmPassword('');
+        self.passwordError('');
+        self.showPasswordModal();
+    };
+
+    self.savePassword = function() {
+        var userId = self.passwordUserId();
+        var newPass = self.newPassword();
+        var confirmPass = self.confirmPassword();
+
+        if (!newPass || newPass.length < 6) {
+            self.passwordError('Şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+        if (newPass !== confirmPass) {
+            self.passwordError('Şifreler eşleşmiyor.');
+            return;
+        }
+
+        self.isSavingPassword(true);
+        self.passwordError('');
+
+        ApiService.post('/users/' + userId + '/change-password', {
+            userId: userId,
+            newPassword: newPass
+        })
+            .then(function() {
+                self.successMessage('Şifre başarıyla değiştirildi.');
+                self.hidePasswordModal();
             })
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Silme işlemi başarısız');
-                    return response.json();
-                })
-                .then(function(data) {
-                    self.successMessage('Personel başarıyla silindi.');
-                    self.loadPersonnel();
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    self.errorMessage(error.message || 'Personel silinirken bir hata oluştu.');
-                });
-        });
+            .catch(function(error) {
+                console.error('Error:', error);
+                self.passwordError(error.message || 'Şifre değiştirilemedi.');
+            })
+            .finally(function() {
+                self.isSavingPassword(false);
+            });
     };
 
     // Modal helpers
@@ -290,8 +294,20 @@ function PersonnelViewModel() {
         }
     };
 
+    self.showPasswordModal = function() {
+        if (!self.passwordModal) {
+            self.passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+        }
+        self.passwordModal.show();
+    };
+
+    self.hidePasswordModal = function() {
+        if (self.passwordModal) {
+            self.passwordModal.hide();
+        }
+    };
+
     // Initialize
-    self.loadFilterOptions();
     self.loadPersonnel();
 
     // Auto-search on typing (with debounce)
@@ -299,8 +315,8 @@ function PersonnelViewModel() {
     self.filter.searchTerm.subscribe(function(value) {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(function() {
-            self.applyFilters();
-        }, 500);
+            // Computed handles filtering automatically
+        }, 300);
     });
 }
 

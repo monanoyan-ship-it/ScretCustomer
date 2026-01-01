@@ -112,3 +112,9 @@ public class UpdateCustomerPersonnelDto
     [StringLength(2000)]
     public string? Notes { get; set; }
 }
+
+public class ChangeOrganizationDto
+{
+    [Required(ErrorMessage = "Yeni organizasyon seçimi zorunludur")]
+    public int NewOrganizationId { get; set; }
+}

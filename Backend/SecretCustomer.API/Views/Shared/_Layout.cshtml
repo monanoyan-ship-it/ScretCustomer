@@ -132,6 +132,15 @@
         };
     </script>
 
+    <!-- User Role for JS -->
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <script>
+            window.userRole = '@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value';
+            window.userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+        </script>
+    }
+
     <!-- Chart.js (Local) -->
     <script src="~/lib/chartjs/chart.umd.min.js"></script>
 

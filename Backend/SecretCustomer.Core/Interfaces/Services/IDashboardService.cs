@@ -8,6 +8,11 @@ public interface IDashboardService
     Task<DashboardStatsDto> GetTeamLeaderDashboardAsync(int branchId, DateTime? startDate = null, DateTime? endDate = null);
     Task<List<RepresentativeEvaluationDto>> GetRepresentativeDashboardAsync(int userId);
     Task<ScorecardDto> GetScorecardAsync(int userId);
+
+    // Yeni metrikler
+    Task<DailyMetricsDto> GetDailyMetricsAsync();
+    Task<UserPerformanceDto> GetUserPerformanceAsync(int? currentUserId = null);
+    Task<TargetProgressDto> GetTargetProgressAsync();
 }
 
 public class RepresentativeEvaluationDto

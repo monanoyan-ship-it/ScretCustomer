@@ -7,6 +7,7 @@ public interface ICustomerPersonnelRepository
     Task<CustomerPersonnel?> GetByIdAsync(int id, bool includeDetails = false);
     Task<IEnumerable<CustomerPersonnel>> GetAllAsync(bool includeInactive = false);
     Task<IEnumerable<CustomerPersonnel>> GetByCustomerIdAsync(int customerId, bool includeInactive = false);
+    Task<IEnumerable<CustomerPersonnel>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false);
     Task<CustomerPersonnel?> GetByUsernameAsync(string username);
     Task<CustomerPersonnel?> GetByEmailAsync(string email);
     Task<CustomerPersonnel> CreateAsync(CustomerPersonnel personnel);

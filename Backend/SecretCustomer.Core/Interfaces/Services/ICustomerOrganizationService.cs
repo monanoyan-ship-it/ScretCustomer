@@ -7,6 +7,9 @@ namespace SecretCustomer.Core.Interfaces.Services;
 /// </summary>
 public interface ICustomerOrganizationService
 {
+    // Debug
+    Task<object> DebugCheckPersonnelAsync();
+
     // Organizasyon CRUD
     Task<CustomerOrganizationDto?> GetByIdAsync(int id);
     Task<IEnumerable<CustomerOrganizationDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false);
@@ -14,6 +17,11 @@ public interface ICustomerOrganizationService
     Task<CustomerOrganizationDto> CreateAsync(CreateCustomerOrganizationDto dto);
     Task<CustomerOrganizationDto> UpdateAsync(int id, UpdateCustomerOrganizationDto dto);
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Organizasyonun parent'ını değiştir (Drag & Drop için)
+    /// </summary>
+    Task MoveOrganizationAsync(int organizationId, int? newParentId);
 
     // Personel yönetimi
     Task<OrganizationPersonnelListDto> GetPersonnelByOrganizationIdAsync(int organizationId);

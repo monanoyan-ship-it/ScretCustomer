@@ -55,6 +55,21 @@ public class CustomerPersonnelApiController : BaseApiController
         }
     }
 
+    [HttpGet("by-organization/{organizationId}")]
+    public async Task<IActionResult> GetByOrganizationId(int organizationId, [FromQuery] bool includeInactive = false)
+    {
+        try
+        {
+            var personnel = await _personnelService.GetByOrganizationIdAsync(organizationId, includeInactive);
+            return Ok(personnel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading personnel for organization {OrganizationId}", organizationId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError"), ex));
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -231,6 +246,26 @@ public class CustomerPersonnelApiController : BaseApiController
         {
             _logger.LogError(ex, "Error checking email {Email}", email);
             return StatusCode(500, CreateErrorResponse("E-posta kontrolü sırasında hata oluştu.", ex));
+        }
+    }
+
+    [HttpPut("{id}/change-organization")]
+    public async Task<IActionResult> ChangeOrganization(int id, [FromBody] ChangeOrganizationDto dto)
+    {
+        try
+        {
+            await _personnelService.ChangeOrganizationAsync(id, dto.NewOrganizationId);
+            return Ok(new { message = "Personel organizasyonu güncellendi." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            return NotFound(CreateErrorResponse(ex.Message, ex));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing organization for personnel {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Organizasyon değiştirme sırasında hata oluştu.", ex));
         }
     }
 

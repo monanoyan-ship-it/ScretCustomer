@@ -81,6 +81,9 @@ public class ApplicationDbContext : DbContext
     // Audit Logs (Sistem logları)
     public DbSet<AuditLog> AuditLogs { get; set; }
 
+    // System Settings (Sistem ayarları)
+    public DbSet<SystemSetting> SystemSettings { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
