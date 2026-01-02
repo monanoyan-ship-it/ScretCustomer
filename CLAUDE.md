@@ -63,6 +63,8 @@ dotnet publish Backend\SecretCustomer.API\SecretCustomer.API.csproj -c Release -
 
 **UYARI:** `obj` klasöründe eski publish cache dosyaları kalırsa, iç içe `publish/publish/publish/...` klasörleri oluşabilir. Bu yüzden publish öncesi obj klasörünü silmek önemlidir.
 
+**ScreenShots Klasörü:** `wwwroot/ScreenShots/` klasörü publish'e dahil EDİLMEZ (csproj'da exclude edildi). Bu klasörde mp4/png gibi geliştirme dosyaları bulunur.
+
 ## Düzeltilmiş Modüller
 
 Bu modüller artık doğru SPA Modal Pattern'i kullanıyor:
