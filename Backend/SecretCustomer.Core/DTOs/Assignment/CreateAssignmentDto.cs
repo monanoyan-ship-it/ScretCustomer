@@ -51,56 +51,6 @@ public class UpdateAssignmentDto
 }
 
 /// <summary>
-/// Toplu atama oluşturma
-/// </summary>
-public class BulkAssignmentDto
-{
-    [Required]
-    public int ProjectId { get; set; }
-
-    [Required]
-    public int ChecklistId { get; set; }
-
-    [Required]
-    public List<AssignmentItemDto> Assignments { get; set; } = new();
-}
-
-public class AssignmentItemDto
-{
-    public int? AssignedUserId { get; set; }
-    public string? ExternalEmail { get; set; }
-    public string? ExternalName { get; set; }
-    public DateTime DueDate { get; set; }
-}
-
-/// <summary>
-/// Proje şubelerine toplu atama oluşturma
-/// </summary>
-public class BulkProjectAssignmentDto
-{
-    [Required]
-    public int ProjectId { get; set; }
-
-    [Required]
-    public DateTime DueDate { get; set; }
-
-    /// <summary>
-    /// Atanacak kullanıcı (boş bırakılırsa tüm proje takımına eşit dağıtılır)
-    /// </summary>
-    public int? AssignedUserId { get; set; }
-
-    /// <summary>
-    /// Her şube için kaç atama oluşturulacak (default: 1)
-    /// </summary>
-    public int AssignmentsPerBranch { get; set; } = 1;
-
-    /// <summary>
-    /// Sadece belirli şubeler için oluştur (boş ise tüm proje şubeleri)
-    /// </summary>
-    public List<int>? BranchIds { get; set; }
-}
-
-/// <summary>
 /// Atama yeniden atama
 /// </summary>
 public class ReassignAssignmentDto

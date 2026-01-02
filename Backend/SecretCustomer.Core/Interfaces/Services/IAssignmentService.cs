@@ -11,7 +11,6 @@ public interface IAssignmentService
     Task<IEnumerable<AssignmentDto>> GetAllAsync();
     Task<AssignmentDto?> GetByUniqueLinkAsync(string uniqueLink);
     Task<AssignmentDto> CreateAsync(CreateAssignmentDto dto);
-    Task<IEnumerable<AssignmentDto>> CreateBulkAsync(BulkAssignmentDto dto);
     Task UpdateAsync(int id, UpdateAssignmentDto dto);
     Task<bool> DeleteAsync(int id);
 
@@ -27,7 +26,6 @@ public interface IAssignmentService
     Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto);
 
     // ===== TOPLU İŞLEMLER =====
-    Task<IEnumerable<AssignmentDto>> CreateForProjectBranchesAsync(BulkProjectAssignmentDto dto);
     Task<int> DeleteByProjectIdAsync(int projectId);
 
     // ===== İSTATİSTİKLER =====

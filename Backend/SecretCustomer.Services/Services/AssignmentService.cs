@@ -173,35 +173,6 @@ public class AssignmentService : IAssignmentService
         return await GetByIdAsync(assignment.Id) ?? MapToDto(assignment);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> CreateBulkAsync(BulkAssignmentDto dto)
-    {
-        // Validate project and checklist
-        var projectExists = await _projectRepository.ExistsAsync(dto.ProjectId);
-        if (!projectExists)
-            throw new KeyNotFoundException($"Proje bulunamadı: {dto.ProjectId}");
-
-        var checklistExists = await _checklistRepository.ExistsAsync(dto.ChecklistId);
-        if (!checklistExists)
-            throw new KeyNotFoundException($"Kontrol listesi bulunamadı: {dto.ChecklistId}");
-
-        var assignments = dto.Assignments.Select(a => new Assignment
-        {
-            ProjectId = dto.ProjectId,
-            ChecklistId = dto.ChecklistId,
-            AssignedUserId = a.AssignedUserId,
-            ExternalEmail = a.ExternalEmail,
-            ExternalName = a.ExternalName,
-            UniqueLink = Guid.NewGuid().ToString(),
-            DueDate = DateTime.SpecifyKind(a.DueDate, DateTimeKind.Utc),
-            IsCompleted = false
-        }).ToList();
-
-        await _context.Assignments.AddRangeAsync(assignments);
-        await _context.SaveChangesAsync();
-
-        return await GetByProjectIdAsync(dto.ProjectId);
-    }
-
     public async Task UpdateAsync(int id, UpdateAssignmentDto dto)
     {
         var assignment = await _context.Assignments.FindAsync(id);
@@ -433,12 +404,6 @@ public class AssignmentService : IAssignmentService
     #endregion
 
     #region TOPLU İŞLEMLER
-
-    public async Task<IEnumerable<AssignmentDto>> CreateForProjectBranchesAsync(BulkProjectAssignmentDto dto)
-    {
-        // Branch system removed - this method is deprecated
-        throw new NotSupportedException("Branch-based bulk assignment creation is no longer supported.");
-    }
 
     public async Task<int> DeleteByProjectIdAsync(int projectId)
     {

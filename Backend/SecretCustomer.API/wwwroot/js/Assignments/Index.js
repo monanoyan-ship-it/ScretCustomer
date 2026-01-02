@@ -51,23 +51,6 @@ function AssignmentEditViewModel(data) {
     };
 }
 
-// Bulk Assignment ViewModel
-function BulkAssignmentViewModel() {
-    var self = this;
-
-    self.projectId = ko.observable('');
-    self.dueDate = ko.observable('');
-    self.assignmentCount = ko.observable(1);
-    self.assignedUserId = ko.observable('');
-
-    self.reset = function() {
-        self.projectId('');
-        self.dueDate('');
-        self.assignmentCount(1);
-        self.assignedUserId('');
-    };
-}
-
 // Period Form ViewModel
 function PeriodFormViewModel(data) {
     var self = this;
@@ -206,9 +189,6 @@ function AssignmentsViewModel() {
     self.editingAssignment = ko.observable(null);
     self.selectedEvaluation = ko.observable(null);
     self.selectedDetail = ko.observable(null);
-
-    // Bulk Assignment
-    self.bulkAssignment = ko.observable(new BulkAssignmentViewModel());
 
     // Reassign
     self.reassignData = ko.observable(new ReassignViewModel());
@@ -473,65 +453,6 @@ function AssignmentsViewModel() {
         self.editingAssignment(null);
         self.isEditing(false);
         self.modalErrorMessage('');
-    };
-
-    // ===== Bulk Assignment =====
-    self.openBulkAssignmentModal = function() {
-        self.bulkAssignment().reset();
-        var modal = new bootstrap.Modal(document.getElementById('bulkAssignmentModal'));
-        modal.show();
-    };
-
-    self.createBulkAssignments = function() {
-        var bulk = self.bulkAssignment();
-
-        if (!bulk.projectId()) {
-            toastr.warning(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
-            return;
-        }
-
-        if (!bulk.dueDate()) {
-            toastr.warning(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
-            return;
-        }
-
-        var dto = {
-            projectId: bulk.projectId(),
-            dueDate: bulk.dueDate(),
-            assignmentCount: parseInt(bulk.assignmentCount()) || 1,
-            assignedUserId: bulk.assignedUserId() || null
-        };
-
-        self.isSaving(true);
-
-        fetch('/api/assignments/project-bulk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-            .then(function(res) {
-                if (!res.ok) throw new Error(T('Assignment.BulkAssignmentError', 'Toplu atama başarısız'));
-                return res.json();
-            })
-            .then(function(data) {
-                // Bulk olusturursa assignments array doner, tum yeni kayitlari ekle
-                if (data.assignments && Array.isArray(data.assignments)) {
-                    data.assignments.forEach(function(a) {
-                        self.assignments.push(a);
-                    });
-                }
-                self.successMessage(data.message);
-                bootstrap.Modal.getInstance(document.getElementById('bulkAssignmentModal')).hide();
-                self.loadSummary();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                self.errorMessage(T('Assignment.BulkCreateError', 'Toplu atama oluşturulurken bir hata oluştu.'));
-            })
-            .finally(function() {
-                self.isSaving(false);
-            });
     };
 
     // ===== Reassign =====

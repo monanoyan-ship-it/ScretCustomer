@@ -25,14 +25,9 @@
 <div id="assignments-app">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-clipboard-check"></i> @Html.T("Assignment.Title", "Atamalar")</h2>
-        <div class="btn-group">
-            <button class="btn btn-primary" data-bind="click: createNew">
-                <i class="bi bi-plus-circle"></i> @Html.T("Assignment.New", "Yeni Atama")
-            </button>
-            <button class="btn btn-outline-primary" data-bind="click: openBulkAssignmentModal">
-                <i class="bi bi-collection"></i> @Html.T("Assignment.Bulk", "Toplu Atama")
-            </button>
-        </div>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle"></i> @Html.T("Assignment.New", "Yeni Atama")
+        </button>
     </div>
 
     <!-- Summary Cards -->
@@ -414,48 +409,6 @@
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
-
-    <!-- Bulk Assignment Modal -->
-    <div class="modal fade" id="bulkAssignmentModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-collection"></i> @Html.T("Assignment.BulkCreate", "Toplu Atama Oluştur")</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" data-bind="with: bulkAssignment">
-                    <div class="mb-3">
-                        <label class="form-label">@Html.T("Project.Title", "Proje") <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: projectId, options: $parent.availableProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">@Html.T("Common.DueDate", "Son Tarih") <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" data-bind="value: dueDate">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">@Html.T("Assignment.AssignmentCount", "Atama Sayısı")</label>
-                        <input type="number" class="form-control" min="1" max="100" data-bind="value: assignmentCount">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">@Html.T("Assignment.AssigneeUserOptional", "Atanacak Kullanıcı (İsteğe bağlı)")</label>
-                        <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Assignment.DistributeToTeam", "Tüm takıma eşit dağıt...")'"></select>
-                        <small class="text-muted">@Html.T("Assignment.DistributeToTeamHint", "Boş bırakılırsa proje takımına eşit dağıtılır")</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
-                    <button type="button" class="btn btn-primary" data-bind="click: createBulkAssignments, disable: isSaving">
-                        <span data-bind="visible: !isSaving()">
-                            <i class="bi bi-check-circle"></i> @Html.T("Button.Create", "Oluştur")
-                        </span>
-                        <span data-bind="visible: isSaving">
-                            <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Creating", "Oluşturuluyor...")
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Reassign Modal -->
     <div class="modal fade" id="reassignModal" tabindex="-1">

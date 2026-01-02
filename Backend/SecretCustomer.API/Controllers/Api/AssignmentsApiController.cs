@@ -156,26 +156,6 @@ public class AssignmentsApiController : BaseApiController
         }
     }
 
-    [HttpPost("bulk")]
-    [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> CreateBulk([FromBody] BulkAssignmentDto dto)
-    {
-        try
-        {
-            var assignments = await _assignmentService.CreateBulkAsync(dto);
-            var successMsg = string.Format(await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateSuccess"), assignments.Count());
-            return Ok(new {
-                message = successMsg,
-                assignments
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating bulk assignments");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateError"), ex));
-        }
-    }
-
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,TeamLeader")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateAssignmentDto dto)
@@ -407,29 +387,6 @@ public class AssignmentsApiController : BaseApiController
     #endregion
 
     #region TOPLU İŞLEMLER
-
-    /// <summary>
-    /// Create assignments for all branches in a project
-    /// </summary>
-    [HttpPost("project-bulk")]
-    [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> CreateForProjectBranches([FromBody] BulkProjectAssignmentDto dto)
-    {
-        try
-        {
-            var assignments = await _assignmentService.CreateForProjectBranchesAsync(dto);
-            var successMsg = string.Format(await _localizationService.GetResourceAsync("Api.Assignment.BulkCreateSuccess"), assignments.Count());
-            return Ok(new {
-                message = successMsg,
-                assignments
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating assignments for project branches");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectCreateError"), ex));
-        }
-    }
 
     /// <summary>
     /// Delete all assignments for a project
