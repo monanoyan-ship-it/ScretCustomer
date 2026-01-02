@@ -191,8 +191,7 @@
                                 <small class="text-muted d-block" data-bind="text: checklistName"></small>
                             </td>
                             <td>
-                                <span data-bind="text: branchName || '-'"></span>
-                                <small class="text-muted d-block" data-bind="text: region || ''"></small>
+                                <span data-bind="text: assigneeName || '-'"></span>
                             </td>
                             <td>
                                 <span data-bind="text: evaluatorName || '-'"></span>
@@ -271,8 +270,6 @@
                             <dl class="row mb-0">
                                 <dt class="col-sm-4">@Html.T("Report.Project", "Proje"):</dt>
                                 <dd class="col-sm-8" data-bind="text: projectName"></dd>
-                                <dt class="col-sm-4">@Html.T("Report.Branch", "Şube"):</dt>
-                                <dd class="col-sm-8" data-bind="text: branchName || '-'"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Checklist", "Kontrol Listesi"):</dt>
                                 <dd class="col-sm-8" data-bind="text: checklistName"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Evaluator", "Değerlendirici"):</dt>

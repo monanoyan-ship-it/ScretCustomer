@@ -340,16 +340,31 @@
                 body: JSON.stringify(data)
             })
             .then(function(response) {
-                if (response.ok) {
-                    self.closeFormModal();
-                    self.loadMeetings();
-                    self.loadSummary();
-                    toastr.success(isNew ? 'Toplantı oluşturuldu' : 'Toplantı güncellendi');
-                } else {
+                if (!response.ok) {
                     return response.json().then(function(err) {
                         throw new Error(err.message || 'Bir hata oluştu');
                     });
                 }
+                return response.json();
+            })
+            .then(function(savedMeeting) {
+                if (isNew) {
+                    // Yeni kayit: array'e ekle
+                    self.meetings.push(savedMeeting);
+                    self.totalCount(self.totalCount() + 1);
+                } else {
+                    // Guncelleme: array'de bul ve guncelle
+                    var list = self.meetings();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedMeeting.id) {
+                            self.meetings.splice(i, 1, savedMeeting);
+                            break;
+                        }
+                    }
+                }
+                self.closeFormModal();
+                self.loadSummary();
+                toastr.success(isNew ? 'Toplantı oluşturuldu' : 'Toplantı güncellendi');
             })
             .catch(function(error) {
                 toastr.error(error.message || 'Bir hata oluştu');
@@ -393,14 +408,23 @@
                 onConfirm: function() {
                     fetch('/api/meetings/' + meeting.id + '/start', { method: 'POST' })
                         .then(function(response) {
-                            if (response.ok) {
-                                self.loadMeetings();
-                                self.loadSummary();
-                                if (self.currentMeetingId()) {
-                                    self.loadMeetingDetail(self.currentMeetingId());
+                            if (response.ok) return response.json();
+                            throw new Error('İşlem başarısız');
+                        })
+                        .then(function(updatedMeeting) {
+                            // Array'de bul ve güncelle
+                            var list = self.meetings();
+                            for (var i = 0; i < list.length; i++) {
+                                if (list[i].id === updatedMeeting.id) {
+                                    self.meetings.splice(i, 1, updatedMeeting);
+                                    break;
                                 }
-                                toastr.success('Toplantı başlatıldı');
                             }
+                            self.loadSummary();
+                            if (self.currentMeetingId()) {
+                                self.viewingMeeting(updatedMeeting);
+                            }
+                            toastr.success('Toplantı başlatıldı');
                         });
                 }
             });
@@ -432,13 +456,22 @@
                 body: JSON.stringify(data)
             })
             .then(function(response) {
-                if (response.ok) {
-                    self.closeCompleteModal();
-                    self.closeDetailModal();
-                    self.loadMeetings();
-                    self.loadSummary();
-                    toastr.success('Toplantı tamamlandı');
+                if (response.ok) return response.json();
+                throw new Error('İşlem başarısız');
+            })
+            .then(function(updatedMeeting) {
+                // Array'de bul ve güncelle
+                var list = self.meetings();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === updatedMeeting.id) {
+                        self.meetings.splice(i, 1, updatedMeeting);
+                        break;
+                    }
                 }
+                self.closeCompleteModal();
+                self.closeDetailModal();
+                self.loadSummary();
+                toastr.success('Toplantı tamamlandı');
             });
         };
 
@@ -456,14 +489,23 @@
                         body: JSON.stringify({ reason: null })
                     })
                     .then(function(response) {
-                        if (response.ok) {
-                            self.loadMeetings();
-                            self.loadSummary();
-                            if (self.currentMeetingId()) {
-                                self.loadMeetingDetail(self.currentMeetingId());
+                        if (response.ok) return response.json();
+                        throw new Error('İşlem başarısız');
+                    })
+                    .then(function(updatedMeeting) {
+                        // Array'de bul ve güncelle
+                        var list = self.meetings();
+                        for (var i = 0; i < list.length; i++) {
+                            if (list[i].id === updatedMeeting.id) {
+                                self.meetings.splice(i, 1, updatedMeeting);
+                                break;
                             }
-                            toastr.success('Toplantı iptal edildi');
                         }
+                        self.loadSummary();
+                        if (self.currentMeetingId()) {
+                            self.viewingMeeting(updatedMeeting);
+                        }
+                        toastr.success('Toplantı iptal edildi');
                     });
                 }
             });
@@ -474,7 +516,9 @@
                 fetch('/api/meetings/' + meeting.id, { method: 'DELETE' })
                     .then(function(response) {
                         if (response.ok) {
-                            self.loadMeetings();
+                            // Array'den sil
+                            self.meetings.remove(function(m) { return m.id === meeting.id; });
+                            self.totalCount(self.totalCount() - 1);
                             self.loadSummary();
                             toastr.success('Toplantı silindi');
                         }
@@ -571,10 +615,13 @@
         // ========== INITIALIZE ==========
 
         self.init = function() {
-            self.loadMeetings();
-            self.loadSummary();
-            self.loadProjects();
-            self.loadUsers();
+            // Önce EnumsService'i yükle, sonra diğer verileri çek
+            EnumsService.load().then(function() {
+                self.loadMeetings();
+                self.loadSummary();
+                self.loadProjects();
+                self.loadUsers();
+            });
         };
 
         self.init();

@@ -325,24 +325,13 @@ function ApprovalsViewModel() {
         return types[type] || type;
     };
 
+    // Status helpers - EnumsService kullanir
     self.getStatusText = function(status) {
-        var statuses = {
-            'Pending': T('Approval.Status.Pending', 'Beklemede'),
-            'Approved': T('Approval.Status.Approved', 'Onaylandı'),
-            'Rejected': T('Approval.Status.Rejected', 'Reddedildi'),
-            'Cancelled': T('Approval.Status.Cancelled', 'İptal')
-        };
-        return statuses[status] || status;
+        return EnumsService.getApprovalStatusDisplay(status);
     };
 
     self.getStatusBadgeClass = function(status) {
-        var classes = {
-            'Pending': 'bg-warning text-dark',
-            'Approved': 'bg-success',
-            'Rejected': 'bg-danger',
-            'Cancelled': 'bg-secondary'
-        };
-        return classes[status] || 'bg-secondary';
+        return EnumsService.getApprovalStatusCss(status);
     };
 
     self.getPriorityText = function(priority) {
@@ -385,7 +374,10 @@ function ApprovalsViewModel() {
 
     // Initialize
     self.init = function() {
-        self.refreshAll();
+        // Once EnumsService'i yukle, sonra verileri cek
+        EnumsService.load().then(function() {
+            self.refreshAll();
+        });
     };
 
     self.init();

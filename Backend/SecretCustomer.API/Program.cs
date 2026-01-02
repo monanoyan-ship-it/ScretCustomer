@@ -35,8 +35,21 @@ builder.Services.AddSingleton(new JwtHelper(
 // Authentication - Cookie for MVC, JWT for API
 builder.Services.AddAuthentication(options =>
     {
-        options.DefaultScheme = "Cookies";
-        options.DefaultChallengeScheme = "Cookies";
+        options.DefaultScheme = "MultiScheme";
+        options.DefaultChallengeScheme = "MultiScheme";
+    })
+    .AddPolicyScheme("MultiScheme", "Cookie or JWT", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            // API istekleri için Bearer token varsa JWT kullan
+            string authorization = context.Request.Headers["Authorization"];
+            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+                return "Bearer";
+
+            // Diğer durumlar için Cookie kullan
+            return "Cookies";
+        };
     })
     .AddCookie("Cookies", options =>
     {
@@ -83,7 +96,8 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ClockSkew = TimeSpan.FromDays(365) // 1 yıl tolerans
         };
     });
 

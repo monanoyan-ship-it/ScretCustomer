@@ -11,6 +11,19 @@ function UserEditViewModel(data) {
     self.password = ko.observable('');
     self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2');
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+
+    // Mevcut data'dan ViewModel olustur (guncelleme icin)
+    self.toData = function() {
+        return {
+            id: self.id,
+            username: self.username(),
+            firstName: self.firstName(),
+            lastName: self.lastName(),
+            email: self.email(),
+            role: parseInt(self.role()),
+            isActive: self.isActive()
+        };
+    };
 }
 
 // ===== Customer Personnel Edit ViewModel =====
@@ -20,6 +33,7 @@ function CustomerPersonnelEditViewModel(data) {
 
     self.id = data.id || null;
     self.customerId = ko.observable(data.customerId || '');
+    self.customerName = data.customerName || '';
     self.username = ko.observable(data.username || '');
     self.firstName = ko.observable(data.firstName || '');
     self.lastName = ko.observable(data.lastName || '');
@@ -29,6 +43,23 @@ function CustomerPersonnelEditViewModel(data) {
     self.password = ko.observable('');
     self.role = ko.observable(data.role !== undefined ? data.role.toString() : '1');
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+
+    // Mevcut data'dan ViewModel olustur (guncelleme icin)
+    self.toData = function() {
+        return {
+            id: self.id,
+            customerId: parseInt(self.customerId()),
+            customerName: self.customerName,
+            username: self.username(),
+            firstName: self.firstName(),
+            lastName: self.lastName(),
+            email: self.email(),
+            phoneNumber: self.phoneNumber(),
+            department: self.department(),
+            role: parseInt(self.role()),
+            isActive: self.isActive()
+        };
+    };
 }
 
 // ===== Password Change ViewModel =====
@@ -106,38 +137,22 @@ function UsersViewModel() {
         self.successMessage('');
     };
 
-    // ===== Role Display Helpers (System Users) =====
+    // ===== Role Display Helpers (System Users) - EnumsService kullanir =====
     self.getRoleDisplayName = function(role) {
-        var roleNames = {
-            1: 'Admin', 2: 'Kalite Uzmanı', 3: 'Saha Çalışanı',
-            'Admin': 'Admin', 'QualitySpecialist': 'Kalite Uzmanı', 'FieldWorker': 'Saha Çalışanı'
-        };
-        return roleNames[role] || 'Bilinmiyor';
+        return EnumsService.getUserRoleDisplay(role);
     };
 
     self.getRoleBadgeClass = function(role) {
-        var roleClasses = {
-            1: 'bg-danger', 2: 'bg-primary', 3: 'bg-success',
-            'Admin': 'bg-danger', 'QualitySpecialist': 'bg-primary', 'FieldWorker': 'bg-success'
-        };
-        return roleClasses[role] || 'bg-secondary';
+        return EnumsService.getUserRoleCss(role);
     };
 
-    // ===== Role Display Helpers (Customer Personnel) =====
+    // ===== Role Display Helpers (Customer Personnel) - EnumsService kullanir =====
     self.getCustomerRoleDisplayName = function(role) {
-        var roleNames = {
-            1: 'Müşteri Yöneticisi', 2: 'Müşteri Süpervizörü', 3: 'Müşteri Operatörü',
-            'CustomerManager': 'Müşteri Yöneticisi', 'CustomerSupervisor': 'Müşteri Süpervizörü', 'CustomerOperator': 'Müşteri Operatörü'
-        };
-        return roleNames[role] || 'Bilinmiyor';
+        return EnumsService.getCustomerRoleDisplay(role);
     };
 
     self.getCustomerRoleBadgeClass = function(role) {
-        var roleClasses = {
-            1: 'bg-info', 2: 'bg-warning', 3: 'bg-secondary',
-            'CustomerManager': 'bg-info', 'CustomerSupervisor': 'bg-warning', 'CustomerOperator': 'bg-secondary'
-        };
-        return roleClasses[role] || 'bg-secondary';
+        return EnumsService.getCustomerRoleCss(role);
     };
 
     // ===== Load Data =====
@@ -164,23 +179,27 @@ function UsersViewModel() {
 
     self.loadAll = function() {
         self.isLoading(true);
-        Promise.all([
-            fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/customers', { credentials: 'include' }).then(function(r) { return r.json(); })
-        ])
-        .then(function(results) {
-            self.users(results[0] || []);
-            self.customerPersonnel(results[1] || []);
-            self.customers(results[2] || []);
-        })
-        .catch(function(err) {
-            console.error('Error loading data:', err);
-            self.errorMessage('Veriler yüklenirken bir hata oluştu.');
-        })
-        .finally(function() {
-            self.isLoading(false);
-        });
+        // Once EnumsService'i yukle, sonra verileri cek
+        EnumsService.load()
+            .then(function() {
+                return Promise.all([
+                    fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
+                    fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
+                    fetch('/api/customers', { credentials: 'include' }).then(function(r) { return r.json(); })
+                ]);
+            })
+            .then(function(results) {
+                self.users(results[0] || []);
+                self.customerPersonnel(results[1] || []);
+                self.customers(results[2] || []);
+            })
+            .catch(function(err) {
+                console.error('Error loading data:', err);
+                self.errorMessage('Veriler yüklenirken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
     };
 
     // ===== Create New =====
@@ -232,8 +251,9 @@ function UsersViewModel() {
         }
 
         self.isSaving(true);
-        var endpoint = u.id ? '/api/users/' + u.id : '/api/users';
-        var method = u.id ? 'PUT' : 'POST';
+        var isNew = !u.id;
+        var endpoint = isNew ? '/api/users' : '/api/users/' + u.id;
+        var method = isNew ? 'POST' : 'PUT';
 
         fetch(endpoint, {
             method: method,
@@ -245,10 +265,22 @@ function UsersViewModel() {
             if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
             return res.json();
         })
-        .then(function() {
+        .then(function(savedUser) {
+            if (isNew) {
+                // Yeni kayit: array'e ekle
+                self.users.push(savedUser);
+            } else {
+                // Guncelleme: array'de bul ve guncelle
+                var users = self.users();
+                for (var i = 0; i < users.length; i++) {
+                    if (users[i].id === savedUser.id) {
+                        self.users.splice(i, 1, savedUser);
+                        break;
+                    }
+                }
+            }
             toastr.success('Kullanıcı başarıyla kaydedildi.');
             self.closeModal();
-            self.loadUsers();
         })
         .catch(function(err) {
             self.modalErrorMessage(err.message);
@@ -321,8 +353,9 @@ function UsersViewModel() {
         }
 
         self.isSaving(true);
-        var endpoint = cp.id ? '/api/customer-personnel/' + cp.id : '/api/customer-personnel';
-        var method = cp.id ? 'PUT' : 'POST';
+        var isNew = !cp.id;
+        var endpoint = isNew ? '/api/customer-personnel' : '/api/customer-personnel/' + cp.id;
+        var method = isNew ? 'POST' : 'PUT';
 
         fetch(endpoint, {
             method: method,
@@ -334,10 +367,22 @@ function UsersViewModel() {
             if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
             return res.json();
         })
-        .then(function() {
+        .then(function(savedCp) {
+            if (isNew) {
+                // Yeni kayit: array'e ekle
+                self.customerPersonnel.push(savedCp);
+            } else {
+                // Guncelleme: array'de bul ve guncelle
+                var list = self.customerPersonnel();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === savedCp.id) {
+                        self.customerPersonnel.splice(i, 1, savedCp);
+                        break;
+                    }
+                }
+            }
             toastr.success('Müşteri personeli başarıyla kaydedildi.');
             self.closeCustomerPersonnelModal();
-            self.loadCustomerPersonnel();
         })
         .catch(function(err) {
             self.modalErrorMessage(err.message);
@@ -401,7 +446,10 @@ function UsersViewModel() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ newPassword: pwdUser.newPassword() })
+            body: JSON.stringify({
+                userId: pwdUser.userId,
+                newPassword: pwdUser.newPassword()
+            })
         })
         .then(function(res) {
             if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });

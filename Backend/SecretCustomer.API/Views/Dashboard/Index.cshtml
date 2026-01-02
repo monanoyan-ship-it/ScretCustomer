@@ -412,19 +412,6 @@
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card bg-secondary text-white shadow h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ActiveBranches", "Aktif Şube")</h6>
-                                <h2 class="mb-0" data-bind="text: stats().branchComparisons.length"></h2>
-                            </div>
-                            <i class="bi bi-building fs-1 opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         </div>
 
@@ -444,118 +431,6 @@
                 </div>
             </div>
 
-            <!-- Branch Comparison Chart -->
-            <div class="col-xl-4 mb-4">
-                <div class="card shadow h-100">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> @Html.T("Dashboard.BranchComparison", "Şube Karşılaştırması")</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="branchComparisonChart" style="max-height: 300px;"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top & Bottom Branches -->
-        <div class="row">
-            <!-- Top 5 Branches -->
-            <div class="col-md-6 mb-4">
-                <div class="card shadow h-100">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="bi bi-trophy"></i> @Html.T("Dashboard.TopBranches", "En İyi 5 Şube")</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div data-bind="visible: stats().topBranches.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
-                        </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: stats().topBranches">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge bg-success me-2" data-bind="text: $index() + 1"></span>
-                                    <span data-bind="text: branchName"></span>
-                                </div>
-                                <div>
-                                    <span class="badge bg-light text-dark me-2" data-bind="text: evaluationCount + ' değerlendirme'"></span>
-                                    <span class="badge bg-success rounded-pill" data-bind="text: averageScore.toFixed(1) + '%'"></span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom 5 Branches -->
-            <div class="col-md-6 mb-4">
-                <div class="card shadow h-100">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> @Html.T("Dashboard.NeedsImprovement", "Geliştirilmesi Gereken 5 Şube")</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div data-bind="visible: stats().bottomBranches.length === 0" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
-                        </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: stats().bottomBranches">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge bg-warning text-dark me-2" data-bind="text: $index() + 1"></span>
-                                    <span data-bind="text: branchName"></span>
-                                </div>
-                                <div>
-                                    <span class="badge bg-light text-dark me-2" data-bind="text: evaluationCount + ' değerlendirme'"></span>
-                                    <span class="badge bg-warning text-dark rounded-pill" data-bind="text: averageScore.toFixed(1) + '%'"></span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detailed Branch Table -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-table"></i> @Html.T("Dashboard.AllBranches", "Tüm Şubeler")</h5>
-                <div class="input-group input-group-sm" style="max-width: 250px;">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="@Html.T("Dashboard.SearchBranch", "Şube ara...")" data-bind="value: branchSearchTerm, valueUpdate: 'afterkeydown'">
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Html.T("Branch.BranchName", "Şube")</th>
-                                <th>@Html.T("Branch.Region", "Bölge")</th>
-                                <th>@Html.T("Dashboard.Evaluation", "Değerlendirme")</th>
-                                <th>@Html.T("Dashboard.AverageScore", "Ortalama Puan")</th>
-                                <th>@Html.T("Report.Performance", "Performans")</th>
-                            </tr>
-                        </thead>
-                        <tbody data-bind="foreach: filteredBranches">
-                            <tr>
-                                <td data-bind="text: branchName"></td>
-                                <td data-bind="text: region"></td>
-                                <td data-bind="text: evaluationCount"></td>
-                                <td>
-                                    <strong data-bind="text: averageScore.toFixed(1) + '%'"></strong>
-                                </td>
-                                <td>
-                                    <div class="progress" style="height: 20px; min-width: 100px;">
-                                        <div class="progress-bar" role="progressbar"
-                                             data-bind="style: { width: averageScore + '%' },
-                                                        css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning' : 'bg-danger')">
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
         </div>
 

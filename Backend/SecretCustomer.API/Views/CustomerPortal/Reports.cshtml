@@ -145,8 +145,8 @@
                         <tbody data-bind="foreach: branchPerformance">
                             <tr>
                                 <td data-bind="text: $index() + 1"></td>
-                                <td><strong data-bind="text: branchName"></strong></td>
-                                <td data-bind="text: city || '-'"></td>
+                                <td><strong data-bind="text: projectName || name"></strong></td>
+                                <td data-bind="text: checklistName || '-'"></td>
                                 <td class="text-center" data-bind="text: evaluationCount"></td>
                                 <td class="text-center">
                                     <span class="badge fs-6" data-bind="text: averageScore.toFixed(1), css: $parent.getScoreBadgeClass(averageScore)"></span>

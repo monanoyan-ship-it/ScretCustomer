@@ -15,8 +15,6 @@ public class UserProfileDto
     public string FullName => $"{FirstName} {LastName}";
     public string? PhoneNumber { get; set; }
     public string Role { get; set; } = string.Empty;
-    public string? BranchName { get; set; }
-    public int? BranchId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
 }

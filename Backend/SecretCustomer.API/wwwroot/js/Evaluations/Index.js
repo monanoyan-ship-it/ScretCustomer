@@ -7,7 +7,8 @@ function EvaluationsViewModel() {
     // ========================
     self.isLoading = ko.observable(true);
     self.errorMessage = ko.observable('');
-    self.activeTab = ko.observable('pending');
+    self.activeTab = ko.observable('assignments');
+    self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
     self.filterStatus = ko.observable('');
     self.searchTerm = ko.observable('');
 
@@ -39,45 +40,15 @@ function EvaluationsViewModel() {
     self.callDate = ko.observable('');
     self.durationMinutes = ko.observable(null);
     self.controlTime = ko.observable('');
-    self.selectedOrganizationId = ko.observable(null);
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
     self.evaluatedPersonnelId = ko.observable(null);
     self.evaluatedUnknownPersonnel = ko.observable('');
     self.evaluationComment = ko.observable('');
 
-    // Organizasyon seçildiğinde personel listesini yükle
-    self.selectedOrganizationId.subscribe(function(orgId) {
-        if (!orgId) {
-            self.availablePersonnel([]);
-            self.evaluatedPersonnelId(null);
-            return;
-        }
-        self.loadPersonnelByOrganization(orgId);
-    });
-
-    // Organizasyona göre personel listesi yükle
-    self.loadPersonnelByOrganization = function(organizationId) {
-        self.isLoadingPersonnel(true);
-        self.availablePersonnel([]);
-        self.evaluatedPersonnelId(null);
-
-        fetch('/api/evaluations/personnel-by-org/' + organizationId, { credentials: 'include' })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Personel yüklenemedi');
-                return response.json();
-            })
-            .then(function(data) {
-                self.availablePersonnel(data || []);
-            })
-            .catch(function(error) {
-                console.error('Personnel loading error:', error);
-                self.availablePersonnel([]);
-            })
-            .finally(function() {
-                self.isLoadingPersonnel(false);
-            });
-    };
+    // Dönem seçimi
+    self.selectedPeriodId = ko.observable(null);
+    self.availablePeriods = ko.observableArray([]);
 
     // Answers dictionary (questionId -> answer observable)
     self.answers = {};
@@ -105,18 +76,20 @@ function EvaluationsViewModel() {
     // LIST COMPUTED
     // ========================
 
-    // Pending Assignments (no evaluation yet)
-    self.pendingAssignments = ko.computed(function() {
+    // Sekme 1: Aktif Atamalar (tarihi geçmemiş, tamamlanmamış)
+    self.activeAssignments = ko.computed(function() {
         var assignments = self.allAssignments();
-        var evaluationAssignmentIds = self.allEvaluations().map(function(e) { return e.assignmentId; });
         var search = self.searchTerm().toLowerCase();
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
 
         return assignments.filter(function(a) {
             if (a.isCompleted) return false;
-            if (evaluationAssignmentIds.indexOf(a.id) >= 0) return false;
+            var dueDate = new Date(a.dueDate);
+            if (dueDate < today) return false; // Tarihi geçmişleri 3. sekmeye
             if (search) {
                 var matchesSearch = (a.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (a.branchName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (a.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (a.checklistName || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
@@ -124,33 +97,51 @@ function EvaluationsViewModel() {
         });
     });
 
-    // Completed Evaluations
-    self.completedEvaluations = ko.computed(function() {
+    // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
+    self.allEvaluationsList = ko.computed(function() {
         var search = self.searchTerm().toLowerCase();
         return self.allEvaluations().filter(function(e) {
-            if (e.status !== 'Completed') return false;
             if (search) {
                 var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.branchName || '').toLowerCase().indexOf(search) >= 0;
+                                   (e.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (e.checklistName || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
             return true;
         });
     });
 
-    // Draft Evaluations
-    self.draftEvaluations = ko.computed(function() {
+    // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
+    self.expiredAssignments = ko.computed(function() {
+        var assignments = self.allAssignments();
         var search = self.searchTerm().toLowerCase();
-        return self.allEvaluations().filter(function(e) {
-            if (e.status !== 'Draft' && e.status !== 'InProgress') return false;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return assignments.filter(function(a) {
+            if (a.isCompleted) return false;
+            var dueDate = new Date(a.dueDate);
+            if (dueDate >= today) return false; // Aktif olanları 1. sekmeye
             if (search) {
-                var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.branchName || '').toLowerCase().indexOf(search) >= 0;
+                var matchesSearch = (a.projectName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (a.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (a.checklistName || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
             return true;
         });
     });
+
+    // Admin mi kontrolü
+    self.isAdmin = ko.computed(function() {
+        return self.currentUserRole() === 'Admin';
+    });
+
+    // Tamamlanmış evaluation düzenlenebilir mi?
+    self.canEditEvaluation = function(evaluation) {
+        if (self.isAdmin()) return true;
+        return evaluation.status !== 'Completed';
+    };
 
     // ========================
     // LIST FUNCTIONS
@@ -162,11 +153,15 @@ function EvaluationsViewModel() {
 
         Promise.all([
             fetch('/api/assignments/my-assignments', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/evaluations/evaluator', { credentials: 'include' }).then(function(r) { return r.json(); })
+            fetch('/api/evaluations/evaluator', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/auth/me', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
             self.allAssignments(results[0] || []);
             self.allEvaluations(results[1] || []);
+            if (results[2] && results[2].role) {
+                self.currentUserRole(results[2].role);
+            }
         })
         .catch(function(error) {
             console.error('Load error:', error);
@@ -241,11 +236,12 @@ function EvaluationsViewModel() {
         self.callDate('');
         self.durationMinutes(null);
         self.controlTime('');
-        self.selectedOrganizationId(null);
         self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
         self.evaluationComment('');
+        self.selectedPeriodId(null);
+        self.availablePeriods([]);
         self.totalScoreCalc(0);
         self.maxScoreCalc(0);
         self.scorePercentageCalc(0);
@@ -317,17 +313,21 @@ function EvaluationsViewModel() {
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
 
-                // Mevcut seçili organizasyonu ve personeli yükle
-                if (data.selectedOrganizationId) {
-                    // Önce personel listesini yükle, sonra organizasyonu set et
-                    self.availablePersonnel(data.availablePersonnel || []);
-                    self.selectedOrganizationId(data.selectedOrganizationId);
-                    if (data.evaluatedPersonnelId) {
-                        self.evaluatedPersonnelId(data.evaluatedPersonnelId);
+                // Dönemleri yükle
+                self.availablePeriods(data.availablePeriods || []);
+                if (data.selectedPeriodId) {
+                    self.selectedPeriodId(data.selectedPeriodId);
+                } else if (data.availablePeriods && data.availablePeriods.length > 0) {
+                    // Aktif dönemi otomatik seç
+                    var activePeriod = data.availablePeriods.find(function(p) { return p.status === 'Open'; });
+                    if (activePeriod) {
+                        self.selectedPeriodId(activePeriod.id);
                     }
-                } else if (data.evaluatedPersonnelId) {
-                    // Eski kayıtlar için (organizasyon seçilmemiş)
-                    self.availablePersonnel(data.availablePersonnel || []);
+                }
+
+                // Personel listesini yükle (Checklist'in organizasyonuna göre API'den geliyor)
+                self.availablePersonnel(data.availablePersonnel || []);
+                if (data.evaluatedPersonnelId) {
                     self.evaluatedPersonnelId(data.evaluatedPersonnelId);
                 }
 
@@ -386,15 +386,23 @@ function EvaluationsViewModel() {
                 // Skip unscored questions
                 if (q.scoringType === 'Unscored') return;
 
-                // Handle penalty questions
+                // Handle penalty questions - selectedPenaltyType değerine bak
                 if (q.scoringType === 'Penalty' || q.penaltyType !== 'None') {
-                    if (answer.applyPenalty()) {
-                        if (answer.selectedPenaltyType() === 'YellowCard') {
-                            yellowCards++;
-                        } else if (answer.selectedPenaltyType() === 'RedCard') {
-                            redCards++;
-                        }
+                    var penaltyType = answer.selectedPenaltyType();
+                    if (penaltyType === 'YellowCard') {
+                        yellowCards++;
                         total -= q.penaltyValue || 0;
+                    } else if (penaltyType === 'RedCard') {
+                        redCards++;
+                        total -= q.penaltyValue || 0;
+                    }
+                    // Ceza yoksa ama puan verilmişse normal puanlama yap
+                    if (!penaltyType && answer.answerNumeric() !== null) {
+                        var weight = q.weightPoints || q.points || 0;
+                        var maxScore = q.maxPoints || 5;
+                        max += weight;
+                        var numericValue = parseFloat(answer.answerNumeric()) || 0;
+                        total += (numericValue / maxScore) * weight;
                     }
                     return;
                 }
@@ -436,6 +444,7 @@ function EvaluationsViewModel() {
 
         Object.keys(self.answers).forEach(function(questionId) {
             var a = self.answers[questionId];
+            var penaltyType = a.selectedPenaltyType() || null;
             answers.push({
                 questionId: questionId,
                 answerText: a.answerText() || null,
@@ -444,20 +453,21 @@ function EvaluationsViewModel() {
                 givenPoints: a.givenPoints() ? parseFloat(a.givenPoints()) : null,
                 notes: a.notes() || null,
                 recommendationNotes: a.recommendationNotes() || null,
-                applyPenalty: a.applyPenalty(),
-                selectedPenaltyType: a.selectedPenaltyType() || null
+                applyPenalty: penaltyType === 'YellowCard' || penaltyType === 'RedCard',
+                selectedPenaltyType: penaltyType
             });
         });
 
         return {
             assignmentId: self.formData().assignmentId,
+            assignmentPeriodId: self.selectedPeriodId() || null,
             answers: answers,
             notes: '',
             evaluationComment: self.evaluationComment(),
             callId: self.callId() || null,
             callDate: self.callDate() || null,
             durationMinutes: self.durationMinutes() ? parseInt(self.durationMinutes()) : null,
-            evaluatedOrganizationId: self.selectedOrganizationId() || null,
+            evaluatedOrganizationId: self.formData().checklistOrganizationId || null,
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
             controlDate: new Date().toISOString().split('T')[0],
@@ -498,12 +508,6 @@ function EvaluationsViewModel() {
 
     // Submit evaluation
     self.submitEvaluation = function() {
-        // Organizasyon seçimi zorunlu kontrolü
-        if (!self.selectedOrganizationId()) {
-            self.modalErrorMessage(T('Evaluation.OrganizationRequired', 'Lütfen bir organizasyon seçin.'));
-            return;
-        }
-
         // Validate required questions
         var hasError = false;
         self.formData().sections.forEach(function(section) {
@@ -534,6 +538,7 @@ function EvaluationsViewModel() {
         self.formSuccessMessage('');
 
         var data = self.prepareData();
+        var assignmentId = data.assignmentId;
 
         fetch('/api/evaluations/submit', {
             method: 'POST',
@@ -545,12 +550,40 @@ function EvaluationsViewModel() {
             if (!response.ok) throw new Error(T('Evaluation.SubmitError', 'Değerlendirme gönderilemedi'));
             return response.json();
         })
-        .then(function(result) {
+        .then(function(newEvaluation) {
             self.formSuccessMessage(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
-            // Close modal and refresh list after 1.5 seconds
+
+            // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
+            var existingIndex = -1;
+            var evaluations = self.allEvaluations();
+            for (var i = 0; i < evaluations.length; i++) {
+                if (evaluations[i].id === newEvaluation.id) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex >= 0) {
+                // Mevcut degerlendirmeyi guncelle
+                self.allEvaluations.splice(existingIndex, 1, newEvaluation);
+            } else {
+                // Yeni degerlendirme ekle
+                self.allEvaluations.push(newEvaluation);
+            }
+
+            // Assignment'i tamamlandi olarak isaretle
+            var assignments = self.allAssignments();
+            for (var j = 0; j < assignments.length; j++) {
+                if (assignments[j].id === assignmentId) {
+                    assignments[j].isCompleted = true;
+                    self.allAssignments.splice(j, 1, assignments[j]);
+                    break;
+                }
+            }
+
+            // Close modal after 1.5 seconds
             setTimeout(function() {
                 self.closeEvaluateModal();
-                self.loadEvaluations();
             }, 1500);
         })
         .catch(function(error) {
@@ -565,7 +598,10 @@ function EvaluationsViewModel() {
     // ========================
     // INITIALIZE
     // ========================
-    self.loadEvaluations();
+    // Once EnumsService'i yukle, sonra diger verileri cek
+    EnumsService.load().then(function() {
+        self.loadEvaluations();
+    });
 }
 
 // Apply bindings when DOM is ready

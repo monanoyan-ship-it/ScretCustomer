@@ -19,7 +19,7 @@ public class RepresentativeEvaluationDto
 {
     public int Id { get; set; }
     public string ProjectName { get; set; } = string.Empty;
-    public string BranchName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
     public decimal? ScorePercentage { get; set; }
     public DateTime? CompletedAt { get; set; }
 }

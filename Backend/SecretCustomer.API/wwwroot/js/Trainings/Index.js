@@ -349,16 +349,31 @@
                 body: JSON.stringify(data)
             })
             .then(function(response) {
-                if (response.ok) {
-                    self.closeFormModal();
-                    self.loadTrainings();
-                    self.loadSummary();
-                    toastr.success(isNew ? 'Eğitim oluşturuldu' : 'Eğitim güncellendi');
-                } else {
+                if (!response.ok) {
                     return response.json().then(function(err) {
                         throw new Error(err.message || 'Bir hata oluştu');
                     });
                 }
+                return response.json();
+            })
+            .then(function(savedTraining) {
+                if (isNew) {
+                    // Yeni kayıt: array'e ekle
+                    self.trainings.push(savedTraining);
+                    self.totalCount(self.totalCount() + 1);
+                } else {
+                    // Güncelleme: array'de bul ve güncelle
+                    var list = self.trainings();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedTraining.id) {
+                            self.trainings.splice(i, 1, savedTraining);
+                            break;
+                        }
+                    }
+                }
+                self.closeFormModal();
+                self.loadSummary();
+                toastr.success(isNew ? 'Eğitim oluşturuldu' : 'Eğitim güncellendi');
             })
             .catch(function(error) {
                 toastr.error(error.message || 'Bir hata oluştu');
@@ -396,14 +411,23 @@
             var id = training.id || self.currentTrainingId();
             fetch('/api/trainings/' + id + '/start', { method: 'POST' })
                 .then(function(response) {
-                    if (response.ok) {
-                        self.loadTrainings();
-                        self.loadSummary();
-                        if (self.currentTrainingId()) {
-                            self.loadTrainingDetail(self.currentTrainingId());
+                    if (response.ok) return response.json();
+                    throw new Error('İşlem başarısız');
+                })
+                .then(function(updatedTraining) {
+                    // Array'de bul ve güncelle
+                    var list = self.trainings();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === updatedTraining.id) {
+                            self.trainings.splice(i, 1, updatedTraining);
+                            break;
                         }
-                        toastr.success('Eğitim başlatıldı');
                     }
+                    self.loadSummary();
+                    if (self.currentTrainingId()) {
+                        self.viewingTraining(updatedTraining);
+                    }
+                    toastr.success('Eğitim başlatıldı');
                 });
         };
 
@@ -415,14 +439,23 @@
                 body: JSON.stringify({})
             })
             .then(function(response) {
-                if (response.ok) {
-                    self.loadTrainings();
-                    self.loadSummary();
-                    if (self.currentTrainingId()) {
-                        self.loadTrainingDetail(self.currentTrainingId());
+                if (response.ok) return response.json();
+                throw new Error('İşlem başarısız');
+            })
+            .then(function(updatedTraining) {
+                // Array'de bul ve güncelle
+                var list = self.trainings();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === updatedTraining.id) {
+                        self.trainings.splice(i, 1, updatedTraining);
+                        break;
                     }
-                    toastr.success('Eğitim tamamlandı');
                 }
+                self.loadSummary();
+                if (self.currentTrainingId()) {
+                    self.viewingTraining(updatedTraining);
+                }
+                toastr.success('Eğitim tamamlandı');
             });
         };
 
@@ -431,7 +464,9 @@
                 fetch('/api/trainings/' + training.id, { method: 'DELETE' })
                     .then(function(response) {
                         if (response.ok) {
-                            self.loadTrainings();
+                            // Array'den sil
+                            self.trainings.remove(function(t) { return t.id === training.id; });
+                            self.totalCount(self.totalCount() - 1);
                             self.loadSummary();
                             toastr.success('Eğitim silindi');
                         }
@@ -641,11 +676,14 @@
         // ========== INITIALIZE ==========
 
         self.init = function() {
-            self.loadTrainings();
-            self.loadSummary();
-            self.loadProjects();
-            self.loadCustomers();
-            self.loadUsers();
+            // Önce EnumsService'i yükle, sonra diğer verileri çek
+            EnumsService.load().then(function() {
+                self.loadTrainings();
+                self.loadSummary();
+                self.loadProjects();
+                self.loadCustomers();
+                self.loadUsers();
+            });
         };
 
         self.init();

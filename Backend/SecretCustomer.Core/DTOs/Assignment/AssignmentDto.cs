@@ -31,6 +31,7 @@ public class AssignmentDto
     public decimal? EvaluationScore { get; set; }
     public int YellowCardCount { get; set; }
     public int RedCardCount { get; set; }
+    public int EvaluationCount { get; set; } // Toplam dinleme sayısı
 
     // Assignee display name
     public string AssigneeName => AssignedUserName

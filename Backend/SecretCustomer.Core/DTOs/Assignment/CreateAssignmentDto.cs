@@ -10,8 +10,6 @@ public class CreateAssignmentDto
     [Required]
     public int ChecklistId { get; set; }
 
-    public int? BranchId { get; set; }
-
     public int? AssignedUserId { get; set; }
 
     public int? AssignedCustomerPersonnelId { get; set; }
@@ -35,8 +33,6 @@ public class UpdateAssignmentDto
 
     [Required]
     public int ChecklistId { get; set; }
-
-    public int? BranchId { get; set; }
 
     public int? AssignedUserId { get; set; }
 
@@ -71,7 +67,6 @@ public class BulkAssignmentDto
 
 public class AssignmentItemDto
 {
-    public int? BranchId { get; set; }
     public int? AssignedUserId { get; set; }
     public string? ExternalEmail { get; set; }
     public string? ExternalName { get; set; }
@@ -132,7 +127,6 @@ public class CancelAssignmentDto
 public class AssignmentFilterDto
 {
     public int? ProjectId { get; set; }
-    public int? BranchId { get; set; }
     public int? AssignedUserId { get; set; }
     public string? Status { get; set; }
     public DateTime? DueDateFrom { get; set; }

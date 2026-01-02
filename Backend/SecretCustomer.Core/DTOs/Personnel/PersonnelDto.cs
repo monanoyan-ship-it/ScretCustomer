@@ -31,10 +31,6 @@ public class PersonnelDto
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
 
-    // Branch info
-    public int? BranchId { get; set; }
-    public string? BranchName { get; set; }
-
     // Customer info
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
@@ -92,8 +88,6 @@ public class CreatePersonnelDto
 
     public string? Notes { get; set; }
 
-    public int? BranchId { get; set; }
-
     public int? CustomerId { get; set; }
 }
 
@@ -110,7 +104,6 @@ public class UpdatePersonnelDto : CreatePersonnelDto
 public class PersonnelFilterDto
 {
     public string? SearchTerm { get; set; }
-    public int? BranchId { get; set; }
     public int? CustomerId { get; set; }
     public bool? IsActive { get; set; }
     public Gender? Gender { get; set; }

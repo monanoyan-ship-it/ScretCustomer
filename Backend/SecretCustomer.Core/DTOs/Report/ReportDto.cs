@@ -6,10 +6,8 @@ namespace SecretCustomer.Core.DTOs.Report;
 public class ReportFilterDto
 {
     public int? ProjectId { get; set; }
-    public int? BranchId { get; set; }
     public int? EvaluatorId { get; set; }
     public int? ChecklistId { get; set; }
-    public string? Region { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? Status { get; set; }
@@ -28,11 +26,6 @@ public class EvaluationReportDto
     // Project
     public string ProjectName { get; set; } = string.Empty;
     public string? ProjectCode { get; set; }
-
-    // Branch
-    public string? BranchName { get; set; }
-    public string? BranchCode { get; set; }
-    public string? Region { get; set; }
 
     // Checklist
     public string ChecklistName { get; set; } = string.Empty;
@@ -132,7 +125,6 @@ public class SummaryReportDto
     public int TotalRedCards { get; set; }
 
     public List<ProjectSummaryReportDto> ProjectSummaries { get; set; } = new();
-    public List<BranchSummaryReportDto> BranchSummaries { get; set; } = new();
     public List<EvaluatorSummaryReportDto> EvaluatorSummaries { get; set; } = new();
 }
 
@@ -140,15 +132,6 @@ public class ProjectSummaryReportDto
 {
     public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
-    public int EvaluationCount { get; set; }
-    public decimal AverageScore { get; set; }
-}
-
-public class BranchSummaryReportDto
-{
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string? Region { get; set; }
     public int EvaluationCount { get; set; }
     public decimal AverageScore { get; set; }
 }
@@ -179,7 +162,6 @@ public class ExcelExportDto
 public class PenaltyFilterDto
 {
     public int? ProjectId { get; set; }
-    public int? BranchId { get; set; }
     public string? PenaltyType { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
@@ -193,7 +175,6 @@ public class PenaltyReportResultDto
     public PenaltySummaryDto Summary { get; set; } = new();
     public List<PenaltyDetailDto> Penalties { get; set; } = new();
     public List<PenaltyQuestionDto> TopPenaltyQuestions { get; set; } = new();
-    public List<PenaltyBranchDto> TopPenaltyBranches { get; set; } = new();
     public List<PenaltyMonthlyTrendDto> MonthlyTrend { get; set; } = new();
 }
 
@@ -220,8 +201,7 @@ public class PenaltyDetailDto
     public string SectionName { get; set; } = string.Empty;
     public string PenaltyType { get; set; } = string.Empty;
     public string ProjectName { get; set; } = string.Empty;
-    public string? BranchName { get; set; }
-    public string? Region { get; set; }
+    public string? ChecklistName { get; set; }
     public string? EvaluatorName { get; set; }
     public string? EvaluatedPersonnelName { get; set; }
     public DateTime? EvaluationDate { get; set; }
@@ -237,19 +217,6 @@ public class PenaltyQuestionDto
     public string QuestionText { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
     public string SectionName { get; set; } = string.Empty;
-    public int YellowCardCount { get; set; }
-    public int RedCardCount { get; set; }
-    public int TotalPenalties { get; set; }
-}
-
-/// <summary>
-/// En çok ceza alan şube
-/// </summary>
-public class PenaltyBranchDto
-{
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string? Region { get; set; }
     public int YellowCardCount { get; set; }
     public int RedCardCount { get; set; }
     public int TotalPenalties { get; set; }
@@ -291,8 +258,6 @@ public class PersonnelReportCardDto
     public string PersonnelName { get; set; } = string.Empty;
     public string? Title { get; set; }
     public string? Department { get; set; }
-    public string? BranchName { get; set; }
-    public string? Region { get; set; }
 
     // Özet istatistikler
     public int TotalEvaluations { get; set; }
@@ -379,7 +344,6 @@ public class PersonnelListItemDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
-    public string? BranchName { get; set; }
 }
 
 // ===== ÖNERİLER RAPORU DTO'LARI (Video 5-6) =====
@@ -390,7 +354,6 @@ public class PersonnelListItemDto
 public class SuggestionsFilterDto
 {
     public int? ProjectId { get; set; }
-    public int? BranchId { get; set; }
     public int? ChecklistId { get; set; }
     public int? EvaluatorId { get; set; }
     public int? PersonnelId { get; set; }
@@ -448,10 +411,8 @@ public class SuggestionDetailDto
     public decimal? MaxPoints { get; set; }
     public decimal? PercentageScore { get; set; }
 
-    // Proje ve şube
+    // Proje
     public string ProjectName { get; set; } = string.Empty;
-    public string? BranchName { get; set; }
-    public string? Region { get; set; }
 
     // Değerlendirici ve personel
     public string? EvaluatorName { get; set; }

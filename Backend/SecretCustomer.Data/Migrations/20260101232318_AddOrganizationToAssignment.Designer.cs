@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260101232318_AddOrganizationToAssignment")]
+    partial class AddOrganizationToAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -372,6 +375,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
+                    b.Property<int?>("CustomerOrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -410,6 +416,8 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("AssignedUserId");
 
                     b.HasIndex("ChecklistId");
+
+                    b.HasIndex("CustomerOrganizationId");
 
                     b.HasIndex("ProjectId");
 
@@ -589,9 +597,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("CustomerOrganizationId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -638,8 +643,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("CustomerOrganizationId");
 
                     b.ToTable("Checklists");
                 });
@@ -2924,6 +2927,10 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "CustomerOrganization")
+                        .WithMany()
+                        .HasForeignKey("CustomerOrganizationId");
+
                     b.HasOne("SecretCustomer.Core.Entities.Project", "Project")
                         .WithMany("Assignments")
                         .HasForeignKey("ProjectId")
@@ -2935,6 +2942,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("AssignedUser");
 
                     b.Navigation("Checklist");
+
+                    b.Navigation("CustomerOrganization");
 
                     b.Navigation("Project");
                 });
@@ -2962,13 +2971,7 @@ namespace SecretCustomer.Data.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerId");
 
-                    b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "CustomerOrganization")
-                        .WithMany()
-                        .HasForeignKey("CustomerOrganizationId");
-
                     b.Navigation("Customer");
-
-                    b.Navigation("CustomerOrganization");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerOrganization", b =>

@@ -52,10 +52,6 @@ public class DashboardService : IDashboardService
             ? ((averageScore - previousAverage) / previousAverage) * 100
             : 0;
 
-        // Branch system removed - return empty lists
-        var topBranches = new List<TopBranchDto>();
-        var bottomBranches = new List<TopBranchDto>();
-
         // Son 12 ay trend
         var last12Months = completedEvaluations
             .Where(e => e.CompletedAt.HasValue)
@@ -72,18 +68,12 @@ public class DashboardService : IDashboardService
             .TakeLast(12)
             .ToList();
 
-        // Branch system removed - return empty list
-        var branchComparisons = new List<BranchComparisonDto>();
-
         return new DashboardStatsDto
         {
             TotalEvaluations = totalEvaluations,
             AverageScore = Math.Round(averageScore, 2),
             PercentageChange = Math.Round(percentageChange, 2),
-            TopBranches = topBranches,
-            BottomBranches = bottomBranches,
-            MonthlyTrends = last12Months,
-            BranchComparisons = branchComparisons
+            MonthlyTrends = last12Months
         };
     }
 
@@ -103,7 +93,7 @@ public class DashboardService : IDashboardService
             {
                 Id = e.Id,
                 ProjectName = e.Assignment?.Project?.Name ?? "",
-                BranchName = "",
+                ChecklistName = e.Assignment?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 CompletedAt = e.CompletedAt
             })
@@ -187,7 +177,7 @@ public class DashboardService : IDashboardService
             {
                 Id = e.Id,
                 ProjectName = e.Assignment?.Project?.Name ?? "",
-                BranchName = "",
+                ChecklistName = e.Assignment?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 EvaluationDate = e.CompletedAt ?? e.CreatedAt,
                 Status = e.Status.ToString()

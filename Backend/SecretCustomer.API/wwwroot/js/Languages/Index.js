@@ -147,9 +147,24 @@ function LanguagesViewModel() {
             data: JSON.stringify(data)
         })
             .done(function (response) {
+                var savedLang = response.language || response;
+                savedLang.resourceCount = savedLang.resourceCount || 0;
+
+                if (self.isEditing()) {
+                    // Güncelleme: array'de bul ve güncelle
+                    var list = self.languages();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedLang.id) {
+                            self.languages.splice(i, 1, savedLang);
+                            break;
+                        }
+                    }
+                } else {
+                    // Yeni kayıt: array'e ekle
+                    self.languages.push(savedLang);
+                }
                 toastr.success(response.message || T('Language.SaveSuccess', 'Dil kaydedildi.'));
                 $('#languageModal').modal('hide');
-                self.loadLanguages();
             })
             .fail(function (xhr) {
                 toastr.error(xhr.responseJSON?.message || T('Language.SaveError', 'Kayıt sırasında hata oluştu.'));
@@ -212,8 +227,9 @@ function LanguagesViewModel() {
                 method: 'DELETE'
             })
                 .done(function (response) {
+                    // Array'den sil
+                    self.languages.remove(function(l) { return l.id === language.id; });
                     toastr.success(response.message || T('Language.DeleteSuccess', 'Dil silindi.'));
-                    self.loadLanguages();
                 })
                 .fail(function (xhr) {
                     toastr.error(xhr.responseJSON?.message || T('Language.DeleteError', 'Silme sırasında hata oluştu.'));
@@ -356,8 +372,11 @@ function LanguagesViewModel() {
 
     // Initialize
     self.init = function () {
-        self.loadLanguages();
-        self.loadAvailableXmlFiles();
+        // Önce EnumsService'i yükle, sonra diğer verileri çek
+        EnumsService.load().then(function() {
+            self.loadLanguages();
+            self.loadAvailableXmlFiles();
+        });
     };
 
     self.init();

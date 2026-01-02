@@ -128,7 +128,7 @@
                         <tbody data-bind="foreach: recentEvaluations">
                             <tr>
                                 <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
-                                <td data-bind="text: branchName"></td>
+                                <td data-bind="text: projectName"></td>
                                 <td data-bind="text: checklistName"></td>
                                 <td>
                                     <span class="badge" data-bind="text: score.toFixed(1), css: $parent.getScoreBadgeClass(score)"></span>

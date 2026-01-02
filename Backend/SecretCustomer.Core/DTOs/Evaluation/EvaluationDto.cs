@@ -80,8 +80,8 @@ public class EvaluationDto
 
     // Assignment bilgileri
     public string? ProjectName { get; set; }
-    public string? BranchName { get; set; }
     public string? ChecklistName { get; set; }
+    public string? AssigneeName { get; set; }
 
     public List<AnswerDto> Answers { get; set; } = new();
 }

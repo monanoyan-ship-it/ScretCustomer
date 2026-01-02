@@ -248,8 +248,6 @@ public class PersonnelService : IPersonnelService
             Department = personnel.Department,
             IsActive = personnel.IsActive,
             Notes = personnel.Notes,
-            BranchId = null, // Branch system removed
-            BranchName = null,
             CustomerId = personnel.CustomerId,
             CustomerName = personnel.Customer?.CompanyName,
             EvaluationCount = evaluationCount,

@@ -279,12 +279,27 @@ function AssignmentsViewModel() {
     };
 
     self.loadEvaluators = function() {
-        fetch('/api/users/role/3', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.availableEvaluators(data);
-            })
-            .catch(function(error) { console.error('Error loading evaluators:', error); });
+        // Hem QualitySpecialist (role 2) hem FieldWorker (role 3) kullanıcılarını çek
+        Promise.all([
+            fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/users/role/3', { credentials: 'include' }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            var qualitySpecialists = results[0] || [];
+            var fieldWorkers = results[1] || [];
+            // Birleştir ve tekrarları kaldır (id'ye göre)
+            var combined = qualitySpecialists.concat(fieldWorkers);
+            var unique = [];
+            var ids = {};
+            combined.forEach(function(u) {
+                if (!ids[u.id]) {
+                    ids[u.id] = true;
+                    unique.push(u);
+                }
+            });
+            self.availableEvaluators(unique);
+        })
+        .catch(function(error) { console.error('Error loading evaluators:', error); });
     };
 
     // FieldWorker modülü kaldırıldı - artık sadece User'lar kullanılıyor
@@ -390,7 +405,8 @@ function AssignmentsViewModel() {
 
         var dto = assignment.toDTO();
         var isEdit = self.isEditing();
-        var url = isEdit ? '/api/assignments/' + assignment.id() : '/api/assignments';
+        var assignmentId = assignment.id();
+        var url = isEdit ? '/api/assignments/' + assignmentId : '/api/assignments';
         var method = isEdit ? 'PUT' : 'POST';
 
         self.isSaving(true);
@@ -404,12 +420,24 @@ function AssignmentsViewModel() {
         })
             .then(function(response) {
                 if (!response.ok) throw new Error(T('Message.SaveError', 'Kayıt başarısız'));
-                return isEdit ? null : response.json();
+                return response.json();
             })
-            .then(function(data) {
+            .then(function(savedAssignment) {
+                if (isEdit) {
+                    // Guncelleme: array'de bul ve guncelle
+                    var list = self.assignments();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedAssignment.id) {
+                            self.assignments.splice(i, 1, savedAssignment);
+                            break;
+                        }
+                    }
+                } else {
+                    // Yeni kayit: array'e ekle
+                    self.assignments.push(savedAssignment);
+                }
                 self.successMessage(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
                 self.closeModal();
-                self.loadAssignments();
                 self.loadSummary();
             })
             .catch(function(error) {
@@ -487,9 +515,14 @@ function AssignmentsViewModel() {
                 return res.json();
             })
             .then(function(data) {
+                // Bulk olusturursa assignments array doner, tum yeni kayitlari ekle
+                if (data.assignments && Array.isArray(data.assignments)) {
+                    data.assignments.forEach(function(a) {
+                        self.assignments.push(a);
+                    });
+                }
                 self.successMessage(data.message);
                 bootstrap.Modal.getInstance(document.getElementById('bulkAssignmentModal')).hide();
-                self.loadAssignments();
                 self.loadSummary();
             })
             .catch(function(error) {
@@ -532,10 +565,17 @@ function AssignmentsViewModel() {
                 if (!res.ok) throw new Error(T('Assignment.ReassignError', 'Yeniden atama başarısız'));
                 return res.json();
             })
-            .then(function(result) {
+            .then(function(updatedAssignment) {
+                // Array'de bul ve guncelle
+                var list = self.assignments();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === updatedAssignment.id) {
+                        self.assignments.splice(i, 1, updatedAssignment);
+                        break;
+                    }
+                }
                 self.successMessage(T('Assignment.ReassignSuccess', 'Atama başarıyla yeniden atandı.'));
                 bootstrap.Modal.getInstance(document.getElementById('reassignModal')).hide();
-                self.loadAssignments();
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -565,9 +605,16 @@ function AssignmentsViewModel() {
                         if (!res.ok) throw new Error(T('Assignment.CancelError', 'İptal başarısız'));
                         return res.json();
                     })
-                    .then(function(result) {
+                    .then(function(updatedAssignment) {
+                        // Array'de bul ve guncelle
+                        var list = self.assignments();
+                        for (var i = 0; i < list.length; i++) {
+                            if (list[i].id === updatedAssignment.id) {
+                                self.assignments.splice(i, 1, updatedAssignment);
+                                break;
+                            }
+                        }
                         toastr.success(T('Assignment.CancelSuccess', 'Atama başarıyla iptal edildi.'));
-                        self.loadAssignments();
                         self.loadSummary();
                     })
                     .catch(function(error) {
@@ -596,9 +643,16 @@ function AssignmentsViewModel() {
                         if (!res.ok) throw new Error(T('Assignment.ReopenError', 'Yeniden açma başarısız'));
                         return res.json();
                     })
-                    .then(function(result) {
+                    .then(function(updatedAssignment) {
+                        // Array'de bul ve guncelle
+                        var list = self.assignments();
+                        for (var i = 0; i < list.length; i++) {
+                            if (list[i].id === updatedAssignment.id) {
+                                self.assignments.splice(i, 1, updatedAssignment);
+                                break;
+                            }
+                        }
                         toastr.success(T('Assignment.ReopenSuccess', 'Atama başarıyla yeniden açıldı.'));
-                        self.loadAssignments();
                         self.loadSummary();
                     })
                     .catch(function(error) {
@@ -769,27 +823,13 @@ function AssignmentsViewModel() {
         });
     };
 
-    // ===== Status Helpers =====
+    // ===== Status Helpers - EnumsService kullanir =====
     self.getStatusBadgeClass = function(status) {
-        switch (status) {
-            case 'Pending': return 'bg-warning text-dark';
-            case 'InProgress': return 'bg-info';
-            case 'Completed': return 'bg-success';
-            case 'Expired': return 'bg-danger';
-            case 'Cancelled': return 'bg-secondary';
-            default: return 'bg-light text-dark';
-        }
+        return EnumsService.getAssignmentStatusCss(status);
     };
 
     self.getStatusText = function(status) {
-        switch (status) {
-            case 'Pending': return T('Status.Pending', 'Bekleyen');
-            case 'InProgress': return T('Status.InProgress', 'Devam Eden');
-            case 'Completed': return T('Status.Completed', 'Tamamlandı');
-            case 'Expired': return T('Status.Expired', 'Süresi Doldu');
-            case 'Cancelled': return T('Status.Cancelled', 'İptal Edildi');
-            default: return status || T('Status.Unknown', 'Bilinmiyor');
-        }
+        return EnumsService.getAssignmentStatusDisplay(status);
     };
 
     self.getAssigneeTypeText = function(assigneeType) {
@@ -820,12 +860,15 @@ function AssignmentsViewModel() {
     };
 
     // ===== Initialize =====
-    self.loadAssignments();
-    self.loadSummary();
-    self.loadProjects();
-    self.loadChecklists();
-    self.loadEvaluators();
-    self.loadFieldWorkers();
+    // Once EnumsService'i yukle, sonra diger verileri cek
+    EnumsService.load().then(function() {
+        self.loadAssignments();
+        self.loadSummary();
+        self.loadProjects();
+        self.loadChecklists();
+        self.loadEvaluators();
+        self.loadFieldWorkers();
+    });
 }
 
 // ===== Apply Bindings =====

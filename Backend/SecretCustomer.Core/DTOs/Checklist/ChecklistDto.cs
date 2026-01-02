@@ -18,17 +18,11 @@ public class ChecklistDto
     public string ScoringMethod { get; set; } = "Maximum";
     public string ScoringMethodName { get; set; } = "Maksimum";
 
-    /// <summary>
-    /// Likert Ölçeği - Puanlama için maksimum değer
-    /// </summary>
-    public int LikertScale { get; set; } = 5;
-
     public decimal MaxTotalPoints { get; set; } = 100;
     public string? Code { get; set; }
     public string? TemplateName { get; set; }
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
-    public int? EstimatedDurationMinutes { get; set; }
 
     // Firma ve Organizasyon
     public int? CustomerId { get; set; }

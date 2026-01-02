@@ -24,11 +24,6 @@ public class UpdateChecklistDto
     // Puanlama yöntemi
     public string ScoringMethod { get; set; } = "Maximum";
 
-    /// <summary>
-    /// Likert Ölçeği - Puanlama için maksimum değer (örn: 5 = 0-5 arası)
-    /// </summary>
-    public int LikertScale { get; set; } = 5;
-
     public decimal MaxTotalPoints { get; set; } = 100;
 
     [MaxLength(50)]
@@ -39,7 +34,6 @@ public class UpdateChecklistDto
 
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
-    public int? EstimatedDurationMinutes { get; set; }
 
     // Firma ve Organizasyon
     public int? CustomerId { get; set; }

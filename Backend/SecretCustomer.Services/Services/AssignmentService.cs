@@ -257,8 +257,10 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.Evaluations)
+            .Include(a => a.Periods)
             .Where(a => a.AssignedUserId == userId && !a.IsDeleted)
-            .OrderByDescending(a => a.CreatedAt)
+            // Sıralama: DueDate en uzak (gelecekte) olan en üstte
+            .OrderByDescending(a => a.DueDate)
             .ToListAsync();
 
         return assignments.Select(MapToDto);
@@ -594,7 +596,8 @@ public class AssignmentService : IAssignmentService
             EvaluationStatus = evaluation?.Status.ToString(),
             EvaluationScore = evaluation?.ScorePercentage,
             YellowCardCount = evaluation?.YellowCardCount ?? 0,
-            RedCardCount = evaluation?.RedCardCount ?? 0
+            RedCardCount = evaluation?.RedCardCount ?? 0,
+            EvaluationCount = assignment.Evaluations?.Count ?? 0
         };
     }
 

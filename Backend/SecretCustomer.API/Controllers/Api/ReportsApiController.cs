@@ -126,7 +126,6 @@ public class ReportsApiController : BaseApiController
     [HttpGet("penalties")]
     public async Task<IActionResult> GetPenaltiesReport(
         [FromQuery] int? projectId,
-        [FromQuery] int? branchId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -136,7 +135,6 @@ public class ReportsApiController : BaseApiController
             var filter = new PenaltyFilterDto
             {
                 ProjectId = projectId,
-                BranchId = branchId,
                 PenaltyType = penaltyType,
                 StartDate = startDate,
                 EndDate = endDate
@@ -157,7 +155,6 @@ public class ReportsApiController : BaseApiController
     [HttpGet("penalties/export")]
     public async Task<IActionResult> ExportPenaltiesToExcel(
         [FromQuery] int? projectId,
-        [FromQuery] int? branchId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -167,7 +164,6 @@ public class ReportsApiController : BaseApiController
             var filter = new PenaltyFilterDto
             {
                 ProjectId = projectId,
-                BranchId = branchId,
                 PenaltyType = penaltyType,
                 StartDate = startDate,
                 EndDate = endDate
@@ -273,7 +269,6 @@ public class ReportsApiController : BaseApiController
     [HttpGet("suggestions")]
     public async Task<IActionResult> GetSuggestionsReport(
         [FromQuery] int? projectId,
-        [FromQuery] int? branchId,
         [FromQuery] int? checklistId,
         [FromQuery] int? evaluatorId,
         [FromQuery] int? personnelId,
@@ -288,7 +283,6 @@ public class ReportsApiController : BaseApiController
             var filter = new SuggestionsFilterDto
             {
                 ProjectId = projectId,
-                BranchId = branchId,
                 ChecklistId = checklistId,
                 EvaluatorId = evaluatorId,
                 PersonnelId = personnelId,
@@ -344,7 +338,6 @@ public class ReportsApiController : BaseApiController
     [HttpGet("suggestions/export")]
     public async Task<IActionResult> ExportSuggestionsToExcel(
         [FromQuery] int? projectId,
-        [FromQuery] int? branchId,
         [FromQuery] int? checklistId,
         [FromQuery] int? evaluatorId,
         [FromQuery] int? personnelId,
@@ -357,7 +350,6 @@ public class ReportsApiController : BaseApiController
             var filter = new SuggestionsFilterDto
             {
                 ProjectId = projectId,
-                BranchId = branchId,
                 ChecklistId = checklistId,
                 EvaluatorId = evaluatorId,
                 PersonnelId = personnelId,

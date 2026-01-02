@@ -24,8 +24,6 @@ function ProfileViewModel() {
         fullName: '',
         phoneNumber: '',
         role: '',
-        branchName: '',
-        branchId: null,
         createdAt: null,
         lastLoginAt: null
     });

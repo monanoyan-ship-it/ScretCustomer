@@ -91,9 +91,6 @@ public class ReportService : IReportService
             AssignmentId = evaluation.AssignmentId,
             ProjectName = evaluation.Assignment.Project?.Name ?? "",
             ProjectCode = evaluation.Assignment.Project?.Code,
-            BranchName = null,
-            BranchCode = null,
-            Region = null,
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
@@ -194,7 +191,6 @@ public class ReportService : IReportService
                 })
                 .OrderByDescending(p => p.EvaluationCount)
                 .ToList(),
-            BranchSummaries = new List<BranchSummaryReportDto>(), // Branch system removed
             EvaluatorSummaries = evaluations
                 .Where(e => e.Evaluator != null)
                 .GroupBy(e => e.Evaluator!)
@@ -228,7 +224,7 @@ public class ReportService : IReportService
         // Headers
         var headers = new[]
         {
-            "Proje", "Proje Kodu", "Şube", "Şube Kodu", "Bölge", "Kontrol Listesi",
+            "Proje", "Proje Kodu", "Kontrol Listesi",
             "Değerlendirici", "Değerlendirilen Personel", "Değerlendirme Tarihi", "Tamamlanma Tarihi",
             "Son Tarih", "Puan", "Maks Puan", "Yüzde", "Sarı Kart", "Kırmızı Kart",
             "Durum", "Çağrı ID", "Çağrı Tarihi", "Süre (dk)", "Yorum"
@@ -247,25 +243,22 @@ public class ReportService : IReportService
         {
             worksheet.Cell(row, 1).Value = item.ProjectName;
             worksheet.Cell(row, 2).Value = item.ProjectCode ?? "";
-            worksheet.Cell(row, 3).Value = item.BranchName ?? "";
-            worksheet.Cell(row, 4).Value = item.BranchCode ?? "";
-            worksheet.Cell(row, 5).Value = item.Region ?? "";
-            worksheet.Cell(row, 6).Value = item.ChecklistName;
-            worksheet.Cell(row, 7).Value = item.EvaluatorName ?? "";
-            worksheet.Cell(row, 8).Value = item.EvaluatedPersonnelName ?? "";
-            worksheet.Cell(row, 9).Value = item.EvaluationDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
-            worksheet.Cell(row, 10).Value = item.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "";
-            worksheet.Cell(row, 11).Value = item.DueDate.ToString("dd.MM.yyyy");
-            worksheet.Cell(row, 12).Value = item.TotalScore ?? 0;
-            worksheet.Cell(row, 13).Value = item.MaxScore ?? 0;
-            worksheet.Cell(row, 14).Value = item.ScorePercentage ?? 0;
-            worksheet.Cell(row, 15).Value = item.YellowCardCount;
-            worksheet.Cell(row, 16).Value = item.RedCardCount;
-            worksheet.Cell(row, 17).Value = item.Status;
-            worksheet.Cell(row, 18).Value = item.CallId ?? "";
-            worksheet.Cell(row, 19).Value = item.CallDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
-            worksheet.Cell(row, 20).Value = item.DurationMinutes ?? 0;
-            worksheet.Cell(row, 21).Value = item.Comment ?? "";
+            worksheet.Cell(row, 3).Value = item.ChecklistName;
+            worksheet.Cell(row, 4).Value = item.EvaluatorName ?? "";
+            worksheet.Cell(row, 5).Value = item.EvaluatedPersonnelName ?? "";
+            worksheet.Cell(row, 6).Value = item.EvaluationDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
+            worksheet.Cell(row, 7).Value = item.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "";
+            worksheet.Cell(row, 8).Value = item.DueDate.ToString("dd.MM.yyyy");
+            worksheet.Cell(row, 9).Value = item.TotalScore ?? 0;
+            worksheet.Cell(row, 10).Value = item.MaxScore ?? 0;
+            worksheet.Cell(row, 11).Value = item.ScorePercentage ?? 0;
+            worksheet.Cell(row, 12).Value = item.YellowCardCount;
+            worksheet.Cell(row, 13).Value = item.RedCardCount;
+            worksheet.Cell(row, 14).Value = item.Status;
+            worksheet.Cell(row, 15).Value = item.CallId ?? "";
+            worksheet.Cell(row, 16).Value = item.CallDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
+            worksheet.Cell(row, 17).Value = item.DurationMinutes ?? 0;
+            worksheet.Cell(row, 18).Value = item.Comment ?? "";
             row++;
         }
 
@@ -382,9 +375,6 @@ public class ReportService : IReportService
             AssignmentId = evaluation.AssignmentId,
             ProjectName = evaluation.Assignment.Project?.Name ?? "",
             ProjectCode = evaluation.Assignment.Project?.Code,
-            BranchName = null,
-            BranchCode = null,
-            Region = null,
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
@@ -462,8 +452,7 @@ public class ReportService : IReportService
                 SectionName = a.Question?.Section?.Name ?? "",
                 PenaltyType = a.AppliedPenaltyType.ToString(),
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-                BranchName = null,
-                Region = null,
+                ChecklistName = a.Question?.Section?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
@@ -493,9 +482,6 @@ public class ReportService : IReportService
             .Take(10)
             .ToList();
 
-        // Top penalty branches - Branch system removed, return empty list
-        var topBranches = new List<PenaltyBranchDto>();
-
         // Monthly trend (last 12 months)
         var monthlyTrend = penaltyAnswers
             .Where(a => a.Evaluation.ControlDate.HasValue || a.Evaluation.CompletedAt.HasValue)
@@ -523,7 +509,6 @@ public class ReportService : IReportService
             Summary = summary,
             Penalties = penalties,
             TopPenaltyQuestions = topQuestions,
-            TopPenaltyBranches = topBranches,
             MonthlyTrend = monthlyTrend
         };
     }
@@ -552,7 +537,7 @@ public class ReportService : IReportService
         var penaltiesSheet = workbook.Worksheets.Add("Cezalı Değerlendirmeler");
         var headers = new[]
         {
-            "Tarih", "Proje", "Şube", "Bölge", "Bölüm", "Soru",
+            "Tarih", "Proje", "Kontrol Listesi", "Bölüm", "Soru",
             "Ceza Tipi", "Değerlendirici", "Denetlenen", "Not"
         };
 
@@ -568,14 +553,13 @@ public class ReportService : IReportService
         {
             penaltiesSheet.Cell(row, 1).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             penaltiesSheet.Cell(row, 2).Value = penalty.ProjectName;
-            penaltiesSheet.Cell(row, 3).Value = penalty.BranchName ?? "";
-            penaltiesSheet.Cell(row, 4).Value = penalty.Region ?? "";
-            penaltiesSheet.Cell(row, 5).Value = penalty.SectionName;
-            penaltiesSheet.Cell(row, 6).Value = penalty.QuestionText;
-            penaltiesSheet.Cell(row, 7).Value = penalty.PenaltyType == "YellowCard" ? "Sarı Kart" : "Kırmızı Kart";
-            penaltiesSheet.Cell(row, 8).Value = penalty.EvaluatorName ?? "";
-            penaltiesSheet.Cell(row, 9).Value = penalty.EvaluatedPersonnelName ?? "";
-            penaltiesSheet.Cell(row, 10).Value = penalty.Notes ?? "";
+            penaltiesSheet.Cell(row, 3).Value = penalty.ChecklistName ?? "";
+            penaltiesSheet.Cell(row, 4).Value = penalty.SectionName;
+            penaltiesSheet.Cell(row, 5).Value = penalty.QuestionText;
+            penaltiesSheet.Cell(row, 6).Value = penalty.PenaltyType == "YellowCard" ? "Sarı Kart" : "Kırmızı Kart";
+            penaltiesSheet.Cell(row, 7).Value = penalty.EvaluatorName ?? "";
+            penaltiesSheet.Cell(row, 8).Value = penalty.EvaluatedPersonnelName ?? "";
+            penaltiesSheet.Cell(row, 9).Value = penalty.Notes ?? "";
             row++;
         }
         penaltiesSheet.Columns().AdjustToContents();
@@ -607,31 +591,6 @@ public class ReportService : IReportService
             row++;
         }
         questionsSheet.Columns().AdjustToContents();
-
-        // Top branches sheet
-        var branchesSheet = workbook.Worksheets.Add("En Çok Ceza Alan Şubeler");
-        branchesSheet.Cell(1, 1).Value = "Şube";
-        branchesSheet.Cell(1, 1).Style.Font.Bold = true;
-        branchesSheet.Cell(1, 2).Value = "Bölge";
-        branchesSheet.Cell(1, 2).Style.Font.Bold = true;
-        branchesSheet.Cell(1, 3).Value = "Sarı Kart";
-        branchesSheet.Cell(1, 3).Style.Font.Bold = true;
-        branchesSheet.Cell(1, 4).Value = "Kırmızı Kart";
-        branchesSheet.Cell(1, 4).Style.Font.Bold = true;
-        branchesSheet.Cell(1, 5).Value = "Toplam";
-        branchesSheet.Cell(1, 5).Style.Font.Bold = true;
-
-        row = 2;
-        foreach (var b in report.TopPenaltyBranches)
-        {
-            branchesSheet.Cell(row, 1).Value = b.BranchName;
-            branchesSheet.Cell(row, 2).Value = b.Region ?? "";
-            branchesSheet.Cell(row, 3).Value = b.YellowCardCount;
-            branchesSheet.Cell(row, 4).Value = b.RedCardCount;
-            branchesSheet.Cell(row, 5).Value = b.TotalPenalties;
-            row++;
-        }
-        branchesSheet.Columns().AdjustToContents();
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -687,8 +646,7 @@ public class ReportService : IReportService
             {
                 Id = g.Key!.Value,
                 Name = $"{g.First().FirstName} {g.First().LastName}",
-                Title = null, // User entity'de Title yok
-                BranchName = null
+                Title = null
             })
             .OrderBy(p => p.Name)
             .ToList();
@@ -732,10 +690,8 @@ public class ReportService : IReportService
             {
                 PersonnelId = user.Id,
                 PersonnelName = $"{user.FirstName} {user.LastName}",
-                Title = user.Role.ToString(), // User'da Title yok, Role kullanılabilir
-                Department = null,
-                BranchName = null,
-                Region = null
+                Title = user.Role.ToString(),
+                Department = null
             };
         }
 
@@ -825,8 +781,6 @@ public class ReportService : IReportService
             PersonnelName = $"{user.FirstName} {user.LastName}",
             Title = user.Role.ToString(),
             Department = null,
-            BranchName = null,
-            Region = null,
             TotalEvaluations = evaluations.Count,
             AverageScore = completedScores.Any() ? Math.Round(completedScores.Average(), 2) : 0,
             BestScore = completedScores.Any() ? completedScores.Max() : 0,
@@ -867,26 +821,22 @@ public class ReportService : IReportService
         infoSheet.Cell(3, 2).Value = report.PersonnelName;
         infoSheet.Cell(4, 1).Value = "Unvan:";
         infoSheet.Cell(4, 2).Value = report.Title ?? "-";
-        infoSheet.Cell(5, 1).Value = "Şube:";
-        infoSheet.Cell(5, 2).Value = report.BranchName ?? "-";
-        infoSheet.Cell(6, 1).Value = "Bölge:";
-        infoSheet.Cell(6, 2).Value = report.Region ?? "-";
 
-        infoSheet.Cell(8, 1).Value = "PERFORMANS ÖZETİ";
-        infoSheet.Cell(8, 1).Style.Font.Bold = true;
+        infoSheet.Cell(6, 1).Value = "PERFORMANS ÖZETİ";
+        infoSheet.Cell(6, 1).Style.Font.Bold = true;
 
-        infoSheet.Cell(9, 1).Value = "Toplam Değerlendirme:";
-        infoSheet.Cell(9, 2).Value = report.TotalEvaluations;
-        infoSheet.Cell(10, 1).Value = "Ortalama Puan:";
-        infoSheet.Cell(10, 2).Value = $"{report.AverageScore:F1}%";
-        infoSheet.Cell(11, 1).Value = "En Yüksek Puan:";
-        infoSheet.Cell(11, 2).Value = $"{report.BestScore:F1}%";
-        infoSheet.Cell(12, 1).Value = "En Düşük Puan:";
-        infoSheet.Cell(12, 2).Value = $"{report.WorstScore:F1}%";
-        infoSheet.Cell(13, 1).Value = "Toplam Sarı Kart:";
-        infoSheet.Cell(13, 2).Value = report.TotalYellowCards;
-        infoSheet.Cell(14, 1).Value = "Toplam Kırmızı Kart:";
-        infoSheet.Cell(14, 2).Value = report.TotalRedCards;
+        infoSheet.Cell(7, 1).Value = "Toplam Değerlendirme:";
+        infoSheet.Cell(7, 2).Value = report.TotalEvaluations;
+        infoSheet.Cell(8, 1).Value = "Ortalama Puan:";
+        infoSheet.Cell(8, 2).Value = $"{report.AverageScore:F1}%";
+        infoSheet.Cell(9, 1).Value = "En Yüksek Puan:";
+        infoSheet.Cell(9, 2).Value = $"{report.BestScore:F1}%";
+        infoSheet.Cell(10, 1).Value = "En Düşük Puan:";
+        infoSheet.Cell(10, 2).Value = $"{report.WorstScore:F1}%";
+        infoSheet.Cell(11, 1).Value = "Toplam Sarı Kart:";
+        infoSheet.Cell(11, 2).Value = report.TotalYellowCards;
+        infoSheet.Cell(12, 1).Value = "Toplam Kırmızı Kart:";
+        infoSheet.Cell(12, 2).Value = report.TotalRedCards;
 
         infoSheet.Columns().AdjustToContents();
 
@@ -1098,8 +1048,6 @@ public class ReportService : IReportService
                 ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
                 : null,
             ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-            BranchName = null,
-            Region = null,
             EvaluatorName = a.Evaluation.Evaluator != null
                 ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                 : null,
@@ -1209,7 +1157,7 @@ public class ReportService : IReportService
         var detailsSheet = workbook.Worksheets.Add("Öneriler Listesi");
         var headers = new[]
         {
-            "Tarih", "Proje", "Şube", "Bölge", "Kontrol Listesi", "Bölüm", "Soru",
+            "Tarih", "Proje", "Kontrol Listesi", "Bölüm", "Soru",
             "Notlar", "Öneri", "Verilen Puan", "Maks Puan", "Yüzde",
             "Değerlendirici", "Personel", "Çağrı ID", "Ceza"
         };
@@ -1226,20 +1174,18 @@ public class ReportService : IReportService
         {
             detailsSheet.Cell(row, 1).Value = item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             detailsSheet.Cell(row, 2).Value = item.ProjectName;
-            detailsSheet.Cell(row, 3).Value = item.BranchName ?? "";
-            detailsSheet.Cell(row, 4).Value = item.Region ?? "";
-            detailsSheet.Cell(row, 5).Value = item.ChecklistName;
-            detailsSheet.Cell(row, 6).Value = item.SectionName;
-            detailsSheet.Cell(row, 7).Value = item.QuestionText;
-            detailsSheet.Cell(row, 8).Value = item.Notes ?? "";
-            detailsSheet.Cell(row, 9).Value = item.RecommendationNotes ?? "";
-            detailsSheet.Cell(row, 10).Value = item.GivenPoints ?? 0;
-            detailsSheet.Cell(row, 11).Value = item.MaxPoints ?? 0;
-            detailsSheet.Cell(row, 12).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F1}%" : "";
-            detailsSheet.Cell(row, 13).Value = item.EvaluatorName ?? "";
-            detailsSheet.Cell(row, 14).Value = item.EvaluatedPersonnelName ?? "";
-            detailsSheet.Cell(row, 15).Value = item.CallId ?? "";
-            detailsSheet.Cell(row, 16).Value = item.PenaltyType ?? "";
+            detailsSheet.Cell(row, 3).Value = item.ChecklistName;
+            detailsSheet.Cell(row, 4).Value = item.SectionName;
+            detailsSheet.Cell(row, 5).Value = item.QuestionText;
+            detailsSheet.Cell(row, 6).Value = item.Notes ?? "";
+            detailsSheet.Cell(row, 7).Value = item.RecommendationNotes ?? "";
+            detailsSheet.Cell(row, 8).Value = item.GivenPoints ?? 0;
+            detailsSheet.Cell(row, 9).Value = item.MaxPoints ?? 0;
+            detailsSheet.Cell(row, 10).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F1}%" : "";
+            detailsSheet.Cell(row, 11).Value = item.EvaluatorName ?? "";
+            detailsSheet.Cell(row, 12).Value = item.EvaluatedPersonnelName ?? "";
+            detailsSheet.Cell(row, 13).Value = item.CallId ?? "";
+            detailsSheet.Cell(row, 14).Value = item.PenaltyType ?? "";
             row++;
         }
 

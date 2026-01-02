@@ -154,10 +154,23 @@ function CustomersViewModel() {
             : customerApiService.createCustomer(customer);
 
         promise
-            .then(function() {
-                self.successMessage(customer.id ? T('Customer.UpdateSuccess', 'Müşteri başarıyla güncellendi.') : T('Customer.SaveSuccess', 'Müşteri başarıyla oluşturuldu.'));
+            .then(function(savedCustomer) {
+                var isNew = !customer.id;
+                if (isNew) {
+                    // Yeni kayıt: array'e ekle
+                    self.customers.push(savedCustomer);
+                } else {
+                    // Güncelleme: array'de bul ve güncelle
+                    var list = self.customers();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedCustomer.id) {
+                            self.customers.splice(i, 1, savedCustomer);
+                            break;
+                        }
+                    }
+                }
+                self.successMessage(isNew ? T('Customer.SaveSuccess', 'Müşteri başarıyla oluşturuldu.') : T('Customer.UpdateSuccess', 'Müşteri başarıyla güncellendi.'));
                 self.isModalOpen(false);
-                self.loadCustomers();
             })
             .catch(function(error) {
                 console.error('Error saving customer:', error);
@@ -182,8 +195,9 @@ function CustomersViewModel() {
             function() {
                 customerApiService.deleteCustomer(customer.id)
                     .then(function() {
+                        // Array'den sil
+                        self.customers.remove(function(c) { return c.id === customer.id; });
                         self.successMessage(T('Customer.DeleteSuccess', 'Müşteri başarıyla silindi.'));
-                        self.loadCustomers();
                     })
                     .catch(function(error) {
                         console.error('Error deleting customer:', error);
@@ -730,10 +744,23 @@ function CustomersViewModel() {
         }
 
         promise
-            .then(function() {
-                self.orgModalSuccessMessage(org.id ? T('Organization.UpdateSuccess', 'Organizasyon güncellendi.') : T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.'));
+            .then(function(savedOrg) {
+                var isNew = !org.id;
+                if (isNew) {
+                    // Yeni kayıt: array'e ekle
+                    self.organizations.push(savedOrg);
+                } else {
+                    // Güncelleme: array'de bul ve güncelle
+                    var list = self.organizations();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedOrg.id) {
+                            self.organizations.splice(i, 1, savedOrg);
+                            break;
+                        }
+                    }
+                }
+                self.orgModalSuccessMessage(isNew ? T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.') : T('Organization.UpdateSuccess', 'Organizasyon güncellendi.'));
                 self.closeOrgFormModal();
-                self.loadOrganizations(self.selectedCustomerForOrg().id);
             })
             .catch(function(error) {
                 console.error('Error saving organization:', error);
@@ -751,8 +778,9 @@ function CustomersViewModel() {
             function() {
                 ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
+                        // Array'den sil
+                        self.organizations.remove(function(o) { return o.id === org.id; });
                         self.orgModalSuccessMessage(T('Organization.DeleteSuccess', 'Organizasyon silindi.'));
-                        self.loadOrganizations(self.selectedCustomerForOrg().id);
                         if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
                             self.selectedOrganization(null);
                             self.orgPersonnelList({ supervisors: [], operators: [] });
@@ -1120,7 +1148,14 @@ function CustomersViewModel() {
     document.addEventListener('keydown', self.handleEscapeKey);
 
     // Initialize
-    self.loadCustomers();
+    self.init = function() {
+        // Önce EnumsService'i yükle, sonra diğer verileri çek
+        EnumsService.load().then(function() {
+            self.loadCustomers();
+        });
+    };
+
+    self.init();
 }
 
 // Apply bindings when DOM is ready

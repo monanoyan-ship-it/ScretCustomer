@@ -58,10 +58,6 @@
                             <small class="text-muted d-block">@Html.T("Common.Phone", "Telefon")</small>
                             <span data-bind="text: profile().phoneNumber || '-'"></span>
                         </div>
-                        <div class="mb-3" data-bind="visible: profile().branchName">
-                            <small class="text-muted d-block">@Html.T("Branch.BranchName", "Şube")</small>
-                            <span data-bind="text: profile().branchName"></span>
-                        </div>
                         <div>
                             <small class="text-muted d-block">@Html.T("Profile.RegistrationDate", "Kayıt Tarihi")</small>
                             <span data-bind="text: formatDate(profile().createdAt)"></span>

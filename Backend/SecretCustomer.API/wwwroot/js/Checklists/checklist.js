@@ -78,9 +78,7 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     base.templateName = ko.observable(data.templateName || '');
     base.checklistType = ko.observable(data.checklistType || 'CallPerformance');
     base.scoringMethod = ko.observable(data.scoringMethod || 'Maximum');
-    base.likertScale = ko.observable(data.likertScale || 5); // Likert ölçeği (0-5)
     base.maxTotalPoints = ko.observable(data.maxTotalPoints || 100);
-    base.estimatedDurationMinutes = ko.observable(data.estimatedDurationMinutes || 30);
     base.validFrom = ko.observable(data.validFrom ? data.validFrom.split('T')[0] : '');
     base.validUntil = ko.observable(data.validUntil ? data.validUntil.split('T')[0] : '');
     // Firma ve Organizasyon
@@ -126,6 +124,7 @@ function ChecklistViewModel() {
     self.customers = ko.observableArray([]);
     self.organizations = ko.observableArray([]);
     self.selectedCustomerId = ko.observable(null);
+    self._isLoadingChecklist = false; // Düzenleme sırasında org sıfırlamayı engelle
 
     // Arama/Filtreleme
     self.searchText = ko.observable('');
@@ -156,14 +155,18 @@ function ChecklistViewModel() {
             // Checklist'teki customerId'yi güncelle
             if (self.editingChecklist()) {
                 self.editingChecklist().customerId(customerId);
-                // Firma değiştiğinde organizasyon seçimini sıfırla
-                self.editingChecklist().customerOrganizationId(null);
+                // Sadece kullanıcı manuel değiştirdiyse organizasyonu sıfırla (düzenleme yüklemesinde değil)
+                if (!self._isLoadingChecklist) {
+                    self.editingChecklist().customerOrganizationId(null);
+                }
             }
         } else {
             self.organizations([]);
             if (self.editingChecklist()) {
                 self.editingChecklist().customerId(null);
-                self.editingChecklist().customerOrganizationId(null);
+                if (!self._isLoadingChecklist) {
+                    self.editingChecklist().customerOrganizationId(null);
+                }
             }
         }
     });
@@ -271,27 +274,44 @@ function ChecklistViewModel() {
         self.modalErrorMessage('');
         self.wizardStep(1);
         self.isLoading(true);
+        self._isLoadingChecklist = true; // Subscriber'ın org sıfırlamasını engelle
 
         // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
         apiService.get('/checklists/' + checklist.id)
             .then(function (fullChecklist) {
-                self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                // Firma ve organizasyon seçimini ayarla
                 if (fullChecklist.customerId) {
-                    self.loadOrganizations(fullChecklist.customerId);
-                    self.selectedCustomerId(fullChecklist.customerId);
+                    // Organizasyonları yükle ve sonra checklist'i oluştur
+                    apiService.get('/customer-organizations/by-customer/' + fullChecklist.customerId)
+                        .then(function (orgs) {
+                            self.organizations(orgs);
+                            self.selectedCustomerId(fullChecklist.customerId);
+                            self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
+                            self.isModalOpen(true);
+                            self.isLoading(false);
+                            self._isLoadingChecklist = false;
+                        })
+                        .catch(function () {
+                            self.organizations([]);
+                            self.selectedCustomerId(fullChecklist.customerId);
+                            self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
+                            self.isModalOpen(true);
+                            self.isLoading(false);
+                            self._isLoadingChecklist = false;
+                        });
                 } else {
                     self.selectedCustomerId(null);
                     self.organizations([]);
+                    self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
+                    self.isModalOpen(true);
+                    self.isLoading(false);
+                    self._isLoadingChecklist = false;
                 }
-                self.isModalOpen(true);
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
                 self.errorMessage('Kontrol listesi yuklenirken bir hata olustu.');
-            })
-            .finally(function () {
                 self.isLoading(false);
+                self._isLoadingChecklist = false;
             });
     };
 
@@ -299,6 +319,7 @@ function ChecklistViewModel() {
         self.modalErrorMessage('');
         self.wizardStep(1);
         self.isLoading(true);
+        self._isLoadingChecklist = true;
 
         // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
         apiService.get('/checklists/' + checklist.id)
@@ -320,23 +341,39 @@ function ChecklistViewModel() {
                     });
                 });
 
-                self.editingChecklist(new ChecklistModel(cloneData));
                 // Firma ve organizasyon seçimini ayarla (klonlama sırasında korunur)
                 if (fullChecklist.customerId) {
-                    self.loadOrganizations(fullChecklist.customerId);
-                    self.selectedCustomerId(fullChecklist.customerId);
+                    apiService.get('/customer-organizations/by-customer/' + fullChecklist.customerId)
+                        .then(function (orgs) {
+                            self.organizations(orgs);
+                            self.selectedCustomerId(fullChecklist.customerId);
+                            self.editingChecklist(new ChecklistModel(cloneData));
+                            self.isModalOpen(true);
+                            self.isLoading(false);
+                            self._isLoadingChecklist = false;
+                        })
+                        .catch(function () {
+                            self.organizations([]);
+                            self.selectedCustomerId(fullChecklist.customerId);
+                            self.editingChecklist(new ChecklistModel(cloneData));
+                            self.isModalOpen(true);
+                            self.isLoading(false);
+                            self._isLoadingChecklist = false;
+                        });
                 } else {
                     self.selectedCustomerId(null);
                     self.organizations([]);
+                    self.editingChecklist(new ChecklistModel(cloneData));
+                    self.isModalOpen(true);
+                    self.isLoading(false);
+                    self._isLoadingChecklist = false;
                 }
-                self.isModalOpen(true);
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
                 self.errorMessage('Kontrol listesi yuklenirken bir hata olustu.');
-            })
-            .finally(function () {
                 self.isLoading(false);
+                self._isLoadingChecklist = false;
             });
     };
 
@@ -526,9 +563,22 @@ function ChecklistViewModel() {
 
         promise
             .then(function (savedChecklist) {
+                var isNew = !data.id;
+                if (isNew) {
+                    // Yeni kayıt: array'e ekle
+                    self.checklists.push(savedChecklist);
+                } else {
+                    // Güncelleme: array'de bul ve güncelle
+                    var list = self.checklists();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedChecklist.id) {
+                            self.checklists.splice(i, 1, savedChecklist);
+                            break;
+                        }
+                    }
+                }
                 self.successMessage('Kontrol listesi basariyla kaydedildi.');
                 self.closeModal();
-                self.loadChecklists();
             })
             .catch(function (error) {
                 console.error('Save error:', error);
@@ -554,8 +604,15 @@ function ChecklistViewModel() {
     };
 
     // Initialize
-    self.loadChecklists();
-    self.loadCustomers();
+    self.init = function() {
+        // Önce EnumsService'i yükle, sonra diğer verileri çek
+        EnumsService.load().then(function() {
+            self.loadChecklists();
+            self.loadCustomers();
+        });
+    };
+
+    self.init();
 }
 
 // Apply bindings when DOM is ready

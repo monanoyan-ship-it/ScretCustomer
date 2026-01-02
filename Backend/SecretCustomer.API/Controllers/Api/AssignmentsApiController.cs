@@ -247,11 +247,17 @@ public class AssignmentsApiController : BaseApiController
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
+                _logger.LogWarning("GetMyAssignments: User ID claim not found or invalid. Claim value: {Claim}", userIdClaim);
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
+            _logger.LogInformation("GetMyAssignments: Fetching assignments for userId={UserId}", userId);
+
             // User ID ile kendi atamalarını getir
             var assignments = await _assignmentService.GetByUserIdAsync(userId);
+
+            _logger.LogInformation("GetMyAssignments: Found {Count} assignments for userId={UserId}",
+                assignments?.Count() ?? 0, userId);
 
             return Ok(assignments);
         }

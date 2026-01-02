@@ -53,13 +53,11 @@ public class ChecklistService : IChecklistService
             // Kontrol listesi ayarları
             ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance,
             ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum,
-            LikertScale = dto.LikertScale,
             MaxTotalPoints = dto.MaxTotalPoints,
             Code = dto.Code,
             TemplateName = dto.TemplateName,
             ValidFrom = ToUtc(dto.ValidFrom),
             ValidUntil = ToUtc(dto.ValidUntil),
-            EstimatedDurationMinutes = dto.EstimatedDurationMinutes,
             // Firma ve Organizasyon
             CustomerId = dto.CustomerId,
             CustomerOrganizationId = dto.CustomerOrganizationId,
@@ -105,13 +103,11 @@ public class ChecklistService : IChecklistService
         // Kontrol listesi ayarları
         existing.ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance;
         existing.ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum;
-        existing.LikertScale = dto.LikertScale;
         existing.MaxTotalPoints = dto.MaxTotalPoints;
         existing.Code = dto.Code;
         existing.TemplateName = dto.TemplateName;
         existing.ValidFrom = ToUtc(dto.ValidFrom);
         existing.ValidUntil = ToUtc(dto.ValidUntil);
-        existing.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
         // Firma ve Organizasyon
         existing.CustomerId = dto.CustomerId;
         existing.CustomerOrganizationId = dto.CustomerOrganizationId;
@@ -146,13 +142,11 @@ public class ChecklistService : IChecklistService
             // Kontrol listesi ayarları
             ChecklistType = original.ChecklistType,
             ScoringMethod = original.ScoringMethod,
-            LikertScale = original.LikertScale,
             MaxTotalPoints = original.MaxTotalPoints,
             Code = original.Code,
             TemplateName = original.TemplateName,
             ValidFrom = original.ValidFrom,
             ValidUntil = original.ValidUntil,
-            EstimatedDurationMinutes = original.EstimatedDurationMinutes,
             CustomerId = original.CustomerId,
             CustomerOrganizationId = original.CustomerOrganizationId,
             // Soruları kopyala
@@ -314,13 +308,11 @@ public class ChecklistService : IChecklistService
             ChecklistTypeName = GetChecklistTypeName(checklist.ChecklistType),
             ScoringMethod = checklist.ScoringMethod.ToString(),
             ScoringMethodName = GetScoringMethodName(checklist.ScoringMethod),
-            LikertScale = checklist.LikertScale,
             MaxTotalPoints = checklist.MaxTotalPoints,
             Code = checklist.Code,
             TemplateName = checklist.TemplateName,
             ValidFrom = checklist.ValidFrom,
             ValidUntil = checklist.ValidUntil,
-            EstimatedDurationMinutes = checklist.EstimatedDurationMinutes,
             // Firma ve Organizasyon
             CustomerId = checklist.CustomerId,
             CustomerName = checklist.Customer?.CompanyName,

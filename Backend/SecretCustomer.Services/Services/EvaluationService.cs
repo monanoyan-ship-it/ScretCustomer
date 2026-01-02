@@ -201,6 +201,8 @@ public class EvaluationService : IEvaluationService
             .Include(a => a.Project)
                 .ThenInclude(p => p.Customer)
             .Include(a => a.Checklist)
+                .ThenInclude(c => c.CustomerOrganization)
+            .Include(a => a.Checklist)
                 .ThenInclude(c => c.Sections.Where(s => s.IsActive))
                     .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted))
             .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
@@ -213,35 +215,47 @@ public class EvaluationService : IEvaluationService
             .Include(e => e.Answers)
             .FirstOrDefaultAsync(e => e.AssignmentId == assignmentId && !e.IsDeleted);
 
-        // Get available organizations based on checklist's customer
-        // Organizasyon seçimi ZORUNLU - önce organizasyon seç, sonra personel
-        var organizationsQuery = _context.CustomerOrganizations
-            .Where(co => !co.IsDeleted && co.IsActive);
+        // Organizasyon artık Checklist'ten geliyor
+        var organizations = new List<OrganizationOptionDto>();
+        int? selectedOrganizationId = existingEvaluation?.EvaluatedOrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
 
-        // Checklist'te firma belirtilmişse o firmaya göre filtrele
-        if (assignment.Checklist?.CustomerId.HasValue == true)
+        // Checklist'te organizasyon seçiliyse sadece o organizasyonu göster
+        if (assignment.Checklist?.CustomerOrganizationId.HasValue == true)
         {
-            organizationsQuery = organizationsQuery.Where(co => co.CustomerId == assignment.Checklist.CustomerId);
+            var org = await _context.CustomerOrganizations
+                .Where(co => co.Id == assignment.Checklist.CustomerOrganizationId && !co.IsDeleted)
+                .Select(co => new OrganizationOptionDto
+                {
+                    Id = co.Id,
+                    Name = co.Name,
+                    Code = co.Code,
+                    Level = co.Level,
+                    PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
+                })
+                .FirstOrDefaultAsync();
+            if (org != null)
+                organizations.Add(org);
+        }
+        // Organizasyon seçilmemişse checklist'in customer'ına göre tüm organizasyonları göster
+        else if (assignment.Checklist?.CustomerId.HasValue == true)
+        {
+            organizations = await _context.CustomerOrganizations
+                .Where(co => !co.IsDeleted && co.IsActive && co.CustomerId == assignment.Checklist.CustomerId)
+                .Select(co => new OrganizationOptionDto
+                {
+                    Id = co.Id,
+                    Name = co.Name,
+                    Code = co.Code,
+                    Level = co.Level,
+                    PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
+                })
+                .OrderBy(o => o.Level)
+                .ThenBy(o => o.Name)
+                .ToListAsync();
         }
 
-        var organizations = await organizationsQuery
-            .Select(co => new OrganizationOptionDto
-            {
-                Id = co.Id,
-                Name = co.Name,
-                Code = co.Code,
-                Level = co.Level,
-                PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
-            })
-            .OrderBy(o => o.Level)
-            .ThenBy(o => o.Name)
-            .ToListAsync();
-
-        // Personel listesi başlangıçta boş - organizasyon seçildikten sonra API ile doldurulacak
+        // Personel listesi - organizasyon seçiliyse yükle
         var personnel = new List<PersonnelOptionDto>();
-
-        // Eğer mevcut değerlendirmede organizasyon seçiliyse, o organizasyonun personelini yükle
-        int? selectedOrganizationId = existingEvaluation?.EvaluatedOrganizationId;
         if (selectedOrganizationId.HasValue)
         {
             personnel = await GetPersonnelByOrganizationAsync(selectedOrganizationId.Value);
@@ -276,7 +290,6 @@ public class EvaluationService : IEvaluationService
             ChecklistType = assignment.Checklist?.ChecklistType.ToString(),
             ScoringMethod = assignment.Checklist?.ScoringMethod.ToString(),
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
-            EstimatedDurationMinutes = assignment.Checklist?.EstimatedDurationMinutes,
             CallId = existingEvaluation?.CallId,
             CallDate = existingEvaluation?.CallDate,
             DurationMinutes = existingEvaluation?.DurationMinutes,
@@ -749,8 +762,10 @@ public class EvaluationService : IEvaluationService
             ControlDate = evaluation.ControlDate,
             ControlTime = evaluation.ControlTime,
             ProjectName = evaluation.Assignment?.Project?.Name,
-            BranchName = null,
             ChecklistName = evaluation.Assignment?.Checklist?.Name,
+            AssigneeName = evaluation.Assignment?.AssignedUser != null
+                ? $"{evaluation.Assignment.AssignedUser.FirstName} {evaluation.Assignment.AssignedUser.LastName}"
+                : null,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };
     }
@@ -766,14 +781,15 @@ public class EvaluationService : IEvaluationService
                          cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == organizationId))
             // Süpervizörleri hariç tut
             .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+            .OrderBy(cp => cp.FirstName)
+            .ThenBy(cp => cp.LastName)
             .Select(cp => new PersonnelOptionDto
             {
                 Id = cp.Id,
-                Name = $"{cp.FirstName} {cp.LastName}",
-                Title = cp.Title ?? cp.Role.ToString(),
+                Name = cp.FirstName + " " + cp.LastName,
+                Title = cp.Title ?? "",
                 OrganizationId = cp.OrganizationId
             })
-            .OrderBy(p => p.Name)
             .ToListAsync();
 
         return personnel;

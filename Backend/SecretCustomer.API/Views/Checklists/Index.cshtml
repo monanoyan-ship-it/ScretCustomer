@@ -76,7 +76,6 @@
                                 <th>@Html.T("Checklist.Name", "Adı")</th>
                                 <th>@Html.T("Common.Customer", "Firma")</th>
                                 <th class="text-center">@Html.T("Checklist.Questions", "Soru")</th>
-                                <th class="text-center">@Html.T("Checklist.LikertScale", "Ölçek")</th>
                                 <th class="text-center">@Html.T("Common.Version", "Versiyon")</th>
                                 <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                 <th class="text-center" style="width: 150px;">@Html.T("Common.Actions", "İşlemler")</th>
@@ -101,9 +100,6 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-info" data-bind="text: questionCount || (questions && questions.length) || 0"></span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-secondary" data-bind="text: '0-' + (likertScale || 5)"></span>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-secondary">v<span data-bind="text: version || 1"></span></span>
@@ -236,44 +232,30 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">@Html.T("Checklist.LikertScale", "Likert Ölçeği")</label>
-                            <select class="form-select" data-bind="value: likertScale">
-                                <option value="3">0-3</option>
-                                <option value="4">0-4</option>
-                                <option value="5">0-5</option>
-                                <option value="7">0-7</option>
-                                <option value="10">0-10</option>
-                            </select>
-                            <small class="text-muted">@Html.T("Checklist.LikertScaleHelp", "Değerlendirme ölçeği")</small>
-                        </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">@Html.T("Checklist.MaxTotalPoints", "Maks. Toplam Puan")</label>
                             <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" />
+                            <small class="text-muted">@Html.T("Checklist.MaxTotalPointsHelp", "Varsayılan: 100")</small>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">@Html.T("Checklist.EstimatedDuration", "Tahmini Süre (dk)")</label>
-                            <input type="number" class="form-control" data-bind="value: estimatedDurationMinutes" min="0" />
-                        </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">@Html.T("Checklist.ValidFrom", "Geçerlilik Başlangıç")</label>
                             <input type="date" class="form-control" data-bind="value: validFrom" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">@Html.T("Checklist.ValidUntil", "Geçerlilik Bitiş")</label>
+                            <input type="date" class="form-control" data-bind="value: validUntil" />
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">@Html.T("Checklist.ValidUntil", "Geçerlilik Bitiş")</label>
-                            <input type="date" class="form-control" data-bind="value: validUntil" />
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-check mt-4">
+                        <div class="col-md-4">
+                            <div class="form-check mt-2">
                                 <input type="checkbox" class="form-check-input" data-bind="checked: isScored" id="isScored" />
                                 <label class="form-check-label" for="isScored">@Html.T("Checklist.IsScored", "Puanlı")</label>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-check mt-4">
+                        <div class="col-md-4">
+                            <div class="form-check mt-2">
                                 <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
                                 <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                             </div>
@@ -281,7 +263,7 @@
                     </div>
 
                     <hr class="my-3" />
-                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-building"></i> @Html.T("Checklist.CustomerAndOrg", "Firma ve Organizasyon")</h6>
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-building"></i> @Html.T("Common.Customer", "Firma")</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Common.Customer", "Firma")</label>
@@ -290,8 +272,8 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Common.Organization", "Organizasyon/Şube")</label>
-                            <select class="form-select" data-bind="value: customerOrganizationId, options: $root.organizations, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOrg", "-- Organizasyon Seçin (Tümü) --")', enable: $root.selectedCustomerId()"></select>
-                            <small class="text-muted">@Html.T("Checklist.OrgHelp", "Boş bırakılırsa seçili firmadaki tüm organizasyonlar için geçerli olur")</small>
+                            <select class="form-select" data-bind="value: customerOrganizationId, options: $root.organizations, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOrganization", "-- Organizasyon Seçin (Tümü) --")', enable: $root.selectedCustomerId()"></select>
+                            <small class="text-muted">@Html.T("Checklist.OrganizationHelp", "Boş bırakılırsa tüm organizasyonlar için geçerli olur")</small>
                         </div>
                     </div>
                 </div>
@@ -531,10 +513,9 @@
                                 <tr><th>@Html.T("Checklist.TemplateName", "Şablon"):</th><td data-bind="text: templateName || '-'"></td></tr>
                                 <tr><th>@Html.T("Checklist.Type", "Tip"):</th><td data-bind="text: checklistType"></td></tr>
                                 <tr><th>@Html.T("Checklist.ScoringMethod", "Puanlama Yöntemi"):</th><td data-bind="text: scoringMethod"></td></tr>
-                                <tr><th>@Html.T("Checklist.LikertScale", "Likert Ölçeği"):</th><td>0-<span data-bind="text: likertScale"></span></td></tr>
                                 <tr><th>@Html.T("Checklist.MaxTotalPoints", "Maks. Puan"):</th><td data-bind="text: maxTotalPoints"></td></tr>
                                 <tr><th>@Html.T("Common.Customer", "Firma"):</th><td data-bind="text: $parent.getSelectedCustomerName() || '@Html.T("Checklist.General", "Genel")'"></td></tr>
-                                <tr><th>@Html.T("Common.Organization", "Organizasyon"):</th><td data-bind="text: $parent.getSelectedOrganizationName() || '@Html.T("Checklist.AllOrgs", "Tümü")'"></td></tr>
+                                <tr><th>@Html.T("Common.Organization", "Organizasyon"):</th><td data-bind="text: $parent.getSelectedOrganizationName() || '@Html.T("Checklist.AllOrganizations", "Tüm Organizasyonlar")'"></td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
@@ -544,7 +525,6 @@
                                 <tr><th>@Html.T("Checklist.YellowCardQuestions", "Sarı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'YellowCard'; }).length"></td></tr>
                                 <tr><th>@Html.T("Checklist.RedCardQuestions", "Kırmızı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).length"></td></tr>
                                 <tr><th>@Html.T("Checklist.TotalWeightPoints", "Toplam Ağırlık Puanı"):</th><td data-bind="text: questions().reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></td></tr>
-                                <tr><th>@Html.T("Checklist.EstimatedDuration", "Tahmini Süre"):</th><td><span data-bind="text: estimatedDurationMinutes || '-'"></span> @Html.T("Checklist.Minutes", "dk")</td></tr>
                                 <tr><th>@Html.T("Common.Status", "Durum"):</th><td><span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span></td></tr>
                             </table>
                         </div>
@@ -617,7 +597,6 @@
                 <div class="mb-3">
                     <span class="badge bg-secondary">@Html.T("Checklist.Version", "Versiyon"): <span data-bind="text: version"></span></span>
                     <span class="badge bg-info ms-2"><span data-bind="text: questionCount || (questions && questions.length) || 0"></span> @Html.T("Checklist.Questions", "Soru")</span>
-                    <span class="badge bg-primary ms-2">@Html.T("Checklist.LikertScale", "Ölçek"): 0-<span data-bind="text: likertScale || 5"></span></span>
                 </div>
 
                 <hr>
@@ -677,6 +656,7 @@
 @section Scripts {
     <script src="~/js/Shared/app.config.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/enums.service.js"></script>
     <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/Checklists/checklist.js"></script>
 }

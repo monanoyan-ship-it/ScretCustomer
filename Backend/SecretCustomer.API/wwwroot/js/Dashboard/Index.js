@@ -15,10 +15,7 @@ function DashboardViewModel() {
         totalEvaluations: 0,
         averageScore: 0,
         percentageChange: 0,
-        topBranches: [],
-        bottomBranches: [],
-        monthlyTrends: [],
-        branchComparisons: []
+        monthlyTrends: []
     });
 
     // Scorecard data
@@ -75,27 +72,8 @@ function DashboardViewModel() {
     // Announcements
     self.announcements = ko.observableArray([]);
 
-    // Branch search
-    self.branchSearchTerm = ko.observable('');
-
-    // Filtered branches for table
-    self.filteredBranches = ko.computed(function() {
-        var searchTerm = self.branchSearchTerm().toLowerCase();
-        var branches = self.stats().branchComparisons || [];
-
-        if (!searchTerm) {
-            return branches;
-        }
-
-        return branches.filter(function(branch) {
-            return branch.branchName.toLowerCase().indexOf(searchTerm) !== -1 ||
-                   branch.region.toLowerCase().indexOf(searchTerm) !== -1;
-        });
-    });
-
     // Chart instances
     var monthlyTrendChart = null;
-    var branchComparisonChart = null;
 
     // Flag to track if user has admin access
     self.hasAdminAccess = ko.observable(true);
@@ -148,7 +126,6 @@ function DashboardViewModel() {
     // Update charts with new data
     self.updateCharts = function(data) {
         self.updateMonthlyTrendChart(data.monthlyTrends || []);
-        self.updateBranchComparisonChart(data.topBranches || []);
     };
 
     // Monthly Trend Chart (Line Chart)
@@ -236,74 +213,6 @@ function DashboardViewModel() {
                         },
                         grid: {
                             drawOnChartArea: false
-                        }
-                    }
-                }
-            }
-        });
-    };
-
-    // Branch Comparison Chart (Horizontal Bar Chart)
-    self.updateBranchComparisonChart = function(topBranches) {
-        var ctx = document.getElementById('branchComparisonChart');
-        if (!ctx) return;
-
-        // Destroy existing chart
-        if (branchComparisonChart) {
-            branchComparisonChart.destroy();
-        }
-
-        var labels = topBranches.map(function(b) { return b.branchName; });
-        var scores = topBranches.map(function(b) { return b.averageScore; });
-
-        // Generate colors based on score
-        var backgroundColors = scores.map(function(score) {
-            if (score >= 70) return 'rgba(40, 167, 69, 0.7)';
-            if (score >= 50) return 'rgba(255, 193, 7, 0.7)';
-            return 'rgba(220, 53, 69, 0.7)';
-        });
-
-        var borderColors = scores.map(function(score) {
-            if (score >= 70) return 'rgb(40, 167, 69)';
-            if (score >= 50) return 'rgb(255, 193, 7)';
-            return 'rgb(220, 53, 69)';
-        });
-
-        branchComparisonChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: T('Dashboard.AverageScore', 'Ortalama Puan (%)'),
-                    data: scores,
-                    backgroundColor: backgroundColors,
-                    borderColor: borderColors,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return T('Dashboard.Score', 'Puan') + ': ' + context.raw.toFixed(1) + '%';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        min: 0,
-                        max: 100,
-                        title: {
-                            display: true,
-                            text: T('Dashboard.Score', 'Puan (%)')
                         }
                     }
                 }

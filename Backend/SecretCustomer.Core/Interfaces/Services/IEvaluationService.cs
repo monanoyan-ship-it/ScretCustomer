@@ -83,7 +83,6 @@ public class EvaluationFormDto
     public string? ChecklistType { get; set; }
     public string? ScoringMethod { get; set; }
     public decimal MaxTotalPoints { get; set; }
-    public int? EstimatedDurationMinutes { get; set; }
 
     // Çağrı bilgileri (mevcut değerlendirmeden)
     public string? CallId { get; set; }

@@ -300,18 +300,39 @@ function CustomerOrganizationsViewModel() {
             customerId: org.customerId
         };
 
+        var isNew = !org.id;
         var promise;
-        if (org.id) {
-            promise = ApiService.put('/customer-organizations/' + org.id, data);
-        } else {
+        if (isNew) {
             promise = ApiService.post('/customer-organizations', data);
+        } else {
+            promise = ApiService.put('/customer-organizations/' + org.id, data);
         }
 
         promise
-            .then(function(result) {
+            .then(function(savedOrg) {
                 self.closeModal();
-                self.loadOrganizations(self.selectedCustomer().id);
-                toastr.success(org.id ? 'Organizasyon güncellendi.' : 'Organizasyon oluşturuldu.');
+
+                if (isNew) {
+                    // Yeni kayit: array'e ekle
+                    savedOrg.isSelected = ko.observable(false);
+                    self.organizations.push(savedOrg);
+                    // Update customer's organization count
+                    if (self.selectedCustomer()) {
+                        self.selectedCustomer().organizationCount++;
+                    }
+                } else {
+                    // Guncelleme: array'de bul ve guncelle
+                    var list = self.organizations();
+                    for (var i = 0; i < list.length; i++) {
+                        if (list[i].id === savedOrg.id) {
+                            savedOrg.isSelected = list[i].isSelected;
+                            self.organizations.splice(i, 1, savedOrg);
+                            break;
+                        }
+                    }
+                }
+
+                toastr.success(isNew ? 'Organizasyon oluşturuldu.' : 'Organizasyon güncellendi.');
             })
             .catch(function(error) {
                 console.error('Error saving organization:', error);
@@ -338,7 +359,14 @@ function CustomerOrganizationsViewModel() {
             function() {
                 ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
-                        self.loadOrganizations(self.selectedCustomer().id);
+                        // Array'den sil
+                        self.organizations.remove(org);
+
+                        // Update customer's organization count
+                        if (self.selectedCustomer() && self.selectedCustomer().organizationCount > 0) {
+                            self.selectedCustomer().organizationCount--;
+                        }
+
                         if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
                             self.selectedOrganization(null);
                             self.personnel([]);
@@ -365,7 +393,10 @@ function CustomerOrganizationsViewModel() {
     };
 
     // Initialize
-    self.loadCustomers();
+    // EnumsService'i yukle, sonra diger verileri cek
+    EnumsService.load().then(function() {
+        self.loadCustomers();
+    });
 }
 
 // Initialize on page load

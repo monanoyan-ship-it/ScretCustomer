@@ -140,15 +140,7 @@ function ProjectsViewModel() {
     self.editingProject = ko.observable(null);
     self.viewingProject = ko.observable(null);
 
-    // Text mappings
-    self.statusTexts = {
-        'Draft': 'Taslak', 'Planned': 'Planlandı', 'Active': 'Aktif',
-        'Paused': 'Duraklatıldı', 'Completed': 'Tamamlandı', 'Cancelled': 'İptal Edildi'
-    };
-    self.statusBadges = {
-        'Draft': 'bg-secondary', 'Planned': 'bg-info', 'Active': 'bg-success',
-        'Paused': 'bg-warning text-dark', 'Completed': 'bg-primary', 'Cancelled': 'bg-danger'
-    };
+    // Project Type mappings (EnumsService'de yok, burada kalabilir)
     self.projectTypeTexts = {
         'MysteryShopping': 'Gizli Müşteri', 'CallAuditing': 'Çağrı Denetimi',
         'PhysicalAudit': 'Fiziksel Denetim', 'OnlineSurvey': 'Online Anket',
@@ -163,9 +155,9 @@ function ProjectsViewModel() {
     };
     self.roleTexts = { 'Evaluator': 'Değerlendirici', 'Manager': 'Yönetici', 'Observer': 'Gözlemci' };
 
-    // Helpers
-    self.getStatusText = function(status) { return self.statusTexts[status] || status; };
-    self.getStatusBadge = function(status) { return self.statusBadges[status] || 'bg-secondary'; };
+    // Helpers - EnumsService kullanir
+    self.getStatusText = function(status) { return EnumsService.getProjectStatusDisplay(status); };
+    self.getStatusBadge = function(status) { return EnumsService.getProjectStatusCss(status); };
     self.getProjectTypeText = function(type) { return self.projectTypeTexts[type] || type; };
     self.getProjectTypeBadge = function(type) { return self.projectTypeBadges[type] || 'bg-secondary'; };
     self.getRoleText = function(role) { return self.roleTexts[role] || role; };
@@ -409,11 +401,12 @@ function ProjectsViewModel() {
         }
 
         var dto = project.toDTO();
+        var isNew = !project.id;
         self.isSaving(true);
         self.errorMessage('');
 
-        var endpoint = project.id ? '/api/projects/' + project.id : '/api/projects';
-        var method = project.id ? 'PUT' : 'POST';
+        var endpoint = isNew ? '/api/projects' : '/api/projects/' + project.id;
+        var method = isNew ? 'POST' : 'PUT';
 
         fetch(endpoint, {
             method: method,
@@ -429,10 +422,23 @@ function ProjectsViewModel() {
             }
             return res.json();
         })
-        .then(function(data) {
-            toastr.success(project.id ? 'Proje güncellendi.' : 'Proje oluşturuldu.');
+        .then(function(savedProject) {
+            if (isNew) {
+                // Yeni kayit: array'e ekle
+                self.projects.push(savedProject);
+            } else {
+                // Guncelleme: array'de bul ve guncelle
+                var list = self.projects();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === savedProject.id) {
+                        self.projects.splice(i, 1, savedProject);
+                        break;
+                    }
+                }
+            }
+            self.calculateStats(self.projects());
+            toastr.success(isNew ? 'Proje oluşturuldu.' : 'Proje güncellendi.');
             self.closeEditModal();
-            self.loadProjects();
         })
         .catch(function(error) {
             console.error('Error:', error);
@@ -441,6 +447,22 @@ function ProjectsViewModel() {
         .finally(function() {
             self.isSaving(false);
         });
+    };
+
+    // Helper: Array'de projeyi guncelle
+    self.updateProjectInArray = function(updatedProject) {
+        var list = self.projects();
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].id === updatedProject.id) {
+                self.projects.splice(i, 1, updatedProject);
+                break;
+            }
+        }
+        self.calculateStats(self.projects());
+        // Detail modal aciksa guncelle
+        if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === updatedProject.id) {
+            self.viewingProject(updatedProject);
+        }
     };
 
     // Start project
@@ -460,12 +482,9 @@ function ProjectsViewModel() {
                     if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
                     return res.json();
                 })
-                .then(function(data) {
+                .then(function(updatedProject) {
                     toastr.success('Proje başlatıldı.');
-                    self.loadProjects();
-                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                        self.openDetailModal(project);
-                    }
+                    self.updateProjectInArray(updatedProject);
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
@@ -492,12 +511,9 @@ function ProjectsViewModel() {
                     if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
                     return res.json();
                 })
-                .then(function(data) {
+                .then(function(updatedProject) {
                     toastr.success('Proje duraklatıldı.');
-                    self.loadProjects();
-                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                        self.openDetailModal(project);
-                    }
+                    self.updateProjectInArray(updatedProject);
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
@@ -524,12 +540,9 @@ function ProjectsViewModel() {
                     if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
                     return res.json();
                 })
-                .then(function(data) {
+                .then(function(updatedProject) {
                     toastr.success('Proje tamamlandı.');
-                    self.loadProjects();
-                    if (self.isDetailModalOpen() && self.viewingProject() && self.viewingProject().id === project.id) {
-                        self.openDetailModal(project);
-                    }
+                    self.updateProjectInArray(updatedProject);
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
@@ -558,9 +571,9 @@ function ProjectsViewModel() {
                     if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
                     return res.json();
                 })
-                .then(function(data) {
+                .then(function(updatedProject) {
                     toastr.success('Proje iptal edildi.');
-                    self.loadProjects();
+                    self.updateProjectInArray(updatedProject);
                     if (self.isDetailModalOpen()) {
                         self.closeDetailModal();
                     }
@@ -595,8 +608,11 @@ function ProjectsViewModel() {
 
     // Initialize
     self.init = function() {
-        self.loadDropdownData();
-        self.loadProjects();
+        // Once EnumsService'i yukle, sonra diger verileri cek
+        EnumsService.load().then(function() {
+            self.loadDropdownData();
+            self.loadProjects();
+        });
     };
 
     self.init();

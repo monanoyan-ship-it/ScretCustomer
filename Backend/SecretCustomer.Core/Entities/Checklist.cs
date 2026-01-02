@@ -84,13 +84,6 @@ public class Checklist : BaseEntity
         Description = "Kontrol listesinin geçerli olduğu bitiş tarihi")]
     public DateTime? ValidUntil { get; set; }
 
-    /// <summary>
-    /// Tahmini tamamlama süresi (dakika)
-    /// </summary>
-    [ExcelColumn("Tahmini Süre (dk)", 13, ColumnType = ExcelColumnType.Number,
-        Description = "Tahmini tamamlama süresi (dakika)", SampleValue = "30")]
-    public int? EstimatedDurationMinutes { get; set; }
-
     // ===== FİRMA VE ORGANİZASYON =====
 
     /// <summary>
@@ -102,13 +95,6 @@ public class Checklist : BaseEntity
     /// Organizasyon/Şube ID (null ise tüm organizasyonlar için)
     /// </summary>
     public int? CustomerOrganizationId { get; set; }
-
-    /// <summary>
-    /// Likert Ölçeği - Puanlama için kullanılacak ölçek (0-5, 1-10 vb.)
-    /// </summary>
-    [ExcelColumn("Likert Ölçeği", 14, ColumnType = ExcelColumnType.Number,
-        Description = "Likert ölçeği maksimum değeri (örn: 5 = 0-5 arası)", SampleValue = "5")]
-    public int LikertScale { get; set; } = 5;
 
     // Navigation properties
     public Customer? Customer { get; set; }

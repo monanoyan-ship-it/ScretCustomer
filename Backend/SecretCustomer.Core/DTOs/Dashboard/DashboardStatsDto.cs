@@ -5,18 +5,7 @@ public class DashboardStatsDto
     public int TotalEvaluations { get; set; }
     public decimal AverageScore { get; set; }
     public decimal PercentageChange { get; set; } // Önceki aya göre
-    public List<TopBranchDto> TopBranches { get; set; } = new();
-    public List<TopBranchDto> BottomBranches { get; set; } = new();
     public List<MonthlyTrendDto> MonthlyTrends { get; set; } = new();
-    public List<BranchComparisonDto> BranchComparisons { get; set; } = new();
-}
-
-public class TopBranchDto
-{
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public decimal AverageScore { get; set; }
-    public int EvaluationCount { get; set; }
 }
 
 public class MonthlyTrendDto
@@ -28,14 +17,6 @@ public class MonthlyTrendDto
     public int EvaluationCount { get; set; }
 }
 
-public class BranchComparisonDto
-{
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string Region { get; set; } = string.Empty;
-    public decimal AverageScore { get; set; }
-    public int EvaluationCount { get; set; }
-}
 
 /// <summary>
 /// Kişisel performans kartı (Scorecard)
@@ -76,7 +57,7 @@ public class RecentEvaluationDto
 {
     public int Id { get; set; }
     public string ProjectName { get; set; } = string.Empty;
-    public string BranchName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
     public decimal? ScorePercentage { get; set; }
     public DateTime EvaluationDate { get; set; }
     public string Status { get; set; } = string.Empty;
