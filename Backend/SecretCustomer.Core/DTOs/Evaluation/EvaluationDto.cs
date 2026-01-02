@@ -34,9 +34,9 @@ public class EvaluationDto
     public DateTime? CallDate { get; set; }
 
     /// <summary>
-    /// Süre (dakika)
+    /// Süre (dk:sn formatında, örn: "12:26")
     /// </summary>
-    public int? DurationMinutes { get; set; }
+    public string? Duration { get; set; }
 
     /// <summary>
     /// Değerlendirilen personel ID
@@ -136,7 +136,6 @@ public class AnswerDto
     public decimal? MaxPoints { get; set; }
     public string? ScoringType { get; set; }
     public string? PenaltyType { get; set; }
-    public decimal? PenaltyValue { get; set; }
     public string? HelpText { get; set; }
     public string? RecommendedNote { get; set; }
 }

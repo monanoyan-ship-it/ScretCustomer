@@ -210,14 +210,13 @@ public class EvaluationService : IEvaluationService
         if (assignment == null)
             return null;
 
-        // Get existing evaluation if any
-        var existingEvaluation = await _context.Evaluations
-            .Include(e => e.Answers)
-            .FirstOrDefaultAsync(e => e.AssignmentId == assignmentId && !e.IsDeleted);
+        // Not: Her "Ekle" dediğinde yeni evaluation oluşturulacak
+        // Mevcut evaluationlar sadece düzenleme endpoint'inden yüklenir
+        // Bu fonksiyon her zaman boş form döndürür
 
         // Organizasyon artık Checklist'ten geliyor
         var organizations = new List<OrganizationOptionDto>();
-        int? selectedOrganizationId = existingEvaluation?.EvaluatedOrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
+        int? selectedOrganizationId = assignment.Checklist?.CustomerOrganizationId;
 
         // Checklist'te organizasyon seçiliyse sadece o organizasyonu göster
         if (assignment.Checklist?.CustomerOrganizationId.HasValue == true)
@@ -280,8 +279,8 @@ public class EvaluationService : IEvaluationService
         return new EvaluationFormDto
         {
             AssignmentId = assignmentId,
-            EvaluationId = existingEvaluation?.Id,
-            Status = existingEvaluation?.Status.ToString() ?? "New",
+            EvaluationId = null, // Yeni evaluation oluşturulacak
+            Status = "New",
             ProjectName = assignment.Project?.Name ?? "",
             BranchName = "",
             CustomerName = assignment.Project?.Customer?.CompanyName,
@@ -290,16 +289,16 @@ public class EvaluationService : IEvaluationService
             ChecklistType = assignment.Checklist?.ChecklistType.ToString(),
             ScoringMethod = assignment.Checklist?.ScoringMethod.ToString(),
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
-            CallId = existingEvaluation?.CallId,
-            CallDate = existingEvaluation?.CallDate,
-            DurationMinutes = existingEvaluation?.DurationMinutes,
-            EvaluatedPersonnelId = existingEvaluation?.EvaluatedPersonnelId,
-            EvaluatedUnknownPersonnel = existingEvaluation?.EvaluatedUnknownPersonnel,
-            EvaluationComment = existingEvaluation?.EvaluationComment,
+            CallId = null,
+            CallDate = null,
+            Duration = null,
+            EvaluatedPersonnelId = null,
+            EvaluatedUnknownPersonnel = null,
+            EvaluationComment = null,
             AvailableOrganizations = organizations,
             SelectedOrganizationId = selectedOrganizationId,
             AvailablePersonnel = personnel,
-            SelectedPeriodId = existingEvaluation?.AssignmentPeriodId,
+            SelectedPeriodId = null,
             AvailablePeriods = periods,
             // Sorular direkt checklist'e bağlı (Section kaldırıldı)
             Sections = new List<EvaluationSectionDto>
@@ -323,9 +322,8 @@ public class EvaluationService : IEvaluationService
                             AllowNA = q.AllowNA,
                             ScoringType = q.ScoringType.ToString(),
                             WeightPoints = q.WeightPoints,
-                            ScaleSteps = q.ScaleSteps,
+                            MaxPoints = q.MaxPoints,
                             PenaltyType = q.PenaltyType.ToString(),
-                            PenaltyValue = q.PenaltyValue,
                             RecommendedNote = q.RecommendedNote,
                             HelpText = q.HelpText,
                             SubCriteria = q.SubCriteria?
@@ -344,9 +342,7 @@ public class EvaluationService : IEvaluationService
                         .ToList() ?? new List<EvaluationQuestionDto>()
                 }
             },
-            ExistingAnswers = existingEvaluation?.Answers
-                .Select(a => MapAnswerToDto(a))
-                .ToList() ?? new List<AnswerDto>()
+            ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
         };
     }
 
@@ -354,12 +350,117 @@ public class EvaluationService : IEvaluationService
     {
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Customer)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Checklist)
+                    .ThenInclude(c => c.CustomerOrganization)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Checklist)
+                    .ThenInclude(c => c.Sections.Where(s => s.IsActive))
+                        .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted))
+            .Include(e => e.Answers)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
         if (evaluation == null)
             return null;
 
-        return await GetEvaluationFormAsync(evaluation.AssignmentId);
+        var assignment = evaluation.Assignment;
+        if (assignment == null)
+            return null;
+
+        // Organizasyon
+        int? selectedOrganizationId = evaluation.EvaluatedOrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
+        var personnel = new List<PersonnelOptionDto>();
+        if (selectedOrganizationId.HasValue)
+        {
+            personnel = await GetPersonnelByOrganizationAsync(selectedOrganizationId.Value);
+        }
+
+        // Dönemler
+        var periods = await _context.AssignmentPeriods
+            .Where(p => p.AssignmentId == assignment.Id && !p.IsDeleted)
+            .OrderByDescending(p => p.StartDate)
+            .Select(p => new PeriodOptionDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Status = p.Status.ToString(),
+                TargetCount = p.TargetCount,
+                CompletedCount = p.CompletedCount
+            })
+            .ToListAsync();
+
+        return new EvaluationFormDto
+        {
+            AssignmentId = assignment.Id,
+            EvaluationId = evaluation.Id,
+            Status = evaluation.Status.ToString(),
+            ProjectName = assignment.Project?.Name ?? "",
+            CustomerName = assignment.Project?.Customer?.CompanyName,
+            ChecklistId = assignment.ChecklistId,
+            ChecklistName = assignment.Checklist?.Name ?? "",
+            ChecklistType = assignment.Checklist?.ChecklistType.ToString(),
+            ScoringMethod = assignment.Checklist?.ScoringMethod.ToString(),
+            MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
+            CallId = evaluation.CallId,
+            CallDate = evaluation.CallDate,
+            Duration = evaluation.Duration,
+            EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
+            EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
+            EvaluationComment = evaluation.EvaluationComment,
+            SelectedOrganizationId = selectedOrganizationId,
+            AvailablePersonnel = personnel,
+            SelectedPeriodId = evaluation.AssignmentPeriodId,
+            AvailablePeriods = periods,
+            Sections = new List<EvaluationSectionDto>
+            {
+                new EvaluationSectionDto
+                {
+                    Id = 0,
+                    Name = "Sorular",
+                    Order = 1,
+                    GroupType = "Scored",
+                    WeightPoints = assignment.Checklist?.Sections.SelectMany(s => s.Questions).Sum(q => q.WeightPoints) ?? 0,
+                    MaxPoints = assignment.Checklist?.Sections.SelectMany(s => s.Questions).Sum(q => q.MaxPoints) ?? 0,
+                    Questions = assignment.Checklist?.Sections
+                        .SelectMany(s => s.Questions)
+                        .OrderBy(q => q.Order)
+                        .Select(q => new EvaluationQuestionDto
+                        {
+                            Id = q.Id,
+                            Text = q.Text,
+                            Order = q.Order,
+                            ScoringType = q.ScoringType.ToString(),
+                            WeightPoints = q.WeightPoints,
+                            MaxPoints = q.MaxPoints,
+                            PenaltyType = q.PenaltyType.ToString(),
+                            AllowNA = q.AllowNA,
+                            IsRequired = q.IsRequired,
+                            RecommendedNote = q.RecommendedNote,
+                            HelpText = q.HelpText,
+                            SubCriteria = q.SubCriteria?
+                                .Where(sc => !sc.IsDeleted && sc.IsActive)
+                                .OrderBy(sc => sc.Order)
+                                .Select(sc => new EvaluationSubCriteriaDto
+                                {
+                                    Id = sc.Id,
+                                    Description = sc.Description,
+                                    Order = sc.Order,
+                                    WeightPoints = sc.WeightPoints,
+                                    IsActive = sc.IsActive
+                                })
+                                .ToList()
+                        })
+                        .ToList() ?? new List<EvaluationQuestionDto>()
+                }
+            },
+            ExistingAnswers = evaluation.Answers
+                .Select(a => MapAnswerToDto(a))
+                .ToList()
+        };
     }
 
     public async Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto)
@@ -447,7 +548,7 @@ public class EvaluationService : IEvaluationService
         evaluation.EvaluationComment = dto.EvaluationComment;
         evaluation.CallId = dto.CallId;
         evaluation.CallDate = ToUtc(dto.CallDate);
-        evaluation.DurationMinutes = dto.DurationMinutes;
+        evaluation.Duration = dto.Duration;
         evaluation.EvaluatedOrganizationId = dto.EvaluatedOrganizationId;
         evaluation.EvaluatedPersonnelId = dto.EvaluatedPersonnelId;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
@@ -460,10 +561,8 @@ public class EvaluationService : IEvaluationService
         if (targetStatus == EvaluationStatus.Completed)
         {
             evaluation.CompletedAt = DateTime.UtcNow;
-
-            // Update assignment
-            assignment.IsCompleted = true;
-            assignment.CompletedAt = DateTime.UtcNow;
+            // Not: Assignment tamamlandı olarak işaretlenmiyor
+            // Aynı atamaya sınırsız dinleme (evaluation) eklenebilir
         }
 
         await _context.SaveChangesAsync();
@@ -508,8 +607,8 @@ public class EvaluationService : IEvaluationService
                     else if (answer.SelectedPenaltyType == "RedCard")
                         redCardCount++;
 
-                    // Ceza puanını düş
-                    totalEarned -= question.PenaltyValue;
+                    // Ceza puanını düş (ağırlık puanı kadar)
+                    totalEarned -= question.WeightPoints;
                 }
             }
             else
@@ -547,15 +646,15 @@ public class EvaluationService : IEvaluationService
         if (question.ScoringType == ScoringType.Penalty)
             return 0;
 
-        // Ağırlık puanı ve kırılım sayısı sistemi
-        // Formül: (cevap / ScaleSteps) * WeightPoints
-        // Örnek: ağırlık=10, kırılım=4, cevap=4 → (4/4) * 10 = 10 puan
-        // Örnek: ağırlık=10, kırılım=4, cevap=3 → (3/4) * 10 = 7.5 puan
+        // Ağırlık puanı ve maksimum puan sistemi
+        // Formül: (cevap / MaxPoints) * WeightPoints
+        // Örnek: ağırlık=10, max=5, cevap=5 → (5/5) * 10 = 10 puan
+        // Örnek: ağırlık=10, max=5, cevap=3 → (3/5) * 10 = 6 puan
         var weight = question.WeightPoints;
-        var scaleSteps = question.ScaleSteps > 0 ? question.ScaleSteps : 4;
+        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
 
-        // ScaleSteps = 1 ise Evet/Hayır tipi: 0 veya tam puan
-        if (scaleSteps == 1)
+        // MaxPoints = 1 ise Evet/Hayır tipi: 0 veya tam puan
+        if (maxPoints == 1)
         {
             var answered = answer.AnswerNumeric > 0 ||
                 answer.AnswerText?.ToLower() == "evet" ||
@@ -563,9 +662,9 @@ public class EvaluationService : IEvaluationService
             return answered ? weight : 0;
         }
 
-        // ScaleSteps > 1 için orantılı hesaplama
+        // MaxPoints > 1 için orantılı hesaplama
         var answerValue = answer.AnswerNumeric ?? 0;
-        return (answerValue / scaleSteps) * weight;
+        return (answerValue / maxPoints) * weight;
     }
 
     private Answer CreateAnswerFromDto(SubmitAnswerDto dto)
@@ -625,7 +724,6 @@ public class EvaluationService : IEvaluationService
             MaxPoints = a.Question?.WeightPoints, // WeightPoints kullanılıyor
             ScoringType = a.Question?.ScoringType.ToString(),
             PenaltyType = a.Question?.PenaltyType.ToString(),
-            PenaltyValue = a.Question?.PenaltyValue,
             HelpText = a.Question?.HelpText,
             RecommendedNote = a.Question?.RecommendedNote
         };
@@ -654,12 +752,8 @@ public class EvaluationService : IEvaluationService
         evaluation.CompletedAt = null;
         evaluation.UpdatedAt = DateTime.UtcNow;
 
-        // Assignment'ı da güncelle
-        if (evaluation.Assignment != null)
-        {
-            evaluation.Assignment.IsCompleted = false;
-            evaluation.Assignment.CompletedAt = null;
-        }
+        // Not: Assignment artık tamamlandı olarak işaretlenmediği için
+        // reopen'da da güncellemesine gerek yok
 
         // Değişiklik logunu kaydet (Notes alanına ekle)
         var logEntry = $"\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] Taslağa alındı. Önceki durum: {previousStatus}. Neden: {reason ?? "Belirtilmedi"}";
@@ -752,7 +846,7 @@ public class EvaluationService : IEvaluationService
             EvaluationComment = evaluation.EvaluationComment,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
-            DurationMinutes = evaluation.DurationMinutes,
+            Duration = evaluation.Duration,
             EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
             EvaluatedPersonnelName = evaluatedPersonnelName,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,

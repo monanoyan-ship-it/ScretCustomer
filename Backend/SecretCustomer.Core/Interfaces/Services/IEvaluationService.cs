@@ -87,7 +87,7 @@ public class EvaluationFormDto
     // Çağrı bilgileri (mevcut değerlendirmeden)
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
-    public int? DurationMinutes { get; set; }
+    public string? Duration { get; set; }
     public int? EvaluatedPersonnelId { get; set; }
     public string? EvaluatedUnknownPersonnel { get; set; }
     public string? EvaluationComment { get; set; }
@@ -170,12 +170,11 @@ public class EvaluationQuestionDto
     public decimal WeightPoints { get; set; }
 
     /// <summary>
-    /// Kırılım sayısı / Ölçek (1, 2, 3, 4)
+    /// Maksimum puan (0'dan MaxPoints'e kadar butonlar)
     /// </summary>
-    public int ScaleSteps { get; set; } = 4;
+    public int MaxPoints { get; set; } = 5;
 
     public string? PenaltyType { get; set; }
-    public decimal PenaltyValue { get; set; }
     public string? RecommendedNote { get; set; }
     public string? HelpText { get; set; }
 

@@ -47,15 +47,12 @@ public class Question : BaseEntity
     public decimal WeightPoints { get; set; } = 10;
 
     /// <summary>
-    /// Kırılım sayısı / Ölçek - Bu soru kaç kırılımlı? (1, 2, 3, 4)
-    /// 1 = Evet/Hayır (0 veya tam puan)
-    /// 2 = İki kırılım (0, yarım, tam)
-    /// 3 = Üç kırılım
-    /// 4 = Dört kırılım (0, 1/4, 2/4, 3/4, tam)
+    /// Maksimum puan - Bu soru için verilebilecek maksimum puan (0'dan MaxPoints'e kadar butonlar)
+    /// 1 = Evet/Hayır, 2+ = Likert ölçeği
     /// </summary>
-    [ExcelColumn("Kırılım Sayısı", 5, ColumnType = ExcelColumnType.Number,
-        Description = "Ölçek kırılım sayısı (1-4)", SampleValue = "4")]
-    public int ScaleSteps { get; set; } = 4;
+    [ExcelColumn("Maks Puan", 5, ColumnType = ExcelColumnType.Number,
+        Description = "Maksimum puan değeri", SampleValue = "5")]
+    public int MaxPoints { get; set; } = 5;
 
     /// <summary>
     /// Ceza tipi (Sarı Kart / Kırmızı Kart) - ScoringType=Penalty olduğunda kullanılır
@@ -66,32 +63,25 @@ public class Question : BaseEntity
         SampleValue = "None")]
     public PenaltyType PenaltyType { get; set; } = PenaltyType.None;
 
-    /// <summary>
-    /// Cezalı sorularda ceza değeri (puan düşürme miktarı)
-    /// </summary>
-    [ExcelColumn("Ceza Değeri", 7, ColumnType = ExcelColumnType.Number,
-        Description = "Ceza durumunda düşürülecek puan", SampleValue = "0")]
-    public decimal PenaltyValue { get; set; } = 0;
-
-    [ExcelColumn("N/A İzni", 8, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("N/A İzni", 7, ColumnType = ExcelColumnType.Boolean,
         Description = "N/A seçeneğine izin verilir mi?", SampleValue = "false")]
     public bool AllowNA { get; set; } = false;
 
-    [ExcelColumn("Zorunlu", 9, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("Zorunlu", 8, ColumnType = ExcelColumnType.Boolean,
         Description = "Soru zorunlu mu?", SampleValue = "true")]
     public bool IsRequired { get; set; } = true;
 
     /// <summary>
     /// Önerilen açıklama / Öneri notu
     /// </summary>
-    [ExcelColumn("Önerilen Açıklama", 10, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Önerilen Açıklama", 9, ColumnType = ExcelColumnType.Text,
         Description = "Bu soru için önerilen açıklama/öneri")]
     public string? RecommendedNote { get; set; }
 
     /// <summary>
     /// Soru için yardımcı metin / ipucu
     /// </summary>
-    [ExcelColumn("Yardımcı Metin", 11, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Yardımcı Metin", 10, ColumnType = ExcelColumnType.Text,
         Description = "Değerlendirici için yardımcı metin")]
     public string? HelpText { get; set; }
 

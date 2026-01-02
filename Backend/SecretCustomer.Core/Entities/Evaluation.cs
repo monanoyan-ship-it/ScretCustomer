@@ -75,11 +75,11 @@ public class Evaluation : BaseEntity
     public DateTime? CallDate { get; set; }
 
     /// <summary>
-    /// Değerlendirme süresi (dakika)
+    /// Değerlendirme süresi (dakika:saniye formatında, örn: "12:26")
     /// </summary>
-    [ExcelColumn("Süre (dk)", 11, ColumnType = ExcelColumnType.Number,
-        Description = "Değerlendirme süresi (dakika)")]
-    public int? DurationMinutes { get; set; }
+    [ExcelColumn("Süre", 11, ColumnType = ExcelColumnType.Text,
+        Description = "Değerlendirme süresi (dk:sn)")]
+    public string? Duration { get; set; }
 
     /// <summary>
     /// Değerlendirilen tanımlı personel ID (User - bizim şirket personeli)

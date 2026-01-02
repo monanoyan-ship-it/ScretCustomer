@@ -62,23 +62,15 @@ public class CreateQuestionDto
     public decimal WeightPoints { get; set; } = 1;
 
     /// <summary>
-    /// Kırılım sayısı / Ölçek - Bu soru kaç kırılımlı? (1, 2, 3, 4)
-    /// 1 = Evet/Hayır (0 veya tam puan)
-    /// 2 = İki kırılım (0, yarım, tam)
-    /// 3 = Üç kırılım
-    /// 4 = Dört kırılım (0, 1/4, 2/4, 3/4, tam)
+    /// Maksimum puan (0'dan MaxPoints'e kadar butonlar)
+    /// 1 = Evet/Hayır, 2+ = Likert ölçeği
     /// </summary>
-    public int ScaleSteps { get; set; } = 4;
+    public int MaxPoints { get; set; } = 5;
 
     /// <summary>
     /// Ceza tipi (ScoringType=Penalty olduğunda): None, YellowCard, RedCard
     /// </summary>
     public string PenaltyType { get; set; } = "None";
-
-    /// <summary>
-    /// Ceza değeri - Cezalı sorularda düşürülecek puan
-    /// </summary>
-    public decimal PenaltyValue { get; set; } = 0;
 
     /// <summary>
     /// N/A (Uygulanamaz) seçeneği izni

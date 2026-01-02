@@ -27,9 +27,8 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     // Puanlama alanları
     base.scoringType = ko.observable(data.scoringType || 'Scored');
     base.weightPoints = ko.observable(data.weightPoints || 10); // Varsayılan 10 (5 soru = 50, 10 soru = 100)
-    base.scaleSteps = ko.observable(data.scaleSteps || 4); // Kırılım sayısı (1=Evet/Hayır, 4=Detaylı)
+    base.maxPoints = ko.observable(data.maxPoints || 5); // Maksimum puan (1=Evet/Hayır, 5=Detaylı)
     base.penaltyType = ko.observable(data.penaltyType || 'None');
-    base.penaltyValue = ko.observable(data.penaltyValue || 0);
     base.recommendedNote = ko.observable(data.recommendedNote || '');
     base.helpText = ko.observable(data.helpText || '');
 

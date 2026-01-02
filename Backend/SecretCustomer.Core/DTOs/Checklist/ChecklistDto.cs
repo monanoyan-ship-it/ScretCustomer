@@ -57,9 +57,9 @@ public class QuestionDto
     public decimal WeightPoints { get; set; } = 10;
 
     /// <summary>
-    /// Kırılım sayısı / Ölçek (1, 2, 3, 4)
+    /// Maksimum puan (0'dan MaxPoints'e kadar butonlar)
     /// </summary>
-    public int ScaleSteps { get; set; } = 4;
+    public int MaxPoints { get; set; } = 5;
 
     /// <summary>
     /// Ceza tipi: None, YellowCard, RedCard
@@ -67,7 +67,6 @@ public class QuestionDto
     public string PenaltyType { get; set; } = "None";
     public string PenaltyTypeName { get; set; } = "Yok";
 
-    public decimal PenaltyValue { get; set; } = 0;
     public bool AllowNA { get; set; }
     public bool IsRequired { get; set; }
     public string? RecommendedNote { get; set; }

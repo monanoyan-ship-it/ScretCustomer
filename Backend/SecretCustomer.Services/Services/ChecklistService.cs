@@ -68,9 +68,8 @@ public class ChecklistService : IChecklistService
                 Order = q.Order,
                 ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
                 WeightPoints = q.WeightPoints,
-                ScaleSteps = q.ScaleSteps,
+                MaxPoints = q.MaxPoints,
                 PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
-                PenaltyValue = q.PenaltyValue,
                 AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
@@ -156,9 +155,8 @@ public class ChecklistService : IChecklistService
                 Order = q.Order,
                 ScoringType = q.ScoringType,
                 WeightPoints = q.WeightPoints,
-                ScaleSteps = q.ScaleSteps,
+                MaxPoints = q.MaxPoints,
                 PenaltyType = q.PenaltyType,
-                PenaltyValue = q.PenaltyValue,
                 AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
@@ -203,9 +201,8 @@ public class ChecklistService : IChecklistService
                     question.Order = questionDto.Order;
                     question.ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored;
                     question.WeightPoints = questionDto.WeightPoints;
-                    question.ScaleSteps = questionDto.ScaleSteps;
+                    question.MaxPoints = questionDto.MaxPoints;
                     question.PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None;
-                    question.PenaltyValue = questionDto.PenaltyValue;
                     question.AllowNA = questionDto.AllowNA;
                     question.IsRequired = questionDto.IsRequired;
                     question.RecommendedNote = questionDto.RecommendedNote;
@@ -226,9 +223,8 @@ public class ChecklistService : IChecklistService
                     Order = questionDto.Order,
                     ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored,
                     WeightPoints = questionDto.WeightPoints,
-                    ScaleSteps = questionDto.ScaleSteps,
+                    MaxPoints = questionDto.MaxPoints,
                     PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None,
-                    PenaltyValue = questionDto.PenaltyValue,
                     AllowNA = questionDto.AllowNA,
                     IsRequired = questionDto.IsRequired,
                     RecommendedNote = questionDto.RecommendedNote,
@@ -327,10 +323,9 @@ public class ChecklistService : IChecklistService
                 ScoringType = q.ScoringType.ToString(),
                 ScoringTypeName = GetScoringTypeName(q.ScoringType),
                 WeightPoints = q.WeightPoints,
-                ScaleSteps = q.ScaleSteps,
+                MaxPoints = q.MaxPoints,
                 PenaltyType = q.PenaltyType.ToString(),
                 PenaltyTypeName = GetPenaltyTypeName(q.PenaltyType),
-                PenaltyValue = q.PenaltyValue,
                 AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,

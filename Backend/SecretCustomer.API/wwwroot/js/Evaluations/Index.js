@@ -10,7 +10,10 @@ function EvaluationsViewModel() {
     self.activeTab = ko.observable('assignments');
     self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
     self.filterStatus = ko.observable('');
-    self.searchTerm = ko.observable('');
+    // Her tab için ayrı search
+    self.assignmentsSearch = ko.observable('');
+    self.evaluationsSearch = ko.observable('');
+    self.expiredSearch = ko.observable('');
 
     // List Data
     self.allAssignments = ko.observableArray([]);
@@ -38,7 +41,7 @@ function EvaluationsViewModel() {
     // Form fields
     self.callId = ko.observable('');
     self.callDate = ko.observable('');
-    self.durationMinutes = ko.observable(null);
+    self.duration = ko.observable('');
     self.controlTime = ko.observable('');
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
@@ -79,17 +82,16 @@ function EvaluationsViewModel() {
     // Sekme 1: Aktif Atamalar (tarihi geçmemiş, tamamlanmamış)
     self.activeAssignments = ko.computed(function() {
         var assignments = self.allAssignments();
-        var search = self.searchTerm().toLowerCase();
+        var search = self.assignmentsSearch().toLowerCase();
         var today = new Date();
         today.setHours(0, 0, 0, 0);
 
         return assignments.filter(function(a) {
             if (a.isCompleted) return false;
             var dueDate = new Date(a.dueDate);
-            if (dueDate < today) return false; // Tarihi geçmişleri 3. sekmeye
+            if (dueDate < today) return false;
             if (search) {
                 var matchesSearch = (a.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (a.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (a.checklistName || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
@@ -99,12 +101,13 @@ function EvaluationsViewModel() {
 
     // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
     self.allEvaluationsList = ko.computed(function() {
-        var search = self.searchTerm().toLowerCase();
+        var search = self.evaluationsSearch().toLowerCase();
         return self.allEvaluations().filter(function(e) {
             if (search) {
                 var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.checklistName || '').toLowerCase().indexOf(search) >= 0;
+                                   (e.checklistName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (e.evaluatedPersonnelName || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
             return true;
@@ -114,17 +117,16 @@ function EvaluationsViewModel() {
     // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
     self.expiredAssignments = ko.computed(function() {
         var assignments = self.allAssignments();
-        var search = self.searchTerm().toLowerCase();
+        var search = self.expiredSearch().toLowerCase();
         var today = new Date();
         today.setHours(0, 0, 0, 0);
 
         return assignments.filter(function(a) {
             if (a.isCompleted) return false;
             var dueDate = new Date(a.dueDate);
-            if (dueDate >= today) return false; // Aktif olanları 1. sekmeye
+            if (dueDate >= today) return false;
             if (search) {
                 var matchesSearch = (a.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (a.assigneeName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (a.checklistName || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
             }
@@ -137,10 +139,9 @@ function EvaluationsViewModel() {
         return self.currentUserRole() === 'Admin';
     });
 
-    // Tamamlanmış evaluation düzenlenebilir mi?
+    // Sadece taslak (Draft) durumundaki evaluation düzenlenebilir
     self.canEditEvaluation = function(evaluation) {
-        if (self.isAdmin()) return true;
-        return evaluation.status !== 'Completed';
+        return evaluation.status === 'Draft';
     };
 
     // ========================
@@ -234,7 +235,7 @@ function EvaluationsViewModel() {
     self.resetFormFields = function() {
         self.callId('');
         self.callDate('');
-        self.durationMinutes(null);
+        self.duration('');
         self.controlTime('');
         self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
@@ -309,7 +310,7 @@ function EvaluationsViewModel() {
                 // Load existing values if any
                 if (data.callId) self.callId(data.callId);
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
-                if (data.durationMinutes) self.durationMinutes(data.durationMinutes);
+                if (data.duration) self.duration(data.duration);
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
 
@@ -349,9 +350,13 @@ function EvaluationsViewModel() {
                 }
 
                 // Initialize answers for all questions
+                // Soru zaten YellowCard/RedCard tanımlıysa otomatik set et
                 data.sections.forEach(function(section) {
                     section.questions.forEach(function(q) {
-                        self.getAnswer(q.id);
+                        var answer = self.getAnswer(q.id);
+                        if (q.penaltyType === 'YellowCard' || q.penaltyType === 'RedCard') {
+                            answer.selectedPenaltyType(q.penaltyType);
+                        }
                     });
                 });
 
@@ -386,24 +391,25 @@ function EvaluationsViewModel() {
                 // Skip unscored questions
                 if (q.scoringType === 'Unscored') return;
 
-                // Handle penalty questions - selectedPenaltyType değerine bak
-                if (q.scoringType === 'Penalty' || q.penaltyType !== 'None') {
-                    var penaltyType = answer.selectedPenaltyType();
-                    if (penaltyType === 'YellowCard') {
-                        yellowCards++;
-                        total -= q.penaltyValue || 0;
-                    } else if (penaltyType === 'RedCard') {
-                        redCards++;
-                        total -= q.penaltyValue || 0;
+                // Handle penalty questions - penaltyType sorudan geliyor (checklist'te belirlendi)
+                if (q.scoringType === 'Penalty') {
+                    // Cevaplanmadıysa etkisi yok
+                    if (answer.answerNumeric() === null || answer.answerNumeric() === '') return;
+
+                    var numericValue = parseFloat(answer.answerNumeric()) || 0;
+                    var maxScore = q.maxPoints || 2;
+                    var weight = q.weightPoints || 0;
+
+                    // 0 seçilirse ceza yok, maxScore seçilirse tam ceza
+                    if (numericValue > 0) {
+                        var penaltyAmount = (numericValue / maxScore) * weight;
+                        total -= penaltyAmount;
+
+                        // Kart sayısını tut
+                        if (q.penaltyType === 'YellowCard') yellowCards++;
+                        else if (q.penaltyType === 'RedCard') redCards++;
                     }
-                    // Ceza yoksa ama puan verilmişse normal puanlama yap
-                    if (!penaltyType && answer.answerNumeric() !== null) {
-                        var weight = q.weightPoints || q.points || 0;
-                        var maxScore = q.maxPoints || 5;
-                        max += weight;
-                        var numericValue = parseFloat(answer.answerNumeric()) || 0;
-                        total += (numericValue / maxScore) * weight;
-                    }
+
                     return;
                 }
 
@@ -433,7 +439,8 @@ function EvaluationsViewModel() {
 
         self.totalScoreCalc(Math.max(0, total));
         self.maxScoreCalc(max);
-        self.scorePercentageCalc(max > 0 ? (total / max) * 100 : 0);
+        var percentage = max > 0 ? (Math.max(0, total) / max) * 100 : 0;
+        self.scorePercentageCalc(Math.min(100, percentage));
         self.yellowCardCountCalc(yellowCards);
         self.redCardCountCalc(redCards);
     };
@@ -442,9 +449,26 @@ function EvaluationsViewModel() {
     self.prepareData = function() {
         var answers = [];
 
+        // Soruları map'e al (penaltyType için)
+        var questionMap = {};
+        if (self.formData()) {
+            self.formData().sections.forEach(function(section) {
+                section.questions.forEach(function(q) {
+                    questionMap[q.id] = q;
+                });
+            });
+        }
+
         Object.keys(self.answers).forEach(function(questionId) {
             var a = self.answers[questionId];
-            var penaltyType = a.selectedPenaltyType() || null;
+            var q = questionMap[questionId];
+            // penaltyType sorudan geliyor (checklist'te belirlendi)
+            var penaltyType = q && q.penaltyType && q.penaltyType !== 'None' ? q.penaltyType : null;
+            // Cezalı sorularda: değer > 0 ise ceza uygula
+            var shouldApplyPenalty = q && q.scoringType === 'Penalty' &&
+                a.answerNumeric() !== null && a.answerNumeric() !== '' &&
+                parseFloat(a.answerNumeric()) > 0;
+
             answers.push({
                 questionId: questionId,
                 answerText: a.answerText() || null,
@@ -453,8 +477,8 @@ function EvaluationsViewModel() {
                 givenPoints: a.givenPoints() ? parseFloat(a.givenPoints()) : null,
                 notes: a.notes() || null,
                 recommendationNotes: a.recommendationNotes() || null,
-                applyPenalty: penaltyType === 'YellowCard' || penaltyType === 'RedCard',
-                selectedPenaltyType: penaltyType
+                applyPenalty: shouldApplyPenalty,
+                selectedPenaltyType: shouldApplyPenalty ? penaltyType : null
             });
         });
 
@@ -466,7 +490,7 @@ function EvaluationsViewModel() {
             evaluationComment: self.evaluationComment(),
             callId: self.callId() || null,
             callDate: self.callDate() || null,
-            durationMinutes: self.durationMinutes() ? parseInt(self.durationMinutes()) : null,
+            duration: self.duration() || null,
             evaluatedOrganizationId: self.formData().checklistOrganizationId || null,
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
@@ -508,30 +532,8 @@ function EvaluationsViewModel() {
 
     // Submit evaluation
     self.submitEvaluation = function() {
-        // Validate required questions
-        var hasError = false;
-        self.formData().sections.forEach(function(section) {
-            section.questions.forEach(function(q) {
-                if (q.isRequired) {
-                    var answer = self.answers[q.id];
-                    if (!answer) {
-                        hasError = true;
-                        return;
-                    }
-                    if (answer.isNA()) return; // N/A is acceptable
-
-                    var hasAnswer = answer.answerText() || answer.answerNumeric() !== null || answer.givenPoints() !== null;
-                    if (!hasAnswer) {
-                        hasError = true;
-                    }
-                }
-            });
-        });
-
-        if (hasError) {
-            self.modalErrorMessage(T('Evaluation.AnswerAllRequired', 'Lütfen tüm zorunlu soruları cevaplayın.'));
-            return;
-        }
+        // Not: Zorunluluk kontrolü kaldırıldı
+        // Puanlanmamış sorular zaten puana etki etmiyor
 
         self.isSavingForm(true);
         self.modalErrorMessage('');

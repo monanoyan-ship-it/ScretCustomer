@@ -1,6 +1,6 @@
 // ===== Evaluation Form ViewModel =====
 
-function AnswerViewModel(questionId, scaleSteps) {
+function AnswerViewModel(questionId, maxPoints) {
     var self = this;
 
     self.questionId = questionId;
@@ -53,9 +53,9 @@ function EvaluationFormViewModel() {
         return self.answers[questionId];
     };
 
-    self.getScoreOptions = function(scaleSteps) {
+    self.getScoreOptions = function(maxPoints) {
         var options = [];
-        var steps = scaleSteps || 4;
+        var steps = maxPoints || 5;
         for (var i = 0; i <= steps; i++) {
             options.push({
                 value: i,
@@ -96,7 +96,7 @@ function EvaluationFormViewModel() {
                 if (!answer) return;
 
                 var score = answer.score();
-                var scaleSteps = question.scaleSteps || 4;
+                var maxPoints = question.maxPoints || 5;
 
                 // Skip N/A answers
                 if (score === -1 || answer.isNA()) return;
@@ -104,7 +104,7 @@ function EvaluationFormViewModel() {
                 // Scored questions
                 if (question.scoringType === 'Scored' && score !== null) {
                     totalMaxPoints += question.weightPoints;
-                    var earnedPoints = (score / scaleSteps) * question.weightPoints;
+                    var earnedPoints = (score / maxPoints) * question.weightPoints;
                     totalEarnedPoints += earnedPoints;
                 }
             });
@@ -221,7 +221,7 @@ function EvaluationFormViewModel() {
                         answerText: answer.note() || null,
                         answerNumeric: score === -1 ? null : score,
                         isNA: score === -1,
-                        givenPoints: score === -1 ? 0 : (score !== null ? (score / (question.scaleSteps || 4)) * question.weightPoints : null),
+                        givenPoints: score === -1 ? 0 : (score !== null ? (score / (question.maxPoints || 5)) * question.weightPoints : null),
                         notes: answer.note() || null,
                         applyPenalty: answer.applyPenalty(),
                         selectedPenaltyType: answer.selectedPenaltyType()

@@ -325,9 +325,9 @@
                                         <input type="number" class="form-control" data-bind="value: weightPoints" min="0" step="0.1" />
                                     </div>
                                     <div class="col-md-2 mb-2">
-                                        <label class="form-label">@Html.T("Checklist.ScaleSteps", "Kırılım")</label>
-                                        <input type="number" class="form-control" data-bind="value: scaleSteps" min="1" max="10" />
-                                        <small class="text-muted">@Html.T("Checklist.ScaleStepsHelp", "1=Evet/Hayır, 4=Detaylı")</small>
+                                        <label class="form-label">@Html.T("Checklist.MaxPoints", "Maks Puan")</label>
+                                        <input type="number" class="form-control" data-bind="value: maxPoints" min="1" max="10" />
+                                        <small class="text-muted">@Html.T("Checklist.MaxPointsHelp", "1=Evet/Hayır, 5=Detaylı")</small>
                                     </div>
                                     <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
                                         <label class="form-label">@Html.T("Checklist.PenaltyType", "Ceza Tipi")</label>
@@ -336,10 +336,6 @@
                                             <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
                                             <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
                                         </select>
-                                    </div>
-                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
-                                        <label class="form-label">@Html.T("Checklist.PenaltyValue", "Ceza Değeri")</label>
-                                        <input type="number" class="form-control" data-bind="value: penaltyValue" min="0" />
                                     </div>
                                     <div class="col-md-2 mb-2">
                                         <label class="form-label d-block">&nbsp;</label>
@@ -539,7 +535,7 @@
                                     <th>@Html.T("Checklist.QuestionText", "Soru")</th>
                                     <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
                                     <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
-                                    <th>@Html.T("Checklist.ScaleSteps", "Kırılım")</th>
+                                    <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
                                     <th>@Html.T("Checklist.SubCriteria", "Alt Kriter")</th>
                                 </tr>
                             </thead>
@@ -551,7 +547,7 @@
                                         <span class="badge" data-bind="css: { 'bg-success': scoringType() === 'Scored', 'bg-warning': scoringType() === 'Penalty', 'bg-secondary': scoringType() === 'Unscored' }, text: scoringType"></span>
                                     </td>
                                     <td data-bind="text: weightPoints"></td>
-                                    <td data-bind="text: scaleSteps"></td>
+                                    <td data-bind="text: maxPoints"></td>
                                     <td data-bind="text: (subCriteria && subCriteria().length) || 0"></td>
                                 </tr>
                             </tbody>
@@ -609,7 +605,7 @@
                             <th>@Html.T("Checklist.QuestionText", "Soru")</th>
                             <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
                             <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
-                            <th>@Html.T("Checklist.ScaleSteps", "Kırılım")</th>
+                            <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
                             <th>N/A</th>
                         </tr>
                     </thead>
@@ -626,7 +622,7 @@
                                 <span class="badge" data-bind="css: { 'bg-success': scoringType === 'Scored', 'bg-warning': scoringType === 'Penalty', 'bg-secondary': scoringType === 'Unscored' }, text: scoringTypeName || scoringType"></span>
                             </td>
                             <td data-bind="text: weightPoints"></td>
-                            <td data-bind="text: scaleSteps"></td>
+                            <td data-bind="text: maxPoints"></td>
                             <td>
                                 <span data-bind="visible: allowNA" class="text-success">
                                     <i class="bi bi-check-circle-fill"></i>

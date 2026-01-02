@@ -37,9 +37,9 @@ public class SubmitEvaluationDto
     public DateTime? CallDate { get; set; }
 
     /// <summary>
-    /// Süre (dakika)
+    /// Süre (dk:sn formatında, örn: "12:26")
     /// </summary>
-    public int? DurationMinutes { get; set; }
+    public string? Duration { get; set; }
 
     /// <summary>
     /// Değerlendirilen organizasyon ID (ZORUNLU)

@@ -66,16 +66,14 @@ public class UpdateQuestionDto
     public decimal WeightPoints { get; set; } = 10;
 
     /// <summary>
-    /// Kırılım sayısı / Ölçek - Bu soru kaç kırılımlı? (1, 2, 3, 4)
+    /// Maksimum puan (0'dan MaxPoints'e kadar butonlar)
     /// </summary>
-    public int ScaleSteps { get; set; } = 4;
+    public int MaxPoints { get; set; } = 5;
 
     /// <summary>
     /// Ceza tipi: None, YellowCard, RedCard
     /// </summary>
     public string PenaltyType { get; set; } = "None";
-
-    public decimal PenaltyValue { get; set; } = 0;
 
     public bool AllowNA { get; set; }
 

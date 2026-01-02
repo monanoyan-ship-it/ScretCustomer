@@ -109,7 +109,7 @@ public class ReportService : IReportService
             Status = evaluation.Status.ToString(),
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
-            DurationMinutes = evaluation.DurationMinutes,
+            Duration = evaluation.Duration,
             Comment = evaluation.EvaluationComment,
             Sections = evaluation.Answers
                 .Where(a => a.Question?.Section != null)
@@ -257,7 +257,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 14).Value = item.Status;
             worksheet.Cell(row, 15).Value = item.CallId ?? "";
             worksheet.Cell(row, 16).Value = item.CallDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
-            worksheet.Cell(row, 17).Value = item.DurationMinutes ?? 0;
+            worksheet.Cell(row, 17).Value = item.Duration ?? "";
             worksheet.Cell(row, 18).Value = item.Comment ?? "";
             row++;
         }
@@ -393,7 +393,7 @@ public class ReportService : IReportService
             Status = evaluation.Status.ToString(),
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
-            DurationMinutes = evaluation.DurationMinutes,
+            Duration = evaluation.Duration,
             Comment = evaluation.EvaluationComment
         };
     }

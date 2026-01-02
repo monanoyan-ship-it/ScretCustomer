@@ -54,7 +54,7 @@ public class EvaluationReportDto
     // Call Info
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
-    public int? DurationMinutes { get; set; }
+    public string? Duration { get; set; }
 
     // Comment
     public string? Comment { get; set; }

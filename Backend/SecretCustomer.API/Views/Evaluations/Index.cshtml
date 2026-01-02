@@ -7,33 +7,6 @@
 </div>
 
 <div id="evaluations-app">
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
-                    <select class="form-select" data-bind="value: filterStatus">
-                        <option value="">@Html.T("Common.All", "Tümü")</option>
-                        <option value="Pending">@Html.T("Common.Status.Pending", "Bekleyen")</option>
-                        <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Eden")</option>
-                        <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
-                        <option value="Completed">@Html.T("Common.Status.Completed", "Tamamlanan")</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
-                    <input type="text" class="form-control" data-bind="value: searchTerm, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, şube ara...")">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">&nbsp;</label>
-                    <button class="btn btn-outline-primary d-block" data-bind="click: loadEvaluations">
-                        <i class="bi bi-arrow-clockwise"></i> @Html.T("Common.Refresh", "Yenile")
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Loading State -->
     <div data-bind="visible: isLoading" class="text-center py-5">
@@ -73,6 +46,14 @@
 
     <!-- Aktif Atamalar Tab -->
     <div data-bind="visible: activeTab() === 'assignments' && !isLoading()">
+        <!-- Search -->
+        <div class="mb-3">
+            <div class="input-group" style="max-width: 400px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchAssignments", "Proje veya kontrol listesi ara...")">
+            </div>
+        </div>
+
         <!-- Empty State -->
         <div data-bind="visible: activeAssignments().length === 0" class="alert alert-info">
             <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoActiveAssignments", "Aktif atama bulunmamaktadır.")
@@ -120,6 +101,14 @@
 
     <!-- Dinlemeler/Ziyaretler Tab -->
     <div data-bind="visible: activeTab() === 'evaluations' && !isLoading()">
+        <!-- Search -->
+        <div class="mb-3">
+            <div class="input-group" style="max-width: 400px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" data-bind="value: evaluationsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchEvaluations", "Proje, kontrol listesi veya personel ara...")">
+            </div>
+        </div>
+
         <!-- Empty State -->
         <div data-bind="visible: allEvaluationsList().length === 0" class="alert alert-info">
             <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoEvaluations", "Henüz dinleme/ziyaret kaydı bulunmamaktadır.")
@@ -165,7 +154,7 @@
                                 <span class="text-muted">-</span>
                                 <!-- /ko -->
                             </td>
-                            <td data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : (createdAt ? new Date(createdAt).toLocaleDateString('tr-TR') : '-')"></td>
+                            <td data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : (startedAt ? new Date(startedAt).toLocaleDateString('tr-TR') : '-')"></td>
                             <td>
                                 <!-- ko if: status === 'Completed' -->
                                 <span class="badge bg-success">@Html.T("Common.Status.Completed", "Tamamlandı")</span>
@@ -198,6 +187,14 @@
 
     <!-- Tarihi Geçmiş Atamalar Tab -->
     <div data-bind="visible: activeTab() === 'expired' && !isLoading()">
+        <!-- Search -->
+        <div class="mb-3">
+            <div class="input-group" style="max-width: 400px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" data-bind="value: expiredSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchExpired", "Proje veya kontrol listesi ara...")">
+            </div>
+        </div>
+
         <!-- Empty State -->
         <div data-bind="visible: expiredAssignments().length === 0" class="alert alert-info">
             <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoExpiredAssignments", "Tarihi geçmiş atama bulunmamaktadır.")
@@ -323,7 +320,7 @@
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.Duration", "Süre")</th>
-                                                <td><span data-bind="text: durationMinutes || '-'"></span> @Html.T("Common.Minutes", "dakika")</td>
+                                                <td data-bind="text: duration || '-'"></td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.ControlTime", "Kontrol Saati")</th>
@@ -539,8 +536,8 @@
                                                     <input type="date" class="form-control" data-bind="value: callDate">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label class="form-label">@Html.T("Evaluation.DurationMinutes", "Süre (dk)")</label>
-                                                    <input type="number" class="form-control" data-bind="value: durationMinutes" placeholder="@Html.T("Common.Minutes", "Dakika")">
+                                                    <label class="form-label">@Html.T("Evaluation.Duration", "Süre")</label>
+                                                    <input type="time" step="1" class="form-control" data-bind="value: duration" placeholder="SS:DD:SN">
                                                 </div>
                                                 <!-- Kontrol Saati backend'de otomatik kaydedilir -->
                                             </div>
@@ -671,10 +668,10 @@
                                                                     <span class="badge bg-danger">@Html.T("Evaluation.Penalty", "Cezalı")</span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'YellowCard' -->
-                                                                    <span class="badge bg-warning text-dark">@Html.T("Evaluation.YellowCard", "Sarı Kart") (<span data-bind="text: penaltyValue"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <span class="badge bg-warning text-dark">@Html.T("Evaluation.YellowCard", "Sarı Kart") (<span data-bind="text: weightPoints"></span> @Html.T("Evaluation.Points", "puan"))</span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'RedCard' -->
-                                                                    <span class="badge bg-danger">@Html.T("Evaluation.RedCard", "Kırmızı Kart") (<span data-bind="text: penaltyValue"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <span class="badge bg-danger">@Html.T("Evaluation.RedCard", "Kırmızı Kart") (<span data-bind="text: weightPoints"></span> @Html.T("Evaluation.Points", "puan"))</span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: isRequired -->
                                                                     <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>
@@ -686,7 +683,7 @@
                                                         <!-- Answer Input -->
                                                         <div class="mt-2" data-bind="with: $root.getAnswer(id)">
                                                             <!-- Puanlı ve Cezalı sorular için Likert butonları (scoringType = Scored veya Penalty) -->
-                                                            <!-- ko if: $parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty' -->
+                                                            <!-- ko if: ($parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty') && $parent.maxPoints !== 1 -->
                                                             <div class="btn-group btn-group-sm" role="group">
                                                                 <!-- ko foreach: $root.getScoreOptions($parent.maxPoints) -->
                                                                 <button type="button" class="btn"
@@ -696,7 +693,22 @@
                                                                 </button>
                                                                 <!-- /ko -->
                                                             </div>
-                                                            <small class="text-muted ms-2" data-bind="text: '@Html.T("Evaluation.WeightInfo", "Ağırlık:")' + ' ' + $parents[1].weightPoints + ' ' + '@Html.T("Evaluation.Points", "puan")'"></small>
+                                                            <!-- /ko -->
+
+                                                            <!-- Max puanı 1 olanlar için Evet/Hayır butonları -->
+                                                            <!-- ko if: ($parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty') && $parent.maxPoints === 1 -->
+                                                            <div class="btn-group" role="group">
+                                                                <button type="button" class="btn"
+                                                                        data-bind="click: function() { answerNumeric(1); },
+                                                                                   css: answerNumeric() === 1 ? 'btn-success' : 'btn-outline-success'">
+                                                                    @Html.T("Common.Yes", "Evet")
+                                                                </button>
+                                                                <button type="button" class="btn"
+                                                                        data-bind="click: function() { answerNumeric(0); },
+                                                                                   css: answerNumeric() === 0 ? 'btn-danger' : 'btn-outline-danger'">
+                                                                    @Html.T("Common.No", "Hayır")
+                                                                </button>
+                                                            </div>
                                                             <!-- /ko -->
 
                                                             <!-- ko if: $parent.type === 'YesNo' -->
@@ -747,19 +759,6 @@
                                                                        data-bind="value: givenPoints, attr: { max: $parent.maxPoints }"
                                                                        step="0.5" min="0">
                                                                 <small class="text-muted">@Html.T("Evaluation.Max", "Maks"): <span data-bind="text: $parent.maxPoints"></span></small>
-                                                            </div>
-                                                            <!-- /ko -->
-
-                                                            <!-- ko if: $parent.scoringType === 'Penalty' || $parent.penaltyType !== 'None' -->
-                                                            <div class="mb-2">
-                                                                <label class="form-label small text-danger">
-                                                                    <i class="bi bi-card-fill"></i> @Html.T("Evaluation.PenaltyType", "Ceza Tipi")
-                                                                </label>
-                                                                <select class="form-select form-select-sm" data-bind="value: selectedPenaltyType">
-                                                                    <option value="">@Html.T("Evaluation.NoPenalty", "Ceza Yok")</option>
-                                                                    <option value="YellowCard">@Html.T("Evaluation.YellowCard", "Sarı Kart")</option>
-                                                                    <option value="RedCard">@Html.T("Evaluation.RedCard", "Kırmızı Kart")</option>
-                                                                </select>
                                                             </div>
                                                             <!-- /ko -->
 
