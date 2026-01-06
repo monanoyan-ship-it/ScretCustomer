@@ -203,8 +203,8 @@ public class EvaluationService : IEvaluationService
             .Include(a => a.Checklist)
                 .ThenInclude(c => c.CustomerOrganization)
             .Include(a => a.Checklist)
-                .ThenInclude(c => c.Sections.Where(s => s.IsActive))
-                    .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted))
+                .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
+                    .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
 
         if (assignment == null)
@@ -357,8 +357,8 @@ public class EvaluationService : IEvaluationService
                     .ThenInclude(c => c.CustomerOrganization)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-                    .ThenInclude(c => c.Sections.Where(s => s.IsActive))
-                        .ThenInclude(s => s.Questions.Where(q => !q.IsDeleted))
+                    .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
+                        .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .Include(e => e.Answers)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
