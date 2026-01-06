@@ -35,6 +35,7 @@ public class CustomerRepository : ICustomerRepository
         var query = _context.Customers
             .Where(c => !c.IsDeleted)
             .Include(c => c.Personnel)
+            .Include(c => c.Organizations)
             .Include(c => c.Projects)
             .AsQueryable();
 

@@ -420,7 +420,7 @@ function DashboardViewModel() {
         return 'bg-danger';
     };
 
-    // Initialize
+    // Initialize - Dashboard verilerini yükle
     self.loadDashboard();
     self.loadScorecard();
     self.loadAnnouncements();

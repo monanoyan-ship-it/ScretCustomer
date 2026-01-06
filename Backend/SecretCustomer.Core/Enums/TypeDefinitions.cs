@@ -69,9 +69,9 @@ public static class UserRoles
 // ============================================================
 public static class CustomerPersonnelRoles
 {
-    public static readonly TypeItem Manager = new(1, "CustomerManager", "CustomerRole.Manager", "Musteri yoneticisi - tum raporlari gorebilir", "bi-person-fill-gear", "bg-info", 1, isDefault: true);
-    public static readonly TypeItem Supervisor = new(2, "CustomerSupervisor", "CustomerRole.Supervisor", "Musteri supervizoru - kendi takiminin raporlarini gorebilir", "bi-person-lines-fill", "bg-warning text-dark", 2);
-    public static readonly TypeItem Operator = new(3, "CustomerOperator", "CustomerRole.Operator", "Musteri operatoru - sadece kendi raporlarini gorebilir", "bi-person", "bg-secondary", 3);
+    public static readonly TypeItem Manager = new(1, "CustomerManager", "CustomerPersonnel.Role.Manager", "Musteri yoneticisi - tum raporlari gorebilir", "bi-person-fill-gear", "bg-info", 1, isDefault: true);
+    public static readonly TypeItem Supervisor = new(2, "CustomerSupervisor", "CustomerPersonnel.Role.Supervisor", "Musteri supervizoru - kendi takiminin raporlarini gorebilir", "bi-person-lines-fill", "bg-warning text-dark", 2);
+    public static readonly TypeItem Operator = new(3, "CustomerOperator", "CustomerPersonnel.Role.Operator", "Musteri operatoru - sadece kendi raporlarini gorebilir", "bi-person", "bg-secondary", 3);
 
     public static IEnumerable<TypeItem> All => new[] { Manager, Supervisor, Operator };
     public static TypeItem Default => All.First(x => x.IsDefault);

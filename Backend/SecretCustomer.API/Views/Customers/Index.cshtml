@@ -288,7 +288,7 @@
                                         <td data-bind="text: fullName"></td>
                                         <td><span class="badge bg-secondary" data-bind="text: username"></span></td>
                                         <td data-bind="text: email"></td>
-                                        <td><span class="badge bg-primary" data-bind="text: roleName"></span></td>
+                                        <td><span class="badge" data-bind="text: roleName, css: { 'bg-danger': role == 1, 'bg-info': role == 2, 'bg-secondary': role == 3 }"></span></td>
                                         <td>
                                             <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                                         </td>
@@ -369,7 +369,6 @@
                                 <option value="1">@Html.T("Customer.Role.Manager", "Müşteri Yöneticisi")</option>
                                 <option value="2">@Html.T("Customer.Role.Supervisor", "Müşteri Süpervizörü")</option>
                                 <option value="3">@Html.T("Customer.Role.Operator", "Müşteri Operatörü")</option>
-                                <option value="4">@Html.T("Customer.Role.Viewer", "Müşteri Görüntüleyici")</option>
                             </select>
                         </div>
                     </div>

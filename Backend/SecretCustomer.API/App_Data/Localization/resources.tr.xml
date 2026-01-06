@@ -3048,6 +3048,9 @@
   <LocaleResource Name="Role.Evaluator">
     <Value>Değerlendirici</Value>
   </LocaleResource>
+  <LocaleResource Name="Role.QualitySpecialist">
+    <Value>Kalite Uzmanı</Value>
+  </LocaleResource>
   <LocaleResource Name="Role.FieldWorker">
     <Value>Saha Çalışanı</Value>
   </LocaleResource>

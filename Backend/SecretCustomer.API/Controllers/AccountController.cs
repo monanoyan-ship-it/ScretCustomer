@@ -77,6 +77,15 @@ public class AccountController : Controller
                 new Claim("Username", result.Username)
             };
 
+            // CustomerPersonnel ise ek claim'ler ekle
+            if (result.CustomerId.HasValue)
+            {
+                claims.Add(new Claim("UserType", "CustomerPersonnel"));
+                claims.Add(new Claim("CustomerId", result.CustomerId.Value.ToString()));
+                if (!string.IsNullOrEmpty(result.CustomerName))
+                    claims.Add(new Claim("CustomerName", result.CustomerName));
+            }
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
             {

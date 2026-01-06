@@ -1,0 +1,217 @@
+@{
+    ViewData["Title"] = Html.T("Dashboard.MyEvaluations", "Değerlendirmelerim").ToString();
+}
+
+<div id="my-dashboard-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clipboard-data"></i> @Html.T("Dashboard.MyEvaluations", "Değerlendirmelerim")</h2>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>@Html.T("Dashboard.Period", "Dönem")</h5>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <!-- Organizasyon Filtresi (sadece Manager için) -->
+                <select data-bind="visible: isManager() && organizations().length > 0, value: selectedOrganization" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
+                    <option value="">@Html.T("Common.AllOrganizations", "Tüm Şubeler")</option>
+                    <!-- ko foreach: organizations -->
+                    <option data-bind="value: name, text: name"></option>
+                    <!-- /ko -->
+                </select>
+                <!-- Supervisor Filtresi (sadece Manager için) -->
+                <select data-bind="visible: isManager() && supervisors().length > 0, value: selectedSupervisor" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
+                    <option value="">@Html.T("Common.AllSupervisors", "Tüm Takım Liderleri")</option>
+                    <!-- ko foreach: supervisors -->
+                    <option data-bind="value: name, text: name"></option>
+                    <!-- /ko -->
+                </select>
+                <!-- Personel Arama (sadece supervisor/manager için) -->
+                <div data-bind="visible: showPersonnelName" class="input-group input-group-sm" style="width: 200px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="@Html.T("Common.SearchPersonnel", "Personel ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'">
+                </div>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: selectedYear">
+                    <!-- ko foreach: availableYears -->
+                    <option data-bind="value: $data, text: $data"></option>
+                    <!-- /ko -->
+                </select>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: selectedMonth">
+                    <option value="1">Ocak</option>
+                    <option value="2">Şubat</option>
+                    <option value="3">Mart</option>
+                    <option value="4">Nisan</option>
+                    <option value="5">Mayıs</option>
+                    <option value="6">Haziran</option>
+                    <option value="7">Temmuz</option>
+                    <option value="8">Ağustos</option>
+                    <option value="9">Eylül</option>
+                    <option value="10">Ekim</option>
+                    <option value="11">Kasım</option>
+                    <option value="12">Aralık</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Özet -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 text-center">
+                        <h6 class="text-muted mb-1">@Html.T("Dashboard.TotalEvaluations", "Toplam Değerlendirme")</h6>
+                        <h2 class="text-primary mb-0" data-bind="text: summary().totalCount"></h2>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 text-center">
+                        <h6 class="text-muted mb-1">@Html.T("Dashboard.AverageScore", "Ortalama Puan")</h6>
+                        <h2 class="mb-0" data-bind="text: summary().averageScore + '%', css: summary().averageScore >= 80 ? 'text-success' : (summary().averageScore >= 60 ? 'text-warning' : 'text-danger')"></h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supervisor Bazlı Analiz (sadece Manager için) -->
+            <div data-bind="visible: isManager() && supervisorSummary().length > 0" class="mb-4">
+                <h6 class="text-muted mb-3"><i class="bi bi-person-badge me-2"></i>@Html.T("Dashboard.SupervisorAnalysis", "Takım Lideri Bazlı Analiz")</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Common.Supervisor", "Takım Lideri")</th>
+                                <th class="text-center">@Html.T("Common.Personnel", "Personel")</th>
+                                <th class="text-center">@Html.T("Dashboard.EvaluationCount", "Değerlendirme")</th>
+                                <th class="text-center">@Html.T("Dashboard.AverageScore", "Ortalama")</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: supervisorSummary">
+                            <tr data-bind="css: { 'table-primary': $parent.selectedSupervisor() === supervisorName }">
+                                <td>
+                                    <i class="bi bi-person-badge text-info me-1"></i>
+                                    <span data-bind="text: supervisorName"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary" data-bind="text: personnelCount"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary" data-bind="text: evaluationCount"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" data-bind="text: averageScore + '%', css: $parent.getScoreBadgeClass(averageScore)"></span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info" data-bind="click: $parent.filterBySupervisor" title="@Html.T("Common.Filter", "Filtrele")">
+                                        <i class="bi bi-funnel"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Personel Bazlı Analiz (Manager/Supervisor için) -->
+            <div data-bind="visible: showPersonnelName() && filteredPersonnelSummary().length > 0" class="mb-4">
+                <h6 class="text-muted mb-3"><i class="bi bi-people me-2"></i>@Html.T("Dashboard.PersonnelAnalysis", "Personel Bazlı Analiz")</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Common.Personnel", "Personel")</th>
+                                <!-- ko if: isManager() -->
+                                <th>@Html.T("Common.Supervisor", "Takım Lideri")</th>
+                                <!-- /ko -->
+                                <th class="text-center">@Html.T("Dashboard.EvaluationCount", "Adet")</th>
+                                <th class="text-center">@Html.T("Dashboard.AverageScore", "Ortalama")</th>
+                                <th class="text-center">@Html.T("Dashboard.MinMax", "Min/Max")</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: filteredPersonnelSummary">
+                            <tr>
+                                <td>
+                                    <i class="bi bi-person text-primary me-1"></i>
+                                    <span data-bind="text: personnelName"></span>
+                                </td>
+                                <!-- ko if: $parent.isManager() -->
+                                <td>
+                                    <small class="text-muted" data-bind="text: supervisorName || '-'"></small>
+                                </td>
+                                <!-- /ko -->
+                                <td class="text-center">
+                                    <span class="badge bg-secondary" data-bind="text: evaluationCount"></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" data-bind="text: averageScore + '%', css: $parent.getScoreBadgeClass(averageScore)"></span>
+                                </td>
+                                <td class="text-center">
+                                    <small class="text-muted" data-bind="text: minScore + '% - ' + maxScore + '%'"></small>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.filterByPersonnel" title="@Html.T("Common.Filter", "Filtrele")">
+                                        <i class="bi bi-funnel"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div data-bind="visible: isLoading" class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</p>
+            </div>
+
+            <!-- Değerlendirme Listesi -->
+            <div data-bind="visible: !isLoading()">
+                <!-- Filtre Aktif Bildirimi -->
+                <div data-bind="visible: hasActiveFilter()" class="alert alert-info py-2 d-flex justify-content-between align-items-center mb-3">
+                    <span>
+                        <i class="bi bi-funnel-fill me-2"></i>
+                        <!-- ko if: selectedOrganization() -->
+                        <span class="badge bg-secondary me-1">@Html.T("Common.Organization", "Şube"): <span data-bind="text: selectedOrganization"></span></span>
+                        <!-- /ko -->
+                        <!-- ko if: selectedSupervisor() -->
+                        <span class="badge bg-info me-1">@Html.T("Common.Supervisor", "Takım Lideri"): <span data-bind="text: selectedSupervisor"></span></span>
+                        <!-- /ko -->
+                        <!-- ko if: searchText() -->
+                        <span class="badge bg-primary me-1">@Html.T("Common.Personnel", "Personel"): <span data-bind="text: searchText"></span></span>
+                        <!-- /ko -->
+                        (<span data-bind="text: evaluations().length"></span> @Html.T("Common.Result", "sonuç"))
+                    </span>
+                    <button class="btn btn-sm btn-outline-info" data-bind="click: clearFilter">
+                        <i class="bi bi-x-lg"></i> @Html.T("Common.ClearFilter", "Temizle")
+                    </button>
+                </div>
+                <div data-bind="visible: evaluations().length === 0 && !searchText()" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">@Html.T("Dashboard.NoEvaluationsThisMonth", "Bu dönemde değerlendirme bulunmamaktadır.")</p>
+                </div>
+                <div data-bind="visible: evaluations().length === 0 && searchText()" class="text-center text-muted py-4">
+                    <i class="bi bi-search fs-1"></i>
+                    <p class="mt-2">@Html.T("Dashboard.NoMatchingEvaluations", "Eşleşen değerlendirme bulunamadı.")</p>
+                </div>
+                <div class="list-group" data-bind="visible: evaluations().length > 0, foreach: evaluations">
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <!-- ko if: $parent.showPersonnelName() -->
+                            <i class="bi bi-person text-primary me-1"></i>
+                            <strong class="me-3" data-bind="text: personnelName"></strong>
+                            <!-- /ko -->
+                            <i class="bi bi-calendar-event text-muted me-2"></i>
+                            <span data-bind="text: $parent.formatDateTime(callDate)"></span>
+                        </div>
+                        <div>
+                            <span class="badge fs-6" data-bind="text: score + '%', css: score >= 80 ? 'bg-success' : (score >= 60 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Dashboard/MyDashboard.js"></script>
+}

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 using System.Security.Claims;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -13,16 +15,19 @@ public class DashboardApiController : BaseApiController
     private readonly IDashboardService _dashboardService;
     private readonly ILogger<DashboardApiController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly ApplicationDbContext _context;
 
     public DashboardApiController(
         IDashboardService dashboardService,
         ILogger<DashboardApiController> logger,
         ILocalizationService localizationService,
+        ApplicationDbContext context,
         IConfiguration configuration) : base(configuration)
     {
         _dashboardService = dashboardService;
         _logger = logger;
         _localizationService = localizationService;
+        _context = context;
     }
 
     [HttpGet("admin")]
@@ -165,5 +170,216 @@ public class DashboardApiController : BaseApiController
             _logger.LogError(ex, "Error loading target progress");
             return StatusCode(500, CreateErrorResponse("Hedef bilgileri yüklenirken hata oluştu", ex));
         }
+    }
+
+    /// <summary>
+    /// Müşteri personeli için değerlendirmeleri getirir (yıl ve ay filtreli)
+    /// - CustomerOperator: Sadece kendi değerlendirmeleri
+    /// - CustomerSupervisor: Takımındaki kişilerin değerlendirmeleri
+    /// - CustomerManager: Tüm müşteri değerlendirmeleri
+    /// </summary>
+    [HttpGet("my-evaluations")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator,CustomerViewer")]
+    public async Task<IActionResult> GetMyEvaluations([FromQuery] int? year = null, [FromQuery] int? month = null)
+    {
+        try
+        {
+            // Token'dan personnelId al
+            var personnelIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
+            {
+                return Unauthorized(new { message = "Kullanıcı bilgisi bulunamadı." });
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            // Varsayılan: mevcut yıl ve ay
+            var targetYear = year ?? DateTime.UtcNow.Year;
+            var targetMonth = month ?? DateTime.UtcNow.Month;
+
+            // Hedef kullanıcı ID'lerini belirle (role göre)
+            var targetUserIds = new List<int>();
+            var showPersonnelName = false;
+
+            if (role == "CustomerManager")
+            {
+                // Manager: Tüm müşteri personelinin değerlendirmeleri
+                var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+                if (personnel != null)
+                {
+                    targetUserIds = await _context.CustomerPersonnel
+                        .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted)
+                        .Select(p => p.Id)
+                        .ToListAsync();
+                }
+                showPersonnelName = true;
+            }
+            else if (role == "CustomerSupervisor")
+            {
+                // Supervisor: Takımındaki kişilerin değerlendirmeleri
+                targetUserIds = await _context.CustomerPersonnel
+                    .Where(p => p.SupervisorId == personnelId && !p.IsDeleted)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+                showPersonnelName = true;
+            }
+            else
+            {
+                // Operator/Viewer: Sadece kendi değerlendirmeleri
+                targetUserIds.Add(personnelId);
+            }
+
+            if (!targetUserIds.Any())
+            {
+                return Ok(new
+                {
+                    Year = targetYear,
+                    Month = targetMonth,
+                    MonthName = new DateTime(targetYear, targetMonth, 1).ToString("MMMM", new System.Globalization.CultureInfo("tr-TR")),
+                    TotalCount = 0,
+                    AverageScore = 0.0,
+                    Evaluations = new List<object>(),
+                    ShowPersonnelName = showPersonnelName
+                });
+            }
+
+            // Değerlendirmeleri getir
+            var evaluations = await _context.Evaluations
+                .Include(e => e.Assignment)
+                    .ThenInclude(a => a.AssignedCustomerPersonnel)
+                        .ThenInclude(cp => cp!.Supervisor)
+                .Include(e => e.Assignment)
+                    .ThenInclude(a => a.AssignedCustomerPersonnel)
+                        .ThenInclude(cp => cp!.Organization)
+                .Where(e => e.Assignment != null
+                    && e.Assignment.AssignedCustomerPersonnelId != null
+                    && targetUserIds.Contains(e.Assignment.AssignedCustomerPersonnelId.Value)
+                    && e.CreatedAt.Year == targetYear
+                    && e.CreatedAt.Month == targetMonth
+                    && e.Status == Core.Enums.EvaluationStatus.Completed)
+                .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
+                .Select(e => new
+                {
+                    e.Id,
+                    CallDate = e.CallDate ?? e.CreatedAt,
+                    Score = e.TotalScore ?? 0,
+                    PersonnelName = e.Assignment!.AssignedCustomerPersonnel != null
+                        ? e.Assignment.AssignedCustomerPersonnel.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.LastName
+                        : "",
+                    SupervisorName = e.Assignment.AssignedCustomerPersonnel != null && e.Assignment.AssignedCustomerPersonnel.Supervisor != null
+                        ? e.Assignment.AssignedCustomerPersonnel.Supervisor.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.Supervisor.LastName
+                        : "",
+                    OrganizationName = e.Assignment.AssignedCustomerPersonnel != null && e.Assignment.AssignedCustomerPersonnel.Organization != null
+                        ? e.Assignment.AssignedCustomerPersonnel.Organization.Name
+                        : "",
+                    e.Notes
+                })
+                .ToListAsync();
+
+            var isManager = role == "CustomerManager";
+
+            // Manager için filtre listeleri
+            List<object>? organizationList = null;
+            List<object>? supervisorList = null;
+            if (isManager)
+            {
+                var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+                if (personnel != null)
+                {
+                    // Organizasyon listesi
+                    organizationList = await _context.CustomerOrganizations
+                        .Where(o => o.CustomerId == personnel.CustomerId && !o.IsDeleted)
+                        .OrderBy(o => o.Name)
+                        .Select(o => new { o.Id, o.Name })
+                        .ToListAsync<object>();
+
+                    // Supervisor listesi
+                    supervisorList = await _context.CustomerPersonnel
+                        .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted && p.Role == Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+                        .OrderBy(p => p.FirstName).ThenBy(p => p.LastName)
+                        .Select(p => new { p.Id, Name = p.FirstName + " " + p.LastName })
+                        .ToListAsync<object>();
+                }
+            }
+
+            // Personel bazlı özet (Manager/Supervisor için)
+            var personnelSummary = showPersonnelName
+                ? evaluations
+                    .GroupBy(e => new { e.PersonnelName, e.SupervisorName, e.OrganizationName })
+                    .Select(g => new
+                    {
+                        PersonnelName = g.Key.PersonnelName,
+                        SupervisorName = g.Key.SupervisorName,
+                        OrganizationName = g.Key.OrganizationName,
+                        EvaluationCount = g.Count(),
+                        AverageScore = Math.Round(g.Average(e => (double)e.Score), 1),
+                        MinScore = g.Min(e => e.Score),
+                        MaxScore = g.Max(e => e.Score)
+                    })
+                    .OrderByDescending(p => p.EvaluationCount)
+                    .ToList()
+                : null;
+
+            // Supervisor bazlı özet (sadece Manager için)
+            var supervisorSummary = isManager && evaluations.Any()
+                ? evaluations
+                    .Where(e => !string.IsNullOrEmpty(e.SupervisorName))
+                    .GroupBy(e => e.SupervisorName)
+                    .Select(g => new
+                    {
+                        SupervisorName = g.Key,
+                        PersonnelCount = g.Select(e => e.PersonnelName).Distinct().Count(),
+                        EvaluationCount = g.Count(),
+                        AverageScore = Math.Round(g.Average(e => (double)e.Score), 1)
+                    })
+                    .OrderByDescending(s => s.EvaluationCount)
+                    .ToList()
+                : null;
+
+            // Özet hesapla
+            var summary = new
+            {
+                Year = targetYear,
+                Month = targetMonth,
+                MonthName = new DateTime(targetYear, targetMonth, 1).ToString("MMMM", new System.Globalization.CultureInfo("tr-TR")),
+                TotalCount = evaluations.Count,
+                AverageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)e.Score), 1) : 0,
+                Evaluations = evaluations,
+                ShowPersonnelName = showPersonnelName,
+                IsManager = isManager,
+                PersonnelSummary = personnelSummary,
+                SupervisorSummary = supervisorSummary,
+                Organizations = organizationList,
+                Supervisors = supervisorList
+            };
+
+            return Ok(summary);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading my evaluations");
+            return StatusCode(500, CreateErrorResponse("Değerlendirmeler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcı tipini döndürür (dashboard view'da hangi paneli göstereceğimizi belirlemek için)
+    /// </summary>
+    [HttpGet("user-type")]
+    public IActionResult GetUserType()
+    {
+        var userType = User.FindFirst("UserType")?.Value;
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+        var isCustomerPersonnel = userType == "CustomerPersonnel" ||
+            role == "CustomerManager" || role == "CustomerSupervisor" ||
+            role == "CustomerOperator" || role == "CustomerViewer";
+
+        return Ok(new
+        {
+            UserType = userType ?? "User",
+            Role = role,
+            IsCustomerPersonnel = isCustomerPersonnel
+        });
     }
 }
