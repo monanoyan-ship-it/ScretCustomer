@@ -250,18 +250,18 @@ function CustomersViewModel() {
 
         self.personnelModalErrorMessage('');
         self.editingPersonnel({
-            id: null,
-            customerId: customer.id,
-            username: '',
-            email: '',
-            password: '',
-            firstName: '',
-            lastName: '',
-            phoneNumber: '',
-            department: '',
-            title: '',
-            role: 1,
-            isActive: true
+            id: ko.observable(null),
+            customerId: ko.observable(customer.id),
+            username: ko.observable(''),
+            email: ko.observable(''),
+            password: ko.observable(''),
+            firstName: ko.observable(''),
+            lastName: ko.observable(''),
+            phoneNumber: ko.observable(''),
+            department: ko.observable(''),
+            title: ko.observable(''),
+            role: ko.observable('3'), // Default to operator
+            isActive: ko.observable(true)
         });
         self.showPersonnelFormModal(true);
     };
@@ -270,18 +270,18 @@ function CustomersViewModel() {
     self.editPersonnel = function(personnel) {
         self.personnelModalErrorMessage('');
         self.editingPersonnel({
-            id: personnel.id,
-            customerId: personnel.customerId,
-            username: personnel.username,
-            email: personnel.email,
-            password: '',
-            firstName: personnel.firstName,
-            lastName: personnel.lastName,
-            phoneNumber: personnel.phoneNumber || '',
-            department: personnel.department || '',
-            title: personnel.title || '',
-            role: String(personnel.role), // Convert to string for select binding
-            isActive: personnel.isActive
+            id: ko.observable(personnel.id),
+            customerId: ko.observable(personnel.customerId),
+            username: ko.observable(personnel.username),
+            email: ko.observable(personnel.email),
+            password: ko.observable(''),
+            firstName: ko.observable(personnel.firstName),
+            lastName: ko.observable(personnel.lastName),
+            phoneNumber: ko.observable(personnel.phoneNumber || ''),
+            department: ko.observable(personnel.department || ''),
+            title: ko.observable(personnel.title || ''),
+            role: ko.observable(String(personnel.role)), // Convert to string for select binding
+            isActive: ko.observable(personnel.isActive)
         });
         self.showPersonnelFormModal(true);
     };
@@ -294,13 +294,21 @@ function CustomersViewModel() {
         var personnel = self.editingPersonnel();
         if (!personnel) return;
 
+        // Unwrap observables
+        var id = ko.unwrap(personnel.id);
+        var username = ko.unwrap(personnel.username);
+        var email = ko.unwrap(personnel.email);
+        var password = ko.unwrap(personnel.password);
+        var firstName = ko.unwrap(personnel.firstName);
+        var lastName = ko.unwrap(personnel.lastName);
+
         // Validation
-        if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
+        if (!username || !email || !firstName || !lastName) {
             toastr.warning(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
-        if (!personnel.id && !personnel.password) {
+        if (!id && !password) {
             toastr.warning(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
@@ -309,26 +317,26 @@ function CustomersViewModel() {
 
         // Prepare data - convert empty password to null and role to integer
         var data = {
-            customerId: personnel.customerId,
-            username: personnel.username,
-            email: personnel.email,
-            password: personnel.password || null,
-            firstName: personnel.firstName,
-            lastName: personnel.lastName,
-            phoneNumber: personnel.phoneNumber || null,
-            department: personnel.department || null,
-            title: personnel.title || null,
-            role: parseInt(personnel.role, 10),
-            isActive: personnel.isActive
+            customerId: ko.unwrap(personnel.customerId),
+            username: username,
+            email: email,
+            password: password || null,
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: ko.unwrap(personnel.phoneNumber) || null,
+            department: ko.unwrap(personnel.department) || null,
+            title: ko.unwrap(personnel.title) || null,
+            role: parseInt(ko.unwrap(personnel.role), 10),
+            isActive: ko.unwrap(personnel.isActive)
         };
 
-        var promise = personnel.id
-            ? customerApiService.updatePersonnel(personnel.id, data)
+        var promise = id
+            ? customerApiService.updatePersonnel(id, data)
             : customerApiService.createPersonnel(data);
 
         promise
             .then(function() {
-                toastr.success(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+                toastr.success(id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.showPersonnelFormModal(false);
                 self.loadPersonnel(self.selectedCustomerForPersonnel().id);
                 self.loadCustomers(); // Refresh personnel count
@@ -866,18 +874,18 @@ function CustomersViewModel() {
     self.editOrgPersonnel = function(personnel) {
         self.modalErrorMessage('');
         self.editingPersonnel({
-            id: personnel.id,
-            customerId: self.selectedCustomerForOrg().id,
-            username: personnel.username,
-            email: personnel.email,
-            password: '',
-            firstName: personnel.firstName,
-            lastName: personnel.lastName,
-            phoneNumber: personnel.phoneNumber || '',
-            department: personnel.department || '',
-            title: personnel.title || '',
-            role: String(personnel.role), // Convert to string for select binding
-            isActive: personnel.isActive !== false
+            id: ko.observable(personnel.id),
+            customerId: ko.observable(self.selectedCustomerForOrg().id),
+            username: ko.observable(personnel.username),
+            email: ko.observable(personnel.email),
+            password: ko.observable(''),
+            firstName: ko.observable(personnel.firstName),
+            lastName: ko.observable(personnel.lastName),
+            phoneNumber: ko.observable(personnel.phoneNumber || ''),
+            department: ko.observable(personnel.department || ''),
+            title: ko.observable(personnel.title || ''),
+            role: ko.observable(String(personnel.role)), // Convert to string for select binding
+            isActive: ko.observable(personnel.isActive !== false)
         });
         self.showPersonnelFormModal(true);
     };
@@ -891,13 +899,21 @@ function CustomersViewModel() {
         var personnel = self.editingPersonnel();
         if (!personnel) return;
 
+        // Unwrap observables
+        var id = ko.unwrap(personnel.id);
+        var username = ko.unwrap(personnel.username);
+        var email = ko.unwrap(personnel.email);
+        var password = ko.unwrap(personnel.password);
+        var firstName = ko.unwrap(personnel.firstName);
+        var lastName = ko.unwrap(personnel.lastName);
+
         // Validation
-        if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
+        if (!username || !email || !firstName || !lastName) {
             toastr.warning(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
-        if (!personnel.id && !personnel.password) {
+        if (!id && !password) {
             toastr.warning(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
@@ -906,26 +922,26 @@ function CustomersViewModel() {
 
         // Prepare data - convert empty password to null and role to integer
         var data = {
-            customerId: personnel.customerId,
-            username: personnel.username,
-            email: personnel.email,
-            password: personnel.password || null,
-            firstName: personnel.firstName,
-            lastName: personnel.lastName,
-            phoneNumber: personnel.phoneNumber || null,
-            department: personnel.department || null,
-            title: personnel.title || null,
-            role: parseInt(personnel.role, 10),
-            isActive: personnel.isActive
+            customerId: ko.unwrap(personnel.customerId),
+            username: username,
+            email: email,
+            password: password || null,
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: ko.unwrap(personnel.phoneNumber) || null,
+            department: ko.unwrap(personnel.department) || null,
+            title: ko.unwrap(personnel.title) || null,
+            role: parseInt(ko.unwrap(personnel.role), 10),
+            isActive: ko.unwrap(personnel.isActive)
         };
 
-        var promise = personnel.id
-            ? customerApiService.updatePersonnel(personnel.id, data)
+        var promise = id
+            ? customerApiService.updatePersonnel(id, data)
             : customerApiService.createPersonnel(data);
 
         promise
             .then(function() {
-                toastr.success(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+                toastr.success(id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.showPersonnelFormModal(false);
 
                 // If organization modal is open, refresh org data
