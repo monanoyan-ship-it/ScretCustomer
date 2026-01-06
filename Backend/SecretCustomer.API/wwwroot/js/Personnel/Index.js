@@ -93,7 +93,7 @@ function PersonnelViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Personel listesi yüklenirken bir hata oluştu.');
+                toastr.error(error.message || 'Personel listesi yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -154,23 +154,23 @@ function PersonnelViewModel() {
 
         // Validation
         if (!editing.firstName() || !editing.lastName()) {
-            self.modalErrorMessage('Ad ve Soyad alanları zorunludur.');
+            toastr.error('Ad ve Soyad alanları zorunludur.');
             return;
         }
         if (!editing.email()) {
-            self.modalErrorMessage('E-posta alanı zorunludur.');
+            toastr.error('E-posta alanı zorunludur.');
             return;
         }
         if (!editing.id && !editing.username()) {
-            self.modalErrorMessage('Kullanıcı adı zorunludur.');
+            toastr.error('Kullanıcı adı zorunludur.');
             return;
         }
         if (!editing.id && !editing.password()) {
-            self.modalErrorMessage('Şifre zorunludur.');
+            toastr.error('Şifre zorunludur.');
             return;
         }
         if (!editing.id && editing.password().length < 6) {
-            self.modalErrorMessage('Şifre en az 6 karakter olmalıdır.');
+            toastr.error('Şifre en az 6 karakter olmalıdır.');
             return;
         }
 
@@ -205,13 +205,13 @@ function PersonnelViewModel() {
 
         promise
             .then(function(data) {
-                self.successMessage(editing.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
+                toastr.success(editing.id ? 'Personel başarıyla güncellendi.' : 'Personel başarıyla oluşturuldu.');
                 self.hideModal();
                 self.loadPersonnel();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.modalErrorMessage(error.message || 'Personel kaydedilirken bir hata oluştu.');
+                toastr.error(error.message || 'Personel kaydedilirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);
@@ -226,12 +226,12 @@ function PersonnelViewModel() {
             function() {
                 ApiService.delete('/users/' + person.id)
                     .then(function() {
-                        self.successMessage('Personel başarıyla silindi.');
+                        toastr.success('Personel başarıyla silindi.');
                         self.loadPersonnel();
                     })
                     .catch(function(error) {
                         console.error('Error:', error);
-                        self.errorMessage(error.message || 'Personel silinirken bir hata oluştu.');
+                        toastr.error(error.message || 'Personel silinirken bir hata oluştu.');
                     });
             }
         );
@@ -252,11 +252,11 @@ function PersonnelViewModel() {
         var confirmPass = self.confirmPassword();
 
         if (!newPass || newPass.length < 6) {
-            self.passwordError('Şifre en az 6 karakter olmalıdır.');
+            toastr.error('Şifre en az 6 karakter olmalıdır.');
             return;
         }
         if (newPass !== confirmPass) {
-            self.passwordError('Şifreler eşleşmiyor.');
+            toastr.error('Şifreler eşleşmiyor.');
             return;
         }
 
@@ -268,12 +268,12 @@ function PersonnelViewModel() {
             newPassword: newPass
         })
             .then(function() {
-                self.successMessage('Şifre başarıyla değiştirildi.');
+                toastr.success('Şifre başarıyla değiştirildi.');
                 self.hidePasswordModal();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.passwordError(error.message || 'Şifre değiştirilemedi.');
+                toastr.error(error.message || 'Şifre değiştirilemedi.');
             })
             .finally(function() {
                 self.isSavingPassword(false);

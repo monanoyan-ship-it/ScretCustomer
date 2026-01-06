@@ -108,7 +108,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || T('Report.LoadErrorMessage', 'Veriler yüklenirken bir hata oluştu.'));
+                toastr.error(error.message || T('Report.LoadErrorMessage', 'Veriler yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -227,7 +227,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Report.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
+                toastr.error(T('Report.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
             });
     };
 
@@ -261,7 +261,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Report.ExcelDownloadError', 'Excel dosyası indirilemedi.'));
+                toastr.error(T('Report.ExcelDownloadError', 'Excel dosyası indirilemedi.'));
             })
             .finally(function() {
                 self.isExporting(false);
@@ -296,7 +296,7 @@ function ReportsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Report.DetailedExcelDownloadError', 'Detaylı Excel dosyası indirilemedi.'));
+                toastr.error(T('Report.DetailedExcelDownloadError', 'Detaylı Excel dosyası indirilemedi.'));
             })
             .finally(function() {
                 self.isExporting(false);

@@ -12,7 +12,7 @@ function CustomerLoginViewModel() {
         self.errorMessage('');
 
         if (!self.username() || !self.password()) {
-            self.errorMessage(T('Account.LoginRequired', 'Kullanıcı adı ve şifre gereklidir.'));
+            toastr.error(T('Account.LoginRequired', 'Kullanıcı adı ve şifre gereklidir.'));
             return;
         }
 
@@ -48,7 +48,7 @@ function CustomerLoginViewModel() {
             window.location.href = returnUrl || '/CustomerPortal/Dashboard';
         })
         .catch(function(error) {
-            self.errorMessage(error.message || T('Account.LoginError', 'Giriş sırasında bir hata oluştu.'));
+            toastr.error(error.message || T('Account.LoginError', 'Giriş sırasında bir hata oluştu.'));
         })
         .finally(function() {
             self.isLoading(false);

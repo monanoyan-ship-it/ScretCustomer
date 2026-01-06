@@ -112,7 +112,7 @@ function PermissionsViewModel() {
         })
         .catch(function(error) {
             console.error('Error:', error);
-            self.errorMessage('Veriler yüklenirken bir hata oluştu.');
+            toastr.error('Veriler yüklenirken bir hata oluştu.');
         })
         .finally(function() {
             self.isLoading(false);
@@ -177,7 +177,7 @@ function PermissionsViewModel() {
             return response.json();
         })
         .then(function(data) {
-            self.successMessage('Rol yetkileri başarıyla güncellendi.');
+            toastr.success('Rol yetkileri başarıyla güncellendi.');
             // Update map
             var map = self.rolePermissionsMap();
             map[self.selectedRole().value] = self.selectedRolePermissionIds().slice();
@@ -185,7 +185,7 @@ function PermissionsViewModel() {
         })
         .catch(function(error) {
             console.error('Error:', error);
-            self.errorMessage(error.message || 'Yetkiler kaydedilirken bir hata oluştu.');
+            toastr.error(error.message || 'Yetkiler kaydedilirken bir hata oluştu.');
         })
         .finally(function() {
             self.isSaving(false);
@@ -212,7 +212,7 @@ function PermissionsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message);
+                toastr.error(error.message);
             })
             .finally(function() {
                 self.isLoading(false);
@@ -239,7 +239,7 @@ function PermissionsViewModel() {
     // Add user permission
     self.addUserPermission = function() {
         if (!self.selectedUser() || !self.newUserPermission.permissionId()) {
-            self.modalErrorMessage('Lütfen bir yetki seçin.');
+            toastr.error('Lütfen bir yetki seçin.');
             return;
         }
 
@@ -271,13 +271,13 @@ function PermissionsViewModel() {
             return response.json();
         })
         .then(function(data) {
-            self.successMessage('Kullanıcı yetkisi başarıyla eklendi.');
+            toastr.success('Kullanıcı yetkisi başarıyla eklendi.');
             self.userPermissionModal.hide();
             self.loadUserPermissions(self.selectedUser().id);
         })
         .catch(function(error) {
             console.error('Error:', error);
-            self.modalErrorMessage(error.message || 'Yetki eklenirken bir hata oluştu.');
+            toastr.error(error.message || 'Yetki eklenirken bir hata oluştu.');
         })
         .finally(function() {
             self.isSaving(false);
@@ -300,12 +300,12 @@ function PermissionsViewModel() {
                 return response.json();
             })
             .then(function(data) {
-                self.successMessage('Kullanıcı yetkisi başarıyla kaldırıldı.');
+                toastr.success('Kullanıcı yetkisi başarıyla kaldırıldı.');
                 self.loadUserPermissions(self.selectedUser().id);
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || 'Yetki kaldırılırken bir hata oluştu.');
+                toastr.error(error.message || 'Yetki kaldırılırken bir hata oluştu.');
             });
         });
     };

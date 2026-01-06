@@ -85,7 +85,7 @@ function VisitDetailsViewModel() {
                 self.sectors(data);
             })
             .catch(function(err) {
-                self.errorMessage(err.message);
+                toastr.error(err.message);
             })
             .finally(function() {
                 self.isLoadingSectors(false);
@@ -133,7 +133,7 @@ function VisitDetailsViewModel() {
         var name = sector.name();
 
         if (!code || !name) {
-            self.modalErrorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
+            toastr.error(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
             return;
         }
 
@@ -167,11 +167,11 @@ function VisitDetailsViewModel() {
         .then(function() {
             self.closeSectorModal();
             self.loadSectors();
-            self.successMessage(isNew ? T('VisitDetails.SectorCreated', 'Sektör oluşturuldu.') : T('VisitDetails.SectorUpdated', 'Sektör güncellendi.'));
+            toastr.success(isNew ? T('VisitDetails.SectorCreated', 'Sektör oluşturuldu.') : T('VisitDetails.SectorUpdated', 'Sektör güncellendi.'));
             self.clearMessages();
         })
         .catch(function(err) {
-            self.modalErrorMessage(err.message);
+            toastr.error(err.message);
         })
         .finally(function() {
             self.isSaving(false);
@@ -188,11 +188,11 @@ function VisitDetailsViewModel() {
                         });
                     }
                     self.loadSectors();
-                    self.successMessage(T('VisitDetails.SectorDeleted', 'Sektör silindi.'));
+                    toastr.success(T('VisitDetails.SectorDeleted', 'Sektör silindi.'));
                     self.clearMessages();
                 })
                 .catch(function(err) {
-                    self.errorMessage(err.message);
+                    toastr.error(err.message);
                 });
         });
     };
@@ -219,7 +219,7 @@ function VisitDetailsViewModel() {
                 self.fields(data);
             })
             .catch(function(err) {
-                self.errorMessage(err.message);
+                toastr.error(err.message);
             })
             .finally(function() {
                 self.isLoadingFields(false);
@@ -285,7 +285,7 @@ function VisitDetailsViewModel() {
         var name = field.name();
 
         if (!code || !name) {
-            self.modalErrorMessage(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
+            toastr.error(T('VisitDetails.CodeNameRequired', 'Kod ve Ad alanları zorunludur.'));
             return;
         }
 
@@ -328,11 +328,11 @@ function VisitDetailsViewModel() {
         .then(function() {
             self.closeFieldModal();
             self.loadFields();
-            self.successMessage(isNew ? T('VisitDetails.FieldCreated', 'Alan tanımı oluşturuldu.') : T('VisitDetails.FieldUpdated', 'Alan tanımı güncellendi.'));
+            toastr.success(isNew ? T('VisitDetails.FieldCreated', 'Alan tanımı oluşturuldu.') : T('VisitDetails.FieldUpdated', 'Alan tanımı güncellendi.'));
             self.clearMessages();
         })
         .catch(function(err) {
-            self.modalErrorMessage(err.message);
+            toastr.error(err.message);
         })
         .finally(function() {
             self.isSaving(false);
@@ -349,11 +349,11 @@ function VisitDetailsViewModel() {
                         });
                     }
                     self.loadFields();
-                    self.successMessage(T('VisitDetails.FieldDeleted', 'Alan tanımı silindi.'));
+                    toastr.success(T('VisitDetails.FieldDeleted', 'Alan tanımı silindi.'));
                     self.clearMessages();
                 })
                 .catch(function(err) {
-                    self.errorMessage(err.message);
+                    toastr.error(err.message);
                 });
         });
     };

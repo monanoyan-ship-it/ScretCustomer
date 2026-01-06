@@ -64,7 +64,7 @@ function ProfileViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || T('Profile.LoadErrorMessage', 'Profil yüklenirken bir hata oluştu.'));
+                toastr.error(error.message || T('Profile.LoadErrorMessage', 'Profil yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -100,11 +100,11 @@ function ProfileViewModel() {
             })
             .then(function(data) {
                 self.profile(data);
-                self.successMessage(T('Profile.UpdateSuccess', 'Profil bilgileriniz başarıyla güncellendi.'));
+                toastr.success(T('Profile.UpdateSuccess', 'Profil bilgileriniz başarıyla güncellendi.'));
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || T('Profile.UpdateErrorMessage', 'Profil güncellenirken bir hata oluştu.'));
+                toastr.error(error.message || T('Profile.UpdateErrorMessage', 'Profil güncellenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -115,12 +115,12 @@ function ProfileViewModel() {
     self.changePassword = function() {
         // Validate
         if (self.passwordForm.newPassword() !== self.passwordForm.confirmPassword()) {
-            self.errorMessage(T('Validation.PasswordMismatch', 'Yeni şifreler eşleşmiyor.'));
+            toastr.error(T('Validation.PasswordMismatch', 'Yeni şifreler eşleşmiyor.'));
             return;
         }
 
         if (self.passwordForm.newPassword().length < 6) {
-            self.errorMessage(T('Validation.PasswordMinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
+            toastr.error(T('Validation.PasswordMinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
@@ -149,7 +149,7 @@ function ProfileViewModel() {
                 return response.json();
             })
             .then(function(data) {
-                self.successMessage(data.message || T('Account.PasswordChanged', 'Şifreniz başarıyla değiştirildi.'));
+                toastr.success(data.message || T('Account.PasswordChanged', 'Şifreniz başarıyla değiştirildi.'));
                 // Clear password form
                 self.passwordForm.currentPassword('');
                 self.passwordForm.newPassword('');
@@ -157,7 +157,7 @@ function ProfileViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(error.message || T('Account.PasswordChangeErrorMessage', 'Şifre değiştirilirken bir hata oluştu.'));
+                toastr.error(error.message || T('Account.PasswordChangeErrorMessage', 'Şifre değiştirilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isChangingPassword(false);

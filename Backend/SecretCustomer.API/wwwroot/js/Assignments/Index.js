@@ -217,7 +217,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.LoadError', 'Atamalar yüklenirken bir hata oluştu.'));
+                toastr.error(T('Assignment.LoadError', 'Atamalar yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -318,7 +318,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.FilterError', 'Atamalar filtrelenirken bir hata oluştu.'));
+                toastr.error(T('Assignment.FilterError', 'Atamalar filtrelenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -369,17 +369,17 @@ function AssignmentsViewModel() {
 
         // Validation
         if (!assignment.projectId()) {
-            self.modalErrorMessage(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
+            toastr.error(T('Assignment.SelectProject', 'Proje seçmelisiniz!'));
             return;
         }
 
         if (!assignment.checklistId()) {
-            self.modalErrorMessage(T('Assignment.SelectChecklist', 'Kontrol listesi seçmelisiniz!'));
+            toastr.error(T('Assignment.SelectChecklist', 'Kontrol listesi seçmelisiniz!'));
             return;
         }
 
         if (!assignment.dueDate()) {
-            self.modalErrorMessage(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
+            toastr.error(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
             return;
         }
 
@@ -416,13 +416,13 @@ function AssignmentsViewModel() {
                     // Yeni kayit: array'e ekle
                     self.assignments.push(savedAssignment);
                 }
-                self.successMessage(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
+                toastr.success(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
                 self.closeModal();
                 self.loadSummary();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.modalErrorMessage(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
+                toastr.error(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -468,7 +468,7 @@ function AssignmentsViewModel() {
         var assignmentId = data.assignmentId();
 
         if (!assignmentId) {
-            self.errorMessage(T('Assignment.NotFound', 'Atama bulunamadı.'));
+            toastr.error(T('Assignment.NotFound', 'Atama bulunamadı.'));
             return;
         }
 
@@ -495,12 +495,12 @@ function AssignmentsViewModel() {
                         break;
                     }
                 }
-                self.successMessage(T('Assignment.ReassignSuccess', 'Atama başarıyla yeniden atandı.'));
+                toastr.success(T('Assignment.ReassignSuccess', 'Atama başarıyla yeniden atandı.'));
                 bootstrap.Modal.getInstance(document.getElementById('reassignModal')).hide();
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.ReassignProcessError', 'Yeniden atama yapılırken bir hata oluştu.'));
+                toastr.error(T('Assignment.ReassignProcessError', 'Yeniden atama yapılırken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -692,7 +692,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
+                toastr.error(T('Assignment.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
             });
     };
 
@@ -719,7 +719,7 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage(T('Assignment.QRCodeError', 'QR kod oluşturulurken bir hata oluştu.'));
+                toastr.error(T('Assignment.QRCodeError', 'QR kod oluşturulurken bir hata oluştu.'));
             });
     };
 
@@ -737,10 +737,10 @@ function AssignmentsViewModel() {
         var link = baseUrl + '/form/' + assignment.uniqueLink;
 
         navigator.clipboard.writeText(link).then(function() {
-            self.successMessage(T('Message.LinkCopiedToClipboard', 'Link panoya kopyalandı!'));
+            toastr.success(T('Message.LinkCopiedToClipboard', 'Link panoya kopyalandı!'));
         }).catch(function(error) {
             console.error('Error copying link:', error);
-            self.errorMessage(T('Message.LinkCopyError', 'Link kopyalanırken bir hata oluştu.'));
+            toastr.error(T('Message.LinkCopyError', 'Link kopyalanırken bir hata oluştu.'));
         });
     };
 

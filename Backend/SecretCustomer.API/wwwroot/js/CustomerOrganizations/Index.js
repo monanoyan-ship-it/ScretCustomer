@@ -56,7 +56,7 @@ function CustomerOrganizationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading customers:', error);
-                self.errorMessage('Müşteriler yüklenirken bir hata oluştu.');
+                toastr.error('Müşteriler yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -90,7 +90,7 @@ function CustomerOrganizationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading organizations:', error);
-                self.errorMessage('Organizasyonlar yüklenirken bir hata oluştu.');
+                toastr.error('Organizasyonlar yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoadingOrganizations(false);
@@ -234,7 +234,7 @@ function CustomerOrganizationsViewModel() {
     // Create new organization
     self.createNewOrganization = function() {
         if (!self.selectedCustomer()) {
-            self.errorMessage('Lütfen önce bir müşteri seçin.');
+            toastr.error('Lütfen önce bir müşteri seçin.');
             return;
         }
 
@@ -284,7 +284,7 @@ function CustomerOrganizationsViewModel() {
 
         var name = ko.unwrap(org.name);
         if (!name || name.trim() === '') {
-            self.modalErrorMessage('Organizasyon adı zorunludur.');
+            toastr.error('Organizasyon adı zorunludur.');
             return;
         }
 
@@ -340,7 +340,7 @@ function CustomerOrganizationsViewModel() {
                 if (error && error.message) {
                     errorMsg = error.message;
                 }
-                self.modalErrorMessage(errorMsg);
+                toastr.error(errorMsg);
             })
             .finally(function() {
                 self.isSaving(false);

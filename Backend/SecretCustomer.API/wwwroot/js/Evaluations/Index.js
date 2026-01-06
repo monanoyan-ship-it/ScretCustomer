@@ -166,7 +166,7 @@ function EvaluationsViewModel() {
         })
         .catch(function(error) {
             console.error('Load error:', error);
-            self.errorMessage(T('Evaluation.LoadError', 'Veriler yüklenirken bir hata oluştu.'));
+            toastr.error(T('Evaluation.LoadError', 'Veriler yüklenirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isLoading(false);
@@ -193,7 +193,7 @@ function EvaluationsViewModel() {
             .catch(function(error) {
                 console.error('Details load error:', error);
                 self.closeDetailsModal();
-                self.errorMessage(T('Evaluation.DetailsLoadError', 'Değerlendirme detayları yüklenirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.DetailsLoadError', 'Değerlendirme detayları yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isDetailsLoading(false);
@@ -294,7 +294,7 @@ function EvaluationsViewModel() {
         } else if (self.currentEvaluationId) {
             url = '/api/evaluations/form/edit/' + self.currentEvaluationId;
         } else {
-            self.modalErrorMessage(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
+            toastr.error(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
             self.isFormLoading(false);
             return;
         }
@@ -364,7 +364,7 @@ function EvaluationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                self.modalErrorMessage(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isFormLoading(false);
@@ -519,11 +519,11 @@ function EvaluationsViewModel() {
             return response.json();
         })
         .then(function(result) {
-            self.formSuccessMessage(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+            toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
         })
         .catch(function(error) {
             console.error('Draft save error:', error);
-            self.modalErrorMessage(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+            toastr.error(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);
@@ -553,7 +553,7 @@ function EvaluationsViewModel() {
             return response.json();
         })
         .then(function(newEvaluation) {
-            self.formSuccessMessage(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
+            toastr.success(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
 
             // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
             var existingIndex = -1;
@@ -590,7 +590,7 @@ function EvaluationsViewModel() {
         })
         .catch(function(error) {
             console.error('Submit error:', error);
-            self.modalErrorMessage(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
+            toastr.error(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);

@@ -238,7 +238,7 @@ function ProjectsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Projeler yüklenirken bir hata oluştu.');
+                toastr.error('Projeler yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -281,7 +281,7 @@ function ProjectsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Proje yüklenirken bir hata oluştu.');
+                toastr.error('Proje yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -308,7 +308,7 @@ function ProjectsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                self.errorMessage('Proje detayı yüklenirken bir hata oluştu.');
+                toastr.error('Proje detayı yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);

@@ -9,6 +9,7 @@ public interface ICustomerRepository
     Task<IEnumerable<Customer>> GetActiveAsync();
     Task<Customer?> GetByTaxNumberAsync(string taxNumber);
     Task<Customer?> GetByEmailAsync(string email);
+    Task<Customer?> GetByNameAsync(string companyName);
     Task<Customer> CreateAsync(Customer customer);
     Task<Customer> UpdateAsync(Customer customer);
     Task DeleteAsync(int id);

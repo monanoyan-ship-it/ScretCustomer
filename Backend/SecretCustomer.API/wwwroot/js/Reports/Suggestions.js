@@ -134,7 +134,7 @@ function SuggestionsViewModel() {
         })
         .catch(function(error) {
             console.error('Suggestions report error:', error);
-            self.errorMessage(error.message || T('Report.LoadErrorMessage', 'Rapor yüklenirken bir hata oluştu.'));
+            toastr.error(error.message || T('Report.LoadErrorMessage', 'Rapor yüklenirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isLoading(false);
@@ -202,7 +202,7 @@ function SuggestionsViewModel() {
             })
             .catch(function(error) {
                 console.error('Export error:', error);
-                self.errorMessage(T('Report.ExcelExportError', 'Excel export başarısız') + ': ' + error.message);
+                toastr.error(T('Report.ExcelExportError', 'Excel export başarısız') + ': ' + error.message);
             })
             .finally(function() {
                 self.isExporting(false);

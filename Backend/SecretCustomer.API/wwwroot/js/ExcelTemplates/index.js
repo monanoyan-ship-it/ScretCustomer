@@ -193,7 +193,7 @@ function ExcelTemplatesViewModel() {
             })
             .catch(err => {
                 console.error('Error loading templates:', err);
-                self.errorMessage('Şablonlar yüklenirken hata oluştu');
+                toastr.error('Şablonlar yüklenirken hata oluştu');
                 self.isLoading(false);
             });
     };
@@ -207,7 +207,7 @@ function ExcelTemplatesViewModel() {
             })
             .catch(err => {
                 console.error('Error loading schema:', err);
-                self.errorMessage('Şema yüklenirken hata oluştu');
+                toastr.error('Şema yüklenirken hata oluştu');
             });
     };
 
@@ -230,7 +230,7 @@ function ExcelTemplatesViewModel() {
             })
             .catch(err => {
                 console.error('Error loading template:', err);
-                self.errorMessage('Şablon yüklenirken hata oluştu');
+                toastr.error('Şablon yüklenirken hata oluştu');
             });
     };
 
@@ -278,13 +278,13 @@ function ExcelTemplatesViewModel() {
             return res.json();
         })
         .then(data => {
-            self.successMessage(template.id() ? 'Şablon güncellendi' : 'Şablon oluşturuldu');
+            toastr.success(template.id() ? 'Şablon güncellendi' : 'Şablon oluşturuldu');
             self.closeModal();
             self.loadTemplates();
         })
         .catch(err => {
             console.error('Error saving template:', err);
-            self.modalErrorMessage('Şablon kaydedilirken hata oluştu: ' + err.message);
+            toastr.error('Şablon kaydedilirken hata oluştu: ' + err.message);
         });
     };
 
@@ -296,12 +296,12 @@ function ExcelTemplatesViewModel() {
             })
             .then(res => {
                 if (!res.ok) throw new Error('Silme işlemi başarısız');
-                self.successMessage('Şablon silindi');
+                toastr.success('Şablon silindi');
                 self.loadTemplates();
             })
             .catch(err => {
                 console.error('Error deleting template:', err);
-                self.errorMessage('Şablon silinirken bir hata oluştu.');
+                toastr.error('Şablon silinirken bir hata oluştu.');
             });
         });
     };
@@ -366,7 +366,7 @@ function ExcelTemplatesViewModel() {
         })
         .catch(err => {
             console.error('Error importing:', err);
-            self.errorMessage('Excel içe aktarılırken hata oluştu: ' + err.message);
+            toastr.error('Excel içe aktarılırken hata oluştu: ' + err.message);
         });
     };
 

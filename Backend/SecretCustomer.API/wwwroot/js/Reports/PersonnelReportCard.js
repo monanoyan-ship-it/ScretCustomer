@@ -34,14 +34,14 @@ function PersonnelReportCardViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading personnel list:', error);
-                self.errorMessage('Personel listesi yuklenirken bir hata olustu.');
+                toastr.error('Personel listesi yuklenirken bir hata olustu.');
             });
     };
 
     // Load report
     self.loadReport = function() {
         if (!self.selectedPersonnelId()) {
-            self.errorMessage('Lutfen bir temsilci secin.');
+            toastr.error('Lutfen bir temsilci secin.');
             return;
         }
 
@@ -77,7 +77,7 @@ function PersonnelReportCardViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading report:', error);
-                self.errorMessage(error.message || 'Karne yuklenirken bir hata olustu.');
+                toastr.error(error.message || 'Karne yuklenirken bir hata olustu.');
             })
             .finally(function() {
                 self.isLoading(false);

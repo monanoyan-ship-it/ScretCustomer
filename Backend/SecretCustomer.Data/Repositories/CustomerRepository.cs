@@ -74,6 +74,13 @@ public class CustomerRepository : ICustomerRepository
             .FirstOrDefaultAsync(c => c.Email == email);
     }
 
+    public async Task<Customer?> GetByNameAsync(string companyName)
+    {
+        return await _context.Customers
+            .Where(c => !c.IsDeleted)
+            .FirstOrDefaultAsync(c => c.CompanyName.ToLower() == companyName.ToLower());
+    }
+
     public async Task<Customer> CreateAsync(Customer customer)
     {
         _context.Customers.Add(customer);

@@ -280,7 +280,7 @@ function CustomersViewModel() {
             phoneNumber: personnel.phoneNumber || '',
             department: personnel.department || '',
             title: personnel.title || '',
-            role: personnel.role,
+            role: String(personnel.role), // Convert to string for select binding
             isActive: personnel.isActive
         });
         self.showPersonnelFormModal(true);
@@ -296,31 +296,46 @@ function CustomersViewModel() {
 
         // Validation
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
-            self.personnelModalErrorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
+            toastr.warning(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
         if (!personnel.id && !personnel.password) {
-            self.personnelModalErrorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
+            toastr.warning(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
 
         self.isSavingPersonnel(true);
 
+        // Prepare data - convert empty password to null and role to integer
+        var data = {
+            customerId: personnel.customerId,
+            username: personnel.username,
+            email: personnel.email,
+            password: personnel.password || null,
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            phoneNumber: personnel.phoneNumber || null,
+            department: personnel.department || null,
+            title: personnel.title || null,
+            role: parseInt(personnel.role, 10),
+            isActive: personnel.isActive
+        };
+
         var promise = personnel.id
-            ? customerApiService.updatePersonnel(personnel.id, personnel)
-            : customerApiService.createPersonnel(personnel);
+            ? customerApiService.updatePersonnel(personnel.id, data)
+            : customerApiService.createPersonnel(data);
 
         promise
             .then(function() {
-                self.successMessage(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+                toastr.success(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.showPersonnelFormModal(false);
                 self.loadPersonnel(self.selectedCustomerForPersonnel().id);
                 self.loadCustomers(); // Refresh personnel count
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
-                self.personnelModalErrorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSavingPersonnel(false);
@@ -571,6 +586,19 @@ function CustomersViewModel() {
             return;
         }
 
+        // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(username)) {
+            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            return;
+        }
+
+        // Şifre uzunluğu kontrolü
+        if (password.length < 6) {
+            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            return;
+        }
+
         self.isSavingNewManager(true);
         self.orgModalErrorMessage('');
 
@@ -592,7 +620,24 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error creating manager:', error);
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Yönetici oluşturulurken bir hata oluştu.') + ' ' + (error.message || ''));
+            // Validation hatalarını detaylı göster
+            var errorMsg = '';
+            if (error.errors) {
+                var errorDetails = [];
+                for (var field in error.errors) {
+                    errorDetails.push(field + ': ' + error.errors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else if (error.validationErrors) {
+                var errorDetails = [];
+                for (var field in error.validationErrors) {
+                    errorDetails.push(field + ': ' + error.validationErrors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else {
+                errorMsg = error.message || error.title || JSON.stringify(error);
+            }
+            self.orgModalErrorMessage(T('Personnel.CreateError', 'Yönetici oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingNewManager(false);
@@ -831,7 +876,7 @@ function CustomersViewModel() {
             phoneNumber: personnel.phoneNumber || '',
             department: personnel.department || '',
             title: personnel.title || '',
-            role: personnel.role,
+            role: String(personnel.role), // Convert to string for select binding
             isActive: personnel.isActive !== false
         });
         self.showPersonnelFormModal(true);
@@ -848,24 +893,39 @@ function CustomersViewModel() {
 
         // Validation
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
-            self.personnelModalErrorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
+            toastr.warning(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
         if (!personnel.id && !personnel.password) {
-            self.personnelModalErrorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
+            toastr.warning(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
 
         self.isSavingPersonnel(true);
 
+        // Prepare data - convert empty password to null and role to integer
+        var data = {
+            customerId: personnel.customerId,
+            username: personnel.username,
+            email: personnel.email,
+            password: personnel.password || null,
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            phoneNumber: personnel.phoneNumber || null,
+            department: personnel.department || null,
+            title: personnel.title || null,
+            role: parseInt(personnel.role, 10),
+            isActive: personnel.isActive
+        };
+
         var promise = personnel.id
-            ? customerApiService.updatePersonnel(personnel.id, personnel)
-            : customerApiService.createPersonnel(personnel);
+            ? customerApiService.updatePersonnel(personnel.id, data)
+            : customerApiService.createPersonnel(data);
 
         promise
             .then(function() {
-                self.successMessage(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+                toastr.success(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.showPersonnelFormModal(false);
 
                 // If organization modal is open, refresh org data
@@ -880,7 +940,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
-                self.personnelModalErrorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSavingPersonnel(false);
@@ -1004,6 +1064,19 @@ function CustomersViewModel() {
             return;
         }
 
+        // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(username)) {
+            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            return;
+        }
+
+        // Şifre uzunluğu kontrolü
+        if (password.length < 6) {
+            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            return;
+        }
+
         self.isSavingNewSupervisor(true);
         self.orgModalErrorMessage('');
 
@@ -1034,7 +1107,26 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error creating supervisor:', error);
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Personel oluşturulurken bir hata oluştu.') + ' ' + (error.message || ''));
+            // Validation hatalarını detaylı göster
+            var errorMsg = '';
+            if (error.errors) {
+                // ASP.NET validation errors
+                var errorDetails = [];
+                for (var field in error.errors) {
+                    errorDetails.push(field + ': ' + error.errors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else if (error.validationErrors) {
+                // Custom validation errors
+                var errorDetails = [];
+                for (var field in error.validationErrors) {
+                    errorDetails.push(field + ': ' + error.validationErrors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else {
+                errorMsg = error.message || error.title || JSON.stringify(error);
+            }
+            self.orgModalErrorMessage(T('Personnel.CreateError', 'Personel oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingNewSupervisor(false);
@@ -1080,6 +1172,19 @@ function CustomersViewModel() {
             return;
         }
 
+        // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(username)) {
+            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            return;
+        }
+
+        // Şifre uzunluğu kontrolü
+        if (password.length < 6) {
+            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            return;
+        }
+
         self.isSavingOperator(true);
         self.orgModalErrorMessage('');
 
@@ -1111,7 +1216,24 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error creating operator:', error);
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Operatör oluşturulurken bir hata oluştu.') + ' ' + (error.message || ''));
+            // Validation hatalarını detaylı göster
+            var errorMsg = '';
+            if (error.errors) {
+                var errorDetails = [];
+                for (var field in error.errors) {
+                    errorDetails.push(field + ': ' + error.errors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else if (error.validationErrors) {
+                var errorDetails = [];
+                for (var field in error.validationErrors) {
+                    errorDetails.push(field + ': ' + error.validationErrors[field].join(', '));
+                }
+                errorMsg = errorDetails.join('; ');
+            } else {
+                errorMsg = error.message || error.title || JSON.stringify(error);
+            }
+            self.orgModalErrorMessage(T('Personnel.CreateError', 'Operatör oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingOperator(false);

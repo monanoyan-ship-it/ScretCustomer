@@ -169,7 +169,7 @@ function EvaluationFormViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading form:', error);
-                self.errorMessage(error.message || 'Form yüklenirken bir hata oluştu.');
+                toastr.error(error.message || 'Form yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -334,7 +334,7 @@ function EvaluationFormViewModel() {
                 self.assignmentId(parseInt(assignId));
                 self.loadForm();
             } else {
-                self.errorMessage('Atama ID bulunamadı.');
+                toastr.error('Atama ID bulunamadı.');
                 self.isLoading(false);
             }
         }

@@ -58,7 +58,7 @@ function DashboardViewModel() {
             })
             .catch(function(error) {
                 console.error('Dashboard error:', error);
-                self.errorMessage('Dashboard verileri yüklenirken bir hata oluştu.');
+                toastr.error('Dashboard verileri yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);

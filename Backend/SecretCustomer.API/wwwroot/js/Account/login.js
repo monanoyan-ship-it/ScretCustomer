@@ -11,7 +11,7 @@ function LoginViewModel() {
         self.errorMessage('');
 
         if (!self.username() || !self.password()) {
-            self.errorMessage(T('Account.LoginRequired', 'Kullanıcı adı ve şifre gereklidir.'));
+            toastr.error(T('Account.LoginRequired', 'Kullanıcı adı ve şifre gereklidir.'));
             return;
         }
 
@@ -24,7 +24,7 @@ function LoginViewModel() {
             })
             .catch(function(error) {
                 console.error('Login error:', error);
-                self.errorMessage(error.message || T('Account.LoginFailed', 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.'));
+                toastr.error(error.message || T('Account.LoginFailed', 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.'));
             })
             .finally(function() {
                 self.isLoading(false);

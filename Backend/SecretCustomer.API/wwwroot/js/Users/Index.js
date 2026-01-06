@@ -195,7 +195,7 @@ function UsersViewModel() {
             })
             .catch(function(err) {
                 console.error('Error loading data:', err);
-                self.errorMessage('Veriler yüklenirken bir hata oluştu.');
+                toastr.error('Veriler yüklenirken bir hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
@@ -283,7 +283,7 @@ function UsersViewModel() {
             self.closeModal();
         })
         .catch(function(err) {
-            self.modalErrorMessage(err.message);
+            toastr.error(err.message);
         })
         .finally(function() {
             self.isSaving(false);
@@ -385,7 +385,7 @@ function UsersViewModel() {
             self.closeCustomerPersonnelModal();
         })
         .catch(function(err) {
-            self.modalErrorMessage(err.message);
+            toastr.error(err.message);
         })
         .finally(function() {
             self.isSaving(false);
@@ -460,7 +460,7 @@ function UsersViewModel() {
             self.closePasswordModal();
         })
         .catch(function(err) {
-            self.modalErrorMessage(err.message);
+            toastr.error(err.message);
         })
         .finally(function() {
             self.isSaving(false);

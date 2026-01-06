@@ -235,7 +235,7 @@ function ChecklistViewModel() {
             })
             .catch(function (error) {
                 console.error('Checklists error:', error);
-                self.errorMessage('Kontrol listeleri yuklenirken bir hata olustu.');
+                toastr.error('Kontrol listeleri yuklenirken bir hata olustu.');
             })
             .finally(function () {
                 self.isLoading(false);
@@ -308,7 +308,7 @@ function ChecklistViewModel() {
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
-                self.errorMessage('Kontrol listesi yuklenirken bir hata olustu.');
+                toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
                 self.isLoading(false);
                 self._isLoadingChecklist = false;
             });
@@ -370,7 +370,7 @@ function ChecklistViewModel() {
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
-                self.errorMessage('Kontrol listesi yuklenirken bir hata olustu.');
+                toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
                 self.isLoading(false);
                 self._isLoadingChecklist = false;
             });
@@ -409,14 +409,14 @@ function ChecklistViewModel() {
             .then(function (result) {
                 if (result.success && result.attachment) {
                     question._attachments.push(result.attachment);
-                    self.successMessage('Dosya başarıyla yüklendi.');
+                    toastr.success('Dosya başarıyla yüklendi.');
                 } else {
-                    self.modalErrorMessage(result.message || 'Dosya yüklenemedi.');
+                    toastr.error(result.message || 'Dosya yüklenemedi.');
                 }
             })
             .catch(function (error) {
                 console.error('Upload error:', error);
-                self.modalErrorMessage('Dosya yüklenirken bir hata oluştu.');
+                toastr.error('Dosya yüklenirken bir hata oluştu.');
             })
             .finally(function () {
                 question._isUploadingFile(false);
@@ -433,11 +433,11 @@ function ChecklistViewModel() {
                 .then(function (response) { return response.json(); })
                 .then(function (result) {
                     question._attachments.remove(attachment);
-                    self.successMessage('Dosya silindi.');
+                    toastr.success('Dosya silindi.');
                 })
                 .catch(function (error) {
                     console.error('Delete error:', error);
-                    self.modalErrorMessage('Dosya silinirken bir hata oluştu.');
+                    toastr.error('Dosya silinirken bir hata oluştu.');
                 });
         });
     };
@@ -448,11 +448,11 @@ function ChecklistViewModel() {
             apiService.delete('/checklists/' + checklist.id)
                 .then(function () {
                     self.checklists.remove(checklist);
-                    self.successMessage('Kontrol listesi basariyla silindi.');
+                    toastr.success('Kontrol listesi basariyla silindi.');
                 })
                 .catch(function (error) {
                     console.error('Delete error:', error);
-                    self.errorMessage('Kontrol listesi silinirken bir hata olustu.');
+                    toastr.error('Kontrol listesi silinirken bir hata olustu.');
                 });
         });
     };
@@ -576,7 +576,7 @@ function ChecklistViewModel() {
                         }
                     }
                 }
-                self.successMessage('Kontrol listesi basariyla kaydedildi.');
+                toastr.success('Kontrol listesi basariyla kaydedildi.');
                 self.closeModal();
             })
             .catch(function (error) {
@@ -584,7 +584,7 @@ function ChecklistViewModel() {
                 if (error.errors) {
                     console.error('Validation errors:', JSON.stringify(error.errors, null, 2));
                 }
-                self.modalErrorMessage('Kontrol listesi kaydedilirken bir hata olustu: ' + (error.message || JSON.stringify(error.errors || '')));
+                toastr.error('Kontrol listesi kaydedilirken bir hata olustu: ' + (error.message || JSON.stringify(error.errors || '')));
             })
             .finally(function () {
                 self.isSaving(false);

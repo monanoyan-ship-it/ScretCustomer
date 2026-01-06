@@ -55,7 +55,7 @@ function CustomerPersonnelViewModel(customerId) {
             })
             .catch(function(error) {
                 console.error('Error loading customer:', error);
-                self.errorMessage(T('Customer.LoadError', 'Müşteri bilgileri yüklenirken bir hata oluştu.'));
+                toastr.error(T('Customer.LoadError', 'Müşteri bilgileri yüklenirken bir hata oluştu.'));
             });
     };
 
@@ -85,7 +85,7 @@ function CustomerPersonnelViewModel(customerId) {
             })
             .catch(function(error) {
                 console.error('Error loading personnel:', error);
-                self.errorMessage(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu:') + ' ' + (error.message || ''));
+                toastr.error(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu:') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -144,29 +144,29 @@ function CustomerPersonnelViewModel(customerId) {
 
         // Validation
         if (!personnel.customerId) {
-            self.modalErrorMessage(T('Validation.CustomerRequired', 'Müşteri seçimi zorunludur.'));
+            toastr.error(T('Validation.CustomerRequired', 'Müşteri seçimi zorunludur.'));
             return;
         }
 
         if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
-            self.modalErrorMessage(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
+            toastr.error(T('Personnel.RequiredFields', 'Kullanıcı adı, e-posta, ad ve soyad zorunludur.'));
             return;
         }
 
         // Username format validation (no spaces, no Turkish characters)
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
         if (!usernameRegex.test(personnel.username)) {
-            self.modalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            toastr.error(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
             return;
         }
 
         if (!personnel.id && !personnel.password) {
-            self.modalErrorMessage(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
+            toastr.error(T('Personnel.PasswordRequired', 'Yeni personel için şifre zorunludur.'));
             return;
         }
 
         if (!personnel.role) {
-            self.modalErrorMessage(T('Personnel.RoleRequired', 'Rol seçimi zorunludur.'));
+            toastr.error(T('Personnel.RoleRequired', 'Rol seçimi zorunludur.'));
             return;
         }
 
@@ -182,7 +182,7 @@ function CustomerPersonnelViewModel(customerId) {
             .then(function(data) {
                 if (data.exists) {
                     self.isSaving(false);
-                    self.modalErrorMessage(T('User.UsernameExists', 'Bu kullanıcı adı zaten kullanılıyor.'));
+                    toastr.error(T('User.UsernameExists', 'Bu kullanıcı adı zaten kullanılıyor.'));
                     return Promise.reject('username_exists');
                 }
                 // Check email
@@ -192,7 +192,7 @@ function CustomerPersonnelViewModel(customerId) {
             .then(function(data) {
                 if (data.exists) {
                     self.isSaving(false);
-                    self.modalErrorMessage(T('User.EmailExists', 'Bu e-posta adresi zaten kullanılıyor.'));
+                    toastr.error(T('User.EmailExists', 'Bu e-posta adresi zaten kullanılıyor.'));
                     return Promise.reject('email_exists');
                 }
                 // All checks passed, proceed with save
@@ -236,13 +236,13 @@ function CustomerPersonnelViewModel(customerId) {
 
         promise
             .then(function() {
-                self.successMessage(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+                toastr.success(personnel.id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
                 self.isModalOpen(false);
                 self.loadPersonnel();
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
-                self.modalErrorMessage(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu:') + ' ' + (error.message || ''));
+                toastr.error(T('Personnel.SaveError', 'Personel kaydedilirken bir hata oluştu:') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -261,12 +261,12 @@ function CustomerPersonnelViewModel(customerId) {
         deleteConfirmation.show(T('Personnel.DeleteConfirm', 'Bu personeli silmek istediğinizden emin misiniz?') + '\n\n' + personnel.fullName, function() {
             customerApiService.deletePersonnel(personnel.id)
                 .then(function() {
-                    self.successMessage(T('Personnel.DeleteSuccess', 'Personel başarıyla silindi.'));
+                    toastr.success(T('Personnel.DeleteSuccess', 'Personel başarıyla silindi.'));
                     self.loadPersonnel();
                 })
                 .catch(function(error) {
                     console.error('Error deleting personnel:', error);
-                    self.errorMessage(T('Personnel.DeleteError', 'Personel silinirken bir hata oluştu:') + ' ' + (error.message || ''));
+                    toastr.error(T('Personnel.DeleteError', 'Personel silinirken bir hata oluştu:') + ' ' + (error.message || ''));
                 });
         });
     };
@@ -288,17 +288,17 @@ function CustomerPersonnelViewModel(customerId) {
         var confirmPass = self.confirmPassword();
 
         if (!newPass || !confirmPass) {
-            self.errorMessage(T('Validation.AllFieldsRequired', 'Tüm alanlar zorunludur.'));
+            toastr.error(T('Validation.AllFieldsRequired', 'Tüm alanlar zorunludur.'));
             return;
         }
 
         if (newPass.length < 6) {
-            self.errorMessage(T('Validation.PasswordMinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
+            toastr.error(T('Validation.PasswordMinLength', 'Yeni şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
         if (newPass !== confirmPass) {
-            self.errorMessage(T('Validation.PasswordMismatch', 'Yeni şifre ve onay eşleşmiyor.'));
+            toastr.error(T('Validation.PasswordMismatch', 'Yeni şifre ve onay eşleşmiyor.'));
             return;
         }
 
@@ -308,14 +308,14 @@ function CustomerPersonnelViewModel(customerId) {
 
         customerApiService.resetPersonnelPassword(personnelId, newPass)
             .then(function(response) {
-                self.successMessage(response.message || T('Password.ResetSuccess', 'Şifre başarıyla sıfırlandı.'));
+                toastr.success(response.message || T('Password.ResetSuccess', 'Şifre başarıyla sıfırlandı.'));
                 self.showChangePasswordModal(false);
                 self.newPassword('');
                 self.confirmPassword('');
             })
             .catch(function(error) {
                 console.error('Error resetting password:', error);
-                self.errorMessage(T('Password.ResetError', 'Şifre sıfırlanırken bir hata oluştu:') + ' ' + (error.message || ''));
+                toastr.error(T('Password.ResetError', 'Şifre sıfırlanırken bir hata oluştu:') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isResettingPassword(false);
