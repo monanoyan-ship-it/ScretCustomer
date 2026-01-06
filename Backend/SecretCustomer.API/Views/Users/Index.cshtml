@@ -5,9 +5,10 @@
 <div id="users-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>@Html.T("User.Title", "Kullanıcılar")</h2>
-        <button class="btn btn-primary" data-bind="click: createNew">
+        <!-- Sadece Sistem Kullanıcıları tabında göster -->
+        <button class="btn btn-primary" data-bind="visible: activeTab() === 'users', click: createNew">
             <i class="bi bi-plus-circle"></i>
-            <span data-bind="text: activeTab() === 'users' ? '@Html.T("User.NewUser", "Yeni Kullanıcı")' : '@Html.T("CustomerPersonnel.New", "Yeni Müşteri Personeli")'"></span>
+            @Html.T("User.NewUser", "Yeni Kullanıcı")
         </button>
     </div>
 
