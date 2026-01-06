@@ -16,6 +16,7 @@ public class CustomerDto
     public DateTime? ContractEndDate { get; set; }
     public string? Notes { get; set; }
     public int PersonnelCount { get; set; }
+    public int OrganizationCount { get; set; }
     public int BranchCount { get; set; }
     public int ProjectCount { get; set; }
     public DateTime CreatedAt { get; set; }

@@ -47,7 +47,8 @@
                             <div>
                                 <div class="fw-semibold" data-bind="text: companyName"></div>
                                 <small class="text-muted">
-                                    <span data-bind="text: organizationCount || 0"></span> @Html.T("CustomerOrganization.OrgCount", "organizasyon")
+                                    <span title="Organizasyon">🏢 <span data-bind="text: organizationCount || 0"></span></span>
+                                    <span class="ms-2" title="Personel">👥 <span data-bind="text: personnelCount || 0"></span></span>
                                 </small>
                             </div>
                             <i class="bi bi-chevron-right"></i>
