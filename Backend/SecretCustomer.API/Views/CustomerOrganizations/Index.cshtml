@@ -196,7 +196,7 @@
                                                     </td>
                                                     <td data-bind="text: $data.title || '-'"></td>
                                                     <td>
-                                                        <span class="badge bg-secondary" data-bind="text: roleName"></span>
+                                                        <span class="badge" data-bind="text: roleName, css: { 'bg-danger': roleName === 'Müşteri Yöneticisi', 'bg-info': roleName === 'Müşteri Süpervizörü', 'bg-secondary': roleName === 'Müşteri Operatörü' }"></span>
                                                     </td>
                                                     <td>
                                                         <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
