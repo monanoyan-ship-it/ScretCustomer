@@ -28,6 +28,14 @@ Bu dosya projenin standart pattern'lerini içerir:
 2. **Modal ile CRUD** - Create/Edit/Detail işlemleri ayrı sayfa değil, modal ile yapılmalı
 3. **Spesifik Binding** - `ko.applyBindings(vm, document.getElementById('app-id'))` kullan
 4. **Ayrı Sayfa YOK** - Create.cshtml, Edit.cshtml, Detail.cshtml OLMAMALI
+5. **YALAN SÖYLEME** - "Kaldırıldı", "Yok" demeden önce MUTLAKA kontrol et (Glob, Grep kullan)
+6. **Varsayımda bulunma** - Entity, dosya veya özellik hakkında emin olmadan konuşma
+
+## Entity Yapısı Notları
+
+- **Section**: Entity olarak var ama kullanılmıyor. Questions artık direkt Checklist'e bağlı.
+- **GroupName**: Question entity'sinde var, sadece RAPORLAMA için gruplama amaçlı. UI'da gruplama yapılmamalı.
+- `.ThenInclude(c => c.Sections)` kullanımları temizlendi, `.ThenInclude(c => c.Questions)` kullanılmalı.
 
 ## Commit Kuralları
 

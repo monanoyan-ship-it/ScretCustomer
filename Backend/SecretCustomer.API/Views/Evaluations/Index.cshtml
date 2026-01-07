@@ -257,14 +257,14 @@
                         <button type="button" class="btn-close btn-close-white" data-bind="click: closeDetailsModal"></button>
                     </div>
                 </div>
-                <div class="modal-body" data-bind="with: detailsData">
+                <div class="modal-body">
                     <!-- Loading -->
-                    <div data-bind="visible: $parent.isDetailsLoading" class="text-center py-4">
+                    <div data-bind="visible: isDetailsLoading" class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
                     </div>
 
                     <!-- Content -->
-                    <div data-bind="visible: !$parent.isDetailsLoading()">
+                    <div data-bind="visible: !isDetailsLoading() && detailsData(), with: detailsData">
                         <!-- Summary Cards -->
                         <div class="row mb-4">
                             <div class="col-md-3">
@@ -590,14 +590,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Dönem yoksa uyarı -->
-                                <div class="col-12 mb-3" data-bind="visible: availablePeriods().length === 0">
-                                    <div class="alert alert-warning mb-0">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        @Html.T("Evaluation.NoPeriodWarning", "Bu atama için tanımlı dönem bulunmuyor. Dönem seçimi yapılmadan dinleme kaydedilebilir.")
-                                    </div>
-                                </div>
-
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header bg-light">
@@ -701,16 +693,6 @@
                                                 </div>
                                             </div>
                                             <div class="col-auto">
-                                                <!-- Ağırlık Grupları -->
-                                                <span class="badge bg-primary me-1" data-bind="visible: scoredWeightCalc() > 0" title="@Html.T("Evaluation.ScoredWeight", "Puanlı Soru Ağırlığı")">
-                                                    <i class="bi bi-star-fill"></i> <span data-bind="text: scoredWeightCalc()"></span>
-                                                </span>
-                                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardWeightCalc() > 0" title="@Html.T("Evaluation.YellowCardWeight", "Sarı Kart Ağırlığı")">
-                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardWeightCalc()"></span>
-                                                </span>
-                                                <span class="badge bg-danger me-2" data-bind="visible: redCardWeightCalc() > 0" title="@Html.T("Evaluation.RedCardWeight", "Kırmızı Kart Ağırlığı")">
-                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardWeightCalc()"></span>
-                                                </span>
                                                 <!-- Uygulanan Kartlar -->
                                                 <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCountCalc() > 0">
                                                     <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
@@ -724,39 +706,41 @@
                                 </div>
                             </div>
 
-                            <!-- Sections -->
+                            <!-- Soru Grupları: Sorular, Sarı Kartlar, Kırmızı Kartlar -->
                             <!-- ko if: formData() -->
                             <div data-bind="foreach: formData().sections">
                                 <div class="card shadow-sm mb-4">
-                                    <div class="card-header" data-bind="css: groupType === 'Penalty' ? 'bg-danger text-white' : (groupType === 'Unscored' ? 'bg-secondary text-white' : 'bg-light')">
+                                    <div class="card-header" data-bind="css: name === 'Kırmızı Kartlar' ? 'bg-danger text-white' : (name === 'Sarı Kartlar' ? 'bg-warning text-dark' : 'bg-primary text-white')">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h5 class="mb-0">
-                                                <span data-bind="text: order"></span>.
+                                                <!-- ko if: name === 'Sarı Kartlar' -->
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                <!-- /ko -->
+                                                <!-- ko if: name === 'Kırmızı Kartlar' -->
+                                                <i class="bi bi-x-circle-fill me-2"></i>
+                                                <!-- /ko -->
+                                                <!-- ko if: name === 'Sorular' -->
+                                                <i class="bi bi-list-check me-2"></i>
+                                                <!-- /ko -->
                                                 <span data-bind="text: name"></span>
-                                                <!-- ko if: groupType === 'Penalty' -->
-                                                <span class="badge bg-white text-danger ms-2">@Html.T("Evaluation.PenaltySection", "Cezalı Bölüm")</span>
-                                                <!-- /ko -->
-                                                <!-- ko if: groupType === 'Unscored' -->
-                                                <span class="badge bg-white text-secondary ms-2">@Html.T("Evaluation.Unscored", "Puansız")</span>
-                                                <!-- /ko -->
+                                                <span class="badge bg-white text-dark ms-2" data-bind="text: questions.length + ' soru'"></span>
                                             </h5>
                                             <div>
-                                                <small>
-                                                    @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
-                                                    @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span> @Html.T("Evaluation.Points", "puan")
-                                                </small>
+                                                <span class="badge bg-white text-dark">
+                                                    @Html.T("Evaluation.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="card-body">
                                         <!-- Questions -->
                                         <div data-bind="foreach: questions">
-                                            <div class="border rounded p-3 mb-3" data-bind="css: { 'border-danger': penaltyType !== 'None', 'border-warning': $parent.groupType === 'Unscored' }">
+                                            <div class="border rounded p-3 mb-3" data-bind="css: { 'border-danger': penaltyType === 'RedCard', 'border-warning': penaltyType === 'YellowCard' }">
                                                 <div class="row">
                                                     <div class="col-md-8">
                                                         <!-- Question Header -->
                                                         <div class="d-flex align-items-start mb-2">
-                                                            <span class="badge bg-secondary me-2" data-bind="text: $parent.order + '.' + order"></span>
+                                                            <span class="badge bg-secondary me-2" data-bind="text: order"></span>
                                                             <div class="flex-grow-1">
                                                                 <strong data-bind="text: text"></strong>
                                                                 <!-- ko if: helpText -->
@@ -765,20 +749,26 @@
                                                                 </button>
                                                                 <!-- /ko -->
                                                                 <div class="mt-1">
-                                                                    <!-- ko if: scoringType === 'Scored' -->
-                                                                    <span class="badge bg-primary">@Html.T("Evaluation.Scored", "Puanlı")</span>
+                                                                    <!-- ko if: scoringType === 'Scored' && penaltyType === 'None' -->
+                                                                    <span class="badge bg-primary">
+                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
+                                                                        @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span>
+                                                                    </span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: scoringType === 'Unscored' -->
                                                                     <span class="badge bg-secondary">@Html.T("Evaluation.Unscored", "Puansız")</span>
                                                                     <!-- /ko -->
-                                                                    <!-- ko if: scoringType === 'Penalty' -->
-                                                                    <span class="badge bg-danger">@Html.T("Evaluation.Penalty", "Cezalı")</span>
-                                                                    <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'YellowCard' -->
-                                                                    <span class="badge bg-warning text-dark">@Html.T("Evaluation.YellowCard", "Sarı Kart") (<span data-bind="text: weightPoints"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <span class="badge bg-warning text-dark">
+                                                                        @Html.T("Evaluation.YellowCard", "Sarı Kart") |
+                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                                    </span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'RedCard' -->
-                                                                    <span class="badge bg-danger">@Html.T("Evaluation.RedCard", "Kırmızı Kart") (<span data-bind="text: weightPoints"></span> @Html.T("Evaluation.Points", "puan"))</span>
+                                                                    <span class="badge bg-danger">
+                                                                        @Html.T("Evaluation.RedCard", "Kırmızı Kart") |
+                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                                    </span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: isRequired -->
                                                                     <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>

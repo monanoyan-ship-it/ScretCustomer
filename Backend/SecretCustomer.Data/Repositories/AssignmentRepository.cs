@@ -48,8 +48,7 @@ public class AssignmentRepository : IAssignmentRepository
             query = query
                 .Include(a => a.Project)
                 .Include(a => a.Checklist)
-                    .ThenInclude(c => c.Sections.OrderBy(s => s.Order))
-                        .ThenInclude(s => s.Questions.OrderBy(q => q.Order));
+                    .ThenInclude(c => c.Questions.OrderBy(q => q.Order));
         }
 
         return await query.FirstOrDefaultAsync(a => a.UniqueLink == uniqueLink);

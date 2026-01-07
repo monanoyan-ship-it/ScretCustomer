@@ -328,48 +328,8 @@ public class EvaluationService : IEvaluationService
             AvailablePersonnel = personnel,
             SelectedPeriodId = null,
             AvailablePeriods = periods,
-            // Sorular direkt checklist'e bağlı (Section kaldırıldı)
-            Sections = new List<EvaluationSectionDto>
-            {
-                new EvaluationSectionDto
-                {
-                    Id = 0,
-                    Name = "Sorular",
-                    Order = 1,
-                    WeightPoints = assignment.Checklist?.Questions.Sum(q => q.WeightPoints) ?? 0,
-                    MaxPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
-                    Questions = assignment.Checklist?.Questions
-                        .Where(q => !q.IsDeleted)
-                        .OrderBy(q => q.Order)
-                        .Select(q => new EvaluationQuestionDto
-                        {
-                            Id = q.Id,
-                            Text = q.Text,
-                            Order = q.Order,
-                            IsRequired = q.IsRequired,
-                            AllowNA = q.AllowNA,
-                            ScoringType = q.ScoringType.ToString(),
-                            WeightPoints = q.WeightPoints,
-                            MaxPoints = q.MaxPoints,
-                            PenaltyType = q.PenaltyType.ToString(),
-                            RecommendedNote = q.RecommendedNote,
-                            HelpText = q.HelpText,
-                            SubCriteria = q.SubCriteria?
-                                .Where(sc => !sc.IsDeleted && sc.IsActive)
-                                .OrderBy(sc => sc.Order)
-                                .Select(sc => new EvaluationSubCriteriaDto
-                                {
-                                    Id = sc.Id,
-                                    Description = sc.Description,
-                                    Order = sc.Order,
-                                    WeightPoints = sc.WeightPoints,
-                                    IsActive = sc.IsActive
-                                })
-                                .ToList()
-                        })
-                        .ToList() ?? new List<EvaluationQuestionDto>()
-                }
-            },
+            // Soruları GroupName'e göre grupla
+            Sections = BuildSectionsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
         };
     }
@@ -446,48 +406,8 @@ public class EvaluationService : IEvaluationService
             AvailablePersonnel = personnel,
             SelectedPeriodId = evaluation.AssignmentPeriodId,
             AvailablePeriods = periods,
-            Sections = new List<EvaluationSectionDto>
-            {
-                new EvaluationSectionDto
-                {
-                    Id = 0,
-                    Name = "Sorular",
-                    Order = 1,
-                    GroupType = "Scored",
-                    WeightPoints = assignment.Checklist?.Questions.Where(q => !q.IsDeleted).Sum(q => q.WeightPoints) ?? 0,
-                    MaxPoints = assignment.Checklist?.Questions.Where(q => !q.IsDeleted).Sum(q => q.MaxPoints) ?? 0,
-                    Questions = assignment.Checklist?.Questions
-                        .Where(q => !q.IsDeleted)
-                        .OrderBy(q => q.Order)
-                        .Select(q => new EvaluationQuestionDto
-                        {
-                            Id = q.Id,
-                            Text = q.Text,
-                            Order = q.Order,
-                            ScoringType = q.ScoringType.ToString(),
-                            WeightPoints = q.WeightPoints,
-                            MaxPoints = q.MaxPoints,
-                            PenaltyType = q.PenaltyType.ToString(),
-                            AllowNA = q.AllowNA,
-                            IsRequired = q.IsRequired,
-                            RecommendedNote = q.RecommendedNote,
-                            HelpText = q.HelpText,
-                            SubCriteria = q.SubCriteria?
-                                .Where(sc => !sc.IsDeleted && sc.IsActive)
-                                .OrderBy(sc => sc.Order)
-                                .Select(sc => new EvaluationSubCriteriaDto
-                                {
-                                    Id = sc.Id,
-                                    Description = sc.Description,
-                                    Order = sc.Order,
-                                    WeightPoints = sc.WeightPoints,
-                                    IsActive = sc.IsActive
-                                })
-                                .ToList()
-                        })
-                        .ToList() ?? new List<EvaluationQuestionDto>()
-                }
-            },
+            // Soruları GroupName'e göre grupla
+            Sections = BuildSectionsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = evaluation.Answers
                 .Select(a => MapAnswerToDto(a))
                 .ToList()
@@ -501,11 +421,10 @@ public class EvaluationService : IEvaluationService
 
     private async Task<EvaluationDto> ProcessEvaluationAsync(SubmitEvaluationDto dto, EvaluationStatus targetStatus)
     {
-        // Get assignment with checklist details
+        // Get assignment with checklist details (Sections kaldırıldı, Questions direkt Checklist'e bağlı)
         var assignment = await _context.Assignments
             .Include(a => a.Checklist)
-                .ThenInclude(c => c.Sections)
-                    .ThenInclude(s => s.Questions)
+                .ThenInclude(c => c.Questions)
             .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
 
         if (assignment == null)
@@ -540,9 +459,9 @@ public class EvaluationService : IEvaluationService
             evaluation.AssignmentPeriodId = dto.AssignmentPeriodId;
         }
 
-        // Get all questions from checklist
-        var allQuestions = assignment.Checklist.Sections
-            .SelectMany(s => s.Questions)
+        // Get all questions from checklist (Questions direkt Checklist'e bağlı)
+        var allQuestions = assignment.Checklist.Questions
+            .Where(q => !q.IsDeleted)
             .ToList();
 
         // Calculate scores with penalty handling
@@ -751,6 +670,79 @@ public class EvaluationService : IEvaluationService
         answer.UpdatedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Soruları PenaltyType'a göre grupla: Sorular, Sarı Kartlar, Kırmızı Kartlar
+    /// </summary>
+    private List<EvaluationSectionDto> BuildSectionsFromQuestions(List<Question>? questions)
+    {
+        if (questions == null || !questions.Any())
+            return new List<EvaluationSectionDto>();
+
+        var result = new List<EvaluationSectionDto>();
+        var order = 1;
+
+        // 1. Normal Sorular (PenaltyType = None)
+        var normalQuestions = questions.Where(q => q.PenaltyType == PenaltyType.None).OrderBy(q => q.Order).ToList();
+        if (normalQuestions.Any())
+        {
+            result.Add(CreateQuestionGroup(normalQuestions, "Sorular", order++));
+        }
+
+        // 2. Sarı Kartlar
+        var yellowCards = questions.Where(q => q.PenaltyType == PenaltyType.YellowCard).OrderBy(q => q.Order).ToList();
+        if (yellowCards.Any())
+        {
+            result.Add(CreateQuestionGroup(yellowCards, "Sarı Kartlar", order++));
+        }
+
+        // 3. Kırmızı Kartlar
+        var redCards = questions.Where(q => q.PenaltyType == PenaltyType.RedCard).OrderBy(q => q.Order).ToList();
+        if (redCards.Any())
+        {
+            result.Add(CreateQuestionGroup(redCards, "Kırmızı Kartlar", order++));
+        }
+
+        return result;
+    }
+
+    private EvaluationSectionDto CreateQuestionGroup(List<Question> questions, string name, int order)
+    {
+        return new EvaluationSectionDto
+        {
+            Id = order,
+            Name = name,
+            Order = order,
+            WeightPoints = questions.Sum(q => q.WeightPoints),
+            MaxPoints = questions.Sum(q => q.MaxPoints),
+            Questions = questions.Select(q => new EvaluationQuestionDto
+            {
+                Id = q.Id,
+                Text = q.Text,
+                Order = q.Order,
+                IsRequired = q.IsRequired,
+                AllowNA = q.AllowNA,
+                ScoringType = q.ScoringType.ToString(),
+                WeightPoints = q.WeightPoints,
+                MaxPoints = q.MaxPoints,
+                PenaltyType = q.PenaltyType.ToString(),
+                RecommendedNote = q.RecommendedNote,
+                HelpText = q.HelpText,
+                SubCriteria = q.SubCriteria?
+                    .Where(sc => !sc.IsDeleted && sc.IsActive)
+                    .OrderBy(sc => sc.Order)
+                    .Select(sc => new EvaluationSubCriteriaDto
+                    {
+                        Id = sc.Id,
+                        Description = sc.Description,
+                        Order = sc.Order,
+                        WeightPoints = sc.WeightPoints,
+                        IsActive = sc.IsActive
+                    })
+                    .ToList()
+            }).ToList()
+        };
+    }
+
     private AnswerDto MapAnswerToDto(Answer a)
     {
         return new AnswerDto
@@ -769,8 +761,8 @@ public class EvaluationService : IEvaluationService
             AttachmentFileName = a.AttachmentFileName,
             IsPenaltyApplied = a.IsPenaltyApplied,
             AppliedPenaltyType = a.AppliedPenaltyType.ToString(),
-            SectionOrder = a.Question?.Section?.Order,
-            SectionName = a.Question?.Section?.Name,
+            SectionOrder = null, // Section kaldırıldı
+            SectionName = null, // Section kaldırıldı
             QuestionOrder = a.Question?.Order,
             MaxPoints = a.Question?.WeightPoints, // WeightPoints kullanılıyor
             ScoringType = a.Question?.ScoringType.ToString(),
