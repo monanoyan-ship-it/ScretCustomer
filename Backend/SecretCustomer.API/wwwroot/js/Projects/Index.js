@@ -372,7 +372,7 @@ function ProjectsViewModel() {
         .then(function(savedProject) {
             if (isNew) {
                 // Yeni kayit: array'e ekle
-                self.projects.push(savedProject);
+                self.projects.unshift(savedProject); // Son eklenen en üstte
             } else {
                 // Guncelleme: array'de bul ve guncelle
                 var list = self.projects();

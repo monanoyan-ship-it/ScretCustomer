@@ -77,6 +77,17 @@ function CustomersViewModel() {
         return date.toLocaleDateString('tr-TR');
     };
 
+    // Date input için YYYY-MM-DD formatı
+    self.formatDateForInput = function(dateString) {
+        if (!dateString) return '';
+        var date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        var year = date.getFullYear();
+        var month = ('0' + (date.getMonth() + 1)).slice(-2);
+        var day = ('0' + date.getDate()).slice(-2);
+        return year + '-' + month + '-' + day;
+    };
+
     // Load customers
     self.loadCustomers = function() {
         self.isLoading(true);
@@ -88,7 +99,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading customers:', error);
-                self.errorMessage(T('Customer.LoadError', 'Müşteriler yüklenirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Customer.LoadError', 'Müşteriler yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -126,8 +137,8 @@ function CustomersViewModel() {
             address: customer.address || '',
             city: customer.city || '',
             isActive: customer.isActive,
-            contractStartDate: customer.contractStartDate,
-            contractEndDate: customer.contractEndDate,
+            contractStartDate: self.formatDateForInput(customer.contractStartDate),
+            contractEndDate: self.formatDateForInput(customer.contractEndDate),
             notes: customer.notes || ''
         });
         self.isModalOpen(true);
@@ -169,7 +180,7 @@ function CustomersViewModel() {
                         }
                     }
                 }
-                self.successMessage(isNew ? T('Customer.SaveSuccess', 'Müşteri başarıyla oluşturuldu.') : T('Customer.UpdateSuccess', 'Müşteri başarıyla güncellendi.'));
+                toastr.success(isNew ? T('Customer.SaveSuccess', 'Müşteri başarıyla oluşturuldu.') : T('Customer.UpdateSuccess', 'Müşteri başarıyla güncellendi.'));
                 self.isModalOpen(false);
             })
             .catch(function(error) {
@@ -197,11 +208,11 @@ function CustomersViewModel() {
                     .then(function() {
                         // Array'den sil
                         self.customers.remove(function(c) { return c.id === customer.id; });
-                        self.successMessage(T('Customer.DeleteSuccess', 'Müşteri başarıyla silindi.'));
+                        toastr.success(T('Customer.DeleteSuccess', 'Müşteri başarıyla silindi.'));
                     })
                     .catch(function(error) {
                         console.error('Error deleting customer:', error);
-                        self.errorMessage(T('Customer.DeleteError', 'Müşteri silinirken bir hata oluştu.') + ' ' + (error.message || ''));
+                        toastr.error(T('Customer.DeleteError', 'Müşteri silinirken bir hata oluştu.'));
                     });
             }
         );
@@ -228,7 +239,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading personnel:', error);
-                self.errorMessage(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoadingPersonnel(false);
@@ -335,11 +346,48 @@ function CustomersViewModel() {
             : customerApiService.createPersonnel(data);
 
         promise
-            .then(function() {
-                toastr.success(id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+            .then(function(response) {
+                var isNew = !id;
+                toastr.success(isNew ? T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.') : T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.'));
                 self.showPersonnelFormModal(false);
-                self.loadPersonnel(self.selectedCustomerForPersonnel().id);
-                self.loadCustomers(); // Refresh personnel count
+
+                if (isNew) {
+                    // Yeni: ID'yi al, nesneyi oluştur, listeye ekle
+                    var newItem = {
+                        id: response.id || response,
+                        customerId: data.customerId,
+                        username: data.username,
+                        email: data.email,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        fullName: data.firstName + ' ' + data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        department: data.department,
+                        title: data.title,
+                        role: data.role,
+                        isActive: data.isActive
+                    };
+                    self.personnel.push(newItem);
+                } else {
+                    // Güncelleme: mevcut kaydı bul ve güncelle
+                    var list = self.personnel();
+                    for (var j = 0; j < list.length; j++) {
+                        if (list[j].id === id) {
+                            list[j].username = data.username;
+                            list[j].email = data.email;
+                            list[j].firstName = data.firstName;
+                            list[j].lastName = data.lastName;
+                            list[j].fullName = data.firstName + ' ' + data.lastName;
+                            list[j].phoneNumber = data.phoneNumber;
+                            list[j].department = data.department;
+                            list[j].title = data.title;
+                            list[j].role = data.role;
+                            list[j].isActive = data.isActive;
+                            self.personnel.valueHasMutated();
+                            break;
+                        }
+                    }
+                }
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);
@@ -364,13 +412,13 @@ function CustomersViewModel() {
             function() {
                 customerApiService.deletePersonnel(personnel.id)
                     .then(function() {
-                        self.successMessage(T('Personnel.DeleteSuccess', 'Personel başarıyla silindi.'));
-                        self.loadPersonnel(self.selectedCustomerForPersonnel().id);
-                        self.loadCustomers(); // Refresh personnel count
+                        // Listeden sil (loadPersonnel yerine)
+                        self.personnel.remove(function(p) { return p.id === personnel.id; });
+                        toastr.success(T('Personnel.DeleteSuccess', 'Personel başarıyla silindi.'));
                     })
                     .catch(function(error) {
                         console.error('Error deleting personnel:', error);
-                        self.errorMessage(T('Personnel.DeleteError', 'Personel silinirken bir hata oluştu.') + ' ' + (error.message || ''));
+                        toastr.error(T('Personnel.DeleteError', 'Personel silinirken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -414,7 +462,7 @@ function CustomersViewModel() {
 
         customerApiService.resetPersonnelPassword(personnelId, newPass)
             .then(function(response) {
-                self.successMessage(response.message || T('Password.ResetSuccess', 'Şifre başarıyla sıfırlandı.'));
+                toastr.success(response.message || T('Password.ResetSuccess', 'Şifre başarıyla sıfırlandı.'));
                 self.showChangePasswordModal(false);
                 self.newPassword('');
                 self.confirmPassword('');
@@ -686,11 +734,23 @@ function CustomersViewModel() {
 
     // Close organizations modal
     self.closeOrganizationModal = function() {
+        // Modalı kapatmadan önce müşteri sayılarını güncelle (loadCustomers yerine)
+        var customer = self.selectedCustomerForOrg();
+        if (customer) {
+            var orgCount = self.organizations().length;
+            var customers = self.customers();
+            for (var i = 0; i < customers.length; i++) {
+                if (customers[i].id === customer.id) {
+                    customers[i].organizationCount = orgCount;
+                    self.customers.valueHasMutated();
+                    break;
+                }
+            }
+        }
         self.showOrganizationModal(false);
         self.selectedCustomerForOrg(null);
         self.organizations([]);
         self.selectedOrganization(null);
-        self.loadCustomers(); // Refresh to update counts
     };
 
     // Load organizations for customer
@@ -977,19 +1037,50 @@ function CustomersViewModel() {
             : customerApiService.createPersonnel(data);
 
         promise
-            .then(function() {
-                toastr.success(id ? T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.') : T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.'));
+            .then(function(response) {
+                var isNew = !id;
+                toastr.success(isNew ? T('Personnel.SaveSuccess', 'Personel başarıyla oluşturuldu.') : T('Personnel.UpdateSuccess', 'Personel başarıyla güncellendi.'));
                 self.showPersonnelFormModal(false);
 
-                // If organization modal is open, refresh org data
+                // Organization modalı açıksa, org personnel listesini güncelle
                 if (self.showOrganizationModal() && self.selectedOrganization()) {
+                    // OrgPersonnel güncelleme - yapısı karmaşık, sadece listeyi yenile
                     self.loadOrgPersonnel(self.selectedOrganization().id);
-                    self.loadOrganizations(self.selectedCustomerForOrg().id);
-                    self.loadPersonnelPool(self.selectedCustomerForOrg().id);
                 } else if (self.selectedCustomerForPersonnel()) {
-                    self.loadPersonnel(self.selectedCustomerForPersonnel().id);
+                    // Normal personnel modalı - local güncelle
+                    if (isNew) {
+                        var newItem = {
+                            id: response.id || response,
+                            customerId: data.customerId,
+                            username: data.username,
+                            email: data.email,
+                            firstName: data.firstName,
+                            lastName: data.lastName,
+                            fullName: data.firstName + ' ' + data.lastName,
+                            phoneNumber: data.phoneNumber,
+                            department: data.department,
+                            title: data.title,
+                            role: data.role,
+                            isActive: data.isActive
+                        };
+                        self.personnel.push(newItem);
+                    } else {
+                        var list = self.personnel();
+                        for (var j = 0; j < list.length; j++) {
+                            if (list[j].id === id) {
+                                list[j].username = data.username;
+                                list[j].email = data.email;
+                                list[j].firstName = data.firstName;
+                                list[j].lastName = data.lastName;
+                                list[j].fullName = data.firstName + ' ' + data.lastName;
+                                list[j].role = data.role;
+                                list[j].isActive = data.isActive;
+                                self.personnel.valueHasMutated();
+                                break;
+                            }
+                        }
+                    }
                 }
-                self.loadCustomers(); // Refresh personnel count
             })
             .catch(function(error) {
                 console.error('Error saving personnel:', error);

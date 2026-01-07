@@ -169,19 +169,6 @@
         <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</p>
     </div>
 
-    <!-- Messages -->
-    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show">
-        <i class="bi bi-check-circle"></i>
-        <span data-bind="text: successMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
-    </div>
-
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle"></i>
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
     <!-- Assignments -->
     <div data-bind="visible: !isLoading()">
         <!-- Empty State -->

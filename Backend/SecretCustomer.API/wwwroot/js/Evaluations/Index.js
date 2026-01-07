@@ -272,6 +272,22 @@ function EvaluationsViewModel() {
         self.answers = {};
         self.resetFormFields();
         self.loadForm();
+
+        // Flatpickr 24h time picker başlat (DOM güncellenince)
+        setTimeout(function() {
+            self.initTimePickers();
+        }, 100);
+    };
+
+    // Input mask başlatma
+    self.initTimePickers = function() {
+        Inputmask('99:99', { insertMode: false }).mask('.time-mask');
+        Inputmask('99:99:99', { insertMode: false }).mask('.duration-mask');
+
+        // Süre varsayılan olarak 00: ile başlasın
+        if (!self.duration()) {
+            self.duration('00:');
+        }
     };
 
     self.resetFormFields = function() {

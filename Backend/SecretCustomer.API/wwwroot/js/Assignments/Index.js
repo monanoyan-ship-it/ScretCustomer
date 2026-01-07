@@ -413,8 +413,8 @@ function AssignmentsViewModel() {
                         }
                     }
                 } else {
-                    // Yeni kayit: array'e ekle
-                    self.assignments.push(savedAssignment);
+                    // Yeni kayit: array'e ekle (son eklenen en üstte)
+                    self.assignments.unshift(savedAssignment);
                 }
                 toastr.success(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
                 self.closeModal();

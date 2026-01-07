@@ -18,20 +18,6 @@
         <p class="mt-2 text-muted">@Html.T("Profile.Loading", "Profil yükleniyor...")</p>
     </div>
 
-    <!-- Error Message -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
-    <!-- Success Message -->
-    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        <span data-bind="text: successMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
-    </div>
-
     <!-- Profile Content -->
     <div data-bind="visible: !isLoading()" class="row">
         <!-- Profile Info Card -->

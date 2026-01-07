@@ -12,12 +12,6 @@
         <div class="spinner-border text-primary"></div>
     </div>
 
-    <!-- Error Message -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
     <!-- Main Content -->
     <div data-bind="visible: !isLoading()" class="row">
         <!-- Left Panel: Customer List -->
@@ -320,19 +314,22 @@
                             <span class="badge bg-primary rounded-pill me-2">1</span>Hedef Organizasyon Seçin:
                         </label>
                         <div class="list-group" style="max-height: 200px; overflow-y: auto;">
-                            <!-- ko foreach: availableTargetOrgs -->
+                            <!-- ko foreach: organizations -->
                             <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                                data-bind="click: function() { $root.selectTargetOrg($data); }, css: { 'active': $root.selectedTargetOrg() && $root.selectedTargetOrg().id === id }">
                                 <div>
                                     <i class="bi bi-folder2 me-2"></i>
                                     <span data-bind="text: name"></span>
+                                    <!-- ko if: $root.selectedOrganization() && $root.selectedOrganization().id === id -->
+                                    <span class="badge bg-info ms-2">Mevcut</span>
+                                    <!-- /ko -->
                                 </div>
                                 <span class="badge bg-secondary" data-bind="text: personnelCount + ' kişi'"></span>
                             </a>
                             <!-- /ko -->
                         </div>
-                        <div data-bind="visible: availableTargetOrgs().length === 0" class="text-muted text-center py-3">
-                            Taşınabilecek başka organizasyon yok
+                        <div data-bind="visible: organizations().length === 0" class="text-muted text-center py-3">
+                            Organizasyon bulunamadı
                         </div>
                     </div>
 

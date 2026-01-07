@@ -15,13 +15,6 @@
         </div>
     </div>
 
-    <!-- Error State -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle"></i>
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
     <!-- Tabs -->
     <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
         <li class="nav-item">
@@ -134,7 +127,7 @@
                         <tr>
                             <td><strong data-bind="text: projectName"></strong></td>
                             <td data-bind="text: checklistName"></td>
-                            <td data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || '-'"></td>
+                            <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="progress flex-grow-1 me-2" style="height: 6px; width: 60px;">
@@ -343,7 +336,7 @@
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
-                                                <td data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || '-'"></td>
+                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CompletedAt", "Tamamlanma")</th>
@@ -540,16 +533,16 @@
                                                     <input type="text" class="form-control" data-bind="value: callId" placeholder="@Html.T("Evaluation.CallIdPlaceholder", "Çağrı numarası")">
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</label>
-                                                    <input type="date" class="form-control" data-bind="value: callDate">
+                                                    <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi") <span class="text-danger">*</span></label>
+                                                    <input type="date" class="form-control" data-bind="value: callDate" required>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.CallTime", "Çağrı Saati")</label>
-                                                    <input type="time" class="form-control" data-bind="value: callTime">
+                                                    <label class="form-label">@Html.T("Evaluation.CallTime", "Çağrı Saati") <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control time-mask" data-bind="value: callTime" placeholder="__:__" required>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.Duration", "Süre")</label>
-                                                    <input type="time" step="1" class="form-control" data-bind="value: duration" placeholder="SS:DD:SN">
+                                                    <label class="form-label">@Html.T("Evaluation.Duration", "Süre") <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control duration-mask" data-bind="value: duration" placeholder="00:__:__" required>
                                                 </div>
                                                 <!-- Açıklamalar -->
                                                 <div class="col-md-8">
@@ -603,10 +596,6 @@
                                                         </span>
                                                         <!-- /ko -->
                                                     </div>
-                                                </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">@Html.T("Evaluation.OrUnknownPersonnel", "veya Tanımsız Personel")</label>
-                                                    <input type="text" class="form-control" data-bind="value: evaluatedUnknownPersonnel" placeholder="@Html.T("Evaluation.UnknownPersonnelPlaceholder", "Tanımsız personel adı")">
                                                 </div>
                                             </div>
                                         </div>

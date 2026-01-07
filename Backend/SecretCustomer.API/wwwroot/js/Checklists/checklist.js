@@ -470,6 +470,15 @@ function ChecklistViewModel() {
     self.addQuestion = function () {
         if (!self.editingChecklist()) return;
         self.editingChecklist().addQuestion();
+
+        // Yeni eklenen soruya scroll yap
+        setTimeout(function() {
+            var questionCards = document.querySelectorAll('.question-card');
+            if (questionCards.length > 0) {
+                var lastCard = questionCards[questionCards.length - 1];
+                lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     };
 
     self.removeQuestion = function (question) {
@@ -655,8 +664,8 @@ function ChecklistViewModel() {
             .then(function (savedChecklist) {
                 var isNew = !data.id;
                 if (isNew) {
-                    // Yeni kayıt: array'e ekle
-                    self.checklists.push(savedChecklist);
+                    // Yeni kayıt: array'e ekle (son eklenen en üstte)
+                    self.checklists.unshift(savedChecklist);
                 } else {
                     // Güncelleme: array'de bul ve güncelle
                     var list = self.checklists();

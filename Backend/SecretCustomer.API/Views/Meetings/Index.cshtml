@@ -135,12 +135,6 @@
         <div class="spinner-border text-primary"></div>
     </div>
 
-    <!-- Error/Success Messages -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
     <!-- Meetings List -->
     <div data-bind="visible: !isLoading()" class="card shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
