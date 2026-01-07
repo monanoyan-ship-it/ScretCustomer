@@ -53,6 +53,11 @@ public class CustomerPersonnel : BaseEntity
         Description = "Personel hakkında notlar")]
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// İlk giriş veya şifre sıfırlama sonrası şifre değiştirmeye zorla
+    /// </summary>
+    public bool MustChangePassword { get; set; } = false;
+
     // Language Preference
     public int? PreferredLanguageId { get; set; }
     public Language? PreferredLanguage { get; set; }

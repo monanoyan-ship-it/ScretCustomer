@@ -14,27 +14,31 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    // Authentication related
+    // Authentication related - Case-insensitive username
     public async Task<User?> GetByUsernameAsync(string username)
     {
+        var lowerUsername = username.ToLower();
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == username);
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == lowerUsername);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
+        var lowerEmail = email.ToLower();
         return await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == lowerEmail);
     }
 
     public async Task<bool> ExistsByUsernameAsync(string username)
     {
-        return await _context.Users.AnyAsync(u => u.Username == username);
+        var lowerUsername = username.ToLower();
+        return await _context.Users.AnyAsync(u => u.Username.ToLower() == lowerUsername);
     }
 
     public async Task<bool> ExistsByEmailAsync(string email)
     {
-        return await _context.Users.AnyAsync(u => u.Email == email);
+        var lowerEmail = email.ToLower();
+        return await _context.Users.AnyAsync(u => u.Email.ToLower() == lowerEmail);
     }
 
     // CRUD operations

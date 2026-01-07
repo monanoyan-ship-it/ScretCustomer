@@ -221,23 +221,25 @@ function ChecklistViewModel() {
             });
     };
 
-    // Autocomplete - Grup önerilerini göster
-    self.showGroupSuggestions = function (question, event) {
-        // Mevcut sorulardan tüm grupları topla (API'den gelenler + yeni eklenmiş olanlar)
-        var allGroups = self.questionGroups().slice(); // API'den gelenler
-
-        // Mevcut soruların gruplarını da ekle (yeni eklenmişler)
+    // Mevcut checklist'in sorularından grup isimlerini al
+    self.getGroupsFromQuestions = function () {
+        var groups = [];
         if (self.editingChecklist()) {
             self.editingChecklist().questions().forEach(function (q) {
                 var gn = q.groupName();
-                if (gn && allGroups.indexOf(gn) === -1) {
-                    allGroups.push(gn);
+                if (gn && groups.indexOf(gn) === -1) {
+                    groups.push(gn);
                 }
             });
         }
+        return groups.sort();
+    };
 
+    // Autocomplete - Grup önerilerini göster
+    self.showGroupSuggestions = function (question, event) {
+        var allGroups = self.getGroupsFromQuestions();
         self.filteredGroups(allGroups);
-        self.showGroupDropdown(true);
+        self.showGroupDropdown(allGroups.length > 0);
     };
 
     // Autocomplete - Grup önerilerini filtrele
@@ -247,19 +249,8 @@ function ChecklistViewModel() {
         }
         self._groupFilterTimeout = setTimeout(function () {
             var searchVal = (event.target.value || '').toLowerCase();
+            var allGroups = self.getGroupsFromQuestions();
 
-            // Mevcut sorulardan tüm grupları topla
-            var allGroups = self.questionGroups().slice();
-            if (self.editingChecklist()) {
-                self.editingChecklist().questions().forEach(function (q) {
-                    var gn = q.groupName();
-                    if (gn && allGroups.indexOf(gn) === -1) {
-                        allGroups.push(gn);
-                    }
-                });
-            }
-
-            // Filtrele
             if (searchVal) {
                 var filtered = allGroups.filter(function (g) {
                     return g.toLowerCase().indexOf(searchVal) >= 0;

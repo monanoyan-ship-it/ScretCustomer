@@ -511,10 +511,15 @@ public class EvaluationService : IEvaluationService
         if (assignment == null)
             throw new KeyNotFoundException($"Assignment with ID {dto.AssignmentId} not found");
 
-        // Get or create evaluation
-        var evaluation = await _context.Evaluations
-            .Include(e => e.Answers)
-            .FirstOrDefaultAsync(e => e.AssignmentId == dto.AssignmentId && !e.IsDeleted);
+        Evaluation? evaluation = null;
+
+        // EvaluationId varsa onu kullan (taslak güncelleme), yoksa yeni oluştur
+        if (dto.EvaluationId.HasValue && dto.EvaluationId.Value > 0)
+        {
+            evaluation = await _context.Evaluations
+                .Include(e => e.Answers)
+                .FirstOrDefaultAsync(e => e.Id == dto.EvaluationId.Value && !e.IsDeleted);
+        }
 
         if (evaluation == null)
         {

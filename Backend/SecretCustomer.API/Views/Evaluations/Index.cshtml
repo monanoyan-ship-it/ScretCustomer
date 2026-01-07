@@ -244,6 +244,13 @@
                         <!-- /ko -->
                     </h5>
                     <div>
+                        <!-- Taslağa Al Talebi Butonu - Sadece Completed değerlendirmeler için -->
+                        <!-- ko if: detailsData() && detailsData().status === 'Completed' -->
+                        <button type="button" class="btn btn-warning btn-sm me-2"
+                                data-bind="click: openRevertRequestModal">
+                            <i class="bi bi-arrow-counterclockwise"></i> @Html.T("Evaluation.RequestRevert", "Taslağa Al Talebi")
+                        </button>
+                        <!-- /ko -->
                         <button type="button" class="btn btn-light btn-sm me-2" onclick="window.print()">
                             <i class="bi bi-printer"></i> @Html.T("Common.Print", "Yazdır")
                         </button>
@@ -422,14 +429,6 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <!-- Taslağa Al Talebi Butonu - Sadece Completed değerlendirmeler için -->
-                    <!-- ko if: status === 'Completed' -->
-                    <button type="button" class="btn btn-warning me-auto"
-                            data-bind="click: function() { $parent.requestRevertToDraft($data); }">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i>
-                        @Html.T("Evaluation.RequestRevert", "Taslağa Al Talebi")
-                    </button>
-                    <!-- /ko -->
                     <button type="button" class="btn btn-secondary" data-bind="click: closeDetailsModal">
                         @Html.T("Common.Close", "Kapat")
                     </button>
@@ -477,8 +476,86 @@
                         <button type="button" class="btn-close" data-bind="click: function() { formSuccessMessage(''); }"></button>
                     </div>
 
+                    <!-- Summary View -->
+                    <!-- ko if: isShowingSummary() && summaryData() -->
+                    <!-- ko with: summaryData -->
+                    <div class="container py-4">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8 col-lg-6">
+                                <div class="card shadow-lg border-success">
+                                    <div class="card-header bg-success text-white text-center py-4">
+                                        <i class="bi bi-check-circle-fill display-4 mb-2"></i>
+                                        <h4 class="mb-0">@Html.T("Evaluation.Completed", "Değerlendirme Tamamlandı")</h4>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <!-- Puan Özeti -->
+                                        <div class="text-center mb-4">
+                                            <div class="display-4 fw-bold text-primary" data-bind="text: totalScore.toFixed(1)"></div>
+                                            <div class="text-muted">
+                                                / <span data-bind="text: maxScore.toFixed(1)"></span> @Html.T("Evaluation.Points", "puan")
+                                            </div>
+                                            <div class="progress mt-3" style="height: 25px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                     data-bind="style: { width: scorePercentage.toFixed(0) + '%' },
+                                                                css: { 'bg-success': scorePercentage >= 70, 'bg-warning': scorePercentage >= 50 && scorePercentage < 70, 'bg-danger': scorePercentage < 50 }">
+                                                    <span class="fw-bold" data-bind="text: '%' + scorePercentage.toFixed(1)"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Kart Özeti -->
+                                        <div class="row text-center mb-4" data-bind="visible: yellowCardCount > 0 || redCardCount > 0">
+                                            <div class="col-6" data-bind="visible: yellowCardCount > 0">
+                                                <div class="p-3 bg-warning bg-opacity-25 rounded">
+                                                    <i class="bi bi-card-heading fs-3 text-warning"></i>
+                                                    <div class="fw-bold" data-bind="text: yellowCardCount"></div>
+                                                    <small class="text-muted">@Html.T("Evaluation.YellowCards", "Sarı Kart")</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6" data-bind="visible: redCardCount > 0">
+                                                <div class="p-3 bg-danger bg-opacity-25 rounded">
+                                                    <i class="bi bi-card-heading fs-3 text-danger"></i>
+                                                    <div class="fw-bold" data-bind="text: redCardCount"></div>
+                                                    <small class="text-muted">@Html.T("Evaluation.RedCards", "Kırmızı Kart")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Detay Bilgileri -->
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">@Html.T("Evaluation.Personnel", "Personel")</small>
+                                                <span class="fw-bold" data-bind="text: evaluatedPersonnelName"></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
+                                                <span class="fw-bold" data-bind="text: callId"></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>
+                                                <span class="fw-bold" data-bind="text: callDate"></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">@Html.T("Evaluation.Duration", "Süre")</small>
+                                                <span class="fw-bold" data-bind="text: duration"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-center py-3">
+                                        <button type="button" class="btn btn-lg btn-success" data-bind="click: $parent.closeEvaluateModal">
+                                            <i class="bi bi-check me-2"></i>@Html.T("Common.Close", "Kapat")
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- /ko -->
+
                     <!-- Form Content -->
-                    <div data-bind="visible: !isFormLoading() && formData()">
+                    <div data-bind="visible: !isFormLoading() && formData() && !isShowingSummary()">
                         <div class="container-fluid">
                             <!-- Period & Call Info -->
                             <div class="row mb-4">
@@ -624,11 +701,22 @@
                                                 </div>
                                             </div>
                                             <div class="col-auto">
-                                                <span class="badge bg-warning text-dark me-2" data-bind="visible: yellowCardCountCalc() > 0">
-                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
+                                                <!-- Ağırlık Grupları -->
+                                                <span class="badge bg-primary me-1" data-bind="visible: scoredWeightCalc() > 0" title="@Html.T("Evaluation.ScoredWeight", "Puanlı Soru Ağırlığı")">
+                                                    <i class="bi bi-star-fill"></i> <span data-bind="text: scoredWeightCalc()"></span>
+                                                </span>
+                                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardWeightCalc() > 0" title="@Html.T("Evaluation.YellowCardWeight", "Sarı Kart Ağırlığı")">
+                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardWeightCalc()"></span>
+                                                </span>
+                                                <span class="badge bg-danger me-2" data-bind="visible: redCardWeightCalc() > 0" title="@Html.T("Evaluation.RedCardWeight", "Kırmızı Kart Ağırlığı")">
+                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardWeightCalc()"></span>
+                                                </span>
+                                                <!-- Uygulanan Kartlar -->
+                                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCountCalc() > 0">
+                                                    <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
                                                 </span>
                                                 <span class="badge bg-danger" data-bind="visible: redCardCountCalc() > 0">
-                                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Evaluation.Red", "Kırmızı")
+                                                    <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Evaluation.Red", "Kırmızı")
                                                 </span>
                                             </div>
                                         </div>
@@ -831,7 +919,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" data-bind="visible: !isShowingSummary()">
                     <button type="button" class="btn btn-secondary" data-bind="click: closeEvaluateModal">
                         <i class="bi bi-x"></i> @Html.T("Common.Cancel", "İptal")
                     </button>
@@ -849,6 +937,42 @@
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="visible: isEvaluateModalOpen, css: { show: isEvaluateModalOpen }"></div>
+
+    <!-- Revert Request Modal -->
+    <div class="modal fade" data-bind="css: { show: isRevertRequestModalOpen }, style: { display: isRevertRequestModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("Evaluation.RequestRevert", "Taslağa Al Talebi")
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: closeRevertRequestModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">
+                        @Html.T("Evaluation.RevertRequestInfo", "Bu değerlendirmeyi taslağa almak için bir talep oluşturulacaktır. Admin onayı sonrası değerlendirme taslak durumuna alınacaktır.")
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Evaluation.RevertReason", "Neden (Opsiyonel)")</label>
+                        <textarea class="form-control" rows="3" data-bind="value: revertRequestReason"
+                                  placeholder="@Html.T("Evaluation.RevertReasonPlaceholder", "Taslağa alma nedeninizi yazabilirsiniz...")"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeRevertRequestModal">
+                        <i class="bi bi-x me-1"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-warning" data-bind="click: submitRevertRequest, disable: isSubmittingRevertRequest">
+                        <!-- ko if: isSubmittingRevertRequest() -->
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        <!-- /ko -->
+                        <i class="bi bi-send me-1"></i>@Html.T("Evaluation.SendRequest", "Talep Gönder")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isRevertRequestModalOpen, css: { show: isRevertRequestModalOpen }"></div>
 </div>
 
 @section Scripts {

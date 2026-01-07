@@ -25,6 +25,7 @@ public class AuthService : IAuthService
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
         // Önce User tablosunu kontrol et (bizim personelimiz)
+        // UserRepository zaten case-insensitive arama yapıyor
         var user = await _userRepository.GetByUsernameAsync(dto.Username);
         if (user != null)
         {
@@ -46,14 +47,17 @@ public class AuthService : IAuthService
                 UserId = user.Id,
                 Username = user.Username,
                 FullName = $"{user.FirstName} {user.LastName}",
-                Role = user.Role.ToString()
+                Role = user.Role.ToString(),
+                MustChangePassword = user.MustChangePassword
             };
         }
 
         // User bulunamadıysa CustomerPersonnel tablosunu kontrol et (müşteri personeli)
+        // Case-insensitive arama
+        var lowerUsername = dto.Username.ToLower();
         var customerPersonnel = await _context.CustomerPersonnel
             .Include(cp => cp.Customer)
-            .FirstOrDefaultAsync(cp => cp.Username == dto.Username && !cp.IsDeleted);
+            .FirstOrDefaultAsync(cp => cp.Username.ToLower() == lowerUsername && !cp.IsDeleted);
 
         if (customerPersonnel != null)
         {
@@ -73,7 +77,8 @@ public class AuthService : IAuthService
                 FullName = customerPersonnel.FullName,
                 Role = customerPersonnel.Role.ToString(),
                 CustomerId = customerPersonnel.CustomerId,
-                CustomerName = customerPersonnel.Customer?.CompanyName
+                CustomerName = customerPersonnel.Customer?.CompanyName,
+                MustChangePassword = customerPersonnel.MustChangePassword
             };
         }
 
@@ -191,8 +196,9 @@ public class AuthService : IAuthService
                 Message = "Yeni şifre en az 6 karakter olmalıdır."
             };
 
-        // Update password
+        // Update password ve MustChangePassword'ü sıfırla
         user.PasswordHash = HashPassword(dto.NewPassword);
+        user.MustChangePassword = false;
         await _userRepository.UpdateAsync(user);
 
         return new ChangePasswordResultDto

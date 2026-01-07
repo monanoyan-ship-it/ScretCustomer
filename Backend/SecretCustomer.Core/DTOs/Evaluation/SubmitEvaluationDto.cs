@@ -8,6 +8,11 @@ public class SubmitEvaluationDto
     public int AssignmentId { get; set; }
 
     /// <summary>
+    /// Mevcut değerlendirme ID (taslak güncelleme için)
+    /// </summary>
+    public int? EvaluationId { get; set; }
+
+    /// <summary>
     /// Değerlendirmenin ait olduğu dönem
     /// </summary>
     public int? AssignmentPeriodId { get; set; }

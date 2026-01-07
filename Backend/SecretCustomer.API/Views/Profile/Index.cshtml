@@ -10,6 +10,16 @@
         </h2>
     </div>
 
+    @if (TempData["MustChangePassword"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>@Html.T("Profile.PasswordChangeRequired", "Şifre Değişikliği Gerekli!")</strong>
+            @(TempData["Info"] ?? Html.T("Account.MustChangePassword", "İlk giriş veya şifre sıfırlama sonrası şifrenizi değiştirmeniz gerekmektedir."))
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">

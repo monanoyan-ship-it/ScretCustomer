@@ -29,6 +29,12 @@ Bu dosya projenin standart pattern'lerini içerir:
 3. **Spesifik Binding** - `ko.applyBindings(vm, document.getElementById('app-id'))` kullan
 4. **Ayrı Sayfa YOK** - Create.cshtml, Edit.cshtml, Detail.cshtml OLMAMALI
 
+## Commit Kuralları
+
+- **Kullanıcı açıkça "commit yap" demeden commit YAPILMAZ**
+- Değişiklikler önce test edilmeli
+- Kullanıcı onayı olmadan push yapılmaz
+
 ## Proje Yapısı
 
 ```

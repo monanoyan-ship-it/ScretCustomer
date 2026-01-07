@@ -38,6 +38,10 @@ function EvaluationsViewModel() {
     self.currentAssignmentId = null;
     self.currentEvaluationId = null;
 
+    // Özet görünümü
+    self.isShowingSummary = ko.observable(false);
+    self.summaryData = ko.observable(null);
+
     // Form fields
     self.callId = ko.observable('');
     self.callDate = ko.observable('');
@@ -76,6 +80,10 @@ function EvaluationsViewModel() {
     self.scorePercentageCalc = ko.observable(0);
     self.yellowCardCountCalc = ko.observable(0);
     self.redCardCountCalc = ko.observable(0);
+    // Ağırlık grupları
+    self.scoredWeightCalc = ko.observable(0);      // Normal soru ağırlığı
+    self.yellowCardWeightCalc = ko.observable(0);  // Sarı kart ağırlığı
+    self.redCardWeightCalc = ko.observable(0);     // Kırmızı kart ağırlığı
 
     // Helper: Generate score options array [0, 1, 2, ..., maxPoints]
     // Müşteri isteği: ağırlık=15, max=2 ise → 0,1,2 seçenekleri
@@ -219,16 +227,37 @@ function EvaluationsViewModel() {
         self.detailsData(null);
     };
 
-    // Taslağa alma talebi gönder
-    self.requestRevertToDraft = function(evaluation) {
-        var reason = prompt('Taslağa alma nedeninizi yazınız (opsiyonel):', '');
-        if (reason === null) return; // İptal edildi
+    // Taslağa alma talebi modalı
+    self.isRevertRequestModalOpen = ko.observable(false);
+    self.revertRequestReason = ko.observable('');
+    self.isSubmittingRevertRequest = ko.observable(false);
+    self.revertRequestEvaluationId = ko.observable(null);
 
-        fetch('/api/evaluations/' + evaluation.id + '/request-revert', {
+    self.openRevertRequestModal = function() {
+        if (self.detailsData()) {
+            self.revertRequestEvaluationId(self.detailsData().id);
+            self.revertRequestReason('');
+            self.isRevertRequestModalOpen(true);
+        }
+    };
+
+    self.closeRevertRequestModal = function() {
+        self.isRevertRequestModalOpen(false);
+        self.revertRequestReason('');
+        self.revertRequestEvaluationId(null);
+    };
+
+    self.submitRevertRequest = function() {
+        var evaluationId = self.revertRequestEvaluationId();
+        if (!evaluationId) return;
+
+        self.isSubmittingRevertRequest(true);
+
+        fetch('/api/evaluations/' + evaluationId + '/request-revert', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ reason: reason || '' })
+            body: JSON.stringify({ reason: self.revertRequestReason() || '' })
         })
         .then(function(res) {
             if (!res.ok) {
@@ -239,11 +268,15 @@ function EvaluationsViewModel() {
             return res.json();
         })
         .then(function(result) {
-            toastr.success('Taslağa alma talebi gönderildi. Admin onayı bekleniyor.');
+            toastr.success(T('Evaluation.RevertRequestSent', 'Taslağa alma talebi gönderildi. Admin onayı bekleniyor.'));
+            self.closeRevertRequestModal();
             self.closeDetailsModal();
         })
         .catch(function(err) {
-            toastr.error(err.message || 'Talep gönderilemedi.');
+            toastr.error(err.message || T('Evaluation.RevertRequestFailed', 'Talep gönderilemedi.'));
+        })
+        .finally(function() {
+            self.isSubmittingRevertRequest(false);
         });
     };
 
@@ -270,6 +303,8 @@ function EvaluationsViewModel() {
         self.formSuccessMessage('');
         self.formData(null);
         self.answers = {};
+        self.isShowingSummary(false);
+        self.summaryData(null);
         self.resetFormFields();
         self.loadForm();
 
@@ -308,6 +343,9 @@ function EvaluationsViewModel() {
         self.scorePercentageCalc(0);
         self.yellowCardCountCalc(0);
         self.redCardCountCalc(0);
+        self.scoredWeightCalc(0);
+        self.yellowCardWeightCalc(0);
+        self.redCardWeightCalc(0);
     };
 
     self.closeEvaluateModal = function() {
@@ -315,6 +353,8 @@ function EvaluationsViewModel() {
         self.formData(null);
         self.currentAssignmentId = null;
         self.currentEvaluationId = null;
+        self.isShowingSummary(false);
+        self.summaryData(null);
     };
 
     // Get or create answer for a question
@@ -469,9 +509,24 @@ function EvaluationsViewModel() {
         var max = 0;
         var yellowCards = 0;
         var redCards = 0;
+        // Ağırlık grupları
+        var scoredWeight = 0;
+        var yellowCardWeight = 0;
+        var redCardWeight = 0;
 
         self.formData().sections.forEach(function(section) {
             section.questions.forEach(function(q) {
+                var weight = q.weightPoints || q.points || 0;
+
+                // Ağırlık gruplarını hesapla (tüm sorular için)
+                if (q.penaltyType === 'YellowCard') {
+                    yellowCardWeight += weight;
+                } else if (q.penaltyType === 'RedCard') {
+                    redCardWeight += weight;
+                } else if (q.scoringType === 'Scored') {
+                    scoredWeight += weight;
+                }
+
                 var answer = self.answers[q.id];
                 if (!answer) return;
 
@@ -488,7 +543,6 @@ function EvaluationsViewModel() {
 
                     var numericValue = parseFloat(answer.answerNumeric()) || 0;
                     var maxScore = q.maxPoints || 2;
-                    var weight = q.weightPoints || 0;
 
                     // 0 seçilirse ceza yok, maxScore seçilirse tam ceza
                     if (numericValue > 0) {
@@ -506,7 +560,6 @@ function EvaluationsViewModel() {
                 // Normal scored questions
                 // Müşteri isteği: ağırlık puanı (weightPoints) ve max skor (maxPoints) sistemi
                 // Örnek: ağırlık=15, max=2 → 0 seçilirse 0 puan, 1 seçilirse 7.5 puan, 2 seçilirse 15 puan
-                var weight = q.weightPoints || q.points || 0;
                 var maxScore = q.maxPoints || 5;
                 max += weight;  // Toplam maksimum puan = ağırlık puanları toplamı
 
@@ -533,6 +586,10 @@ function EvaluationsViewModel() {
         self.scorePercentageCalc(Math.min(100, percentage));
         self.yellowCardCountCalc(yellowCards);
         self.redCardCountCalc(redCards);
+        // Ağırlık grupları
+        self.scoredWeightCalc(scoredWeight);
+        self.yellowCardWeightCalc(yellowCardWeight);
+        self.redCardWeightCalc(redCardWeight);
     };
 
     // Prepare submission data
@@ -582,6 +639,7 @@ function EvaluationsViewModel() {
 
         return {
             assignmentId: self.formData().assignmentId,
+            evaluationId: self.formData().evaluationId || null,
             assignmentPeriodId: self.selectedPeriodId() || null,
             answers: answers,
             notes: '',
@@ -620,6 +678,9 @@ function EvaluationsViewModel() {
         })
         .then(function(result) {
             toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+            // Taslak kaydedilince modal kapansın ve liste yenilensin
+            self.closeEvaluateModal();
+            self.loadEvaluations();
         })
         .catch(function(error) {
             console.error('Draft save error:', error);
@@ -652,8 +713,9 @@ function EvaluationsViewModel() {
             if (!response.ok) throw new Error(T('Evaluation.SubmitError', 'Değerlendirme gönderilemedi'));
             return response.json();
         })
-        .then(function(newEvaluation) {
-            toastr.success(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla tamamlandı.'));
+        .then(function(result) {
+            // API { message, evaluation } döndürüyor
+            var newEvaluation = result.evaluation || result;
 
             // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
             var existingIndex = -1;
@@ -683,10 +745,24 @@ function EvaluationsViewModel() {
                 }
             }
 
-            // Close modal after 1.5 seconds
-            setTimeout(function() {
-                self.closeEvaluateModal();
-            }, 1500);
+            // Özet verilerini hazırla ve göster
+            self.summaryData({
+                totalScore: self.totalScoreCalc(),
+                maxScore: self.maxScoreCalc(),
+                scorePercentage: self.scorePercentageCalc(),
+                yellowCardCount: self.yellowCardCountCalc(),
+                redCardCount: self.redCardCountCalc(),
+                scoredWeight: self.scoredWeightCalc(),
+                yellowCardWeight: self.yellowCardWeightCalc(),
+                redCardWeight: self.redCardWeightCalc(),
+                evaluatedPersonnelName: self.availablePersonnel().find(function(p) {
+                    return p.id === self.evaluatedPersonnelId();
+                })?.name || self.evaluatedUnknownPersonnel() || '-',
+                callId: self.callId() || '-',
+                callDate: self.callDate() || '-',
+                duration: self.duration() || '-'
+            });
+            self.isShowingSummary(true);
         })
         .catch(function(error) {
             console.error('Submit error:', error);

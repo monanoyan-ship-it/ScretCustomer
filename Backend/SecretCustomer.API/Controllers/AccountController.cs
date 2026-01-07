@@ -74,7 +74,8 @@ public class AccountController : Controller
                 new Claim(ClaimTypes.Name, result.FullName),
                 new Claim(ClaimTypes.Email, result.Username), // Using username as email
                 new Claim(ClaimTypes.Role, result.Role),
-                new Claim("Username", result.Username)
+                new Claim("Username", result.Username),
+                new Claim("MustChangePassword", result.MustChangePassword.ToString())
             };
 
             // CustomerPersonnel ise ek claim'ler ekle
@@ -105,6 +106,14 @@ public class AccountController : Controller
             await _auditLogService.LogLoginAsync(result.UserId, result.Username, success: true);
 
             _logger.LogInformation("User {Username} logged in successfully", model.Username);
+
+            // Şifre değiştirmesi gereken kullanıcıyı Profile sayfasına yönlendir
+            if (result.MustChangePassword)
+            {
+                TempData["MustChangePassword"] = true;
+                TempData["Info"] = await _localizationService.GetResourceAsync("Account.MustChangePassword", "İlk giriş veya şifre sıfırlama sonrası şifrenizi değiştirmeniz gerekmektedir.");
+                return RedirectToAction("Index", "Profile");
+            }
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {

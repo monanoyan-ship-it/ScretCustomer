@@ -48,6 +48,11 @@ public class User : BaseEntity
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiry { get; set; }
 
+    /// <summary>
+    /// İlk giriş veya şifre sıfırlama sonrası şifre değiştirmeye zorla
+    /// </summary>
+    public bool MustChangePassword { get; set; } = false;
+
     // Navigation properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();

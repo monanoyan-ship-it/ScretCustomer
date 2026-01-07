@@ -24,6 +24,11 @@ public class LoginResponseDto
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
     public bool IsCustomerPersonnel => CustomerId.HasValue;
+
+    /// <summary>
+    /// Kullanıcı şifre değiştirmeye zorlanıyor mu?
+    /// </summary>
+    public bool MustChangePassword { get; set; }
 }
 
 public class RegisterDto

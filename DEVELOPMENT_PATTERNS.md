@@ -495,6 +495,40 @@ showConfirmModal({
 
 ---
 
+## 13. Migration Kuralları (Entity Framework Core)
+
+### Migration Oluşturma
+```bash
+# Proje kök dizininde çalıştır:
+dotnet ef migrations add MigrationIsmi --project Backend/SecretCustomer.Data --startup-project Backend/SecretCustomer.API
+```
+
+### Migration Uygulama (Database Update)
+```bash
+dotnet ef database update --project Backend/SecretCustomer.Data --startup-project Backend/SecretCustomer.API
+```
+
+### Migration İptali/Geri Alma
+```bash
+# Son migration'ı sil (uygulanmadan önce)
+dotnet ef migrations remove --project Backend/SecretCustomer.Data --startup-project Backend/SecretCustomer.API
+
+# Belirli migration'a geri dön
+dotnet ef database update MigrationIsmi --project Backend/SecretCustomer.Data --startup-project Backend/SecretCustomer.API
+```
+
+### ÖNEMLİ KURALLAR
+1. **Migration ismi açıklayıcı olmalı:** `AddMustChangePasswordToUser`, `RemoveFieldWorkerEntity`
+2. **Her entity değişikliği için migration oluştur**
+3. **Migration oluşturduktan sonra database update yap**
+4. **Production'da otomatik migration AÇIK:** `Program.cs`'de `db.Database.Migrate()` var
+5. **Migration dosyalarını silme!** Sadece `migrations remove` komutu kullan
+
+### Connection String
+PostgreSQL bağlantısı `appsettings.json` ve `appsettings.Development.json`'da tanımlı.
+
+---
+
 ## ÖZET
 
 1. **Her modül TEK Index.cshtml ile çalışır**
