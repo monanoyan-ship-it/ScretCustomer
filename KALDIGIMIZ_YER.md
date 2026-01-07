@@ -517,6 +517,12 @@ public CustomerPersonnel? EvaluatedCustomerPersonnel { get; set; }
 
 ---
 
+## 📋 YARIN YAPILACAKLAR (9 Ocak 2026)
+
+1. **Puanlama Sistemi Yeniden Düzenlenecek**
+
+---
+
 ## 📝 NOTLAR
 
 ### Entity Durumu
