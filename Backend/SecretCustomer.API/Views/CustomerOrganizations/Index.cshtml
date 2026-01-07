@@ -113,101 +113,112 @@
                         </div>
                     </div>
 
-                    <!-- Organizations with Personnel -->
-                    <div data-bind="visible: organizations().length > 0" class="card shadow">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>@Html.T("CustomerOrganization.List", "Organizasyonlar")</h6>
-                            <small class="text-muted">
-                                <i class="bi bi-arrows-move me-1"></i>Personeli sürükleyip başka organizasyona bırakabilirsiniz
-                            </small>
+                    <!-- Organizations with TreeView -->
+                    <div data-bind="visible: organizations().length > 0">
+                        <div class="card shadow mb-2">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>@Html.T("CustomerOrganization.List", "Organizasyonlar")</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-lightbulb me-1"></i>Taşımak için personel satırındaki butonu kullanın
+                                </small>
+                            </div>
                         </div>
-                        <div class="list-group list-group-flush">
-                            <!-- ko foreach: organizations -->
-                            <div class="org-item" data-bind="
-                                event: {
-                                    dragover: function(data, e) { $root.onOrgDragOver(data, e); },
-                                    dragleave: function(data, e) { $root.onOrgDragLeave(data, e); },
-                                    drop: function(data, e) { $root.onOrgDrop(data, e); }
-                                },
-                                css: { 'drop-target': $root.dropTargetOrgId() === id }
-                            ">
-                                <!-- Organization Row -->
-                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                     data-bind="click: $root.toggleOrganization, css: { 'bg-light': isSelected() }">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi me-2" data-bind="css: isSelected() ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-                                        <i class="bi bi-diagram-3 text-primary me-2"></i>
-                                        <span class="fw-semibold" data-bind="text: name"></span>
-                                        <span class="badge bg-secondary ms-2" data-bind="text: code, visible: code"></span>
-                                        <span class="badge bg-info ms-2" data-bind="visible: personnelCount > 0">
-                                            <i class="bi bi-people"></i> <span data-bind="text: personnelCount"></span>
-                                        </span>
-                                        <span class="badge ms-2" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
-                                    </div>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary me-1" title="Düzenle"
-                                                data-bind="click: function(data, event) { $root.editOrganization(data, event); }">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" title="Sil"
-                                                data-bind="click: function(data, event) { $root.deleteOrganization(data, event); }">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
 
-                                <!-- Personnel Panel (expanded) -->
-                                <div class="personnel-panel" data-bind="visible: isSelected()">
-                                    <!-- Loading -->
-                                    <div data-bind="visible: $root.isLoadingPersonnel" class="text-center py-3">
-                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <!-- Organization Cards -->
+                        <div class="row" data-bind="foreach: organizations">
+                            <div class="col-md-6 mb-3">
+                                <div class="card org-card h-100" data-bind="css: { 'border-primary': isSelected() }">
+                                    <!-- Card Header -->
+                                    <div class="card-header d-flex justify-content-between align-items-center py-2"
+                                         data-bind="click: $root.toggleOrganization, css: { 'bg-primary text-white': isSelected(), 'bg-light': !isSelected() }"
+                                         style="cursor: pointer;">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi me-2" data-bind="css: isSelected() ? 'bi-folder2-open' : 'bi-folder2'"></i>
+                                            <span class="fw-semibold" data-bind="text: name"></span>
+                                            <span class="badge ms-2" data-bind="text: personnelCount + ' kişi', css: isSelected() ? 'bg-light text-primary' : 'bg-secondary'"></span>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-sm" title="Düzenle"
+                                                    data-bind="click: function(data, event) { $root.editOrganization(data, event); }, css: isSelected() ? 'btn-light' : 'btn-outline-primary'">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm" title="Sil"
+                                                    data-bind="click: function(data, event) { $root.deleteOrganization(data, event); }, css: isSelected() ? 'btn-light text-danger' : 'btn-outline-danger'">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <!-- Personnel List -->
-                                    <div data-bind="visible: !$root.isLoadingPersonnel()">
-                                        <!-- Empty -->
-                                        <div data-bind="visible: $root.personnel().length === 0" class="text-center text-muted py-3 bg-light">
-                                            <i class="bi bi-person-x"></i> Bu organizasyonda personel bulunmuyor
+                                    <!-- Card Body - Personnel TreeView -->
+                                    <div class="card-body p-0" data-bind="visible: isSelected()">
+                                        <!-- Loading -->
+                                        <div data-bind="visible: $root.isLoadingPersonnel" class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
                                         </div>
 
-                                        <!-- Personnel Table -->
-                                        <table data-bind="visible: $root.personnel().length > 0" class="table table-sm table-hover mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="width: 30px;"></th>
-                                                    <th>@Html.T("CustomerPersonnel.Name", "Ad Soyad")</th>
-                                                    <th>@Html.T("CustomerPersonnel.Title", "Ünvan")</th>
-                                                    <th>@Html.T("CustomerPersonnel.Role", "Rol")</th>
-                                                    <th>@Html.T("Common.Status", "Durum")</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody data-bind="foreach: $root.personnel">
-                                                <tr class="personnel-row" draggable="true" data-bind="
-                                                    event: {
-                                                        dragstart: function(data, e) { $root.onPersonnelDragStart(data, e); }
-                                                    }
-                                                ">
-                                                    <td class="text-center">
-                                                        <i class="bi bi-grip-vertical text-muted drag-handle"></i>
-                                                    </td>
-                                                    <td>
-                                                        <i class="bi bi-person text-primary me-1"></i>
-                                                        <span data-bind="text: fullName"></span>
-                                                    </td>
-                                                    <td data-bind="text: $data.title || '-'"></td>
-                                                    <td>
-                                                        <span class="badge" data-bind="text: roleName, css: { 'bg-danger': roleName === 'Müşteri Yöneticisi', 'bg-info': roleName === 'Müşteri Süpervizörü', 'bg-secondary': roleName === 'Müşteri Operatörü' }"></span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        <!-- Personnel TreeView -->
+                                        <div data-bind="visible: !$root.isLoadingPersonnel()" class="personnel-tree">
+                                            <!-- Empty -->
+                                            <div data-bind="visible: !$root.personnelData().supervisors.length && !$root.personnelData().operators.length" class="text-center text-muted py-3">
+                                                <i class="bi bi-person-x"></i> Personel yok
+                                            </div>
+
+                                            <!-- Supervisors with Team Members -->
+                                            <div data-bind="foreach: $root.personnelData().supervisors" class="tree-group">
+                                                <div class="tree-item tree-supervisor" data-bind="attr: { 'data-id': id }">
+                                                    <!-- Supervisor Row -->
+                                                    <div class="d-flex align-items-center justify-content-between px-3 py-2">
+                                                        <div>
+                                                            <i class="bi bi-person-badge text-primary me-2"></i>
+                                                            <span class="fw-semibold" data-bind="text: fullName"></span>
+                                                            <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
+                                                            <span class="badge bg-info ms-1" data-bind="visible: teamMembers && teamMembers.length, text: teamMembers ? teamMembers.length + ' ekip' : ''"></span>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                            <i class="bi bi-arrows-move"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Team Members (indented) -->
+                                                    <div data-bind="foreach: teamMembers" class="tree-children">
+                                                        <div class="tree-item tree-operator d-flex align-items-center justify-content-between px-3 py-1">
+                                                            <div>
+                                                                <span class="tree-connector me-2">└─</span>
+                                                                <i class="bi bi-person text-secondary me-2"></i>
+                                                                <span data-bind="text: fullName"></span>
+                                                                <span class="badge bg-secondary ms-2 small" data-bind="text: roleName"></span>
+                                                            </div>
+                                                            <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                                <i class="bi bi-arrows-move"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Independent Operators -->
+                                            <div data-bind="visible: $root.personnelData().operators.length > 0" class="tree-group">
+                                                <div class="tree-section-header px-3 py-1 bg-light border-top">
+                                                    <small class="text-muted"><i class="bi bi-people me-1"></i>Bağımsız Operatörler</small>
+                                                </div>
+                                                <div data-bind="foreach: $root.personnelData().operators">
+                                                    <div class="tree-item tree-independent d-flex align-items-center justify-content-between px-3 py-2">
+                                                        <div>
+                                                            <i class="bi bi-person text-secondary me-2"></i>
+                                                            <span data-bind="text: fullName"></span>
+                                                            <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                            <i class="bi bi-arrows-move"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
-                            <!-- /ko -->
                         </div>
                     </div>
                 </div>
@@ -279,45 +290,174 @@
     <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 
     <partial name="_DeleteConfirmationModal" />
+
+    <!-- Move Personnel Modal -->
+    <div class="modal fade" data-bind="css: { show: isMoveModalOpen }, style: { display: isMoveModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrows-move me-2"></i>Personel Taşı
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: closeMoveModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-person me-2"></i>
+                        <strong data-bind="text: movingPerson() ? movingPerson().fullName : ''"></strong>
+                        <span class="badge bg-secondary ms-2" data-bind="text: movingPerson() ? movingPerson().roleName : ''"></span>
+                        <!-- ko if: movingPerson() && movingPerson().teamMembers && movingPerson().teamMembers.length > 0 -->
+                        <div class="mt-2 small">
+                            <i class="bi bi-people me-1"></i>
+                            <span data-bind="text: movingPerson().teamMembers.length"></span> ekip üyesi var
+                        </div>
+                        <!-- /ko -->
+                    </div>
+
+                    <!-- Step 1: Hedef Organizasyon -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-pill me-2">1</span>Hedef Organizasyon Seçin:
+                        </label>
+                        <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+                            <!-- ko foreach: availableTargetOrgs -->
+                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                               data-bind="click: function() { $root.selectTargetOrg($data); }, css: { 'active': $root.selectedTargetOrg() && $root.selectedTargetOrg().id === id }">
+                                <div>
+                                    <i class="bi bi-folder2 me-2"></i>
+                                    <span data-bind="text: name"></span>
+                                </div>
+                                <span class="badge bg-secondary" data-bind="text: personnelCount + ' kişi'"></span>
+                            </a>
+                            <!-- /ko -->
+                        </div>
+                        <div data-bind="visible: availableTargetOrgs().length === 0" class="text-muted text-center py-3">
+                            Taşınabilecek başka organizasyon yok
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Hedef Süpervizör (organizasyon seçildikten sonra görünür) -->
+                    <div data-bind="visible: selectedTargetOrg()" class="mb-3">
+                        <label class="form-label fw-bold">
+                            <span class="badge bg-primary rounded-pill me-2">2</span>Hedef Süpervizör Seçin:
+                        </label>
+
+                        <!-- Loading -->
+                        <div data-bind="visible: isLoadingTargetPersonnel()" class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <small class="ms-2 text-muted">Personel yükleniyor...</small>
+                        </div>
+
+                        <!-- Supervisor Selection List -->
+                        <div data-bind="visible: !isLoadingTargetPersonnel()" class="list-group" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Bağımsız Option -->
+                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                               data-bind="click: function() { $root.selectTargetSupervisor(null); }, css: { 'active': $root.selectedTargetSupervisor() === null }">
+                                <div>
+                                    <i class="bi bi-person-dash text-warning me-2"></i>
+                                    <span>Bağımsız (Süpervizörsüz)</span>
+                                </div>
+                                <span class="badge bg-warning text-dark">Bağımsız</span>
+                            </a>
+
+                            <!-- Available Supervisors -->
+                            <!-- ko foreach: targetOrgPersonnel().supervisors -->
+                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                               data-bind="click: function() { $root.selectTargetSupervisor($data); }, css: { 'active': $root.selectedTargetSupervisor() && $root.selectedTargetSupervisor().id === id }">
+                                <div>
+                                    <i class="bi bi-person-badge text-primary me-2"></i>
+                                    <span data-bind="text: fullName"></span>
+                                </div>
+                                <span class="badge bg-primary" data-bind="text: teamMembers ? teamMembers.length + ' ekip' : '0 ekip'"></span>
+                            </a>
+                            <!-- /ko -->
+
+                            <!-- No supervisors message -->
+                            <div data-bind="visible: targetOrgPersonnel().supervisors.length === 0" class="list-group-item text-muted text-center small">
+                                <i class="bi bi-info-circle me-1"></i>Bu organizasyonda süpervizör yok
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Move Option -->
+                    <!-- ko if: movingPerson() && movingPerson().teamMembers && movingPerson().teamMembers.length > 0 -->
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="moveWithTeam" data-bind="checked: moveWithTeam" />
+                        <label class="form-check-label" for="moveWithTeam">
+                            <i class="bi bi-people me-1"></i>Ekip üyelerini de birlikte taşı (<span data-bind="text: movingPerson().teamMembers.length"></span> kişi)
+                        </label>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeMoveModal">
+                        <i class="bi bi-x-circle me-1"></i>İptal
+                    </button>
+                    <button type="button" class="btn btn-warning" data-bind="click: executeMove, disable: !selectedTargetOrg() || isMoving()">
+                        <span data-bind="visible: !isMoving()">
+                            <i class="bi bi-arrows-move me-1"></i>Taşı
+                        </span>
+                        <span data-bind="visible: isMoving()">
+                            <span class="spinner-border spinner-border-sm me-1"></span>Taşınıyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isMoveModalOpen }, style: { display: isMoveModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 <style>
-    .org-item {
-        border-bottom: 1px solid #dee2e6;
+    /* Organization Card */
+    .org-card {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
 
-    .org-item:last-child {
-        border-bottom: none;
+    .org-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .org-item.drop-target {
-        background-color: #cfe2ff !important;
-        border: 2px dashed #0d6efd;
+    .org-card .card-header {
+        transition: all 0.2s ease;
     }
 
-    .personnel-panel {
+    /* Personnel Tree */
+    .personnel-tree {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .tree-item {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .tree-item:hover {
         background-color: #f8f9fa;
-        border-top: 1px solid #dee2e6;
     }
 
-    .personnel-row {
-        cursor: grab;
+    .tree-children {
+        margin-left: 20px;
+        border-left: 2px solid #e0e0e0;
     }
 
-    .personnel-row:active {
-        cursor: grabbing;
+    .tree-children .tree-item {
+        background-color: #fafafa;
     }
 
-    .personnel-row.dragging {
-        opacity: 0.5;
+    .tree-connector {
+        color: #ccc;
+        font-family: monospace;
     }
 
-    .drag-handle {
-        cursor: grab;
+    .tree-supervisor {
+        background-color: #fff;
     }
 
-    .drag-handle:active {
-        cursor: grabbing;
+    .tree-section-header {
+        font-size: 0.85rem;
     }
 </style>
 

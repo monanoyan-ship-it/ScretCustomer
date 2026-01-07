@@ -700,6 +700,9 @@
                                                                     <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
                                                                 </div>
                                                                 <div class="btn-group btn-group-sm">
+                                                                    <button class="btn btn-outline-warning btn-sm" data-bind="click: $parents[1].makeIndependent" title="@Html.T("Customer.MakeIndependent", "Bağımsız Yap")">
+                                                                        <i class="bi bi-unlock"></i>
+                                                                    </button>
                                                                     <button class="btn btn-outline-primary btn-sm" data-bind="click: $parents[1].editOrgPersonnel" title="@Html.T("Common.Edit", "Düzenle")">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
@@ -725,17 +728,11 @@
                                                 <span><i class="bi bi-people me-2"></i>@Html.T("Customer.IndependentOperators", "Bağımsız Operatörler")</span>
                                             </div>
                                             <div class="card-body py-2">
-                                                <!-- Add Operator from Pool -->
-                                                <div class="row g-2 align-items-end mb-3 border-bottom pb-3" data-bind="visible: personnelPoolForOperator().length > 0">
-                                                    <div class="col-md-8">
-                                                        <label class="form-label small mb-1">@Html.T("Customer.AddOperatorFromPool", "Havuzdan Operatör Ekle")</label>
-                                                        <select class="form-select form-select-sm" data-bind="options: personnelPoolForOperator, optionsText: 'fullName', optionsValue: 'id', value: selectedPoolOperatorId, optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <button class="btn btn-secondary btn-sm w-100" data-bind="click: assignPoolOperatorToOrg, enable: selectedPoolOperatorId()">
-                                                            <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.Add", "Ekle")
-                                                        </button>
-                                                    </div>
+                                                <!-- Add Independent Operator -->
+                                                <div class="mb-3 border-bottom pb-3">
+                                                    <button class="btn btn-outline-success btn-sm" data-bind="click: addIndependentOperator">
+                                                        <i class="bi bi-person-plus me-1"></i>@Html.T("Customer.NewIndependentOperator", "Yeni Bağımsız Operatör")
+                                                    </button>
                                                 </div>
 
                                                 <!-- Operator List -->
@@ -760,7 +757,7 @@
                                                 </div>
 
                                                 <!-- Empty state for operators -->
-                                                <div data-bind="visible: (!orgPersonnelList().operators || orgPersonnelList().operators.length === 0) && personnelPoolForOperator().length === 0" class="text-muted small text-center py-2">
+                                                <div data-bind="visible: !orgPersonnelList().operators || orgPersonnelList().operators.length === 0" class="text-muted small text-center py-2">
                                                     <i class="bi bi-info-circle"></i> @Html.T("Customer.NoIndependentOperators", "Bağımsız operatör yok")
                                                 </div>
                                             </div>
@@ -851,9 +848,16 @@
                     <button type="button" class="btn-close" data-bind="click: closeAddOperatorModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- ko if: selectedSupervisorForOperator() -->
                     <p class="text-muted mb-3">
-                        @Html.T("Customer.AddOperatorToSupervisor", "Süpervizör:") <strong data-bind="text: selectedSupervisorForOperator() ? selectedSupervisorForOperator().fullName : ''"></strong>
+                        @Html.T("Customer.AddOperatorToSupervisor", "Süpervizör:") <strong data-bind="text: selectedSupervisorForOperator().fullName"></strong>
                     </p>
+                    <!-- /ko -->
+                    <!-- ko ifnot: selectedSupervisorForOperator() -->
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-info-circle me-1"></i>@Html.T("Customer.IndependentOperatorInfo", "Bu operatör bağımsız olarak eklenecek (süpervizörsüz)")
+                    </p>
+                    <!-- /ko -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.FirstName", "Ad") <span class="text-danger">*</span></label>

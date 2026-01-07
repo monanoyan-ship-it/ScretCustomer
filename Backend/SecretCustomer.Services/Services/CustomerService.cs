@@ -146,7 +146,7 @@ public class CustomerService : ICustomerService
             Notes = customer.Notes,
             PersonnelCount = customer.Personnel?.Count(p => !p.IsDeleted) ?? 0,
             OrganizationCount = customer.Organizations?.Count(o => !o.IsDeleted) ?? 0,
-            BranchCount = 0, // Branch system removed
+            BranchCount = customer.Organizations?.Count(o => !o.IsDeleted) ?? 0, // Now shows organization count
             ProjectCount = customer.Projects?.Count(p => !p.IsDeleted) ?? 0,
             CreatedAt = customer.CreatedAt,
             UpdatedAt = customer.UpdatedAt

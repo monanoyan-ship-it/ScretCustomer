@@ -1000,6 +1000,29 @@ function CustomersViewModel() {
             });
     };
 
+    // Make operator independent (remove from supervisor but keep in organization)
+    self.makeIndependent = function(personnel) {
+        var org = self.selectedOrganization();
+        if (!org) return;
+
+        deleteConfirmation.show(
+            '"' + personnel.fullName + '" ' + T('Customer.MakeIndependentConfirm', 'personelini bağımsız yapmak istediğinizden emin misiniz? Süpervizörden ayrılacak ama organizasyonda kalacak.'),
+            function() {
+                ApiService.put('/customer-organizations/personnel/' + personnel.id + '/supervisor', null)
+                    .then(function() {
+                        self.orgModalSuccessMessage(T('Customer.MakeIndependentSuccess', 'Personel bağımsız yapıldı.'));
+                        self.loadOrgPersonnel(org.id);
+                        self.loadOrganizations(self.selectedCustomerForOrg().id);
+                        self.loadPersonnelPool(self.selectedCustomerForOrg().id);
+                    })
+                    .catch(function(error) {
+                        console.error('Error making personnel independent:', error);
+                        self.orgModalErrorMessage(T('Customer.MakeIndependentError', 'Personel bağımsız yapılırken bir hata oluştu.') + ' ' + (error.message || ''));
+                    });
+            }
+        );
+    };
+
     // Remove personnel from organization
     self.removePersonnelFromOrg = function(personnel) {
         var org = self.selectedOrganization();
@@ -1199,6 +1222,19 @@ function CustomersViewModel() {
         self.showAddOperatorModal(true);
     };
 
+    // Add independent operator (no supervisor)
+    self.addIndependentOperator = function() {
+        self.selectedSupervisorForOperator(null); // No supervisor
+        self.newOperator({
+            firstName: ko.observable(''),
+            lastName: ko.observable(''),
+            username: ko.observable(''),
+            email: ko.observable(''),
+            password: ko.observable('')
+        });
+        self.showAddOperatorModal(true);
+    };
+
     // Close add operator modal
     self.closeAddOperatorModal = function() {
         self.showAddOperatorModal(false);
@@ -1208,11 +1244,11 @@ function CustomersViewModel() {
     // Save new operator
     self.saveNewOperator = function() {
         var op = self.newOperator();
-        var supervisor = self.selectedSupervisorForOperator();
+        var supervisor = self.selectedSupervisorForOperator(); // Can be null for independent operators
         var customer = self.selectedCustomerForOrg();
         var org = self.selectedOrganization();
 
-        if (!supervisor || !customer || !org) return;
+        if (!customer || !org) return;
 
         var firstName = ko.unwrap(op.firstName);
         var lastName = ko.unwrap(op.lastName);
@@ -1253,11 +1289,11 @@ function CustomersViewModel() {
             isActive: true
         })
         .then(function(newPersonnel) {
-            // Then assign to organization with supervisor
+            // Then assign to organization (with or without supervisor)
             return ApiService.post('/customer-organizations/assign-personnel', {
                 personnelId: newPersonnel.id,
                 organizationId: org.id,
-                supervisorId: supervisor.id
+                supervisorId: supervisor ? supervisor.id : null
             });
         })
         .then(function() {

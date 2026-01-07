@@ -18,24 +18,37 @@ function CustomerOrganizationsViewModel() {
 
     // Selected Organization & Personnel
     self.selectedOrganization = ko.observable(null);
-    self.personnel = ko.observableArray([]);
+    self.personnelData = ko.observable({ supervisors: [], operators: [] });
     self.isLoadingPersonnel = ko.observable(false);
-
-    // Drag & Drop
-    self.draggedPersonnel = ko.observable(null);
-    self.dropTargetOrgId = ko.observable(null);
 
     // Modal
     self.isModalOpen = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.editingOrganization = ko.observable(null);
 
+    // Move Modal
+    self.isMoveModalOpen = ko.observable(false);
+    self.movingPerson = ko.observable(null);
+    self.selectedTargetOrg = ko.observable(null);
+    self.targetOrgPersonnel = ko.observable({ supervisors: [], operators: [] });
+    self.selectedTargetSupervisor = ko.observable(null); // null = bağımsız
+    self.moveWithTeam = ko.observable(false);
+    self.isMoving = ko.observable(false);
+    self.isLoadingTargetPersonnel = ko.observable(false);
+
+    // Available target organizations (exclude current)
+    self.availableTargetOrgs = ko.computed(function() {
+        var currentOrg = self.selectedOrganization();
+        if (!currentOrg) return [];
+        return self.organizations().filter(function(org) {
+            return org.id !== currentOrg.id;
+        });
+    });
+
     // Filtered customers
     self.filteredCustomers = ko.computed(function() {
         var search = self.customerSearchText().toLowerCase();
-        if (!search) {
-            return self.customers();
-        }
+        if (!search) return self.customers();
         return self.customers().filter(function(c) {
             return c.companyName.toLowerCase().indexOf(search) > -1;
         });
@@ -67,7 +80,7 @@ function CustomerOrganizationsViewModel() {
     self.selectCustomer = function(customer) {
         self.selectedCustomer(customer);
         self.selectedOrganization(null);
-        self.personnel([]);
+        self.personnelData({ supervisors: [], operators: [] });
         self.loadOrganizations(customer.id);
     };
 
@@ -78,7 +91,6 @@ function CustomerOrganizationsViewModel() {
 
         ApiService.get('/customer-organizations/by-customer/' + customerId + '?includeInactive=true')
             .then(function(data) {
-                // Add isSelected observable to each org
                 var orgs = (data || []).map(function(org) {
                     org.isSelected = ko.observable(false);
                     return org;
@@ -101,7 +113,6 @@ function CustomerOrganizationsViewModel() {
     self.toggleOrganization = function(org) {
         var wasSelected = org.isSelected();
 
-        // Deselect all organizations
         self.organizations().forEach(function(o) {
             o.isSelected(false);
         });
@@ -112,59 +123,21 @@ function CustomerOrganizationsViewModel() {
             self.loadPersonnel(org.id);
         } else {
             self.selectedOrganization(null);
-            self.personnel([]);
+            self.personnelData({ supervisors: [], operators: [] });
         }
     };
 
-    // Load personnel for organization (same endpoint as Customers page)
+    // Load personnel for organization
     self.loadPersonnel = function(organizationId) {
         self.isLoadingPersonnel(true);
-        self.personnel([]);
+        self.personnelData({ supervisors: [], operators: [] });
 
         ApiService.get('/customer-organizations/' + organizationId + '/personnel')
             .then(function(data) {
-                // Flatten hierarchical data to flat list
-                var allPersonnel = [];
-
-                // Add supervisors and their team members
-                if (data && data.supervisors) {
-                    data.supervisors.forEach(function(sup) {
-                        allPersonnel.push({
-                            id: sup.id,
-                            fullName: sup.fullName,
-                            title: sup.title || '',
-                            roleName: sup.roleName,
-                            isActive: sup.isActive !== false
-                        });
-                        // Add team members
-                        if (sup.teamMembers) {
-                            sup.teamMembers.forEach(function(tm) {
-                                allPersonnel.push({
-                                    id: tm.id,
-                                    fullName: tm.fullName,
-                                    title: tm.title || '',
-                                    roleName: tm.roleName,
-                                    isActive: tm.isActive !== false
-                                });
-                            });
-                        }
-                    });
-                }
-
-                // Add independent operators
-                if (data && data.operators) {
-                    data.operators.forEach(function(op) {
-                        allPersonnel.push({
-                            id: op.id,
-                            fullName: op.fullName,
-                            title: op.title || '',
-                            roleName: op.roleName,
-                            isActive: op.isActive !== false
-                        });
-                    });
-                }
-
-                self.personnel(allPersonnel);
+                self.personnelData({
+                    supervisors: data.supervisors || [],
+                    operators: data.operators || []
+                });
             })
             .catch(function(error) {
                 console.error('Error loading personnel:', error);
@@ -175,63 +148,137 @@ function CustomerOrganizationsViewModel() {
             });
     };
 
-    // ========== DRAG & DROP FOR PERSONNEL ==========
+    // ========== MOVE MODAL ==========
 
-    self.onPersonnelDragStart = function(person, event) {
-        var e = event.originalEvent || event;
-        self.draggedPersonnel(person);
-        e.target.classList.add('dragging');
-        e.dataTransfer.setData('text/plain', person.id);
-        e.dataTransfer.effectAllowed = 'move';
+    self.openMoveModal = function(person) {
+        self.movingPerson(person);
+        self.selectedTargetOrg(null);
+        self.targetOrgPersonnel({ supervisors: [], operators: [] });
+        self.selectedTargetSupervisor(null);
+        self.moveWithTeam(false);
+        self.isMoveModalOpen(true);
     };
 
-    self.onOrgDragOver = function(org, event) {
-        var e = event.originalEvent || event;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        if (self.draggedPersonnel() && self.selectedOrganization() && self.selectedOrganization().id !== org.id) {
-            self.dropTargetOrgId(org.id);
-        }
+    self.closeMoveModal = function() {
+        self.isMoveModalOpen(false);
+        self.movingPerson(null);
+        self.selectedTargetOrg(null);
+        self.targetOrgPersonnel({ supervisors: [], operators: [] });
+        self.selectedTargetSupervisor(null);
     };
 
-    self.onOrgDragLeave = function(org, event) {
-        self.dropTargetOrgId(null);
+    self.selectTargetOrg = function(org) {
+        self.selectedTargetOrg(org);
+        self.selectedTargetSupervisor(null);
+        self.loadTargetOrgPersonnel(org.id);
     };
 
-    self.onOrgDrop = function(org, event) {
-        var e = event.originalEvent || event;
-        e.preventDefault();
-        self.dropTargetOrgId(null);
+    self.loadTargetOrgPersonnel = function(orgId) {
+        self.isLoadingTargetPersonnel(true);
+        self.targetOrgPersonnel({ supervisors: [], operators: [] });
 
-        var draggedPerson = self.draggedPersonnel();
-        if (!draggedPerson || !self.selectedOrganization() || self.selectedOrganization().id === org.id) {
-            self.draggedPersonnel(null);
-            return;
-        }
-
-        // Change organization
-        self.changePersonnelOrganization(draggedPerson.id, org.id, org.name);
-        self.draggedPersonnel(null);
-    };
-
-    self.changePersonnelOrganization = function(personnelId, newOrgId, newOrgName) {
-        ApiService.put('/customer-personnel/' + personnelId + '/change-organization', { newOrganizationId: newOrgId })
-            .then(function() {
-                toastr.success('Personel "' + newOrgName + '" organizasyonuna taşındı.');
-                // Reload current org's personnel
-                if (self.selectedOrganization()) {
-                    self.loadPersonnel(self.selectedOrganization().id);
-                }
-                // Update personnel counts
-                self.loadOrganizations(self.selectedCustomer().id);
+        ApiService.get('/customer-organizations/' + orgId + '/personnel')
+            .then(function(data) {
+                self.targetOrgPersonnel({
+                    supervisors: data.supervisors || [],
+                    operators: data.operators || []
+                });
             })
             .catch(function(error) {
-                console.error('Error changing organization:', error);
-                toastr.error(error.message || 'Organizasyon değiştirme sırasında hata oluştu.');
+                console.error('Error loading target personnel:', error);
+            })
+            .finally(function() {
+                self.isLoadingTargetPersonnel(false);
             });
     };
 
-    // Create new organization
+    self.selectTargetSupervisor = function(supervisor) {
+        // null means independent
+        self.selectedTargetSupervisor(supervisor);
+    };
+
+    self.executeMove = function() {
+        var person = self.movingPerson();
+        var targetOrg = self.selectedTargetOrg();
+        var targetSupervisor = self.selectedTargetSupervisor();
+        var includeTeam = self.moveWithTeam();
+
+        if (!person || !targetOrg) {
+            toastr.error('Lütfen hedef organizasyon seçin.');
+            return;
+        }
+
+        self.isMoving(true);
+
+        // Get team member IDs if needed
+        var teamMemberIds = [];
+        if (includeTeam && person.teamMembers && person.teamMembers.length > 0) {
+            teamMemberIds = person.teamMembers.map(function(tm) { return tm.id; });
+        }
+
+        var totalCount = 1 + teamMemberIds.length;
+        var sourceOrgName = self.selectedOrganization().name;
+        var targetOrgName = targetOrg.name;
+        var targetSupervisorName = targetSupervisor ? targetSupervisor.fullName : 'Bağımsız';
+
+        // Move main person
+        var movePromise = ApiService.put('/customer-personnel/' + person.id + '/change-organization', {
+            newOrganizationId: targetOrg.id
+        });
+
+        // Set supervisor if selected
+        movePromise = movePromise.then(function() {
+            var supervisorId = targetSupervisor ? targetSupervisor.id : null;
+            return ApiService.put('/customer-organizations/personnel/' + person.id + '/supervisor', supervisorId);
+        });
+
+        // Move team members if needed
+        if (includeTeam && teamMemberIds.length > 0) {
+            movePromise = movePromise.then(function() {
+                var chain = Promise.resolve();
+                teamMemberIds.forEach(function(tmId) {
+                    chain = chain.then(function() {
+                        return ApiService.put('/customer-personnel/' + tmId + '/change-organization', {
+                            newOrganizationId: targetOrg.id
+                        });
+                    });
+                });
+                return chain;
+            });
+        }
+
+        movePromise
+            .then(function() {
+                var movedText = includeTeam && teamMemberIds.length > 0
+                    ? person.fullName + ' ve ' + teamMemberIds.length + ' ekip üyesi'
+                    : person.fullName;
+
+                toastr.success(
+                    '<strong>' + movedText + '</strong> taşındı<br>' +
+                    '<small>' + sourceOrgName + ' → ' + targetOrgName + '</small><br>' +
+                    '<small>Süpervizör: ' + targetSupervisorName + '</small>',
+                    'Taşıma Başarılı'
+                );
+
+                self.closeMoveModal();
+
+                // Reload data
+                if (self.selectedOrganization()) {
+                    self.loadPersonnel(self.selectedOrganization().id);
+                }
+                self.loadOrganizations(self.selectedCustomer().id);
+            })
+            .catch(function(error) {
+                console.error('Error moving personnel:', error);
+                toastr.error(error.message || 'Taşıma sırasında hata oluştu.');
+            })
+            .finally(function() {
+                self.isMoving(false);
+            });
+    };
+
+    // ========== ORGANIZATION CRUD ==========
+
     self.createNewOrganization = function() {
         if (!self.selectedCustomer()) {
             toastr.error('Lütfen önce bir müşteri seçin.');
@@ -251,11 +298,8 @@ function CustomerOrganizationsViewModel() {
         self.isModalOpen(true);
     };
 
-    // Edit organization
     self.editOrganization = function(org, event) {
-        if (event) {
-            event.stopPropagation();
-        }
+        if (event) event.stopPropagation();
 
         ApiService.get('/customer-organizations/' + org.id)
             .then(function(data) {
@@ -277,7 +321,6 @@ function CustomerOrganizationsViewModel() {
             });
     };
 
-    // Save organization
     self.saveOrganization = function() {
         var org = self.editingOrganization();
         if (!org) return;
@@ -301,27 +344,21 @@ function CustomerOrganizationsViewModel() {
         };
 
         var isNew = !org.id;
-        var promise;
-        if (isNew) {
-            promise = ApiService.post('/customer-organizations', data);
-        } else {
-            promise = ApiService.put('/customer-organizations/' + org.id, data);
-        }
+        var promise = isNew
+            ? ApiService.post('/customer-organizations', data)
+            : ApiService.put('/customer-organizations/' + org.id, data);
 
         promise
             .then(function(savedOrg) {
                 self.closeModal();
 
                 if (isNew) {
-                    // Yeni kayit: array'e ekle
                     savedOrg.isSelected = ko.observable(false);
                     self.organizations.push(savedOrg);
-                    // Update customer's organization count
                     if (self.selectedCustomer()) {
                         self.selectedCustomer().organizationCount++;
                     }
                 } else {
-                    // Guncelleme: array'de bul ve guncelle
                     var list = self.organizations();
                     for (var i = 0; i < list.length; i++) {
                         if (list[i].id === savedOrg.id) {
@@ -336,22 +373,15 @@ function CustomerOrganizationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error saving organization:', error);
-                var errorMsg = 'Organizasyon kaydedilirken bir hata oluştu.';
-                if (error && error.message) {
-                    errorMsg = error.message;
-                }
-                toastr.error(errorMsg);
+                toastr.error(error.message || 'Organizasyon kaydedilirken hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);
             });
     };
 
-    // Delete organization
     self.deleteOrganization = function(org, event) {
-        if (event) {
-            event.stopPropagation();
-        }
+        if (event) event.stopPropagation();
 
         showDeleteConfirmation(
             'Organizasyon Sil',
@@ -359,33 +389,24 @@ function CustomerOrganizationsViewModel() {
             function() {
                 ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
-                        // Array'den sil
                         self.organizations.remove(org);
-
-                        // Update customer's organization count
                         if (self.selectedCustomer() && self.selectedCustomer().organizationCount > 0) {
                             self.selectedCustomer().organizationCount--;
                         }
-
                         if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
                             self.selectedOrganization(null);
-                            self.personnel([]);
+                            self.personnelData({ supervisors: [], operators: [] });
                         }
                         toastr.success('Organizasyon silindi.');
                     })
                     .catch(function(error) {
                         console.error('Error deleting organization:', error);
-                        var errorMsg = 'Organizasyon silinirken bir hata oluştu.';
-                        if (error && error.message) {
-                            errorMsg = error.message;
-                        }
-                        toastr.error(errorMsg);
+                        toastr.error(error.message || 'Organizasyon silinirken hata oluştu.');
                     });
             }
         );
     };
 
-    // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingOrganization(null);
@@ -393,7 +414,6 @@ function CustomerOrganizationsViewModel() {
     };
 
     // Initialize
-    // EnumsService'i yukle, sonra diger verileri cek
     EnumsService.load().then(function() {
         self.loadCustomers();
     });
