@@ -492,6 +492,20 @@ function CustomersViewModel() {
         });
     });
 
+    // Personnel Pool for Operator (only operators not in this organization)
+    self.selectedPoolOperatorId = ko.observable(null);
+    self.personnelPoolForOperator = ko.computed(function() {
+        var pool = self.personnelPool();
+        var selectedOrg = self.selectedOrganization();
+        if (!selectedOrg) return [];
+
+        // Filter: only operators, not already in this organization
+        return pool.filter(function(p) {
+            // Role 3 = Operator
+            return p.role === 3 && p.organizationId !== selectedOrg.id;
+        });
+    });
+
     // Firma Yöneticileri (CustomerManager)
     self.customerManagers = ko.observableArray([]);
     self.showNewManagerForm = ko.observable(false);
@@ -847,7 +861,7 @@ function CustomersViewModel() {
         );
     };
 
-    // Assign pool personnel to organization
+    // Assign pool personnel to organization (Supervisor/Manager)
     self.assignPoolPersonnelToOrg = function() {
         var personnelId = self.selectedPoolPersonnelId();
         var org = self.selectedOrganization();
@@ -867,6 +881,29 @@ function CustomersViewModel() {
         .catch(function(error) {
             console.error('Error assigning personnel:', error);
             self.orgModalErrorMessage(T('Personnel.AssignError', 'Personel atanırken bir hata oluştu.') + ' ' + (error.message || ''));
+        });
+    };
+
+    // Assign pool operator to organization (Independent Operator)
+    self.assignPoolOperatorToOrg = function() {
+        var personnelId = self.selectedPoolOperatorId();
+        var org = self.selectedOrganization();
+        if (!personnelId || !org) return;
+
+        ApiService.post('/customer-organizations/assign-personnel', {
+            personnelId: personnelId,
+            organizationId: org.id
+        })
+        .then(function() {
+            self.orgModalSuccessMessage(T('Personnel.OperatorAssignSuccess', 'Operatör organizasyona atandı.'));
+            self.selectedPoolOperatorId(null);
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations(self.selectedCustomerForOrg().id);
+            self.loadPersonnelPool(self.selectedCustomerForOrg().id);
+        })
+        .catch(function(error) {
+            console.error('Error assigning operator:', error);
+            self.orgModalErrorMessage(T('Personnel.AssignError', 'Operatör atanırken bir hata oluştu.') + ' ' + (error.message || ''));
         });
     };
 
