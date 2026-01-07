@@ -296,7 +296,7 @@
                                                placeholder="@Html.T("Question.GroupNamePlaceholder", "Grup adı...")"
                                                autocomplete="off" />
                                         <!-- Autocomplete Dropdown -->
-                                        <div class="dropdown-menu w-100" data-bind="visible: $root.showGroupDropdown() && $root.filteredGroups().length > 0, foreach: $root.filteredGroups">
+                                        <div class="dropdown-menu w-100 show" style="max-height: 200px; overflow-y: auto;" data-bind="visible: $root.showGroupDropdown() && $root.filteredGroups().length > 0, foreach: $root.filteredGroups">
                                             <a class="dropdown-item" href="#" data-bind="text: $data, click: function() { $parent.groupName($data); $root.showGroupDropdown(false); }"></a>
                                         </div>
                                     </div>
