@@ -454,10 +454,10 @@ public class EvaluationService : IEvaluationService
                     Name = "Sorular",
                     Order = 1,
                     GroupType = "Scored",
-                    WeightPoints = assignment.Checklist?.Sections.SelectMany(s => s.Questions).Sum(q => q.WeightPoints) ?? 0,
-                    MaxPoints = assignment.Checklist?.Sections.SelectMany(s => s.Questions).Sum(q => q.MaxPoints) ?? 0,
-                    Questions = assignment.Checklist?.Sections
-                        .SelectMany(s => s.Questions)
+                    WeightPoints = assignment.Checklist?.Questions.Where(q => !q.IsDeleted).Sum(q => q.WeightPoints) ?? 0,
+                    MaxPoints = assignment.Checklist?.Questions.Where(q => !q.IsDeleted).Sum(q => q.MaxPoints) ?? 0,
+                    Questions = assignment.Checklist?.Questions
+                        .Where(q => !q.IsDeleted)
                         .OrderBy(q => q.Order)
                         .Select(q => new EvaluationQuestionDto
                         {
