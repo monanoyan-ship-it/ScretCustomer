@@ -31,6 +31,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     base.penaltyType = ko.observable(data.penaltyType || 'None');
     base.recommendedNote = ko.observable(data.recommendedNote || '');
     base.helpText = ko.observable(data.helpText || '');
+    base.groupName = ko.observable(data.groupName || '');
 
     // Alt Kriterler/Öneriler
     let subCriteria = (data.subCriteria || []).map(function (sc) {
@@ -131,6 +132,12 @@ function ChecklistViewModel() {
     self.filterOrganizationId = ko.observable(null);
     self.filterOrganizations = ko.observableArray([]);
 
+    // Soru grupları (autocomplete için)
+    self.questionGroups = ko.observableArray([]);
+    self.filteredGroups = ko.observableArray([]);
+    self.showGroupDropdown = ko.observable(false);
+    self._groupFilterTimeout = null;
+
     // Filtre firma değiştiğinde organizasyonları yükle
     self.filterCustomerId.subscribe(function (customerId) {
         if (customerId) {
@@ -197,6 +204,83 @@ function ChecklistViewModel() {
             });
     };
 
+    // Soru gruplarını yükle (belirli checklist için)
+    self.loadQuestionGroups = function (checklistId) {
+        if (!checklistId) {
+            self.questionGroups([]);
+            return;
+        }
+        fetch('/api/checklists/' + checklistId + '/question-groups', { credentials: 'include' })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                self.questionGroups(data || []);
+            })
+            .catch(function (error) {
+                console.error('Load question groups error:', error);
+                self.questionGroups([]);
+            });
+    };
+
+    // Autocomplete - Grup önerilerini göster
+    self.showGroupSuggestions = function (question, event) {
+        // Mevcut sorulardan tüm grupları topla (API'den gelenler + yeni eklenmiş olanlar)
+        var allGroups = self.questionGroups().slice(); // API'den gelenler
+
+        // Mevcut soruların gruplarını da ekle (yeni eklenmişler)
+        if (self.editingChecklist()) {
+            self.editingChecklist().questions().forEach(function (q) {
+                var gn = q.groupName();
+                if (gn && allGroups.indexOf(gn) === -1) {
+                    allGroups.push(gn);
+                }
+            });
+        }
+
+        self.filteredGroups(allGroups);
+        self.showGroupDropdown(true);
+    };
+
+    // Autocomplete - Grup önerilerini filtrele
+    self.filterGroupSuggestions = function (question, event) {
+        if (self._groupFilterTimeout) {
+            clearTimeout(self._groupFilterTimeout);
+        }
+        self._groupFilterTimeout = setTimeout(function () {
+            var searchVal = (event.target.value || '').toLowerCase();
+
+            // Mevcut sorulardan tüm grupları topla
+            var allGroups = self.questionGroups().slice();
+            if (self.editingChecklist()) {
+                self.editingChecklist().questions().forEach(function (q) {
+                    var gn = q.groupName();
+                    if (gn && allGroups.indexOf(gn) === -1) {
+                        allGroups.push(gn);
+                    }
+                });
+            }
+
+            // Filtrele
+            if (searchVal) {
+                var filtered = allGroups.filter(function (g) {
+                    return g.toLowerCase().indexOf(searchVal) >= 0;
+                });
+                self.filteredGroups(filtered);
+            } else {
+                self.filteredGroups(allGroups);
+            }
+
+            self.showGroupDropdown(self.filteredGroups().length > 0);
+        }, 100);
+    };
+
+    // Autocomplete - Dropdown'u gizle
+    self.hideGroupSuggestions = function (question, event) {
+        // Biraz gecikme ile gizle (click'in çalışması için)
+        setTimeout(function () {
+            self.showGroupDropdown(false);
+        }, 200);
+    };
+
     // Dosya ekleri yükleme fonksiyonu
     self.loadQuestionAttachments = function (question) {
         if (!question.id()) return;
@@ -260,6 +344,7 @@ function ChecklistViewModel() {
         self.wizardStep(1);
         self.selectedCustomerId(null);
         self.organizations([]);
+        self.questionGroups([]); // Yeni checklist için grupları temizle
         self.editingChecklist(new ChecklistModel());
         self.isModalOpen(true);
     };
@@ -274,6 +359,9 @@ function ChecklistViewModel() {
         self.wizardStep(1);
         self.isLoading(true);
         self._isLoadingChecklist = true; // Subscriber'ın org sıfırlamasını engelle
+
+        // Soru gruplarını yükle
+        self.loadQuestionGroups(checklist.id);
 
         // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
         apiService.get('/checklists/' + checklist.id)
@@ -319,6 +407,9 @@ function ChecklistViewModel() {
         self.wizardStep(1);
         self.isLoading(true);
         self._isLoadingChecklist = true;
+
+        // Klonlama için grupları yükle (orijinal checklist'ten)
+        self.loadQuestionGroups(checklist.id);
 
         // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
         apiService.get('/checklists/' + checklist.id)

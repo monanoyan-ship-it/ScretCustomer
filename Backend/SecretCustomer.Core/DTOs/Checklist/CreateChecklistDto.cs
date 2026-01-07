@@ -95,6 +95,12 @@ public class CreateQuestionDto
     public string? HelpText { get; set; }
 
     /// <summary>
+    /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
+    /// </summary>
+    [MaxLength(200)]
+    public string? GroupName { get; set; }
+
+    /// <summary>
     /// Alt Kriterler/Öneriler - "İlgili davranılmadı", "İsim ile hitap etmedi" gibi
     /// </summary>
     public List<CreateSubCriteriaDto>? SubCriteria { get; set; }

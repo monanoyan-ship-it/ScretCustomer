@@ -341,9 +341,12 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         var personnel = org.Personnel.ToList();
 
         // Süpervizörler (Manager ve Supervisor rolleri)
+        // Organizasyon yöneticileri (teamMembers yok) en üstte gösterilir
         var supervisors = personnel
             .Where(p => p.Role == CustomerPersonnelRole.CustomerManager || p.Role == CustomerPersonnelRole.CustomerSupervisor)
             .Select(p => MapToPersonnelItem(p, personnel))
+            .OrderByDescending(s => s.TeamMembers.Count == 0) // Org yöneticisi (altında kimse yok) en üste
+            .ThenBy(s => s.FullName)
             .ToList();
 
         // Bağımsız operatörler (süpervizörü olmayan VEYA süpervizörü farklı organizasyonda)
@@ -558,9 +561,14 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             .Select(op => new OrganizationPersonnelItemDto
             {
                 Id = op.Id,
+                FirstName = op.FirstName,
+                LastName = op.LastName,
                 FullName = $"{op.FirstName} {op.LastName}",
                 Username = op.Username,
                 Email = op.Email,
+                PhoneNumber = op.PhoneNumber,
+                Department = op.Department,
+                Title = op.Title,
                 RoleName = GetRoleName(op.Role),
                 Role = (int)op.Role,
                 IsActive = op.IsActive,
@@ -573,9 +581,14 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         return new OrganizationPersonnelItemDto
         {
             Id = p.Id,
+            FirstName = p.FirstName,
+            LastName = p.LastName,
             FullName = $"{p.FirstName} {p.LastName}",
             Username = p.Username,
             Email = p.Email,
+            PhoneNumber = p.PhoneNumber,
+            Department = p.Department,
+            Title = p.Title,
             RoleName = GetRoleName(p.Role),
             Role = (int)p.Role,
             IsActive = p.IsActive,

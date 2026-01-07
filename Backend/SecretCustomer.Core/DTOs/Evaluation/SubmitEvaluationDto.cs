@@ -37,9 +37,19 @@ public class SubmitEvaluationDto
     public DateTime? CallDate { get; set; }
 
     /// <summary>
+    /// Çağrı saati (HH:mm formatında)
+    /// </summary>
+    public string? CallTime { get; set; }
+
+    /// <summary>
     /// Süre (dk:sn formatında, örn: "12:26")
     /// </summary>
     public string? Duration { get; set; }
+
+    /// <summary>
+    /// Açıklamalar listesi (boş olanlar otomatik filtrelenir)
+    /// </summary>
+    public List<string>? Descriptions { get; set; }
 
     /// <summary>
     /// Değerlendirilen organizasyon ID (ZORUNLU)
@@ -114,6 +124,11 @@ public class SubmitAnswerDto
     /// Seçilen ceza tipi (None, YellowCard, RedCard)
     /// </summary>
     public string? SelectedPenaltyType { get; set; }
+
+    /// <summary>
+    /// Seçilen alt kriter ID'leri
+    /// </summary>
+    public List<int>? SelectedSubCriteriaIds { get; set; }
 }
 
 /// <summary>
@@ -140,6 +155,11 @@ public class StartEvaluationDto
     /// Çağrı tarihi
     /// </summary>
     public DateTime? CallDate { get; set; }
+
+    /// <summary>
+    /// Çağrı saati (HH:mm formatında)
+    /// </summary>
+    public string? CallTime { get; set; }
 
     /// <summary>
     /// Değerlendirilen personel ID

@@ -75,11 +75,23 @@ public class Evaluation : BaseEntity
     public DateTime? CallDate { get; set; }
 
     /// <summary>
+    /// Çağrı saati (HH:mm formatında)
+    /// </summary>
+    [ExcelColumn("Çağrı Saati", 11, ColumnType = ExcelColumnType.Text,
+        Description = "Çağrı saati")]
+    public string? CallTime { get; set; }
+
+    /// <summary>
     /// Değerlendirme süresi (dakika:saniye formatında, örn: "12:26")
     /// </summary>
-    [ExcelColumn("Süre", 11, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Süre", 12, ColumnType = ExcelColumnType.Text,
         Description = "Değerlendirme süresi (dk:sn)")]
     public string? Duration { get; set; }
+
+    /// <summary>
+    /// Açıklamalar (JSON array olarak saklanır)
+    /// </summary>
+    public string? DescriptionsJson { get; set; }
 
     /// <summary>
     /// Değerlendirilen tanımlı personel ID (User - bizim şirket personeli)

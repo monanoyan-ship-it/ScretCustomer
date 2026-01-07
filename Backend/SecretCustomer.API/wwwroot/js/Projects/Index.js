@@ -9,15 +9,6 @@ function TeamMemberViewModel(data) {
     self.role = ko.observable(data.role || 'Evaluator');
 }
 
-// Branch ViewModel
-function BranchViewModel(data) {
-    var self = this;
-    data = data || {};
-    self.branchId = ko.observable(data.branchId || '');
-    self.targetCount = ko.observable(data.targetCount || null);
-    self.priority = ko.observable(data.priority || 0);
-}
-
 // Project Edit ViewModel
 function ProjectEditViewModel(data) {
     var self = this;
@@ -55,21 +46,13 @@ function ProjectEditViewModel(data) {
     self.tags = ko.observable(data.tags || '');
     self.notes = ko.observable(data.notes || '');
 
-    // Team & Branches
+    // Team Members
     self.teamMembers = ko.observableArray([]);
-    self.branches = ko.observableArray([]);
 
     // Load team members
     if (data.teamMembers && data.teamMembers.length > 0) {
         data.teamMembers.forEach(function(tm) {
             self.teamMembers.push(new TeamMemberViewModel({ userId: tm.userId, role: tm.role }));
-        });
-    }
-
-    // Load branches
-    if (data.branches && data.branches.length > 0) {
-        data.branches.forEach(function(b) {
-            self.branches.push(new BranchViewModel({ branchId: b.branchId, targetCount: b.targetCount, priority: b.priority }));
         });
     }
 
@@ -99,10 +82,7 @@ function ProjectEditViewModel(data) {
             notes: self.notes() || null,
             teamMembers: self.teamMembers().map(function(tm) {
                 return { userId: tm.userId(), role: tm.role() };
-            }).filter(function(tm) { return tm.userId; }),
-            branches: self.branches().map(function(b) {
-                return { branchId: b.branchId(), targetCount: b.targetCount() || null, priority: b.priority() || 0 };
-            }).filter(function(b) { return b.branchId; })
+            }).filter(function(tm) { return tm.userId; })
         };
     };
 }
@@ -126,7 +106,6 @@ function ProjectsViewModel() {
     self.checklists = ko.observableArray([]);
     self.customers = ko.observableArray([]);
     self.users = ko.observableArray([]);
-    self.branches = ko.observableArray([]);
 
     // Filters
     self.searchTerm = ko.observable('');
@@ -216,10 +195,6 @@ function ProjectsViewModel() {
             .then(function(res) { return res.json(); })
             .then(function(data) { self.users(data || []); })
             .catch(function() { console.error('Users could not be loaded'); });
-
-        // Branches modülü kaldırıldı - CustomerOrganizations kullanılıyor
-        // self.branches artık kullanılmıyor
-        self.branches([]);
     };
 
     // Load projects
@@ -333,34 +308,6 @@ function ProjectsViewModel() {
         if (self.editingProject()) {
             self.editingProject().teamMembers.remove(member);
         }
-    };
-
-    // Add branch
-    self.addBranch = function() {
-        if (self.editingProject()) {
-            self.editingProject().branches.push(new BranchViewModel());
-        }
-    };
-
-    // Remove branch
-    self.removeBranch = function(branch) {
-        if (self.editingProject()) {
-            self.editingProject().branches.remove(branch);
-        }
-    };
-
-    // Add all branches
-    self.addAllBranches = function() {
-        if (!self.editingProject() || self.branches().length === 0) {
-            toastr.warning('Eklenecek şube bulunamadı.');
-            return;
-        }
-        var existingIds = self.editingProject().branches().map(function(b) { return b.branchId(); });
-        self.branches().forEach(function(branch) {
-            if (existingIds.indexOf(branch.id) === -1) {
-                self.editingProject().branches.push(new BranchViewModel({ branchId: branch.id }));
-            }
-        });
     };
 
     // Generate code

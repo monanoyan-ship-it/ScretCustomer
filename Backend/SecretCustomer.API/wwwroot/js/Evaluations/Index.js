@@ -41,13 +41,27 @@ function EvaluationsViewModel() {
     // Form fields
     self.callId = ko.observable('');
     self.callDate = ko.observable('');
+    self.callTime = ko.observable('');
     self.duration = ko.observable('');
     self.controlTime = ko.observable('');
+    self.descriptions = ko.observableArray([ko.observable('')]); // Her eleman observable
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
     self.evaluatedPersonnelId = ko.observable(null);
     self.evaluatedUnknownPersonnel = ko.observable('');
     self.evaluationComment = ko.observable('');
+
+    // Açıklama ekle
+    self.addDescription = function() {
+        self.descriptions.push(ko.observable(''));
+    };
+
+    // Açıklama kaldır
+    self.removeDescription = function(index) {
+        if (self.descriptions().length > 1) {
+            self.descriptions.splice(index, 1);
+        }
+    };
 
     // Dönem seçimi
     self.selectedPeriodId = ko.observable(null);
@@ -205,6 +219,34 @@ function EvaluationsViewModel() {
         self.detailsData(null);
     };
 
+    // Taslağa alma talebi gönder
+    self.requestRevertToDraft = function(evaluation) {
+        var reason = prompt('Taslağa alma nedeninizi yazınız (opsiyonel):', '');
+        if (reason === null) return; // İptal edildi
+
+        fetch('/api/evaluations/' + evaluation.id + '/request-revert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason: reason || '' })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(d) {
+                    throw new Error(d.message || 'Talep gönderilemedi');
+                });
+            }
+            return res.json();
+        })
+        .then(function(result) {
+            toastr.success('Taslağa alma talebi gönderildi. Admin onayı bekleniyor.');
+            self.closeDetailsModal();
+        })
+        .catch(function(err) {
+            toastr.error(err.message || 'Talep gönderilemedi.');
+        });
+    };
+
     // ========================
     // EVALUATE MODAL FUNCTIONS
     // ========================
@@ -235,8 +277,10 @@ function EvaluationsViewModel() {
     self.resetFormFields = function() {
         self.callId('');
         self.callDate('');
+        self.callTime('');
         self.duration('');
         self.controlTime('');
+        self.descriptions([ko.observable('')]); // En az bir boş açıklama observable ile başla
         self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
@@ -269,7 +313,8 @@ function EvaluationsViewModel() {
                 notes: ko.observable(''),
                 recommendationNotes: ko.observable(''),
                 applyPenalty: ko.observable(false),
-                selectedPenaltyType: ko.observable('')
+                selectedPenaltyType: ko.observable(''),
+                selectedSubCriteria: ko.observableArray([])
             };
 
             // Subscribe to changes to recalculate scores
@@ -281,6 +326,24 @@ function EvaluationsViewModel() {
             self.answers[questionId].selectedPenaltyType.subscribe(function() { self.calculateScores(); });
         }
         return self.answers[questionId];
+    };
+
+    // Toggle sub-criteria selection
+    self.toggleSubCriteria = function(questionId, subCriteriaId) {
+        var answer = self.getAnswer(questionId);
+        var arr = answer.selectedSubCriteria();
+        var idx = arr.indexOf(subCriteriaId);
+        if (idx >= 0) {
+            answer.selectedSubCriteria.splice(idx, 1);
+        } else {
+            answer.selectedSubCriteria.push(subCriteriaId);
+        }
+    };
+
+    // Check if sub-criteria is selected
+    self.isSubCriteriaSelected = function(questionId, subCriteriaId) {
+        var answer = self.getAnswer(questionId);
+        return answer.selectedSubCriteria().indexOf(subCriteriaId) >= 0;
     };
 
     // Load form data
@@ -310,7 +373,14 @@ function EvaluationsViewModel() {
                 // Load existing values if any
                 if (data.callId) self.callId(data.callId);
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
+                if (data.callTime) self.callTime(data.callTime);
                 if (data.duration) self.duration(data.duration);
+                if (data.descriptions && data.descriptions.length > 0) {
+                    // Her string'i observable'a çevir
+                    self.descriptions(data.descriptions.map(function(d) { return ko.observable(d); }));
+                } else {
+                    self.descriptions([ko.observable('')]); // En az bir boş açıklama
+                }
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
 
@@ -345,6 +415,10 @@ function EvaluationsViewModel() {
                         answer.applyPenalty(a.isPenaltyApplied || false);
                         if (a.appliedPenaltyType && a.appliedPenaltyType !== 'None') {
                             answer.selectedPenaltyType(a.appliedPenaltyType);
+                        }
+                        // Seçili alt kriterleri yükle
+                        if (a.selectedSubCriteriaIds && a.selectedSubCriteriaIds.length > 0) {
+                            answer.selectedSubCriteria(a.selectedSubCriteriaIds);
                         }
                     });
                 }
@@ -478,8 +552,16 @@ function EvaluationsViewModel() {
                 notes: a.notes() || null,
                 recommendationNotes: a.recommendationNotes() || null,
                 applyPenalty: shouldApplyPenalty,
-                selectedPenaltyType: shouldApplyPenalty ? penaltyType : null
+                selectedPenaltyType: shouldApplyPenalty ? penaltyType : null,
+                selectedSubCriteriaIds: a.selectedSubCriteria ? a.selectedSubCriteria() : []
             });
+        });
+
+        // Boş olmayan açıklamaları filtrele (observable'ları unwrap et)
+        var filteredDescriptions = self.descriptions().map(function(d) {
+            return ko.unwrap(d); // observable ise değerini al
+        }).filter(function(d) {
+            return d && d.trim().length > 0;
         });
 
         return {
@@ -490,7 +572,9 @@ function EvaluationsViewModel() {
             evaluationComment: self.evaluationComment(),
             callId: self.callId() || null,
             callDate: self.callDate() || null,
+            callTime: self.callTime() || null,
             duration: self.duration() || null,
+            descriptions: filteredDescriptions.length > 0 ? filteredDescriptions : null,
             evaluatedOrganizationId: self.formData().checklistOrganizationId || null,
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,

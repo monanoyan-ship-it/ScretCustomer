@@ -429,6 +429,14 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <!-- Taslağa Al Talebi Butonu - Sadece Completed değerlendirmeler için -->
+                    <!-- ko if: status === 'Completed' -->
+                    <button type="button" class="btn btn-warning me-auto"
+                            data-bind="click: function() { $parent.requestRevertToDraft($data); }">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        @Html.T("Evaluation.RequestRevert", "Taslağa Al Talebi")
+                    </button>
+                    <!-- /ko -->
                     <button type="button" class="btn btn-secondary" data-bind="click: closeDetailsModal">
                         @Html.T("Common.Close", "Kapat")
                     </button>
@@ -527,19 +535,41 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-3">
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <label class="form-label">@Html.T("Evaluation.CallId", "Çağrı ID")</label>
                                                     <input type="text" class="form-control" data-bind="value: callId" placeholder="@Html.T("Evaluation.CallIdPlaceholder", "Çağrı numarası")">
                                                 </div>
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</label>
                                                     <input type="date" class="form-control" data-bind="value: callDate">
                                                 </div>
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">@Html.T("Evaluation.CallTime", "Çağrı Saati")</label>
+                                                    <input type="time" class="form-control" data-bind="value: callTime">
+                                                </div>
+                                                <div class="col-md-4">
                                                     <label class="form-label">@Html.T("Evaluation.Duration", "Süre")</label>
                                                     <input type="time" step="1" class="form-control" data-bind="value: duration" placeholder="SS:DD:SN">
                                                 </div>
-                                                <!-- Kontrol Saati backend'de otomatik kaydedilir -->
+                                                <!-- Açıklamalar -->
+                                                <div class="col-md-8">
+                                                    <label class="form-label">@Html.T("Evaluation.Descriptions", "Açıklamalar")</label>
+                                                    <!-- ko foreach: descriptions -->
+                                                    <div class="input-group mb-1">
+                                                        <input type="text" class="form-control" data-bind="textInput: $data" placeholder="@Html.T("Evaluation.DescriptionPlaceholder", "Açıklama girin...")">
+                                                        <!-- ko if: $index() === $parent.descriptions().length - 1 -->
+                                                        <button type="button" class="btn btn-outline-success" data-bind="click: $parent.addDescription" title="@Html.T("Common.Add", "Ekle")">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: $parent.descriptions().length > 1 -->
+                                                        <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.removeDescription($index()); }" title="@Html.T("Common.Remove", "Kaldır")">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                        <!-- /ko -->
+                                                    </div>
+                                                    <!-- /ko -->
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -679,6 +709,23 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        <!-- Alt Kriterler (Sub Criteria) -->
+                                                        <!-- ko if: subCriteria && subCriteria.length > 0 -->
+                                                        <div class="mt-2 ps-3 border-start border-2 border-warning">
+                                                            <small class="text-muted d-block mb-1">@Html.T("Evaluation.SubCriteria", "Alt Kriterler"):</small>
+                                                            <div class="d-flex flex-wrap gap-1">
+                                                                <!-- ko foreach: subCriteria -->
+                                                                <button type="button" class="btn btn-sm"
+                                                                        data-bind="click: function() { $root.toggleSubCriteria($parent.id, id); },
+                                                                                   css: $root.isSubCriteriaSelected($parent.id, id) ? 'btn-warning' : 'btn-outline-secondary'">
+                                                                    <i class="bi" data-bind="css: $root.isSubCriteriaSelected($parent.id, id) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                                                    <span data-bind="text: description"></span>
+                                                                </button>
+                                                                <!-- /ko -->
+                                                            </div>
+                                                        </div>
+                                                        <!-- /ko -->
 
                                                         <!-- Answer Input -->
                                                         <div class="mt-2" data-bind="with: $root.getAnswer(id)">

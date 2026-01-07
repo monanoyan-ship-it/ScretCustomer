@@ -87,7 +87,9 @@ public class EvaluationFormDto
     // Çağrı bilgileri (mevcut değerlendirmeden)
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
+    public string? CallTime { get; set; }
     public string? Duration { get; set; }
+    public List<string> Descriptions { get; set; } = new();
     public int? EvaluatedPersonnelId { get; set; }
     public string? EvaluatedUnknownPersonnel { get; set; }
     public string? EvaluationComment { get; set; }

@@ -187,7 +187,6 @@
                             </td>
                             <td>
                                 <span class="badge bg-secondary" data-bind="text: teamMemberCount + ' kişi'"></span>
-                                <span class="badge bg-info" data-bind="text: targetBranchCount + ' şube'"></span>
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
@@ -243,8 +242,7 @@
                                 </div>
                             </div>
                             <div class="row text-muted small">
-                                <div class="col-6"><i class="bi bi-people"></i> <span data-bind="text: teamMemberCount"></span> @Html.T("Project.Person", "Kişi")</div>
-                                <div class="col-6"><i class="bi bi-building"></i> <span data-bind="text: targetBranchCount"></span> @Html.T("Project.Branch", "Şube")</div>
+                                <div class="col-12"><i class="bi bi-people"></i> <span data-bind="text: teamMemberCount"></span> @Html.T("Project.Person", "Kişi")</div>
                             </div>
                         </div>
                         <div class="card-footer bg-light">
@@ -386,22 +384,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Budget -->
-                            <div class="card mb-3">
-                                <div class="card-header py-2"><i class="bi bi-currency-dollar"></i> @Html.T("Project.BudgetInfo", "Bütçe Bilgileri")</div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">@Html.T("Project.EstimatedBudget", "Tahmini Bütçe (TL)")</label>
-                                            <input type="number" class="form-control" data-bind="value: estimatedBudget" min="0" step="0.01">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">@Html.T("Project.CostPerEvaluation", "Değerlendirme Başına Maliyet (TL)")</label>
-                                            <input type="number" class="form-control" data-bind="value: costPerEvaluation" min="0" step="0.01">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             <!-- Other -->
                             <div class="card mb-3">
                                 <div class="card-header py-2"><i class="bi bi-gear"></i> @Html.T("Project.OtherSettings", "Diğer Ayarlar")</div>
@@ -468,35 +450,6 @@
                                             <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parents[1].removeTeamMember"><i class="bi bi-x"></i></button>
                                         </li>
                                     </ul>
-                                </div>
-                            </div>
-                            <!-- Branches -->
-                            <div class="card mb-3">
-                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                                    <span><i class="bi bi-building"></i> @Html.T("Project.TargetBranches", "Hedef Şubeler")</span>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.addBranch"><i class="bi bi-plus"></i></button>
-                                </div>
-                                <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
-                                    <div data-bind="visible: branches().length === 0" class="text-center py-3 text-muted">
-                                        <i class="bi bi-building"></i> @Html.T("Project.AddBranch", "Şube ekleyin")
-                                    </div>
-                                    <ul class="list-group list-group-flush" data-bind="foreach: branches">
-                                        <li class="list-group-item py-2">
-                                            <div class="d-flex align-items-center gap-2 mb-1">
-                                                <select class="form-select form-select-sm flex-grow-1" data-bind="value: branchId, options: $parents[1].branches, optionsText: function(b) { return b.name + ' (' + b.code + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Project.Branch", "Şube...")'"></select>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parents[1].removeBranch"><i class="bi bi-x"></i></button>
-                                            </div>
-                                            <div class="row g-1">
-                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: targetCount" placeholder="@Html.T("Project.Target", "Hedef")" min="0"></div>
-                                                <div class="col-6"><input type="number" class="form-control form-control-sm" data-bind="value: priority" placeholder="@Html.T("Project.Priority", "Öncelik")" min="0"></div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card-footer py-2">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" data-bind="click: $parent.addAllBranches">
-                                        <i class="bi bi-plus-square"></i> @Html.T("Project.AddAllBranches", "Tüm Şubeleri Ekle")
-                                    </button>
                                 </div>
                             </div>
                         </div>

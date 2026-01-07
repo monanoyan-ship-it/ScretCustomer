@@ -74,6 +74,7 @@ public class ChecklistService : IChecklistService
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
+                GroupName = q.GroupName,
                 // Alt Kriterler
                 SubCriteria = q.SubCriteria?.Select(sc => new QuestionSubCriteria
                 {
@@ -161,6 +162,7 @@ public class ChecklistService : IChecklistService
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
+                GroupName = q.GroupName,
                 // Alt Kriterleri de kopyala
                 SubCriteria = q.SubCriteria.Select(sc => new QuestionSubCriteria
                 {
@@ -207,6 +209,7 @@ public class ChecklistService : IChecklistService
                     question.IsRequired = questionDto.IsRequired;
                     question.RecommendedNote = questionDto.RecommendedNote;
                     question.HelpText = questionDto.HelpText;
+                    question.GroupName = questionDto.GroupName;
 
                     // Alt Kriterleri güncelle
                     UpdateSubCriteria(question, questionDto.SubCriteria);
@@ -229,6 +232,7 @@ public class ChecklistService : IChecklistService
                     IsRequired = questionDto.IsRequired,
                     RecommendedNote = questionDto.RecommendedNote,
                     HelpText = questionDto.HelpText,
+                    GroupName = questionDto.GroupName,
                     // Alt Kriterler
                     SubCriteria = questionDto.SubCriteria?.Select(sc => new QuestionSubCriteria
                     {
@@ -330,6 +334,7 @@ public class ChecklistService : IChecklistService
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
+                GroupName = q.GroupName,
                 // Alt Kriterler
                 SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
                 {

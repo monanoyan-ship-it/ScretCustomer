@@ -354,13 +354,25 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6 mb-2">
+                                    <div class="col-md-4 mb-2">
                                         <label class="form-label">@Html.T("Checklist.RecommendedNote", "Önerilen Açıklama")</label>
                                         <input type="text" class="form-control form-control-sm" data-bind="value: recommendedNote" placeholder="@Html.T("Checklist.RecommendedNotePlaceholder", "Değerlendirici için öneri")" />
                                     </div>
-                                    <div class="col-md-6 mb-2">
+                                    <div class="col-md-4 mb-2">
                                         <label class="form-label">@Html.T("Checklist.HelpText", "Yardımcı Metin")</label>
                                         <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="@Html.T("Checklist.HelpTextPlaceholder", "Soru hakkında ipucu")" />
+                                    </div>
+                                    <div class="col-md-4 mb-2 position-relative">
+                                        <label class="form-label">@Html.T("Question.GroupName", "Soru Grubu")</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                               data-bind="value: groupName, event: { focus: $root.showGroupSuggestions, input: $root.filterGroupSuggestions, blur: $root.hideGroupSuggestions }"
+                                               placeholder="@Html.T("Question.GroupNamePlaceholder", "Grup adı girin veya seçin...")"
+                                               autocomplete="off" />
+                                        <!-- Autocomplete Dropdown -->
+                                        <div class="dropdown-menu w-100" data-bind="visible: $root.showGroupDropdown() && $root.filteredGroups().length > 0, foreach: $root.filteredGroups">
+                                            <a class="dropdown-item" href="#" data-bind="text: $data, click: function() { $parent.groupName($data); $root.showGroupDropdown(false); }"></a>
+                                        </div>
+                                        <small class="text-muted">@Html.T("Question.GroupNameHelp", "Raporlamada gruplandırma için (opsiyonel)")</small>
                                     </div>
                                 </div>
 

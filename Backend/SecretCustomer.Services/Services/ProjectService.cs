@@ -213,6 +213,41 @@ public class ProjectService : IProjectService
         project.CustomerId = dto.CustomerId;
         project.UpdatedAt = DateTime.UtcNow;
 
+        // Update team members
+        if (dto.TeamMembers != null)
+        {
+            // Mevcut üyeleri kaldır (soft delete)
+            foreach (var existingMember in project.TeamMembers.Where(m => !m.IsDeleted).ToList())
+            {
+                existingMember.IsDeleted = true;
+            }
+
+            // Yeni üyeleri ekle
+            foreach (var memberDto in dto.TeamMembers.Where(m => m.UserId > 0))
+            {
+                // Daha önce eklenmiş ama silinmiş mi kontrol et
+                var existing = project.TeamMembers.FirstOrDefault(m => m.UserId == memberDto.UserId);
+                if (existing != null)
+                {
+                    // Geri aktif et
+                    existing.IsDeleted = false;
+                    existing.Role = memberDto.Role ?? "Evaluator";
+                }
+                else
+                {
+                    // Yeni ekle
+                    project.TeamMembers.Add(new ProjectTeamMember
+                    {
+                        ProjectId = project.Id,
+                        UserId = memberDto.UserId,
+                        Role = memberDto.Role ?? "Evaluator",
+                        AssignedAt = DateTime.UtcNow,
+                        IsActive = true
+                    });
+                }
+            }
+        }
+
         await _context.SaveChangesAsync();
         return MapToDto(project);
     }

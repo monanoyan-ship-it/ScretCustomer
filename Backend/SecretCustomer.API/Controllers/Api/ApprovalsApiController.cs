@@ -21,12 +21,19 @@ public class ApprovalsApiController : BaseApiController
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
     private readonly IAuditLogService _auditLogService;
+    private readonly IEvaluationService _evaluationService;
 
-    public ApprovalsApiController(ApplicationDbContext context, ILocalizationService localizationService, IAuditLogService auditLogService, IConfiguration configuration) : base(configuration)
+    public ApprovalsApiController(
+        ApplicationDbContext context,
+        ILocalizationService localizationService,
+        IAuditLogService auditLogService,
+        IEvaluationService evaluationService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _localizationService = localizationService;
         _auditLogService = auditLogService;
+        _evaluationService = evaluationService;
     }
 
     private int GetCurrentUserId()
@@ -249,6 +256,33 @@ public class ApprovalsApiController : BaseApiController
         approval.ApprovedByUserId = userId;
         approval.RespondedAt = DateTime.UtcNow;
         approval.ResponseNote = dto.Note;
+
+        // === HOOK: Taslağa Alma Talebi Onayı ===
+        // Eğer bu bir taslağa alma talebi ise ve onaylandıysa, değerlendirmeyi taslağa al
+        if (dto.Approved &&
+            approval.ApprovalType == ApprovalType.Evaluation &&
+            approval.RelatedEntityType == "EvaluationRevert" &&
+            approval.RelatedEntityId.HasValue)
+        {
+            try
+            {
+                await _evaluationService.RevertToDraftAsync(
+                    approval.RelatedEntityId.Value,
+                    userId,
+                    $"Taslağa alma talebi onaylandı. Talep No: {approval.ReferenceNumber}. Neden: {approval.Description}");
+            }
+            catch (Exception ex)
+            {
+                // Taslağa alma başarısız olursa approval'ı geri al
+                approval.Status = ApprovalStatus.Pending;
+                approval.ApprovedByUserId = null;
+                approval.RespondedAt = null;
+                approval.ResponseNote = null;
+                await _context.SaveChangesAsync();
+
+                return BadRequest(CreateErrorResponse($"Değerlendirme taslağa alınamadı: {ex.Message}"));
+            }
+        }
 
         // Notify requester
         var notification = new Notification

@@ -34,9 +34,19 @@ public class EvaluationDto
     public DateTime? CallDate { get; set; }
 
     /// <summary>
+    /// Çağrı saati (HH:mm formatında)
+    /// </summary>
+    public string? CallTime { get; set; }
+
+    /// <summary>
     /// Süre (dk:sn formatında, örn: "12:26")
     /// </summary>
     public string? Duration { get; set; }
+
+    /// <summary>
+    /// Açıklamalar listesi
+    /// </summary>
+    public List<string> Descriptions { get; set; } = new();
 
     /// <summary>
     /// Değerlendirilen personel ID
@@ -138,4 +148,9 @@ public class AnswerDto
     public string? PenaltyType { get; set; }
     public string? HelpText { get; set; }
     public string? RecommendedNote { get; set; }
+
+    /// <summary>
+    /// Seçilen alt kriter ID'leri
+    /// </summary>
+    public List<int>? SelectedSubCriteriaIds { get; set; }
 }

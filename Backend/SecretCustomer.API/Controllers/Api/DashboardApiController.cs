@@ -216,11 +216,30 @@ public class DashboardApiController : BaseApiController
             }
             else if (role == "CustomerSupervisor")
             {
-                // Supervisor: Takımındaki kişilerin değerlendirmeleri
-                targetUserIds = await _context.CustomerPersonnel
-                    .Where(p => p.SupervisorId == personnelId && !p.IsDeleted)
-                    .Select(p => p.Id)
-                    .ToListAsync();
+                // Takım üye sayısını kontrol et
+                var teamMemberCount = await _context.CustomerPersonnel
+                    .CountAsync(p => p.SupervisorId == personnelId && !p.IsDeleted);
+
+                if (teamMemberCount == 0)
+                {
+                    // Organizasyon yöneticisi - tüm organizasyon personelini görsün
+                    var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+                    if (personnel?.OrganizationId != null)
+                    {
+                        targetUserIds = await _context.CustomerPersonnel
+                            .Where(p => p.OrganizationId == personnel.OrganizationId && !p.IsDeleted)
+                            .Select(p => p.Id)
+                            .ToListAsync();
+                    }
+                }
+                else
+                {
+                    // Normal supervisor - sadece takım üyeleri
+                    targetUserIds = await _context.CustomerPersonnel
+                        .Where(p => p.SupervisorId == personnelId && !p.IsDeleted)
+                        .Select(p => p.Id)
+                        .ToListAsync();
+                }
                 showPersonnelName = true;
             }
             else

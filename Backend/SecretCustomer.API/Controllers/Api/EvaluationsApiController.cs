@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Evaluation;
+using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 using System.Security.Claims;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -13,16 +17,19 @@ public class EvaluationsApiController : BaseApiController
     private readonly IEvaluationService _evaluationService;
     private readonly ILogger<EvaluationsApiController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly ApplicationDbContext _context;
 
     public EvaluationsApiController(
         IEvaluationService evaluationService,
         ILogger<EvaluationsApiController> logger,
         ILocalizationService localizationService,
+        ApplicationDbContext context,
         IConfiguration configuration) : base(configuration)
     {
         _evaluationService = evaluationService;
         _logger = logger;
         _localizationService = localizationService;
+        _context = context;
     }
 
     /// <summary>
@@ -408,6 +415,89 @@ public class EvaluationsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.CancelError"), ex));
         }
     }
+
+    /// <summary>
+    /// Taslağa alma talebi gönderir (kullanıcı tarafından)
+    /// Tamamlanmış değerlendirmeler için admin onayı gerektirir
+    /// </summary>
+    [HttpPost("{id:int}/request-revert")]
+    [Authorize]
+    public async Task<IActionResult> RequestRevertToDraft(int id, [FromBody] RequestRevertDto? dto)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(CreateErrorResponse("Kullanıcı bulunamadı"));
+            }
+
+            // 1. Değerlendirmeyi kontrol et (Assignment include etmiyoruz çünkü silinmiş olabilir)
+            var evaluation = await _context.Evaluations
+                .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+
+            if (evaluation == null)
+            {
+                return NotFound(CreateErrorResponse("Değerlendirme bulunamadı"));
+            }
+
+            // Sadece Completed durumundaki değerlendirmeler için talep gönderilebilir
+            if (evaluation.Status != EvaluationStatus.Completed)
+            {
+                return BadRequest(CreateErrorResponse("Sadece tamamlanmış değerlendirmeler için taslağa alma talebi gönderilebilir."));
+            }
+
+            // 2. Zaten bekleyen talep var mı kontrol et
+            var existingRequest = await _context.Approvals
+                .AnyAsync(a => a.ApprovalType == ApprovalType.Evaluation
+                            && a.RelatedEntityId == id
+                            && a.RelatedEntityType == "EvaluationRevert"
+                            && a.Status == ApprovalStatus.Pending);
+
+            if (existingRequest)
+            {
+                return BadRequest(CreateErrorResponse("Bu değerlendirme için zaten bekleyen bir taslağa alma talebi var."));
+            }
+
+            // 3. Referans numarası oluştur
+            var year = DateTime.UtcNow.Year;
+            var count = await _context.Approvals.CountAsync(a => a.CreatedAt.Year == year) + 1;
+            var referenceNumber = $"REV-{year}-{count:D4}";
+
+            // 4. Approval kaydı oluştur
+            var approval = new Approval
+            {
+                ReferenceNumber = referenceNumber,
+                ApprovalType = ApprovalType.Evaluation,
+                Status = ApprovalStatus.Pending,
+                Title = $"Taslağa Alma Talebi - Değerlendirme #{id}",
+                Description = dto?.Reason ?? "Neden belirtilmedi",
+                RelatedEntityId = id,
+                RelatedEntityType = "EvaluationRevert", // Taslağa alma talebi olduğunu belirtmek için
+                RequestedByUserId = userId,
+                RequestedAt = DateTime.UtcNow,
+                Priority = NotificationPriority.Normal
+            };
+
+            _context.Approvals.Add(approval);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Taslağa alma talebi oluşturuldu: EvaluationId={EvaluationId}, ApprovalId={ApprovalId}, UserId={UserId}",
+                id, approval.Id, userId);
+
+            return Ok(new
+            {
+                message = "Taslağa alma talebi gönderildi. Admin onayı bekleniyor.",
+                approvalId = approval.Id,
+                referenceNumber = approval.ReferenceNumber
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating revert request for evaluation {EvaluationId}", id);
+            return StatusCode(500, CreateErrorResponse("Talep oluşturulurken bir hata oluştu.", ex));
+        }
+    }
 }
 
 // Request DTOs
@@ -417,6 +507,11 @@ public class RevertToDraftRequest
 }
 
 public class CancelEvaluationRequest
+{
+    public string? Reason { get; set; }
+}
+
+public class RequestRevertDto
 {
     public string? Reason { get; set; }
 }

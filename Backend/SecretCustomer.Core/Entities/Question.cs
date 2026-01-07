@@ -85,6 +85,14 @@ public class Question : BaseEntity
         Description = "Değerlendirici için yardımcı metin")]
     public string? HelpText { get; set; }
 
+    /// <summary>
+    /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
+    /// </summary>
+    [ExcelColumn("Grup", 11, ColumnType = ExcelColumnType.Text,
+        Description = "Sorunun ait olduğu grup (raporlama için)", SampleValue = "İletişim")]
+    [System.ComponentModel.DataAnnotations.MaxLength(200)]
+    public string? GroupName { get; set; }
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<QuestionAttachment> Attachments { get; set; } = new List<QuestionAttachment>();

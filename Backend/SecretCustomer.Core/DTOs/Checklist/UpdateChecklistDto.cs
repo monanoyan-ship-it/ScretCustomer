@@ -86,6 +86,12 @@ public class UpdateQuestionDto
     public string? HelpText { get; set; }
 
     /// <summary>
+    /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
+    /// </summary>
+    [MaxLength(200)]
+    public string? GroupName { get; set; }
+
+    /// <summary>
     /// Alt Kriterler/Öneriler
     /// </summary>
     public List<UpdateSubCriteriaDto>? SubCriteria { get; set; }

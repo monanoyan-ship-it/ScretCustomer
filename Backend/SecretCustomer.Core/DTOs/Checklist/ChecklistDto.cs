@@ -73,6 +73,11 @@ public class QuestionDto
     public string? HelpText { get; set; }
 
     /// <summary>
+    /// Soru grubu (raporlama için)
+    /// </summary>
+    public string? GroupName { get; set; }
+
+    /// <summary>
     /// Alt Kriterler/Öneriler
     /// </summary>
     public List<SubCriteriaDto>? SubCriteria { get; set; }

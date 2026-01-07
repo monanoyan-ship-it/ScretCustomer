@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Evaluation;
 using SecretCustomer.Core.Entities;
@@ -36,6 +37,30 @@ public class EvaluationService : IEvaluationService
     {
         if (dateTime.Kind == DateTimeKind.Utc) return dateTime;
         return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+    }
+
+    // Helper: Descriptions listesini JSON'a serialize et (boş olanları filtrele)
+    private static string? SerializeDescriptions(List<string>? descriptions)
+    {
+        if (descriptions == null || descriptions.Count == 0) return null;
+        // Boş olanları filtrele
+        var filtered = descriptions.Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
+        if (filtered.Count == 0) return null;
+        return JsonSerializer.Serialize(filtered);
+    }
+
+    // Helper: JSON'dan Descriptions listesini deserialize et
+    private static List<string> DeserializeDescriptions(string? json)
+    {
+        if (string.IsNullOrEmpty(json)) return new List<string>();
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
 
     public async Task<EvaluationDto?> GetByIdAsync(int id)
@@ -147,6 +172,7 @@ public class EvaluationService : IEvaluationService
             FormOpenedAt = DateTime.UtcNow,
             CallId = dto.CallId,
             CallDate = ToUtc(dto.CallDate),
+            CallTime = dto.CallTime,
             EvaluatedPersonnelId = dto.EvaluatedPersonnelId,
             EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel
         };
@@ -291,7 +317,9 @@ public class EvaluationService : IEvaluationService
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
             CallId = null,
             CallDate = null,
+            CallTime = null,
             Duration = null,
+            Descriptions = new List<string>(),
             EvaluatedPersonnelId = null,
             EvaluatedUnknownPersonnel = null,
             EvaluationComment = null,
@@ -360,6 +388,7 @@ public class EvaluationService : IEvaluationService
                     .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
                         .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
         if (evaluation == null)
@@ -407,7 +436,9 @@ public class EvaluationService : IEvaluationService
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
+            CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
+            Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson),
             EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
             EvaluationComment = evaluation.EvaluationComment,
@@ -536,6 +567,19 @@ public class EvaluationService : IEvaluationService
                     : PenaltyType.None;
             }
 
+            // Alt kriter seçimlerini ekle
+            if (answerDto.SelectedSubCriteriaIds?.Any() == true)
+            {
+                foreach (var subCriteriaId in answerDto.SelectedSubCriteriaIds)
+                {
+                    answer.SubCriteriaSelections.Add(new AnswerSubCriteriaSelection
+                    {
+                        SubCriteriaId = subCriteriaId,
+                        SelectedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
             evaluation.Answers.Add(answer);
         }
 
@@ -548,7 +592,9 @@ public class EvaluationService : IEvaluationService
         evaluation.EvaluationComment = dto.EvaluationComment;
         evaluation.CallId = dto.CallId;
         evaluation.CallDate = ToUtc(dto.CallDate);
+        evaluation.CallTime = dto.CallTime;
         evaluation.Duration = dto.Duration;
+        evaluation.DescriptionsJson = SerializeDescriptions(dto.Descriptions);
         evaluation.EvaluatedOrganizationId = dto.EvaluatedOrganizationId;
         evaluation.EvaluatedPersonnelId = dto.EvaluatedPersonnelId;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
@@ -725,7 +771,8 @@ public class EvaluationService : IEvaluationService
             ScoringType = a.Question?.ScoringType.ToString(),
             PenaltyType = a.Question?.PenaltyType.ToString(),
             HelpText = a.Question?.HelpText,
-            RecommendedNote = a.Question?.RecommendedNote
+            RecommendedNote = a.Question?.RecommendedNote,
+            SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList()
         };
     }
 
@@ -734,8 +781,8 @@ public class EvaluationService : IEvaluationService
     /// </summary>
     public async Task<EvaluationDto> RevertToDraftAsync(int evaluationId, int revertedByUserId, string? reason = null)
     {
+        // Assignment include etmiyoruz çünkü silinmiş olabilir
         var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
         if (evaluation == null)
@@ -846,7 +893,9 @@ public class EvaluationService : IEvaluationService
             EvaluationComment = evaluation.EvaluationComment,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
+            CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
+            Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson),
             EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
             EvaluatedPersonnelName = evaluatedPersonnelName,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,

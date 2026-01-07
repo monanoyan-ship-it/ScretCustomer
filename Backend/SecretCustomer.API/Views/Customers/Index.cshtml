@@ -675,6 +675,9 @@
                                                     <div>
                                                         <i class="bi bi-person-badge me-2"></i>
                                                         <strong data-bind="text: fullName"></strong>
+                                                        <!-- ko if: teamMembers.length === 0 -->
+                                                        <span class="text-warning ms-1" title="@Html.T("Customer.OrgManager", "Organizasyon Yöneticisi")">*</span>
+                                                        <!-- /ko -->
                                                         <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
                                                     </div>
                                                     <div class="btn-group btn-group-sm">

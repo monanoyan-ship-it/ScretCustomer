@@ -231,12 +231,23 @@ builder.Services.AddControllers(options =>
 
 var app = builder.Build();
 
-// Seed Database
+// Auto-migrate Database (yeni alanlar otomatik eklenir)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
     var logger = services.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        logger.LogInformation("Veritabanı migration'ları uygulanıyor...");
+        context.Database.Migrate();
+        logger.LogInformation("Migration'lar başarıyla uygulandı.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Migration uygulanırken hata oluştu.");
+    }
 
     // Production için: sadece admin + diller + temel ayarlar
     // Development için: örnek veriler dahil
