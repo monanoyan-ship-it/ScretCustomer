@@ -143,7 +143,22 @@ public class AnswerDto
     public int? SectionOrder { get; set; }
     public string? SectionName { get; set; }
     public int? QuestionOrder { get; set; }
+
+    /// <summary>
+    /// Sorunun maksimum puanı (örn: 5 = 1-5 arası seçim)
+    /// </summary>
+    public int? QuestionMaxPoints { get; set; }
+
+    /// <summary>
+    /// Sorunun ağırlık puanı
+    /// </summary>
+    public decimal? WeightPoints { get; set; }
+
+    /// <summary>
+    /// DEPRECATED: WeightPoints yerine kullanılıyordu, geriye uyumluluk için
+    /// </summary>
     public decimal? MaxPoints { get; set; }
+
     public string? ScoringType { get; set; }
     public string? PenaltyType { get; set; }
     public string? HelpText { get; set; }

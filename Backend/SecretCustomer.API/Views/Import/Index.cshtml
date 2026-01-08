@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Veri İçe Aktarma";
+    ViewData["Title"] = Html.T("Import.Title", "Veri İçe Aktarma");
 }
 
 <div id="import-app">
@@ -9,21 +9,21 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-upload me-2"></i>Personel İçe Aktarma
+                            <i class="bi bi-upload me-2"></i>@Html.T("Import.PersonnelImport", "Personel İçe Aktarma")
                         </h5>
                     </div>
                     <div class="card-body">
                         <!-- Info Box -->
                         <div class="alert alert-info mb-4">
-                            <h6><i class="bi bi-info-circle me-2"></i>Rol Bilgileri</h6>
+                            <h6><i class="bi bi-info-circle me-2"></i>@Html.T("Import.RoleInfo", "Rol Bilgileri")</h6>
                             <ul class="mb-0">
-                                <li><strong>CustomerManager</strong> (RoleId: 1) = Firma Yetkilisi (Tüm raporlara erişim)</li>
-                                <li><strong>CustomerSupervisor</strong> (RoleId: 2) = Takım Lideri (Kendi takımının raporlarını görür)</li>
-                                <li><strong>CustomerOperator</strong> (RoleId: 3) = Müşteri Temsilcisi (Değerlendirilecek personel)</li>
+                                <li><strong>CustomerManager</strong> (RoleId: 1) = @Html.T("Import.Role.CustomerManager", "Firma Yetkilisi (Tüm raporlara erişim)")</li>
+                                <li><strong>CustomerSupervisor</strong> (RoleId: 2) = @Html.T("Import.Role.CustomerSupervisor", "Takım Lideri (Kendi takımının raporlarını görür)")</li>
+                                <li><strong>CustomerOperator</strong> (RoleId: 3) = @Html.T("Import.Role.CustomerOperator", "Müşteri Temsilcisi (Değerlendirilecek personel)")</li>
                             </ul>
                             <hr>
                             <small>
-                                <strong>Organization:</strong> Belirtilmezse "Merkez" olarak atanır.
+                                <strong>Organization:</strong> @Html.T("Import.OrganizationNote", "Belirtilmezse \"Merkez\" olarak atanır.")
                             </small>
                         </div>
 
@@ -32,21 +32,21 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">CSV Dosyası Seçin</label>
+                                        <label class="form-label">@Html.T("Import.SelectCsvFile", "CSV Dosyası Seçin")</label>
                                         <input type="file" class="form-control" id="csvFile" accept=".csv" data-bind="event: { change: onFileSelected }">
-                                        <div class="form-text">Sadece .csv dosyaları kabul edilir (max 10MB)</div>
+                                        <div class="form-text">@Html.T("Import.CsvFileNote", "Sadece .csv dosyaları kabul edilir (max 10MB)")</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Seçenekler</label>
+                                        <label class="form-label">@Html.T("Import.Options", "Seçenekler")</label>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="updateExisting" data-bind="checked: updateExisting">
                                             <label class="form-check-label" for="updateExisting">
-                                                Mevcut kayıtları güncelle
+                                                @Html.T("Import.UpdateExisting", "Mevcut kayıtları güncelle")
                                             </label>
                                         </div>
-                                        <div class="form-text">İşaretlenmezse, mevcut kullanıcı adları atlanır</div>
+                                        <div class="form-text">@Html.T("Import.UpdateExistingNote", "İşaretlenmezse, mevcut kullanıcı adları atlanır")</div>
                                     </div>
                                 </div>
                             </div>
@@ -54,14 +54,14 @@
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-primary" data-bind="click: importPersonnel, disable: isLoading() || !selectedFile()">
                                     <span data-bind="visible: !isLoading()">
-                                        <i class="bi bi-upload me-2"></i>İçe Aktar
+                                        <i class="bi bi-upload me-2"></i>@Html.T("Import.Import", "İçe Aktar")
                                     </span>
                                     <span data-bind="visible: isLoading">
-                                        <span class="spinner-border spinner-border-sm me-2"></span>İşleniyor...
+                                        <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Import.Processing", "İşleniyor...")
                                     </span>
                                 </button>
                                 <a href="/api/import/personnel/template" class="btn btn-outline-secondary" download>
-                                    <i class="bi bi-download me-2"></i>Örnek Şablon İndir
+                                    <i class="bi bi-download me-2"></i>@Html.T("Import.DownloadTemplate", "Örnek Şablon İndir")
                                 </a>
                             </div>
                         </form>
@@ -70,7 +70,7 @@
                         <div data-bind="visible: selectedFile" class="mt-3">
                             <div class="alert alert-secondary">
                                 <i class="bi bi-file-earmark-text me-2"></i>
-                                <strong>Seçili Dosya:</strong> <span data-bind="text: selectedFileName"></span>
+                                <strong>@Html.T("Import.SelectedFile", "Seçili Dosya"):</strong> <span data-bind="text: selectedFileName"></span>
                                 (<span data-bind="text: selectedFileSize"></span>)
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                     <div class="card-header" data-bind="css: { 'bg-success text-white': importResult() && importResult().success, 'bg-danger text-white': importResult() && !importResult().success }">
                         <h5 class="mb-0">
                             <i class="bi me-2" data-bind="css: { 'bi-check-circle': importResult() && importResult().success, 'bi-x-circle': importResult() && !importResult().success }"></i>
-                            İçe Aktarma Sonucu
+                            @Html.T("Import.ImportResult", "İçe Aktarma Sonucu")
                         </h5>
                     </div>
                     <div class="card-body">
@@ -95,44 +95,44 @@
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0" data-bind="text: importResult() ? importResult().totalRows : 0"></h3>
-                                    <small class="text-muted">Toplam Satır</small>
+                                    <small class="text-muted">@Html.T("Import.TotalRows", "Toplam Satır")</small>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0 text-info" data-bind="text: importResult() ? importResult().customersCreated : 0"></h3>
-                                    <small class="text-muted">Firma Oluşturuldu</small>
+                                    <small class="text-muted">@Html.T("Import.CustomersCreated", "Firma Oluşturuldu")</small>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0 text-success" data-bind="text: importResult() ? importResult().personnelCreated : 0"></h3>
-                                    <small class="text-muted">Personel Oluşturuldu</small>
+                                    <small class="text-muted">@Html.T("Import.PersonnelCreated", "Personel Oluşturuldu")</small>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0 text-primary" data-bind="text: importResult() ? importResult().personnelUpdated : 0"></h3>
-                                    <small class="text-muted">Personel Güncellendi</small>
+                                    <small class="text-muted">@Html.T("Import.PersonnelUpdated", "Personel Güncellendi")</small>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0 text-warning" data-bind="text: importResult() ? importResult().personnelSkipped : 0"></h3>
-                                    <small class="text-muted">Atlandı</small>
+                                    <small class="text-muted">@Html.T("Import.Skipped", "Atlandı")</small>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="text-center p-3 bg-light rounded">
                                     <h3 class="mb-0 text-danger" data-bind="text: importResult() && importResult().errors ? importResult().errors.length : 0"></h3>
-                                    <small class="text-muted">Hata</small>
+                                    <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Errors -->
                         <div data-bind="visible: importResult() && importResult().errors && importResult().errors.length > 0" class="mb-3">
-                            <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Hatalar</h6>
+                            <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Html.T("Import.Errors", "Hatalar")</h6>
                             <ul class="list-group">
                                 <!-- ko foreach: importResult() ? importResult().errors : [] -->
                                 <li class="list-group-item list-group-item-danger" data-bind="text: $data"></li>
@@ -142,30 +142,30 @@
 
                         <!-- Warnings -->
                         <div data-bind="visible: importResult() && importResult().warnings && importResult().warnings.length > 0" class="mb-3">
-                            <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>Uyarılar</h6>
+                            <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>@Html.T("Import.Warnings", "Uyarılar")</h6>
                             <ul class="list-group">
                                 <!-- ko foreach: importResult() ? importResult().warnings.slice(0, 20) : [] -->
                                 <li class="list-group-item list-group-item-warning" data-bind="text: $data"></li>
                                 <!-- /ko -->
                                 <li class="list-group-item list-group-item-light" data-bind="visible: importResult() && importResult().warnings && importResult().warnings.length > 20">
-                                    ... ve <span data-bind="text: importResult() && importResult().warnings ? importResult().warnings.length - 20 : 0"></span> uyarı daha
+                                    ... @Html.T("Import.AndMore", "ve") <span data-bind="text: importResult() && importResult().warnings ? importResult().warnings.length - 20 : 0"></span> @Html.T("Import.MoreWarnings", "uyarı daha")
                                 </li>
                             </ul>
                         </div>
 
                         <!-- Imported Personnel Table -->
                         <div data-bind="visible: importResult() && importResult().importedPersonnel && importResult().importedPersonnel.length > 0">
-                            <h6><i class="bi bi-table me-2"></i>İşlenen Personeller (İlk 50)</h6>
+                            <h6><i class="bi bi-table me-2"></i>@Html.T("Import.ProcessedPersonnel", "İşlenen Personeller (İlk 50)")</h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-striped">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Ad Soyad</th>
-                                            <th>Kullanıcı Adı</th>
-                                            <th>Firma</th>
-                                            <th>Rol</th>
-                                            <th>Durum</th>
+                                            <th>@Html.T("Import.FullName", "Ad Soyad")</th>
+                                            <th>@Html.T("Import.Username", "Kullanıcı Adı")</th>
+                                            <th>@Html.T("Import.Company", "Firma")</th>
+                                            <th>@Html.T("Import.Role", "Rol")</th>
+                                            <th>@Html.T("Common.Status", "Durum")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: importResult() ? importResult().importedPersonnel.slice(0, 50) : []">
@@ -222,7 +222,7 @@
 
         self.importPersonnel = function() {
             if (!self.selectedFile()) {
-                toastr.warning('Lütfen bir CSV dosyası seçin.');
+                toastr.warning(T('Import.SelectFileWarning', 'Lütfen bir CSV dosyası seçin.'));
                 return;
             }
 
@@ -248,16 +248,16 @@
                 self.importResult(result.data);
 
                 if (result.ok && result.data.success) {
-                    toastr.success('İçe aktarma başarıyla tamamlandı!');
+                    toastr.success(T('Import.Success', 'İçe aktarma başarıyla tamamlandı!'));
                 } else if (result.ok && !result.data.success) {
-                    toastr.warning('İçe aktarma tamamlandı ancak hatalar var.');
+                    toastr.warning(T('Import.SuccessWithErrors', 'İçe aktarma tamamlandı ancak hatalar var.'));
                 } else {
-                    toastr.error('İçe aktarma başarısız.');
+                    toastr.error(T('Import.Failed', 'İçe aktarma başarısız.'));
                 }
             })
             .catch(function(error) {
                 console.error('Import error:', error);
-                toastr.error('İçe aktarma sırasında bir hata oluştu.');
+                toastr.error(T('Import.Error', 'İçe aktarma sırasında bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);

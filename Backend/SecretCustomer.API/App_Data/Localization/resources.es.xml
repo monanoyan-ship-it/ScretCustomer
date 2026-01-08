@@ -194,15 +194,6 @@
   <LocaleResource Name="Common.Saving">
     <Value>Guardando...</Value>
   </LocaleResource>
-  <LocaleResource Name="Common.Total">
-    <Value>Total</Value>
-  </LocaleResource>
-  <LocaleResource Name="Common.Average">
-    <Value>Promedio</Value>
-  </LocaleResource>
-  <LocaleResource Name="Common.Refresh">
-    <Value>Actualizar</Value>
-  </LocaleResource>
   <LocaleResource Name="Common.Status.Pending">
     <Value>Pendiente</Value>
   </LocaleResource>
@@ -248,8 +239,6 @@
   <LocaleResource Name="Common.ConfirmMessage">
     <Value>¿Está seguro de que desea continuar con esta acción?</Value>
   </LocaleResource>
-
-  <!-- Layout -->
   <LocaleResource Name="Layout.AppTitle">
     <Value>Sistema de Evaluación de Cliente Misterioso</Value>
   </LocaleResource>
@@ -274,8 +263,6 @@
   <LocaleResource Name="Layout.StartViewing">
     <Value>Iniciar Visualización</Value>
   </LocaleResource>
-
-  <!-- Permission -->
   <LocaleResource Name="Permission.Title">
     <Value>Gestión de Permisos</Value>
   </LocaleResource>
@@ -360,8 +347,6 @@
   <LocaleResource Name="Permission.Note">
     <Value>Nota</Value>
   </LocaleResource>
-
-  <!-- Organization -->
   <LocaleResource Name="Organization.Title">
     <Value>Gestión de Organización</Value>
   </LocaleResource>
@@ -455,8 +440,6 @@
   <LocaleResource Name="Organization.AddSubUnit">
     <Value>Agregar Sub Unidad</Value>
   </LocaleResource>
-
-  <!-- Delegation -->
   <LocaleResource Name="Delegation.Title">
     <Value>Gestión de Delegaciones</Value>
   </LocaleResource>
@@ -544,8 +527,6 @@
   <LocaleResource Name="Delegation.NotesPlaceholder">
     <Value>Notas adicionales...</Value>
   </LocaleResource>
-
-  <!-- Profile -->
   <LocaleResource Name="Profile.Title">
     <Value>Mi Perfil</Value>
   </LocaleResource>
@@ -570,8 +551,6 @@
   <LocaleResource Name="Profile.ChangingPassword">
     <Value>Cambiando...</Value>
   </LocaleResource>
-
-  <!-- Account -->
   <LocaleResource Name="Account.Login">
     <Value>Iniciar Sesión</Value>
   </LocaleResource>
@@ -644,8 +623,6 @@
   <LocaleResource Name="Account.PasswordChangedTitle">
     <Value>Su Contraseña ha sido Cambiada</Value>
   </LocaleResource>
-
-  <!-- Login (Legacy) -->
   <LocaleResource Name="Login.Title">
     <Value>Iniciar Sesión</Value>
   </LocaleResource>
@@ -676,8 +653,6 @@
   <LocaleResource Name="Login.Logout">
     <Value>Cerrar Sesión</Value>
   </LocaleResource>
-
-  <!-- Menu -->
   <LocaleResource Name="Menu.Dashboard">
     <Value>Panel de Control</Value>
   </LocaleResource>
@@ -795,8 +770,6 @@
   <LocaleResource Name="Menu.VisitDetails">
     <Value>Campos de Visita</Value>
   </LocaleResource>
-
-  <!-- Visit Details -->
   <LocaleResource Name="VisitDetails.Title">
     <Value>Gestión de Detalles de Visita</Value>
   </LocaleResource>
@@ -944,8 +917,6 @@
   <LocaleResource Name="VisitDetails.DeleteError">
     <Value>Error al eliminar.</Value>
   </LocaleResource>
-
-  <!-- Dashboard -->
   <LocaleResource Name="Dashboard.Title">
     <Value>Panel de Control</Value>
   </LocaleResource>
@@ -1021,8 +992,6 @@
   <LocaleResource Name="Dashboard.SearchBranch">
     <Value>Buscar sucursal...</Value>
   </LocaleResource>
-
-  <!-- Customers -->
   <LocaleResource Name="Customer.Title">
     <Value>Clientes</Value>
   </LocaleResource>
@@ -1152,8 +1121,6 @@
   <LocaleResource Name="Customer.TitlePlaceholder">
     <Value>Gerente de Calidad</Value>
   </LocaleResource>
-
-  <!-- FieldWorkers -->
   <LocaleResource Name="FieldWorker.Title">
     <Value>Trabajadores de Campo</Value>
   </LocaleResource>
@@ -1217,8 +1184,6 @@
   <LocaleResource Name="FieldWorker.NotesPlaceholder">
     <Value>Notas adicionales...</Value>
   </LocaleResource>
-
-  <!-- Personnel -->
   <LocaleResource Name="Personnel.Title">
     <Value>Gestión de Personal</Value>
   </LocaleResource>
@@ -1327,8 +1292,6 @@
   <LocaleResource Name="Personnel.NotesPlaceholder">
     <Value>Notas sobre el personal...</Value>
   </LocaleResource>
-
-  <!-- Projects -->
   <LocaleResource Name="Project.Title">
     <Value>Gestión de Proyectos</Value>
   </LocaleResource>
@@ -1623,8 +1586,6 @@
   <LocaleResource Name="Project.Eval">
     <Value>eval.</Value>
   </LocaleResource>
-
-  <!-- Branches -->
   <LocaleResource Name="Branch.Title">
     <Value>Sucursales</Value>
   </LocaleResource>
@@ -1670,8 +1631,6 @@
   <LocaleResource Name="Branch.AddressPlaceholder">
     <Value>Dirección de sucursal...</Value>
   </LocaleResource>
-
-  <!-- Checklists -->
   <LocaleResource Name="Checklist.Title">
     <Value>Listas de Verificación</Value>
   </LocaleResource>
@@ -1930,8 +1889,6 @@
   <LocaleResource Name="Checklist.QuestionCount">
     <Value>Cantidad de Preguntas</Value>
   </LocaleResource>
-
-  <!-- Evaluations -->
   <LocaleResource Name="Evaluation.Title">
     <Value>Evaluaciones</Value>
   </LocaleResource>
@@ -2010,8 +1967,6 @@
   <LocaleResource Name="Evaluation.TempScore">
     <Value>Puntuación Temporal</Value>
   </LocaleResource>
-
-  <!-- Meetings -->
   <LocaleResource Name="Meeting.Title">
     <Value>Reuniones</Value>
   </LocaleResource>
@@ -2204,8 +2159,6 @@
   <LocaleResource Name="Meeting.Uploading">
     <Value>Subiendo...</Value>
   </LocaleResource>
-
-  <!-- Calls -->
   <LocaleResource Name="Call.Title">
     <Value>Gestión de Llamadas</Value>
   </LocaleResource>
@@ -2413,8 +2366,6 @@
   <LocaleResource Name="Call.CompleteCall">
     <Value>Completar Llamada</Value>
   </LocaleResource>
-
-  <!-- Trainings -->
   <LocaleResource Name="Training.Title">
     <Value>Gestión de Capacitación</Value>
   </LocaleResource>
@@ -2577,7 +2528,6 @@
   <LocaleResource Name="Training.RequiredMaterial">
     <Value>Material Requerido</Value>
   </LocaleResource>
-  <!-- Training Types -->
   <LocaleResource Name="Training.Type.InPerson">
     <Value>Presencial</Value>
   </LocaleResource>
@@ -2602,7 +2552,6 @@
   <LocaleResource Name="Training.Type.Certification">
     <Value>Certificación</Value>
   </LocaleResource>
-  <!-- Training Status -->
   <LocaleResource Name="Training.Status.Draft">
     <Value>Borrador</Value>
   </LocaleResource>
@@ -2624,7 +2573,6 @@
   <LocaleResource Name="Training.Status.Postponed">
     <Value>Pospuesta</Value>
   </LocaleResource>
-  <!-- Training Categories -->
   <LocaleResource Name="Training.Category.General">
     <Value>General</Value>
   </LocaleResource>
@@ -2655,7 +2603,6 @@
   <LocaleResource Name="Training.Category.Compliance">
     <Value>Cumplimiento</Value>
   </LocaleResource>
-  <!-- Participant Status -->
   <LocaleResource Name="Training.ParticipantStatus.Invited">
     <Value>Invitado</Value>
   </LocaleResource>
@@ -2677,8 +2624,6 @@
   <LocaleResource Name="Training.ParticipantStatus.Failed">
     <Value>No Aprobó</Value>
   </LocaleResource>
-
-  <!-- Reports -->
   <LocaleResource Name="Report.Title">
     <Value>Informes</Value>
   </LocaleResource>
@@ -2721,8 +2666,6 @@
   <LocaleResource Name="Report.Suggestions">
     <Value>Informe de Sugerencias</Value>
   </LocaleResource>
-
-  <!-- Users -->
   <LocaleResource Name="User.Title">
     <Value>Usuarios</Value>
   </LocaleResource>
@@ -2810,8 +2753,6 @@
   <LocaleResource Name="User.Changing">
     <Value>Cambiando...</Value>
   </LocaleResource>
-
-  <!-- Pagination -->
   <LocaleResource Name="Pagination.First">
     <Value>Primera</Value>
   </LocaleResource>
@@ -2836,8 +2777,6 @@
   <LocaleResource Name="Pagination.PerPage">
     <Value>Por página</Value>
   </LocaleResource>
-
-  <!-- Validation Messages -->
   <LocaleResource Name="Validation.Required">
     <Value>Este campo es requerido</Value>
   </LocaleResource>
@@ -2856,8 +2795,6 @@
   <LocaleResource Name="Validation.InvalidFormat">
     <Value>Formato inválido</Value>
   </LocaleResource>
-
-  <!-- Messages -->
   <LocaleResource Name="Message.SaveSuccess">
     <Value>Registro creado exitosamente</Value>
   </LocaleResource>
@@ -2885,8 +2822,6 @@
   <LocaleResource Name="Message.SessionExpired">
     <Value>Su sesión ha expirado. Por favor inicie sesión nuevamente.</Value>
   </LocaleResource>
-
-  <!-- Settings -->
   <LocaleResource Name="Settings.Title">
     <Value>Configuración del Sistema</Value>
   </LocaleResource>
@@ -2911,8 +2846,6 @@
   <LocaleResource Name="Settings.DemoMode">
     <Value>Modo Demostración</Value>
   </LocaleResource>
-
-  <!-- Languages -->
   <LocaleResource Name="Language.Title">
     <Value>Idiomas</Value>
   </LocaleResource>
@@ -2955,8 +2888,6 @@
   <LocaleResource Name="Language.ResourceValue">
     <Value>Traducción</Value>
   </LocaleResource>
-
-  <!-- Customer Portal -->
   <LocaleResource Name="CustomerPortal.Title">
     <Value>Portal del Cliente</Value>
   </LocaleResource>
@@ -2984,16 +2915,9 @@
   <LocaleResource Name="CustomerPortal.AdminLogin">
     <Value>Inicio de Sesión de Administrador</Value>
   </LocaleResource>
-
-  <!-- Menu Extra -->
   <LocaleResource Name="Menu.Assignments">
     <Value>Asignaciones</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.Approvals">
-    <Value>Aprobaciones</Value>
-  </LocaleResource>
-
-  <!-- Approvals -->
   <LocaleResource Name="Approval.Title">
     <Value>Gestión de Aprobaciones</Value>
   </LocaleResource>
@@ -3105,8 +3029,6 @@
   <LocaleResource Name="Approval.CancelError">
     <Value>Cancelación falló</Value>
   </LocaleResource>
-
-  <!-- Approval Types -->
   <LocaleResource Name="Approval.Type.Evaluation">
     <Value>Evaluación</Value>
   </LocaleResource>
@@ -3128,8 +3050,6 @@
   <LocaleResource Name="Approval.Type.General">
     <Value>General</Value>
   </LocaleResource>
-
-  <!-- Approval Status -->
   <LocaleResource Name="Approval.Status.Pending">
     <Value>Pendiente</Value>
   </LocaleResource>
@@ -3142,8 +3062,6 @@
   <LocaleResource Name="Approval.Status.Cancelled">
     <Value>Cancelado</Value>
   </LocaleResource>
-
-  <!-- Priority -->
   <LocaleResource Name="Priority.Low">
     <Value>Baja</Value>
   </LocaleResource>
@@ -3156,8 +3074,6 @@
   <LocaleResource Name="Priority.Urgent">
     <Value>Urgente</Value>
   </LocaleResource>
-
-  <!-- Notifications -->
   <LocaleResource Name="Notification.Title">
     <Value>Notificaciones</Value>
   </LocaleResource>
@@ -3179,7 +3095,6 @@
   <LocaleResource Name="Notification.SearchPlaceholder">
     <Value>Título, mensaje...</Value>
   </LocaleResource>
-  <!-- Notification Types -->
   <LocaleResource Name="Notification.Type.Info">
     <Value>Información</Value>
   </LocaleResource>
@@ -3210,8 +3125,6 @@
   <LocaleResource Name="Notification.Type.System">
     <Value>Sistema</Value>
   </LocaleResource>
-
-  <!-- Notification Settings -->
   <LocaleResource Name="Notification.Settings.Title">
     <Value>Configuración de Notificaciones</Value>
   </LocaleResource>
@@ -3269,8 +3182,6 @@
   <LocaleResource Name="Notification.Settings.CreateDefaults">
     <Value>Crear Configuración Predeterminada</Value>
   </LocaleResource>
-
-  <!-- Settings -->
   <LocaleResource Name="Setting.Title">
     <Value>Configuración del Sistema</Value>
   </LocaleResource>
@@ -3298,34 +3209,11 @@
   <LocaleResource Name="Setting.NoRecords">
     <Value>No se encontraron configuraciones.</Value>
   </LocaleResource>
-
-  <!-- Languages -->
-  <LocaleResource Name="Language.Title">
-    <Value>Gestión de Idiomas</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.NewLanguage">
-    <Value>Nuevo Idioma</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.EditLanguage">
-    <Value>Editar Idioma</Value>
-  </LocaleResource>
   <LocaleResource Name="Language.Order">
     <Value>Orden</Value>
   </LocaleResource>
   <LocaleResource Name="Language.Flag">
     <Value>Bandera</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.Name">
-    <Value>Nombre del Idioma</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.Culture">
-    <Value>Código de Cultura</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.SeoCode">
-    <Value>Código SEO</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.IsDefault">
-    <Value>Predeterminado</Value>
   </LocaleResource>
   <LocaleResource Name="Language.Default">
     <Value>Predeterminado</Value>
@@ -3372,15 +3260,6 @@
   <LocaleResource Name="Language.FlagIconHelp">
     <Value>Utiliza flag-icon-css</Value>
   </LocaleResource>
-  <LocaleResource Name="Language.DisplayOrder">
-    <Value>Orden de Visualización</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.RTL">
-    <Value>De Derecha a Izquierda</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.Resources">
-    <Value>Recursos de Traducción</Value>
-  </LocaleResource>
   <LocaleResource Name="Language.SearchResource">
     <Value>Buscar nombre de recurso...</Value>
   </LocaleResource>
@@ -3392,12 +3271,6 @@
   </LocaleResource>
   <LocaleResource Name="Language.EditResource">
     <Value>Editar Recurso</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ResourceName">
-    <Value>Clave de Recurso</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ResourceValue">
-    <Value>Traducción</Value>
   </LocaleResource>
   <LocaleResource Name="Language.NoResources">
     <Value>No se encontraron recursos.</Value>
@@ -3413,14 +3286,6 @@
   </LocaleResource>
   <LocaleResource Name="Language.ResourceValuePlaceholder">
     <Value>Valor de traducción</Value>
-  </LocaleResource>
-
-  <!-- Reports -->
-  <LocaleResource Name="Report.Title">
-    <Value>Informes</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.ExportExcel">
-    <Value>Exportar a Excel</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Downloading">
     <Value>Descargando...</Value>
@@ -3689,8 +3554,6 @@
   <LocaleResource Name="Report.GoToEvaluation">
     <Value>Ir a Evaluación</Value>
   </LocaleResource>
-
-  <!-- Common extras -->
   <LocaleResource Name="Common.Filters">
     <Value>Filtros</Value>
   </LocaleResource>
@@ -3706,8 +3569,6 @@
   <LocaleResource Name="Common.Home">
     <Value>Inicio</Value>
   </LocaleResource>
-
-  <!-- Excel Templates -->
   <LocaleResource Name="ExcelTemplate.Title">
     <Value>Plantillas de Excel</Value>
   </LocaleResource>
@@ -3834,8 +3695,6 @@
   <LocaleResource Name="ExcelTemplate.UploadAndProcess">
     <Value>Subir y Procesar Archivo</Value>
   </LocaleResource>
-
-  <!-- Customer Personnel -->
   <LocaleResource Name="CustomerPersonnel.Title">
     <Value>Personal del Cliente</Value>
   </LocaleResource>
@@ -3905,8 +3764,6 @@
   <LocaleResource Name="CustomerPersonnel.Resetting">
     <Value>Restableciendo...</Value>
   </LocaleResource>
-
-  <!-- CustomerPortal.Branch -->
   <LocaleResource Name="CustomerPortal.Branch.Title">
     <Value>Sucursales</Value>
   </LocaleResource>
@@ -3922,8 +3779,6 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Punt. Media</Value>
   </LocaleResource>
-
-  <!-- CustomerPortal.Dashboard -->
   <LocaleResource Name="CustomerPortal.Dashboard.Title">
     <Value>Panel de Control</Value>
   </LocaleResource>
@@ -3951,8 +3806,6 @@
   <LocaleResource Name="CustomerPortal.Dashboard.NoEvaluations">
     <Value>No hay evaluaciones todavía.</Value>
   </LocaleResource>
-
-  <!-- CustomerPortal.Evaluation -->
   <LocaleResource Name="CustomerPortal.Evaluation.Title">
     <Value>Evaluaciones</Value>
   </LocaleResource>
@@ -3962,8 +3815,6 @@
   <LocaleResource Name="CustomerPortal.Evaluation.NoRecords">
     <Value>No hay registros de evaluación todavía.</Value>
   </LocaleResource>
-
-  <!-- CustomerPortal.Report -->
   <LocaleResource Name="CustomerPortal.Report.Title">
     <Value>Informes</Value>
   </LocaleResource>
@@ -3988,8 +3839,6 @@
   <LocaleResource Name="CustomerPortal.Report.NoPeriodData">
     <Value>No hay evaluaciones en el período seleccionado.</Value>
   </LocaleResource>
-
-  <!-- CustomerPortal.Menu (Layout) -->
   <LocaleResource Name="CustomerPortal.Menu.Dashboard">
     <Value>Panel de Control</Value>
   </LocaleResource>
@@ -4005,8 +3854,6 @@
   <LocaleResource Name="CustomerPortal.Menu.Logout">
     <Value>Cerrar Sesión</Value>
   </LocaleResource>
-
-  <!-- Form (Evaluation Form - Public) -->
   <LocaleResource Name="Form.Title">
     <Value>Formulario de Evaluación</Value>
   </LocaleResource>
@@ -4070,8 +3917,6 @@
   <LocaleResource Name="Form.Error.SubmitError">
     <Value>Ocurrió un error al enviar la evaluación:</Value>
   </LocaleResource>
-
-  <!-- Auth (API Controller) -->
   <LocaleResource Name="Auth.InvalidCredentials">
     <Value>Nombre de usuario o contraseña inválidos.</Value>
   </LocaleResource>
@@ -4099,8 +3944,6 @@
   <LocaleResource Name="Auth.ImpersonationEndError">
     <Value>Ocurrió un error al finalizar la suplantación.</Value>
   </LocaleResource>
-
-  <!-- Api.Assignment (API Controller) -->
   <LocaleResource Name="Api.Assignment.LoadError">
     <Value>Ocurrió un error al cargar las asignaciones.</Value>
   </LocaleResource>
@@ -4173,8 +4016,6 @@
   <LocaleResource Name="Api.Assignment.QRCodeError">
     <Value>Ocurrió un error al generar el código QR.</Value>
   </LocaleResource>
-
-  <!-- Api.Evaluation (API Controller) -->
   <LocaleResource Name="Api.Evaluation.LoadListError">
     <Value>Ocurrió un error al cargar las evaluaciones.</Value>
   </LocaleResource>
@@ -4226,8 +4067,6 @@
   <LocaleResource Name="Api.Evaluation.CancelError">
     <Value>Ocurrió un error al cancelar la evaluación.</Value>
   </LocaleResource>
-
-  <!-- Api.Project (API Controller) -->
   <LocaleResource Name="Api.Project.NotFound">
     <Value>Proyecto no encontrado.</Value>
   </LocaleResource>
@@ -4294,8 +4133,6 @@
   <LocaleResource Name="Api.Project.CodeGenerationError">
     <Value>Ocurrió un error al generar el código del proyecto.</Value>
   </LocaleResource>
-
-  <!-- Api.Branch (API Controller) -->
   <LocaleResource Name="Api.Branch.NotFound">
     <Value>Sucursal no encontrada.</Value>
   </LocaleResource>
@@ -4317,8 +4154,6 @@
   <LocaleResource Name="Api.Branch.DeleteError">
     <Value>Ocurrió un error al eliminar la sucursal.</Value>
   </LocaleResource>
-
-  <!-- Api.Checklist (API Controller) -->
   <LocaleResource Name="Api.Checklist.NotFound">
     <Value>Lista de verificación no encontrada.</Value>
   </LocaleResource>
@@ -4340,8 +4175,6 @@
   <LocaleResource Name="Api.Checklist.CloneError">
     <Value>Ocurrió un error al clonar la lista de verificación.</Value>
   </LocaleResource>
-
-  <!-- Api.Customer (API Controller) -->
   <LocaleResource Name="Api.Customer.NotFound">
     <Value>Cliente no encontrado.</Value>
   </LocaleResource>
@@ -4363,8 +4196,6 @@
   <LocaleResource Name="Api.Customer.DeleteError">
     <Value>Ocurrió un error al eliminar el cliente.</Value>
   </LocaleResource>
-
-  <!-- Api.CustomerPersonnel (API Controller) -->
   <LocaleResource Name="Api.CustomerPersonnel.NotFound">
     <Value>Personal no encontrado.</Value>
   </LocaleResource>
@@ -4395,8 +4226,6 @@
   <LocaleResource Name="Api.CustomerPersonnel.PasswordResetError">
     <Value>Ocurrió un error al restablecer la contraseña.</Value>
   </LocaleResource>
-
-  <!-- Api.FieldWorker (API Controller) -->
   <LocaleResource Name="Api.FieldWorker.NotFound">
     <Value>Trabajador de campo no encontrado.</Value>
   </LocaleResource>
@@ -4415,8 +4244,6 @@
   <LocaleResource Name="Api.FieldWorker.DeleteError">
     <Value>Ocurrió un error al eliminar el trabajador de campo.</Value>
   </LocaleResource>
-
-  <!-- Api.Personnel (API Controller) -->
   <LocaleResource Name="Api.Personnel.NotFound">
     <Value>Personal no encontrado.</Value>
   </LocaleResource>
@@ -4441,8 +4268,6 @@
   <LocaleResource Name="Api.Personnel.CheckError">
     <Value>Ocurrió un error durante la validación.</Value>
   </LocaleResource>
-
-  <!-- Api.User (API Controller) -->
   <LocaleResource Name="Api.User.NotFound">
     <Value>Usuario no encontrado.</Value>
   </LocaleResource>
@@ -4476,8 +4301,6 @@
   <LocaleResource Name="Api.User.PasswordChangeError">
     <Value>Ocurrió un error al cambiar la contraseña.</Value>
   </LocaleResource>
-
-  <!-- Api.Profile (API Controller) -->
   <LocaleResource Name="Api.Profile.NotFound">
     <Value>Perfil no encontrado.</Value>
   </LocaleResource>
@@ -4490,8 +4313,6 @@
   <LocaleResource Name="Api.Profile.PasswordChangeError">
     <Value>Ocurrió un error al cambiar la contraseña.</Value>
   </LocaleResource>
-
-  <!-- Api.OrganizationUnit (API Controller) -->
   <LocaleResource Name="Api.OrganizationUnit.NotFound">
     <Value>Unidad organizativa no encontrada.</Value>
   </LocaleResource>
@@ -4501,16 +4322,12 @@
   <LocaleResource Name="Api.OrganizationUnit.DeleteSuccess">
     <Value>Unidad organizativa eliminada correctamente.</Value>
   </LocaleResource>
-
-  <!-- Api.Delegation (API Controller) -->
   <LocaleResource Name="Api.Delegation.NotFound">
     <Value>Delegación no encontrada.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Delegation.DeleteSuccess">
     <Value>Delegación eliminada correctamente.</Value>
   </LocaleResource>
-
-  <!-- Api.Permission (API Controller) -->
   <LocaleResource Name="Api.Permission.LoadError">
     <Value>Ocurrió un error al cargar los permisos.</Value>
   </LocaleResource>
@@ -4550,8 +4367,6 @@
   <LocaleResource Name="Api.Permission.UserPermissionRevokeError">
     <Value>Ocurrió un error al revocar el permiso del usuario.</Value>
   </LocaleResource>
-
-  <!-- Api.Meeting (API Controller) -->
   <LocaleResource Name="Api.Meeting.NotFound">
     <Value>Reunión no encontrada.</Value>
   </LocaleResource>
@@ -4591,8 +4406,6 @@
   <LocaleResource Name="Api.Meeting.ResponseSaved">
     <Value>Su respuesta ha sido guardada.</Value>
   </LocaleResource>
-
-  <!-- Api.Common (Shared API Messages) -->
   <LocaleResource Name="Api.Common.FileNotSelected">
     <Value>Ningún archivo seleccionado.</Value>
   </LocaleResource>
@@ -4611,8 +4424,6 @@
   <LocaleResource Name="Api.Common.FileDeleteSuccess">
     <Value>Archivo eliminado.</Value>
   </LocaleResource>
-
-  <!-- Api.Call (API Controller) -->
   <LocaleResource Name="Api.Call.NotFound">
     <Value>Llamada no encontrada.</Value>
   </LocaleResource>
@@ -4643,29 +4454,21 @@
   <LocaleResource Name="Api.Call.RecordingNotFound">
     <Value>Grabación de llamada no encontrada.</Value>
   </LocaleResource>
-
-  <!-- Api.Training (API Controller) -->
   <LocaleResource Name="Api.Training.MaxParticipantsReached">
     <Value>Se alcanzó el número máximo de participantes.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Training.ParticipantAlreadyExists">
     <Value>Este usuario ya es un participante.</Value>
   </LocaleResource>
-
-  <!-- Api.Approval (API Controller) -->
   <LocaleResource Name="Api.Approval.AlreadyResponded">
     <Value>Esta solicitud de aprobación ya ha sido respondida.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Approval.CannotCancel">
     <Value>Esta solicitud de aprobación no puede ser cancelada.</Value>
   </LocaleResource>
-
-  <!-- Api.Notification (API Controller) -->
   <LocaleResource Name="Api.Notification.InvalidType">
     <Value>Tipo de notificación inválido.</Value>
   </LocaleResource>
-
-  <!-- Api.Report (API Controller) -->
   <LocaleResource Name="Api.Report.LoadError">
     <Value>Ocurrió un error al cargar el informe.</Value>
   </LocaleResource>
@@ -4702,21 +4505,15 @@
   <LocaleResource Name="Api.Report.SuggestionsExportError">
     <Value>Ocurrió un error al exportar el informe de sugerencias a Excel.</Value>
   </LocaleResource>
-
-  <!-- Api.Common (Common messages - additional) -->
   <LocaleResource Name="Api.Common.UserNotFound">
     <Value>Usuario no encontrado.</Value>
   </LocaleResource>
-
-  <!-- Api.Dashboard (API Controller) -->
   <LocaleResource Name="Api.Dashboard.LoadError">
     <Value>Ocurrió un error al cargar el panel de control.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Dashboard.ScorecardLoadError">
     <Value>Ocurrió un error al cargar el cuadro de mando.</Value>
   </LocaleResource>
-
-  <!-- Api.AppSettings (API Controller) -->
   <LocaleResource Name="Api.AppSettings.NotFound">
     <Value>Configuración no encontrada.</Value>
   </LocaleResource>
@@ -4732,8 +4529,6 @@
   <LocaleResource Name="Api.AppSettings.DeleteSuccess">
     <Value>Configuración eliminada correctamente.</Value>
   </LocaleResource>
-
-  <!-- Api.Language (API Controller) -->
   <LocaleResource Name="Api.Language.NotFound">
     <Value>Idioma no encontrado.</Value>
   </LocaleResource>
@@ -4758,16 +4553,12 @@
   <LocaleResource Name="Api.Language.ChangeSuccess">
     <Value>Idioma cambiado.</Value>
   </LocaleResource>
-
-  <!-- Api.Resource (API Controller) -->
   <LocaleResource Name="Api.Resource.SaveSuccess">
     <Value>Recurso guardado.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Resource.DeleteSuccess">
     <Value>Recurso eliminado.</Value>
   </LocaleResource>
-
-  <!-- Api.ExcelTemplate (API Controller) -->
   <LocaleResource Name="Api.ExcelTemplate.NotFound">
     <Value>Plantilla no encontrada.</Value>
   </LocaleResource>
@@ -4786,8 +4577,6 @@
   <LocaleResource Name="Api.ExcelTemplate.NoAttributesFound">
     <Value>No se encontraron atributos ExcelColumn en {0}.</Value>
   </LocaleResource>
-
-  <!-- Api.Answer (API Controller) -->
   <LocaleResource Name="Api.Answer.UploadError">
     <Value>Ocurrió un error al subir el archivo.</Value>
   </LocaleResource>
@@ -4797,8 +4586,6 @@
   <LocaleResource Name="Api.Answer.DownloadError">
     <Value>Ocurrió un error al descargar el archivo.</Value>
   </LocaleResource>
-
-  <!-- Api.VisitDetail (API Controller) -->
   <LocaleResource Name="Api.VisitDetail.SectorsLoadError">
     <Value>Ocurrió un error al cargar los sectores.</Value>
   </LocaleResource>
@@ -4868,13 +4655,8 @@
   <LocaleResource Name="Api.VisitDetail.CompareError">
     <Value>Ocurrió un error al comparar las visitas.</Value>
   </LocaleResource>
-
-  <!-- Api.Common (File operations - additional) -->
   <LocaleResource Name="Api.Common.FilesLoadError">
     <Value>Ocurrió un error al cargar los archivos.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Common.FileSizeExceeded10MB">
-    <Value>El tamaño del archivo no puede exceder 10MB.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Common.FileSizeExceeded50MB">
     <Value>El tamaño del archivo no puede exceder 50MB.</Value>
@@ -4894,21 +4676,15 @@
   <LocaleResource Name="Api.Common.FileDeleteError">
     <Value>Ocurrió un error al eliminar el archivo.</Value>
   </LocaleResource>
-
-  <!-- Api.Question (API Controller) -->
   <LocaleResource Name="Api.Question.NotFound">
     <Value>Pregunta no encontrada.</Value>
   </LocaleResource>
-
-  <!-- Api.QuestionAttachment (API Controller) -->
   <LocaleResource Name="Api.QuestionAttachment.OrderUpdateSuccess">
     <Value>Orden actualizado.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.QuestionAttachment.OrderUpdateError">
     <Value>Ocurrió un error al actualizar el orden.</Value>
   </LocaleResource>
-
-  <!-- Api.Announcement (API Controller) -->
   <LocaleResource Name="Api.Announcement.LoadError">
     <Value>Ocurrió un error al cargar los anuncios.</Value>
   </LocaleResource>
@@ -4933,8 +4709,6 @@
   <LocaleResource Name="Api.Announcement.DeleteError">
     <Value>Ocurrió un error al eliminar el anuncio.</Value>
   </LocaleResource>
-
-  <!-- Api.CustomerVisit (API Controller) -->
   <LocaleResource Name="Api.CustomerVisit.LoadError">
     <Value>Ocurrió un error al cargar las visitas.</Value>
   </LocaleResource>
@@ -4980,8 +4754,6 @@
   <LocaleResource Name="Api.CustomerVisit.DeleteError">
     <Value>Ocurrió un error al eliminar la visita.</Value>
   </LocaleResource>
-
-  <!-- Api.CustomerPortalAuth -->
   <LocaleResource Name="Api.CustomerPortalAuth.UsernamePasswordRequired">
     <Value>Nombre de usuario y contraseña son obligatorios.</Value>
   </LocaleResource>
@@ -4997,16 +4769,12 @@
   <LocaleResource Name="Api.CustomerPortalAuth.LogoutSuccess">
     <Value>Cierre de sesión exitoso.</Value>
   </LocaleResource>
-
-  <!-- Api.CustomerPortal -->
   <LocaleResource Name="Api.CustomerPortal.CustomerNotFound">
     <Value>Información del cliente no encontrada.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.CustomerPortal.CustomerNotFoundTokenInvalid">
     <Value>Información del cliente no encontrada. El token es inválido o falta.</Value>
   </LocaleResource>
-
-  <!-- Mvc.Account -->
   <LocaleResource Name="Mvc.Account.InvalidCredentials">
     <Value>Nombre de usuario o contraseña inválidos.</Value>
   </LocaleResource>
@@ -5016,17 +4784,385 @@
   <LocaleResource Name="Mvc.Account.OperationError">
     <Value>Ocurrió un error durante la operación. Por favor, inténtelo de nuevo.</Value>
   </LocaleResource>
-
-  <!-- Mvc.MyAssignments -->
   <LocaleResource Name="Mvc.MyAssignments.FieldWorkerNotFound">
     <Value>Registro de trabajador de campo no encontrado. Por favor, contacte al administrador del sistema.</Value>
   </LocaleResource>
   <LocaleResource Name="Mvc.MyAssignments.LoadError">
     <Value>Ocurrió un error al cargar las asignaciones.</Value>
   </LocaleResource>
-
-  <!-- Common -->
   <LocaleResource Name="Common.User">
     <Value>Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Title">
+    <Value>Registros del Sistema</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.CleanupOldLogs">
+    <Value>Limpiar Registros Antiguos</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.LogType">
+    <Value>Tipo de Registro</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Category">
+    <Value>Categoría</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.UserId">
+    <Value>ID de Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.TotalLogs">
+    <Value>Total de Registros</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Errors">
+    <Value>Errores</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Warnings">
+    <Value>Advertencias</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.SuccessfulLogins">
+    <Value>Inicios de Sesión Exitosos</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Type">
+    <Value>Tipo</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Message">
+    <Value>Mensaje</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.User">
+    <Value>Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.IpAddress">
+    <Value>Dirección IP</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.LogDetail">
+    <Value>Detalle del Registro</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Details">
+    <Value>Detalles</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.Table">
+    <Value>Tabla</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.RecordId">
+    <Value>ID de Registro</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.OldValues">
+    <Value>Valores Anteriores</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.NewValues">
+    <Value>Valores Nuevos</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.ExceptionType">
+    <Value>Tipo de Excepción</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.StackTrace">
+    <Value>Seguimiento de Pila</Value>
+  </LocaleResource>
+  <LocaleResource Name="AuditLog.UserAgent">
+    <Value>Agente de Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Avg">
+    <Value>Prom</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.January">
+    <Value>Enero</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.February">
+    <Value>Febrero</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.March">
+    <Value>Marzo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.April">
+    <Value>Abril</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.May">
+    <Value>Mayo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.June">
+    <Value>Junio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.July">
+    <Value>Julio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.August">
+    <Value>Agosto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.September">
+    <Value>Septiembre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.October">
+    <Value>Octubre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.November">
+    <Value>Noviembre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Month.December">
+    <Value>Diciembre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Status.Completed">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Status.Draft">
+    <Value>Borrador</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Status.InProgress">
+    <Value>En Progreso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role.Admin">
+    <Value>Admin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role.Manager">
+    <Value>Gerente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role.QualitySpecialist">
+    <Value>Especialista en Calidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role.FieldWorker">
+    <Value>Trabajador de Campo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.UsernameHint">
+    <Value>Solo letras inglesas, números, puntos y guiones bajos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Contact">
+    <Value>Contacto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ContractEnd">
+    <Value>Fin del Contrato</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Title">
+    <Value>Importación de Datos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.PersonnelImport">
+    <Value>Importación de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.RoleInfo">
+    <Value>Información de Roles</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerManager">
+    <Value>Gerente de Empresa (Acceso completo a informes)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerSupervisor">
+    <Value>Líder de Equipo (Ve informes de su equipo)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerOperator">
+    <Value>Representante del Cliente (Personal a evaluar)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.OrganizationNote">
+    <Value>Si no se especifica, se asigna como "Central".</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCsvFile">
+    <Value>Seleccionar Archivo CSV</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.CsvFileNote">
+    <Value>Solo archivos .csv (máx 10MB)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Options">
+    <Value>Opciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.UpdateExisting">
+    <Value>Actualizar registros existentes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.UpdateExistingNote">
+    <Value>Si no está marcado, se omiten los nombres de usuario existentes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Import">
+    <Value>Importar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Processing">
+    <Value>Procesando...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DownloadTemplate">
+    <Value>Descargar Plantilla de Ejemplo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectedFile">
+    <Value>Archivo Seleccionado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ImportResult">
+    <Value>Resultado de Importación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.TotalRows">
+    <Value>Total de Filas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.CustomersCreated">
+    <Value>Empresas Creadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.PersonnelCreated">
+    <Value>Personal Creado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.PersonnelUpdated">
+    <Value>Personal Actualizado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Skipped">
+    <Value>Omitidos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Error">
+    <Value>Error</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Errors">
+    <Value>Errores</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Warnings">
+    <Value>Advertencias</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.AndMore">
+    <Value>y</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.MoreWarnings">
+    <Value>advertencias más</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ProcessedPersonnel">
+    <Value>Personal Procesado (Primeros 50)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.FullName">
+    <Value>Nombre Completo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Username">
+    <Value>Nombre de Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Company">
+    <Value>Empresa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Role">
+    <Value>Rol</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectFileWarning">
+    <Value>Por favor seleccione un archivo CSV.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Success">
+    <Value>¡Importación completada exitosamente!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SuccessWithErrors">
+    <Value>Importación completada pero hay errores.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Failed">
+    <Value>Importación fallida.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Checklist">
+    <Value>Lista de Verificación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDate">
+    <Value>Fecha de Entrega</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.FieldWorker">
+    <Value>Trabajador de Campo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NoTasks">
+    <Value>Aún no tiene tareas asignadas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Title">
+    <Value>Asignaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllBranches">
+    <Value>Todas las Sucursales</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Complete">
+    <Value>Completar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Detail">
+    <Value>Detalle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Start">
+    <Value>Iniciar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Unknown">
+    <Value>Desconocido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.View">
+    <Value>Ver</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.CancelMessage">
+    <Value>¿Está seguro de que desea cancelar esta operación?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.CancelTitle">
+    <Value>Confirmación de Cancelación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.DeleteMessage">
+    <Value>¿Está seguro de que desea eliminar este registro?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.DeleteTitle">
+    <Value>Confirmación de Eliminación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.Message">
+    <Value>¿Confirma esta operación?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.Title">
+    <Value>Confirmación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.YesCancel">
+    <Value>Sí, Cancelar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Confirm.YesDelete">
+    <Value>Sí, Eliminar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.WelcomeMessage">
+    <Value>¡Bienvenido! Haga clic en Mis Tareas en el menú izquierdo para ver sus asignaciones.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.StartEvaluation">
+    <Value>Iniciar Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.Admin">
+    <Value>Administrador</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerRepresentative">
+    <Value>Representante del Cliente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.Evaluator">
+    <Value>Evaluador</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.FieldWorker">
+    <Value>Trabajador de Campo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.QualitySpecialist">
+    <Value>Especialista en Calidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.TeamLeader">
+    <Value>Líder de Equipo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Approved">
+    <Value>Aprobado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Callback">
+    <Value>Devolución de Llamada</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Cancelled">
+    <Value>Cancelado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Completed">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Draft">
+    <Value>Borrador</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Expired">
+    <Value>Expirado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.InProgress">
+    <Value>En Progreso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Missed">
+    <Value>Perdida</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Overdue">
+    <Value>Atrasado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Pending">
+    <Value>Pendiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Planned">
+    <Value>Planificado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Postponed">
+    <Value>Pospuesto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Rejected">
+    <Value>Rechazado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Today">
+    <Value>Hoy</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Upcoming">
+    <Value>Próximo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Status.Waiting">
+    <Value>Esperando</Value>
   </LocaleResource>
 </Language>

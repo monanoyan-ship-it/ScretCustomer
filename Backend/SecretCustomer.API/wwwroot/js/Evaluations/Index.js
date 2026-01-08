@@ -15,6 +15,11 @@ function EvaluationsViewModel() {
     self.evaluationsSearch = ko.observable('');
     self.expiredSearch = ko.observable('');
 
+    // Dinlemeler/Ziyaretler filtreleri
+    self.evaluationsStatusFilter = ko.observable('');
+    self.evaluationsDateFrom = ko.observable('');
+    self.evaluationsDateTo = ko.observable('');
+
     // List Data
     self.allAssignments = ko.observableArray([]);
     self.allEvaluations = ko.observableArray([]);
@@ -124,17 +129,45 @@ function EvaluationsViewModel() {
     // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
     self.allEvaluationsList = ko.computed(function() {
         var search = self.evaluationsSearch().toLowerCase();
+        var statusFilter = self.evaluationsStatusFilter();
+        var dateFrom = self.evaluationsDateFrom();
+        var dateTo = self.evaluationsDateTo();
+
         return self.allEvaluations().filter(function(e) {
+            // Text arama
             if (search) {
                 var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (e.checklistName || '').toLowerCase().indexOf(search) >= 0 ||
                                    (e.evaluatedPersonnelName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0;
+                                   (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (e.callId || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
+            }
+            // Durum filtresi
+            if (statusFilter && e.status !== statusFilter) return false;
+            // Tarih filtreleri (callDate kullan)
+            if (dateFrom && e.callDate) {
+                var evalDate = new Date(e.callDate);
+                var fromDate = new Date(dateFrom);
+                if (evalDate < fromDate) return false;
+            }
+            if (dateTo && e.callDate) {
+                var evalDate = new Date(e.callDate);
+                var toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                if (evalDate > toDate) return false;
             }
             return true;
         });
     });
+
+    // Filtreleri temizle
+    self.clearEvaluationsFilters = function() {
+        self.evaluationsSearch('');
+        self.evaluationsStatusFilter('');
+        self.evaluationsDateFrom('');
+        self.evaluationsDateTo('');
+    };
 
     // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
     self.expiredAssignments = ko.computed(function() {
@@ -480,12 +513,18 @@ function EvaluationsViewModel() {
                 }
 
                 // Initialize answers for all questions
-                // Soru zaten YellowCard/RedCard tanımlıysa otomatik set et
+                var hasExistingAnswers = data.existingAnswers && data.existingAnswers.length > 0;
                 data.sections.forEach(function(section) {
                     section.questions.forEach(function(q) {
                         var answer = self.getAnswer(q.id);
+                        // Soru zaten YellowCard/RedCard tanımlıysa otomatik set et
                         if (q.penaltyType === 'YellowCard' || q.penaltyType === 'RedCard') {
                             answer.selectedPenaltyType(q.penaltyType);
+                        }
+                        // Puanlı sorular için varsayılan olarak maxPoints değerini ata (100 puandan başla)
+                        // Sadece yeni değerlendirmede (existingAnswers yoksa) ve cevap henüz girilmemişse
+                        if (q.scoringType === 'Scored' && !hasExistingAnswers && answer.answerNumeric() === null) {
+                            answer.answerNumeric(q.maxPoints || 5);
                         }
                     });
                 });
@@ -649,7 +688,7 @@ function EvaluationsViewModel() {
             callTime: self.callTime() || null,
             duration: self.duration() || null,
             descriptions: filteredDescriptions.length > 0 ? filteredDescriptions : null,
-            evaluatedOrganizationId: self.formData().checklistOrganizationId || null,
+            evaluatedOrganizationId: self.formData().selectedOrganizationId || null,
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
             controlDate: new Date().toISOString().split('T')[0],
@@ -658,8 +697,37 @@ function EvaluationsViewModel() {
         };
     };
 
+    // Zorunlu alan validasyonu
+    self.validateRequiredFields = function() {
+        var errors = [];
+
+        // Personel seçimi (ya listeden seç ya da tanımsız personel gir)
+        if (!self.evaluatedPersonnelId() && !self.evaluatedUnknownPersonnel()) {
+            errors.push(T('Evaluation.PersonnelRequired', 'Personel seçimi zorunludur'));
+        }
+
+        if (!self.callDate()) {
+            errors.push(T('Evaluation.CallDateRequired', 'Çağrı Tarihi zorunludur'));
+        }
+        if (!self.callTime()) {
+            errors.push(T('Evaluation.CallTimeRequired', 'Çağrı Saati zorunludur'));
+        }
+        if (!self.duration()) {
+            errors.push(T('Evaluation.DurationRequired', 'Süre zorunludur'));
+        }
+
+        return errors;
+    };
+
     // Save as draft
     self.saveDraft = function() {
+        // Zorunlu alan kontrolü
+        var validationErrors = self.validateRequiredFields();
+        if (validationErrors.length > 0) {
+            toastr.error(validationErrors.join('<br>'), T('Evaluation.ValidationError', 'Zorunlu Alanlar'), { enableHtml: true });
+            return;
+        }
+
         self.isSavingForm(true);
         self.modalErrorMessage('');
         self.formSuccessMessage('');
@@ -691,11 +759,77 @@ function EvaluationsViewModel() {
         });
     };
 
-    // Submit evaluation
-    self.submitEvaluation = function() {
-        // Not: Zorunluluk kontrolü kaldırıldı
-        // Puanlanmamış sorular zaten puana etki etmiyor
+    // Show summary before submit (önce özet göster, onay al)
+    self.showSummary = function() {
+        // Zorunlu alan kontrolü
+        var validationErrors = self.validateRequiredFields();
+        if (validationErrors.length > 0) {
+            toastr.error(validationErrors.join('<br>'), T('Evaluation.ValidationError', 'Zorunlu Alanlar'), { enableHtml: true });
+            return;
+        }
 
+        // Cevapları hazırla (sorular + verilen cevaplar)
+        var answersForSummary = [];
+        if (self.formData()) {
+            self.formData().sections.forEach(function(section) {
+                section.questions.forEach(function(q) {
+                    var answer = self.answers[q.id];
+                    if (!answer) return;
+
+                    var answerNumeric = answer.answerNumeric();
+                    var maxPoints = q.maxPoints || 5;
+                    var weightPoints = q.weightPoints || 0;
+                    var earnedPoints = 0;
+
+                    // Puan hesapla
+                    if (q.scoringType === 'Scored' && answerNumeric !== null && answerNumeric !== '') {
+                        earnedPoints = (parseFloat(answerNumeric) / maxPoints) * weightPoints;
+                    } else if (q.scoringType === 'Penalty' && answerNumeric !== null && answerNumeric !== '' && parseFloat(answerNumeric) > 0) {
+                        earnedPoints = -((parseFloat(answerNumeric) / maxPoints) * weightPoints);
+                    }
+
+                    answersForSummary.push({
+                        questionText: q.text,
+                        scoringType: q.scoringType,
+                        penaltyType: q.penaltyType,
+                        maxPoints: maxPoints,
+                        weightPoints: weightPoints,
+                        answerNumeric: answerNumeric,
+                        earnedPoints: earnedPoints,
+                        notes: answer.notes ? answer.notes() : ''
+                    });
+                });
+            });
+        }
+
+        // Özet verilerini hazırla ve göster (backend'e gitmeden)
+        self.summaryData({
+            totalScore: self.totalScoreCalc(),
+            maxScore: self.maxScoreCalc(),
+            scorePercentage: self.scorePercentageCalc(),
+            yellowCardCount: self.yellowCardCountCalc(),
+            redCardCount: self.redCardCountCalc(),
+            scoredWeight: self.scoredWeightCalc(),
+            yellowCardWeight: self.yellowCardWeightCalc(),
+            redCardWeight: self.redCardWeightCalc(),
+            evaluatedPersonnelName: self.availablePersonnel().find(function(p) {
+                return p.id === self.evaluatedPersonnelId();
+            })?.name || self.evaluatedUnknownPersonnel() || '-',
+            callId: self.callId() || '-',
+            callDate: self.callDate() || '-',
+            duration: self.duration() || '-',
+            answers: answersForSummary
+        });
+        self.isShowingSummary(true);
+    };
+
+    // Go back to form from summary (özetten forma geri dön)
+    self.backToForm = function() {
+        self.isShowingSummary(false);
+    };
+
+    // Confirm and submit evaluation (onaylandığında backend'e kaydet)
+    self.confirmSubmit = function() {
         self.isSavingForm(true);
         self.modalErrorMessage('');
         self.formSuccessMessage('');
@@ -745,24 +879,9 @@ function EvaluationsViewModel() {
                 }
             }
 
-            // Özet verilerini hazırla ve göster
-            self.summaryData({
-                totalScore: self.totalScoreCalc(),
-                maxScore: self.maxScoreCalc(),
-                scorePercentage: self.scorePercentageCalc(),
-                yellowCardCount: self.yellowCardCountCalc(),
-                redCardCount: self.redCardCountCalc(),
-                scoredWeight: self.scoredWeightCalc(),
-                yellowCardWeight: self.yellowCardWeightCalc(),
-                redCardWeight: self.redCardWeightCalc(),
-                evaluatedPersonnelName: self.availablePersonnel().find(function(p) {
-                    return p.id === self.evaluatedPersonnelId();
-                })?.name || self.evaluatedUnknownPersonnel() || '-',
-                callId: self.callId() || '-',
-                callDate: self.callDate() || '-',
-                duration: self.duration() || '-'
-            });
-            self.isShowingSummary(true);
+            toastr.success(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla kaydedildi.'));
+            self.closeEvaluateModal();
+            self.loadEvaluations();
         })
         .catch(function(error) {
             console.error('Submit error:', error);

@@ -427,13 +427,13 @@
                             </div>
                             <!-- Contact Info -->
                             <div class="col-md-3">
-                                <div class="small opacity-75 mb-1">İletişim</div>
+                                <div class="small opacity-75 mb-1">@Html.T("Customer.Contact", "İletişim")</div>
                                 <div data-bind="if: selectedCustomerForOrg().phone" class="mb-1"><i class="bi bi-telephone-fill me-2"></i><span data-bind="text: selectedCustomerForOrg().phone"></span></div>
                                 <div data-bind="if: selectedCustomerForOrg().email"><i class="bi bi-envelope-fill me-2"></i><span data-bind="text: selectedCustomerForOrg().email"></span></div>
                             </div>
                             <!-- Address -->
                             <div class="col-md-3">
-                                <div class="small opacity-75 mb-1">Adres</div>
+                                <div class="small opacity-75 mb-1">@Html.T("Customer.Address", "Adres")</div>
                                 <div data-bind="if: selectedCustomerForOrg().city"><i class="bi bi-geo-alt-fill me-2"></i><span data-bind="text: selectedCustomerForOrg().city"></span></div>
                                 <div data-bind="if: selectedCustomerForOrg().address" class="small opacity-75 text-truncate" style="max-width: 200px;" data-bind="text: selectedCustomerForOrg().address, attr: { title: selectedCustomerForOrg().address }"></div>
                             </div>
@@ -445,7 +445,7 @@
                                         <div class="fw-bold" data-bind="text: selectedCustomerForOrg().taxNumber || '-'"></div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="small opacity-75 mb-1">Sözleşme Bitiş</div>
+                                        <div class="small opacity-75 mb-1">@Html.T("Customer.ContractEnd", "Sözleşme Bitiş")</div>
                                         <div class="fw-bold" data-bind="text: selectedCustomerForOrg().contractEndDate ? new Date(selectedCustomerForOrg().contractEndDate).toLocaleDateString('tr-TR') : '-'"></div>
                                     </div>
                                 </div>

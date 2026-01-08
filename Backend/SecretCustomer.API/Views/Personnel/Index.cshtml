@@ -26,10 +26,10 @@
                     <label class="form-label">@Html.T("Personnel.Role", "Rol")</label>
                     <select class="form-select" data-bind="value: filter.role">
                         <option value="">@Html.T("Common.All", "Tümü")</option>
-                        <option value="0">Admin</option>
-                        <option value="1">Manager</option>
-                        <option value="2">QualitySpecialist</option>
-                        <option value="3">FieldWorker</option>
+                        <option value="0">@Html.T("Personnel.Role.Admin", "Admin")</option>
+                        <option value="1">@Html.T("Personnel.Role.Manager", "Yönetici")</option>
+                        <option value="2">@Html.T("Personnel.Role.QualitySpecialist", "Kalite Uzmanı")</option>
+                        <option value="3">@Html.T("Personnel.Role.FieldWorker", "Saha Çalışanı")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -173,7 +173,7 @@
                         <div class="col-12">
                             <label class="form-label">@Html.T("Personnel.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: username" required placeholder="ornek.kullanici">
-                            <small class="text-muted">Sadece İngilizce harf, rakam, nokta ve alt çizgi</small>
+                            <small class="text-muted">@Html.T("Personnel.UsernameHint", "Sadece İngilizce harf, rakam, nokta ve alt çizgi")</small>
                         </div>
                         <!-- /ko -->
 
@@ -196,10 +196,10 @@
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Personnel.Role", "Rol") <span class="text-danger">*</span></label>
                             <select class="form-select" data-bind="value: role" required>
-                                <option value="0">Admin</option>
-                                <option value="1">Manager</option>
-                                <option value="2">QualitySpecialist</option>
-                                <option value="3">FieldWorker</option>
+                                <option value="0">@Html.T("Personnel.Role.Admin", "Admin")</option>
+                                <option value="1">@Html.T("Personnel.Role.Manager", "Yönetici")</option>
+                                <option value="2">@Html.T("Personnel.Role.QualitySpecialist", "Kalite Uzmanı")</option>
+                                <option value="3">@Html.T("Personnel.Role.FieldWorker", "Saha Çalışanı")</option>
                             </select>
                         </div>
 

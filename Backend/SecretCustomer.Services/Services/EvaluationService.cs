@@ -764,7 +764,9 @@ public class EvaluationService : IEvaluationService
             SectionOrder = null, // Section kaldırıldı
             SectionName = null, // Section kaldırıldı
             QuestionOrder = a.Question?.Order,
-            MaxPoints = a.Question?.WeightPoints, // WeightPoints kullanılıyor
+            QuestionMaxPoints = a.Question?.MaxPoints ?? 5, // Sorunun max puanı (örn: 5)
+            WeightPoints = a.Question?.WeightPoints ?? 0, // Ağırlık puanı
+            MaxPoints = a.Question?.WeightPoints, // Geriye uyumluluk için
             ScoringType = a.Question?.ScoringType.ToString(),
             PenaltyType = a.Question?.PenaltyType.ToString(),
             HelpText = a.Question?.HelpText,

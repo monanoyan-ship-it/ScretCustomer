@@ -79,7 +79,7 @@
                             <div>
                                 <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ThisWeek", "Bu Hafta")</h6>
                                 <h2 class="mb-0" data-bind="text: dailyMetrics().thisWeekEvaluations"></h2>
-                                <small class="text-white-50">Ort: <span data-bind="text: dailyMetrics().thisWeekAverageScore.toFixed(1)"></span>%</small>
+                                <small class="text-white-50">@Html.T("Common.Avg", "Ort"): <span data-bind="text: dailyMetrics().thisWeekAverageScore.toFixed(1)"></span>%</small>
                             </div>
                             <i class="bi bi-calendar-week fs-1 opacity-50"></i>
                         </div>

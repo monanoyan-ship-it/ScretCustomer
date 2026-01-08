@@ -319,11 +319,11 @@
                                             <option value="Penalty">@Html.T("Checklist.ScoringType.Penalty", "Cezalı")</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-2 mb-2">
+                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() !== 'Unscored'">
                                         <label class="form-label">@Html.T("Checklist.WeightPoints", "Ağırlık Puanı")</label>
                                         <input type="number" class="form-control" data-bind="value: weightPoints" min="0" step="0.1" />
                                     </div>
-                                    <div class="col-md-2 mb-2">
+                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() !== 'Unscored'">
                                         <label class="form-label">@Html.T("Checklist.MaxPoints", "Maks Puan")</label>
                                         <input type="number" class="form-control" data-bind="value: maxPoints" min="1" max="10" />
                                         <small class="text-muted">@Html.T("Checklist.MaxPointsHelp", "1=Evet/Hayır, 5=Detaylı")</small>
@@ -335,13 +335,6 @@
                                             <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
                                             <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
                                         </select>
-                                    </div>
-                                    <div class="col-md-2 mb-2">
-                                        <label class="form-label d-block">&nbsp;</label>
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" data-bind="checked: allowNA" />
-                                            <label class="form-check-label">@Html.T("Checklist.AllowNA", "N/A İzin Ver")</label>
-                                        </div>
                                     </div>
                                     <div class="col-md-2 mb-2">
                                         <label class="form-label d-block">&nbsp;</label>
@@ -523,10 +516,21 @@
                         <div class="col-md-6">
                             <table class="table table-sm">
                                 <tr><th>@Html.T("Checklist.TotalQuestions", "Toplam Soru"):</th><td data-bind="text: questions().length"></td></tr>
-                                <tr><th>@Html.T("Checklist.ScoredQuestions", "Puanlı Soru"):</th><td data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored'; }).length"></td></tr>
+                                <tr><th>@Html.T("Checklist.ScoredQuestions", "Puanlı Soru"):</th><td data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored' && q.penaltyType() === 'None'; }).length"></td></tr>
                                 <tr><th>@Html.T("Checklist.YellowCardQuestions", "Sarı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'YellowCard'; }).length"></td></tr>
                                 <tr><th>@Html.T("Checklist.RedCardQuestions", "Kırmızı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).length"></td></tr>
-                                <tr><th>@Html.T("Checklist.TotalWeightPoints", "Toplam Ağırlık Puanı"):</th><td data-bind="text: questions().reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></td></tr>
+                                <tr>
+                                    <th>@Html.T("Checklist.ScoredWeightPoints", "Puanlı Soru Ağırlığı"):</th>
+                                    <td><span class="text-primary fw-bold" data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored' && q.penaltyType() === 'None'; }).reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></span></td>
+                                </tr>
+                                <tr>
+                                    <th>@Html.T("Checklist.YellowCardWeightPoints", "Sarı Kart Ağırlığı"):</th>
+                                    <td><span class="text-warning fw-bold" data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'YellowCard'; }).reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></span></td>
+                                </tr>
+                                <tr>
+                                    <th>@Html.T("Checklist.RedCardWeightPoints", "Kırmızı Kart Ağırlığı"):</th>
+                                    <td><span class="text-danger fw-bold" data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></span></td>
+                                </tr>
                                 <tr><th>@Html.T("Common.Status", "Durum"):</th><td><span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span></td></tr>
                             </table>
                         </div>
@@ -552,8 +556,22 @@
                                     <td>
                                         <span class="badge" data-bind="css: { 'bg-success': scoringType() === 'Scored', 'bg-warning': scoringType() === 'Penalty', 'bg-secondary': scoringType() === 'Unscored' }, text: scoringType"></span>
                                     </td>
-                                    <td data-bind="text: weightPoints"></td>
-                                    <td data-bind="text: maxPoints"></td>
+                                    <td>
+                                        <!-- ko if: scoringType() !== 'Unscored' -->
+                                        <span data-bind="text: weightPoints"></span>
+                                        <!-- /ko -->
+                                        <!-- ko if: scoringType() === 'Unscored' -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td>
+                                        <!-- ko if: scoringType() !== 'Unscored' -->
+                                        <span data-bind="text: maxPoints"></span>
+                                        <!-- /ko -->
+                                        <!-- ko if: scoringType() === 'Unscored' -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
                                     <td data-bind="text: (subCriteria && subCriteria().length) || 0"></td>
                                 </tr>
                             </tbody>
@@ -612,7 +630,6 @@
                             <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
                             <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
                             <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
-                            <th>N/A</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: questions || []">
@@ -627,15 +644,21 @@
                             <td>
                                 <span class="badge" data-bind="css: { 'bg-success': scoringType === 'Scored', 'bg-warning': scoringType === 'Penalty', 'bg-secondary': scoringType === 'Unscored' }, text: scoringTypeName || scoringType"></span>
                             </td>
-                            <td data-bind="text: weightPoints"></td>
-                            <td data-bind="text: maxPoints"></td>
                             <td>
-                                <span data-bind="visible: allowNA" class="text-success">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </span>
-                                <span data-bind="visible: !allowNA" class="text-muted">
-                                    <i class="bi bi-dash-circle"></i>
-                                </span>
+                                <!-- ko if: scoringType !== 'Unscored' -->
+                                <span data-bind="text: weightPoints"></span>
+                                <!-- /ko -->
+                                <!-- ko if: scoringType === 'Unscored' -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: scoringType !== 'Unscored' -->
+                                <span data-bind="text: maxPoints"></span>
+                                <!-- /ko -->
+                                <!-- ko if: scoringType === 'Unscored' -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
                             </td>
                         </tr>
                     </tbody>

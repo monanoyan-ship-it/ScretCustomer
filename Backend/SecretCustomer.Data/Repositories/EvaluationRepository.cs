@@ -48,6 +48,9 @@ public class EvaluationRepository : IEvaluationRepository
         return await _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Checklist)
+            .Include(e => e.EvaluatedPersonnel)
             .Where(e => e.EvaluatorId == evaluatorId)
             .OrderByDescending(e => e.CompletedAt)
             .ToListAsync();

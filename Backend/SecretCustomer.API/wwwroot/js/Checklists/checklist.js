@@ -26,12 +26,25 @@ var QuestionModel = function (data, loadAttachmentsFn) {
 
     // Puanlama alanları
     base.scoringType = ko.observable(data.scoringType || 'Scored');
-    base.weightPoints = ko.observable(data.weightPoints || 10); // Varsayılan 10 (5 soru = 50, 10 soru = 100)
+    // Puansız sorular için weightPoints = 0, diğerleri için varsayılan 10
+    var initialWeightPoints = data.weightPoints !== undefined ? data.weightPoints :
+        (data.scoringType === 'Unscored' ? 0 : 10);
+    base.weightPoints = ko.observable(initialWeightPoints);
     base.maxPoints = ko.observable(data.maxPoints || 5); // Maksimum puan (1=Evet/Hayır, 5=Detaylı)
     base.penaltyType = ko.observable(data.penaltyType || 'None');
     base.recommendedNote = ko.observable(data.recommendedNote || '');
     base.helpText = ko.observable(data.helpText || '');
     base.groupName = ko.observable(data.groupName || '');
+
+    // scoringType değiştiğinde weightPoints'i otomatik ayarla
+    base.scoringType.subscribe(function(newValue) {
+        if (newValue === 'Unscored') {
+            base.weightPoints(0);
+        } else if (base.weightPoints() === 0) {
+            // Puansızdan puanlıya geçerken varsayılan değer ata
+            base.weightPoints(10);
+        }
+    });
 
     // Alt Kriterler/Öneriler
     let subCriteria = (data.subCriteria || []).map(function (sc) {
