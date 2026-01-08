@@ -393,6 +393,22 @@ public class LocalizationService : ILocalizationService
         _cache.Remove($"{CACHE_KEY_PREFIX}all_{languageId}");
     }
 
+    /// <summary>
+    /// Tüm localization cache'ini temizle
+    /// </summary>
+    public async Task ClearAllCacheAsync()
+    {
+        // Dil cache'ini temizle
+        ClearLanguageCache();
+
+        // Tüm diller için resource cache'ini temizle
+        var languages = await _context.Languages.ToListAsync();
+        foreach (var lang in languages)
+        {
+            _cache.Remove($"{CACHE_KEY_PREFIX}all_{lang.Id}");
+        }
+    }
+
     #endregion
 
     #region XML Import/Export

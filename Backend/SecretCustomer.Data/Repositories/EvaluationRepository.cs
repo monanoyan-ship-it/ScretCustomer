@@ -23,7 +23,10 @@ public class EvaluationRepository : IEvaluationRepository
                 .Include(e => e.Assignment)
                 .Include(e => e.Evaluator)
                 .Include(e => e.Answers)
-                    .ThenInclude(a => a.Question);
+                    .ThenInclude(a => a.Question)
+                .Include(e => e.Answers)
+                    .ThenInclude(a => a.SubCriteriaSelections)
+                        .ThenInclude(s => s.SubCriteria);
         }
 
         return await query.FirstOrDefaultAsync(e => e.Id == id);

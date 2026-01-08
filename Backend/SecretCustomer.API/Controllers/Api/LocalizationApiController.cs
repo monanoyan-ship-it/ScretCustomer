@@ -299,6 +299,21 @@ public class LocalizationApiController : BaseApiController
 
     #endregion
 
+    #region Cache
+
+    /// <summary>
+    /// Tüm localization cache'ini temizle
+    /// </summary>
+    [HttpPost("cache/clear")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ClearCache()
+    {
+        await _localizationService.ClearAllCacheAsync();
+        return Ok(new { message = "Localization cache temizlendi." });
+    }
+
+    #endregion
+
     #region Current Language
 
     [HttpGet("current")]
@@ -347,6 +362,40 @@ public class LocalizationApiController : BaseApiController
         return Ok(new { resourceName, value });
     }
 
+    /// <summary>
+    /// Get all resources for current language (for JavaScript localization)
+    /// </summary>
+    [HttpGet("resources/current")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCurrentResources()
+    {
+        var langId = _localizationService.GetCurrentLanguageId();
+        var resources = await _localizationService.GetAllResourcesAsync(langId);
+        return Ok(resources);
+    }
+
+    /// <summary>
+    /// Get specific resources by key list (batch request for JS modules)
+    /// </summary>
+    [HttpPost("resources/batch")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetResourcesBatch([FromBody] BatchResourcesDto dto)
+    {
+        if (dto?.Keys == null || dto.Keys.Count == 0)
+            return Ok(new Dictionary<string, string>());
+
+        var langId = _localizationService.GetCurrentLanguageId();
+        var result = new Dictionary<string, string>();
+
+        foreach (var key in dto.Keys)
+        {
+            var value = await _localizationService.GetResourceAsync(key, langId);
+            result[key] = value;
+        }
+
+        return Ok(result);
+    }
+
     #endregion
 }
 
@@ -385,6 +434,11 @@ public class SetResourceDto
 public class ImportXmlDto
 {
     public string XmlContent { get; set; } = string.Empty;
+}
+
+public class BatchResourcesDto
+{
+    public List<string> Keys { get; set; } = new();
 }
 
 #endregion

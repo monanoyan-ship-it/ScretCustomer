@@ -68,8 +68,8 @@ public class PersonnelService : IPersonnelService
         // Get evaluation stats
         var personnelIds = personnel.Select(p => p.Id).ToList();
         var evaluationStats = await _context.Evaluations
-            .Where(e => e.EvaluatedPersonnelId != null && personnelIds.Contains(e.EvaluatedPersonnelId.Value))
-            .GroupBy(e => e.EvaluatedPersonnelId)
+            .Where(e => e.EvaluatedCustomerPersonnelId != null && personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value))
+            .GroupBy(e => e.EvaluatedCustomerPersonnelId)
             .Select(g => new
             {
                 PersonnelId = g.Key,
@@ -104,8 +104,8 @@ public class PersonnelService : IPersonnelService
 
         // Get evaluation stats
         var stats = await _context.Evaluations
-            .Where(e => e.EvaluatedPersonnelId == id)
-            .GroupBy(e => e.EvaluatedPersonnelId)
+            .Where(e => e.EvaluatedCustomerPersonnelId == id)
+            .GroupBy(e => e.EvaluatedCustomerPersonnelId)
             .Select(g => new
             {
                 Count = g.Count(),

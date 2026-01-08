@@ -627,21 +627,21 @@ public class ReportService : IReportService
 
     public async Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync()
     {
-        // Değerlendirmede bulunan personelleri getir (EvaluatedPersonnel = User entity)
+        // Değerlendirmede bulunan personelleri getir (EvaluatedCustomerPersonnel = CustomerPersonnel entity)
         var personnelFromEvaluations = await _context.Evaluations
-            .Include(e => e.EvaluatedPersonnel)
-            .Where(e => e.EvaluatedPersonnelId != null && e.Status == EvaluationStatus.Completed)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Where(e => e.EvaluatedCustomerPersonnelId != null && e.Status == EvaluationStatus.Completed)
             .Select(e => new
             {
-                e.EvaluatedPersonnelId,
-                e.EvaluatedPersonnel!.FirstName,
-                e.EvaluatedPersonnel.LastName
+                e.EvaluatedCustomerPersonnelId,
+                e.EvaluatedCustomerPersonnel!.FirstName,
+                e.EvaluatedCustomerPersonnel.LastName
             })
             .Distinct()
             .ToListAsync();
 
         return personnelFromEvaluations
-            .GroupBy(p => p.EvaluatedPersonnelId)
+            .GroupBy(p => p.EvaluatedCustomerPersonnelId)
             .Select(g => new PersonnelListItemDto
             {
                 Id = g.Key!.Value,
@@ -670,7 +670,7 @@ public class ReportService : IReportService
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
                     .ThenInclude(q => q.Section)
-            .Where(e => e.EvaluatedPersonnelId == filter.PersonnelId && e.Status == EvaluationStatus.Completed);
+            .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.Status == EvaluationStatus.Completed);
 
         // Apply filters
         if (filter.ProjectId.HasValue)
@@ -986,7 +986,7 @@ public class ReportService : IReportService
             query = query.Where(a => a.Evaluation.EvaluatorId == filter.EvaluatorId.Value);
 
         if (filter.PersonnelId.HasValue)
-            query = query.Where(a => a.Evaluation.EvaluatedPersonnelId == filter.PersonnelId.Value);
+            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId == filter.PersonnelId.Value);
 
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value);
@@ -1025,8 +1025,8 @@ public class ReportService : IReportService
                 .Distinct()
                 .Count(),
             UniquePersonnel = allSuggestionAnswers
-                .Where(a => a.Evaluation.EvaluatedPersonnelId.HasValue)
-                .Select(a => a.Evaluation.EvaluatedPersonnelId)
+                .Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue)
+                .Select(a => a.Evaluation.EvaluatedCustomerPersonnelId)
                 .Distinct()
                 .Count()
         };

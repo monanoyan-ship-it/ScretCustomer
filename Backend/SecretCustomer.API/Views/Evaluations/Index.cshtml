@@ -180,10 +180,10 @@
                             </td>
                             <td>
                                 <!-- ko if: yellowCardCount > 0 -->
-                                <span class="badge bg-warning text-dark me-1" title="Sarı Kart"><span data-bind="text: yellowCardCount"></span></span>
+                                <span class="badge bg-warning text-dark me-1" title="@Html.T("Penalty.YellowCard", "Sarı Kart")"><span data-bind="text: yellowCardCount"></span></span>
                                 <!-- /ko -->
                                 <!-- ko if: redCardCount > 0 -->
-                                <span class="badge bg-danger" title="Kırmızı Kart"><span data-bind="text: redCardCount"></span></span>
+                                <span class="badge bg-danger" title="@Html.T("Penalty.RedCard", "Kırmızı Kart")"><span data-bind="text: redCardCount"></span></span>
                                 <!-- /ko -->
                                 <!-- ko if: !yellowCardCount && !redCardCount -->
                                 <span class="text-muted">-</span>
@@ -202,11 +202,11 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary btn-sm" data-bind="click: $parent.showDetails" title="Detay">
+                                    <button class="btn btn-outline-primary btn-sm" data-bind="click: $parent.showDetails" title="@Html.T("Common.Detail", "Detay")">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     <!-- ko if: $parent.canEditEvaluation($data) -->
-                                    <button class="btn btn-outline-warning btn-sm" data-bind="click: $parent.continueEvaluation" title="Düzenle">
+                                    <button class="btn btn-outline-warning btn-sm" data-bind="click: $parent.continueEvaluation" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <!-- /ko -->
@@ -400,6 +400,18 @@
                             </div>
                         </div>
 
+                        <!-- Descriptions (Açıklamalar) -->
+                        <div class="card mb-4" data-bind="visible: descriptions && descriptions.length > 0">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0"><i class="bi bi-list-ul"></i> @Html.T("Evaluation.Descriptions", "Açıklamalar")</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0" data-bind="foreach: descriptions">
+                                    <li data-bind="text: $data"></li>
+                                </ul>
+                            </div>
+                        </div>
+
                         <!-- Evaluation Comment -->
                         <div class="card mb-4" data-bind="visible: evaluationComment">
                             <div class="card-header bg-info text-white">
@@ -430,6 +442,9 @@
                                             <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
                                                 <td>
                                                     <span data-bind="text: questionText"></span>
+                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                    <!-- /ko -->
                                                     <!-- ko if: notes -->
                                                     <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: notes"></span></small>
                                                     <!-- /ko -->
@@ -611,11 +626,35 @@
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>
                                                 <span class="fw-bold" data-bind="text: callDate"></span>
                                             </div>
-                                            <div class="col-6">
+                                            <div class="col-3">
+                                                <small class="text-muted d-block">@Html.T("Evaluation.CallTime", "Çağrı Saati")</small>
+                                                <span class="fw-bold" data-bind="text: callTime"></span>
+                                            </div>
+                                            <div class="col-3">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.Duration", "Süre")</small>
                                                 <span class="fw-bold" data-bind="text: duration"></span>
                                             </div>
                                         </div>
+
+                                        <!-- Açıklamalar -->
+                                        <!-- ko if: descriptions && descriptions.length > 0 -->
+                                        <div class="mb-4">
+                                            <small class="text-muted d-block mb-1">@Html.T("Evaluation.Descriptions", "Açıklamalar")</small>
+                                            <ul class="mb-0">
+                                                <!-- ko foreach: descriptions -->
+                                                <li data-bind="text: $data"></li>
+                                                <!-- /ko -->
+                                            </ul>
+                                        </div>
+                                        <!-- /ko -->
+
+                                        <!-- Denetim Yorumu -->
+                                        <!-- ko if: evaluationComment -->
+                                        <div class="mb-4">
+                                            <small class="text-muted d-block mb-1">@Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</small>
+                                            <p class="mb-0 bg-light p-2 rounded" data-bind="text: evaluationComment"></p>
+                                        </div>
+                                        <!-- /ko -->
 
                                         <!-- Cevaplar Tablosu -->
                                         <hr>
@@ -634,6 +673,9 @@
                                                     <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
                                                         <td>
                                                             <span data-bind="text: questionText"></span>
+                                                            <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                            <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                            <!-- /ko -->
                                                             <!-- ko if: notes -->
                                                             <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: notes"></span></small>
                                                             <!-- /ko -->
@@ -783,6 +825,7 @@
                                                 <!-- Personel Seçimi -->
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.SelectPersonnel", "Personel Seç") <span class="text-danger">*</span></label>
+                                                    <!-- ko ifnot: isNewPersonnelMode -->
                                                     <div class="input-group">
                                                         <select class="form-select" data-bind="value: evaluatedPersonnelId, options: availablePersonnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
                                                         <!-- ko if: isLoadingPersonnel() -->
@@ -790,7 +833,33 @@
                                                             <span class="spinner-border spinner-border-sm"></span>
                                                         </span>
                                                         <!-- /ko -->
+                                                        <!-- ko ifnot: isLoadingPersonnel() -->
+                                                        <button type="button" class="btn btn-outline-secondary" data-bind="click: enableNewPersonnelMode" title="@Html.T("Evaluation.PersonnelNotInList", "Listede Yok")">
+                                                            <i class="bi bi-person-plus"></i>
+                                                        </button>
+                                                        <!-- /ko -->
                                                     </div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isNewPersonnelMode -->
+                                                    <div class="card border-warning">
+                                                        <div class="card-header bg-warning text-dark py-2 d-flex justify-content-between align-items-center">
+                                                            <small><i class="bi bi-person-plus me-1"></i>@Html.T("Evaluation.NewPersonnel", "Yeni Personel")</small>
+                                                            <button type="button" class="btn btn-sm btn-outline-dark" data-bind="click: cancelNewPersonnelMode">
+                                                                <i class="bi bi-x"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.FirstName", "Ad") *" data-bind="value: newPersonnelFirstName">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.LastName", "Soyad") *" data-bind="value: newPersonnelLastName">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- /ko -->
                                                 </div>
                                             </div>
                                         </div>
@@ -997,7 +1066,7 @@
                                                             <!-- Notes -->
                                                             <div class="mb-2">
                                                                 <label class="form-label small">@Html.T("Common.Note", "Not")</label>
-                                                                <textarea class="form-control form-control-sm" rows="1" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")"></textarea>
+                                                                <textarea class="form-control form-control-sm" rows="2" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")" style="resize: vertical;"></textarea>
                                                             </div>
 
                                                             <!-- ko if: $parent.recommendedNote -->

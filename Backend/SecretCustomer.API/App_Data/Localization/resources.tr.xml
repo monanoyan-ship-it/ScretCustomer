@@ -5300,6 +5300,9 @@
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Atama başarıyla güncellendi.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.ChecklistAutoFilled">
+    <Value>Kontrol listesi proje tanımından otomatik alınır</Value>
+  </LocaleResource>
   <LocaleResource Name="BankVisit.DeleteSuccess">
     <Value>Ziyaret silindi.</Value>
   </LocaleResource>
@@ -5420,6 +5423,42 @@
   <LocaleResource Name="Evaluation.SubmitSuccess">
     <Value>Değerlendirme başarıyla tamamlandı.</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.ValidationError">
+    <Value>Zorunlu Alanlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelRequired">
+    <Value>Personel seçimi zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallDateRequired">
+    <Value>Çağrı Tarihi zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallTimeRequired">
+    <Value>Çağrı Saati zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DurationRequired">
+    <Value>Süre zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveErrorMessage">
+    <Value>Taslak kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitErrorMessage">
+    <Value>Değerlendirme gönderilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotFound">
+    <Value>Değerlendirme bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailsLoadError">
+    <Value>Detaylar yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestSent">
+    <Value>Taslağa döndürme isteği gönderildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestFailed">
+    <Value>Taslağa döndürme işlemi başarısız oldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadErrorMessage">
+    <Value>Form yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
   <LocaleResource Name="File.DetailedEvaluations">
     <Value>Detayli_Degerlendirmeler</Value>
   </LocaleResource>
@@ -5479,6 +5518,15 @@
   </LocaleResource>
   <LocaleResource Name="Language.LoadError">
     <Value>Diller yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ClearCache">
+    <Value>Cache Temizle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearedSuccess">
+    <Value>Localization cache temizlendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearError">
+    <Value>Cache temizlenirken hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ResourceDeleteSuccess">
     <Value>Kaynak silindi.</Value>
@@ -5716,5 +5764,126 @@
   </LocaleResource>
   <LocaleResource Name="Validation.SelectRequired">
     <Value>Lütfen bir seçim yapın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewManager">
+    <Value>Yeni Yönetici</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Organization">
+    <Value>Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Move">
+    <Value>Taşı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Personnel">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Pinned">
+    <Value>Sabitlenmiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignmentCount">
+    <Value>Görev Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EvaluationCount">
+    <Value>Değerlendirme Sayısı</Value>
+  </LocaleResource>
+  <!-- UserRequests & PersonnelRequest -->
+  <LocaleResource Name="Menu.UserRequests">
+    <Value>Kullanıcı Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.DraftRequests">
+    <Value>Taslağa Alma Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.PersonnelRequests">
+    <Value>Personel Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.AllRequests">
+    <Value>Personel Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Name">
+    <Value>Ad Soyad</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.NoRecords">
+    <Value>Henüz personel talebi bulunmamaktadır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approve">
+    <Value>Personel Talebini Onayla</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Reject">
+    <Value>Personel Talebini Reddet</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Info">
+    <Value>Talep Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.DefaultEmail">
+    <Value>Boş bırakılırsa kullaniciadi@temp.com olarak atanır</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.PasswordInfo">
+    <Value>Varsayılan şifre: user@123 (İlk girişte değiştirmek zorunda)</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectWarning">
+    <Value>Talebi reddettiğinizde ilgili değerlendirme taslağa alınacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.LoadError">
+    <Value>Personel talepleri yüklenirken hata oluştu</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveSuccess">
+    <Value>Personel talebi onaylandı ve kullanıcı oluşturuldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveError">
+    <Value>Onay işlemi başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectSuccess">
+    <Value>Personel talebi reddedildi. İlgili değerlendirme taslağa alındı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectError">
+    <Value>Red işlemi başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.UsernameRequired">
+    <Value>Kullanıcı adı zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectReasonRequired">
+    <Value>Red sebebi zorunludur</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.AllRequests">
+    <Value>Taslağa Alma Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.NoRecords">
+    <Value>Henüz taslağa alma talebi bulunmamaktadır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.LoadError">
+    <Value>Talepler yüklenirken hata oluştu</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmApprove">
+    <Value>Bu talebi onaylamak istediğinizden emin misiniz? Değerlendirme taslak durumuna alınacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmReject">
+    <Value>Bu talebi reddetmek istediğinizden emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveSuccess">
+    <Value>Talep onaylandı. Değerlendirme taslak durumuna alındı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveError">
+    <Value>Onay işlemi başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectSuccess">
+    <Value>Talep reddedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectError">
+    <Value>Red işlemi başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectOptional">
+    <Value>Seçiniz (opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelNotInList">
+    <Value>Listede Yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnel">
+    <Value>Yeni Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FirstName">
+    <Value>Ad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastName">
+    <Value>Soyad</Value>
   </LocaleResource>
 </Language>

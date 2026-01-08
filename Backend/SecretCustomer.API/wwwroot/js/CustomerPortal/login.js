@@ -56,7 +56,16 @@ function CustomerLoginViewModel() {
     };
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Account.LoginRequired',
+    'Account.LoginFailed',
+    'Account.LoginError'
+];
+
 // Apply bindings when DOM is ready
 $(document).ready(function() {
-    ko.applyBindings(new CustomerLoginViewModel(), document.getElementById('customer-login-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new CustomerLoginViewModel(), document.getElementById('customer-login-app'));
+    });
 });

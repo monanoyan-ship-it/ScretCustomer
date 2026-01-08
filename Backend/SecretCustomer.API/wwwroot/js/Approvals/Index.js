@@ -383,7 +383,44 @@ function ApprovalsViewModel() {
     self.init();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Common.Total',
+    'Approval.LoadError',
+    'Approval.DetailLoadError',
+    'Approval.Approve',
+    'Approval.ConfirmApprove',
+    'Approval.ApproveSuccess',
+    'Approval.ApproveError',
+    'Approval.Reject',
+    'Approval.ConfirmReject',
+    'Approval.RejectSuccess',
+    'Approval.RejectError',
+    'Common.Cancel',
+    'Approval.ConfirmCancel',
+    'Approval.CancelRequest',
+    'Approval.CancelSuccess',
+    'Approval.CancelError',
+    'Approval.Type.Evaluation',
+    'Approval.Type.Assignment',
+    'Approval.Type.Project',
+    'Approval.Type.Meeting',
+    'Approval.Type.Training',
+    'Approval.Type.Delegation',
+    'Approval.Type.General',
+    'Priority.Low',
+    'Priority.Normal',
+    'Priority.High',
+    'Priority.Urgent',
+    // Confirm modal keys
+    'Confirm.Title',
+    'Confirm.Message',
+    'Common.Confirm'
+];
+
 // Initialize ViewModel
 $(document).ready(function() {
-    ko.applyBindings(new ApprovalsViewModel(), document.getElementById('approvals-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new ApprovalsViewModel(), document.getElementById('approvals-app'));
+    });
 });

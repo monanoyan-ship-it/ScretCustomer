@@ -168,4 +168,9 @@ public class AnswerDto
     /// Seçilen alt kriter ID'leri
     /// </summary>
     public List<int>? SelectedSubCriteriaIds { get; set; }
+
+    /// <summary>
+    /// Seçilen alt kriter açıklamaları (görüntüleme için)
+    /// </summary>
+    public List<string>? SelectedSubCriteria { get; set; }
 }

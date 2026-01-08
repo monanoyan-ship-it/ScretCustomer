@@ -60,6 +60,22 @@ function EvaluationsViewModel() {
     self.evaluatedUnknownPersonnel = ko.observable('');
     self.evaluationComment = ko.observable('');
 
+    // New Personnel Mode (Listede Yok)
+    self.isNewPersonnelMode = ko.observable(false);
+    self.newPersonnelFirstName = ko.observable('');
+    self.newPersonnelLastName = ko.observable('');
+
+    self.enableNewPersonnelMode = function() {
+        self.isNewPersonnelMode(true);
+        self.evaluatedPersonnelId(null);
+    };
+
+    self.cancelNewPersonnelMode = function() {
+        self.isNewPersonnelMode(false);
+        self.newPersonnelFirstName('');
+        self.newPersonnelLastName('');
+    };
+
     // Açıklama ekle
     self.addDescription = function() {
         self.descriptions.push(ko.observable(''));
@@ -689,11 +705,15 @@ function EvaluationsViewModel() {
             duration: self.duration() || null,
             descriptions: filteredDescriptions.length > 0 ? filteredDescriptions : null,
             evaluatedOrganizationId: self.formData().selectedOrganizationId || null,
-            evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
+            evaluatedPersonnelId: self.isNewPersonnelMode() ? null : (self.evaluatedPersonnelId() || null),
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
             controlDate: new Date().toISOString().split('T')[0],
             controlTime: self.controlTime() || null,
-            formOpenedAt: new Date().toISOString()
+            formOpenedAt: new Date().toISOString(),
+            newPersonnel: self.isNewPersonnelMode() ? {
+                firstName: self.newPersonnelFirstName(),
+                lastName: self.newPersonnelLastName()
+            } : null
         };
     };
 
@@ -701,8 +721,16 @@ function EvaluationsViewModel() {
     self.validateRequiredFields = function() {
         var errors = [];
 
-        // Personel seçimi (ya listeden seç ya da tanımsız personel gir)
-        if (!self.evaluatedPersonnelId() && !self.evaluatedUnknownPersonnel()) {
+        // Personel seçimi (ya listeden seç, ya yeni personel gir, ya da tanımsız personel gir)
+        if (self.isNewPersonnelMode()) {
+            // Yeni personel modunda ad ve soyad zorunlu
+            if (!self.newPersonnelFirstName() || !self.newPersonnelFirstName().trim()) {
+                errors.push(T('Evaluation.NewPersonnelFirstNameRequired', 'Yeni personel için ad zorunludur'));
+            }
+            if (!self.newPersonnelLastName() || !self.newPersonnelLastName().trim()) {
+                errors.push(T('Evaluation.NewPersonnelLastNameRequired', 'Yeni personel için soyad zorunludur'));
+            }
+        } else if (!self.evaluatedPersonnelId() && !self.evaluatedUnknownPersonnel()) {
             errors.push(T('Evaluation.PersonnelRequired', 'Personel seçimi zorunludur'));
         }
 
@@ -788,6 +816,15 @@ function EvaluationsViewModel() {
                         earnedPoints = -((parseFloat(answerNumeric) / maxPoints) * weightPoints);
                     }
 
+                    // Seçili alt kriterleri al
+                    var selectedSubCriteriaNames = [];
+                    if (answer.selectedSubCriteria && answer.selectedSubCriteria().length > 0 && q.subCriteria) {
+                        answer.selectedSubCriteria().forEach(function(scId) {
+                            var sc = q.subCriteria.find(function(s) { return s.id === scId; });
+                            if (sc) selectedSubCriteriaNames.push(sc.description);
+                        });
+                    }
+
                     answersForSummary.push({
                         questionText: q.text,
                         scoringType: q.scoringType,
@@ -796,11 +833,19 @@ function EvaluationsViewModel() {
                         weightPoints: weightPoints,
                         answerNumeric: answerNumeric,
                         earnedPoints: earnedPoints,
-                        notes: answer.notes ? answer.notes() : ''
+                        notes: answer.notes ? answer.notes() : '',
+                        selectedSubCriteria: selectedSubCriteriaNames
                     });
                 });
             });
         }
+
+        // Açıklamaları al (boş olmayanlar)
+        var filteredDescriptions = self.descriptions().map(function(d) {
+            return ko.unwrap(d);
+        }).filter(function(d) {
+            return d && d.trim().length > 0;
+        });
 
         // Özet verilerini hazırla ve göster (backend'e gitmeden)
         self.summaryData({
@@ -817,7 +862,10 @@ function EvaluationsViewModel() {
             })?.name || self.evaluatedUnknownPersonnel() || '-',
             callId: self.callId() || '-',
             callDate: self.callDate() || '-',
+            callTime: self.callTime() || '-',
             duration: self.duration() || '-',
+            descriptions: filteredDescriptions,
+            evaluationComment: self.evaluationComment() || '',
             answers: answersForSummary
         });
         self.isShowingSummary(true);
@@ -901,13 +949,42 @@ function EvaluationsViewModel() {
     });
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Evaluation.LoadError',
+    'Evaluation.NotFound',
+    'Evaluation.DetailsLoadError',
+    'Evaluation.RevertRequestSent',
+    'Evaluation.RevertRequestFailed',
+    'Evaluation.InvalidParams',
+    'Evaluation.FormLoadError',
+    'Evaluation.FormLoadErrorMessage',
+    'Evaluation.PersonnelRequired',
+    'Evaluation.CallDateRequired',
+    'Evaluation.CallTimeRequired',
+    'Evaluation.DurationRequired',
+    'Evaluation.ValidationError',
+    'Evaluation.DraftSaveError',
+    'Evaluation.DraftSaved',
+    'Evaluation.DraftSaveErrorMessage',
+    'Evaluation.SubmitError',
+    'Evaluation.SubmitSuccess',
+    'Evaluation.SubmitErrorMessage',
+    // Confirm modal keys
+    'Confirm.Title',
+    'Confirm.Message',
+    'Common.Confirm'
+];
+
 // Apply bindings when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    ko.applyBindings(new EvaluationsViewModel(), document.getElementById('evaluations-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new EvaluationsViewModel(), document.getElementById('evaluations-app'));
 
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
 });

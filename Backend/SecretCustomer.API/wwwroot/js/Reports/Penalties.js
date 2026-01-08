@@ -213,7 +213,20 @@ function PenaltiesViewModel() {
     self.loadReport();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Report.LoadError',
+    'Report.LoadErrorMessage',
+    'Report.ExportError',
+    'Report.ExcelExportError',
+    'Penalty.YellowCard',
+    'Penalty.RedCard',
+    'File.PenaltyReport'
+];
+
 // Apply bindings
 $(document).ready(function() {
-    ko.applyBindings(new PenaltiesViewModel(), document.getElementById('penalties-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new PenaltiesViewModel(), document.getElementById('penalties-app'));
+    });
 });

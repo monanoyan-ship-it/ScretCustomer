@@ -46,4 +46,9 @@ public interface ILocalizationService
     /// Kullanıcının kayıtlı dil tercihini cookie'ye uygular (login sonrası çağrılır)
     /// </summary>
     void ApplyUserLanguagePreference(int userId);
+
+    /// <summary>
+    /// Tüm localization cache'ini temizle
+    /// </summary>
+    Task ClearAllCacheAsync();
 }

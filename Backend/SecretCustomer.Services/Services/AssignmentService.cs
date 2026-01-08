@@ -271,6 +271,8 @@ public class AssignmentService : IAssignmentService
             var term = filter.SearchTerm.ToLower();
             query = query.Where(a =>
                 (a.Project != null && a.Project.Name.ToLower().Contains(term)) ||
+                (a.Checklist != null && a.Checklist.Name.ToLower().Contains(term)) ||
+                (a.AssignedUser != null && (a.AssignedUser.FirstName + " " + a.AssignedUser.LastName).ToLower().Contains(term)) ||
                 (a.ExternalEmail != null && a.ExternalEmail.ToLower().Contains(term)) ||
                 (a.ExternalName != null && a.ExternalName.ToLower().Contains(term)));
         }

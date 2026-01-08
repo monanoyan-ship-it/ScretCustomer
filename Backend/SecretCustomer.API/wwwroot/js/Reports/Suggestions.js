@@ -214,7 +214,17 @@ function SuggestionsViewModel() {
     self.loadReport();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Report.LoadErrorMessage',
+    'Report.ExportError',
+    'Report.ExcelExportError',
+    'File.SuggestionsReport'
+];
+
 // Apply bindings
 $(document).ready(function() {
-    ko.applyBindings(new SuggestionsViewModel(), document.getElementById('suggestions-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new SuggestionsViewModel(), document.getElementById('suggestions-app'));
+    });
 });

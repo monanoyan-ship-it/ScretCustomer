@@ -189,7 +189,26 @@ function ProfileViewModel() {
     self.loadProfile();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Profile.LoadError',
+    'Profile.LoadErrorMessage',
+    'Profile.UpdateError',
+    'Profile.UpdateSuccess',
+    'Profile.UpdateErrorMessage',
+    'Validation.PasswordMismatch',
+    'Validation.PasswordMinLength',
+    'Account.PasswordChangeError',
+    'Account.PasswordChanged',
+    'Account.PasswordChangeErrorMessage',
+    'Role.Admin',
+    'Role.QualitySpecialist',
+    'Role.FieldWorker'
+];
+
 // Apply bindings when document is ready
 $(document).ready(function() {
-    ko.applyBindings(new ProfileViewModel(), document.getElementById('profile-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new ProfileViewModel(), document.getElementById('profile-app'));
+    });
 });

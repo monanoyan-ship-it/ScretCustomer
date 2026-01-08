@@ -1,7 +1,17 @@
 @{
-    ViewData["Title"] = "Dil Yönetimi";
+    ViewData["Title"] = Html.T("Language.Title", "Dil Yönetimi");
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<style>
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div id="languages-app">
     <!-- Header -->
@@ -17,9 +27,14 @@
                 </ol>
             </nav>
         </div>
-        <button class="btn btn-primary" data-bind="click: showCreateModal">
-            <i class="bi bi-plus me-1"></i> @Html.T("Language.NewLanguage", "Yeni Dil")
-        </button>
+        <div class="btn-group">
+            <button class="btn btn-outline-warning" data-bind="click: clearCache, disable: isClearingCache">
+                <i class="bi bi-arrow-repeat me-1" data-bind="css: { 'spin': isClearingCache() }"></i> @Html.T("Language.ClearCache", "Cache Temizle")
+            </button>
+            <button class="btn btn-primary" data-bind="click: showCreateModal">
+                <i class="bi bi-plus me-1"></i> @Html.T("Language.NewLanguage", "Yeni Dil")
+            </button>
+        </div>
     </div>
 
     <!-- Loading -->

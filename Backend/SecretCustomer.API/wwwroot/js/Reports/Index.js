@@ -328,7 +328,25 @@ function ReportsViewModel() {
     self.loadSummary();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Report.LoadError',
+    'Report.LoadErrorMessage',
+    'Report.DetailLoadError',
+    'Report.ExportError',
+    'Report.ExcelDownloadError',
+    'Report.DetailedExcelDownloadError',
+    'File.Evaluations',
+    'File.DetailedEvaluations',
+    'Status.Completed',
+    'Status.Draft',
+    'Status.InProgress',
+    'Common.Unknown'
+];
+
 // Apply bindings when document is ready
 $(document).ready(function() {
-    ko.applyBindings(new ReportsViewModel(), document.getElementById('reports-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new ReportsViewModel(), document.getElementById('reports-app'));
+    });
 });

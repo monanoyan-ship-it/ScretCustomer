@@ -5300,6 +5300,9 @@
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Assignment updated successfully.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.ChecklistAutoFilled">
+    <Value>Checklist is automatically filled from project definition</Value>
+  </LocaleResource>
   <LocaleResource Name="BankVisit.DeleteSuccess">
     <Value>Visit deleted.</Value>
   </LocaleResource>
@@ -5420,6 +5423,42 @@
   <LocaleResource Name="Evaluation.SubmitSuccess">
     <Value>Evaluation completed successfully.</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.ValidationError">
+    <Value>Required Fields</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelRequired">
+    <Value>Personnel selection is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallDateRequired">
+    <Value>Call Date is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallTimeRequired">
+    <Value>Call Time is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DurationRequired">
+    <Value>Duration is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveErrorMessage">
+    <Value>An error occurred while saving draft.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitErrorMessage">
+    <Value>An error occurred while submitting evaluation.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotFound">
+    <Value>Evaluation not found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailsLoadError">
+    <Value>An error occurred while loading details.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestSent">
+    <Value>Revert to draft request sent.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestFailed">
+    <Value>Revert to draft operation failed.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadErrorMessage">
+    <Value>An error occurred while loading form.</Value>
+  </LocaleResource>
   <LocaleResource Name="File.DetailedEvaluations">
     <Value>Detailed_Evaluations</Value>
   </LocaleResource>
@@ -5479,6 +5518,15 @@
   </LocaleResource>
   <LocaleResource Name="Language.LoadError">
     <Value>An error occurred while loading languages.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ClearCache">
+    <Value>Clear Cache</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearedSuccess">
+    <Value>Localization cache cleared.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearError">
+    <Value>Error clearing cache.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ResourceDeleteSuccess">
     <Value>Resource deleted.</Value>
@@ -5716,5 +5764,126 @@
   </LocaleResource>
   <LocaleResource Name="Validation.SelectRequired">
     <Value>Please make a selection.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewManager">
+    <Value>New Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Organization">
+    <Value>Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Move">
+    <Value>Move</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Personnel">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Pinned">
+    <Value>Pinned</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignmentCount">
+    <Value>Assignment Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EvaluationCount">
+    <Value>Evaluation Count</Value>
+  </LocaleResource>
+  <!-- UserRequests & PersonnelRequest -->
+  <LocaleResource Name="Menu.UserRequests">
+    <Value>User Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.DraftRequests">
+    <Value>Draft Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.PersonnelRequests">
+    <Value>Personnel Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.AllRequests">
+    <Value>Personnel Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Name">
+    <Value>Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.NoRecords">
+    <Value>No personnel requests found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approve">
+    <Value>Approve Personnel Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Reject">
+    <Value>Reject Personnel Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Info">
+    <Value>Request Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.DefaultEmail">
+    <Value>If left empty, will be set as username@temp.com</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.PasswordInfo">
+    <Value>Default password: user@123 (Must change on first login)</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectWarning">
+    <Value>When you reject this request, the related evaluation will be reverted to draft.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.LoadError">
+    <Value>Error loading personnel requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveSuccess">
+    <Value>Personnel request approved and user created.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveError">
+    <Value>Approval failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectSuccess">
+    <Value>Personnel request rejected. Related evaluation reverted to draft.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectError">
+    <Value>Rejection failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.UsernameRequired">
+    <Value>Username is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectReasonRequired">
+    <Value>Rejection reason is required</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.AllRequests">
+    <Value>Draft Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.NoRecords">
+    <Value>No draft requests found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.LoadError">
+    <Value>Error loading requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmApprove">
+    <Value>Are you sure you want to approve this request? The evaluation will be reverted to draft status.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmReject">
+    <Value>Are you sure you want to reject this request?</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveSuccess">
+    <Value>Request approved. Evaluation reverted to draft status.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveError">
+    <Value>Approval failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectSuccess">
+    <Value>Request rejected.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectError">
+    <Value>Rejection failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectOptional">
+    <Value>Select (optional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelNotInList">
+    <Value>Not in List</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnel">
+    <Value>New Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FirstName">
+    <Value>First Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastName">
+    <Value>Last Name</Value>
   </LocaleResource>
 </Language>

@@ -363,10 +363,37 @@ function VisitDetailsViewModel() {
     self.loadFields();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'VisitDetails.FieldType.Int',
+    'VisitDetails.FieldType.Decimal',
+    'VisitDetails.FieldType.Bool',
+    'VisitDetails.FieldType.String',
+    'VisitDetails.FieldType.DateTime',
+    'VisitDetails.FieldType.Rating',
+    'VisitDetails.Category.Time',
+    'VisitDetails.Category.Staff',
+    'VisitDetails.Category.Facility',
+    'VisitDetails.Category.General',
+    'VisitDetails.Category.Sector',
+    'VisitDetails.LoadError',
+    'VisitDetails.CodeNameRequired',
+    'VisitDetails.SaveError',
+    'VisitDetails.SectorCreated',
+    'VisitDetails.SectorUpdated',
+    'VisitDetails.DeleteError',
+    'VisitDetails.SectorDeleted',
+    'VisitDetails.FieldCreated',
+    'VisitDetails.FieldUpdated',
+    'VisitDetails.FieldDeleted'
+];
+
 // Apply bindings to specific element
 $(document).ready(function() {
-    var container = document.getElementById('visit-details-app');
-    if (container) {
-        ko.applyBindings(new VisitDetailsViewModel(), container);
-    }
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        var container = document.getElementById('visit-details-app');
+        if (container) {
+            ko.applyBindings(new VisitDetailsViewModel(), container);
+        }
+    });
 });

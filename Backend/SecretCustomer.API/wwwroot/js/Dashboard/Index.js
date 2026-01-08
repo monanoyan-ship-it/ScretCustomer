@@ -429,7 +429,26 @@ function DashboardViewModel() {
     self.loadTargetProgress();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Dashboard.AverageScore',
+    'Dashboard.EvaluationCount',
+    'Dashboard.Score',
+    'Dashboard.Evaluation',
+    'Dashboard.User',
+    'Dashboard.AnnouncementsLoadError',
+    'Dashboard.Target',
+    'Common.Warning',
+    'Common.Success',
+    'Common.Important',
+    'Common.News',
+    'Common.System',
+    'Common.Info'
+];
+
 // Apply bindings when document is ready
 $(document).ready(function() {
-    ko.applyBindings(new DashboardViewModel(), document.getElementById('dashboard-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new DashboardViewModel(), document.getElementById('dashboard-app'));
+    });
 });

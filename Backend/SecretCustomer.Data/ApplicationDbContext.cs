@@ -84,6 +84,9 @@ public class ApplicationDbContext : DbContext
     // System Settings (Sistem ayarları)
     public DbSet<SystemSetting> SystemSettings { get; set; }
 
+    // Personnel Requests (Personel Talepleri)
+    public DbSet<PersonnelRequest> PersonnelRequests { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -150,6 +153,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Approval>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<NotificationSetting>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Personnel Requests
+        modelBuilder.Entity<PersonnelRequest>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== CustomerOrganization İlişkileri =====
 
@@ -260,6 +266,49 @@ public class ApplicationDbContext : DbContext
             .HasIndex(a => a.Category);
         modelBuilder.Entity<AuditLog>()
             .HasIndex(a => new { a.TableName, a.RecordId });
+
+        // ===== PersonnelRequest İlişkileri =====
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.Evaluation)
+            .WithMany()
+            .HasForeignKey(pr => pr.EvaluationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.Customer)
+            .WithMany()
+            .HasForeignKey(pr => pr.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.CustomerOrganization)
+            .WithMany()
+            .HasForeignKey(pr => pr.CustomerOrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.RequestedByUser)
+            .WithMany()
+            .HasForeignKey(pr => pr.RequestedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.ReviewedByUser)
+            .WithMany()
+            .HasForeignKey(pr => pr.ReviewedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasOne(pr => pr.CreatedPersonnel)
+            .WithMany()
+            .HasForeignKey(pr => pr.CreatedPersonnelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // PersonnelRequest indexleri
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasIndex(pr => pr.Status);
+        modelBuilder.Entity<PersonnelRequest>()
+            .HasIndex(pr => pr.EvaluationId);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

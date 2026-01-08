@@ -529,6 +529,84 @@ PostgreSQL bağlantısı `appsettings.json` ve `appsettings.Development.json`'da
 
 ---
 
+## 14. JavaScript Localization Pattern (Çok Dilli Destek)
+
+### Genel Bilgi
+
+Proje çok dilli yapıyı destekler:
+- **Server-side:** `Html.T("Key", "Fallback")` - Razor view'larda
+- **Client-side:** `T("Key", "Fallback")` - JavaScript'te
+
+### JavaScript'te Çeviri Kullanımı
+
+Her JS modülü kendi kullandığı çeviri key'lerini **başlangıçta** yüklemeli:
+
+```javascript
+// Modülde kullanılan tüm çeviri key'leri
+var TRANSLATION_KEYS = [
+    'Module.LoadError',
+    'Module.SaveSuccess',
+    'Module.DeleteConfirm',
+    'Validation.Required',
+    'Common.Confirm',
+    // ... modülde kullanılan tüm T() key'leri
+];
+
+// Çevirileri yükle, SONRA ViewModel başlat
+$(document).ready(function () {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new ModuleViewModel(), document.getElementById('module-app'));
+    });
+});
+```
+
+### YANLIŞ - Çevirileri yüklemeden kullanma
+```javascript
+$(document).ready(function () {
+    ko.applyBindings(new ModuleViewModel(), document.getElementById('module-app'));
+});
+// T() çağrıları sadece fallback değerleri döner!
+```
+
+### DOĞRU - Önce çevirileri yükle
+```javascript
+$(document).ready(function () {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new ModuleViewModel(), document.getElementById('module-app'));
+    });
+});
+```
+
+### Key Listesi Nasıl Oluşturulur?
+
+1. JS dosyasında tüm `T('...')` çağrılarını bul
+2. `confirm-modal.js` kullanılıyorsa o key'leri de ekle:
+   - `Confirm.Title`, `Confirm.Message`, `Confirm.DeleteTitle`
+   - `Confirm.DeleteMessage`, `Confirm.YesDelete`, `Confirm.CancelTitle`
+   - `Confirm.CancelMessage`, `Confirm.YesCancel`
+   - `Common.Confirm`, `Common.OK`
+
+### API Endpoint
+
+```
+POST /api/localization/resources/batch
+Body: { "keys": ["Key1", "Key2", ...] }
+Response: { "Key1": "Çeviri1", "Key2": "Çeviri2", ... }
+```
+
+### Avantajları
+
+- ✅ Sadece ihtiyaç duyulan key'ler yüklenir (tüm çeviriler değil)
+- ✅ Hızlı - küçük payload
+- ✅ Dil değiştiğinde doğru çeviriler gelir
+- ✅ Timing sorunu yok - çeviriler yüklenmeden ViewModel başlamaz
+
+### Örnek Modül: Languages/index.js
+
+Referans olarak `wwwroot/js/Languages/index.js` dosyasına bakılabilir.
+
+---
+
 ## ÖZET
 
 1. **Her modül TEK Index.cshtml ile çalışır**
@@ -537,3 +615,4 @@ PostgreSQL bağlantısı `appsettings.json` ve `appsettings.Development.json`'da
 4. **Ayrı sayfa (Create.cshtml, Edit.cshtml, Detail.cshtml) OLMAZ**
 5. **CDN KULLANILMAZ - Tüm kütüphaneler yerel olmalı**
 6. **Native confirm() KULLANILMAZ - showConfirmModal() kullan**
+7. **JS'de T() kullanımı için önce Localization.loadKeys() çağır**

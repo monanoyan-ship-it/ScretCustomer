@@ -173,7 +173,8 @@ public class EvaluationService : IEvaluationService
             CallId = dto.CallId,
             CallDate = ToUtc(dto.CallDate),
             CallTime = dto.CallTime,
-            EvaluatedPersonnelId = dto.EvaluatedPersonnelId,
+            // Frontend'den gelen evaluatedPersonnelId aslında CustomerPersonnel ID'si
+            EvaluatedCustomerPersonnelId = dto.EvaluatedPersonnelId > 0 ? dto.EvaluatedPersonnelId : null,
             EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel
         };
 
@@ -349,6 +350,7 @@ public class EvaluationService : IEvaluationService
                         .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
         if (evaluation == null)
@@ -399,7 +401,8 @@ public class EvaluationService : IEvaluationService
             CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
             Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson),
-            EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
+            // Frontend'e CustomerPersonnel ID'sini evaluatedPersonnelId olarak gönder
+            EvaluatedPersonnelId = evaluation.EvaluatedCustomerPersonnelId,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
             EvaluationComment = evaluation.EvaluationComment,
             SelectedOrganizationId = selectedOrganizationId,
@@ -423,6 +426,7 @@ public class EvaluationService : IEvaluationService
     {
         // Get assignment with checklist details (Sections kaldırıldı, Questions direkt Checklist'e bağlı)
         var assignment = await _context.Assignments
+            .Include(a => a.Project)
             .Include(a => a.Checklist)
                 .ThenInclude(c => c.Questions)
             .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
@@ -437,6 +441,7 @@ public class EvaluationService : IEvaluationService
         {
             evaluation = await _context.Evaluations
                 .Include(e => e.Answers)
+                    .ThenInclude(a => a.SubCriteriaSelections)
                 .FirstOrDefaultAsync(e => e.Id == dto.EvaluationId.Value && !e.IsDeleted);
         }
 
@@ -519,8 +524,14 @@ public class EvaluationService : IEvaluationService
         evaluation.CallTime = dto.CallTime;
         evaluation.Duration = dto.Duration;
         evaluation.DescriptionsJson = SerializeDescriptions(dto.Descriptions);
-        evaluation.EvaluatedOrganizationId = dto.EvaluatedOrganizationId;
-        evaluation.EvaluatedPersonnelId = dto.EvaluatedPersonnelId;
+        // 0 değerlerini null'a çevir (FK hatası önleme)
+        evaluation.EvaluatedOrganizationId = dto.EvaluatedOrganizationId > 0 ? dto.EvaluatedOrganizationId : null;
+        // Frontend'den gelen evaluatedPersonnelId aslında CustomerPersonnel ID'si
+        // EvaluatedPersonnelId (User) şimdilik kullanılmıyor
+        evaluation.EvaluatedPersonnelId = null;
+        evaluation.EvaluatedCustomerPersonnelId = (dto.EvaluatedCustomerPersonnelId ?? dto.EvaluatedPersonnelId) > 0
+            ? (dto.EvaluatedCustomerPersonnelId ?? dto.EvaluatedPersonnelId)
+            : null;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
         evaluation.ControlDate = ToUtc(dto.ControlDate);
         evaluation.ControlTime = dto.ControlTime;
@@ -536,6 +547,16 @@ public class EvaluationService : IEvaluationService
         }
 
         await _context.SaveChangesAsync();
+
+        // Yeni personel talebi oluştur (Listede Yok seçilmişse)
+        if (targetStatus == EvaluationStatus.Completed && dto.NewPersonnel != null &&
+            !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName) &&
+            !string.IsNullOrWhiteSpace(dto.NewPersonnel.LastName) &&
+            assignment.Project?.CustomerId != null)
+        {
+            await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
+        }
+
         return await MapToDtoAsync(evaluation);
     }
 
@@ -771,7 +792,8 @@ public class EvaluationService : IEvaluationService
             PenaltyType = a.Question?.PenaltyType.ToString(),
             HelpText = a.Question?.HelpText,
             RecommendedNote = a.Question?.RecommendedNote,
-            SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList()
+            SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList(),
+            SelectedSubCriteria = a.SubCriteriaSelections?.Select(s => s.SubCriteria?.Description ?? "").Where(d => !string.IsNullOrEmpty(d)).ToList()
         };
     }
 
@@ -853,11 +875,12 @@ public class EvaluationService : IEvaluationService
         }
 
         string? evaluatedPersonnelName = null;
-        if (evaluation.EvaluatedPersonnelId.HasValue)
+        // CustomerPersonnel tablosundan isim çek (EvaluatedCustomerPersonnelId kullanılıyor)
+        if (evaluation.EvaluatedCustomerPersonnelId.HasValue)
         {
-            var personnel = await _context.Users
-                .Where(u => u.Id == evaluation.EvaluatedPersonnelId.Value)
-                .Select(u => $"{u.FirstName} {u.LastName}")
+            var personnel = await _context.CustomerPersonnel
+                .Where(cp => cp.Id == evaluation.EvaluatedCustomerPersonnelId.Value)
+                .Select(cp => $"{cp.FirstName} {cp.LastName}")
                 .FirstOrDefaultAsync();
             evaluatedPersonnelName = personnel;
         }
@@ -895,7 +918,8 @@ public class EvaluationService : IEvaluationService
             CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
             Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson),
-            EvaluatedPersonnelId = evaluation.EvaluatedPersonnelId,
+            // Frontend'e CustomerPersonnel ID'sini evaluatedPersonnelId olarak gönder
+            EvaluatedPersonnelId = evaluation.EvaluatedCustomerPersonnelId,
             EvaluatedPersonnelName = evaluatedPersonnelName,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
             YellowCardCount = evaluation.YellowCardCount,
@@ -935,5 +959,53 @@ public class EvaluationService : IEvaluationService
             .ToListAsync();
 
         return personnel;
+    }
+
+    /// <summary>
+    /// Yeni personel talebi oluşturur (Listede Yok seçildiğinde)
+    /// </summary>
+    private async Task CreatePersonnelRequestAsync(Evaluation evaluation, SubmitEvaluationDto dto, int customerId)
+    {
+        if (dto.NewPersonnel == null) return;
+
+        var personnelRequest = new PersonnelRequest
+        {
+            EvaluationId = evaluation.Id,
+            CustomerId = customerId,
+            CustomerOrganizationId = dto.EvaluatedOrganizationId ?? 0,
+            FirstName = dto.NewPersonnel.FirstName.Trim(),
+            LastName = dto.NewPersonnel.LastName.Trim(),
+            Title = dto.NewPersonnel.Title?.Trim(),
+            Notes = $"Değerlendirme #{evaluation.Id} sırasında oluşturuldu",
+            RequestedByUserId = dto.EvaluatorId ?? 0,
+            Status = ApprovalStatuses.Ids.Pending
+        };
+
+        _context.PersonnelRequests.Add(personnelRequest);
+        await _context.SaveChangesAsync();
+
+        // Admin'lere bildirim gönder
+        var admins = await _context.Users
+            .Where(u => u.Role == UserRole.Admin && u.IsActive && !u.IsDeleted)
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        foreach (var adminId in admins)
+        {
+            var notification = new Notification
+            {
+                RecipientUserId = adminId,
+                NotificationType = NotificationType.Info,
+                Channel = NotificationChannel.InApp,
+                Priority = NotificationPriority.Normal,
+                Title = "PersonnelRequest.New",
+                Message = $"Yeni personel talebi: {personnelRequest.FullName}",
+                ActionUrl = $"/UserRequests?tab=personnel&id={personnelRequest.Id}",
+                IsRead = false
+            };
+            _context.Notifications.Add(notification);
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

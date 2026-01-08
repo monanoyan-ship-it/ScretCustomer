@@ -1460,7 +1460,67 @@ function CustomersViewModel() {
     self.init();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Customer.LoadError',
+    'Customer.CompanyNameRequired',
+    'Customer.SaveSuccess',
+    'Customer.UpdateSuccess',
+    'Customer.SaveError',
+    'Customer.DeleteConfirm',
+    'Customer.DeleteSuccess',
+    'Customer.DeleteError',
+    'Personnel.LoadError',
+    'Personnel.RequiredFields',
+    'Personnel.PasswordRequired',
+    'Personnel.SaveSuccess',
+    'Personnel.UpdateSuccess',
+    'Personnel.SaveError',
+    'Personnel.DeleteConfirm',
+    'Personnel.DeleteSuccess',
+    'Personnel.DeleteError',
+    'Common.AllFieldsRequired',
+    'Password.MinLength',
+    'Password.Mismatch',
+    'Password.ResetSuccess',
+    'Password.ResetError',
+    'User.UsernameInvalid',
+    'Validation.PasswordMinLength',
+    'Personnel.ManagerCreated',
+    'Personnel.CreateError',
+    'Organization.LoadError',
+    'Organization.NameRequired',
+    'Organization.CreateSuccess',
+    'Organization.UpdateSuccess',
+    'Organization.SaveError',
+    'Organization.DeleteConfirm',
+    'Organization.DeleteSuccess',
+    'Organization.DeleteError',
+    'Personnel.AssignSuccess',
+    'Personnel.AssignError',
+    'Personnel.OperatorAssignSuccess',
+    'Personnel.SupervisorCreated',
+    'Personnel.OperatorCreated',
+    'Customer.MakeIndependentConfirm',
+    'Customer.MakeIndependentSuccess',
+    'Customer.MakeIndependentError',
+    'Personnel.RemoveFromOrgConfirm',
+    'Personnel.RemoveSuccess',
+    'Personnel.RemoveError',
+    'Personnel.TransferSuccess',
+    'Personnel.TransferError',
+    // Confirm modal keys
+    'Confirm.Title',
+    'Confirm.Message',
+    'Confirm.DeleteTitle',
+    'Confirm.DeleteMessage',
+    'Confirm.YesDelete',
+    'Common.Confirm'
+];
+
 // Apply bindings when DOM is ready
-if (typeof ko !== 'undefined') {
-    ko.applyBindings(new CustomersViewModel(), document.getElementById('customers-app'));
-}
+$(document).ready(function() {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new CustomersViewModel(), document.getElementById('customers-app'));
+    });
+});

@@ -534,3 +534,47 @@ public CustomerPersonnel? EvaluatedCustomerPersonnel { get; set; }
 - Question entity'sinde `GroupName` alanı var
 - Bu alan sadece **RAPORLAMA** için kullanılacak
 - UI'da gruplama yapılmıyor, sadece PenaltyType'a göre sıralama var
+
+---
+
+## ⚠️ DÜZELTILECEK: Permission Sistemi (8 Ocak 2026)
+
+### Mevcut Durum - SORUNLU
+**Permission sistemi şu an "dekoratif" - hiçbir şeyi kontrol etmiyor!**
+
+```
+Database'deki Permission tablosu:
+┌─────────────────────────────────┐
+│ Code: "Evaluations.View"        │  ← Sadece etiket
+│ DisplayName: "Değerlendirme..." │  ← Sadece görsel
+└─────────────────────────────────┘
+         │
+         │ HİÇBİR BAĞLANTI YOK ❌
+         ▼
+Controller'daki gerçek kontrol:
+┌─────────────────────────────────┐
+│ [Authorize(Roles = "Admin")]    │  ← Hardcoded rol kontrolü
+└─────────────────────────────────┘
+```
+
+### Yapılan İşler (8 Ocak 2026)
+- ✅ PermissionCategory enum'a yeni kategoriler eklendi (Languages, Trainings, Meetings, Approvals, DraftRequests, CustomerOrganizations, Personnel)
+- ✅ SeedData.cs'e 55 yeni permission tanımı eklendi
+- ✅ `SyncPermissionsAsync` metodu oluşturuldu (mevcut DB'ye yeni permission'ları ekler)
+- ✅ `POST /api/permissions/sync` endpoint eklendi
+- ✅ Permissions sayfasına "Yetkileri Senkronize Et" butonu eklendi
+
+### Yapılması Gereken
+1. **Policy tabanlı authorization'a geçiş:**
+   - `[Authorize(Roles = "Admin")]` → `[Authorize(Policy = "Users.View")]`
+   - Program.cs'de policy'leri database'den okuyacak handler yazılması
+
+2. **CompanyUsers (CustomerPersonnel) için ayrı sistem:**
+   - CustomerPersonnel'in permission sistemiyle HİÇBİR ilgisi yok
+   - Onlar için ayrı sayfalar/portal gerekecek
+   - Şu anki permission sistemi sadece User (bizim şirket çalışanları) için
+
+### Neden Önemli?
+- CompanyUsers (müşteri tarafı) sisteme girdiğinde ne görecekleri belirsiz
+- Şu an herkes her şeyi görebiliyor (rol bazlı kısıtlı)
+- Granüler yetki kontrolü YOK

@@ -286,7 +286,32 @@ function DraftRequestsViewModel() {
     self.init();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Common.Total',
+    'DraftRequest.LoadError',
+    'DraftRequest.DetailLoadError',
+    'DraftRequest.ConfirmApprove',
+    'DraftRequest.ConfirmReject',
+    'DraftRequest.ApproveSuccess',
+    'DraftRequest.ApproveError',
+    'DraftRequest.RejectSuccess',
+    'DraftRequest.RejectError',
+    'Approval.Approve',
+    'Approval.Reject',
+    'Approval.Status.Pending',
+    'Approval.Status.Approved',
+    'Approval.Status.Rejected',
+    'Approval.Status.Cancelled',
+    // Confirm modal keys
+    'Confirm.Title',
+    'Confirm.Message',
+    'Common.Confirm'
+];
+
 // Initialize ViewModel
 $(document).ready(function() {
-    ko.applyBindings(new DraftRequestsViewModel(), document.getElementById('draft-requests-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new DraftRequestsViewModel(), document.getElementById('draft-requests-app'));
+    });
 });

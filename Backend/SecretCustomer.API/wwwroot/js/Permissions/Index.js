@@ -5,6 +5,7 @@ function PermissionsViewModel() {
     // State
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
+    self.isSyncing = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.modalErrorMessage = ko.observable('');
     self.successMessage = ko.observable('');
@@ -307,6 +308,40 @@ function PermissionsViewModel() {
                 console.error('Error:', error);
                 toastr.error(error.message || 'Yetki kaldırılırken bir hata oluştu.');
             });
+        });
+    };
+
+    // Sync permissions - add new permissions to database
+    self.syncPermissions = function() {
+        self.isSyncing(true);
+
+        fetch('/api/permissions/sync', {
+            method: 'POST',
+            credentials: 'include'
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                return response.json().then(function(err) {
+                    throw new Error(err.message || 'Senkronizasyon başarısız');
+                });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.addedCount > 0) {
+                toastr.success(data.message);
+                // Reload all data to get new permissions
+                self.loadData();
+            } else {
+                toastr.info(data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            toastr.error(error.message || 'Yetkiler senkronize edilirken hata oluştu.');
+        })
+        .finally(function() {
+            self.isSyncing(false);
         });
     };
 

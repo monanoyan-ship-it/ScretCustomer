@@ -472,6 +472,30 @@ public class PermissionsApiController : BaseApiController
         return Ok(roles);
     }
 
+    /// <summary>
+    /// Eksik permission'ları database'e ekler (mevcut verileri silmez)
+    /// </summary>
+    [HttpPost("sync")]
+    public async Task<IActionResult> SyncPermissions()
+    {
+        try
+        {
+            var addedCount = await SeedData.SyncPermissionsAsync(_context, _logger);
+            return Ok(new
+            {
+                message = addedCount > 0
+                    ? $"{addedCount} yeni yetki eklendi"
+                    : "Tüm yetkiler zaten mevcut",
+                addedCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error syncing permissions");
+            return StatusCode(500, CreateErrorResponse("Yetkiler senkronize edilirken hata oluştu", ex));
+        }
+    }
+
     private static string GetCategoryName(PermissionCategory category) => category switch
     {
         PermissionCategory.Users => "Kullanıcılar",
@@ -488,6 +512,13 @@ public class PermissionsApiController : BaseApiController
         PermissionCategory.Customers => "Müşteriler",
         PermissionCategory.CustomerPersonnel => "Müşteri Personeli",
         PermissionCategory.Settings => "Ayarlar",
+        PermissionCategory.Languages => "Diller",
+        PermissionCategory.Trainings => "Eğitimler",
+        PermissionCategory.Meetings => "Toplantılar",
+        PermissionCategory.Approvals => "Onaylar",
+        PermissionCategory.DraftRequests => "Taslak Talepleri",
+        PermissionCategory.CustomerOrganizations => "Müşteri Organizasyonları",
+        PermissionCategory.Personnel => "Personel",
         _ => category.ToString()
     };
 

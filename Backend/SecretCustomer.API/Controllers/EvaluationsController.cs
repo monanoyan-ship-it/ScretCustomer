@@ -12,14 +12,4 @@ public class EvaluationsController : Controller
     {
         return View();
     }
-
-    /// <summary>
-    /// Değerlendirme Formu - Checklist doldurma sayfası
-    /// </summary>
-    /// <param name="id">Assignment ID</param>
-    public IActionResult Form(int id)
-    {
-        ViewBag.AssignmentId = id;
-        return View();
-    }
 }

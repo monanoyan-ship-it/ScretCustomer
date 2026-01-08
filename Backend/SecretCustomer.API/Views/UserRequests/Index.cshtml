@@ -1,0 +1,308 @@
+@{
+    ViewData["Title"] = Html.T("Menu.UserRequests", "Kullanici Talepleri").ToString();
+}
+
+<div id="user-requests-app" class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">@Html.T("Menu.UserRequests", "Kullanici Talepleri")</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Menu.UserRequests", "Kullanici Talepleri")</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bind="css: { active: activeTab() === 'draft' }, click: function() { setActiveTab('draft'); }">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("UserRequest.DraftRequests", "Taslaga Alma Talepleri")
+                <span class="badge bg-warning ms-2" data-bind="text: draftCounts().pending, visible: draftCounts().pending > 0"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bind="css: { active: activeTab() === 'personnel' }, click: function() { setActiveTab('personnel'); }">
+                <i class="bi bi-person-plus me-2"></i>@Html.T("UserRequest.PersonnelRequests", "Personel Talepleri")
+                <span class="badge bg-warning ms-2" data-bind="text: personnelCounts().pending, visible: personnelCounts().pending > 0"></span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: currentCounts().pending">0</h3>
+                    <small>@Html.T("Status.Pending", "Bekleyen")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: currentCounts().approved">0</h3>
+                    <small>@Html.T("Approval.Approved", "Onaylanan")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: currentCounts().rejected">0</h3>
+                    <small>@Html.T("Approval.Rejected", "Reddedilen")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0" data-bind="text: currentCounts().total">0</h3>
+                    <small>@Html.T("Common.Total", "Toplam")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filterStatus">
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="1">@Html.T("Approval.Status.Pending", "Beklemede")</option>
+                        <option value="2">@Html.T("Approval.Status.Approved", "Onaylandi")</option>
+                        <option value="3">@Html.T("Approval.Status.Rejected", "Reddedildi")</option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Approval.SearchPlaceholder", "Referans, baslik...")" data-bind="value: searchTerm, valueUpdate: 'afterkeydown'" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DRAFT REQUESTS TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'draft'">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("DraftRequest.AllRequests", "Taslaga Alma Talepleri")</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Approval.Reference", "Referans")</th>
+                                <th>@Html.T("Common.Title", "Baslik")</th>
+                                <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th>@Html.T("Common.Date", "Tarih")</th>
+                                <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: draftRequests">
+                            <tr>
+                                <td>
+                                    <a href="#" data-bind="text: referenceNumber, click: function() { $parent.showDraftDetail($data); }" class="text-decoration-none fw-bold"></a>
+                                </td>
+                                <td data-bind="text: title"></td>
+                                <td data-bind="text: requestedByUserName"></td>
+                                <td>
+                                    <span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span>
+                                </td>
+                                <td data-bind="text: $parent.formatDate(requestedAt)"></td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- ko if: status === 'Pending' -->
+                                        <button class="btn btn-success" data-bind="click: function() { $parent.approveDraftRequest($data); }" title="@Html.T("Approval.Approve", "Onayla")">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-danger" data-bind="click: function() { $parent.rejectDraftRequest($data); }" title="@Html.T("Approval.Reject", "Reddet")">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <!-- /ko -->
+                                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDraftDetail($data); }" title="@Html.T("Common.Detail", "Detay")">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center py-5" data-bind="visible: draftRequests().length === 0 && !isLoading()">
+                    <i class="bi bi-inbox fa-3x text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                    <p class="text-muted">@Html.T("DraftRequest.NoRecords", "Henuz taslaga alma talebi bulunmamaktadir.")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PERSONNEL REQUESTS TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'personnel'">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>@Html.T("PersonnelRequest.AllRequests", "Personel Talepleri")</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("PersonnelRequest.Name", "Ad Soyad")</th>
+                                <th>@Html.T("Common.Customer", "Firma")</th>
+                                <th>@Html.T("Common.Organization", "Organizasyon")</th>
+                                <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th>@Html.T("Common.Date", "Tarih")</th>
+                                <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: personnelRequests">
+                            <tr>
+                                <td>
+                                    <a href="#" data-bind="text: fullName, click: function() { $parent.showPersonnelDetail($data); }" class="text-decoration-none fw-bold"></a>
+                                </td>
+                                <td data-bind="text: customerName"></td>
+                                <td data-bind="text: customerOrganizationName"></td>
+                                <td data-bind="text: requestedByUserName"></td>
+                                <td>
+                                    <span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span>
+                                </td>
+                                <td data-bind="text: $parent.formatDate(requestedAt)"></td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- ko if: status === 1 -->
+                                        <button class="btn btn-success" data-bind="click: function() { $parent.showApprovePersonnelModal($data); }" title="@Html.T("Approval.Approve", "Onayla")">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-danger" data-bind="click: function() { $parent.showRejectPersonnelModal($data); }" title="@Html.T("Approval.Reject", "Reddet")">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <!-- /ko -->
+                                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showPersonnelDetail($data); }" title="@Html.T("Common.Detail", "Detay")">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center py-5" data-bind="visible: personnelRequests().length === 0 && !isLoading()">
+                    <i class="bi bi-inbox fa-3x text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                    <p class="text-muted">@Html.T("PersonnelRequest.NoRecords", "Henuz personel talebi bulunmamaktadir.")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" data-bind="visible: isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- ==================== PERSONNEL APPROVE MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isApproveModalOpen }, style: { display: isApproveModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>@Html.T("PersonnelRequest.Approve", "Personel Talebini Onayla")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeApproveModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: approvingRequest">
+                    <div class="alert alert-info">
+                        <strong>@Html.T("PersonnelRequest.Info", "Talep Bilgileri"):</strong><br/>
+                        <span data-bind="text: fullName"></span> - <span data-bind="text: customerOrganizationName"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("User.Username", "Kullanici Adi") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: $parent.approveUsername" placeholder="ornek.kullanici" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("User.Email", "E-posta")</label>
+                        <input type="email" class="form-control" data-bind="value: $parent.approveEmail" placeholder="kullaniciadi@temp.com" />
+                        <small class="text-muted">@Html.T("PersonnelRequest.DefaultEmail", "Bos birakilirsa kullaniciadi@temp.com olarak atanir")</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("CustomerPersonnel.Supervisor", "Supervizor")</label>
+                        <select class="form-select" data-bind="options: $parent.availableSupervisors, optionsText: 'name', optionsValue: 'id', value: $parent.approveSupervisorId, optionsCaption: '@Html.T("Common.SelectOptional", "Seciniz (opsiyonel)")'"></select>
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-info-circle me-2"></i>
+                        @Html.T("PersonnelRequest.PasswordInfo", "Varsayilan sifre: user@123 (Ilk giriste degistirmek zorunda)")
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeApproveModal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-success" data-bind="click: confirmApprove, disable: !approveUsername()">
+                        <i class="bi bi-check-circle me-2"></i>@Html.T("Approval.Approve", "Onayla")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PERSONNEL REJECT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isRejectModalOpen }, style: { display: isRejectModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>@Html.T("PersonnelRequest.Reject", "Personel Talebini Reddet")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeRejectModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: rejectingRequest">
+                    <div class="alert alert-warning">
+                        <strong>@Html.T("PersonnelRequest.Info", "Talep Bilgileri"):</strong><br/>
+                        <span data-bind="text: fullName"></span> - <span data-bind="text: customerOrganizationName"></span>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        @Html.T("PersonnelRequest.RejectWarning", "Talebi reddettiginizde ilgili degerlendirme taslaga alinacaktir.")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Approval.RejectReason", "Red Sebebi") <span class="text-danger">*</span></label>
+                        <textarea class="form-control" rows="3" data-bind="value: $parent.rejectReason" placeholder="@Html.T("Approval.RejectReasonPlaceholder", "Red sebebini giriniz...")" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeRejectModal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: confirmReject, disable: !rejectReason()">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Approval.Reject", "Reddet")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade" data-bind="css: { show: isApproveModalOpen() || isRejectModalOpen() }, style: { display: (isApproveModalOpen() || isRejectModalOpen()) ? 'block' : 'none' }"></div>
+</div>
+
+@section Scripts {
+    <script src="~/js/UserRequests/Index.js"></script>
+}

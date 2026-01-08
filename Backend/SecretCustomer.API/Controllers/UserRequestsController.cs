@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace SecretCustomer.API.Controllers;
 
 /// <summary>
-/// Taslağa Alma Talepleri sayfası controller
-/// Admin tarafından değerlendirme taslağa alma taleplerini yönetmek için kullanılır
+/// Kullanıcı Talepleri sayfası controller
+/// Admin tarafından taslağa alma ve personel taleplerini yönetmek için kullanılır
 /// </summary>
 [Authorize(Roles = "Admin")]
-public class DraftRequestsController : Controller
+public class UserRequestsController : Controller
 {
     public IActionResult Index()
     {

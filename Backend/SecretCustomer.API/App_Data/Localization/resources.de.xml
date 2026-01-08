@@ -5300,6 +5300,9 @@
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Zuweisung erfolgreich aktualisiert.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.ChecklistAutoFilled">
+    <Value>Checkliste wird automatisch aus der Projektdefinition übernommen</Value>
+  </LocaleResource>
   <LocaleResource Name="BankVisit.DeleteSuccess">
     <Value>Besuch gelöscht.</Value>
   </LocaleResource>
@@ -5420,6 +5423,42 @@
   <LocaleResource Name="Evaluation.SubmitSuccess">
     <Value>Bewertung erfolgreich abgeschlossen.</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.ValidationError">
+    <Value>Pflichtfelder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelRequired">
+    <Value>Personalauswahl ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallDateRequired">
+    <Value>Anrufdatum ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallTimeRequired">
+    <Value>Anrufzeit ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DurationRequired">
+    <Value>Dauer ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveErrorMessage">
+    <Value>Beim Speichern des Entwurfs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitErrorMessage">
+    <Value>Beim Einreichen der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotFound">
+    <Value>Bewertung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailsLoadError">
+    <Value>Beim Laden der Details ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestSent">
+    <Value>Anfrage zum Zurücksetzen auf Entwurf gesendet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestFailed">
+    <Value>Zurücksetzen auf Entwurf fehlgeschlagen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadErrorMessage">
+    <Value>Beim Laden des Formulars ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
   <LocaleResource Name="File.DetailedEvaluations">
     <Value>Detaillierte_Bewertungen</Value>
   </LocaleResource>
@@ -5479,6 +5518,15 @@
   </LocaleResource>
   <LocaleResource Name="Language.LoadError">
     <Value>Beim Laden der Sprachen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ClearCache">
+    <Value>Cache leeren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearedSuccess">
+    <Value>Lokalisierungscache geleert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearError">
+    <Value>Fehler beim Leeren des Cache.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ResourceDeleteSuccess">
     <Value>Ressource gelöscht.</Value>
@@ -5716,5 +5764,126 @@
   </LocaleResource>
   <LocaleResource Name="Validation.SelectRequired">
     <Value>Bitte treffen Sie eine Auswahl.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewManager">
+    <Value>Neuer Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Organization">
+    <Value>Organisation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Move">
+    <Value>Verschieben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Pinned">
+    <Value>Angeheftet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignmentCount">
+    <Value>Aufgabenanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EvaluationCount">
+    <Value>Bewertungsanzahl</Value>
+  </LocaleResource>
+  <!-- UserRequests & PersonnelRequest -->
+  <LocaleResource Name="Menu.UserRequests">
+    <Value>Benutzeranfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.DraftRequests">
+    <Value>Entwurfsanfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.PersonnelRequests">
+    <Value>Personalanfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.AllRequests">
+    <Value>Personalanfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Name">
+    <Value>Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.NoRecords">
+    <Value>Keine Personalanfragen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approve">
+    <Value>Personalanfrage genehmigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Reject">
+    <Value>Personalanfrage ablehnen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Info">
+    <Value>Anfrageinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.DefaultEmail">
+    <Value>Wenn leer gelassen, wird benutzername@temp.com verwendet</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.PasswordInfo">
+    <Value>Standardpasswort: user@123 (Muss bei erster Anmeldung geandert werden)</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectWarning">
+    <Value>Wenn Sie diese Anfrage ablehnen, wird die zugehorige Bewertung auf Entwurf zuruckgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.LoadError">
+    <Value>Fehler beim Laden der Personalanfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveSuccess">
+    <Value>Personalanfrage genehmigt und Benutzer erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveError">
+    <Value>Genehmigung fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectSuccess">
+    <Value>Personalanfrage abgelehnt. Zugehorige Bewertung auf Entwurf zuruckgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectError">
+    <Value>Ablehnung fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.UsernameRequired">
+    <Value>Benutzername ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectReasonRequired">
+    <Value>Ablehnungsgrund ist erforderlich</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.AllRequests">
+    <Value>Entwurfsanfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.NoRecords">
+    <Value>Keine Entwurfsanfragen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.LoadError">
+    <Value>Fehler beim Laden der Anfragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmApprove">
+    <Value>Sind Sie sicher, dass Sie diese Anfrage genehmigen mochten? Die Bewertung wird auf Entwurf zuruckgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmReject">
+    <Value>Sind Sie sicher, dass Sie diese Anfrage ablehnen mochten?</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveSuccess">
+    <Value>Anfrage genehmigt. Bewertung auf Entwurf zuruckgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveError">
+    <Value>Genehmigung fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectSuccess">
+    <Value>Anfrage abgelehnt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectError">
+    <Value>Ablehnung fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectOptional">
+    <Value>Auswahlen (optional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelNotInList">
+    <Value>Nicht in der Liste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnel">
+    <Value>Neues Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FirstName">
+    <Value>Vorname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastName">
+    <Value>Nachname</Value>
   </LocaleResource>
 </Language>

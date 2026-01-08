@@ -73,5 +73,40 @@ public enum PermissionCategory
     /// <summary>
     /// Sistem ayarları
     /// </summary>
-    Settings = 14
+    Settings = 14,
+
+    /// <summary>
+    /// Dil yönetimi
+    /// </summary>
+    Languages = 15,
+
+    /// <summary>
+    /// Eğitim yönetimi
+    /// </summary>
+    Trainings = 16,
+
+    /// <summary>
+    /// Toplantı yönetimi
+    /// </summary>
+    Meetings = 17,
+
+    /// <summary>
+    /// Onay yönetimi
+    /// </summary>
+    Approvals = 18,
+
+    /// <summary>
+    /// Taslak talepleri
+    /// </summary>
+    DraftRequests = 19,
+
+    /// <summary>
+    /// Müşteri organizasyonları
+    /// </summary>
+    CustomerOrganizations = 20,
+
+    /// <summary>
+    /// Personel (Şube personeli)
+    /// </summary>
+    Personnel = 21
 }

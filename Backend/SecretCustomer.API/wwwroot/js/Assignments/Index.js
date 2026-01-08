@@ -147,10 +147,9 @@ function AssignmentsViewModel() {
     // ===== Data =====
     self.assignments = ko.observableArray([]);
     self.availableProjects = ko.observableArray([]);
-    self.availableChecklists = ko.observableArray([]);
     self.availableEvaluators = ko.observableArray([]);
     self.availableFieldWorkers = ko.observableArray([]);
-    self.projectChecklists = ko.observableArray([]);
+    self.selectedProjectChecklistName = ko.observable('');
 
     // Summary
     self.summary = ko.observable({
@@ -171,6 +170,15 @@ function AssignmentsViewModel() {
     self.filterDueDateFrom = ko.observable('');
     self.filterDueDateTo = ko.observable('');
     self.filterSearchTerm = ko.observable('');
+
+    // Debounce helper
+    var searchTimeout = null;
+    self.filterSearchTerm.subscribe(function(newValue) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            self.applyFilters();
+        }, 400); // 400ms bekle
+    });
 
     // All assignable users (for filter)
     self.allAssignableUsers = ko.computed(function() {
@@ -247,15 +255,6 @@ function AssignmentsViewModel() {
                 self.availableProjects(data.filter(function(p) { return p.isActive; }));
             })
             .catch(function(error) { console.error('Error loading projects:', error); });
-    };
-
-    self.loadChecklists = function() {
-        fetch('/api/checklists', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.availableChecklists(data.filter(function(c) { return c.isActive; }));
-            })
-            .catch(function(error) { console.error('Error loading checklists:', error); });
     };
 
     self.loadEvaluators = function() {
@@ -340,7 +339,7 @@ function AssignmentsViewModel() {
     self.createNew = function() {
         self.isEditing(false);
         self.editingAssignment(new AssignmentEditViewModel());
-        self.projectChecklists([]);
+        self.selectedProjectChecklistName('');
         self.modalErrorMessage('');
         self.isModalOpen(true);
     };
@@ -351,17 +350,20 @@ function AssignmentsViewModel() {
 
         var projectId = assignment.projectId();
         if (!projectId) {
-            self.projectChecklists([]);
+            assignment.checklistId('');
+            self.selectedProjectChecklistName('');
             return;
         }
 
-        // Load checklists for the project
-        fetch('/api/checklists?projectId=' + projectId, { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.projectChecklists(data.filter(function(c) { return c.isActive; }));
-            })
-            .catch(function(error) { console.error('Error loading project checklists:', error); });
+        // Find selected project and auto-fill checklist
+        var selectedProject = self.availableProjects().find(function(p) {
+            return p.id == projectId;
+        });
+
+        if (selectedProject) {
+            assignment.checklistId(selectedProject.checklistId);
+            self.selectedProjectChecklistName(selectedProject.checklistName || '');
+        }
     };
 
     self.saveAssignment = function() {
@@ -786,13 +788,80 @@ function AssignmentsViewModel() {
         self.loadAssignments();
         self.loadSummary();
         self.loadProjects();
-        self.loadChecklists();
         self.loadEvaluators();
         self.loadFieldWorkers();
     });
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'User.Title',
+    'Role.FieldWorker',
+    'Message.LoadError',
+    'Assignment.LoadError',
+    'Message.FilterError',
+    'Assignment.FilterError',
+    'Assignment.SelectProject',
+    'Assignment.SelectChecklist',
+    'Assignment.DueDateRequired',
+    'Message.SaveError',
+    'Assignment.UpdateSuccess',
+    'Assignment.SaveSuccess',
+    'Assignment.SaveError',
+    'Assignment.ThisAssignment',
+    'Message.DeleteError',
+    'Assignment.DeleteSuccess',
+    'Assignment.DeleteError',
+    'Assignment.NotFound',
+    'Assignment.ReassignError',
+    'Assignment.ReassignSuccess',
+    'Assignment.ReassignProcessError',
+    'Assignment.CancelTitle',
+    'Assignment.CancelConfirm',
+    'Button.Cancel',
+    'Assignment.CancelError',
+    'Assignment.CancelSuccess',
+    'Assignment.CancelProcessError',
+    'Assignment.ReopenTitle',
+    'Assignment.ReopenConfirm',
+    'Button.Reopen',
+    'Assignment.ReopenError',
+    'Assignment.ReopenSuccess',
+    'Assignment.ReopenProcessError',
+    'Assignment.SelectFirst',
+    'Period.NameRequired',
+    'Period.StartDateRequired',
+    'Period.EndDateRequired',
+    'Period.InvalidDateRange',
+    'Period.TargetRequired',
+    'Period.CreateError',
+    'Period.CreateSuccess',
+    'Assignment.DetailLoadError',
+    'Assignment.QRCodeError',
+    'Message.LinkCopied',
+    'Message.LinkCopyError',
+    'Message.LinkCopiedToClipboard',
+    'Assignment.External',
+    'Role.CustomerPersonnel',
+    'Common.DaysPassed',
+    'Common.Today',
+    'Common.DaysLeft',
+    'Assignment.Edit',
+    'Assignment.Create',
+    'Button.Update',
+    'Button.Create',
+    // Confirm modal keys
+    'Confirm.Title',
+    'Confirm.Message',
+    'Confirm.DeleteTitle',
+    'Confirm.DeleteMessage',
+    'Confirm.YesDelete',
+    'Common.Confirm'
+];
+
 // ===== Apply Bindings =====
 $(document).ready(function() {
-    ko.applyBindings(new AssignmentsViewModel(), document.getElementById('assignments-app'));
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new AssignmentsViewModel(), document.getElementById('assignments-app'));
+    });
 });

@@ -9,6 +9,7 @@ function LanguagesViewModel() {
     self.isEditing = ko.observable(false);
     self.editingId = ko.observable(null);
     self.modalErrorMessage = ko.observable('');
+    self.isClearingCache = ko.observable(false);
 
     // Form
     self.form = {
@@ -74,6 +75,21 @@ function LanguagesViewModel() {
         $.get('/api/localization/available-xml-files')
             .done(function (data) {
                 self.availableXmlFiles(data);
+            });
+    };
+
+    // Clear localization cache
+    self.clearCache = function () {
+        self.isClearingCache(true);
+        $.post('/api/localization/cache/clear')
+            .done(function () {
+                toastr.success(T('Language.CacheClearedSuccess', 'Localization cache temizlendi.'));
+            })
+            .fail(function () {
+                toastr.error(T('Language.CacheClearError', 'Cache temizlenirken hata oluştu.'));
+            })
+            .always(function () {
+                self.isClearingCache(false);
             });
     };
 
@@ -382,7 +398,54 @@ function LanguagesViewModel() {
     self.init();
 }
 
+// Translation keys used in this module
+var TRANSLATION_KEYS = [
+    // Language module keys
+    'Language.LoadError',
+    'Language.SaveSuccess',
+    'Language.SaveError',
+    'Language.AlreadyDefault',
+    'Language.SetDefaultTitle',
+    'Language.SetDefaultMessage',
+    'Language.SetDefault',
+    'Language.SetDefaultSuccess',
+    'Language.CannotDeleteDefault',
+    'Language.DeleteConfirmMessage',
+    'Language.DeleteSuccess',
+    'Language.DeleteError',
+    'Language.ImportXmlTitle',
+    'Language.ImportConfirmMessage',
+    'Language.Import',
+    'Language.ImportSuccess',
+    'Language.ImportError',
+    'Language.ResourcesLoadError',
+    'Language.ResourceSaved',
+    'Language.Resource',
+    'Language.ResourceDeleted',
+    'Language.SeedSuccess',
+    'Language.SeedError',
+    // Validation keys
+    'Validation.Required',
+    'Validation.AllFieldsRequired',
+    // Common keys
+    'Message.Error',
+    // Confirm modal keys (used by confirm-modal.js)
+    'Confirm.Title',
+    'Confirm.Message',
+    'Confirm.DeleteTitle',
+    'Confirm.DeleteMessage',
+    'Confirm.YesDelete',
+    'Confirm.CancelTitle',
+    'Confirm.CancelMessage',
+    'Confirm.YesCancel',
+    'Common.Confirm',
+    'Common.OK'
+];
+
 // Initialize when document is ready
 $(document).ready(function () {
-    ko.applyBindings(new LanguagesViewModel(), document.getElementById('languages-app'));
+    // Load translations first, then initialize ViewModel
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new LanguagesViewModel(), document.getElementById('languages-app'));
+    });
 });

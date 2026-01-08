@@ -110,7 +110,27 @@ function NotificationsSettingsViewModel() {
     self.init();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Notification.SettingsLoadError',
+    'Notification.SettingsCreated',
+    'Notification.SettingsCreateError',
+    'Notification.SettingsSaveError',
+    'Notification.Type.Info',
+    'Notification.Type.Success',
+    'Notification.Type.Warning',
+    'Notification.Type.Error',
+    'Notification.Type.ApprovalRequest',
+    'Notification.Type.Assignment',
+    'Notification.Type.MeetingInvite',
+    'Notification.Type.TrainingInvite',
+    'Notification.Type.Reminder',
+    'Notification.Type.System'
+];
+
 // Initialize when document is ready
 $(document).ready(function() {
-    ko.applyBindings(new NotificationsSettingsViewModel());
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new NotificationsSettingsViewModel());
+    });
 });

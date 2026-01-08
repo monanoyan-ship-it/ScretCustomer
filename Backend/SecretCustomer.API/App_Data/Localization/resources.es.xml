@@ -5300,6 +5300,9 @@
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Asignación actualizada exitosamente.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.ChecklistAutoFilled">
+    <Value>La lista de verificación se completa automáticamente desde la definición del proyecto</Value>
+  </LocaleResource>
   <LocaleResource Name="BankVisit.DeleteSuccess">
     <Value>Visita eliminada.</Value>
   </LocaleResource>
@@ -5420,6 +5423,42 @@
   <LocaleResource Name="Evaluation.SubmitSuccess">
     <Value>Evaluación completada exitosamente.</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.ValidationError">
+    <Value>Campos Obligatorios</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelRequired">
+    <Value>La selección de personal es obligatoria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallDateRequired">
+    <Value>La fecha de llamada es obligatoria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallTimeRequired">
+    <Value>La hora de llamada es obligatoria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DurationRequired">
+    <Value>La duración es obligatoria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveErrorMessage">
+    <Value>Ocurrió un error al guardar el borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitErrorMessage">
+    <Value>Ocurrió un error al enviar la evaluación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotFound">
+    <Value>Evaluación no encontrada.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailsLoadError">
+    <Value>Ocurrió un error al cargar los detalles.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestSent">
+    <Value>Solicitud de revertir a borrador enviada.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestFailed">
+    <Value>Operación de revertir a borrador fallida.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadErrorMessage">
+    <Value>Ocurrió un error al cargar el formulario.</Value>
+  </LocaleResource>
   <LocaleResource Name="File.DetailedEvaluations">
     <Value>Evaluaciones_Detalladas</Value>
   </LocaleResource>
@@ -5479,6 +5518,15 @@
   </LocaleResource>
   <LocaleResource Name="Language.LoadError">
     <Value>Ocurrió un error al cargar los idiomas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ClearCache">
+    <Value>Limpiar Caché</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearedSuccess">
+    <Value>Caché de localización limpiado.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CacheClearError">
+    <Value>Error al limpiar el caché.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ResourceDeleteSuccess">
     <Value>Recurso eliminado.</Value>
@@ -5716,5 +5764,126 @@
   </LocaleResource>
   <LocaleResource Name="Validation.SelectRequired">
     <Value>Por favor haga una selección.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewManager">
+    <Value>Nuevo Gerente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Organization">
+    <Value>Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Move">
+    <Value>Mover</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Pinned">
+    <Value>Fijado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignmentCount">
+    <Value>Cantidad de Tareas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.EvaluationCount">
+    <Value>Cantidad de Evaluaciones</Value>
+  </LocaleResource>
+  <!-- UserRequests & PersonnelRequest -->
+  <LocaleResource Name="Menu.UserRequests">
+    <Value>Solicitudes de Usuario</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.DraftRequests">
+    <Value>Solicitudes de Borrador</Value>
+  </LocaleResource>
+  <LocaleResource Name="UserRequest.PersonnelRequests">
+    <Value>Solicitudes de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.AllRequests">
+    <Value>Solicitudes de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Name">
+    <Value>Nombre</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.NoRecords">
+    <Value>No se encontraron solicitudes de personal.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approve">
+    <Value>Aprobar Solicitud de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Reject">
+    <Value>Rechazar Solicitud de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Info">
+    <Value>Informacion de la Solicitud</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.DefaultEmail">
+    <Value>Si se deja vacio, se asignara nombreusuario@temp.com</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.PasswordInfo">
+    <Value>Contrasena predeterminada: user@123 (Debe cambiar en el primer inicio de sesion)</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectWarning">
+    <Value>Cuando rechace esta solicitud, la evaluacion relacionada se revertira a borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.LoadError">
+    <Value>Error al cargar las solicitudes de personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveSuccess">
+    <Value>Solicitud de personal aprobada y usuario creado.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.ApproveError">
+    <Value>Error en la aprobacion</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectSuccess">
+    <Value>Solicitud de personal rechazada. Evaluacion relacionada revertida a borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectError">
+    <Value>Error en el rechazo</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.UsernameRequired">
+    <Value>El nombre de usuario es obligatorio</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.RejectReasonRequired">
+    <Value>El motivo de rechazo es obligatorio</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.AllRequests">
+    <Value>Solicitudes de Borrador</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.NoRecords">
+    <Value>No se encontraron solicitudes de borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.LoadError">
+    <Value>Error al cargar las solicitudes</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmApprove">
+    <Value>Esta seguro de que desea aprobar esta solicitud? La evaluacion se revertira a estado de borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ConfirmReject">
+    <Value>Esta seguro de que desea rechazar esta solicitud?</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveSuccess">
+    <Value>Solicitud aprobada. Evaluacion revertida a estado de borrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.ApproveError">
+    <Value>Error en la aprobacion</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectSuccess">
+    <Value>Solicitud rechazada.</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.RejectError">
+    <Value>Error en el rechazo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectOptional">
+    <Value>Seleccionar (opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PersonnelNotInList">
+    <Value>No esta en la lista</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnel">
+    <Value>Nuevo Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FirstName">
+    <Value>Nombre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastName">
+    <Value>Apellido</Value>
   </LocaleResource>
 </Language>

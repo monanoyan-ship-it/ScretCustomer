@@ -41,8 +41,8 @@
                             <div>
                                 <div class="fw-semibold" data-bind="text: companyName"></div>
                                 <small class="text-muted">
-                                    <span title="Organizasyon">🏢 <span data-bind="text: organizationCount || 0"></span></span>
-                                    <span class="ms-2" title="Personel">👥 <span data-bind="text: personnelCount || 0"></span></span>
+                                    <span title="@Html.T("Customer.Organization", "Organizasyon")">🏢 <span data-bind="text: organizationCount || 0"></span></span>
+                                    <span class="ms-2" title="@Html.T("Common.Personnel", "Personel")">👥 <span data-bind="text: personnelCount || 0"></span></span>
                                 </small>
                             </div>
                             <i class="bi bi-chevron-right"></i>
@@ -132,11 +132,11 @@
                                             <span class="badge ms-2" data-bind="text: personnelCount + ' kişi', css: isSelected() ? 'bg-light text-primary' : 'bg-secondary'"></span>
                                         </div>
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-sm" title="Düzenle"
+                                            <button class="btn btn-sm" title="@Html.T("Common.Edit", "Düzenle")"
                                                     data-bind="click: function(data, event) { $root.editOrganization(data, event); }, css: isSelected() ? 'btn-light' : 'btn-outline-primary'">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn btn-sm" title="Sil"
+                                            <button class="btn btn-sm" title="@Html.T("Common.Delete", "Sil")"
                                                     data-bind="click: function(data, event) { $root.deleteOrganization(data, event); }, css: isSelected() ? 'btn-light text-danger' : 'btn-outline-danger'">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -168,7 +168,7 @@
                                                             <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
                                                             <span class="badge bg-info ms-1" data-bind="visible: teamMembers && teamMembers.length, text: teamMembers ? teamMembers.length + ' ekip' : ''"></span>
                                                         </div>
-                                                        <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                        <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                             <i class="bi bi-arrows-move"></i>
                                                         </button>
                                                     </div>
@@ -182,7 +182,7 @@
                                                                 <span data-bind="text: fullName"></span>
                                                                 <span class="badge bg-secondary ms-2 small" data-bind="text: roleName"></span>
                                                             </div>
-                                                            <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                            <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                                 <i class="bi bi-arrows-move"></i>
                                                             </button>
                                                         </div>
@@ -202,7 +202,7 @@
                                                             <span data-bind="text: fullName"></span>
                                                             <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
                                                         </div>
-                                                        <button class="btn btn-sm btn-outline-warning" title="Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                        <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                             <i class="bi bi-arrows-move"></i>
                                                         </button>
                                                     </div>

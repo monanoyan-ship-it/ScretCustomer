@@ -62,9 +62,14 @@ public class SubmitEvaluationDto
     public int? EvaluatedOrganizationId { get; set; }
 
     /// <summary>
-    /// Değerlendirilen personel ID
+    /// Değerlendirilen personel ID (User - bizim şirket personeli)
     /// </summary>
     public int? EvaluatedPersonnelId { get; set; }
+
+    /// <summary>
+    /// Değerlendirilen müşteri personeli ID (CustomerPersonnel - firma personeli)
+    /// </summary>
+    public int? EvaluatedCustomerPersonnelId { get; set; }
 
     /// <summary>
     /// Tanımsız personel adı
@@ -90,6 +95,22 @@ public class SubmitEvaluationDto
     /// Taslak olarak kaydet
     /// </summary>
     public bool SaveAsDraft { get; set; } = false;
+
+    /// <summary>
+    /// Yeni personel bilgisi (Listede Yok seçildiğinde)
+    /// Doldurulursa PersonnelRequest oluşturulur
+    /// </summary>
+    public NewPersonnelDto? NewPersonnel { get; set; }
+}
+
+/// <summary>
+/// Yeni personel talebi için DTO (Listede Yok)
+/// </summary>
+public class NewPersonnelDto
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string? Title { get; set; }
 }
 
 public class SubmitAnswerDto

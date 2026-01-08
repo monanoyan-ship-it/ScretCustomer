@@ -8,6 +8,11 @@
         <h2 class="mb-0">
             <i class="bi bi-shield-lock me-2"></i>@Html.T("Permission.Title", "Yetki Yönetimi")
         </h2>
+        <button class="btn btn-warning" data-bind="click: syncPermissions, disable: isSyncing">
+            <i class="bi bi-arrow-repeat me-1" data-bind="css: { 'spin': isSyncing() }"></i>
+            <span data-bind="visible: !isSyncing()">@Html.T("Permission.SyncPermissions", "Yetkileri Senkronize Et")</span>
+            <span data-bind="visible: isSyncing">@Html.T("Common.Syncing", "Senkronize ediliyor...")</span>
+        </button>
     </div>
 
     <!-- Tabs -->

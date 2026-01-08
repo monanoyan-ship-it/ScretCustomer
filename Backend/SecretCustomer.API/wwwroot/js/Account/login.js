@@ -31,3 +31,16 @@ function LoginViewModel() {
             });
     };
 }
+
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Account.LoginRequired',
+    'Account.LoginFailed'
+];
+
+// Apply bindings when DOM is ready
+$(document).ready(function() {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        ko.applyBindings(new LoginViewModel(), document.getElementById('login-app'));
+    });
+});

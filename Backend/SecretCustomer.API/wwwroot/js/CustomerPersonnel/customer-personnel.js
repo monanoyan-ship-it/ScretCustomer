@@ -341,11 +341,41 @@ function CustomerPersonnelViewModel(customerId) {
     self.loadPersonnel();
 }
 
+// Translation keys
+var TRANSLATION_KEYS = [
+    'Role.CustomerManager',
+    'Role.CustomerSupervisor',
+    'Role.CustomerOperator',
+    'Common.Unknown',
+    'Customer.LoadError',
+    'Personnel.LoadError',
+    'Validation.CustomerRequired',
+    'Personnel.RequiredFields',
+    'User.UsernameInvalid',
+    'Personnel.PasswordRequired',
+    'Personnel.RoleRequired',
+    'User.UsernameExists',
+    'User.EmailExists',
+    'Personnel.UpdateSuccess',
+    'Personnel.SaveSuccess',
+    'Personnel.SaveError',
+    'Personnel.DeleteConfirm',
+    'Personnel.DeleteSuccess',
+    'Personnel.DeleteError',
+    'Validation.AllFieldsRequired',
+    'Validation.PasswordMinLength',
+    'Validation.PasswordMismatch',
+    'Password.ResetSuccess',
+    'Password.ResetError'
+];
+
 // Apply bindings when DOM is ready
-if (typeof ko !== 'undefined') {
-    var customerPersonnelApp = document.getElementById('customer-personnel-app');
-    if (customerPersonnelApp) {
-        var customerId = customerPersonnelApp.getAttribute('data-customer-id') || null;
-        ko.applyBindings(new CustomerPersonnelViewModel(customerId), customerPersonnelApp);
-    }
-}
+$(document).ready(function() {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        var customerPersonnelApp = document.getElementById('customer-personnel-app');
+        if (customerPersonnelApp) {
+            var customerId = customerPersonnelApp.getAttribute('data-customer-id') || null;
+            ko.applyBindings(new CustomerPersonnelViewModel(customerId), customerPersonnelApp);
+        }
+    });
+});
