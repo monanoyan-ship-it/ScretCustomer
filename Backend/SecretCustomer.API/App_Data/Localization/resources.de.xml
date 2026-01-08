@@ -5165,4 +5165,556 @@
   <LocaleResource Name="Status.Waiting">
     <Value>Wartend</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.Import">
+    <Value>Importieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportXmlTitle">
+    <Value>XML Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultTitle">
+    <Value>Standardsprache</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultMessage">
+    <Value>Möchten Sie diese Sprache als Standard festlegen?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultSuccess">
+    <Value>wurde als Standardsprache festgelegt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.AlreadyDefault">
+    <Value>Diese Sprache ist bereits Standard.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CannotDeleteDefault">
+    <Value>Standardsprache kann nicht gelöscht werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteConfirmMessage">
+    <Value>Sprache und alle Übersetzungen werden gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourcesLoadError">
+    <Value>Fehler beim Laden der Ressourcen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaved">
+    <Value>Ressource gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Resource">
+    <Value>Ressource</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleted">
+    <Value>Ressource gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedSuccess">
+    <Value>Standardsprachen erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedError">
+    <Value>Fehler beim Erstellen der Sprachen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.AllFieldsRequired">
+    <Value>Bitte füllen Sie alle Felder aus.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginError">
+    <Value>Bei der Anmeldung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginFailed">
+    <Value>Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginRequired">
+    <Value>Benutzername und Passwort sind erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LogoutSuccess">
+    <Value>Erfolgreich abgemeldet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChangeError">
+    <Value>Beim Ändern des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetError">
+    <Value>Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetSuccess">
+    <Value>Das Passwort wurde erfolgreich zurückgesetzt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdateError">
+    <Value>Beim Aktualisieren des Profils ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdated">
+    <Value>Ihr Profil wurde erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateError">
+    <Value>Beim Erstellen der Massenzuweisungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateSuccess">
+    <Value>Massenzuweisung erfolgreich erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmMessage">
+    <Value>Sind Sie sicher, dass Sie diese Zuweisung stornieren möchten?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmTitle">
+    <Value>Zuweisung stornieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelError">
+    <Value>Beim Stornieren der Zuweisung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelSuccess">
+    <Value>Zuweisung erfolgreich storniert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteError">
+    <Value>Beim Löschen der Zuweisung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteSuccess">
+    <Value>Zuweisung erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDateRequired">
+    <Value>Fälligkeitsdatum ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LinkCopied">
+    <Value>Link kopiert!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LoadError">
+    <Value>Beim Laden der Zuweisungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.MyTasks">
+    <Value>Meine Aufgaben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NotFound">
+    <Value>Zuweisung nicht gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.QRCodeError">
+    <Value>Beim Generieren des QR-Codes ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignError">
+    <Value>Bei der Neuzuweisung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignSuccess">
+    <Value>Neuzuweisung erfolgreich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveError">
+    <Value>Beim Speichern der Zuweisung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveSuccess">
+    <Value>Zuweisung erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectChecklist">
+    <Value>Sie müssen eine Checkliste auswählen!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectProject">
+    <Value>Sie müssen ein Projekt auswählen!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateSuccess">
+    <Value>Zuweisung erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DeleteSuccess">
+    <Value>Besuch gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DetailLoadError">
+    <Value>Beim Laden der Details ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.EditLoadError">
+    <Value>Beim Laden der Bearbeitungsdaten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.LoadError">
+    <Value>Beim Laden der Daten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.SaveSuccess">
+    <Value>Besuch gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.Title">
+    <Value>Bankbesuche</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.CodeRequired">
+    <Value>Filialcode ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteConfirm">
+    <Value>Sind Sie sicher, dass Sie diese Filiale löschen möchten?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteError">
+    <Value>Beim Löschen der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteSuccess">
+    <Value>Filiale erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.LoadError">
+    <Value>Beim Laden der Filialen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.NameRequired">
+    <Value>Filialname ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveError">
+    <Value>Beim Speichern der Filiale ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveSuccess">
+    <Value>Filiale erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.DeleteSuccess">
+    <Value>Anruf erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.LoadError">
+    <Value>Beim Laden der Anrufe ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.SaveSuccess">
+    <Value>Anruf erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeConference">
+    <Value>Konferenz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeIncoming">
+    <Value>Eingehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeInternal">
+    <Value>Intern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeMystery">
+    <Value>Mystery-Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeOutgoing">
+    <Value>Ausgehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CompanyNameRequired">
+    <Value>Firmenname ist erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteError">
+    <Value>Beim Löschen des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteSuccess">
+    <Value>Kunde erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.LoadError">
+    <Value>Beim Laden der Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveError">
+    <Value>Beim Speichern des Kunden ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveSuccess">
+    <Value>Kunde erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.UpdateSuccess">
+    <Value>Kunde erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.LoadError">
+    <Value>Beim Laden der Dashboard-Daten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.WelcomeFieldWorker">
+    <Value>Willkommen! Klicken Sie im linken Menü auf Meine Aufgaben, um Ihre Zuweisungen zu sehen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.AnswerAllRequired">
+    <Value>Bitte beantworten Sie alle erforderlichen Fragen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailLoadError">
+    <Value>Beim Laden der Details ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveError">
+    <Value>Beim Speichern des Entwurfs ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaved">
+    <Value>Entwurf erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadError">
+    <Value>Beim Laden des Formulars ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.InvalidParams">
+    <Value>Ungültige Parameter.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.LoadError">
+    <Value>Beim Laden der Bewertungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitError">
+    <Value>Beim Einreichen der Bewertung ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitSuccess">
+    <Value>Bewertung erfolgreich abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.DetailedEvaluations">
+    <Value>Detaillierte_Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.Evaluations">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.PenaltyReport">
+    <Value>Strafbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.SuggestionsReport">
+    <Value>Vorschlagsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Cancel">
+    <Value>Abbrechen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Description">
+    <Value>Diese Funktion ermöglicht es Ihnen, zur Ansicht des ausgewählten Kunden zu wechseln. Ihre Aktionen werden protokolliert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Exit">
+    <Value>Beenden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.LoadError">
+    <Value>Kundenliste konnte nicht geladen werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomer">
+    <Value>Kunde auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomerPlaceholder">
+    <Value>Kunde auswählen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectError">
+    <Value>Bitte wählen Sie einen Kunden aus.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Start">
+    <Value>Ansicht starten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.ViewingAs">
+    <Value>anzeigen als</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteError">
+    <Value>Beim Löschen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteSuccess">
+    <Value>Sprache gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmMessage">
+    <Value>Möchten Sie Übersetzungen aus der Datei importieren?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmTitle">
+    <Value>XML Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportError">
+    <Value>Beim Import ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportSuccess">
+    <Value>Übersetzungen importiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.LoadError">
+    <Value>Beim Laden der Sprachen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleteSuccess">
+    <Value>Ressource gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaveSuccess">
+    <Value>Ressource gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveError">
+    <Value>Beim Speichern ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveSuccess">
+    <Value>Sprache gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DeleteSuccess">
+    <Value>Besprechung erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.LoadError">
+    <Value>Beim Laden der Besprechungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.SaveSuccess">
+    <Value>Besprechung erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeClosing">
+    <Value>Abschluss</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeCustomer">
+    <Value>Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeEvaluation">
+    <Value>Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeGeneral">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeKickoff">
+    <Value>Kick-off</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeProject">
+    <Value>Projekt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeTraining">
+    <Value>Schulung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopyError">
+    <Value>Beim Kopieren ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopySuccess">
+    <Value>In die Zwischenablage kopiert!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.DeleteError">
+    <Value>Beim Löschen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportError">
+    <Value>Beim Export ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportSuccess">
+    <Value>Export erfolgreich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportError">
+    <Value>Beim Import ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportSuccess">
+    <Value>Import erfolgreich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LoadError">
+    <Value>Beim Laden der Daten ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.NetworkError">
+    <Value>Netzwerkfehler aufgetreten. Bitte versuchen Sie es erneut.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.SaveError">
+    <Value>Beim Speichern ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ValidationError">
+    <Value>Bitte füllen Sie die erforderlichen Felder aus.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.LoadError">
+    <Value>Beim Laden der Benachrichtigungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreateError">
+    <Value>Einstellungen konnten nicht erstellt werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreated">
+    <Value>Standardeinstellungen erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsLoadError">
+    <Value>Einstellungen konnten nicht geladen werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsSaveError">
+    <Value>Einstellung konnte nicht gespeichert werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeApprovalRequest">
+    <Value>Genehmigungsanfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeError">
+    <Value>Fehler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeInfo">
+    <Value>Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeMeetingInvite">
+    <Value>Besprechungseinladung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeReminder">
+    <Value>Erinnerung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSuccess">
+    <Value>Erfolg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSystem">
+    <Value>Systembenachrichtigung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTaskAssignment">
+    <Value>Aufgabenzuweisung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTrainingInvite">
+    <Value>Schulungseinladung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeWarning">
+    <Value>Warnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.RedCard">
+    <Value>Rote Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.YellowCard">
+    <Value>Gelbe Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AllFieldsRequired">
+    <Value>Alle Felder sind erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteConfirm">
+    <Value>Sind Sie sicher, dass Sie diesen Mitarbeiter löschen möchten?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteError">
+    <Value>Beim Löschen des Mitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteSuccess">
+    <Value>Mitarbeiter erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.LoadError">
+    <Value>Beim Laden der Mitarbeiter ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.PasswordRequired">
+    <Value>Passwort ist für neue Mitarbeiter erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RequiredFields">
+    <Value>Benutzername, E-Mail, Vorname und Nachname sind erforderlich.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveError">
+    <Value>Beim Speichern des Mitarbeiters ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveSuccess">
+    <Value>Mitarbeiter erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.UpdateSuccess">
+    <Value>Mitarbeiter erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.LoadError">
+    <Value>Beim Laden des Profils ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordMinLength">
+    <Value>Das neue Passwort muss mindestens 6 Zeichen lang sein.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateError">
+    <Value>Beim Aktualisieren des Profils ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateSuccess">
+    <Value>Ihr Profil wurde erfolgreich aktualisiert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportError">
+    <Value>Excel-Datei konnte nicht heruntergeladen werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportSuccess">
+    <Value>Excel-Datei heruntergeladen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadError">
+    <Value>Beim Laden des Berichts ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerManager">
+    <Value>Kundenmanager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerOperator">
+    <Value>Kundenbetreuer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerSupervisor">
+    <Value>Kundenaufseher</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DeleteSuccess">
+    <Value>Schulung erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LoadError">
+    <Value>Beim Laden der Schulungen ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SaveSuccess">
+    <Value>Schulung erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeGeneral">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeSales">
+    <Value>Vertrieb</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeTechnical">
+    <Value>Technisch</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteError">
+    <Value>Beim Löschen des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteSuccess">
+    <Value>Benutzer erfolgreich gelöscht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.EmailRequired">
+    <Value>E-Mail ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FirstNameRequired">
+    <Value>Vorname ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastNameRequired">
+    <Value>Nachname ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LoadError">
+    <Value>Beim Laden der Benutzer ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.PasswordMinLength">
+    <Value>Passwort muss mindestens 6 Zeichen lang sein!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveError">
+    <Value>Beim Speichern des Benutzers ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveSuccess">
+    <Value>Benutzer erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.UsernameRequired">
+    <Value>Benutzername ist erforderlich!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.SelectRequired">
+    <Value>Bitte treffen Sie eine Auswahl.</Value>
+  </LocaleResource>
 </Language>

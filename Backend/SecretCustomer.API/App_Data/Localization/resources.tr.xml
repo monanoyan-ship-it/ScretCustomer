@@ -5165,4 +5165,556 @@
   <LocaleResource Name="Import.Failed">
     <Value>İçe aktarma başarısız.</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.Import">
+    <Value>İçe Aktar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportXmlTitle">
+    <Value>XML İçe Aktarma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultTitle">
+    <Value>Varsayılan Dil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultMessage">
+    <Value>Bu dili varsayılan yapmak istiyor musunuz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultSuccess">
+    <Value>varsayılan dil olarak ayarlandı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.AlreadyDefault">
+    <Value>Bu dil zaten varsayılan.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CannotDeleteDefault">
+    <Value>Varsayılan dil silinemez.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteConfirmMessage">
+    <Value>dili ve tüm çevirileri silinecek.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourcesLoadError">
+    <Value>Kaynaklar yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaved">
+    <Value>Kaynak kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Resource">
+    <Value>kaynağı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleted">
+    <Value>Kaynak silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedSuccess">
+    <Value>Varsayılan diller oluşturuldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedError">
+    <Value>Diller oluşturulurken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.AllFieldsRequired">
+    <Value>Lütfen tüm alanları doldurun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginError">
+    <Value>Giriş sırasında bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginFailed">
+    <Value>Giriş başarısız. Lütfen bilgilerinizi kontrol edin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginRequired">
+    <Value>Kullanıcı adı ve şifre gereklidir.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LogoutSuccess">
+    <Value>Başarıyla çıkış yapıldı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChangeError">
+    <Value>Şifre değiştirilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetError">
+    <Value>Şifre sıfırlanırken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetSuccess">
+    <Value>Şifre başarıyla sıfırlandı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdateError">
+    <Value>Profil güncellenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdated">
+    <Value>Profil bilgileriniz başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateError">
+    <Value>Toplu atama oluşturulurken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateSuccess">
+    <Value>Toplu atama başarıyla oluşturuldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmMessage">
+    <Value>Bu atamayı iptal etmek istediğinizden emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmTitle">
+    <Value>Atama İptali</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelError">
+    <Value>Atama iptal edilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelSuccess">
+    <Value>Atama başarıyla iptal edildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteError">
+    <Value>Atama silinirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteSuccess">
+    <Value>Atama başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDateRequired">
+    <Value>Son tarih zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LinkCopied">
+    <Value>Link kopyalandı!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LoadError">
+    <Value>Atamalar yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.MyTasks">
+    <Value>Görevlerim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NotFound">
+    <Value>Atama bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.QRCodeError">
+    <Value>QR kod oluşturulurken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignError">
+    <Value>Yeniden atama yapılırken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignSuccess">
+    <Value>Atama başarıyla yeniden atandı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveError">
+    <Value>Atama kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveSuccess">
+    <Value>Atama başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectChecklist">
+    <Value>Kontrol listesi seçmelisiniz!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectProject">
+    <Value>Proje seçmelisiniz!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateSuccess">
+    <Value>Atama başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DeleteSuccess">
+    <Value>Ziyaret silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DetailLoadError">
+    <Value>Detay yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.EditLoadError">
+    <Value>Düzenleme için veri yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.LoadError">
+    <Value>Veriler yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.SaveSuccess">
+    <Value>Ziyaret kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.Title">
+    <Value>Banka Ziyaretleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.CodeRequired">
+    <Value>Şube kodu zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteConfirm">
+    <Value>Bu şubeyi silmek istediğinizden emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteError">
+    <Value>Şube silinirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteSuccess">
+    <Value>Şube başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.LoadError">
+    <Value>Şubeler yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.NameRequired">
+    <Value>Şube adı zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveError">
+    <Value>Şube kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveSuccess">
+    <Value>Şube başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.DeleteSuccess">
+    <Value>Çağrı başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.LoadError">
+    <Value>Çağrılar yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.SaveSuccess">
+    <Value>Çağrı başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeConference">
+    <Value>Konferans</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeIncoming">
+    <Value>Gelen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeInternal">
+    <Value>Dahili</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeMystery">
+    <Value>Gizli Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeOutgoing">
+    <Value>Giden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CompanyNameRequired">
+    <Value>Şirket adı zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteError">
+    <Value>Müşteri silinirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteSuccess">
+    <Value>Müşteri başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.LoadError">
+    <Value>Müşteriler yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveError">
+    <Value>Müşteri kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveSuccess">
+    <Value>Müşteri başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.UpdateSuccess">
+    <Value>Müşteri başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.LoadError">
+    <Value>Dashboard verileri yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.WelcomeFieldWorker">
+    <Value>Hoş geldiniz! Atamalarınızı görmek için soldaki menüden Görevlerim seçeneğine tıklayabilirsiniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.AnswerAllRequired">
+    <Value>Lütfen tüm zorunlu soruları cevaplayın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailLoadError">
+    <Value>Detay yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveError">
+    <Value>Taslak kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaved">
+    <Value>Taslak başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadError">
+    <Value>Form yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.InvalidParams">
+    <Value>Geçersiz parametreler.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.LoadError">
+    <Value>Değerlendirmeler yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitError">
+    <Value>Değerlendirme gönderilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitSuccess">
+    <Value>Değerlendirme başarıyla tamamlandı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.DetailedEvaluations">
+    <Value>Detayli_Degerlendirmeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.Evaluations">
+    <Value>Degerlendirmeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.PenaltyReport">
+    <Value>CezaliKLRaporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.SuggestionsReport">
+    <Value>OnerilerRaporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Cancel">
+    <Value>Vazgeç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Description">
+    <Value>Bu özellik, seçilen müşterinin görünümüne geçmenizi sağlar. Gerçekleştirdiğiniz işlemler kayıt altına alınır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Exit">
+    <Value>Çıkış</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.LoadError">
+    <Value>Müşteri listesi yüklenemedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomer">
+    <Value>Müşteri Seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomerPlaceholder">
+    <Value>Müşteri Seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectError">
+    <Value>Lütfen bir müşteri seçin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Start">
+    <Value>Görüntülemeyi Başlat</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.ViewingAs">
+    <Value>olarak görüntülüyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteError">
+    <Value>Silme sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteSuccess">
+    <Value>Dil silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmMessage">
+    <Value>için XML dosyasından çevirileri içe aktarmak istiyor musunuz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmTitle">
+    <Value>XML İçe Aktarma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportError">
+    <Value>İçe aktarma sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportSuccess">
+    <Value>çeviri içe aktarıldı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.LoadError">
+    <Value>Diller yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleteSuccess">
+    <Value>Kaynak silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaveSuccess">
+    <Value>Kaynak kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveError">
+    <Value>Kayıt sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveSuccess">
+    <Value>Dil kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DeleteSuccess">
+    <Value>Toplantı başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.LoadError">
+    <Value>Toplantılar yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.SaveSuccess">
+    <Value>Toplantı başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeClosing">
+    <Value>Kapanış</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeCustomer">
+    <Value>Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeEvaluation">
+    <Value>Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeGeneral">
+    <Value>Genel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeKickoff">
+    <Value>Kick-off</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeProject">
+    <Value>Proje</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeTraining">
+    <Value>Eğitim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopyError">
+    <Value>Kopyalama sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopySuccess">
+    <Value>Panoya kopyalandı!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.DeleteError">
+    <Value>Silme sırasında bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportError">
+    <Value>Dışa aktarma sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportSuccess">
+    <Value>Dışa aktarma başarılı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportError">
+    <Value>İçe aktarma sırasında hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportSuccess">
+    <Value>İçe aktarma başarılı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LoadError">
+    <Value>Veriler yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.NetworkError">
+    <Value>Ağ hatası oluştu. Lütfen tekrar deneyin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.SaveError">
+    <Value>Kayıt sırasında bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ValidationError">
+    <Value>Lütfen zorunlu alanları doldurun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.LoadError">
+    <Value>Bildirimler yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreateError">
+    <Value>Ayarlar oluşturulamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreated">
+    <Value>Varsayılan ayarlar oluşturuldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsLoadError">
+    <Value>Ayarlar yüklenemedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsSaveError">
+    <Value>Ayar kaydedilemedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeApprovalRequest">
+    <Value>Onay Talebi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeError">
+    <Value>Hata</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeInfo">
+    <Value>Bilgi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeMeetingInvite">
+    <Value>Toplantı Daveti</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeReminder">
+    <Value>Hatırlatma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSuccess">
+    <Value>Başarılı İşlem</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSystem">
+    <Value>Sistem Bildirimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTaskAssignment">
+    <Value>Görev Ataması</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTrainingInvite">
+    <Value>Eğitim Daveti</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeWarning">
+    <Value>Uyarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.RedCard">
+    <Value>Kırmızı Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.YellowCard">
+    <Value>Sarı Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AllFieldsRequired">
+    <Value>Tüm alanlar zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteConfirm">
+    <Value>Bu personeli silmek istediğinizden emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteError">
+    <Value>Personel silinirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteSuccess">
+    <Value>Personel başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.LoadError">
+    <Value>Personeller yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.PasswordRequired">
+    <Value>Yeni personel için şifre zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RequiredFields">
+    <Value>Kullanıcı adı, e-posta, ad ve soyad zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveError">
+    <Value>Personel kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveSuccess">
+    <Value>Personel başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.UpdateSuccess">
+    <Value>Personel başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.LoadError">
+    <Value>Profil yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordMinLength">
+    <Value>Yeni şifre en az 6 karakter olmalıdır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateError">
+    <Value>Profil güncellenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateSuccess">
+    <Value>Profil bilgileriniz başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportError">
+    <Value>Excel dosyası indirilemedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportSuccess">
+    <Value>Excel dosyası indirildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadError">
+    <Value>Rapor yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerManager">
+    <Value>Müşteri Yöneticisi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerOperator">
+    <Value>Müşteri Operatörü</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerSupervisor">
+    <Value>Müşteri Süpervizörü</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DeleteSuccess">
+    <Value>Eğitim başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LoadError">
+    <Value>Eğitimler yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SaveSuccess">
+    <Value>Eğitim başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeGeneral">
+    <Value>Genel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeSales">
+    <Value>Satış</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeTechnical">
+    <Value>Teknik</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteError">
+    <Value>Kullanıcı silinirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteSuccess">
+    <Value>Kullanıcı başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.EmailRequired">
+    <Value>E-posta alanı zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FirstNameRequired">
+    <Value>Ad alanı zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastNameRequired">
+    <Value>Soyad alanı zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LoadError">
+    <Value>Kullanıcılar yüklenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.PasswordMinLength">
+    <Value>Şifre en az 6 karakter olmalıdır!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveError">
+    <Value>Kullanıcı kaydedilirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveSuccess">
+    <Value>Kullanıcı başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.UsernameRequired">
+    <Value>Kullanıcı adı zorunludur!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.SelectRequired">
+    <Value>Lütfen bir seçim yapın.</Value>
+  </LocaleResource>
 </Language>

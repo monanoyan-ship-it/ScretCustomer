@@ -5165,4 +5165,556 @@
   <LocaleResource Name="Status.Waiting">
     <Value>Waiting</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.Import">
+    <Value>Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportXmlTitle">
+    <Value>XML Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultTitle">
+    <Value>Default Language</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultMessage">
+    <Value>Do you want to set this language as default?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SetDefaultSuccess">
+    <Value>has been set as default language.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.AlreadyDefault">
+    <Value>This language is already the default.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.CannotDeleteDefault">
+    <Value>Default language cannot be deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteConfirmMessage">
+    <Value>language and all translations will be deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourcesLoadError">
+    <Value>Error loading resources.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaved">
+    <Value>Resource saved.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.Resource">
+    <Value>resource</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleted">
+    <Value>Resource deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedSuccess">
+    <Value>Default languages created.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SeedError">
+    <Value>Error creating languages.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.AllFieldsRequired">
+    <Value>Please fill in all fields.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginError">
+    <Value>An error occurred during login.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginFailed">
+    <Value>Login failed. Please check your credentials.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LoginRequired">
+    <Value>Username and password are required.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.LogoutSuccess">
+    <Value>Successfully logged out.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChangeError">
+    <Value>An error occurred while changing password.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetError">
+    <Value>An error occurred while resetting password.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordResetSuccess">
+    <Value>Password has been reset successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdateError">
+    <Value>An error occurred while updating profile.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.ProfileUpdated">
+    <Value>Your profile has been updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateError">
+    <Value>An error occurred while creating bulk assignments.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.BulkCreateSuccess">
+    <Value>Bulk assignment created successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmMessage">
+    <Value>Are you sure you want to cancel this assignment?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirmTitle">
+    <Value>Cancel Assignment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelError">
+    <Value>An error occurred while canceling assignment.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelSuccess">
+    <Value>Assignment canceled successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteError">
+    <Value>An error occurred while deleting assignment.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DeleteSuccess">
+    <Value>Assignment deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDateRequired">
+    <Value>Due date is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LinkCopied">
+    <Value>Link copied!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.LoadError">
+    <Value>An error occurred while loading assignments.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.MyTasks">
+    <Value>My Tasks</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NotFound">
+    <Value>Assignment not found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.QRCodeError">
+    <Value>An error occurred while generating QR code.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignError">
+    <Value>An error occurred while reassigning.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignSuccess">
+    <Value>Reassignment successful.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveError">
+    <Value>An error occurred while saving assignment.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SaveSuccess">
+    <Value>Assignment saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectChecklist">
+    <Value>You must select a checklist!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectProject">
+    <Value>You must select a project!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateSuccess">
+    <Value>Assignment updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DeleteSuccess">
+    <Value>Visit deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.DetailLoadError">
+    <Value>An error occurred while loading details.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.EditLoadError">
+    <Value>An error occurred while loading edit data.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.LoadError">
+    <Value>An error occurred while loading data.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.SaveSuccess">
+    <Value>Visit saved.</Value>
+  </LocaleResource>
+  <LocaleResource Name="BankVisit.Title">
+    <Value>Bank Visits</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.CodeRequired">
+    <Value>Branch code is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteConfirm">
+    <Value>Are you sure you want to delete this branch?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteError">
+    <Value>An error occurred while deleting branch.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.DeleteSuccess">
+    <Value>Branch deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.LoadError">
+    <Value>An error occurred while loading branches.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.NameRequired">
+    <Value>Branch name is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveError">
+    <Value>An error occurred while saving branch.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Branch.SaveSuccess">
+    <Value>Branch saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.DeleteSuccess">
+    <Value>Call deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.LoadError">
+    <Value>An error occurred while loading calls.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.SaveSuccess">
+    <Value>Call saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeConference">
+    <Value>Conference</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeIncoming">
+    <Value>Incoming</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeInternal">
+    <Value>Internal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeMystery">
+    <Value>Mystery Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Call.TypeOutgoing">
+    <Value>Outgoing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.CompanyNameRequired">
+    <Value>Company name is required.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteError">
+    <Value>An error occurred while deleting customer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DeleteSuccess">
+    <Value>Customer deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.LoadError">
+    <Value>An error occurred while loading customers.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveError">
+    <Value>An error occurred while saving customer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SaveSuccess">
+    <Value>Customer saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.UpdateSuccess">
+    <Value>Customer updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.LoadError">
+    <Value>An error occurred while loading dashboard data.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.WelcomeFieldWorker">
+    <Value>Welcome! Click on My Tasks from the left menu to see your assignments.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.AnswerAllRequired">
+    <Value>Please answer all required questions.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DetailLoadError">
+    <Value>An error occurred while loading details.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaveError">
+    <Value>An error occurred while saving draft.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DraftSaved">
+    <Value>Draft saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoadError">
+    <Value>An error occurred while loading form.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.InvalidParams">
+    <Value>Invalid parameters.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.LoadError">
+    <Value>An error occurred while loading evaluations.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitError">
+    <Value>An error occurred while submitting evaluation.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubmitSuccess">
+    <Value>Evaluation completed successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.DetailedEvaluations">
+    <Value>Detailed_Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.Evaluations">
+    <Value>Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.PenaltyReport">
+    <Value>PenaltyReport</Value>
+  </LocaleResource>
+  <LocaleResource Name="File.SuggestionsReport">
+    <Value>SuggestionsReport</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Cancel">
+    <Value>Cancel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Description">
+    <Value>This feature allows you to switch to the selected customers view. Your actions will be logged.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Exit">
+    <Value>Exit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.LoadError">
+    <Value>Could not load customer list.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomer">
+    <Value>Select Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectCustomerPlaceholder">
+    <Value>Select Customer...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.SelectError">
+    <Value>Please select a customer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.Start">
+    <Value>Start Viewing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Impersonation.ViewingAs">
+    <Value>viewing as</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteError">
+    <Value>An error occurred while deleting.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.DeleteSuccess">
+    <Value>Language deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmMessage">
+    <Value>Do you want to import translations from the file?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportConfirmTitle">
+    <Value>XML Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportError">
+    <Value>An error occurred during import.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportSuccess">
+    <Value>translations imported.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.LoadError">
+    <Value>An error occurred while loading languages.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceDeleteSuccess">
+    <Value>Resource deleted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceSaveSuccess">
+    <Value>Resource saved.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveError">
+    <Value>An error occurred while saving.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.SaveSuccess">
+    <Value>Language saved.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.DeleteSuccess">
+    <Value>Meeting deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.LoadError">
+    <Value>An error occurred while loading meetings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.SaveSuccess">
+    <Value>Meeting saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeClosing">
+    <Value>Closing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeCustomer">
+    <Value>Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeEvaluation">
+    <Value>Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeGeneral">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeKickoff">
+    <Value>Kick-off</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeProject">
+    <Value>Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="Meeting.TypeTraining">
+    <Value>Training</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopyError">
+    <Value>An error occurred while copying.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.CopySuccess">
+    <Value>Copied to clipboard!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.DeleteError">
+    <Value>An error occurred while deleting.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportError">
+    <Value>An error occurred during export.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ExportSuccess">
+    <Value>Export successful.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportError">
+    <Value>An error occurred during import.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ImportSuccess">
+    <Value>Import successful.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LoadError">
+    <Value>An error occurred while loading data.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.NetworkError">
+    <Value>Network error occurred. Please try again.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.SaveError">
+    <Value>An error occurred while saving.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.ValidationError">
+    <Value>Please fill in required fields.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.LoadError">
+    <Value>An error occurred while loading notifications.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreateError">
+    <Value>Could not create settings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsCreated">
+    <Value>Default settings created.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsLoadError">
+    <Value>Could not load settings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.SettingsSaveError">
+    <Value>Could not save setting.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeApprovalRequest">
+    <Value>Approval Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeError">
+    <Value>Error</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeInfo">
+    <Value>Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeMeetingInvite">
+    <Value>Meeting Invitation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeReminder">
+    <Value>Reminder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSuccess">
+    <Value>Success</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeSystem">
+    <Value>System Notification</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTaskAssignment">
+    <Value>Task Assignment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeTrainingInvite">
+    <Value>Training Invitation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notification.TypeWarning">
+    <Value>Warning</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.RedCard">
+    <Value>Red Card</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.YellowCard">
+    <Value>Yellow Card</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AllFieldsRequired">
+    <Value>All fields are required.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteConfirm">
+    <Value>Are you sure you want to delete this personnel?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteError">
+    <Value>An error occurred while deleting personnel.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.DeleteSuccess">
+    <Value>Personnel deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.LoadError">
+    <Value>An error occurred while loading personnel.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.PasswordRequired">
+    <Value>Password is required for new personnel.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RequiredFields">
+    <Value>Username, email, first name and last name are required.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveError">
+    <Value>An error occurred while saving personnel.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SaveSuccess">
+    <Value>Personnel saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.UpdateSuccess">
+    <Value>Personnel updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.LoadError">
+    <Value>An error occurred while loading profile.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordMinLength">
+    <Value>New password must be at least 6 characters.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateError">
+    <Value>An error occurred while updating profile.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateSuccess">
+    <Value>Your profile has been updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportError">
+    <Value>Could not download Excel file.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportSuccess">
+    <Value>Excel file downloaded.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadError">
+    <Value>An error occurred while loading report.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerManager">
+    <Value>Customer Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerOperator">
+    <Value>Customer Operator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerSupervisor">
+    <Value>Customer Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DeleteSuccess">
+    <Value>Training deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LoadError">
+    <Value>An error occurred while loading trainings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SaveSuccess">
+    <Value>Training saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeGeneral">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeSales">
+    <Value>Sales</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TypeTechnical">
+    <Value>Technical</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteError">
+    <Value>An error occurred while deleting user.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.DeleteSuccess">
+    <Value>User deleted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.EmailRequired">
+    <Value>Email is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FirstNameRequired">
+    <Value>First name is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LastNameRequired">
+    <Value>Last name is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.LoadError">
+    <Value>An error occurred while loading users.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.PasswordMinLength">
+    <Value>Password must be at least 6 characters!</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveError">
+    <Value>An error occurred while saving user.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SaveSuccess">
+    <Value>User saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.UsernameRequired">
+    <Value>Username is required!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.SelectRequired">
+    <Value>Please make a selection.</Value>
+  </LocaleResource>
 </Language>
