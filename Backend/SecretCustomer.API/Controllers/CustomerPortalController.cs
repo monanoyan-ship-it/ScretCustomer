@@ -39,12 +39,4 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
-
-    /// <summary>
-    /// İç Değerlendirme Atamaları - Sadece Manager ve Supervisor
-    /// </summary>
-    public IActionResult InternalAssignments()
-    {
-        return View();
-    }
 }

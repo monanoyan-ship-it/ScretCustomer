@@ -134,12 +134,6 @@
                         @Html.T("CustomerPortal.Menu.Reports", "Raporlar")
                     </a>
                 </li>
-                <li class="nav-item" id="menu-internal-assignments" style="display: none;">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "InternalAssignments" ? "active" : "")" href="/CustomerPortal/InternalAssignments">
-                        <i class="bi bi-person-check"></i>
-                        @Html.T("CustomerPortal.Menu.InternalAssignments", "İç Değerlendirme Atamaları")
-                    </a>
-                </li>
             </ul>
 
             <div class="mt-auto p-3 border-top" style="position: absolute; bottom: 0; width: 100%; border-top-color: rgba(255,255,255,0.1) !important;">
@@ -223,13 +217,6 @@
                     document.getElementById('customer-user-role').textContent = getRoleName(user.role);
                     document.getElementById('customer-company-name').textContent = user.customerName || '';
 
-                    // Show Internal Assignments menu only for Manager and Supervisor
-                    if (user.role === 'CustomerManager' || user.role === 'CustomerSupervisor') {
-                        var internalAssignmentsMenu = document.getElementById('menu-internal-assignments');
-                        if (internalAssignmentsMenu) {
-                            internalAssignmentsMenu.style.display = 'block';
-                        }
-                    }
                 })
                 .catch(function(e) {
                     console.error('Auth check failed:', e);
