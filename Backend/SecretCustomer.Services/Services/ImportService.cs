@@ -455,4 +455,223 @@ public class ImportService : IImportService
         var value = values[index].Trim();
         return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
     }
+
+    #region Checklist Import
+
+    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, int? customerId = null, string? description = null)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
+        return await ImportChecklistFromCsvAsync(stream, checklistName, customerId, description);
+    }
+
+    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, int? customerId = null, string? description = null)
+    {
+        var result = new ChecklistImportResultDto { Success = true };
+
+        try
+        {
+            // Yeni checklist oluştur
+            var checklist = new Checklist
+            {
+                Name = checklistName,
+                Description = description ?? $"CSV Import ile oluşturuldu - {DateTime.Now:dd.MM.yyyy HH:mm}",
+                CustomerId = customerId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Checklists.Add(checklist);
+            await _context.SaveChangesAsync();
+
+            result.ChecklistId = checklist.Id;
+            result.ChecklistName = checklist.Name;
+
+            // CSV'yi oku
+            using var reader = new StreamReader(csvStream, Encoding.UTF8);
+            var lines = new List<string>();
+
+            while (!reader.EndOfStream)
+            {
+                var line = await reader.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(line))
+                    lines.Add(line);
+            }
+
+            if (lines.Count < 2)
+            {
+                result.Success = false;
+                result.Errors.Add("CSV dosyası boş veya sadece başlık satırı içeriyor.");
+                return result;
+            }
+
+            // Parse header
+            var header = ParseCsvLine(lines[0]);
+            var columnMap = CreateColumnMap(header);
+
+            if (!ValidateChecklistColumns(columnMap, result))
+            {
+                result.Success = false;
+                return result;
+            }
+
+            result.TotalRows = lines.Count - 1;
+
+            // Yeni checklist olduğu için order 0'dan başlar
+            var maxOrder = 0;
+
+            // Her satırı işle
+            for (int i = 1; i < lines.Count; i++)
+            {
+                var rowNumber = i + 1;
+                try
+                {
+                    var values = ParseCsvLine(lines[i]);
+                    var importDto = MapToChecklistDto(values, columnMap);
+
+                    if (string.IsNullOrWhiteSpace(importDto.QuestionText))
+                    {
+                        result.Warnings.Add($"Satır {rowNumber}: QuestionText boş, atlandı.");
+                        continue;
+                    }
+
+                    maxOrder++;
+
+                    // Yeni soru oluştur
+                    var question = new Question
+                    {
+                        ChecklistId = checklist.Id,
+                        Text = importDto.QuestionText,
+                        GroupName = string.IsNullOrWhiteSpace(importDto.GroupName) ? null : importDto.GroupName,
+                        Order = importDto.Order ?? maxOrder,
+                        WeightPoints = importDto.WeightPoints,
+                        MaxPoints = importDto.MaxPoints,
+                        ScoringType = ParseScoringType(importDto.ScoringType),
+                        PenaltyType = ParsePenaltyType(importDto.PenaltyType),
+                        IsRequired = importDto.IsRequired,
+                        HelpText = string.IsNullOrWhiteSpace(importDto.HelpText) ? null : importDto.HelpText,
+                        AllowNA = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Questions.Add(question);
+                    await _context.SaveChangesAsync();
+
+                    result.QuestionsCreated++;
+
+                    // Alt kriterleri ekle
+                    if (!string.IsNullOrWhiteSpace(importDto.SubCriteria))
+                    {
+                        var subCriteriaList = importDto.SubCriteria.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                        var subOrder = 0;
+
+                        foreach (var subText in subCriteriaList)
+                        {
+                            var trimmedText = subText.Trim();
+                            if (string.IsNullOrWhiteSpace(trimmedText)) continue;
+
+                            subOrder++;
+                            var subCriteria = new QuestionSubCriteria
+                            {
+                                QuestionId = question.Id,
+                                Description = trimmedText,
+                                WeightPoints = 0,
+                                Order = subOrder,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            _context.QuestionSubCriteria.Add(subCriteria);
+                            result.SubCriteriaCreated++;
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+
+                    result.ImportedQuestions.Add(new ImportedQuestionInfo
+                    {
+                        Id = question.Id,
+                        Order = question.Order,
+                        GroupName = question.GroupName ?? "",
+                        QuestionText = question.Text,
+                        WeightPoints = question.WeightPoints,
+                        MaxPoints = question.MaxPoints,
+                        ScoringType = question.ScoringType.ToString(),
+                        SubCriteriaCount = importDto.SubCriteria?.Split('|', StringSplitOptions.RemoveEmptyEntries).Length ?? 0
+                    });
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"Satır {rowNumber}: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.Errors.Add($"Import hatası: {ex.Message}");
+        }
+
+        result.Success = result.Errors.Count == 0;
+        return result;
+    }
+
+    private static bool ValidateChecklistColumns(Dictionary<string, int> columnMap, ChecklistImportResultDto result)
+    {
+        var requiredColumns = new[] { "questiontext" };
+        var missingColumns = requiredColumns.Where(c => !columnMap.ContainsKey(c)).ToList();
+
+        if (missingColumns.Any())
+        {
+            result.Errors.Add($"Eksik kolonlar: {string.Join(", ", missingColumns)}");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static ChecklistQuestionImportDto MapToChecklistDto(string[] values, Dictionary<string, int> columnMap)
+    {
+        return new ChecklistQuestionImportDto
+        {
+            GroupName = GetValue(values, columnMap, "groupname"),
+            QuestionText = GetValue(values, columnMap, "questiontext"),
+            WeightPoints = decimal.TryParse(GetValue(values, columnMap, "weightpoints", "1"), NumberStyles.Any, CultureInfo.InvariantCulture, out var wp) ? wp : 1,
+            MaxPoints = int.TryParse(GetValue(values, columnMap, "maxpoints", "5"), out var mp) ? mp : 5,
+            ScoringType = GetValue(values, columnMap, "scoringtype", "Scored"),
+            PenaltyType = GetValue(values, columnMap, "penaltytype", "None"),
+            SubCriteria = GetValue(values, columnMap, "subcriteria"),
+            Order = int.TryParse(GetValue(values, columnMap, "order"), out var order) ? order : null,
+            IsRequired = bool.TryParse(GetValue(values, columnMap, "isrequired", "false"), out var req) && req,
+            HelpText = GetValue(values, columnMap, "helptext")
+        };
+    }
+
+    private static ScoringType ParseScoringType(string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "scored" => ScoringType.Scored,
+            "unscored" => ScoringType.Unscored,
+            "penalty" => ScoringType.Penalty,
+            "puanlı" => ScoringType.Scored,
+            "puansız" => ScoringType.Unscored,
+            "cezalı" => ScoringType.Penalty,
+            _ => ScoringType.Scored
+        };
+    }
+
+    private static PenaltyType ParsePenaltyType(string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "none" => PenaltyType.None,
+            "yellowcard" => PenaltyType.YellowCard,
+            "redcard" => PenaltyType.RedCard,
+            "yok" => PenaltyType.None,
+            "sarı" or "sarı kart" or "sarıkart" => PenaltyType.YellowCard,
+            "kırmızı" or "kırmızı kart" or "kırmızıkart" => PenaltyType.RedCard,
+            _ => PenaltyType.None
+        };
+    }
+
+    #endregion
 }

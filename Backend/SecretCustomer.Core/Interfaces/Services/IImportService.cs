@@ -16,4 +16,19 @@ public interface IImportService
     /// Stream'den personel verilerini import eder
     /// </summary>
     Task<ImportResultDto> ImportPersonnelFromCsvAsync(Stream csvStream, bool updateExisting = false);
+
+    /// <summary>
+    /// CSV dosyasından yeni checklist oluşturur ve soruları import eder
+    /// </summary>
+    /// <param name="csvStream">CSV dosya stream'i</param>
+    /// <param name="checklistName">Yeni checklist adı</param>
+    /// <param name="customerId">Müşteri ID (opsiyonel - null ise tüm müşteriler için)</param>
+    /// <param name="description">Açıklama (opsiyonel)</param>
+    /// <returns>Import sonucu</returns>
+    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, int? customerId = null, string? description = null);
+
+    /// <summary>
+    /// CSV içeriğinden yeni checklist oluşturur ve soruları import eder
+    /// </summary>
+    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, int? customerId = null, string? description = null);
 }

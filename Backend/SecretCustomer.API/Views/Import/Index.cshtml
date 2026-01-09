@@ -4,8 +4,23 @@
 
 <div id="import-app">
     <div class="container-fluid py-4">
-        <div class="row">
-            <div class="col-12">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personnel-tab" type="button" role="tab">
+                    <i class="bi bi-people me-2"></i>@Html.T("Import.PersonnelImport", "Personel İçe Aktarma")
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#checklist-tab" type="button" role="tab">
+                    <i class="bi bi-list-check me-2"></i>@Html.T("Import.ChecklistImport", "Checklist İçe Aktarma")
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Personnel Tab -->
+            <div class="tab-pane fade show active" id="personnel-tab" role="tabpanel">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -33,7 +48,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">@Html.T("Import.SelectCsvFile", "CSV Dosyası Seçin")</label>
-                                        <input type="file" class="form-control" id="csvFile" accept=".csv" data-bind="event: { change: onFileSelected }">
+                                        <input type="file" class="form-control" id="csvFile" accept=".csv" data-bind="event: { change: onPersonnelFileSelected }">
                                         <div class="form-text">@Html.T("Import.CsvFileNote", "Sadece .csv dosyaları kabul edilir (max 10MB)")</div>
                                     </div>
                                 </div>
@@ -52,7 +67,7 @@
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-primary" data-bind="click: importPersonnel, disable: isLoading() || !selectedFile()">
+                                <button type="button" class="btn btn-primary" data-bind="click: importPersonnel, disable: isLoading() || !personnelFile()">
                                     <span data-bind="visible: !isLoading()">
                                         <i class="bi bi-upload me-2"></i>@Html.T("Import.Import", "İçe Aktar")
                                     </span>
@@ -67,126 +82,301 @@
                         </form>
 
                         <!-- Selected File Info -->
-                        <div data-bind="visible: selectedFile" class="mt-3">
+                        <div data-bind="visible: personnelFile" class="mt-3">
                             <div class="alert alert-secondary">
                                 <i class="bi bi-file-earmark-text me-2"></i>
-                                <strong>@Html.T("Import.SelectedFile", "Seçili Dosya"):</strong> <span data-bind="text: selectedFileName"></span>
-                                (<span data-bind="text: selectedFileSize"></span>)
+                                <strong>@Html.T("Import.SelectedFile", "Seçili Dosya"):</strong> <span data-bind="text: personnelFileName"></span>
+                                (<span data-bind="text: personnelFileSize"></span>)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personnel Result Section -->
+                <div class="mt-4" data-bind="visible: personnelResult">
+                    <div class="card shadow-sm">
+                        <div class="card-header" data-bind="css: { 'bg-success text-white': personnelResult() && personnelResult().success, 'bg-danger text-white': personnelResult() && !personnelResult().success }">
+                            <h5 class="mb-0">
+                                <i class="bi me-2" data-bind="css: { 'bi-check-circle': personnelResult() && personnelResult().success, 'bi-x-circle': personnelResult() && !personnelResult().success }"></i>
+                                @Html.T("Import.ImportResult", "İçe Aktarma Sonucu")
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Summary Stats -->
+                            <div class="row mb-4">
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0" data-bind="text: personnelResult() ? personnelResult().totalRows : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.TotalRows", "Toplam Satır")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-info" data-bind="text: personnelResult() ? personnelResult().customersCreated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.CustomersCreated", "Firma Oluşturuldu")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-success" data-bind="text: personnelResult() ? personnelResult().personnelCreated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.PersonnelCreated", "Personel Oluşturuldu")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-primary" data-bind="text: personnelResult() ? personnelResult().personnelUpdated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.PersonnelUpdated", "Personel Güncellendi")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-warning" data-bind="text: personnelResult() ? personnelResult().personnelSkipped : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.Skipped", "Atlandı")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-danger" data-bind="text: personnelResult() && personnelResult().errors ? personnelResult().errors.length : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Errors -->
+                            <div data-bind="visible: personnelResult() && personnelResult().errors && personnelResult().errors.length > 0" class="mb-3">
+                                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Html.T("Import.Errors", "Hatalar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: personnelResult() ? personnelResult().errors : [] -->
+                                    <li class="list-group-item list-group-item-danger" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                </ul>
+                            </div>
+
+                            <!-- Warnings -->
+                            <div data-bind="visible: personnelResult() && personnelResult().warnings && personnelResult().warnings.length > 0" class="mb-3">
+                                <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>@Html.T("Import.Warnings", "Uyarılar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: personnelResult() ? personnelResult().warnings.slice(0, 20) : [] -->
+                                    <li class="list-group-item list-group-item-warning" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                    <li class="list-group-item list-group-item-light" data-bind="visible: personnelResult() && personnelResult().warnings && personnelResult().warnings.length > 20">
+                                        ... @Html.T("Import.AndMore", "ve") <span data-bind="text: personnelResult() && personnelResult().warnings ? personnelResult().warnings.length - 20 : 0"></span> @Html.T("Import.MoreWarnings", "uyarı daha")
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Imported Personnel Table -->
+                            <div data-bind="visible: personnelResult() && personnelResult().importedPersonnel && personnelResult().importedPersonnel.length > 0">
+                                <h6><i class="bi bi-table me-2"></i>@Html.T("Import.ProcessedPersonnel", "İşlenen Personeller (İlk 50)")</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>@Html.T("Import.FullName", "Ad Soyad")</th>
+                                                <th>@Html.T("Import.Username", "Kullanıcı Adı")</th>
+                                                <th>@Html.T("Import.Company", "Firma")</th>
+                                                <th>@Html.T("Import.Role", "Rol")</th>
+                                                <th>@Html.T("Common.Status", "Durum")</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: personnelResult() ? personnelResult().importedPersonnel.slice(0, 50) : []">
+                                            <tr>
+                                                <td data-bind="text: id"></td>
+                                                <td data-bind="text: fullName"></td>
+                                                <td data-bind="text: username"></td>
+                                                <td data-bind="text: company"></td>
+                                                <td data-bind="text: role"></td>
+                                                <td>
+                                                    <span class="badge" data-bind="
+                                                        text: status,
+                                                        css: {
+                                                            'bg-success': status === 'Created',
+                                                            'bg-primary': status === 'Updated',
+                                                            'bg-secondary': status === 'Skipped'
+                                                        }"></span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Result Section -->
-        <div class="row mt-4" data-bind="visible: importResult">
-            <div class="col-12">
+            <!-- Checklist Tab -->
+            <div class="tab-pane fade" id="checklist-tab" role="tabpanel">
                 <div class="card shadow-sm">
-                    <div class="card-header" data-bind="css: { 'bg-success text-white': importResult() && importResult().success, 'bg-danger text-white': importResult() && !importResult().success }">
+                    <div class="card-header bg-success text-white">
                         <h5 class="mb-0">
-                            <i class="bi me-2" data-bind="css: { 'bi-check-circle': importResult() && importResult().success, 'bi-x-circle': importResult() && !importResult().success }"></i>
-                            @Html.T("Import.ImportResult", "İçe Aktarma Sonucu")
+                            <i class="bi bi-upload me-2"></i>@Html.T("Import.ChecklistImport", "Checklist İçe Aktarma")
                         </h5>
                     </div>
                     <div class="card-body">
-                        <!-- Summary Stats -->
-                        <div class="row mb-4">
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0" data-bind="text: importResult() ? importResult().totalRows : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.TotalRows", "Toplam Satır")</small>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0 text-info" data-bind="text: importResult() ? importResult().customersCreated : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.CustomersCreated", "Firma Oluşturuldu")</small>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0 text-success" data-bind="text: importResult() ? importResult().personnelCreated : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.PersonnelCreated", "Personel Oluşturuldu")</small>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0 text-primary" data-bind="text: importResult() ? importResult().personnelUpdated : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.PersonnelUpdated", "Personel Güncellendi")</small>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0 text-warning" data-bind="text: importResult() ? importResult().personnelSkipped : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.Skipped", "Atlandı")</small>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="text-center p-3 bg-light rounded">
-                                    <h3 class="mb-0 text-danger" data-bind="text: importResult() && importResult().errors ? importResult().errors.length : 0"></h3>
-                                    <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Errors -->
-                        <div data-bind="visible: importResult() && importResult().errors && importResult().errors.length > 0" class="mb-3">
-                            <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Html.T("Import.Errors", "Hatalar")</h6>
-                            <ul class="list-group">
-                                <!-- ko foreach: importResult() ? importResult().errors : [] -->
-                                <li class="list-group-item list-group-item-danger" data-bind="text: $data"></li>
-                                <!-- /ko -->
+                        <!-- Info Box -->
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="bi bi-info-circle me-2"></i>@Html.T("Import.ChecklistInfo", "CSV Kolon Bilgileri")</h6>
+                            <ul class="mb-0">
+                                <li><strong>GroupName</strong> = @Html.T("Import.Checklist.GroupName", "Soru grubu adı (raporlama için)")</li>
+                                <li><strong>QuestionText</strong> = @Html.T("Import.Checklist.QuestionText", "Soru metni (zorunlu)")</li>
+                                <li><strong>WeightPoints</strong> = @Html.T("Import.Checklist.WeightPoints", "Ağırlık puanı (varsayılan: 1)")</li>
+                                <li><strong>MaxPoints</strong> = @Html.T("Import.Checklist.MaxPoints", "Maksimum puan 1-10 (varsayılan: 5)")</li>
+                                <li><strong>ScoringType</strong> = @Html.T("Import.Checklist.ScoringType", "Scored, Unscored, Penalty")</li>
+                                <li><strong>PenaltyType</strong> = @Html.T("Import.Checklist.PenaltyType", "None, YellowCard, RedCard")</li>
+                                <li><strong>SubCriteria</strong> = @Html.T("Import.Checklist.SubCriteria", "Alt kriterler (| ile ayrılmış)")</li>
                             </ul>
                         </div>
 
-                        <!-- Warnings -->
-                        <div data-bind="visible: importResult() && importResult().warnings && importResult().warnings.length > 0" class="mb-3">
-                            <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>@Html.T("Import.Warnings", "Uyarılar")</h6>
-                            <ul class="list-group">
-                                <!-- ko foreach: importResult() ? importResult().warnings.slice(0, 20) : [] -->
-                                <li class="list-group-item list-group-item-warning" data-bind="text: $data"></li>
-                                <!-- /ko -->
-                                <li class="list-group-item list-group-item-light" data-bind="visible: importResult() && importResult().warnings && importResult().warnings.length > 20">
-                                    ... @Html.T("Import.AndMore", "ve") <span data-bind="text: importResult() && importResult().warnings ? importResult().warnings.length - 20 : 0"></span> @Html.T("Import.MoreWarnings", "uyarı daha")
-                                </li>
-                            </ul>
-                        </div>
+                        <!-- Upload Form -->
+                        <form id="checklistUploadForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.ChecklistName", "Checklist Adı") <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" data-bind="value: checklistName" placeholder="@Html.T("Import.ChecklistNamePlaceholder", "Örn: Bosch Inbound Formu")" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.Customer", "Müşteri")</label>
+                                        <select class="form-select" data-bind="value: selectedCustomerId, options: availableCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Import.AllCustomers", "-- Tüm Müşteriler --")'"></select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.ChecklistDescription", "Açıklama")</label>
+                                        <input type="text" class="form-control" data-bind="value: checklistDescription" placeholder="@Html.T("Import.ChecklistDescriptionPlaceholder", "Kısa açıklama...")" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.SelectCsvFile", "CSV Dosyası Seçin") <span class="text-danger">*</span></label>
+                                        <input type="file" class="form-control" id="checklistCsvFile" accept=".csv" data-bind="event: { change: onChecklistFileSelected }">
+                                        <div class="form-text">@Html.T("Import.CsvFileNote", "Sadece .csv dosyaları kabul edilir (max 10MB)")</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Imported Personnel Table -->
-                        <div data-bind="visible: importResult() && importResult().importedPersonnel && importResult().importedPersonnel.length > 0">
-                            <h6><i class="bi bi-table me-2"></i>@Html.T("Import.ProcessedPersonnel", "İşlenen Personeller (İlk 50)")</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>@Html.T("Import.FullName", "Ad Soyad")</th>
-                                            <th>@Html.T("Import.Username", "Kullanıcı Adı")</th>
-                                            <th>@Html.T("Import.Company", "Firma")</th>
-                                            <th>@Html.T("Import.Role", "Rol")</th>
-                                            <th>@Html.T("Common.Status", "Durum")</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody data-bind="foreach: importResult() ? importResult().importedPersonnel.slice(0, 50) : []">
-                                        <tr>
-                                            <td data-bind="text: id"></td>
-                                            <td data-bind="text: fullName"></td>
-                                            <td data-bind="text: username"></td>
-                                            <td data-bind="text: company"></td>
-                                            <td data-bind="text: role"></td>
-                                            <td>
-                                                <span class="badge" data-bind="
-                                                    text: status,
-                                                    css: {
-                                                        'bg-success': status === 'Created',
-                                                        'bg-primary': status === 'Updated',
-                                                        'bg-secondary': status === 'Skipped'
-                                                    }"></span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-success" data-bind="click: importChecklist, disable: isLoading() || !checklistFile() || !checklistName()">
+                                    <span data-bind="visible: !isLoading()">
+                                        <i class="bi bi-upload me-2"></i>@Html.T("Import.Import", "İçe Aktar")
+                                    </span>
+                                    <span data-bind="visible: isLoading">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Import.Processing", "İşleniyor...")
+                                    </span>
+                                </button>
+                                <a href="/api/import/checklist/template" class="btn btn-outline-secondary" download>
+                                    <i class="bi bi-download me-2"></i>@Html.T("Import.DownloadTemplate", "Örnek Şablon İndir")
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Selected File Info -->
+                        <div data-bind="visible: checklistFile" class="mt-3">
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                <strong>@Html.T("Import.SelectedFile", "Seçili Dosya"):</strong> <span data-bind="text: checklistFileName"></span>
+                                (<span data-bind="text: checklistFileSize"></span>)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist Result Section -->
+                <div class="mt-4" data-bind="visible: checklistResult">
+                    <div class="card shadow-sm">
+                        <div class="card-header" data-bind="css: { 'bg-success text-white': checklistResult() && checklistResult().success, 'bg-danger text-white': checklistResult() && !checklistResult().success }">
+                            <h5 class="mb-0">
+                                <i class="bi me-2" data-bind="css: { 'bi-check-circle': checklistResult() && checklistResult().success, 'bi-x-circle': checklistResult() && !checklistResult().success }"></i>
+                                @Html.T("Import.ImportResult", "İçe Aktarma Sonucu")
+                                <span data-bind="visible: checklistResult() && checklistResult().checklistName">
+                                    - <span data-bind="text: checklistResult() ? checklistResult().checklistName : ''"></span>
+                                </span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Summary Stats -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0" data-bind="text: checklistResult() ? checklistResult().totalRows : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.TotalRows", "Toplam Satır")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-success" data-bind="text: checklistResult() ? checklistResult().questionsCreated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.QuestionsCreated", "Soru Oluşturuldu")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-info" data-bind="text: checklistResult() ? checklistResult().subCriteriaCreated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.SubCriteriaCreated", "Alt Kriter Oluşturuldu")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-danger" data-bind="text: checklistResult() && checklistResult().errors ? checklistResult().errors.length : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Errors -->
+                            <div data-bind="visible: checklistResult() && checklistResult().errors && checklistResult().errors.length > 0" class="mb-3">
+                                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Html.T("Import.Errors", "Hatalar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: checklistResult() ? checklistResult().errors : [] -->
+                                    <li class="list-group-item list-group-item-danger" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                </ul>
+                            </div>
+
+                            <!-- Warnings -->
+                            <div data-bind="visible: checklistResult() && checklistResult().warnings && checklistResult().warnings.length > 0" class="mb-3">
+                                <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>@Html.T("Import.Warnings", "Uyarılar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: checklistResult() ? checklistResult().warnings : [] -->
+                                    <li class="list-group-item list-group-item-warning" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                </ul>
+                            </div>
+
+                            <!-- Imported Questions Table -->
+                            <div data-bind="visible: checklistResult() && checklistResult().importedQuestions && checklistResult().importedQuestions.length > 0">
+                                <h6><i class="bi bi-table me-2"></i>@Html.T("Import.ProcessedQuestions", "İşlenen Sorular")</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>@Html.T("Checklist.Order", "Sıra")</th>
+                                                <th>@Html.T("Question.GroupName", "Grup")</th>
+                                                <th>@Html.T("Checklist.QuestionText", "Soru Metni")</th>
+                                                <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
+                                                <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
+                                                <th>@Html.T("Checklist.Scoring", "Puanlama")</th>
+                                                <th>@Html.T("Evaluation.SubCriteria", "Alt Kriter")</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: checklistResult() ? checklistResult().importedQuestions : []">
+                                            <tr>
+                                                <td data-bind="text: order"></td>
+                                                <td data-bind="text: groupName"></td>
+                                                <td data-bind="text: questionText.length > 50 ? questionText.substring(0, 50) + '...' : questionText"></td>
+                                                <td data-bind="text: weightPoints"></td>
+                                                <td data-bind="text: maxPoints"></td>
+                                                <td data-bind="text: scoringType"></td>
+                                                <td data-bind="text: subCriteriaCount"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -202,35 +392,74 @@
         var self = this;
 
         self.isLoading = ko.observable(false);
-        self.updateExisting = ko.observable(false);
-        self.selectedFile = ko.observable(null);
-        self.selectedFileName = ko.observable('');
-        self.selectedFileSize = ko.observable('');
-        self.importResult = ko.observable(null);
 
-        self.onFileSelected = function(vm, event) {
+        // Personnel Import
+        self.updateExisting = ko.observable(false);
+        self.personnelFile = ko.observable(null);
+        self.personnelFileName = ko.observable('');
+        self.personnelFileSize = ko.observable('');
+        self.personnelResult = ko.observable(null);
+
+        // Checklist Import
+        self.checklistFile = ko.observable(null);
+        self.checklistFileName = ko.observable('');
+        self.checklistFileSize = ko.observable('');
+        self.checklistResult = ko.observable(null);
+        self.checklistName = ko.observable('');
+        self.checklistDescription = ko.observable('');
+        self.selectedCustomerId = ko.observable(null);
+        self.availableCustomers = ko.observableArray([]);
+
+        // Load customers
+        self.loadCustomers = function() {
+            fetch('/api/customers', { credentials: 'include' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    self.availableCustomers(data || []);
+                })
+                .catch(function(err) {
+                    console.error('Error loading customers:', err);
+                });
+        };
+
+        // Personnel file selected
+        self.onPersonnelFileSelected = function(vm, event) {
             var file = event.target.files[0];
             if (file) {
-                self.selectedFile(file);
-                self.selectedFileName(file.name);
-                self.selectedFileSize(formatFileSize(file.size));
-                self.importResult(null);
+                self.personnelFile(file);
+                self.personnelFileName(file.name);
+                self.personnelFileSize(formatFileSize(file.size));
+                self.personnelResult(null);
             } else {
-                self.selectedFile(null);
+                self.personnelFile(null);
             }
         };
 
+        // Checklist file selected
+        self.onChecklistFileSelected = function(vm, event) {
+            var file = event.target.files[0];
+            if (file) {
+                self.checklistFile(file);
+                self.checklistFileName(file.name);
+                self.checklistFileSize(formatFileSize(file.size));
+                self.checklistResult(null);
+            } else {
+                self.checklistFile(null);
+            }
+        };
+
+        // Import Personnel
         self.importPersonnel = function() {
-            if (!self.selectedFile()) {
+            if (!self.personnelFile()) {
                 toastr.warning(T('Import.SelectFileWarning', 'Lütfen bir CSV dosyası seçin.'));
                 return;
             }
 
             self.isLoading(true);
-            self.importResult(null);
+            self.personnelResult(null);
 
             var formData = new FormData();
-            formData.append('file', self.selectedFile());
+            formData.append('file', self.personnelFile());
 
             var url = '/api/import/personnel?updateExisting=' + self.updateExisting();
 
@@ -245,10 +474,77 @@
                 });
             })
             .then(function(result) {
-                self.importResult(result.data);
+                self.personnelResult(result.data);
 
                 if (result.ok && result.data.success) {
                     toastr.success(T('Import.Success', 'İçe aktarma başarıyla tamamlandı!'));
+                } else if (result.ok && !result.data.success) {
+                    toastr.warning(T('Import.SuccessWithErrors', 'İçe aktarma tamamlandı ancak hatalar var.'));
+                } else {
+                    toastr.error(T('Import.Failed', 'İçe aktarma başarısız.'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Import error:', error);
+                toastr.error(T('Import.Error', 'İçe aktarma sırasında bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
+        };
+
+        // Import Checklist
+        self.importChecklist = function() {
+            if (!self.checklistFile()) {
+                toastr.warning(T('Import.SelectFileWarning', 'Lütfen bir CSV dosyası seçin.'));
+                return;
+            }
+
+            if (!self.checklistName() || self.checklistName().trim() === '') {
+                toastr.warning(T('Import.EnterChecklistName', 'Lütfen bir checklist adı girin.'));
+                return;
+            }
+
+            self.isLoading(true);
+            self.checklistResult(null);
+
+            var formData = new FormData();
+            formData.append('file', self.checklistFile());
+
+            var params = new URLSearchParams();
+            params.append('checklistName', self.checklistName().trim());
+            if (self.selectedCustomerId()) {
+                params.append('customerId', self.selectedCustomerId());
+            }
+            if (self.checklistDescription() && self.checklistDescription().trim() !== '') {
+                params.append('description', self.checklistDescription().trim());
+            }
+
+            var url = '/api/import/checklist?' + params.toString();
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    return { ok: response.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                self.checklistResult(result.data);
+
+                if (result.ok && result.data.success) {
+                    toastr.success(T('Import.Success', 'İçe aktarma başarıyla tamamlandı!'));
+                    // Formu temizle
+                    self.checklistName('');
+                    self.checklistDescription('');
+                    self.selectedCustomerId(null);
+                    self.checklistFile(null);
+                    self.checklistFileName('');
+                    self.checklistFileSize('');
+                    document.getElementById('checklistCsvFile').value = '';
                 } else if (result.ok && !result.data.success) {
                     toastr.warning(T('Import.SuccessWithErrors', 'İçe aktarma tamamlandı ancak hatalar var.'));
                 } else {
@@ -271,6 +567,9 @@
             var i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
+
+        // Initialize
+        self.loadCustomers();
     }
 
     $(document).ready(function() {
