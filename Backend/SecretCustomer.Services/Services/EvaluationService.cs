@@ -937,14 +937,14 @@ public class EvaluationService : IEvaluationService
     }
 
     /// <summary>
-    /// Organizasyona göre personel listesi getir
+    /// Organizasyona göre personel listesi getir (sadece junction table'dan)
     /// </summary>
     public async Task<List<PersonnelOptionDto>> GetPersonnelByOrganizationAsync(int organizationId)
     {
         var personnel = await _context.CustomerPersonnel
             .Where(cp => !cp.IsDeleted && cp.IsActive)
-            .Where(cp => cp.OrganizationId == organizationId ||
-                         cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == organizationId))
+            .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted) ||
+                         cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted))
             // Süpervizörleri hariç tut
             .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
             .OrderBy(cp => cp.FirstName)
@@ -954,7 +954,11 @@ public class EvaluationService : IEvaluationService
                 Id = cp.Id,
                 Name = cp.FirstName + " " + cp.LastName,
                 Title = cp.Title ?? "",
-                OrganizationId = cp.OrganizationId
+                // Junction table'dan ilk organizasyon ID'si
+                OrganizationId = cp.OrganizationAssignments
+                    .Where(oa => !oa.IsDeleted)
+                    .Select(oa => (int?)oa.CustomerOrganizationId)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 

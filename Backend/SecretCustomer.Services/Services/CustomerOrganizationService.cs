@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.CustomerOrganization;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 
@@ -10,39 +11,50 @@ namespace SecretCustomer.Services.Services;
 public class CustomerOrganizationService : ICustomerOrganizationService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
 
-    public CustomerOrganizationService(ApplicationDbContext context)
+    public CustomerOrganizationService(
+        ApplicationDbContext context,
+        ICustomerPersonnelOrganizationRepository personnelOrgRepository)
     {
         _context = context;
+        _personnelOrgRepository = personnelOrgRepository;
     }
 
     public async Task<object> DebugCheckPersonnelAsync()
     {
-        // Tüm organizasyonları ve personel sayılarını getir
+        // Tüm organizasyonları ve personel sayılarını getir (junction table'dan)
         var orgs = await _context.CustomerOrganizations
-            .Include(o => o.Personnel)
+            .Include(o => o.PersonnelAssignments)
             .Select(o => new
             {
                 OrgId = o.Id,
                 OrgName = o.Name,
                 CustomerName = o.Customer != null ? o.Customer.CompanyName : "",
-                PersonnelCollectionCount = o.Personnel.Count,
-                PersonnelIds = o.Personnel.Select(p => p.Id).ToList()
+                PersonnelAssignmentCount = o.PersonnelAssignments.Count,
+                PersonnelIds = o.PersonnelAssignments.Select(pa => pa.CustomerPersonnelId).ToList()
             })
             .ToListAsync();
 
-        // Tüm personellerin OrganizationId'lerini getir
+        // Tüm personellerin organizasyon atamalarını getir (junction table'dan)
         var personnel = await _context.CustomerPersonnel
+            .Include(p => p.OrganizationAssignments)
+                .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(p => p.OrganizationAssignments)
+                .ThenInclude(oa => oa.Supervisor)
             .Select(p => new
             {
                 PersonnelId = p.Id,
                 FullName = p.FirstName + " " + p.LastName,
                 Role = (int)p.Role,
                 RoleName = p.Role.ToString(),
-                SupervisorId = p.SupervisorId,
-                SupervisorName = p.Supervisor != null ? p.Supervisor.FirstName + " " + p.Supervisor.LastName : "NULL",
-                OrganizationId = p.OrganizationId,
-                OrganizationName = p.Organization != null ? p.Organization.Name : "NULL"
+                OrganizationCount = p.OrganizationAssignments.Count,
+                Organizations = p.OrganizationAssignments.Select(oa => new {
+                    OrgId = oa.CustomerOrganizationId,
+                    OrgName = oa.CustomerOrganization != null ? oa.CustomerOrganization.Name : "NULL",
+                    SupervisorId = oa.SupervisorId,
+                    SupervisorName = oa.Supervisor != null ? oa.Supervisor.FirstName + " " + oa.Supervisor.LastName : "NULL"
+                }).ToList()
             })
             .ToListAsync();
 
@@ -54,8 +66,8 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             {
                 TotalOrgs = orgs.Count,
                 TotalPersonnel = personnel.Count,
-                PersonnelWithOrg = personnel.Count(p => p.OrganizationId != null),
-                PersonnelWithoutOrg = personnel.Count(p => p.OrganizationId == null)
+                PersonnelWithOrg = personnel.Count(p => p.OrganizationCount > 0),
+                PersonnelWithoutOrg = personnel.Count(p => p.OrganizationCount == 0)
             }
         };
     }
@@ -65,7 +77,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         var org = await _context.CustomerOrganizations
             .Include(o => o.Customer)
             .Include(o => o.Parent)
-            .Include(o => o.Personnel)
+            .Include(o => o.PersonnelAssignments) // Sadece junction table
             .Include(o => o.Children)
             .FirstOrDefaultAsync(o => o.Id == id);
 
@@ -77,7 +89,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         var query = _context.CustomerOrganizations
             .Include(o => o.Customer)
             .Include(o => o.Parent)
-            .Include(o => o.Personnel)
+            .Include(o => o.PersonnelAssignments) // Sadece junction table
             .Include(o => o.Children)
             .Where(o => o.CustomerId == customerId);
 
@@ -93,7 +105,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     public async Task<OrganizationTreeDto?> GetOrganizationTreeAsync(int customerId)
     {
         var orgs = await _context.CustomerOrganizations
-            .Include(o => o.Personnel)
+            .Include(o => o.PersonnelAssignments) // Sadece junction table
             .Where(o => o.CustomerId == customerId && o.IsActive)
             .OrderBy(o => o.Order)
             .ThenBy(o => o.Name)
@@ -128,9 +140,15 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             Code = org.Code,
             Level = org.Level,
             IsActive = org.IsActive,
-            PersonnelCount = org.Personnel?.Count ?? 0,
+            PersonnelCount = GetUniquePersonnelCount(org),
             Children = children.Select(c => BuildTreeNode(c, allOrgs)).ToList()
         };
+    }
+
+    // Sadece junction table'dan personel sayısı
+    private static int GetUniquePersonnelCount(CustomerOrganization org)
+    {
+        return org.PersonnelAssignments?.Count ?? 0;
     }
 
     public async Task<CustomerOrganizationDto> CreateAsync(CreateCustomerOrganizationDto dto)
@@ -226,7 +244,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     {
         var org = await _context.CustomerOrganizations
             .Include(o => o.Children)
-            .Include(o => o.Personnel)
+            .Include(o => o.PersonnelAssignments) // Sadece junction table
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (org == null)
@@ -239,7 +257,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new InvalidOperationException("Alt organizasyonları olan bir organizasyon silinemez. Önce alt organizasyonları silin.");
         }
 
-        if (org.Personnel.Any())
+        if (org.PersonnelAssignments.Any())
         {
             throw new InvalidOperationException("Personeli olan bir organizasyon silinemez. Önce personelleri başka organizasyona taşıyın.");
         }
@@ -327,10 +345,10 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     public async Task<OrganizationPersonnelListDto> GetPersonnelByOrganizationIdAsync(int organizationId)
     {
         var org = await _context.CustomerOrganizations
-            .Include(o => o.Personnel)
-                .ThenInclude(p => p.Supervisor)
-            .Include(o => o.Personnel)
-                .ThenInclude(p => p.TeamMembers)
+            .Include(o => o.PersonnelAssignments) // Sadece junction table
+                .ThenInclude(pa => pa.CustomerPersonnel)
+            .Include(o => o.PersonnelAssignments)
+                .ThenInclude(pa => pa.Supervisor)
             .FirstOrDefaultAsync(o => o.Id == organizationId);
 
         if (org == null)
@@ -338,22 +356,37 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new KeyNotFoundException($"Organizasyon bulunamadı (ID: {organizationId})");
         }
 
-        var personnel = org.Personnel.ToList();
+        // Junction table'dan personelleri ve bu org için supervisor bilgisini al
+        var assignmentsWithSupervisors = org.PersonnelAssignments?
+            .Where(pa => pa.CustomerPersonnel != null && !pa.IsDeleted)
+            .ToDictionary(pa => pa.CustomerPersonnelId, pa => pa.SupervisorId)
+            ?? new Dictionary<int, int?>();
+
+        var personnel = org.PersonnelAssignments?
+            .Where(pa => pa.CustomerPersonnel != null && !pa.IsDeleted)
+            .Select(pa => pa.CustomerPersonnel!)
+            .ToList() ?? new List<CustomerPersonnel>();
+
+        // Bu organizasyonda kimin kime bağlı olduğunu junction table'dan al
+        Func<CustomerPersonnel, int?> getSupervisorInOrg = (p) =>
+            assignmentsWithSupervisors.TryGetValue(p.Id, out var supId) ? supId : null;
 
         // Süpervizörler (Manager ve Supervisor rolleri)
-        // Organizasyon yöneticileri (teamMembers yok) en üstte gösterilir
         var supervisors = personnel
             .Where(p => p.Role == CustomerPersonnelRole.CustomerManager || p.Role == CustomerPersonnelRole.CustomerSupervisor)
-            .Select(p => MapToPersonnelItem(p, personnel))
+            .Select(p => MapToPersonnelItemV2(p, personnel, assignmentsWithSupervisors))
             .OrderByDescending(s => s.TeamMembers.Count == 0) // Org yöneticisi (altında kimse yok) en üste
             .ThenBy(s => s.FullName)
             .ToList();
 
-        // Bağımsız operatörler (süpervizörü olmayan VEYA süpervizörü farklı organizasyonda)
+        // Bağımsız operatörler (bu organizasyonda süpervizörü olmayan VEYA süpervizörü bu org'da olmayan)
         var independentOperators = personnel
-            .Where(p => p.Role == CustomerPersonnelRole.CustomerOperator &&
-                       (p.SupervisorId == null || !personnel.Any(s => s.Id == p.SupervisorId)))
-            .Select(p => MapToPersonnelItem(p, personnel))
+            .Where(p => p.Role == CustomerPersonnelRole.CustomerOperator)
+            .Where(p => {
+                var supIdInOrg = getSupervisorInOrg(p);
+                return supIdInOrg == null || !personnel.Any(s => s.Id == supIdInOrg);
+            })
+            .Select(p => MapToPersonnelItemV2(p, personnel, assignmentsWithSupervisors))
             .ToList();
 
         return new OrganizationPersonnelListDto
@@ -368,94 +401,57 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     public async Task<IEnumerable<OrganizationPersonnelSummaryDto>> GetPersonnelPoolAsync(int customerId)
     {
         var personnel = await _context.CustomerPersonnel
-            .Include(p => p.Supervisor)
-            .Include(p => p.Organization)
+            .Include(p => p.OrganizationAssignments) // Junction table
+                .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(p => p.OrganizationAssignments)
+                .ThenInclude(oa => oa.Supervisor)
             .Include(p => p.ManagedOrganizations)
-            .Where(p => p.CustomerId == customerId && p.IsActive)
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
             .OrderBy(p => p.Role)
             .ThenBy(p => p.FirstName)
             .ThenBy(p => p.LastName)
             .ToListAsync();
 
-        return personnel.Select(p => new OrganizationPersonnelSummaryDto
-        {
-            Id = p.Id,
-            FullName = $"{p.FirstName} {p.LastName}",
-            Username = p.Username,
-            Email = p.Email,
-            RoleName = GetRoleName(p.Role),
-            Role = (int)p.Role,
-            IsActive = p.IsActive,
-            SupervisorId = p.SupervisorId,
-            SupervisorName = p.Supervisor != null ? $"{p.Supervisor.FirstName} {p.Supervisor.LastName}" : null,
-            OrganizationId = p.OrganizationId,
-            OrganizationName = p.Organization?.Name,
-            ManagedOrganizationIds = p.ManagedOrganizations?.Select(m => m.CustomerOrganizationId).ToList() ?? new List<int>()
+        return personnel.Select(p => {
+            // İlk organizasyon atamasından supervisor ve org bilgisini al
+            var firstAssignment = p.OrganizationAssignments?.FirstOrDefault(oa => !oa.IsDeleted);
+            return new OrganizationPersonnelSummaryDto
+            {
+                Id = p.Id,
+                FullName = $"{p.FirstName} {p.LastName}",
+                Username = p.Username,
+                Email = p.Email,
+                RoleName = GetRoleName(p.Role),
+                Role = (int)p.Role,
+                IsActive = p.IsActive,
+                SupervisorId = firstAssignment?.SupervisorId,
+                SupervisorName = firstAssignment?.Supervisor != null
+                    ? $"{firstAssignment.Supervisor.FirstName} {firstAssignment.Supervisor.LastName}"
+                    : null,
+                OrganizationId = firstAssignment?.CustomerOrganizationId,
+                OrganizationName = firstAssignment?.CustomerOrganization?.Name,
+                OrganizationCount = p.OrganizationAssignments?.Count(oa => !oa.IsDeleted) ?? 0,
+                ManagedOrganizationIds = p.ManagedOrganizations?.Select(m => m.CustomerOrganizationId).ToList() ?? new List<int>()
+            };
         });
     }
 
     public async Task AssignPersonnelToOrganizationAsync(AssignPersonnelToOrganizationDto dto)
     {
-        var personnel = await _context.CustomerPersonnel.FindAsync(dto.PersonnelId);
-        if (personnel == null)
-        {
-            throw new KeyNotFoundException($"Personel bulunamadı (ID: {dto.PersonnelId})");
-        }
-
-        var org = await _context.CustomerOrganizations.FindAsync(dto.OrganizationId);
-        if (org == null)
-        {
-            throw new KeyNotFoundException($"Organizasyon bulunamadı (ID: {dto.OrganizationId})");
-        }
-
-        if (personnel.CustomerId != org.CustomerId)
-        {
-            throw new InvalidOperationException("Personel ve organizasyon farklı müşterilere ait");
-        }
-
-        // Süpervizör kontrolü
-        if (dto.SupervisorId.HasValue)
-        {
-            var supervisor = await _context.CustomerPersonnel.FindAsync(dto.SupervisorId.Value);
-            if (supervisor == null)
-            {
-                throw new KeyNotFoundException($"Süpervizör bulunamadı (ID: {dto.SupervisorId})");
-            }
-            if (supervisor.OrganizationId != dto.OrganizationId)
-            {
-                throw new InvalidOperationException("Süpervizör bu organizasyona ait değil");
-            }
-            personnel.SupervisorId = dto.SupervisorId;
-        }
-
-        personnel.OrganizationId = dto.OrganizationId;
-        personnel.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        // V2 metodu kullan (junction table)
+        await AddPersonnelToOrganizationAsync(dto.PersonnelId, dto.OrganizationId, dto.SupervisorId, null);
     }
 
     public async Task RemovePersonnelFromOrganizationAsync(int personnelId, int organizationId)
     {
-        var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-        if (personnel == null)
-        {
-            throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelId})");
-        }
-
-        if (personnel.OrganizationId != organizationId)
-        {
-            throw new InvalidOperationException("Personel bu organizasyona ait değil");
-        }
-
-        personnel.OrganizationId = null;
-        personnel.SupervisorId = null;
-        personnel.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        // V2 metodu kullan (junction table)
+        await RemovePersonnelFromOrganizationV2Async(personnelId, organizationId);
     }
 
     public async Task SetSupervisorAsync(int personnelId, int? supervisorId)
     {
+        // Multi-org modelde supervisor her organizasyon için ayrı belirlenir
+        // Bu metod tüm organizasyon atamalarını günceller (backward compatibility için)
         var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
         if (personnel == null)
         {
@@ -475,60 +471,190 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             }
         }
 
-        personnel.SupervisorId = supervisorId;
-        personnel.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        // Tüm organizasyon atamalarını güncelle
+        var assignments = await _personnelOrgRepository.GetByPersonnelIdAsync(personnelId);
+        foreach (var assignment in assignments)
+        {
+            assignment.SupervisorId = supervisorId;
+            assignment.UpdatedAt = DateTime.UtcNow;
+            await _personnelOrgRepository.UpdateAsync(assignment);
+        }
     }
 
     public async Task TransferTeamAndRemoveAsync(int organizationId, int personnelIdToRemove, int newSupervisorId)
     {
-        // Validate personnel to remove
-        var personnelToRemove = await _context.CustomerPersonnel
-            .Include(p => p.TeamMembers)
-            .FirstOrDefaultAsync(p => p.Id == personnelIdToRemove);
-
-        if (personnelToRemove == null)
+        // Validate personnel to remove - junction table'dan kontrol et
+        var assignmentToRemove = await _personnelOrgRepository.GetAsync(personnelIdToRemove, organizationId);
+        if (assignmentToRemove == null)
         {
-            throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelIdToRemove})");
+            throw new KeyNotFoundException($"Personel bu organizasyona atanmamış (PersonelId: {personnelIdToRemove}, OrgId: {organizationId})");
         }
 
-        if (personnelToRemove.OrganizationId != organizationId)
-        {
-            throw new InvalidOperationException("Personel bu organizasyona ait değil");
-        }
-
-        // Validate new supervisor
-        var newSupervisor = await _context.CustomerPersonnel.FindAsync(newSupervisorId);
-        if (newSupervisor == null)
-        {
-            throw new KeyNotFoundException($"Yeni süpervizör bulunamadı (ID: {newSupervisorId})");
-        }
-
-        if (newSupervisor.OrganizationId != organizationId)
+        // Validate new supervisor - junction table'da bu org'da olmalı
+        var newSupervisorAssignment = await _personnelOrgRepository.GetAsync(newSupervisorId, organizationId);
+        if (newSupervisorAssignment == null)
         {
             throw new InvalidOperationException("Yeni süpervizör bu organizasyona ait değil");
         }
 
-        if (newSupervisor.Id == personnelIdToRemove)
+        if (newSupervisorId == personnelIdToRemove)
         {
             throw new InvalidOperationException("Personel kendi kendine devredilemez");
         }
 
-        // Transfer team members to new supervisor
-        var teamMembers = personnelToRemove.TeamMembers?.ToList() ?? new List<CustomerPersonnel>();
-        foreach (var member in teamMembers)
+        // Bu organizasyonda bu personele bağlı ekip üyelerini bul
+        var orgAssignments = await _personnelOrgRepository.GetByOrganizationIdAsync(organizationId);
+        var teamMemberAssignments = orgAssignments
+            .Where(a => a.SupervisorId == personnelIdToRemove)
+            .ToList();
+
+        // Ekip üyelerini yeni süpervizöre transfer et
+        foreach (var memberAssignment in teamMemberAssignments)
         {
-            member.SupervisorId = newSupervisorId;
-            member.UpdatedAt = DateTime.UtcNow;
+            memberAssignment.SupervisorId = newSupervisorId;
+            memberAssignment.UpdatedAt = DateTime.UtcNow;
+            await _personnelOrgRepository.UpdateAsync(memberAssignment);
         }
 
-        // Remove personnel from organization
-        personnelToRemove.OrganizationId = null;
-        personnelToRemove.SupervisorId = null;
-        personnelToRemove.UpdatedAt = DateTime.UtcNow;
+        // Personeli organizasyondan çıkar
+        await _personnelOrgRepository.DeleteAsync(personnelIdToRemove, organizationId);
+    }
 
-        await _context.SaveChangesAsync();
+    // ===== Coklu Organizasyon Destegi (Junction Table) =====
+
+    public async Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetPersonnelOrganizationsAsync(int personnelId)
+    {
+        var assignments = await _personnelOrgRepository.GetByPersonnelIdAsync(personnelId);
+        return assignments.Select(MapToAssignmentDto);
+    }
+
+    public async Task<PersonnelOrganizationAssignmentDto> AddPersonnelToOrganizationAsync(
+        int personnelId, int organizationId, int? supervisorId = null, string? notes = null)
+    {
+        // Personel kontrolu
+        var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+        if (personnel == null)
+        {
+            throw new KeyNotFoundException($"Personel bulunamadi (ID: {personnelId})");
+        }
+
+        // Organizasyon kontrolu
+        var org = await _context.CustomerOrganizations.FindAsync(organizationId);
+        if (org == null)
+        {
+            throw new KeyNotFoundException($"Organizasyon bulunamadi (ID: {organizationId})");
+        }
+
+        // Ayni musteri kontrolu
+        if (personnel.CustomerId != org.CustomerId)
+        {
+            throw new InvalidOperationException("Personel ve organizasyon farkli musterilere ait");
+        }
+
+        // Zaten atanmis mi?
+        if (await _personnelOrgRepository.ExistsAsync(personnelId, organizationId))
+        {
+            throw new InvalidOperationException("Personel zaten bu organizasyona atanmis");
+        }
+
+        // Supervisor kontrolu - junction table'dan kontrol et
+        if (supervisorId.HasValue)
+        {
+            var supervisor = await _context.CustomerPersonnel.FindAsync(supervisorId.Value);
+            if (supervisor == null)
+            {
+                throw new KeyNotFoundException($"Supervisor bulunamadi (ID: {supervisorId})");
+            }
+            // Supervisor'un bu organizasyonda gorev aliyor olmasi gerekir
+            var supervisorInOrg = await _personnelOrgRepository.ExistsAsync(supervisorId.Value, organizationId);
+            if (!supervisorInOrg)
+            {
+                throw new InvalidOperationException("Supervisor bu organizasyonda gorev almiyor");
+            }
+        }
+
+        var assignment = new CustomerPersonnelOrganization
+        {
+            CustomerPersonnelId = personnelId,
+            CustomerOrganizationId = organizationId,
+            SupervisorId = supervisorId,
+            Notes = notes,
+            AssignedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _personnelOrgRepository.AddAsync(assignment);
+
+        // Reload with includes
+        var result = await _personnelOrgRepository.GetAsync(personnelId, organizationId);
+        return MapToAssignmentDto(result!);
+    }
+
+    public async Task<PersonnelOrganizationAssignmentDto> UpdatePersonnelOrganizationAssignmentAsync(
+        int personnelId, int organizationId, UpdatePersonnelOrganizationAssignmentDto dto)
+    {
+        var assignment = await _personnelOrgRepository.GetAsync(personnelId, organizationId);
+        if (assignment == null)
+        {
+            throw new KeyNotFoundException($"Atama bulunamadi (PersonelId: {personnelId}, OrgId: {organizationId})");
+        }
+
+        // Supervisor kontrolu
+        if (dto.SupervisorId.HasValue)
+        {
+            var supervisor = await _context.CustomerPersonnel.FindAsync(dto.SupervisorId.Value);
+            if (supervisor == null)
+            {
+                throw new KeyNotFoundException($"Supervisor bulunamadi (ID: {dto.SupervisorId})");
+            }
+        }
+
+        assignment.SupervisorId = dto.SupervisorId;
+        assignment.Notes = dto.Notes;
+        assignment.UpdatedAt = DateTime.UtcNow;
+
+        await _personnelOrgRepository.UpdateAsync(assignment);
+
+        // Reload with includes
+        var result = await _personnelOrgRepository.GetAsync(personnelId, organizationId);
+        return MapToAssignmentDto(result!);
+    }
+
+    public async Task RemovePersonnelFromOrganizationV2Async(int personnelId, int organizationId)
+    {
+        var assignment = await _personnelOrgRepository.GetAsync(personnelId, organizationId);
+        if (assignment == null)
+        {
+            throw new KeyNotFoundException($"Atama bulunamadi (PersonelId: {personnelId}, OrgId: {organizationId})");
+        }
+
+        await _personnelOrgRepository.DeleteAsync(personnelId, organizationId);
+    }
+
+    public async Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetOrganizationPersonnelAssignmentsAsync(int organizationId)
+    {
+        var assignments = await _personnelOrgRepository.GetByOrganizationIdAsync(organizationId);
+        return assignments.Select(MapToAssignmentDto);
+    }
+
+    private PersonnelOrganizationAssignmentDto MapToAssignmentDto(CustomerPersonnelOrganization assignment)
+    {
+        return new PersonnelOrganizationAssignmentDto
+        {
+            Id = assignment.Id,
+            CustomerPersonnelId = assignment.CustomerPersonnelId,
+            PersonnelName = assignment.CustomerPersonnel != null
+                ? $"{assignment.CustomerPersonnel.FirstName} {assignment.CustomerPersonnel.LastName}"
+                : string.Empty,
+            CustomerOrganizationId = assignment.CustomerOrganizationId,
+            OrganizationName = assignment.CustomerOrganization?.Name ?? string.Empty,
+            SupervisorId = assignment.SupervisorId,
+            SupervisorName = assignment.Supervisor != null
+                ? $"{assignment.Supervisor.FirstName} {assignment.Supervisor.LastName}"
+                : null,
+            AssignedAt = assignment.AssignedAt,
+            Notes = assignment.Notes
+        };
     }
 
     private CustomerOrganizationDto MapToDto(CustomerOrganization org)
@@ -546,18 +672,22 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             CustomerName = org.Customer?.CompanyName ?? string.Empty,
             ParentId = org.ParentId,
             ParentName = org.Parent?.Name,
-            PersonnelCount = org.Personnel?.Count ?? 0,
+            PersonnelCount = GetUniquePersonnelCount(org),
             ChildrenCount = org.Children?.Count ?? 0,
             CreatedAt = org.CreatedAt,
             UpdatedAt = org.UpdatedAt
         };
     }
 
-    private OrganizationPersonnelItemDto MapToPersonnelItem(CustomerPersonnel p, List<CustomerPersonnel> allPersonnel)
+    // V2: Junction table'dan supervisor bilgisini kullanan versiyon
+    private OrganizationPersonnelItemDto MapToPersonnelItemV2(
+        CustomerPersonnel p,
+        List<CustomerPersonnel> allPersonnel,
+        Dictionary<int, int?> supervisorMap)
     {
-        // Bu süpervizöre bağlı operatörleri bul
+        // Bu organizasyonda bu süpervizöre bağlı operatörleri bul
         var teamMembers = allPersonnel
-            .Where(op => op.SupervisorId == p.Id)
+            .Where(op => supervisorMap.TryGetValue(op.Id, out var supId) && supId == p.Id)
             .Select(op => new OrganizationPersonnelItemDto
             {
                 Id = op.Id,
@@ -572,11 +702,17 @@ public class CustomerOrganizationService : ICustomerOrganizationService
                 RoleName = GetRoleName(op.Role),
                 Role = (int)op.Role,
                 IsActive = op.IsActive,
-                SupervisorId = op.SupervisorId,
+                SupervisorId = p.Id,
                 SupervisorName = $"{p.FirstName} {p.LastName}",
                 TeamMembers = new List<OrganizationPersonnelItemDto>()
             })
             .ToList();
+
+        // Bu personelin bu org'daki supervisor'ı
+        supervisorMap.TryGetValue(p.Id, out var mySupervisorId);
+        var mySupervisor = mySupervisorId.HasValue
+            ? allPersonnel.FirstOrDefault(s => s.Id == mySupervisorId.Value)
+            : null;
 
         return new OrganizationPersonnelItemDto
         {
@@ -592,8 +728,8 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             RoleName = GetRoleName(p.Role),
             Role = (int)p.Role,
             IsActive = p.IsActive,
-            SupervisorId = p.SupervisorId,
-            SupervisorName = p.Supervisor != null ? $"{p.Supervisor.FirstName} {p.Supervisor.LastName}" : null,
+            SupervisorId = mySupervisorId,
+            SupervisorName = mySupervisor != null ? $"{mySupervisor.FirstName} {mySupervisor.LastName}" : null,
             TeamMembers = teamMembers
         };
     }
@@ -607,5 +743,20 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             CustomerPersonnelRole.CustomerOperator => "Müşteri Operatörü",
             _ => role.ToString()
         };
+    }
+
+    // Multi-org için personel karşılaştırıcı (Union'da kullanılır)
+    private class CustomerPersonnelComparer : IEqualityComparer<CustomerPersonnel>
+    {
+        public bool Equals(CustomerPersonnel? x, CustomerPersonnel? y)
+        {
+            if (x == null || y == null) return false;
+            return x.Id == y.Id;
+        }
+
+        public int GetHashCode(CustomerPersonnel obj)
+        {
+            return obj.Id.GetHashCode();
+        }
     }
 }

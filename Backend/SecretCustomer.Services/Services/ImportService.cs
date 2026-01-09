@@ -14,15 +14,18 @@ public class ImportService : IImportService
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly ICustomerPersonnelRepository _customerPersonnelRepository;
+    private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
     private readonly ApplicationDbContext _context;
 
     public ImportService(
         ICustomerRepository customerRepository,
         ICustomerPersonnelRepository customerPersonnelRepository,
+        ICustomerPersonnelOrganizationRepository personnelOrgRepository,
         ApplicationDbContext context)
     {
         _customerRepository = customerRepository;
         _customerPersonnelRepository = customerPersonnelRepository;
+        _personnelOrgRepository = personnelOrgRepository;
         _context = context;
     }
 
@@ -110,6 +113,40 @@ public class ImportService : IImportService
 
                     if (existingPersonnel != null)
                     {
+                        // Farklı organizasyonda mı kontrol et - multi-org support
+                        if (organization != null)
+                        {
+                            var existsInOrg = await _personnelOrgRepository.ExistsAsync(existingPersonnel.Id, organization.Id);
+
+                            if (!existsInOrg)
+                            {
+                                // Aynı kişi farklı organizasyona atanıyor - junction table'a ekle
+                                var assignment = new CustomerPersonnelOrganization
+                                {
+                                    CustomerPersonnelId = existingPersonnel.Id,
+                                    CustomerOrganizationId = organization.Id,
+                                    SupervisorId = null, // CSV'den supervisor bilgisi gelmiyorsa null
+                                    AssignedAt = DateTime.UtcNow,
+                                    Notes = "CSV Import ile atandı",
+                                    CreatedAt = DateTime.UtcNow
+                                };
+
+                                await _personnelOrgRepository.AddAsync(assignment);
+                                result.PersonnelUpdated++;
+
+                                result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                                {
+                                    Id = existingPersonnel.Id,
+                                    FullName = importDto.FullName,
+                                    Username = importDto.Username,
+                                    Company = importDto.Company,
+                                    Role = importDto.Role,
+                                    Status = "AddedToOrg"
+                                });
+                                continue;
+                            }
+                        }
+
                         if (updateExisting)
                         {
                             // Update existing
@@ -118,10 +155,29 @@ public class ImportService : IImportService
                             existingPersonnel.Email = importDto.Email;
                             existingPersonnel.Role = ParseRole(importDto.Role);
                             existingPersonnel.CustomerId = customer.Id;
-                            existingPersonnel.OrganizationId = organization?.Id;
+                            // OrganizationId artık junction table'da - doğrudan set etme
                             existingPersonnel.UpdatedAt = DateTime.UtcNow;
 
                             await _customerPersonnelRepository.UpdateAsync(existingPersonnel);
+
+                            // Junction table'da da organizasyona ekle (yoksa)
+                            if (organization != null)
+                            {
+                                var existsInOrg = await _personnelOrgRepository.ExistsAsync(existingPersonnel.Id, organization.Id);
+                                if (!existsInOrg)
+                                {
+                                    var assignment = new CustomerPersonnelOrganization
+                                    {
+                                        CustomerPersonnelId = existingPersonnel.Id,
+                                        CustomerOrganizationId = organization.Id,
+                                        SupervisorId = null, // Update durumunda supervisor belirlenemiyor
+                                        AssignedAt = DateTime.UtcNow,
+                                        Notes = "CSV Import ile güncellendi ve atandı",
+                                        CreatedAt = DateTime.UtcNow
+                                    };
+                                    await _personnelOrgRepository.AddAsync(assignment);
+                                }
+                            }
                             result.PersonnelUpdated++;
 
                             result.ImportedPersonnel.Add(new ImportedPersonnelInfo
@@ -167,12 +223,11 @@ public class ImportService : IImportService
                             currentSupervisorByCompany.TryGetValue(supervisorKey, out supervisorId);
                         }
 
-                        // Create new personnel
+                        // Create new personnel (OrganizationId ve SupervisorId artık junction table'da)
                         var newPersonnel = new CustomerPersonnel
                         {
                             CustomerId = customer.Id,
-                            OrganizationId = organization?.Id,
-                            SupervisorId = supervisorId,
+                            // OrganizationId ve SupervisorId artık junction table'da - doğrudan set etme
                             Username = importDto.Username,
                             Email = importDto.Email,
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(importDto.Password),
@@ -185,6 +240,21 @@ public class ImportService : IImportService
 
                         var created = await _customerPersonnelRepository.CreateAsync(newPersonnel);
                         result.PersonnelCreated++;
+
+                        // Junction table'a da ekle (multi-org desteği için)
+                        if (organization != null)
+                        {
+                            var assignment = new CustomerPersonnelOrganization
+                            {
+                                CustomerPersonnelId = created.Id,
+                                CustomerOrganizationId = organization.Id,
+                                SupervisorId = supervisorId,
+                                AssignedAt = DateTime.UtcNow,
+                                Notes = "CSV Import ile oluşturuldu",
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            await _personnelOrgRepository.AddAsync(assignment);
+                        }
 
                         // Eğer bu kişi Supervisor ise, sonraki operatörler için kaydet
                         if (role == CustomerPersonnelRole.CustomerSupervisor)

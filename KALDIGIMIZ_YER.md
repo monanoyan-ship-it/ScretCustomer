@@ -1,4 +1,86 @@
-# Kaldığımız Yer - 1 Ocak 2026 (Son Güncelleme)
+# Kaldığımız Yer - 9 Ocak 2026 (Son Güncelleme)
+
+---
+
+## ✅ TAMAMLANAN İŞLER (9 Ocak 2026)
+
+### Excel → CSV Dönüşümleri
+
+**Personel Import:**
+| Excel Dosyası | CSV Çıktısı | İçerik |
+|---------------|-------------|--------|
+| `Bosch Home Come.xlsx` | `Bosch_Home_Come_personnel.csv` | 4 Manager, 38 Operator (42 kişi) |
+
+**Checklist Import:**
+| Excel Dosyası | CSV Çıktısı | İçerik |
+|---------------|-------------|--------|
+| `Bosch cozumleme.xlsx` | `Bosch_checklist_import.csv` | 23 soru (SubCriteria dahil) |
+| `Boyner ınbound.xlsx` | `Boyner_inbound_checklist.csv` | 49 soru (26 Scored, 11 YellowCard, 11 RedCard, 1 Unscored) |
+
+### Checklist Import Güncellemesi
+- Import artık **yeni checklist oluşturuyor** (mevcut güncelleme yerine)
+- Parametreler: `checklistName`, `customerId` (opsiyonel), `description` (opsiyonel)
+- API: `POST /api/import/checklist?checklistName=...&customerId=...&description=...`
+
+### Checklist Soru Layout Düzenlemesi
+- Soru kartı layout değişti:
+  - Satır 1: Soru Grubu (tam genişlik)
+  - Satır 2: Soru Metni (tam genişlik)
+  - Satır 3: Puanlama - Ağırlık Puanı - Maks Puan - Ceza Tipi - Sıra - Zorunlu
+- `Question.GroupName` MaxLength(200) limiti kaldırıldı (artık sınırsız)
+- Migration: `RemoveGroupNameMaxLength`
+
+### Checklist CSV Import Özelliği
+- `/Import/Index` sayfasına yeni "Checklist İçe Aktarma" tabı eklendi
+- API: `POST /api/import/checklist?checklistId={id}&clearExisting=false`
+- Şablon: `GET /api/import/checklist/template`
+
+**CSV Formatı:**
+```csv
+GroupName,QuestionText,WeightPoints,MaxPoints,ScoringType,PenaltyType,SubCriteria,Order,IsRequired,HelpText
+İletişim,Müşterinin sözü kesildi,3,3,Scored,None,"Alt kriter 1|Alt kriter 2",1,false,
+Kritik,Kabul Edilemez Eylemler,100,1,Penalty,RedCard,"KVKK ihlali|Polemik",2,true,Kırmızı kart
+```
+
+**Kolonlar:**
+| Kolon | Açıklama | Zorunlu | Varsayılan |
+|-------|----------|---------|------------|
+| GroupName | Soru grubu adı | Hayır | - |
+| QuestionText | Soru metni | EVET | - |
+| WeightPoints | Ağırlık puanı | Hayır | 1 |
+| MaxPoints | Maks puan (1-10) | Hayır | 5 |
+| ScoringType | Scored/Unscored/Penalty | Hayır | Scored |
+| PenaltyType | None/YellowCard/RedCard | Hayır | None |
+| SubCriteria | Alt kriterler (pipe ile ayrılmış) | Hayır | - |
+| Order | Sıra numarası | Hayır | Otomatik |
+| IsRequired | Zorunlu mu | Hayır | false |
+| HelpText | Yardımcı metin | Hayır | - |
+
+### Form.cshtml Pattern İhlali Düzeltildi
+- `Views/Evaluations/Form.cshtml` silindi (ayrı sayfa YASAK)
+- `wwwroot/js/Evaluations/Form.js` silindi
+- `EvaluationsController.Form()` action kaldırıldı
+- Pattern'e göre: Değerlendirmeler sadece Index.cshtml'deki modal ile yapılır
+
+---
+
+## 📋 IMPORT ŞABLONLARI (Boş Kalıp)
+
+### Personel Import CSV
+```csv
+FullName,Username,Email,Password,Role,RoleId,Company,Organization
+Ahmet Yılmaz,ahmet.yilmaz,a@b.com,user@123,CustomerOperator,3,Firma Adı,Merkez
+```
+- **Endpoint:** `POST /api/import/personnel`
+- **Şablon:** `GET /api/import/personnel/template`
+
+### Checklist Import CSV
+```csv
+GroupName,QuestionText,WeightPoints,MaxPoints,ScoringType,PenaltyType,SubCriteria
+Grup Adı,Soru metni,3,5,Scored,None,"Alt kriter 1|Alt kriter 2"
+```
+- **Endpoint:** `POST /api/import/checklist?checklistId={id}`
+- **Şablon:** `GET /api/import/checklist/template`
 
 ---
 

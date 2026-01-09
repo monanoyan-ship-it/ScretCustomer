@@ -31,18 +31,18 @@ function CustomerPersonnelEditViewModel(data) {
     var self = this;
     data = data || {};
 
-    self.id = data.id || null;
-    self.customerId = ko.observable(data.customerId || '');
-    self.customerName = data.customerName || '';
-    self.username = ko.observable(data.username || '');
-    self.firstName = ko.observable(data.firstName || '');
-    self.lastName = ko.observable(data.lastName || '');
-    self.email = ko.observable(data.email || '');
-    self.phoneNumber = ko.observable(data.phoneNumber || '');
-    self.department = ko.observable(data.department || '');
+    self.id = data.id || data.Id || null;
+    self.customerId = ko.observable(data.customerId || data.CustomerId || '');
+    self.customerName = data.customerName || data.CustomerName || '';
+    self.username = ko.observable(data.username || data.Username || '');
+    self.firstName = ko.observable(data.firstName || data.FirstName || '');
+    self.lastName = ko.observable(data.lastName || data.LastName || '');
+    self.email = ko.observable(data.email || data.Email || '');
+    self.phoneNumber = ko.observable(data.phoneNumber || data.PhoneNumber || '');
+    self.department = ko.observable(data.department || data.Department || '');
     self.password = ko.observable('');
-    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '1');
-    self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
+    self.role = ko.observable(data.role !== undefined ? data.role.toString() : (data.Role !== undefined ? data.Role.toString() : '1'));
+    self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : (data.IsActive !== undefined ? data.IsActive : true));
 
     // Mevcut data'dan ViewModel olustur (guncelleme icin)
     self.toData = function() {
@@ -338,6 +338,7 @@ function UsersViewModel() {
 
         var dto = {
             customerId: parseInt(cp.customerId()),
+            username: cp.username(),
             firstName: cp.firstName(),
             lastName: cp.lastName(),
             email: cp.email(),
@@ -348,7 +349,6 @@ function UsersViewModel() {
         };
 
         if (!cp.id) {
-            dto.username = cp.username();
             dto.password = cp.password();
         }
 

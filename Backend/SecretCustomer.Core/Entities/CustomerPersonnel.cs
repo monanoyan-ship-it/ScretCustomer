@@ -99,4 +99,9 @@ public class CustomerPersonnel : BaseEntity
     /// Bu personelin değerlendirebileceği organizasyonlar (many-to-many)
     /// </summary>
     public ICollection<CustomerPersonnelOrganizationAccess> OrganizationAccess { get; set; } = new List<CustomerPersonnelOrganizationAccess>();
+
+    /// <summary>
+    /// Bu personelin gorev aldigi organizasyonlar (many-to-many, her atamada farkli supervisor olabilir)
+    /// </summary>
+    public ICollection<CustomerPersonnelOrganization> OrganizationAssignments { get; set; } = new List<CustomerPersonnelOrganization>();
 }

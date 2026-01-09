@@ -8,6 +8,10 @@ public class CustomerPersonnelDto
     public int Id { get; set; }
     public int CustomerId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+    public int? SupervisorId { get; set; }
+    public string? SupervisorName { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
@@ -23,6 +27,10 @@ public class CustomerPersonnelDto
     public int TaskAssignmentCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    // Multi-org desteği
+    public int OrganizationAssignmentCount { get; set; }
+    public List<int> OrganizationIds { get; set; } = new();
 }
 
 public class CreateCustomerPersonnelDto

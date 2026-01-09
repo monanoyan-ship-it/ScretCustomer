@@ -108,6 +108,9 @@ public class OrganizationPersonnelSummaryDto
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
 
+    // Multi-org: Kişinin atanmış olduğu organizasyon sayısı
+    public int OrganizationCount { get; set; }
+
     // Bu personelin yönettiği organizasyonlar (many-to-many)
     public List<int> ManagedOrganizationIds { get; set; } = new();
 }
@@ -159,4 +162,37 @@ public class OrganizationPersonnelItemDto
 
     // Bu süpervizöre bağlı operatörler
     public List<OrganizationPersonnelItemDto> TeamMembers { get; set; } = new();
+
+    // Personelin gorev aldigi organizasyonlar (coklu organizasyon destegi)
+    public List<PersonnelOrganizationAssignmentDto> OrganizationAssignments { get; set; } = new();
+}
+
+/// <summary>
+/// Personelin bir organizasyondaki gorev atamasi DTO
+/// </summary>
+public class PersonnelOrganizationAssignmentDto
+{
+    public int Id { get; set; }
+    public int CustomerPersonnelId { get; set; }
+    public string PersonnelName { get; set; } = string.Empty;
+    public int CustomerOrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public int? SupervisorId { get; set; }
+    public string? SupervisorName { get; set; }
+    public DateTime AssignedAt { get; set; }
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// Atama guncelleme icin DTO (supervisor degistirme vb.)
+/// </summary>
+public class UpdatePersonnelOrganizationAssignmentDto
+{
+    /// <summary>
+    /// Bu organizasyondaki yeni supervisor
+    /// </summary>
+    public int? SupervisorId { get; set; }
+
+    [StringLength(500)]
+    public string? Notes { get; set; }
 }

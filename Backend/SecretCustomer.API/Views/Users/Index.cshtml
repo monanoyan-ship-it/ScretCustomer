@@ -262,9 +262,10 @@
                         <select class="form-select" data-bind="value: customerId, options: $root.customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("CustomerPersonnel.SelectCustomer", "Müşteri Seçin...")'"></select>
                     </div>
 
-                    <div class="mb-3" data-bind="visible: !id">
+                    <div class="mb-3">
                         <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" data-bind="value: username" />
+                        <input type="text" class="form-control" data-bind="value: username" autocomplete="username" />
+                        <div class="form-text text-muted">@Html.T("User.UsernameHint", "Sadece İngilizce harf, rakam, alt çizgi, nokta ve tire")</div>
                     </div>
 
                     <div class="row">
@@ -285,7 +286,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.Phone", "Telefon")</label>
-                            <input type="text" class="form-control" data-bind="value: phoneNumber" />
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" autocomplete="tel" />
                         </div>
                     </div>
 

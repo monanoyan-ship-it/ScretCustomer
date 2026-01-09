@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
     public DbSet<CustomerOrganizationManager> CustomerOrganizationManagers { get; set; }
     public DbSet<CustomerPersonnelOrganizationAccess> CustomerPersonnelOrganizationAccess { get; set; }
+    public DbSet<CustomerPersonnelOrganization> CustomerPersonnelOrganizations { get; set; }
 
     // Permission Management DbSets
     public DbSet<Permission> Permissions { get; set; }
@@ -117,6 +118,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CustomerOrganization>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerOrganizationManager>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelOrganizationAccess>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerPersonnelOrganization>().HasQueryFilter(e => !e.IsDeleted);
 
         // Permission Management Entities
         modelBuilder.Entity<Permission>().HasQueryFilter(e => !e.IsDeleted);

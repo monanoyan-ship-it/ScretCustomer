@@ -22,7 +22,8 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
             query = query
                 .Include(p => p.Customer)
                 .Include(p => p.TaskAssignments)
-                .Include(p => p.Permissions);
+                .Include(p => p.Permissions)
+                .Include(p => p.OrganizationAssignments); // Multi-org desteği
         }
 
         return await query.FirstOrDefaultAsync(p => p.Id == id);
@@ -33,6 +34,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         var query = _context.CustomerPersonnel
             .Include(p => p.Customer)
             .Include(p => p.TaskAssignments)
+            .Include(p => p.OrganizationAssignments) // Multi-org desteği
             .AsQueryable();
 
         if (!includeInactive)
@@ -51,6 +53,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         var query = _context.CustomerPersonnel
             .Include(p => p.Customer)
             .Include(p => p.TaskAssignments)
+            .Include(p => p.OrganizationAssignments) // Multi-org desteği
             .Where(p => p.CustomerId == customerId);
 
         if (!includeInactive)
@@ -66,10 +69,11 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
 
     public async Task<IEnumerable<CustomerPersonnel>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false)
     {
+        // Sadece junction table'dan cek
         var query = _context.CustomerPersonnel
             .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Where(p => p.OrganizationId == organizationId);
+            .Include(p => p.OrganizationAssignments)
+            .Where(p => p.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == organizationId));
 
         if (!includeInactive)
         {

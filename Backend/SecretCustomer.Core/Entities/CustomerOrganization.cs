@@ -53,4 +53,7 @@ public class CustomerOrganization : BaseEntity
 
     // Navigation - Bu organizasyonu değerlendirebilecekler (many-to-many)
     public ICollection<CustomerPersonnelOrganizationAccess> EvaluatorAccess { get; set; } = new List<CustomerPersonnelOrganizationAccess>();
+
+    // Navigation - Bu organizasyonda gorevli personeller (many-to-many, her atamada farkli supervisor)
+    public ICollection<CustomerPersonnelOrganization> PersonnelAssignments { get; set; } = new List<CustomerPersonnelOrganization>();
 }

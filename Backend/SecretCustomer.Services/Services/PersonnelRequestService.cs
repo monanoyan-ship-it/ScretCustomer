@@ -131,11 +131,11 @@ public class PersonnelRequestService : IPersonnelRequestService
         // Email varsayılanı: username@temp.com
         var email = string.IsNullOrEmpty(dto.Email) ? $"{dto.Username}@temp.com" : dto.Email;
 
-        // 1. CustomerPersonnel oluştur
+        // 1. CustomerPersonnel oluştur (OrganizationId ve SupervisorId artık junction table'da)
         var personnel = new CustomerPersonnel
         {
             CustomerId = request.CustomerId,
-            OrganizationId = request.CustomerOrganizationId,
+            // OrganizationId ve SupervisorId artık junction table'da - doğrudan set etme
             FirstName = request.FirstName,
             LastName = request.LastName,
             Title = request.Title,
@@ -143,12 +143,24 @@ public class PersonnelRequestService : IPersonnelRequestService
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("user@123"),
             MustChangePassword = true,
-            SupervisorId = dto.SupervisorId,
             Role = CustomerPersonnelRole.CustomerOperator,
             IsActive = true
         };
 
         _context.CustomerPersonnel.Add(personnel);
+        await _context.SaveChangesAsync();
+
+        // Junction table'a organizasyon ataması ekle
+        var orgAssignment = new CustomerPersonnelOrganization
+        {
+            CustomerPersonnelId = personnel.Id,
+            CustomerOrganizationId = request.CustomerOrganizationId,
+            SupervisorId = dto.SupervisorId,
+            AssignedAt = DateTime.UtcNow,
+            Notes = $"PersonnelRequest #{request.Id} onayıyla oluşturuldu",
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.CustomerPersonnelOrganizations.Add(orgAssignment);
         await _context.SaveChangesAsync();
 
         // 2. Request güncelle
@@ -220,8 +232,9 @@ public class PersonnelRequestService : IPersonnelRequestService
 
     public async Task<List<(int Id, string FullName)>> GetSupervisorsForOrganizationAsync(int customerOrganizationId)
     {
+        // Sadece junction table'dan cek
         return await _context.CustomerPersonnel
-            .Where(cp => cp.OrganizationId == customerOrganizationId
+            .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == customerOrganizationId)
                       && cp.Role == CustomerPersonnelRole.CustomerSupervisor
                       && cp.IsActive
                       && !cp.IsDeleted)

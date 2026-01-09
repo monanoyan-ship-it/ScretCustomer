@@ -216,28 +216,34 @@ public class DashboardApiController : BaseApiController
             }
             else if (role == "CustomerSupervisor")
             {
-                // Takım üye sayısını kontrol et
-                var teamMemberCount = await _context.CustomerPersonnel
-                    .CountAsync(p => p.SupervisorId == personnelId && !p.IsDeleted);
+                // Junction table'dan bu personelin supervisor olduğu kişileri say
+                var teamMemberCount = await _context.CustomerPersonnelOrganizations
+                    .CountAsync(cpo => cpo.SupervisorId == personnelId && !cpo.IsDeleted);
 
                 if (teamMemberCount == 0)
                 {
-                    // Organizasyon yöneticisi - tüm organizasyon personelini görsün
-                    var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-                    if (personnel?.OrganizationId != null)
+                    // Organizasyon yöneticisi - tüm organizasyon personelini görsün (sadece junction table)
+                    var orgIds = await _context.CustomerPersonnelOrganizations
+                        .Where(cpo => cpo.CustomerPersonnelId == personnelId && !cpo.IsDeleted)
+                        .Select(cpo => cpo.CustomerOrganizationId)
+                        .ToListAsync();
+
+                    if (orgIds.Any())
                     {
-                        targetUserIds = await _context.CustomerPersonnel
-                            .Where(p => p.OrganizationId == personnel.OrganizationId && !p.IsDeleted)
-                            .Select(p => p.Id)
+                        targetUserIds = await _context.CustomerPersonnelOrganizations
+                            .Where(cpo => orgIds.Contains(cpo.CustomerOrganizationId) && !cpo.IsDeleted)
+                            .Select(cpo => cpo.CustomerPersonnelId)
+                            .Distinct()
                             .ToListAsync();
                     }
                 }
                 else
                 {
-                    // Normal supervisor - sadece takım üyeleri
-                    targetUserIds = await _context.CustomerPersonnel
-                        .Where(p => p.SupervisorId == personnelId && !p.IsDeleted)
-                        .Select(p => p.Id)
+                    // Normal supervisor - junction table'dan takım üyeleri
+                    targetUserIds = await _context.CustomerPersonnelOrganizations
+                        .Where(cpo => cpo.SupervisorId == personnelId && !cpo.IsDeleted)
+                        .Select(cpo => cpo.CustomerPersonnelId)
+                        .Distinct()
                         .ToListAsync();
                 }
                 showPersonnelName = true;
@@ -262,14 +268,16 @@ public class DashboardApiController : BaseApiController
                 });
             }
 
-            // Değerlendirmeleri getir
+            // Değerlendirmeleri getir (junction table ile)
             var evaluations = await _context.Evaluations
                 .Include(e => e.Assignment)
                     .ThenInclude(a => a.AssignedCustomerPersonnel)
-                        .ThenInclude(cp => cp!.Supervisor)
+                        .ThenInclude(cp => cp!.OrganizationAssignments)
+                            .ThenInclude(oa => oa.CustomerOrganization)
                 .Include(e => e.Assignment)
                     .ThenInclude(a => a.AssignedCustomerPersonnel)
-                        .ThenInclude(cp => cp!.Organization)
+                        .ThenInclude(cp => cp!.OrganizationAssignments)
+                            .ThenInclude(oa => oa.Supervisor)
                 .Where(e => e.Assignment != null
                     && e.Assignment.AssignedCustomerPersonnelId != null
                     && targetUserIds.Contains(e.Assignment.AssignedCustomerPersonnelId.Value)
@@ -285,11 +293,21 @@ public class DashboardApiController : BaseApiController
                     PersonnelName = e.Assignment!.AssignedCustomerPersonnel != null
                         ? e.Assignment.AssignedCustomerPersonnel.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.LastName
                         : "",
-                    SupervisorName = e.Assignment.AssignedCustomerPersonnel != null && e.Assignment.AssignedCustomerPersonnel.Supervisor != null
-                        ? e.Assignment.AssignedCustomerPersonnel.Supervisor.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.Supervisor.LastName
+                    // Junction table'dan ilk atamadaki supervisor
+                    SupervisorName = e.Assignment.AssignedCustomerPersonnel != null
+                        && e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.Supervisor != null)
+                        ? e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments
+                            .Where(oa => !oa.IsDeleted && oa.Supervisor != null)
+                            .Select(oa => oa.Supervisor!.FirstName + " " + oa.Supervisor.LastName)
+                            .FirstOrDefault() ?? ""
                         : "",
-                    OrganizationName = e.Assignment.AssignedCustomerPersonnel != null && e.Assignment.AssignedCustomerPersonnel.Organization != null
-                        ? e.Assignment.AssignedCustomerPersonnel.Organization.Name
+                    // Junction table'dan ilk atamadaki organizasyon
+                    OrganizationName = e.Assignment.AssignedCustomerPersonnel != null
+                        && e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
+                        ? e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments
+                            .Where(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
+                            .Select(oa => oa.CustomerOrganization!.Name)
+                            .FirstOrDefault() ?? ""
                         : "",
                     e.Notes
                 })

@@ -10,13 +10,16 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 {
     private readonly ICustomerPersonnelRepository _personnelRepository;
     private readonly ICustomerRepository _customerRepository;
+    private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
 
     public CustomerPersonnelService(
         ICustomerPersonnelRepository personnelRepository,
-        ICustomerRepository customerRepository)
+        ICustomerRepository customerRepository,
+        ICustomerPersonnelOrganizationRepository personnelOrgRepository)
     {
         _personnelRepository = personnelRepository;
         _customerRepository = customerRepository;
+        _personnelOrgRepository = personnelOrgRepository;
     }
 
     public async Task<CustomerPersonnelDto?> GetByIdAsync(int id)
@@ -51,10 +54,22 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             throw new KeyNotFoundException($"Personel bulunamadı (ID: {personnelId})");
         }
 
-        personnel.OrganizationId = newOrganizationId;
-        personnel.UpdatedAt = DateTime.UtcNow;
+        // Mevcut tüm organizasyon atamalarını sil
+        var existingAssignments = await _personnelOrgRepository.GetByPersonnelIdAsync(personnelId);
+        foreach (var assignment in existingAssignments)
+        {
+            await _personnelOrgRepository.DeleteAsync(personnelId, assignment.CustomerOrganizationId);
+        }
 
-        await _personnelRepository.UpdateAsync(personnel);
+        // Yeni organizasyona ata
+        var newAssignment = new CustomerPersonnelOrganization
+        {
+            CustomerPersonnelId = personnelId,
+            CustomerOrganizationId = newOrganizationId,
+            AssignedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _personnelOrgRepository.AddAsync(newAssignment);
     }
 
     public async Task<CustomerPersonnelDto?> GetByUsernameAsync(string username)
@@ -220,11 +235,27 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 
     private static CustomerPersonnelDto MapToDto(CustomerPersonnel personnel)
     {
+        // Sadece junction table'dan organizasyon bilgilerini al
+        var orgAssignments = personnel.OrganizationAssignments?
+            .Where(oa => !oa.IsDeleted)
+            .ToList() ?? new List<CustomerPersonnelOrganization>();
+
+        var orgIds = orgAssignments.Select(oa => oa.CustomerOrganizationId).ToList();
+
+        // İlk organizasyon atamasından bilgileri al (birincil organizasyon)
+        var primaryAssignment = orgAssignments.FirstOrDefault();
+
         return new CustomerPersonnelDto
         {
             Id = personnel.Id,
             CustomerId = personnel.CustomerId,
             CustomerName = personnel.Customer?.CompanyName ?? "",
+            OrganizationId = primaryAssignment?.CustomerOrganizationId,
+            OrganizationName = primaryAssignment?.CustomerOrganization?.Name,
+            SupervisorId = primaryAssignment?.SupervisorId,
+            SupervisorName = primaryAssignment?.Supervisor != null
+                ? $"{primaryAssignment.Supervisor.FirstName} {primaryAssignment.Supervisor.LastName}"
+                : null,
             Username = personnel.Username,
             Email = personnel.Email,
             FirstName = personnel.FirstName,
@@ -239,7 +270,9 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             Notes = personnel.Notes,
             TaskAssignmentCount = personnel.TaskAssignments?.Count ?? 0,
             CreatedAt = personnel.CreatedAt,
-            UpdatedAt = personnel.UpdatedAt
+            UpdatedAt = personnel.UpdatedAt,
+            OrganizationAssignmentCount = orgIds.Count,
+            OrganizationIds = orgIds
         };
     }
 

@@ -169,6 +169,7 @@ builder.Services.AddScoped<ICustomerPersonnelRepository, CustomerPersonnelReposi
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
 builder.Services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
+builder.Services.AddScoped<ICustomerPersonnelOrganizationRepository, CustomerPersonnelOrganizationRepository>();
 
 // Service Registration
 builder.Services.AddScoped<IChecklistService, ChecklistService>();

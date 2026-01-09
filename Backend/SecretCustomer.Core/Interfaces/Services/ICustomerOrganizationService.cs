@@ -30,4 +30,31 @@ public interface ICustomerOrganizationService
     Task RemovePersonnelFromOrganizationAsync(int personnelId, int organizationId);
     Task SetSupervisorAsync(int personnelId, int? supervisorId);
     Task TransferTeamAndRemoveAsync(int organizationId, int personnelIdToRemove, int newSupervisorId);
+
+    // ===== Coklu Organizasyon Destegi (Junction Table) =====
+
+    /// <summary>
+    /// Personelin gorev aldigi tum organizasyonlari getir
+    /// </summary>
+    Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetPersonnelOrganizationsAsync(int personnelId);
+
+    /// <summary>
+    /// Personeli bir organizasyona ata (junction table uzerinden)
+    /// </summary>
+    Task<PersonnelOrganizationAssignmentDto> AddPersonnelToOrganizationAsync(int personnelId, int organizationId, int? supervisorId = null, string? notes = null);
+
+    /// <summary>
+    /// Personelin bir organizasyondaki atamasini guncelle (supervisor degistirme vb.)
+    /// </summary>
+    Task<PersonnelOrganizationAssignmentDto> UpdatePersonnelOrganizationAssignmentAsync(int personnelId, int organizationId, UpdatePersonnelOrganizationAssignmentDto dto);
+
+    /// <summary>
+    /// Personeli bir organizasyondan cikar (junction table uzerinden)
+    /// </summary>
+    Task RemovePersonnelFromOrganizationV2Async(int personnelId, int organizationId);
+
+    /// <summary>
+    /// Organizasyondaki tum personel atamalarini getir (junction table uzerinden)
+    /// </summary>
+    Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetOrganizationPersonnelAssignmentsAsync(int organizationId);
 }

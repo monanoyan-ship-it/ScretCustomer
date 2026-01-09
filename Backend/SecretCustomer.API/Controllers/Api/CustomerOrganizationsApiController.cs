@@ -386,6 +386,142 @@ public class CustomerOrganizationsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Transfer işlemi sırasında bir hata oluştu", ex));
         }
     }
+
+    // ========== COKLU ORGANIZASYON DESTEGI (Junction Table) ==========
+
+    /// <summary>
+    /// Personelin gorev aldigi tum organizasyonlari getir
+    /// </summary>
+    [HttpGet("~/api/customer-personnel/{personnelId}/organizations")]
+    public async Task<IActionResult> GetPersonnelOrganizations(int personnelId)
+    {
+        try
+        {
+            var assignments = await _organizationService.GetPersonnelOrganizationsAsync(personnelId);
+            return Ok(assignments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading organizations for personnel {PersonnelId}", personnelId);
+            return StatusCode(500, CreateErrorResponse("Organizasyonlar yuklenirken bir hata olustu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Organizasyondaki tum personel atamalarini getir (junction table)
+    /// </summary>
+    [HttpGet("{organizationId}/assignments")]
+    public async Task<IActionResult> GetOrganizationAssignments(int organizationId)
+    {
+        try
+        {
+            var assignments = await _organizationService.GetOrganizationPersonnelAssignmentsAsync(organizationId);
+            return Ok(assignments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading assignments for organization {OrganizationId}", organizationId);
+            return StatusCode(500, CreateErrorResponse("Atamalar yuklenirken bir hata olustu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Personeli organizasyona ata (coklu organizasyon destegi)
+    /// </summary>
+    [HttpPost("{organizationId}/personnel/{personnelId}")]
+    public async Task<IActionResult> AddPersonnelToOrganization(
+        int organizationId,
+        int personnelId,
+        [FromBody] AddPersonnelToOrganizationRequestDto? dto = null)
+    {
+        try
+        {
+            var assignment = await _organizationService.AddPersonnelToOrganizationAsync(
+                personnelId,
+                organizationId,
+                dto?.SupervisorId,
+                dto?.Notes);
+            return Ok(assignment);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Personnel or organization not found");
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while adding personnel to organization");
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding personnel {PersonnelId} to organization {OrganizationId}", personnelId, organizationId);
+            return StatusCode(500, CreateErrorResponse("Personel atanirken bir hata olustu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Personelin organizasyondaki atamasini guncelle (supervisor degistir vb.)
+    /// </summary>
+    [HttpPut("{organizationId}/personnel/{personnelId}")]
+    public async Task<IActionResult> UpdatePersonnelOrganizationAssignment(
+        int organizationId,
+        int personnelId,
+        [FromBody] UpdatePersonnelOrganizationAssignmentDto dto)
+    {
+        try
+        {
+            var assignment = await _organizationService.UpdatePersonnelOrganizationAssignmentAsync(
+                personnelId,
+                organizationId,
+                dto);
+            return Ok(assignment);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Assignment not found");
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error while updating assignment");
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating assignment for personnel {PersonnelId} in organization {OrganizationId}", personnelId, organizationId);
+            return StatusCode(500, CreateErrorResponse("Atama guncellenirken bir hata olustu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Personeli organizasyondan cikar (coklu organizasyon destegi)
+    /// </summary>
+    [HttpDelete("{organizationId}/personnel/{personnelId}/v2")]
+    public async Task<IActionResult> RemovePersonnelFromOrganizationV2(int organizationId, int personnelId)
+    {
+        try
+        {
+            await _organizationService.RemovePersonnelFromOrganizationV2Async(personnelId, organizationId);
+            return Ok(new { message = "Personel organizasyondan cikarildi" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Assignment not found");
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing personnel {PersonnelId} from organization {OrganizationId}", personnelId, organizationId);
+            return StatusCode(500, CreateErrorResponse("Personel cikarilirken bir hata olustu", ex));
+        }
+    }
+}
+
+public class AddPersonnelToOrganizationRequestDto
+{
+    public int? SupervisorId { get; set; }
+    public string? Notes { get; set; }
 }
 
 public class TransferAndRemoveDto
