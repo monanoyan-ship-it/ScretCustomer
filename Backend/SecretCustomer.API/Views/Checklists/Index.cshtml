@@ -288,8 +288,9 @@
                                 </button>
                             </div>
                             <div class="card-body">
+                                <!-- Satır 1: Soru Grubu -->
                                 <div class="row">
-                                    <div class="col-md-2 mb-2 position-relative">
+                                    <div class="col-12 mb-2 position-relative">
                                         <label class="form-label">@Html.T("Question.GroupName", "Soru Grubu")</label>
                                         <input type="text" class="form-control"
                                                data-bind="value: groupName, event: { focus: $root.showGroupSuggestions, input: $root.filterGroupSuggestions, blur: $root.hideGroupSuggestions }"
@@ -300,16 +301,17 @@
                                             <a class="dropdown-item" href="#" data-bind="text: $data, click: function() { $parent.groupName($data); $root.showGroupDropdown(false); }"></a>
                                         </div>
                                     </div>
-                                    <div class="col-md-8 mb-2">
+                                </div>
+
+                                <!-- Satır 2: Soru Metni -->
+                                <div class="row">
+                                    <div class="col-12 mb-2">
                                         <label class="form-label">@Html.T("Checklist.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" data-bind="value: text" placeholder="@Html.T("Checklist.QuestionTextPlaceholder", "Soru metni")" />
                                     </div>
-                                    <div class="col-md-2 mb-2">
-                                        <label class="form-label">@Html.T("Checklist.Order", "Sıra")</label>
-                                        <input type="number" class="form-control" data-bind="value: order" min="1" />
-                                    </div>
                                 </div>
 
+                                <!-- Satır 3: Puanlama - Ağırlık Puanı - Maks Puan - Ceza Tipi - Sıra - Zorunlu -->
                                 <div class="row">
                                     <div class="col-md-2 mb-2">
                                         <label class="form-label">@Html.T("Checklist.Scoring", "Puanlama")</label>
@@ -335,6 +337,10 @@
                                             <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
                                             <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
                                         </select>
+                                    </div>
+                                    <div class="col-md-2 mb-2">
+                                        <label class="form-label">@Html.T("Checklist.Order", "Sıra")</label>
+                                        <input type="number" class="form-control" data-bind="value: order" min="1" />
                                     </div>
                                     <div class="col-md-2 mb-2">
                                         <label class="form-label d-block">&nbsp;</label>

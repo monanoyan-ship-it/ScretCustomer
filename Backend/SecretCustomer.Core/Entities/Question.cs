@@ -90,7 +90,6 @@ public class Question : BaseEntity
     /// </summary>
     [ExcelColumn("Grup", 11, ColumnType = ExcelColumnType.Text,
         Description = "Sorunun ait olduğu grup (raporlama için)", SampleValue = "İletişim")]
-    [System.ComponentModel.DataAnnotations.MaxLength(200)]
     public string? GroupName { get; set; }
 
     // Navigation properties

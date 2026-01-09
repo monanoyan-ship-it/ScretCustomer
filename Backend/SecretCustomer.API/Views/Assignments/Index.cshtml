@@ -575,10 +575,6 @@
                     <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.openAddPeriodModal">
                         <i class="bi bi-calendar-plus me-1"></i>@Html.T("Period.Add", "Dönem Ekle")
                     </button>
-                    <!-- Değerlendir butonu sadece QualitySpecialist ve FieldWorker için -->
-                    <a class="btn btn-primary" data-bind="attr: { href: '/Evaluations/Form/' + id }, visible: status !== 'Completed' && status !== 'Cancelled' && !$root.isAdmin()">
-                        <i class="bi bi-clipboard-check me-1"></i>@Html.T("Button.Evaluate", "Değerlendir")
-                    </a>
                     <!-- /ko -->
                 </div>
             </div>
