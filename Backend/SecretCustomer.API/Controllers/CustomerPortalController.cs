@@ -12,16 +12,6 @@ namespace SecretCustomer.API.Controllers;
 public class CustomerPortalController : Controller
 {
     /// <summary>
-    /// Müşteri portalı login - Ana login sayfasına yönlendir
-    /// </summary>
-    [AllowAnonymous]
-    public IActionResult Login(string? returnUrl = null)
-    {
-        // CustomerPersonnel artık ana login sayfasını kullanıyor
-        return RedirectToAction("Login", "Account");
-    }
-
-    /// <summary>
     /// Müşteri portalı dashboard
     /// </summary>
     public IActionResult Dashboard()
