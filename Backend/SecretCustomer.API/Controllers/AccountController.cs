@@ -115,15 +115,15 @@ public class AccountController : Controller
                 return RedirectToAction("Index", "Profile");
             }
 
-            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-            {
-                return Redirect(model.ReturnUrl);
-            }
-
-            // CustomerPersonnel kullanıcıları CustomerPortal'a yönlendir
+            // CustomerPersonnel kullanıcıları HER ZAMAN CustomerPortal'a yönlendir
             if (result.CustomerId.HasValue)
             {
                 return RedirectToAction("Dashboard", "CustomerPortal");
+            }
+
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+            {
+                return Redirect(model.ReturnUrl);
             }
 
             return RedirectToAction("Index", "Home");

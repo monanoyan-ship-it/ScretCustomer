@@ -12,19 +12,13 @@ namespace SecretCustomer.API.Controllers;
 public class CustomerPortalController : Controller
 {
     /// <summary>
-    /// Müşteri portalı login sayfası
+    /// Müşteri portalı login - Ana login sayfasına yönlendir
     /// </summary>
     [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
     {
-        // Eğer zaten giriş yapmışsa dashboard'a yönlendir
-        if (Request.Cookies.ContainsKey("CustomerToken"))
-        {
-            return RedirectToAction(nameof(Dashboard));
-        }
-
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        // CustomerPersonnel artık ana login sayfasını kullanıyor
+        return RedirectToAction("Login", "Account");
     }
 
     /// <summary>
