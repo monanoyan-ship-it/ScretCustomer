@@ -88,7 +88,6 @@ public class UpdateQuestionDto
     /// <summary>
     /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
     /// </summary>
-    [MaxLength(200)]
     public string? GroupName { get; set; }
 
     /// <summary>
