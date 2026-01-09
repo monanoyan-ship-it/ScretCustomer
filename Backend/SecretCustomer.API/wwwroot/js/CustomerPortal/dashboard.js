@@ -37,7 +37,7 @@ function CustomerDashboardViewModel() {
         // Get user info
         var userInfo = localStorage.getItem('customerUser');
         if (!userInfo) {
-            window.location.href = '/CustomerPortal/Login';
+            window.location.href = '/Account/Login';
             return;
         }
 

@@ -62,7 +62,7 @@ function CustomerInternalAssignmentsViewModel() {
             if (response.status === 401) {
                 localStorage.removeItem('customerUser');
                 document.cookie = 'CustomerToken=; path=/; max-age=0';
-                window.location.href = '/CustomerPortal/Login';
+                window.location.href = '/Account/Login';
                 throw new Error('Unauthorized');
             }
             if (!response.ok) {
