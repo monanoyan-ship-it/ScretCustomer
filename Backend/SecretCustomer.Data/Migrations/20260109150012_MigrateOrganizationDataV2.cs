@@ -1,36 +1,35 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace SecretCustomer.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrateOrganizationIdToJunction : Migration
+    public partial class MigrateOrganizationDataV2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Mevcut OrganizationId verilerini junction table'a tasi
-            // Sadece OrganizationId olan ve henuz junction'da olmayan kayitlar icin
+            // Zaten varsa atla
             migrationBuilder.Sql(@"
-                INSERT INTO ""CustomerPersonnelOrganizations"" 
+                INSERT INTO ""CustomerPersonnelOrganizations""
                     (""CustomerPersonnelId"", ""CustomerOrganizationId"", ""SupervisorId"", ""AssignedAt"", ""Notes"", ""CreatedAt"", ""IsDeleted"")
-                SELECT 
+                SELECT
                     cp.""Id"",
                     cp.""OrganizationId"",
                     cp.""SupervisorId"",
                     NOW(),
-                    'Eski sistemden migrate edildi',
+                    'Migration V2 ile taşındı',
                     NOW(),
                     false
                 FROM ""CustomerPersonnel"" cp
                 WHERE cp.""OrganizationId"" IS NOT NULL
                   AND cp.""IsDeleted"" = false
                   AND NOT EXISTS (
-                      SELECT 1 FROM ""CustomerPersonnelOrganizations"" cpo 
-                      WHERE cpo.""CustomerPersonnelId"" = cp.""Id"" 
+                      SELECT 1 FROM ""CustomerPersonnelOrganizations"" cpo
+                      WHERE cpo.""CustomerPersonnelId"" = cp.""Id""
                         AND cpo.""CustomerOrganizationId"" = cp.""OrganizationId""
-                        AND cpo.""IsDeleted"" = false
                   )
             ");
         }
@@ -38,12 +37,7 @@ namespace SecretCustomer.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Down migration - junction'dan geri almak mantikli degil
-            // Sadece migrate edilen kayitlari sil
-            migrationBuilder.Sql(@"
-                DELETE FROM ""CustomerPersonnelOrganizations"" 
-                WHERE ""Notes"" = 'Eski sistemden migrate edildi'
-            ");
+
         }
     }
 }

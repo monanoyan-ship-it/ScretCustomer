@@ -2,10 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SecretCustomer.Core.DTOs.Customer;
 
+/// <summary>
+/// Admin tarafından müşteri personeli şifre değiştirme DTO'su
+/// CurrentPassword sadece kullanıcının kendi şifresini değiştirirken gerekli
+/// </summary>
 public class CustomerPersonnelChangePasswordDto
 {
-    [Required(ErrorMessage = "Mevcut şifre zorunludur.")]
-    public string CurrentPassword { get; set; } = string.Empty;
+    /// <summary>
+    /// Mevcut şifre - sadece kullanıcı kendi şifresini değiştirirken gerekli
+    /// Admin değiştirirken gönderilmez
+    /// </summary>
+    public string? CurrentPassword { get; set; }
 
     [Required(ErrorMessage = "Yeni şifre zorunludur.")]
     [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]

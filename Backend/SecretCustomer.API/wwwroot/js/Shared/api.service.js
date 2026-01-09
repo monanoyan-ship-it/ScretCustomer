@@ -79,7 +79,8 @@ var apiService = (function() {
         get: function(endpoint) {
             return fetch(BASE_URL + endpoint, {
                 method: 'GET',
-                headers: getHeaders()
+                headers: getHeaders(),
+                credentials: 'include'
             }).then(handleResponse);
         },
 
@@ -87,6 +88,7 @@ var apiService = (function() {
             return fetch(BASE_URL + endpoint, {
                 method: 'POST',
                 headers: getHeaders(includeAuth),
+                credentials: 'include',
                 body: JSON.stringify(data)
             }).then(handleResponse);
         },
@@ -95,6 +97,7 @@ var apiService = (function() {
             return fetch(BASE_URL + endpoint, {
                 method: 'PUT',
                 headers: getHeaders(),
+                credentials: 'include',
                 body: JSON.stringify(data)
             }).then(handleResponse);
         },
@@ -102,7 +105,8 @@ var apiService = (function() {
         delete: function(endpoint) {
             return fetch(BASE_URL + endpoint, {
                 method: 'DELETE',
-                headers: getHeaders()
+                headers: getHeaders(),
+                credentials: 'include'
             }).then(handleResponse);
         }
     };

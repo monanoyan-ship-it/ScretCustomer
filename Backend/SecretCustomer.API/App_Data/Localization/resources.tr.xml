@@ -1970,6 +1970,12 @@
   <LocaleResource Name="Evaluation.TempScore">
     <Value>Geçici Puan</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationCount">
+    <Value>Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.AddListening">
+    <Value>Değerlendirme Ekle</Value>
+  </LocaleResource>
   <LocaleResource Name="Meeting.Title">
     <Value>Toplantılar</Value>
   </LocaleResource>

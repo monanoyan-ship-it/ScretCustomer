@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260109150012_MigrateOrganizationDataV2")]
+    partial class MigrateOrganizationDataV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -390,9 +393,6 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<string>("UniqueLink")
@@ -776,6 +776,50 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("CustomerOrganizations");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerOrganizationManager", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CustomerOrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CustomerPersonnelId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerOrganizationId");
+
+                    b.HasIndex("CustomerPersonnelId");
+
+                    b.ToTable("CustomerOrganizationManagers");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnel", b =>
                 {
                     b.Property<int>("Id")
@@ -863,16 +907,18 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("PreferredLanguageId");
 
                     b.HasIndex("SupervisorId");
 
-                    b.HasIndex("CustomerId", "Email")
-                        .IsUnique();
-
-                    b.HasIndex("CustomerId", "Username")
+                    b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("CustomerPersonnel", (string)null);
@@ -928,6 +974,50 @@ namespace SecretCustomer.Data.Migrations
                         .HasFilter("\"IsDeleted\" = false");
 
                     b.ToTable("CustomerPersonnelOrganizations");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelOrganizationAccess", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("CanEvaluate")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CustomerOrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CustomerPersonnelId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerOrganizationId");
+
+                    b.HasIndex("CustomerPersonnelId");
+
+                    b.ToTable("CustomerPersonnelOrganizationAccess");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelPermission", b =>
@@ -1160,9 +1250,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("EvaluationComment")
                         .HasColumnType("text");
 
-                    b.Property<int?>("EvaluatorCustomerPersonnelId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("EvaluatorId")
                         .HasColumnType("integer");
 
@@ -1220,8 +1307,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("EvaluatedOrganizationId");
 
                     b.HasIndex("EvaluatedPersonnelId");
-
-                    b.HasIndex("EvaluatorCustomerPersonnelId");
 
                     b.HasIndex("EvaluatorId");
 
@@ -3054,6 +3139,25 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Parent");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerOrganizationManager", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "CustomerOrganization")
+                        .WithMany("Managers")
+                        .HasForeignKey("CustomerOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "CustomerPersonnel")
+                        .WithMany("ManagedOrganizations")
+                        .HasForeignKey("CustomerPersonnelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerOrganization");
+
+                    b.Navigation("CustomerPersonnel");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnel", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
@@ -3109,6 +3213,25 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("CustomerPersonnel");
 
                     b.Navigation("Supervisor");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelOrganizationAccess", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "CustomerOrganization")
+                        .WithMany("EvaluatorAccess")
+                        .HasForeignKey("CustomerOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "CustomerPersonnel")
+                        .WithMany("OrganizationAccess")
+                        .HasForeignKey("CustomerPersonnelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerOrganization");
+
+                    b.Navigation("CustomerPersonnel");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelPermission", b =>
@@ -3185,10 +3308,6 @@ namespace SecretCustomer.Data.Migrations
                         .WithMany()
                         .HasForeignKey("EvaluatedPersonnelId");
 
-                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "EvaluatorCustomerPersonnel")
-                        .WithMany()
-                        .HasForeignKey("EvaluatorCustomerPersonnelId");
-
                     b.HasOne("SecretCustomer.Core.Entities.User", "Evaluator")
                         .WithMany("Evaluations")
                         .HasForeignKey("EvaluatorId")
@@ -3209,8 +3328,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("EvaluatedPersonnel");
 
                     b.Navigation("Evaluator");
-
-                    b.Navigation("EvaluatorCustomerPersonnel");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelColumn", b =>
@@ -3621,6 +3738,10 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.Navigation("Children");
 
+                    b.Navigation("EvaluatorAccess");
+
+                    b.Navigation("Managers");
+
                     b.Navigation("Personnel");
 
                     b.Navigation("PersonnelAssignments");
@@ -3628,6 +3749,10 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnel", b =>
                 {
+                    b.Navigation("ManagedOrganizations");
+
+                    b.Navigation("OrganizationAccess");
+
                     b.Navigation("OrganizationAssignments");
 
                     b.Navigation("Permissions");

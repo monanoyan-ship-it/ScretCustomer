@@ -18,8 +18,17 @@ public class Evaluation : BaseEntity
     public int? AssignmentPeriodId { get; set; }
     public AssignmentPeriod? AssignmentPeriod { get; set; }
 
+    /// <summary>
+    /// Değerlendirmeyi yapan User ID (Gizli müşteri / İç personel)
+    /// </summary>
     public int? EvaluatorId { get; set; }
     public User? Evaluator { get; set; }
+
+    /// <summary>
+    /// Değerlendirmeyi yapan CustomerPersonnel ID (İç değerlendirme için)
+    /// </summary>
+    public int? EvaluatorCustomerPersonnelId { get; set; }
+    public CustomerPersonnel? EvaluatorCustomerPersonnel { get; set; }
 
     [ExcelColumn("Durum", 1, ColumnType = ExcelColumnType.Dropdown,
         Description = "Değerlendirme durumu",

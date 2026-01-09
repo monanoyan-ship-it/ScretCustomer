@@ -137,4 +137,12 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         return await _context.CustomerPersonnel
             .AnyAsync(p => p.Email == email && (excludeId == null || p.Id != excludeId));
     }
+
+    public async Task<bool> ExistsByEmailInCompanyAsync(string email, int customerId, int? excludeId = null)
+    {
+        return await _context.CustomerPersonnel
+            .AnyAsync(p => p.Email == email &&
+                          p.CustomerId == customerId &&
+                          (excludeId == null || p.Id != excludeId));
+    }
 }

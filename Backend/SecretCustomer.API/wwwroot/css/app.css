@@ -81,3 +81,21 @@ body {
         margin-bottom: 0.5rem;
     }
 }
+
+/* ===== Table Dropdown Fix - Card içinde kesilmemesi için ===== */
+.card-body,
+.table-responsive {
+    overflow: visible !important;
+}
+
+.table .dropdown-menu {
+    position: absolute;
+    z-index: 1050;
+}
+
+/* Son satırlardaki dropdown'ların yukarı açılması */
+tbody tr:nth-last-child(-n+3) .dropdown-menu {
+    top: auto !important;
+    bottom: 100% !important;
+    transform: none !important;
+}

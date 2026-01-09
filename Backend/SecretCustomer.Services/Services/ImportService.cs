@@ -108,17 +108,46 @@ public class ImportService : IImportService
                     // Parse name
                     var (firstName, lastName) = ParseFullName(importDto.FullName);
 
-                    // Check if personnel exists
-                    var existingPersonnel = await _customerPersonnelRepository.GetByUsernameAsync(importDto.Username);
+                    // Check if personnel exists in this company (username veya email ile)
+                    // Aynı firmada aynı username var mı?
+                    var existingPersonnel = await _context.CustomerPersonnel
+                        .FirstOrDefaultAsync(p => p.CustomerId == customer.Id &&
+                                                  p.Username.ToLower() == importDto.Username.ToLower() &&
+                                                  !p.IsDeleted);
+
+                    // Eğer username ile bulunamadıysa email ile kontrol et
+                    if (existingPersonnel == null)
+                    {
+                        existingPersonnel = await _context.CustomerPersonnel
+                            .FirstOrDefaultAsync(p => p.CustomerId == customer.Id &&
+                                                      p.Email.ToLower() == importDto.Email.ToLower() &&
+                                                      !p.IsDeleted);
+                    }
 
                     if (existingPersonnel != null)
                     {
-                        // Farklı organizasyonda mı kontrol et - multi-org support
+                        // Aynı firmada - organizasyonda mı kontrol et
                         if (organization != null)
                         {
                             var existsInOrg = await _personnelOrgRepository.ExistsAsync(existingPersonnel.Id, organization.Id);
 
-                            if (!existsInOrg)
+                            if (existsInOrg)
+                            {
+                                // Zaten bu organizasyonda - uyarı ver ve atla
+                                result.PersonnelSkipped++;
+                                result.Warnings.Add($"Satır {rowNumber}: {importDto.Username} zaten {organization.Name} organizasyonunda mevcut");
+                                result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                                {
+                                    Id = existingPersonnel.Id,
+                                    FullName = importDto.FullName,
+                                    Username = importDto.Username,
+                                    Company = importDto.Company,
+                                    Role = importDto.Role,
+                                    Status = "AlreadyInOrg"
+                                });
+                                continue;
+                            }
+                            else
                             {
                                 // Aynı kişi farklı organizasyona atanıyor - junction table'a ekle
                                 var assignment = new CustomerPersonnelOrganization
@@ -280,18 +309,26 @@ public class ImportService : IImportService
                 }
                 catch (Exception ex)
                 {
-                    result.Errors.Add($"Satır {rowNumber}: {ex.Message}");
+                    result.Errors.Add($"Satır {rowNumber}: {GetDeepestExceptionMessage(ex)}");
                 }
             }
         }
         catch (Exception ex)
         {
             result.Success = false;
-            result.Errors.Add($"Import hatası: {ex.Message}");
+            result.Errors.Add($"Import hatası: {GetDeepestExceptionMessage(ex)}");
         }
 
         result.Success = result.Errors.Count == 0;
         return result;
+    }
+
+    private static string GetDeepestExceptionMessage(Exception ex)
+    {
+        var current = ex;
+        while (current.InnerException != null)
+            current = current.InnerException;
+        return current.Message;
     }
 
     private async Task<CustomerOrganization?> GetOrCreateOrganizationAsync(
@@ -504,11 +541,18 @@ public class ImportService : IImportService
 
     private static PersonnelImportDto MapToDto(string[] values, Dictionary<string, int> columnMap)
     {
+        var username = GetValue(values, columnMap, "username");
+        var email = GetValue(values, columnMap, "email");
+
+        // Email yoksa username@temp.com kullan
+        if (string.IsNullOrWhiteSpace(email))
+            email = $"{username}@temp.com";
+
         return new PersonnelImportDto
         {
             FullName = GetValue(values, columnMap, "fullname"),
-            Username = GetValue(values, columnMap, "username"),
-            Email = GetValue(values, columnMap, "email", "a@b.com"),
+            Username = username,
+            Email = email,
             Password = GetValue(values, columnMap, "password", "user@123"),
             Role = GetValue(values, columnMap, "role", "CustomerOperator"),
             RoleId = int.TryParse(GetValue(values, columnMap, "roleid", "3"), out var roleId) ? roleId : 3,
@@ -670,14 +714,14 @@ public class ImportService : IImportService
                 }
                 catch (Exception ex)
                 {
-                    result.Errors.Add($"Satır {rowNumber}: {ex.Message}");
+                    result.Errors.Add($"Satır {rowNumber}: {GetDeepestExceptionMessage(ex)}");
                 }
             }
         }
         catch (Exception ex)
         {
             result.Success = false;
-            result.Errors.Add($"Import hatası: {ex.Message}");
+            result.Errors.Add($"Import hatası: {GetDeepestExceptionMessage(ex)}");
         }
 
         result.Success = result.Errors.Count == 0;

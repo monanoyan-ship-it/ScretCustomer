@@ -220,21 +220,17 @@ function PersonnelViewModel() {
 
     // Delete personnel
     self.deletePersonnel = function(person) {
-        showDeleteConfirmation(
-            'Personel Sil',
-            '"' + person.fullName + '" personelini silmek istediğinize emin misiniz?',
-            function() {
-                ApiService.delete('/users/' + person.id)
-                    .then(function() {
-                        toastr.success('Personel başarıyla silindi.');
-                        self.loadPersonnel();
-                    })
-                    .catch(function(error) {
-                        console.error('Error:', error);
-                        toastr.error(error.message || 'Personel silinirken bir hata oluştu.');
-                    });
-            }
-        );
+        showDeleteConfirm('"' + person.fullName + '" personeli', function() {
+            ApiService.delete('/users/' + person.id)
+                .then(function() {
+                    toastr.success('Personel başarıyla silindi.');
+                    self.loadPersonnel();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Personel silinirken bir hata oluştu.');
+                });
+        });
     };
 
     // Change password

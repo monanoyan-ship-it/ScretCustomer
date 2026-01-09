@@ -438,8 +438,9 @@ function UsersViewModel() {
 
         self.isSaving(true);
 
+        // Admin şifre sıfırlama - reset-password endpoint'i kullan
         var endpoint = pwdUser.isCustomerPersonnel
-            ? '/api/customer-personnel/' + pwdUser.userId + '/change-password'
+            ? '/api/customer-personnel/' + pwdUser.userId + '/reset-password'
             : '/api/users/' + pwdUser.userId + '/change-password';
 
         fetch(endpoint, {

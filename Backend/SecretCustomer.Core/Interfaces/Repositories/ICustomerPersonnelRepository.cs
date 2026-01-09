@@ -15,4 +15,5 @@ public interface ICustomerPersonnelRepository
     Task DeleteAsync(int id);
     Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null);
     Task<bool> ExistsByEmailAsync(string email, int? excludeId = null);
+    Task<bool> ExistsByEmailInCompanyAsync(string email, int customerId, int? excludeId = null);
 }

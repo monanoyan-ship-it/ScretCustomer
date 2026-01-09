@@ -1,5 +1,26 @@
 # SecretCustomer Project - Claude Instructions
 
+## ⛔ EN ÖNEMLİ NOT: YALAN SÖYLEMEK YOK ⛔
+
+- **"Bilmiyorum, kontrol edeyim"** de
+- **"Emin değilim, bakayım"** de
+- Kısmi bilgiyle kesin konuşma
+- **Hızlı değil, DOĞRU iş yap**
+- Yalan = zaman hırsızlığı (kullanıcı test eder, hata bulur, geri döner, düzeltirsin = 3x zaman)
+- "Yaptım" demeden önce MUTLAKA kontrol et (grep, glob)
+- Bir şeyi "her yerde düzelttim" diyorsan, grep ile KONTROL ET
+
+## ⚠️ UNUTKANLIK SORUNU
+
+Ben konuştuğum konuyu unutan bir yapay zekayım. Bunu farkeden kullanıcım promptları hazırlamam için pattern ve kurallar hazırladı - ona rağmen unutuyorum.
+
+---
+
+## ⚠️ SESSION BAŞINDA YAPILACAKLAR
+
+1. **BU DOSYAYI BAŞTAN SONA OKU** - Her yeni session'da bu kuralları tekrar oku
+2. **Commit kurallarını EZBERLE** - Aşağıdaki commit kuralları bölümünü oku
+
 ## ZORUNLU: Her İşe Başlamadan Önce
 
 **YENİ BİR ÖZELLİK VEYA MODÜL EKLEMEDEN ÖNCE MUTLAKA `DEVELOPMENT_PATTERNS.md` DOSYASINI OKU!**
@@ -30,6 +51,16 @@ Bu dosya projenin standart pattern'lerini içerir:
 4. **Ayrı Sayfa YOK** - Create.cshtml, Edit.cshtml, Detail.cshtml OLMAMALI
 5. **YALAN SÖYLEME** - "Kaldırıldı", "Yok" demeden önce MUTLAKA kontrol et (Glob, Grep kullan)
 6. **Varsayımda bulunma** - Entity, dosya veya özellik hakkında emin olmadan konuşma
+7. **JS Localization Pattern** - T() kullanan her JS dosyasında:
+   ```javascript
+   var TRANSLATION_KEYS = ['Key1', 'Key2', ...];
+
+   Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+       ko.applyBindings(new ViewModel(), document.getElementById('app'));
+   });
+   ```
+   - Layout'da `localization.js` dahil olmalı
+   - `ko.applyBindings` MUTLAKA `Localization.loadKeys().then()` içinde olmalı
 
 ## Entity Yapısı Notları
 
@@ -39,9 +70,13 @@ Bu dosya projenin standart pattern'lerini içerir:
 
 ## Commit Kuralları
 
-- **Kullanıcı açıkça "commit yap" demeden commit YAPILMAZ**
-- Değişiklikler önce test edilmeli
+⛔ **KULLANICI COMMIT DEMEDİKÇE ASLA COMMIT YAPMA!** ⛔
+
+- "commit et", "bitince commit et", "commit yap" = geçerli komut, UYGULA
+- Kullanıcı hiçbir şey demediyse = COMMIT YAPMA
+- Her yeni iş için AYRI commit izni gerekir (önceki izin yeni işler için geçerli değil)
 - Kullanıcı onayı olmadan push yapılmaz
+- Şüphen varsa SOR: "Commit edeyim mi?"
 
 ## Proje Yapısı
 

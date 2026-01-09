@@ -17,6 +17,7 @@ public interface IAssignmentService
     // ===== FİLTRELEME =====
     Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(int projectId);
     Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(int userId);
+    Task<IEnumerable<AssignmentDto>> GetByCustomerPersonnelIdAsync(int customerPersonnelId);
     Task<IEnumerable<AssignmentDto>> GetFilteredAsync(AssignmentFilterDto filter);
 
     // ===== DURUM YÖNETİMİ =====
@@ -43,4 +44,9 @@ public interface IAssignmentService
     Task<AssignmentPeriodDto> ClosePeriodAsync(int periodId);
     Task<AssignmentPeriodDto> ReopenPeriodAsync(int periodId);
     Task DeletePeriodAsync(int periodId);
+
+    // ===== İÇ DEĞERLENDİRME ATAMALARI =====
+    Task<InternalAssignmentResultDto> CreateInternalAssignmentsAsync(CreateInternalAssignmentsDto dto);
+    Task<IEnumerable<AssignmentDto>> GetInternalAssignmentsAsync(InternalAssignmentFilterDto filter);
+    Task<IEnumerable<InternalAssignmentSummaryDto>> GetInternalAssignmentSummaryAsync(int? customerId = null);
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260109152757_RemoveCustomerPersonnelOrganizationAccess")]
+    partial class RemoveCustomerPersonnelOrganizationAccess
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -390,9 +393,6 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<string>("UniqueLink")
@@ -863,16 +863,18 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("PreferredLanguageId");
 
                     b.HasIndex("SupervisorId");
 
-                    b.HasIndex("CustomerId", "Email")
-                        .IsUnique();
-
-                    b.HasIndex("CustomerId", "Username")
+                    b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("CustomerPersonnel", (string)null);
@@ -1160,9 +1162,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("EvaluationComment")
                         .HasColumnType("text");
 
-                    b.Property<int?>("EvaluatorCustomerPersonnelId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("EvaluatorId")
                         .HasColumnType("integer");
 
@@ -1220,8 +1219,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("EvaluatedOrganizationId");
 
                     b.HasIndex("EvaluatedPersonnelId");
-
-                    b.HasIndex("EvaluatorCustomerPersonnelId");
 
                     b.HasIndex("EvaluatorId");
 
@@ -3185,10 +3182,6 @@ namespace SecretCustomer.Data.Migrations
                         .WithMany()
                         .HasForeignKey("EvaluatedPersonnelId");
 
-                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "EvaluatorCustomerPersonnel")
-                        .WithMany()
-                        .HasForeignKey("EvaluatorCustomerPersonnelId");
-
                     b.HasOne("SecretCustomer.Core.Entities.User", "Evaluator")
                         .WithMany("Evaluations")
                         .HasForeignKey("EvaluatorId")
@@ -3209,8 +3202,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("EvaluatedPersonnel");
 
                     b.Navigation("Evaluator");
-
-                    b.Navigation("EvaluatorCustomerPersonnel");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelColumn", b =>

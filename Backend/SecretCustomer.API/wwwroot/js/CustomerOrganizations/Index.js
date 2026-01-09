@@ -492,10 +492,7 @@ function CustomerOrganizationsViewModel() {
     self.deleteOrganization = function(org, event) {
         if (event) event.stopPropagation();
 
-        showDeleteConfirmation(
-            'Organizasyon Sil',
-            '"' + org.name + '" organizasyonunu silmek istediğinize emin misiniz?',
-            function() {
+        showDeleteConfirm('"' + org.name + '" organizasyonu', function() {
                 ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
                         self.organizations.remove(org);

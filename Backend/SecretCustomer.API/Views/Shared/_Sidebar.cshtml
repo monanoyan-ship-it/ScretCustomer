@@ -15,8 +15,8 @@
         <hr>
 
         <ul class="nav nav-pills flex-column flex-grow-1 sidebar-nav" style="overflow-y: auto; min-height: 0;">
-            <!-- Dashboard - Not for FieldWorker -->
-            <li class="nav-item" data-bind="visible: !isFieldWorker()">
+            <!-- Dashboard - Not for FieldWorker or CustomerPersonnel -->
+            <li class="nav-item" data-bind="visible: !isFieldWorker() && !isCustomerPersonnel()">
                 <a href="/Dashboard/Index" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-speedometer2 me-2"></i>
                     @Html.T("Menu.Dashboard", "Dashboard")
@@ -50,6 +50,11 @@
                         <li>
                             <a href="/Assignments/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-clipboard me-2"></i>@Html.T("Menu.Assignments", "Atamalar")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/InternalAssignments/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-clipboard-check me-2"></i>@Html.T("Menu.InternalAssignments", "İç Değerlendirme Atamaları")
                             </a>
                         </li>
                         <li>
@@ -94,11 +99,52 @@
                 </div>
             </li>
 
-            <!-- Görevlerim - FieldWorker Only -->
+            <!-- Değerlendirmeler - FieldWorker -->
             <li class="nav-item" data-bind="visible: isFieldWorker">
-                <a href="/MyAssignments/Index" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-list-task me-2"></i>
-                    @Html.T("Menu.MyTasks", "Görevlerim")
+                <a href="/Evaluations/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
+                </a>
+            </li>
+
+            <!-- ==================== MÜŞTERİ PORTALİ (CustomerPersonnel) ==================== -->
+            <!-- Dashboard - CustomerPersonnel -->
+            <li class="nav-item" data-bind="visible: isCustomerPersonnel">
+                <a href="/CustomerPortal/Dashboard" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    @Html.T("Menu.Dashboard", "Dashboard")
+                </a>
+            </li>
+
+            <!-- Değerlendirmeler - CustomerPersonnel (atamalar + değerlendirmeler) -->
+            <li class="nav-item" data-bind="visible: isCustomerPersonnel">
+                <a href="/CustomerPortal/Evaluations" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
+                </a>
+            </li>
+
+            <!-- İç Değerlendirmeler - CustomerPersonnel (Manager & Supervisor - başkalarına atama) -->
+            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
+                <a href="/CustomerPortal/InternalAssignments" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-person-check me-2"></i>
+                    @Html.T("Menu.InternalAssignments", "İç Değerlendirmeler")
+                </a>
+            </li>
+
+            <!-- Şubeler - CustomerPersonnel (Manager & Supervisor) -->
+            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
+                <a href="/CustomerPortal/Branches" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-building me-2"></i>
+                    @Html.T("Menu.Branches", "Şubeler")
+                </a>
+            </li>
+
+            <!-- Raporlar - CustomerPersonnel (Manager & Supervisor) -->
+            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
+                <a href="/CustomerPortal/Reports" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-graph-up me-2"></i>
+                    @Html.T("Menu.Reports", "Raporlar")
                 </a>
             </li>
 
@@ -244,6 +290,7 @@
 
         self.isOpen = ko.observable(false);
         self.userRole = ko.observable('');
+        self.userType = ko.observable('User');
         self.userName = ko.observable('Profilim');
 
         self.isAdmin = ko.computed(function() {
@@ -256,6 +303,23 @@
 
         self.isFieldWorker = ko.computed(function() {
             return self.userRole() === 'FieldWorker';
+        });
+
+        // CustomerPersonnel rolleri
+        self.isCustomerPersonnel = ko.computed(function() {
+            return self.userType() === 'CustomerPersonnel';
+        });
+
+        self.isCustomerManager = ko.computed(function() {
+            return self.isCustomerPersonnel() && self.userRole() === 'CustomerManager';
+        });
+
+        self.isCustomerSupervisor = ko.computed(function() {
+            return self.isCustomerPersonnel() && self.userRole() === 'CustomerSupervisor';
+        });
+
+        self.isCustomerOperator = ko.computed(function() {
+            return self.isCustomerPersonnel() && self.userRole() === 'CustomerOperator';
         });
 
         // Toggle sidebar
@@ -278,6 +342,7 @@
         .then(res => res.json())
         .then(data => {
             self.userRole(data.role);
+            self.userType(data.userType || 'User');
             self.userName(data.fullName || 'Profilim');
         })
         .catch(error => {

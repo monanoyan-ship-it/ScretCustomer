@@ -32,8 +32,6 @@ public class ApplicationDbContext : DbContext
 
     // Customer Organization DbSets (Yeni Hiyerarşi)
     public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
-    public DbSet<CustomerOrganizationManager> CustomerOrganizationManagers { get; set; }
-    public DbSet<CustomerPersonnelOrganizationAccess> CustomerPersonnelOrganizationAccess { get; set; }
     public DbSet<CustomerPersonnelOrganization> CustomerPersonnelOrganizations { get; set; }
 
     // Permission Management DbSets
@@ -116,8 +114,6 @@ public class ApplicationDbContext : DbContext
 
         // Customer Organization Entities (Yeni Hiyerarşi)
         modelBuilder.Entity<CustomerOrganization>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<CustomerOrganizationManager>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelOrganization>().HasQueryFilter(e => !e.IsDeleted);
 
         // Permission Management Entities
@@ -181,32 +177,6 @@ public class ApplicationDbContext : DbContext
             .WithMany(o => o.Personnel)
             .HasForeignKey(p => p.OrganizationId)
             .OnDelete(DeleteBehavior.SetNull);
-
-        // CustomerOrganizationManager (many-to-many: Personnel yönettiği organizasyonlar)
-        modelBuilder.Entity<CustomerOrganizationManager>()
-            .HasOne(m => m.CustomerPersonnel)
-            .WithMany(p => p.ManagedOrganizations)
-            .HasForeignKey(m => m.CustomerPersonnelId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<CustomerOrganizationManager>()
-            .HasOne(m => m.CustomerOrganization)
-            .WithMany(o => o.Managers)
-            .HasForeignKey(m => m.CustomerOrganizationId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // CustomerPersonnelOrganizationAccess (many-to-many: Personnel değerlendirebileceği organizasyonlar)
-        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>()
-            .HasOne(a => a.CustomerPersonnel)
-            .WithMany(p => p.OrganizationAccess)
-            .HasForeignKey(a => a.CustomerPersonnelId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<CustomerPersonnelOrganizationAccess>()
-            .HasOne(a => a.CustomerOrganization)
-            .WithMany(o => o.EvaluatorAccess)
-            .HasForeignKey(a => a.CustomerOrganizationId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // Evaluation - EvaluatedCustomerPersonnel relationship
         modelBuilder.Entity<Evaluation>()

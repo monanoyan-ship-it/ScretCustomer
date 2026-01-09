@@ -218,12 +218,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("CustomerPersonnel.NewPassword", "Yeni Şifre") *</label>
-                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="@Html.T("CustomerPersonnel.MinChars", "En az 6 karakter")" />
+                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="@Html.T("CustomerPersonnel.MinChars", "En az 6 karakter")" autocomplete="new-password" />
                         <small class="text-muted">@Html.T("CustomerPersonnel.PasswordMinLength", "En az 6 karakter olmalıdır")</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("CustomerPersonnel.ConfirmPassword", "Yeni Şifre (Tekrar)") *</label>
-                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="@Html.T("CustomerPersonnel.ConfirmPasswordPlaceholder", "Yeni şifrenizi tekrar girin")" />
+                        <input type="password" class="form-control" data-bind="value: confirmPassword" placeholder="@Html.T("CustomerPersonnel.ConfirmPasswordPlaceholder", "Yeni şifrenizi tekrar girin")" autocomplete="new-password" />
                     </div>
                 </div>
                 <div class="modal-footer">

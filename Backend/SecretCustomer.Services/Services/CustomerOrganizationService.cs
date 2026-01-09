@@ -243,8 +243,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     public async Task DeleteAsync(int id)
     {
         var org = await _context.CustomerOrganizations
-            .Include(o => o.Children)
-            .Include(o => o.PersonnelAssignments) // Sadece junction table
+            .Include(o => o.Children.Where(c => !c.IsDeleted))
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (org == null)
@@ -257,12 +256,17 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new InvalidOperationException("Alt organizasyonları olan bir organizasyon silinemez. Önce alt organizasyonları silin.");
         }
 
-        if (org.PersonnelAssignments.Any())
+        // Aktif personel atamalarını ayrıca kontrol et
+        var activeAssignments = await _context.CustomerPersonnelOrganizations
+            .Where(pa => pa.CustomerOrganizationId == id && !pa.IsDeleted)
+            .CountAsync();
+
+        if (activeAssignments > 0)
         {
-            throw new InvalidOperationException("Personeli olan bir organizasyon silinemez. Önce personelleri başka organizasyona taşıyın.");
+            throw new InvalidOperationException($"Bu organizasyonda {activeAssignments} aktif personel var. Önce personelleri başka organizasyona taşıyın.");
         }
 
-        _context.CustomerOrganizations.Remove(org);
+        org.IsDeleted = true;
         await _context.SaveChangesAsync();
     }
 
@@ -405,7 +409,6 @@ public class CustomerOrganizationService : ICustomerOrganizationService
                 .ThenInclude(oa => oa.CustomerOrganization)
             .Include(p => p.OrganizationAssignments)
                 .ThenInclude(oa => oa.Supervisor)
-            .Include(p => p.ManagedOrganizations)
             .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
             .OrderBy(p => p.Role)
             .ThenBy(p => p.FirstName)
@@ -431,7 +434,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
                 OrganizationId = firstAssignment?.CustomerOrganizationId,
                 OrganizationName = firstAssignment?.CustomerOrganization?.Name,
                 OrganizationCount = p.OrganizationAssignments?.Count(oa => !oa.IsDeleted) ?? 0,
-                ManagedOrganizationIds = p.ManagedOrganizations?.Select(m => m.CustomerOrganizationId).ToList() ?? new List<int>()
+                ManagedOrganizationIds = new List<int>() // CustomerOrganizationManagers tablosu kaldırıldı
             };
         });
     }

@@ -4,6 +4,18 @@ Bu dosya projedeki standart pattern'leri tanımlar. **YENİ BİR ÖZELLİK EKLEN
 
 ---
 
+## ⚠️ EN ÖNEMLİ KURAL: YALAN SÖYLEMEK YOK
+
+- **"Bilmiyorum, kontrol edeyim"** de
+- **"Emin değilim, bakayım"** de
+- Kısmi bilgiyle kesin konuşma
+- **Hızlı değil, DOĞRU iş yap**
+- Yalan = zaman hırsızlığı (kullanıcı test eder, hata bulur, geri döner, düzeltirsin = 3x zaman)
+- "Yaptım" demeden önce MUTLAKA kontrol et
+- Bir şeyi "her yerde düzelttim" diyorsan, grep ile kontrol et
+
+---
+
 ## 1. View/JavaScript Yapısı (SPA Modal Pattern)
 
 ### DOĞRU Pattern (Branches, Users, Checklists gibi)
@@ -531,6 +543,17 @@ PostgreSQL bağlantısı `appsettings.json` ve `appsettings.Development.json`'da
 
 ## 14. JavaScript Localization Pattern (Çok Dilli Destek)
 
+### ⚠️ ÖNEMLİ: Layout'a localization.js Dahil Edilmeli
+
+`Localization.loadKeys()` kullanabilmek için layout dosyasında `localization.js` dahil edilmelidir:
+
+```html
+<!-- Layout dosyasında (örn: _Layout.cshtml, _CustomerLayout.cshtml) -->
+<script src="~/js/shared/localization.js"></script>
+```
+
+**Bu olmadan `Localization is not defined` hatası alınır!**
+
 ### Genel Bilgi
 
 Proje çok dilli yapıyı destekler:
@@ -616,3 +639,8 @@ Referans olarak `wwwroot/js/Languages/index.js` dosyasına bakılabilir.
 5. **CDN KULLANILMAZ - Tüm kütüphaneler yerel olmalı**
 6. **Native confirm() KULLANILMAZ - showConfirmModal() kullan**
 7. **JS'de T() kullanımı için önce Localization.loadKeys() çağır**
+8. **Form input'larında AUTOCOMPLETE attribute'u MUTLAKA kullan:**
+   - Password input: `autocomplete="new-password"`
+   - Search/filter input: `autocomplete="off"`
+   - Username input: `autocomplete="username"`
+   - **NEDEN:** Tarayıcı autocomplete'i yanlış input'lara değer yazabilir ve KnockoutJS observable'ları bozabilir!

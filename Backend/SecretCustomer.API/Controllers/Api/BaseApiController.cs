@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -23,11 +24,12 @@ public abstract class BaseApiController : ControllerBase
         var showDetails = Configuration.GetValue<bool>("ShowDetailedErrors");
         if (showDetails && ex != null)
         {
+            var innermost = ExceptionHelper.GetInnermostException(ex);
             return new
             {
                 message = message,
                 error = ex.Message,
-                innerException = ex.InnerException?.Message,
+                innermostException = innermost.Message,
                 stackTrace = ex.StackTrace,
                 exceptionType = ex.GetType().Name
             };

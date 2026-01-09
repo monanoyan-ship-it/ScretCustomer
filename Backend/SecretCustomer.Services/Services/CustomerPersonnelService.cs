@@ -93,8 +93,13 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
         }
 
-        // Check if email already exists
-        if (await _personnelRepository.ExistsByEmailAsync(createDto.Email))
+        // Email yoksa username@temp.com kullan
+        var email = string.IsNullOrWhiteSpace(createDto.Email)
+            ? $"{createDto.Username}@temp.com"
+            : createDto.Email;
+
+        // Check if email already exists (firma bazlı)
+        if (await ExistsByEmailInCompanyAsync(email, createDto.CustomerId))
         {
             throw new InvalidOperationException("Bu e-posta adresi ile kayıtlı bir personel zaten mevcut");
         }
@@ -103,7 +108,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         {
             CustomerId = createDto.CustomerId,
             Username = createDto.Username,
-            Email = createDto.Email,
+            Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password),
             FirstName = createDto.FirstName,
             LastName = createDto.LastName,
@@ -285,6 +290,12 @@ public class CustomerPersonnelService : ICustomerPersonnelService
     public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
     {
         return await _personnelRepository.ExistsByEmailAsync(email, excludeId);
+    }
+
+    // Firma bazlı email kontrolü
+    private async Task<bool> ExistsByEmailInCompanyAsync(string email, int customerId, int? excludeId = null)
+    {
+        return await _personnelRepository.ExistsByEmailInCompanyAsync(email, customerId, excludeId);
     }
 
     private static string GetRoleName(CustomerPersonnelRole role)

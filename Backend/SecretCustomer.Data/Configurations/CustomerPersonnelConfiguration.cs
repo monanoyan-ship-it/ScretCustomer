@@ -16,14 +16,16 @@ public class CustomerPersonnelConfiguration : IEntityTypeConfiguration<CustomerP
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.HasIndex(p => p.Username)
+        // Username firma bazlı unique (aynı firmada aynı username olamaz)
+        builder.HasIndex(p => new { p.CustomerId, p.Username })
             .IsUnique();
 
         builder.Property(p => p.Email)
             .IsRequired()
             .HasMaxLength(255);
 
-        builder.HasIndex(p => p.Email)
+        // Email firma bazlı unique (aynı firmada aynı email olamaz, farklı firmalarda olabilir)
+        builder.HasIndex(p => new { p.CustomerId, p.Email })
             .IsUnique();
 
         builder.Property(p => p.PasswordHash)

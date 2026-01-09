@@ -217,27 +217,39 @@ public class AssignmentsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get my assignments - for field workers and evaluators
+    /// Get my assignments - for field workers, evaluators, and customer personnel
     /// </summary>
     [HttpGet("my-assignments")]
     public async Task<IActionResult> GetMyAssignments()
     {
         try
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out var id))
             {
-                _logger.LogWarning("GetMyAssignments: User ID claim not found or invalid. Claim value: {Claim}", userIdClaim);
+                _logger.LogWarning("GetMyAssignments: ID claim not found or invalid. Claim value: {Claim}", idClaim);
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
-            _logger.LogInformation("GetMyAssignments: Fetching assignments for userId={UserId}", userId);
+            var userType = User.FindFirstValue("UserType") ?? "User";
 
-            // User ID ile kendi atamalarını getir
-            var assignments = await _assignmentService.GetByUserIdAsync(userId);
+            IEnumerable<Core.DTOs.Assignment.AssignmentDto> assignments;
 
-            _logger.LogInformation("GetMyAssignments: Found {Count} assignments for userId={UserId}",
-                assignments?.Count() ?? 0, userId);
+            if (userType == "CustomerPersonnel")
+            {
+                // CustomerPersonnel için: NameIdentifier = CustomerPersonnelId
+                _logger.LogInformation("GetMyAssignments: Fetching assignments for customerPersonnelId={Id}", id);
+                assignments = await _assignmentService.GetByCustomerPersonnelIdAsync(id);
+            }
+            else
+            {
+                // Normal kullanıcılar için: NameIdentifier = UserId
+                _logger.LogInformation("GetMyAssignments: Fetching assignments for userId={Id}", id);
+                assignments = await _assignmentService.GetByUserIdAsync(id);
+            }
+
+            _logger.LogInformation("GetMyAssignments: Found {Count} assignments for id={Id}, userType={UserType}",
+                assignments?.Count() ?? 0, id, userType);
 
             return Ok(assignments);
         }

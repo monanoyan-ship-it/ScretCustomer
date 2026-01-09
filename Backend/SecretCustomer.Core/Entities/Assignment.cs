@@ -12,6 +12,11 @@ public class Assignment : BaseEntity
     public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
+    /// <summary>
+    /// Atama tipi (Internal User, Customer Personnel, External Customer vb.)
+    /// </summary>
+    public AssignmentType Type { get; set; } = AssignmentType.InternalUser;
+
     public int? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 

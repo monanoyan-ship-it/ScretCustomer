@@ -943,8 +943,7 @@ public class EvaluationService : IEvaluationService
     {
         var personnel = await _context.CustomerPersonnel
             .Where(cp => !cp.IsDeleted && cp.IsActive)
-            .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted) ||
-                         cp.OrganizationAccess.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted))
+            .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted))
             // Süpervizörleri hariç tut
             .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
             .OrderBy(cp => cp.FirstName)

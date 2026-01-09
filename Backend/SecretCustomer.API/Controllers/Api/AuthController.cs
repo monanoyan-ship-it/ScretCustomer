@@ -89,12 +89,20 @@ public class AuthController : ControllerBase
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
         var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        var userType = User.FindFirst("UserType")?.Value ?? "User";
+        var fullName = User.FindFirst("FullName")?.Value ?? username;
+        var customerId = User.FindFirst("CustomerId")?.Value;
+        var customerName = User.FindFirst("CustomerName")?.Value;
 
         return Ok(new
         {
             id = userId,
             username,
-            role
+            role,
+            userType,
+            fullName,
+            customerId,
+            customerName
         });
     }
 

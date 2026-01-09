@@ -1967,6 +1967,12 @@
   <LocaleResource Name="Evaluation.TempScore">
     <Value>Temporary Score</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationCount">
+    <Value>Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.AddListening">
+    <Value>Add Evaluation</Value>
+  </LocaleResource>
   <LocaleResource Name="Meeting.Title">
     <Value>Meetings</Value>
   </LocaleResource>

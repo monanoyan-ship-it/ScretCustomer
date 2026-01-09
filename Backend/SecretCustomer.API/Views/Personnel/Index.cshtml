@@ -253,11 +253,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Personnel.NewPassword", "Yeni Şifre") <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter">
+                        <input type="password" class="form-control" data-bind="value: newPassword" placeholder="En az 6 karakter" autocomplete="new-password">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Personnel.ConfirmPassword", "Şifre Tekrar") <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" data-bind="value: confirmPassword">
+                        <input type="password" class="form-control" data-bind="value: confirmPassword" autocomplete="new-password">
                     </div>
                 </div>
                 <div class="modal-footer">
