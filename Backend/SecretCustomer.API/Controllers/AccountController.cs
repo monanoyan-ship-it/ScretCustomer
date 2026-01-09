@@ -120,6 +120,12 @@ public class AccountController : Controller
                 return Redirect(model.ReturnUrl);
             }
 
+            // CustomerPersonnel kullanıcıları CustomerPortal'a yönlendir
+            if (result.CustomerId.HasValue)
+            {
+                return RedirectToAction("Dashboard", "CustomerPortal");
+            }
+
             return RedirectToAction("Index", "Home");
         }
         catch (UnauthorizedAccessException)
