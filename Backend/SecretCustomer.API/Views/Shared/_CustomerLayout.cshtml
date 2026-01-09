@@ -143,10 +143,13 @@
             </ul>
 
             <div class="mt-auto p-3 border-top" style="position: absolute; bottom: 0; width: 100%; border-top-color: rgba(255,255,255,0.1) !important;">
-                <a class="nav-link text-white-50" href="/CustomerPortal/Logout">
-                    <i class="bi bi-box-arrow-left"></i>
-                    @Html.T("CustomerPortal.Menu.Logout", "Çıkış Yap")
-                </a>
+                <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-link text-white-50 bg-transparent border-0 w-100 text-start">
+                        <i class="bi bi-box-arrow-left"></i>
+                        @Html.T("CustomerPortal.Menu.Logout", "Çıkış Yap")
+                    </button>
+                </form>
             </div>
         </nav>
 

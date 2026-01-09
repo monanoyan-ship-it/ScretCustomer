@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SecretCustomer.API.Controllers;
@@ -49,15 +46,5 @@ public class CustomerPortalController : Controller
     public IActionResult InternalAssignments()
     {
         return View();
-    }
-
-    /// <summary>
-    /// Çıkış yap
-    /// </summary>
-    [AllowAnonymous]
-    public async Task<IActionResult> Logout()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToAction("Login", "Account");
     }
 }
