@@ -4,7 +4,14 @@ function ProfileViewModel() {
 
     // State
     self.isLoading = ko.observable(true);
-    self.profile = ko.observable({});
+    self.isUpdating = ko.observable(false);
+
+    // Profile fields
+    self.username = ko.observable('');
+    self.firstName = ko.observable('');
+    self.lastName = ko.observable('');
+    self.email = ko.observable('');
+    self.phoneNumber = ko.observable('');
 
     // Password change fields
     self.currentPassword = ko.observable('');
@@ -30,6 +37,11 @@ function ProfileViewModel() {
     };
 
     // Validation
+    self.canUpdateProfile = ko.computed(function() {
+        return self.firstName() && self.firstName().trim() &&
+               self.lastName() && self.lastName().trim();
+    });
+
     self.canSubmitPassword = ko.computed(function() {
         return self.currentPassword() &&
                self.newPassword() &&
@@ -42,13 +54,17 @@ function ProfileViewModel() {
     self.loadProfile = function() {
         self.isLoading(true);
 
-        fetch('/api/auth/me', { credentials: 'include' })
+        fetch('/api/customer-portal/profile', { credentials: 'include' })
             .then(function(response) {
                 if (!response.ok) throw new Error('Profil yüklenemedi');
                 return response.json();
             })
             .then(function(data) {
-                self.profile(data);
+                self.username(data.username || '');
+                self.firstName(data.firstName || '');
+                self.lastName(data.lastName || '');
+                self.email(data.email || '');
+                self.phoneNumber(data.phoneNumber || '');
             })
             .catch(function(error) {
                 console.error('Profile load error:', error);
@@ -57,6 +73,51 @@ function ProfileViewModel() {
             .finally(function() {
                 self.isLoading(false);
             });
+    };
+
+    // Update profile
+    self.updateProfile = function() {
+        if (!self.canUpdateProfile()) {
+            toastr.warning(T('Profile.NameRequired', 'Ad ve Soyad alanları zorunludur.'));
+            return;
+        }
+
+        self.isUpdating(true);
+
+        fetch('/api/customer-portal/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                firstName: self.firstName(),
+                lastName: self.lastName(),
+                email: self.email() || null,
+                phoneNumber: self.phoneNumber() || null
+            })
+        })
+        .then(function(response) {
+            return response.json().then(function(data) {
+                if (!response.ok) {
+                    throw new Error(data.message || T('Profile.UpdateFailed', 'Profil güncellenemedi'));
+                }
+                return data;
+            });
+        })
+        .then(function(result) {
+            toastr.success(T('Profile.UpdateSuccess', 'Profil bilgileriniz başarıyla güncellendi.'));
+            // Update fields with response
+            if (result.firstName) self.firstName(result.firstName);
+            if (result.lastName) self.lastName(result.lastName);
+            if (result.email !== undefined) self.email(result.email || '');
+            if (result.phoneNumber !== undefined) self.phoneNumber(result.phoneNumber || '');
+        })
+        .catch(function(error) {
+            console.error('Profile update error:', error);
+            toastr.error(error.message || T('Profile.UpdateError', 'Profil güncellenirken bir hata oluştu.'));
+        })
+        .finally(function() {
+            self.isUpdating(false);
+        });
     };
 
     // Change password
@@ -68,7 +129,7 @@ function ProfileViewModel() {
 
         self.isChangingPassword(true);
 
-        fetch('/api/profile/change-password', {
+        fetch('/api/customer-portal/profile/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -109,6 +170,10 @@ function ProfileViewModel() {
 // Translation keys
 var TRANSLATION_KEYS = [
     'Profile.LoadError',
+    'Profile.NameRequired',
+    'Profile.UpdateFailed',
+    'Profile.UpdateSuccess',
+    'Profile.UpdateError',
     'Profile.FillAllFields',
     'Profile.PasswordChangeFailed',
     'Profile.PasswordChanged',

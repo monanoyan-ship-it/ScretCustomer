@@ -19,26 +19,40 @@
                     <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>@Html.T("Profile.Info", "Profil Bilgileri")</h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-4">
-                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
-                            <i class="bi bi-person"></i>
+                    <form data-bind="submit: updateProfile">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">@Html.T("Profile.FirstName", "Ad") <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">@Html.T("Profile.LastName", "Soyad") <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" data-bind="value: lastName" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">@Html.T("Profile.FullName", "Ad Soyad")</label>
-                        <div class="form-control-plaintext fw-bold" data-bind="text: profile().fullName || '-'"></div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Profile.Email", "E-posta")</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="ornek@email.com">
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">@Html.T("Profile.Username", "Kullanıcı Adı")</label>
-                        <div class="form-control-plaintext" data-bind="text: profile().username || '-'"></div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Profile.Phone", "Telefon")</label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="05XX XXX XX XX">
+                        </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">@Html.T("Profile.Email", "E-posta")</label>
-                        <div class="form-control-plaintext" data-bind="text: profile().email || '-'"></div>
-                    </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">@Html.T("Profile.Username", "Kullanıcı Adı")</label>
+                            <div class="form-control-plaintext text-muted" data-bind="text: username"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100" data-bind="disable: isUpdating() || !canUpdateProfile()">
+                            <!-- ko if: isUpdating() -->
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <!-- /ko -->
+                            <i class="bi bi-check-circle me-1"></i>@Html.T("Profile.SaveChanges", "Değişiklikleri Kaydet")
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
