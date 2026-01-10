@@ -269,16 +269,18 @@ function AssignmentsViewModel() {
     };
 
     self.loadEvaluators = function() {
-        // Hem QualitySpecialist (role 2) hem FieldWorker (role 3) kullanıcılarını çek
+        // Admin (role 1), QualitySpecialist (role 2), FieldWorker (role 3) kullanıcılarını çek
         Promise.all([
+            fetch('/api/users/role/1', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/users/role/3', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
-            var qualitySpecialists = results[0] || [];
-            var fieldWorkers = results[1] || [];
+            var admins = results[0] || [];
+            var qualitySpecialists = results[1] || [];
+            var fieldWorkers = results[2] || [];
             // Birleştir ve tekrarları kaldır (id'ye göre)
-            var combined = qualitySpecialists.concat(fieldWorkers);
+            var combined = admins.concat(qualitySpecialists).concat(fieldWorkers);
             var unique = [];
             var ids = {};
             combined.forEach(function(u) {

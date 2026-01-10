@@ -55,10 +55,22 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>@Html.T("Common.Project", "Proje")</th>
-                            <th>@Html.T("Common.Checklist", "Kontrol Listesi")</th>
-                            <th>@Html.T("Common.DueDate", "Son Tarih")</th>
-                            <th>@Html.T("Evaluation.EvaluationCount", "Değerlendirme")</th>
+                            <th class="sortable" data-bind="click: function() { assignmentsSorting.toggleSort('projectName'); }, css: assignmentsSorting.getSortClass('projectName')">
+                                @Html.T("Common.Project", "Proje")
+                                <i class="bi sort-icon" data-bind="css: assignmentsSorting.getSortIcon('projectName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { assignmentsSorting.toggleSort('checklistName'); }, css: assignmentsSorting.getSortClass('checklistName')">
+                                @Html.T("Common.Checklist", "Kontrol Listesi")
+                                <i class="bi sort-icon" data-bind="css: assignmentsSorting.getSortIcon('checklistName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { assignmentsSorting.toggleSort('dueDate'); }, css: assignmentsSorting.getSortClass('dueDate')">
+                                @Html.T("Common.DueDate", "Son Tarih")
+                                <i class="bi sort-icon" data-bind="css: assignmentsSorting.getSortIcon('dueDate')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { assignmentsSorting.toggleSort('evaluationCount'); }, css: assignmentsSorting.getSortClass('evaluationCount')">
+                                @Html.T("Evaluation.EvaluationCount", "Değerlendirme")
+                                <i class="bi sort-icon" data-bind="css: assignmentsSorting.getSortIcon('evaluationCount')"></i>
+                            </th>
                             <th style="width: 220px;">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
@@ -140,14 +152,38 @@
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                            <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
-                            <th>@Html.T("Evaluation.Duration", "Süre")</th>
-                            <th>@Html.T("Evaluation.EvaluatedPerson", "Personel")</th>
-                            <th>@Html.T("Common.Project", "Proje")</th>
-                            <th>@Html.T("Evaluation.Score", "Puan")</th>
-                            <th>@Html.T("Evaluation.Penalty", "Ceza")</th>
-                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('callId'); }, css: evaluationsSorting.getSortClass('callId')">
+                                @Html.T("Evaluation.CallId", "Çağrı ID")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('callId')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('callDate'); }, css: evaluationsSorting.getSortClass('callDate')">
+                                @Html.T("Evaluation.CallDate", "Çağrı Tarihi")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('callDate')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('duration'); }, css: evaluationsSorting.getSortClass('duration')">
+                                @Html.T("Evaluation.Duration", "Süre")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('duration')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('evaluatedPersonnelName'); }, css: evaluationsSorting.getSortClass('evaluatedPersonnelName')">
+                                @Html.T("Evaluation.EvaluatedPerson", "Personel")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('evaluatedPersonnelName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('projectName'); }, css: evaluationsSorting.getSortClass('projectName')">
+                                @Html.T("Common.Project", "Proje")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('projectName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('scorePercentage'); }, css: evaluationsSorting.getSortClass('scorePercentage')">
+                                @Html.T("Evaluation.Score", "Puan")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('scorePercentage')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('yellowCardCount'); }, css: evaluationsSorting.getSortClass('yellowCardCount')">
+                                @Html.T("Evaluation.Penalty", "Ceza")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('yellowCardCount')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('status'); }, css: evaluationsSorting.getSortClass('status')">
+                                @Html.T("Common.Status", "Durum")
+                                <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('status')"></i>
+                            </th>
                             <th style="width: 100px;">@Html.T("Common.Actions", "İşlem")</th>
                         </tr>
                     </thead>
@@ -240,11 +276,26 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-warning">
                         <tr>
-                            <th>@Html.T("Common.Project", "Proje")</th>
-                            <th>@Html.T("Common.Checklist", "Kontrol Listesi")</th>
-                            <th>@Html.T("Common.DueDate", "Son Tarih")</th>
-                            <th>@Html.T("Evaluation.Overdue", "Gecikme")</th>
-                            <th>@Html.T("Evaluation.EvaluationCount", "Değerlendirme")</th>
+                            <th class="sortable" data-bind="click: function() { expiredSorting.toggleSort('projectName'); }, css: expiredSorting.getSortClass('projectName')">
+                                @Html.T("Common.Project", "Proje")
+                                <i class="bi sort-icon" data-bind="css: expiredSorting.getSortIcon('projectName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { expiredSorting.toggleSort('checklistName'); }, css: expiredSorting.getSortClass('checklistName')">
+                                @Html.T("Common.Checklist", "Kontrol Listesi")
+                                <i class="bi sort-icon" data-bind="css: expiredSorting.getSortIcon('checklistName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { expiredSorting.toggleSort('dueDate'); }, css: expiredSorting.getSortClass('dueDate')">
+                                @Html.T("Common.DueDate", "Son Tarih")
+                                <i class="bi sort-icon" data-bind="css: expiredSorting.getSortIcon('dueDate')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { expiredSorting.toggleSort('daysRemaining'); }, css: expiredSorting.getSortClass('daysRemaining')">
+                                @Html.T("Evaluation.Overdue", "Gecikme")
+                                <i class="bi sort-icon" data-bind="css: expiredSorting.getSortIcon('daysRemaining')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { expiredSorting.toggleSort('evaluationCount'); }, css: expiredSorting.getSortClass('evaluationCount')">
+                                @Html.T("Evaluation.EvaluationCount", "Değerlendirme")
+                                <i class="bi sort-icon" data-bind="css: expiredSorting.getSortIcon('evaluationCount')"></i>
+                            </th>
                             <th style="width: 220px;">@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>

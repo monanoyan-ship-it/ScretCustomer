@@ -230,6 +230,24 @@
   <LocaleResource Name="Common.Email">
     <Value>Correo electrónico</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Customer">
+    <Value>Cliente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Organization">
+    <Value>Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FullName">
+    <Value>Nombre completo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Role">
+    <Value>Rol</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Excel">
+    <Value>Excel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ExportExcel">
+    <Value>Exportar a Excel</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Other">
     <Value>Otro</Value>
   </LocaleResource>
@@ -724,6 +742,12 @@
   </LocaleResource>
   <LocaleResource Name="Menu.Delegations">
     <Value>Delegaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.CustomerOrganizations">
+    <Value>Organizaciones de Clientes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Import">
+    <Value>Importación de Datos</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.MyAssignments">
     <Value>Mis Asignaciones</Value>
@@ -1888,6 +1912,61 @@
   </LocaleResource>
   <LocaleResource Name="Checklist.QuestionCount">
     <Value>Cantidad de Preguntas</Value>
+  </LocaleResource>
+  <!-- Excel Export -->
+  <LocaleResource Name="Excel.PersonnelList">
+    <Value>Lista de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.ExportDate">
+    <Value>Fecha de Exportación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Independent">
+    <Value>Independiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Pool">
+    <Value>Pool</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.ChecklistInfo">
+    <Value>INFORMACIÓN DE LA LISTA DE CONTROL</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Name">
+    <Value>Nombre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Code">
+    <Value>Código</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Description">
+    <Value>Descripción</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.General">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Questions">
+    <Value>PREGUNTAS</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionNumber">
+    <Value>No</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionText">
+    <Value>Texto de la Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionType">
+    <Value>Tipo de Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Required">
+    <Value>Obligatorio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.MaxPoints">
+    <Value>Puntos Máx.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Weight">
+    <Value>Peso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Yes">
+    <Value>Sí</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.No">
+    <Value>No</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Title">
     <Value>Evaluaciones</Value>
@@ -3706,6 +3785,15 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Title">
     <Value>Personal del Cliente</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Department">
+    <Value>Departamento</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Supervisor">
+    <Value>Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.JobTitle">
+    <Value>Cargo</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NewPersonnel">
     <Value>Nuevo Personal</Value>

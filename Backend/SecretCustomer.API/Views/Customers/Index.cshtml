@@ -213,7 +213,7 @@
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-success btn-sm" data-bind="click: exportPersonnelToExcel, visible: selectedCustomerForPersonnel() && !isLoadingPersonnel()" title="@Html.T("Customer.ExportToExcel", "Excel'e Aktar")">
-                            <i class="bi bi-file-earmark-excel"></i> Excel
+                            <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.Excel", "Excel")
                         </button>
                         <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
                     </div>

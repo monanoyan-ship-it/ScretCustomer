@@ -14,11 +14,13 @@ public class CustomerService : ICustomerService
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly ApplicationDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
-    public CustomerService(ICustomerRepository customerRepository, ApplicationDbContext context)
+    public CustomerService(ICustomerRepository customerRepository, ApplicationDbContext context, ILocalizationService localizationService)
     {
         _customerRepository = customerRepository;
         _context = context;
+        _localizationService = localizationService;
     }
 
     // DateTime'ı UTC'ye çevirir (PostgreSQL için gerekli)
@@ -193,22 +195,46 @@ public class CustomerService : ICustomerService
             .ThenBy(p => p.LastName)
             .ToListAsync();
 
+        // Yerelleştirilmiş metinleri al
+        var sheetName = await _localizationService.GetResourceAsync("Excel.PersonnelList");
+        var customerLabel = await _localizationService.GetResourceAsync("Common.Customer");
+        var exportDateLabel = await _localizationService.GetResourceAsync("Excel.ExportDate");
+        var organizationHeader = await _localizationService.GetResourceAsync("Common.Organization");
+        var supervisorHeader = await _localizationService.GetResourceAsync("CustomerPersonnel.Supervisor");
+        var fullNameHeader = await _localizationService.GetResourceAsync("Common.FullName");
+        var usernameHeader = await _localizationService.GetResourceAsync("User.Username");
+        var emailHeader = await _localizationService.GetResourceAsync("Common.Email");
+        var phoneHeader = await _localizationService.GetResourceAsync("Common.Phone");
+        var roleHeader = await _localizationService.GetResourceAsync("Common.Role");
+        var departmentHeader = await _localizationService.GetResourceAsync("CustomerPersonnel.Department");
+        var titleHeader = await _localizationService.GetResourceAsync("CustomerPersonnel.JobTitle");
+        var independentLabel = await _localizationService.GetResourceAsync("Excel.Independent");
+        var poolLabel = await _localizationService.GetResourceAsync("Excel.Pool");
+
+        // Rol isimlerini önceden yükle
+        var roleNames = new Dictionary<CustomerPersonnelRole, string>
+        {
+            { CustomerPersonnelRole.CustomerManager, await _localizationService.GetResourceAsync("Role.CustomerManager") },
+            { CustomerPersonnelRole.CustomerSupervisor, await _localizationService.GetResourceAsync("Role.CustomerSupervisor") },
+            { CustomerPersonnelRole.CustomerOperator, await _localizationService.GetResourceAsync("Role.CustomerOperator") }
+        };
+
         using var workbook = new XLWorkbook();
-        var sheet = workbook.Worksheets.Add("Personel Listesi");
+        var sheet = workbook.Worksheets.Add(sheetName);
 
         // Header bilgileri
-        sheet.Cell(1, 1).Value = "Müşteri:";
+        sheet.Cell(1, 1).Value = customerLabel + ":";
         sheet.Cell(1, 1).Style.Font.Bold = true;
         sheet.Cell(1, 2).Value = customer.CompanyName;
 
-        sheet.Cell(2, 1).Value = "Dışa Aktarma Tarihi:";
+        sheet.Cell(2, 1).Value = exportDateLabel + ":";
         sheet.Cell(2, 1).Style.Font.Bold = true;
         sheet.Cell(2, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         int row = 4;
 
         // Tablo başlıkları
-        var headers = new[] { "Organizasyon", "Süpervizör", "Ad Soyad", "Kullanıcı Adı", "E-posta", "Telefon", "Rol", "Departman", "Ünvan" };
+        var headers = new[] { organizationHeader, supervisorHeader, fullNameHeader, usernameHeader, emailHeader, phoneHeader, roleHeader, departmentHeader, titleHeader };
         for (int i = 0; i < headers.Length; i++)
         {
             sheet.Cell(row, i + 1).Value = headers[i];
@@ -249,7 +275,7 @@ public class CustomerService : ICustomerService
 
             foreach (var sup in independentSupervisors)
             {
-                WritePersonnelRow(sheet, row, org.Name, "", sup);
+                WritePersonnelRow(sheet, row, org.Name, "", sup, roleNames);
                 row++;
             }
 
@@ -261,7 +287,7 @@ public class CustomerService : ICustomerService
             foreach (var sup in supervisorsWithTeam)
             {
                 // Süpervizör satırı
-                WritePersonnelRow(sheet, row, org.Name, "", sup);
+                WritePersonnelRow(sheet, row, org.Name, "", sup, roleNames);
                 sheet.Cell(row, 3).Style.Font.Bold = true;
                 row++;
 
@@ -273,7 +299,7 @@ public class CustomerService : ICustomerService
 
                 foreach (var tm in teamMembers)
                 {
-                    WritePersonnelRow(sheet, row, org.Name, $"{sup.FirstName} {sup.LastName}", tm);
+                    WritePersonnelRow(sheet, row, org.Name, $"{sup.FirstName} {sup.LastName}", tm, roleNames);
                     sheet.Cell(row, 3).Value = $"    └ {tm.FirstName} {tm.LastName}";
                     sheet.Cell(row, 3).Style.Font.FontColor = XLColor.FromHtml("#333333");
                     row++;
@@ -291,7 +317,7 @@ public class CustomerService : ICustomerService
 
             foreach (var op in independentOperators)
             {
-                WritePersonnelRow(sheet, row, org.Name, "(Bağımsız)", op);
+                WritePersonnelRow(sheet, row, org.Name, $"({independentLabel})", op, roleNames);
                 row++;
             }
         }
@@ -303,7 +329,7 @@ public class CustomerService : ICustomerService
 
             foreach (var p in poolPersonnel)
             {
-                WritePersonnelRow(sheet, row, "(Havuzda)", "", p);
+                WritePersonnelRow(sheet, row, $"({poolLabel})", "", p, roleNames);
                 sheet.Row(row).Style.Font.FontColor = XLColor.Gray;
                 row++;
             }
@@ -326,7 +352,7 @@ public class CustomerService : ICustomerService
         };
     }
 
-    private void WritePersonnelRow(IXLWorksheet sheet, int row, string orgName, string supervisorName, CustomerPersonnel p)
+    private static void WritePersonnelRow(IXLWorksheet sheet, int row, string orgName, string supervisorName, CustomerPersonnel p, Dictionary<CustomerPersonnelRole, string> roleNames)
     {
         sheet.Cell(row, 1).Value = orgName;
         sheet.Cell(row, 2).Value = supervisorName;
@@ -334,19 +360,8 @@ public class CustomerService : ICustomerService
         sheet.Cell(row, 4).Value = p.Username;
         sheet.Cell(row, 5).Value = p.Email;
         sheet.Cell(row, 6).Value = p.PhoneNumber ?? "";
-        sheet.Cell(row, 7).Value = GetRoleName(p.Role);
+        sheet.Cell(row, 7).Value = roleNames.TryGetValue(p.Role, out var roleName) ? roleName : p.Role.ToString();
         sheet.Cell(row, 8).Value = p.Department ?? "";
         sheet.Cell(row, 9).Value = p.Title ?? "";
-    }
-
-    private static string GetRoleName(CustomerPersonnelRole role)
-    {
-        return role switch
-        {
-            CustomerPersonnelRole.CustomerManager => "Müşteri Yöneticisi",
-            CustomerPersonnelRole.CustomerSupervisor => "Müşteri Süpervizörü",
-            CustomerPersonnelRole.CustomerOperator => "Müşteri Operatörü",
-            _ => role.ToString()
-        };
     }
 }

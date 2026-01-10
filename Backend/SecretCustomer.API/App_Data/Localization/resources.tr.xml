@@ -230,6 +230,24 @@
   <LocaleResource Name="Common.Email">
     <Value>E-posta</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Customer">
+    <Value>Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Organization">
+    <Value>Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FullName">
+    <Value>Ad Soyad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Role">
+    <Value>Rol</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Excel">
+    <Value>Excel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ExportExcel">
+    <Value>Excel'e Aktar</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Other">
     <Value>Diğer</Value>
   </LocaleResource>
@@ -724,6 +742,12 @@
   </LocaleResource>
   <LocaleResource Name="Menu.Delegations">
     <Value>Vekaletler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.CustomerOrganizations">
+    <Value>Müşteri Organizasyonları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Import">
+    <Value>Veri İçe Aktarma</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.MyAssignments">
     <Value>Atamalarım</Value>
@@ -1891,6 +1915,61 @@
   </LocaleResource>
   <LocaleResource Name="Checklist.QuestionCount">
     <Value>Soru Sayısı</Value>
+  </LocaleResource>
+  <!-- Excel Export -->
+  <LocaleResource Name="Excel.PersonnelList">
+    <Value>Personel Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.ExportDate">
+    <Value>Dışa Aktarma Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Independent">
+    <Value>Bağımsız</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Pool">
+    <Value>Havuzda</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.ChecklistInfo">
+    <Value>KONTROL LİSTESİ BİLGİLERİ</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Name">
+    <Value>Ad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Code">
+    <Value>Kod</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Description">
+    <Value>Açıklama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.General">
+    <Value>Genel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Questions">
+    <Value>SORULAR</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionNumber">
+    <Value>No</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionText">
+    <Value>Soru Metni</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.QuestionType">
+    <Value>Soru Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Required">
+    <Value>Zorunlu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.MaxPoints">
+    <Value>Maks. Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Weight">
+    <Value>Ağırlık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.Yes">
+    <Value>Evet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Excel.No">
+    <Value>Hayır</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Title">
     <Value>Değerlendirmeler</Value>
@@ -3835,6 +3914,15 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Title">
     <Value>Müşteri Personeli</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Department">
+    <Value>Departman</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Supervisor">
+    <Value>Süpervizör</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.JobTitle">
+    <Value>Ünvan</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NewPersonnel">
     <Value>Yeni Personel</Value>

@@ -25,6 +25,11 @@ function EvaluationsViewModel() {
     self.allAssignments = ko.observableArray([]);
     self.allEvaluations = ko.observableArray([]);
 
+    // Sorting states for each table
+    self.assignmentsSorting = TableSorting.createSortState('dueDate', 'asc');
+    self.evaluationsSorting = TableSorting.createSortState('callDate', 'desc');
+    self.expiredSorting = TableSorting.createSortState('dueDate', 'desc');
+
     // ========================
     // DETAILS MODAL STATE
     // ========================
@@ -175,8 +180,10 @@ function EvaluationsViewModel() {
         var search = self.assignmentsSearch().toLowerCase();
         var today = new Date();
         today.setHours(0, 0, 0, 0);
+        var sortBy = self.assignmentsSorting.sortBy();
+        var sortDir = self.assignmentsSorting.sortDirection();
 
-        return assignments.filter(function(a) {
+        var filtered = assignments.filter(function(a) {
             if (a.isCompleted) return false;
             var dueDate = new Date(a.dueDate);
             if (dueDate < today) return false;
@@ -187,6 +194,8 @@ function EvaluationsViewModel() {
             }
             return true;
         });
+
+        return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
     // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
@@ -195,8 +204,10 @@ function EvaluationsViewModel() {
         var statusFilter = self.evaluationsStatusFilter();
         var dateFrom = self.evaluationsDateFrom();
         var dateTo = self.evaluationsDateTo();
+        var sortBy = self.evaluationsSorting.sortBy();
+        var sortDir = self.evaluationsSorting.sortDirection();
 
-        return self.allEvaluations().filter(function(e) {
+        var filtered = self.allEvaluations().filter(function(e) {
             // Text arama
             if (search) {
                 var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
@@ -222,6 +233,8 @@ function EvaluationsViewModel() {
             }
             return true;
         });
+
+        return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
     // Filtreleri temizle
@@ -238,8 +251,10 @@ function EvaluationsViewModel() {
         var search = self.expiredSearch().toLowerCase();
         var today = new Date();
         today.setHours(0, 0, 0, 0);
+        var sortBy = self.expiredSorting.sortBy();
+        var sortDir = self.expiredSorting.sortDirection();
 
-        return assignments.filter(function(a) {
+        var filtered = assignments.filter(function(a) {
             if (a.isCompleted) return false;
             var dueDate = new Date(a.dueDate);
             if (dueDate >= today) return false;
@@ -250,6 +265,8 @@ function EvaluationsViewModel() {
             }
             return true;
         });
+
+        return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
     // Admin mi kontrolü

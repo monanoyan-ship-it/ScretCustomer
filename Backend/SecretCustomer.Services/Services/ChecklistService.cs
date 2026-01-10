@@ -11,10 +11,12 @@ namespace SecretCustomer.Services.Services;
 public class ChecklistService : IChecklistService
 {
     private readonly IChecklistRepository _checklistRepository;
+    private readonly ILocalizationService _localizationService;
 
-    public ChecklistService(IChecklistRepository checklistRepository)
+    public ChecklistService(IChecklistRepository checklistRepository, ILocalizationService localizationService)
     {
         _checklistRepository = checklistRepository;
+        _localizationService = localizationService;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -391,13 +393,31 @@ public class ChecklistService : IChecklistService
         var checklist = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
         if (checklist == null) return null;
 
+        // Yerelleştirilmiş metinleri al
+        var sheetName = await _localizationService.GetResourceAsync("Common.Checklist");
+        var checklistInfoTitle = await _localizationService.GetResourceAsync("Excel.ChecklistInfo");
+        var nameLabel = await _localizationService.GetResourceAsync("Excel.Name");
+        var codeLabel = await _localizationService.GetResourceAsync("Excel.Code");
+        var customerLabel = await _localizationService.GetResourceAsync("Common.Customer");
+        var generalLabel = await _localizationService.GetResourceAsync("Excel.General");
+        var organizationLabel = await _localizationService.GetResourceAsync("Common.Organization");
+        var descriptionLabel = await _localizationService.GetResourceAsync("Excel.Description");
+        var questionsTitle = await _localizationService.GetResourceAsync("Excel.Questions");
+        var orderLabel = await _localizationService.GetResourceAsync("Excel.QuestionNumber");
+        var groupLabel = await _localizationService.GetResourceAsync("Checklist.GroupName");
+        var questionLabel = await _localizationService.GetResourceAsync("Excel.QuestionText");
+        var maxPointsLabel = await _localizationService.GetResourceAsync("Excel.MaxPoints");
+        var weightLabel = await _localizationService.GetResourceAsync("Excel.Weight");
+        var scoringTypeLabel = await _localizationService.GetResourceAsync("Excel.QuestionType");
+        var penaltyTypeLabel = await _localizationService.GetResourceAsync("Question.PenaltyType");
+
         using var workbook = new XLWorkbook();
-        var sheet = workbook.Worksheets.Add("Kontrol Listesi");
+        var sheet = workbook.Worksheets.Add(sheetName);
 
         int row = 1;
 
         // ===== GENEL BİLGİLER =====
-        sheet.Cell(row, 1).Value = "KONTROL LİSTESİ BİLGİLERİ";
+        sheet.Cell(row, 1).Value = checklistInfoTitle;
         sheet.Cell(row, 1).Style.Font.Bold = true;
         sheet.Cell(row, 1).Style.Font.FontSize = 14;
         sheet.Range(row, 1, row, 7).Merge();
@@ -405,23 +425,23 @@ public class ChecklistService : IChecklistService
         sheet.Range(row, 1, row, 7).Style.Font.FontColor = XLColor.White;
         row++;
 
-        sheet.Cell(row, 1).Value = "Ad:";
+        sheet.Cell(row, 1).Value = nameLabel + ":";
         sheet.Cell(row, 1).Style.Font.Bold = true;
         sheet.Cell(row, 2).Value = checklist.Name;
-        sheet.Cell(row, 4).Value = "Kod:";
+        sheet.Cell(row, 4).Value = codeLabel + ":";
         sheet.Cell(row, 4).Style.Font.Bold = true;
         sheet.Cell(row, 5).Value = checklist.Code ?? "-";
         row++;
 
-        sheet.Cell(row, 1).Value = "Müşteri:";
+        sheet.Cell(row, 1).Value = customerLabel + ":";
         sheet.Cell(row, 1).Style.Font.Bold = true;
-        sheet.Cell(row, 2).Value = checklist.Customer?.CompanyName ?? "Genel";
-        sheet.Cell(row, 4).Value = "Organizasyon:";
+        sheet.Cell(row, 2).Value = checklist.Customer?.CompanyName ?? generalLabel;
+        sheet.Cell(row, 4).Value = organizationLabel + ":";
         sheet.Cell(row, 4).Style.Font.Bold = true;
         sheet.Cell(row, 5).Value = checklist.CustomerOrganization?.Name ?? "-";
         row++;
 
-        sheet.Cell(row, 1).Value = "Açıklama:";
+        sheet.Cell(row, 1).Value = descriptionLabel + ":";
         sheet.Cell(row, 1).Style.Font.Bold = true;
         sheet.Cell(row, 2).Value = checklist.Description ?? "-";
         sheet.Range(row, 2, row, 7).Merge();
@@ -430,7 +450,7 @@ public class ChecklistService : IChecklistService
         row++; // Boş satır
 
         // ===== SORULAR VE ALT KRİTERLER =====
-        sheet.Cell(row, 1).Value = "SORULAR VE ALT KRİTERLER";
+        sheet.Cell(row, 1).Value = questionsTitle;
         sheet.Cell(row, 1).Style.Font.Bold = true;
         sheet.Cell(row, 1).Style.Font.FontSize = 14;
         sheet.Range(row, 1, row, 7).Merge();
@@ -439,13 +459,13 @@ public class ChecklistService : IChecklistService
         row++;
 
         // Tablo başlıkları
-        sheet.Cell(row, 1).Value = "Sıra";
-        sheet.Cell(row, 2).Value = "Grup";
-        sheet.Cell(row, 3).Value = "Soru / Alt Kriter";
-        sheet.Cell(row, 4).Value = "Max Puan";
-        sheet.Cell(row, 5).Value = "Ağırlık";
-        sheet.Cell(row, 6).Value = "Puan Tipi";
-        sheet.Cell(row, 7).Value = "Ceza Tipi";
+        sheet.Cell(row, 1).Value = orderLabel;
+        sheet.Cell(row, 2).Value = groupLabel;
+        sheet.Cell(row, 3).Value = questionLabel;
+        sheet.Cell(row, 4).Value = maxPointsLabel;
+        sheet.Cell(row, 5).Value = weightLabel;
+        sheet.Cell(row, 6).Value = scoringTypeLabel;
+        sheet.Cell(row, 7).Value = penaltyTypeLabel;
         sheet.Range(row, 1, row, 7).Style.Font.Bold = true;
         sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
         row++;
@@ -500,7 +520,7 @@ public class ChecklistService : IChecklistService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        var fileName = $"KontrolListesi_{checklist.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        var fileName = $"Checklist_{checklist.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
         return new ExcelExportDto
         {
