@@ -93,6 +93,7 @@ function ProjectsViewModel() {
 
     // State
     self.isLoading = ko.observable(false);
+    self.isLoadingModal = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
@@ -112,6 +113,9 @@ function ProjectsViewModel() {
     self.statusFilter = ko.observable('');
     self.projectTypeFilter = ko.observable('');
     self.viewMode = ko.observable('table');
+
+    // Sorting
+    self.sorting = TableSorting.createSortState('name', 'asc');
 
     // Modals
     self.isEditModalOpen = ko.observable(false);
@@ -178,6 +182,12 @@ function ProjectsViewModel() {
         if (self.projectTypeFilter()) {
             result = result.filter(function(p) { return p.projectType === self.projectTypeFilter(); });
         }
+        // Apply sorting
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (sortBy) {
+            result = TableSorting.clientSort(result, sortBy, sortDir);
+        }
         return result;
     });
 
@@ -185,6 +195,7 @@ function ProjectsViewModel() {
         self.searchTerm('');
         self.statusFilter('');
         self.projectTypeFilter('');
+        self.sorting.reset();
     };
 
     // Load dropdown data
@@ -254,7 +265,7 @@ function ProjectsViewModel() {
 
     // Open edit modal
     self.openEditModal = function(project) {
-        self.isLoading(true);
+        self.isLoadingModal(true);
         fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
             .then(function(res) {
                 if (!res.ok) throw new Error('Proje yüklenemedi');
@@ -270,7 +281,7 @@ function ProjectsViewModel() {
                 toastr.error('Proje yüklenirken bir hata oluştu.');
             })
             .finally(function() {
-                self.isLoading(false);
+                self.isLoadingModal(false);
             });
     };
 
@@ -282,7 +293,7 @@ function ProjectsViewModel() {
 
     // Open detail modal
     self.openDetailModal = function(project) {
-        self.isLoading(true);
+        self.isLoadingModal(true);
         self.projectFiles([]); // Clear previous files
         fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
             .then(function(res) {
@@ -300,7 +311,7 @@ function ProjectsViewModel() {
                 toastr.error('Proje detayı yüklenirken bir hata oluştu.');
             })
             .finally(function() {
-                self.isLoading(false);
+                self.isLoadingModal(false);
             });
     };
 

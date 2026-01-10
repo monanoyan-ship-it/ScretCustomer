@@ -84,4 +84,8 @@ public class AssignmentFilterDto
     public bool? IsCompleted { get; set; }
     public bool? IsExpired { get; set; }
     public string? SearchTerm { get; set; }
+
+    // Sorting
+    public string? SortBy { get; set; }
+    public string SortDirection { get; set; } = "desc";
 }

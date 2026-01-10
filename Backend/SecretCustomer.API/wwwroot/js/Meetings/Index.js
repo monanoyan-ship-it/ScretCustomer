@@ -36,12 +36,24 @@
             isOnline: ko.observable('')
         };
 
+        // Sorting
+        self.sorting = TableSorting.createSortState('plannedDate', 'desc');
+
         // Subscribe to filter changes
         Object.keys(self.filter).forEach(function(key) {
             self.filter[key].subscribe(function() {
                 self.currentPage(1);
                 self.loadMeetings();
             });
+        });
+
+        // Subscribe to sorting changes
+        self.sorting.sortBy.subscribe(function() {
+            self.currentPage(1);
+            self.loadMeetings();
+        });
+        self.sorting.sortDirection.subscribe(function() {
+            self.loadMeetings();
         });
 
         // Visible pages
@@ -145,6 +157,12 @@
             if (self.filter.startDate()) params.append('startDate', self.filter.startDate());
             if (self.filter.endDate()) params.append('endDate', self.filter.endDate());
             if (self.filter.isOnline()) params.append('isOnline', self.filter.isOnline());
+
+            // Sorting params
+            if (self.sorting.sortBy()) {
+                params.append('sortBy', self.sorting.sortBy());
+                params.append('sortDirection', self.sorting.sortDirection());
+            }
 
             fetch('/api/meetings?' + params.toString())
                 .then(function(response) { return response.json(); })
@@ -610,6 +628,7 @@
             self.filter.startDate('');
             self.filter.endDate('');
             self.filter.isOnline('');
+            self.sorting.reset();
         };
 
         // ========== INITIALIZE ==========

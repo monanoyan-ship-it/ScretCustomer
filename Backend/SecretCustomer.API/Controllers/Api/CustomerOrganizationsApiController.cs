@@ -516,6 +516,29 @@ public class CustomerOrganizationsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Personel cikarilirken bir hata olustu", ex));
         }
     }
+
+    /// <summary>
+    /// Personeli belirli bir supervizorün ekibinden cikar
+    /// </summary>
+    [HttpDelete("{organizationId}/personnel/{personnelId}/supervisor/{supervisorId}")]
+    public async Task<IActionResult> RemoveFromTeam(int organizationId, int personnelId, int supervisorId)
+    {
+        try
+        {
+            await _organizationService.RemoveFromTeamAsync(personnelId, organizationId, supervisorId);
+            return Ok(new { message = "Personel ekipten cikarildi" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Assignment not found for personnel {PersonnelId} under supervisor {SupervisorId}", personnelId, supervisorId);
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing personnel {PersonnelId} from team of supervisor {SupervisorId}", personnelId, supervisorId);
+            return StatusCode(500, CreateErrorResponse("Personel ekipten cikarilirken bir hata olustu", ex));
+        }
+    }
 }
 
 public class AddPersonnelToOrganizationRequestDto

@@ -19,6 +19,28 @@ function UserRequestsViewModel() {
     self.personnelRequests = ko.observableArray([]);
     self.personnelCounts = ko.observable({ pending: 0, approved: 0, rejected: 0, total: 0 });
 
+    // ==================== SORTING ====================
+    self.draftSorting = TableSorting.createSortState('requestedAt', 'desc');
+    self.personnelSorting = TableSorting.createSortState('requestedAt', 'desc');
+
+    // Sorted Draft Requests
+    self.sortedDraftRequests = ko.computed(function() {
+        var items = self.draftRequests();
+        var sortBy = self.draftSorting.sortBy();
+        var sortDir = self.draftSorting.sortDirection();
+        if (!sortBy || items.length === 0) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
+    });
+
+    // Sorted Personnel Requests
+    self.sortedPersonnelRequests = ko.computed(function() {
+        var items = self.personnelRequests();
+        var sortBy = self.personnelSorting.sortBy();
+        var sortDir = self.personnelSorting.sortDirection();
+        if (!sortBy || items.length === 0) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
+    });
+
     // Personnel Approve Modal
     self.isApproveModalOpen = ko.observable(false);
     self.approvingRequest = ko.observable(null);

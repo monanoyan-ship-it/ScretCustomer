@@ -30,6 +30,9 @@ function ApprovalsViewModel() {
         searchTerm: ko.observable('')
     };
 
+    // Sorting
+    self.sorting = TableSorting.createSortState('requestedAt', 'desc');
+
     // Pagination
     self.currentPage = ko.observable(1);
     self.pageSize = ko.observable(20);
@@ -67,6 +70,16 @@ function ApprovalsViewModel() {
         }, 300);
     });
 
+    // Sorting subscriptions
+    self.sorting.sortBy.subscribe(function() {
+        self.currentPage(1);
+        self.loadApprovals();
+    });
+    self.sorting.sortDirection.subscribe(function() {
+        self.currentPage(1);
+        self.loadApprovals();
+    });
+
     // Load approvals
     self.loadApprovals = function() {
         self.isLoading(true);
@@ -78,6 +91,8 @@ function ApprovalsViewModel() {
         if (self.filter.status()) params.append('status', self.filter.status());
         if (self.filter.priority()) params.append('priority', self.filter.priority());
         if (self.filter.searchTerm()) params.append('search', self.filter.searchTerm());
+        if (self.sorting.sortBy()) params.append('sortBy', self.sorting.sortBy());
+        if (self.sorting.sortDirection()) params.append('sortDirection', self.sorting.sortDirection());
 
         $.get('/api/approvals?' + params.toString())
             .done(function(response) {

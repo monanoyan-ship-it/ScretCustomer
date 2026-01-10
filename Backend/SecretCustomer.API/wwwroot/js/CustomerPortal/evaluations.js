@@ -66,9 +66,55 @@ function EvaluationsViewModel() {
     self.newPersonnelFirstName = ko.observable('');
     self.newPersonnelLastName = ko.observable('');
 
+    // Personnel Autocomplete
+    self.personnelSearchText = ko.observable('');
+    self.isPersonnelDropdownVisible = ko.observable(false);
+    self.selectedPersonnelName = ko.observable('');
+    self._personnelDropdownTimeout = null;
+
+    // Filtered personnel based on search text
+    self.filteredPersonnel = ko.computed(function() {
+        var search = self.personnelSearchText().toLowerCase().trim();
+        var personnel = self.availablePersonnel();
+        if (search.length < 1) return personnel.slice(0, 20); // Show first 20 if no search
+        return personnel.filter(function(p) {
+            return (p.name || '').toLowerCase().indexOf(search) >= 0 ||
+                   (p.sicilNo || '').toLowerCase().indexOf(search) >= 0;
+        }).slice(0, 20); // Limit to 20 results
+    });
+
+    self.showPersonnelDropdown = function() {
+        if (self._personnelDropdownTimeout) {
+            clearTimeout(self._personnelDropdownTimeout);
+            self._personnelDropdownTimeout = null;
+        }
+        self.isPersonnelDropdownVisible(true);
+    };
+
+    self.hidePersonnelDropdownDelayed = function() {
+        self._personnelDropdownTimeout = setTimeout(function() {
+            self.isPersonnelDropdownVisible(false);
+        }, 200);
+    };
+
+    self.selectPersonnel = function(personnel) {
+        self.evaluatedPersonnelId(personnel.id);
+        self.selectedPersonnelName(personnel.name);
+        self.personnelSearchText(personnel.name); // Input'a seçilen adı yaz
+        self.isPersonnelDropdownVisible(false);
+    };
+
+    self.clearSelectedPersonnel = function() {
+        self.evaluatedPersonnelId(null);
+        self.selectedPersonnelName('');
+        self.personnelSearchText('');
+    };
+
     self.enableNewPersonnelMode = function() {
         self.isNewPersonnelMode(true);
         self.evaluatedPersonnelId(null);
+        self.selectedPersonnelName('');
+        self.personnelSearchText('');
     };
 
     self.cancelNewPersonnelMode = function() {
@@ -385,6 +431,13 @@ function EvaluationsViewModel() {
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
         self.evaluationComment('');
+        // Autocomplete state reset
+        self.personnelSearchText('');
+        self.selectedPersonnelName('');
+        self.isPersonnelDropdownVisible(false);
+        self.isNewPersonnelMode(false);
+        self.newPersonnelFirstName('');
+        self.newPersonnelLastName('');
         self.selectedPeriodId(null);
         self.availablePeriods([]);
         self.totalScoreCalc(0);

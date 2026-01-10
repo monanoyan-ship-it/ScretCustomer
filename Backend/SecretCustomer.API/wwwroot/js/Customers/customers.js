@@ -10,6 +10,9 @@ function CustomersViewModel() {
     self.successMessage = ko.observable('');
     self.showInactive = ko.observable(false);
 
+    // Sorting
+    self.sorting = TableSorting.createSortState('companyName', 'asc');
+
     // Modal
     self.isModalOpen = ko.observable(false);
     self.editingCustomer = ko.observable(null);
@@ -57,6 +60,15 @@ function CustomersViewModel() {
             return self.customers();
         }
         return self.customers().filter(function(c) { return c.isActive; });
+    });
+
+    // Sorted Customers
+    self.sortedCustomers = ko.computed(function() {
+        var items = self.filteredCustomers();
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (!sortBy || items.length === 0) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
     });
 
     self.filteredPersonnel = ko.computed(function() {
@@ -244,6 +256,15 @@ function CustomersViewModel() {
         self.selectedCustomerForPersonnel(null);
         self.personnel([]);
         self.personnelSearchText('');
+    };
+
+    // Export personnel to Excel
+    self.exportPersonnelToExcel = function() {
+        var customer = self.selectedCustomerForPersonnel();
+        if (!customer) return;
+
+        // Open download in new tab
+        window.open('/api/customers/' + customer.id + '/personnel/export/excel', '_blank');
     };
 
     // Create new personnel

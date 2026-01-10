@@ -54,6 +54,11 @@ public interface ICustomerOrganizationService
     Task RemovePersonnelFromOrganizationV2Async(int personnelId, int organizationId);
 
     /// <summary>
+    /// Personeli belirli bir süpervizörün ekibinden çıkar
+    /// </summary>
+    Task RemoveFromTeamAsync(int personnelId, int organizationId, int supervisorId);
+
+    /// <summary>
     /// Organizasyondaki tum personel atamalarini getir (junction table uzerinden)
     /// </summary>
     Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetOrganizationPersonnelAssignmentsAsync(int organizationId);

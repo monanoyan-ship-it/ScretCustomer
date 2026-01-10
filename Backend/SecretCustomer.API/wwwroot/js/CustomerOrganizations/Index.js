@@ -317,6 +317,7 @@ function CustomerOrganizationsViewModel() {
     };
 
     // Kopyalama: Mevcut org'da kalir, yeni org'a da eklenir (multi-org)
+    // Ayni organizasyonda farkli supervizore de atanabilir
     self.executeCopy = function() {
         var person = self.movingPerson();
         var targetOrg = self.selectedTargetOrg();
@@ -328,46 +329,87 @@ function CustomerOrganizationsViewModel() {
             return;
         }
 
+        // Ayni organizasyonda ayni supervizore atama yapilamaz
+        var currentOrg = self.selectedOrganization();
+        if (currentOrg && targetOrg.id === currentOrg.id) {
+            // Ayni organizasyona kopyalama - farkli supervizor secilmeli
+            var currentSupervisorId = person.supervisorId || null;
+            var targetSupervisorId = targetSupervisor ? targetSupervisor.id : null;
+
+            if (currentSupervisorId === targetSupervisorId) {
+                toastr.error('Ayni organizasyonda ayni supervizore atama yapilamaz. Lutfen farkli bir supervizor secin.');
+                return;
+            }
+        }
+
         self.isMoving(true);
 
         var teamMemberIds = [];
-        if (includeTeam && person.teamMembers && person.teamMembers.length > 0) {
+        if (person.teamMembers && person.teamMembers.length > 0) {
             teamMemberIds = person.teamMembers.map(function(tm) { return tm.id; });
         }
 
         var targetOrgName = targetOrg.name;
         var targetSupervisorName = targetSupervisor ? targetSupervisor.fullName : 'Bagimsiz';
 
-        // Coklu organizasyon: Junction table API kullan
-        var copyPromise = ApiService.post('/customer-organizations/' + targetOrg.id + '/personnel/' + person.id, {
-            supervisorId: targetSupervisor ? targetSupervisor.id : null
-        });
+        // Süpervizör başka bir süpervizörün altına kopyalanıyorsa:
+        // Kendisi kopyalanmaz, sadece ekip üyeleri kopyalanır
+        var isSupervisorToSupervisor = targetSupervisor && person.teamMembers && person.teamMembers.length > 0;
 
-        // Ekip uyelerini de ekle
-        if (includeTeam && teamMemberIds.length > 0) {
-            copyPromise = copyPromise.then(function() {
-                var chain = Promise.resolve();
-                teamMemberIds.forEach(function(tmId) {
-                    chain = chain.then(function() {
-                        return ApiService.post('/customer-organizations/' + targetOrg.id + '/personnel/' + tmId, {
-                            supervisorId: targetSupervisor ? targetSupervisor.id : null
-                        });
+        var copyPromise;
+
+        if (isSupervisorToSupervisor) {
+            // Sadece ekip üyelerini hedef süpervizörün altına ekle
+            copyPromise = Promise.resolve();
+            teamMemberIds.forEach(function(tmId) {
+                copyPromise = copyPromise.then(function() {
+                    return ApiService.post('/customer-organizations/' + targetOrg.id + '/personnel/' + tmId, {
+                        supervisorId: targetSupervisor.id
                     });
                 });
-                return chain;
             });
+        } else {
+            // Normal kopyalama: kişiyi ekle
+            copyPromise = ApiService.post('/customer-organizations/' + targetOrg.id + '/personnel/' + person.id, {
+                supervisorId: targetSupervisor ? targetSupervisor.id : null
+            });
+
+            // Ekip uyelerini de ekle (ekiple birlikte taşı seçiliyse)
+            if (includeTeam && teamMemberIds.length > 0) {
+                copyPromise = copyPromise.then(function() {
+                    var chain = Promise.resolve();
+                    teamMemberIds.forEach(function(tmId) {
+                        chain = chain.then(function() {
+                            return ApiService.post('/customer-organizations/' + targetOrg.id + '/personnel/' + tmId, {
+                                supervisorId: targetSupervisor ? targetSupervisor.id : null
+                            });
+                        });
+                    });
+                    return chain;
+                });
+            }
         }
 
         copyPromise
             .then(function() {
-                var copiedText = includeTeam && teamMemberIds.length > 0
-                    ? person.fullName + ' ve ' + teamMemberIds.length + ' ekip uyesi'
-                    : person.fullName;
+                var copiedText;
+                var message;
 
-                var message = '<strong>' + copiedText + '</strong> eklendi<br>' +
-                    '<small>Hedef: ' + targetOrgName + '</small><br>' +
-                    '<small>Supervizor: ' + targetSupervisorName + '</small><br>' +
-                    '<small class="text-info"><i class="bi bi-info-circle"></i> Mevcut organizasyonda da kalmaya devam ediyor</small>';
+                if (isSupervisorToSupervisor) {
+                    // Süpervizörden süpervizöre: sadece ekip üyeleri kopyalandı
+                    copiedText = teamMemberIds.length + ' ekip üyesi';
+                    message = '<strong>' + copiedText + '</strong> kopyalandı<br>' +
+                        '<small>Kaynak: ' + person.fullName + ' ekibi</small><br>' +
+                        '<small>Hedef: ' + targetSupervisorName + ' ekibi</small>';
+                } else {
+                    copiedText = includeTeam && teamMemberIds.length > 0
+                        ? person.fullName + ' ve ' + teamMemberIds.length + ' ekip uyesi'
+                        : person.fullName;
+                    message = '<strong>' + copiedText + '</strong> eklendi<br>' +
+                        '<small>Hedef: ' + targetOrgName + '</small><br>' +
+                        '<small>Supervizor: ' + targetSupervisorName + '</small><br>' +
+                        '<small class="text-info"><i class="bi bi-info-circle"></i> Mevcut organizasyonda da kalmaya devam ediyor</small>';
+                }
 
                 toastr.success(message, 'Kopyalama Basarili');
                 self.closeMoveModal();
@@ -384,6 +426,60 @@ function CustomerOrganizationsViewModel() {
             .finally(function() {
                 self.isMoving(false);
             });
+    };
+
+    // ========== EKİPTEN ÇIKARMA ==========
+
+    self.removeFromTeam = function(person, supervisor) {
+        var orgId = self.selectedOrganization().id;
+        var personName = person.fullName;
+        var supervisorName = supervisor.fullName;
+
+        showConfirmModal({
+            title: 'Ekipten Çıkar',
+            message: personName + ' kişisini ' + supervisorName + ' ekibinden çıkarmak istediğinize emin misiniz?',
+            type: 'danger',
+            confirmText: 'Evet, Çıkar',
+            confirmIcon: 'bi-box-arrow-right',
+            onConfirm: function() {
+                ApiService.delete('/customer-organizations/' + orgId + '/personnel/' + person.id + '/supervisor/' + supervisor.id)
+                    .then(function() {
+                        toastr.success(personName + ' ekipten çıkarıldı.');
+                        self.loadPersonnel(orgId);
+                        self.loadOrganizations(self.selectedCustomer().id);
+                    })
+                    .catch(function(error) {
+                        console.error('Error removing from team:', error);
+                        toastr.error(error.message || 'Ekipten çıkarma sırasında hata oluştu.');
+                    });
+            }
+        });
+    };
+
+    self.removeFromOrganization = function(person) {
+        var orgId = self.selectedOrganization().id;
+        var orgName = self.selectedOrganization().name;
+        var personName = person.fullName;
+
+        showConfirmModal({
+            title: 'Organizasyondan Çıkar',
+            message: personName + ' kişisini ' + orgName + ' organizasyonundan çıkarmak istediğinize emin misiniz?',
+            type: 'danger',
+            confirmText: 'Evet, Çıkar',
+            confirmIcon: 'bi-box-arrow-right',
+            onConfirm: function() {
+                ApiService.delete('/customer-organizations/' + orgId + '/personnel/' + person.id + '/v2')
+                    .then(function() {
+                        toastr.success(personName + ' organizasyondan çıkarıldı.');
+                        self.loadPersonnel(orgId);
+                        self.loadOrganizations(self.selectedCustomer().id);
+                    })
+                    .catch(function(error) {
+                        console.error('Error removing from organization:', error);
+                        toastr.error(error.message || 'Organizasyondan çıkarma sırasında hata oluştu.');
+                    });
+            }
+        });
     };
 
     // ========== ORGANIZATION CRUD ==========

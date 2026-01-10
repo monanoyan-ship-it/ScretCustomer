@@ -12,5 +12,6 @@ public interface ICustomerPersonnelOrganizationRepository
     Task UpdateAsync(CustomerPersonnelOrganization assignment);
     Task DeleteAsync(int id);
     Task DeleteAsync(int personnelId, int organizationId);
+    Task DeleteAsync(int personnelId, int organizationId, int? supervisorId);
     Task<bool> ExistsAsync(int personnelId, int organizationId);
 }

@@ -233,4 +233,28 @@ public class ChecklistsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Soru grupları yüklenirken hata oluştu", ex));
         }
     }
+
+    /// <summary>
+    /// Kontrol listesini Excel olarak dışa aktar (sorular ve alt kriterler dahil)
+    /// </summary>
+    [HttpGet("{id}/export/excel")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> ExportToExcel(int id)
+    {
+        try
+        {
+            var result = await _checklistService.ExportChecklistToExcelAsync(id);
+            if (result == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
+            }
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting checklist {Id} to Excel", id);
+            return StatusCode(500, CreateErrorResponse("Kontrol listesi dışa aktarılırken hata oluştu", ex));
+        }
+    }
 }

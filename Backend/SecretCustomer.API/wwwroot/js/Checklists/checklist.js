@@ -121,7 +121,7 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
 function ChecklistViewModel() {
     var self = this;
 
-    self.checklists = ko.observableArray([]);
+    self._checklists = ko.observableArray([]);
     self.isLoading = ko.observable(true);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
@@ -132,6 +132,18 @@ function ChecklistViewModel() {
     self.viewingChecklist = ko.observable(null);
     self.isSaving = ko.observable(false);
     self.wizardStep = ko.observable(1);
+
+    // Sorting - varsayılan: son eklenen en üstte
+    self.sorting = TableSorting.createSortState('createdAt', 'desc');
+
+    // Sorted checklists
+    self.checklists = ko.computed(function() {
+        var items = self._checklists();
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (!sortBy) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
+    });
 
     // Firma ve Organizasyon listesi
     self.customers = ko.observableArray([]);
@@ -319,7 +331,7 @@ function ChecklistViewModel() {
 
         apiService.get(url)
             .then(function (data) {
-                self.checklists(data);
+                self._checklists(data);
             })
             .catch(function (error) {
                 console.error('Checklists error:', error);
@@ -548,7 +560,7 @@ function ChecklistViewModel() {
         showDeleteConfirm(checklistName + ' kontrol listesi', function () {
             apiService.delete('/checklists/' + checklist.id)
                 .then(function () {
-                    self.checklists.remove(checklist);
+                    self._checklists.remove(checklist);
                     toastr.success('Kontrol listesi basariyla silindi.');
                 })
                 .catch(function (error) {
@@ -664,13 +676,13 @@ function ChecklistViewModel() {
                 var isNew = !data.id;
                 if (isNew) {
                     // Yeni kayıt: array'e ekle (son eklenen en üstte)
-                    self.checklists.unshift(savedChecklist);
+                    self._checklists.unshift(savedChecklist);
                 } else {
                     // Güncelleme: array'de bul ve güncelle
-                    var list = self.checklists();
+                    var list = self._checklists();
                     for (var i = 0; i < list.length; i++) {
                         if (list[i].id === savedChecklist.id) {
-                            self.checklists.splice(i, 1, savedChecklist);
+                            self._checklists.splice(i, 1, savedChecklist);
                             break;
                         }
                     }
@@ -699,6 +711,16 @@ function ChecklistViewModel() {
     self.closeViewModal = function () {
         self.isViewModalOpen(false);
         self.viewingChecklist(null);
+    };
+
+    // Excel Export
+    self.exportChecklistToExcel = function (checklist) {
+        var checklistId = checklist.id;
+        var checklistName = checklist.name;
+
+        // Dosyayı indir
+        window.location.href = '/api/checklists/' + checklistId + '/export/excel';
+        toastr.success(checklistName + ' kontrol listesi Excel\'e aktarılıyor...');
     };
 
     // Initialize

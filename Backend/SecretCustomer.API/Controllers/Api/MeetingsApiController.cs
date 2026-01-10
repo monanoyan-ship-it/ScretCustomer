@@ -83,8 +83,24 @@ public class MeetingsApiController : BaseApiController
 
         var totalCount = await query.CountAsync();
 
-        var meetings = await query
-            .OrderByDescending(m => m.PlannedDate)
+        // Dynamic sorting
+        var isAscending = filter.SortDirection?.ToLower() == "asc";
+        IOrderedQueryable<Meeting> orderedQuery = filter.SortBy?.ToLower() switch
+        {
+            "title" => isAscending ? query.OrderBy(m => m.Title) : query.OrderByDescending(m => m.Title),
+            "meetingtype" => isAscending ? query.OrderBy(m => m.MeetingType) : query.OrderByDescending(m => m.MeetingType),
+            "status" => isAscending ? query.OrderBy(m => m.Status) : query.OrderByDescending(m => m.Status),
+            "planneddate" => isAscending ? query.OrderBy(m => m.PlannedDate) : query.OrderByDescending(m => m.PlannedDate),
+            "organizername" => isAscending
+                ? query.OrderBy(m => m.Organizer != null ? m.Organizer.FirstName : null)
+                : query.OrderByDescending(m => m.Organizer != null ? m.Organizer.FirstName : null),
+            "participantcount" => isAscending
+                ? query.OrderBy(m => m.Participants.Count)
+                : query.OrderByDescending(m => m.Participants.Count),
+            _ => query.OrderByDescending(m => m.PlannedDate) // Default
+        };
+
+        var meetings = await orderedQuery
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Select(m => new MeetingListDto

@@ -87,6 +87,22 @@ public class CustomerPersonnelOrganizationRepository : ICustomerPersonnelOrganiz
         }
     }
 
+    public async Task DeleteAsync(int personnelId, int organizationId, int? supervisorId)
+    {
+        var assignment = await _context.CustomerPersonnelOrganizations
+            .FirstOrDefaultAsync(po =>
+                po.CustomerPersonnelId == personnelId &&
+                po.CustomerOrganizationId == organizationId &&
+                po.SupervisorId == supervisorId &&
+                !po.IsDeleted);
+
+        if (assignment != null)
+        {
+            _context.CustomerPersonnelOrganizations.Remove(assignment);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task<bool> ExistsAsync(int personnelId, int organizationId)
     {
         return await _context.CustomerPersonnelOrganizations

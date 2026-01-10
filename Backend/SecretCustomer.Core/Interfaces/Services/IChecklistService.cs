@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Checklist;
+using SecretCustomer.Core.DTOs.Report;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -11,4 +12,5 @@ public interface IChecklistService
     Task<ChecklistDto> UpdateAsync(UpdateChecklistDto dto);
     Task<bool> DeleteAsync(int id);
     Task<ChecklistDto> CloneChecklistAsync(int id, string newName);
+    Task<ExcelExportDto?> ExportChecklistToExcelAsync(int id);
 }

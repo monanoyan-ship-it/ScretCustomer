@@ -14,6 +14,18 @@ function InternalAssignmentsViewModel() {
     self.availableProjects = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
 
+    // ===== Sorting =====
+    self.sorting = TableSorting.createSortState('dueDate', 'asc');
+
+    // Sorted Assignments
+    self.sortedAssignments = ko.computed(function() {
+        var items = self.assignments();
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (!sortBy || items.length === 0) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
+    });
+
     // Summary
     self.summary = ko.observable({
         totalAssignments: 0,

@@ -817,18 +817,51 @@
                                                 <div class="col-12">
                                                     <label class="form-label">@Html.T("Evaluation.SelectPersonnel", "Personel Seç") <span class="text-danger">*</span></label>
                                                     <!-- ko ifnot: isNewPersonnelMode -->
-                                                    <div class="input-group">
-                                                        <select class="form-select" data-bind="value: evaluatedPersonnelId, options: availablePersonnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPersonnelPlaceholder", "-- Personel Seçin --")'"></select>
-                                                        <!-- ko if: isLoadingPersonnel() -->
-                                                        <span class="input-group-text">
-                                                            <span class="spinner-border spinner-border-sm"></span>
-                                                        </span>
-                                                        <!-- /ko -->
-                                                        <!-- ko ifnot: isLoadingPersonnel() -->
-                                                        <button type="button" class="btn btn-outline-secondary" data-bind="click: enableNewPersonnelMode" title="@Html.T("Evaluation.PersonnelNotInList", "Listede Yok")">
-                                                            <i class="bi bi-person-plus"></i>
-                                                        </button>
-                                                        <!-- /ko -->
+                                                    <div class="position-relative">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                                            <input type="text" class="form-control"
+                                                                   placeholder="@Html.T("Evaluation.SearchPersonnel", "Personel ara...")"
+                                                                   autocomplete="off"
+                                                                   data-bind="value: personnelSearchText, valueUpdate: 'afterkeydown',
+                                                                              event: { focus: showPersonnelDropdown, blur: hidePersonnelDropdownDelayed },
+                                                                              attr: { disabled: isLoadingPersonnel() }">
+                                                            <!-- ko if: evaluatedPersonnelId() -->
+                                                            <button type="button" class="btn btn-outline-danger" data-bind="click: clearSelectedPersonnel" title="@Html.T("Common.Clear", "Temizle")">
+                                                                <i class="bi bi-x-lg"></i>
+                                                            </button>
+                                                            <!-- /ko -->
+                                                            <!-- ko if: isLoadingPersonnel() -->
+                                                            <span class="input-group-text">
+                                                                <span class="spinner-border spinner-border-sm"></span>
+                                                            </span>
+                                                            <!-- /ko -->
+                                                            <!-- ko ifnot: isLoadingPersonnel() -->
+                                                            <button type="button" class="btn btn-outline-secondary" data-bind="click: enableNewPersonnelMode" title="@Html.T("Evaluation.PersonnelNotInList", "Listede Yok")">
+                                                                <i class="bi bi-person-plus"></i>
+                                                            </button>
+                                                            <!-- /ko -->
+                                                        </div>
+                                                        <!-- Autocomplete Dropdown -->
+                                                        <div class="dropdown-menu w-100 show shadow" style="max-height: 250px; overflow-y: auto; position: absolute; top: 100%; left: 0; z-index: 1050;"
+                                                             data-bind="visible: isPersonnelDropdownVisible() && filteredPersonnel().length > 0">
+                                                            <!-- ko foreach: filteredPersonnel -->
+                                                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="#"
+                                                               data-bind="click: function() { $parent.selectPersonnel($data); }, event: { mousedown: function() { return true; } }">
+                                                                <span data-bind="text: name"></span>
+                                                                <!-- ko if: $data.sicilNo -->
+                                                                <small class="text-muted" data-bind="text: $data.sicilNo"></small>
+                                                                <!-- /ko -->
+                                                            </a>
+                                                            <!-- /ko -->
+                                                        </div>
+                                                        <!-- No Results -->
+                                                        <div class="dropdown-menu w-100 show shadow" style="position: absolute; top: 100%; left: 0; z-index: 1050;"
+                                                             data-bind="visible: isPersonnelDropdownVisible() && filteredPersonnel().length === 0 && personnelSearchText().length >= 2">
+                                                            <span class="dropdown-item text-muted">
+                                                                <i class="bi bi-info-circle me-1"></i> @Html.T("Evaluation.NoPersonnelFound", "Personel bulunamadı")
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     <!-- /ko -->
                                                     <!-- ko if: isNewPersonnelMode -->

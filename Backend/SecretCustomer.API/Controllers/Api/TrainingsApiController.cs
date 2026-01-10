@@ -89,8 +89,26 @@ public class TrainingsApiController : BaseApiController
 
         var totalCount = await query.CountAsync();
 
-        var trainings = await query
-            .OrderByDescending(t => t.StartDate ?? t.CreatedAt)
+        // Dynamic sorting
+        var isAscending = filter.SortDirection?.ToLower() == "asc";
+        IOrderedQueryable<Training> orderedQuery = filter.SortBy?.ToLower() switch
+        {
+            "code" => isAscending ? query.OrderBy(t => t.Code) : query.OrderByDescending(t => t.Code),
+            "title" => isAscending ? query.OrderBy(t => t.Title) : query.OrderByDescending(t => t.Title),
+            "trainingtype" => isAscending ? query.OrderBy(t => t.TrainingType) : query.OrderByDescending(t => t.TrainingType),
+            "status" => isAscending ? query.OrderBy(t => t.Status) : query.OrderByDescending(t => t.Status),
+            "category" => isAscending ? query.OrderBy(t => t.Category) : query.OrderByDescending(t => t.Category),
+            "startdate" => isAscending ? query.OrderBy(t => t.StartDate) : query.OrderByDescending(t => t.StartDate),
+            "trainername" => isAscending
+                ? query.OrderBy(t => t.Trainer != null ? t.Trainer.FirstName : t.ExternalTrainerName)
+                : query.OrderByDescending(t => t.Trainer != null ? t.Trainer.FirstName : t.ExternalTrainerName),
+            "currentparticipants" => isAscending
+                ? query.OrderBy(t => t.Participants.Count(p => !p.IsDeleted))
+                : query.OrderByDescending(t => t.Participants.Count(p => !p.IsDeleted)),
+            _ => query.OrderByDescending(t => t.StartDate ?? t.CreatedAt) // Default
+        };
+
+        var trainings = await orderedQuery
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Select(t => new TrainingListDto

@@ -311,7 +311,30 @@ public class AssignmentService : IAssignmentService
                 (a.ExternalName != null && a.ExternalName.ToLower().Contains(term)));
         }
 
-        var assignments = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
+        // Dynamic sorting
+        var isAscending = filter.SortDirection?.ToLower() == "asc";
+        IOrderedQueryable<Assignment> orderedQuery = filter.SortBy?.ToLower() switch
+        {
+            "projectname" => isAscending
+                ? query.OrderBy(a => a.Project != null ? a.Project.Name : null)
+                : query.OrderByDescending(a => a.Project != null ? a.Project.Name : null),
+            "checklistname" => isAscending
+                ? query.OrderBy(a => a.Checklist != null ? a.Checklist.Name : null)
+                : query.OrderByDescending(a => a.Checklist != null ? a.Checklist.Name : null),
+            "assigneename" => isAscending
+                ? query.OrderBy(a => a.AssignedUser != null ? a.AssignedUser.FirstName : a.ExternalName)
+                : query.OrderByDescending(a => a.AssignedUser != null ? a.AssignedUser.FirstName : a.ExternalName),
+            "duedate" => isAscending ? query.OrderBy(a => a.DueDate) : query.OrderByDescending(a => a.DueDate),
+            "status" => isAscending ? query.OrderBy(a => a.IsCompleted) : query.OrderByDescending(a => a.IsCompleted),
+            "score" => isAscending
+                ? query.OrderBy(a => a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
+                    ? a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0)
+                : query.OrderByDescending(a => a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
+                    ? a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0),
+            _ => query.OrderByDescending(a => a.CreatedAt) // Default
+        };
+
+        var assignments = await orderedQuery.ToListAsync();
         return assignments.Select(MapToDto);
     }
 

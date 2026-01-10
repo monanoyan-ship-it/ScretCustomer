@@ -149,4 +149,27 @@ public class CustomersApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.DeleteError"), ex));
         }
     }
+
+    /// <summary>
+    /// Müşteri personel listesini Excel olarak dışa aktar
+    /// </summary>
+    [HttpGet("{id}/personnel/export/excel")]
+    public async Task<IActionResult> ExportPersonnelToExcel(int id)
+    {
+        try
+        {
+            var result = await _customerService.ExportPersonnelToExcelAsync(id);
+            if (result == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.NotFound")));
+            }
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting personnel for customer {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Personel listesi dışa aktarılırken hata oluştu", ex));
+        }
+    }
 }

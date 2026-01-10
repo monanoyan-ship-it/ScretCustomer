@@ -30,20 +30,47 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>@Html.T("Customer.CompanyName", "Şirket Adı")</th>
-                            <th>@Html.T("Customer.TaxNumber", "Vergi Numarası")</th>
-                            <th>@Html.T("Common.Phone", "Telefon")</th>
-                            <th>@Html.T("User.Email", "E-posta")</th>
-                            <th>@Html.T("Customer.City", "Şehir")</th>
-                            <th>@Html.T("Customer.Personnel", "Personel")</th>
-                            <th>@Html.T("Common.Branch", "Şube")</th>
-                            <th>@Html.T("Customer.Project", "Proje")</th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('companyName'); }, css: sorting.getSortClass('companyName')">
+                                @Html.T("Customer.CompanyName", "Şirket Adı")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('companyName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('taxNumber'); }, css: sorting.getSortClass('taxNumber')">
+                                @Html.T("Customer.TaxNumber", "Vergi Numarası")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('taxNumber')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('phone'); }, css: sorting.getSortClass('phone')">
+                                @Html.T("Common.Phone", "Telefon")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('phone')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('email'); }, css: sorting.getSortClass('email')">
+                                @Html.T("User.Email", "E-posta")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('email')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('city'); }, css: sorting.getSortClass('city')">
+                                @Html.T("Customer.City", "Şehir")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('city')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('personnelCount'); }, css: sorting.getSortClass('personnelCount')">
+                                @Html.T("Customer.Personnel", "Personel")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('personnelCount')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('branchCount'); }, css: sorting.getSortClass('branchCount')">
+                                @Html.T("Common.Branch", "Şube")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('branchCount')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('projectCount'); }, css: sorting.getSortClass('projectCount')">
+                                @Html.T("Customer.Project", "Proje")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('projectCount')"></i>
+                            </th>
                             <th>@Html.T("Customer.Contract", "Sözleşme")</th>
-                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('isActive'); }, css: sorting.getSortClass('isActive')">
+                                @Html.T("Common.Status", "Durum")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('isActive')"></i>
+                            </th>
                             <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
-                    <tbody data-bind="foreach: customers">
+                    <tbody data-bind="foreach: sortedCustomers">
                         <tr>
                             <td data-bind="text: companyName"></td>
                             <td><span class="badge bg-secondary" data-bind="text: taxNumber || '-'"></span></td>
@@ -184,7 +211,12 @@
                             - <span data-bind="text: selectedCustomerForPersonnel().companyName"></span>
                         </span>
                     </h5>
-                    <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-success btn-sm" data-bind="click: exportPersonnelToExcel, visible: selectedCustomerForPersonnel() && !isLoadingPersonnel()" title="@Html.T("Customer.ExportToExcel", "Excel'e Aktar")">
+                            <i class="bi bi-file-earmark-excel"></i> Excel
+                        </button>
+                        <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
+                    </div>
                 </div>
                 <div class="modal-body">
 

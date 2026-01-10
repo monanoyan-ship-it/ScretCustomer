@@ -171,6 +171,17 @@ function AssignmentsViewModel() {
     self.filterDueDateTo = ko.observable('');
     self.filterSearchTerm = ko.observable('');
 
+    // Sorting
+    self.sorting = TableSorting.createSortState('dueDate', 'desc');
+
+    // Subscribe to sorting changes
+    self.sorting.sortBy.subscribe(function() {
+        self.applyFilters();
+    });
+    self.sorting.sortDirection.subscribe(function() {
+        self.applyFilters();
+    });
+
     // Debounce helper
     var searchTimeout = null;
     self.filterSearchTerm.subscribe(function(newValue) {
@@ -298,7 +309,9 @@ function AssignmentsViewModel() {
             assignedUserId: self.filterAssignedUserId() || null,
             dueDateFrom: self.filterDueDateFrom() || null,
             dueDateTo: self.filterDueDateTo() || null,
-            searchTerm: self.filterSearchTerm() || null
+            searchTerm: self.filterSearchTerm() || null,
+            sortBy: self.sorting.sortBy() || null,
+            sortDirection: self.sorting.sortDirection() || 'desc'
         };
 
         fetch('/api/assignments/filter', {
@@ -331,6 +344,7 @@ function AssignmentsViewModel() {
         self.filterDueDateFrom('');
         self.filterDueDateTo('');
         self.filterSearchTerm('');
+        self.sorting.reset();
         self.loadAssignments();
         self.loadSummary();
     };

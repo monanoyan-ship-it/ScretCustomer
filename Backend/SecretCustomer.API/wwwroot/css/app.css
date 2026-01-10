@@ -99,3 +99,67 @@ tbody tr:nth-last-child(-n+3) .dropdown-menu {
     bottom: 100% !important;
     transform: none !important;
 }
+
+/* ===== Sortable Table Headers ===== */
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.15s ease-in-out;
+}
+
+th.sortable:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+th.sortable .sort-icon {
+    margin-left: 5px;
+    opacity: 0.3;
+    font-size: 0.85em;
+    transition: opacity 0.15s ease-in-out;
+}
+
+th.sortable:hover .sort-icon {
+    opacity: 0.6;
+}
+
+th.sortable.sort-asc .sort-icon,
+th.sortable.sort-desc .sort-icon {
+    opacity: 1;
+}
+
+/* Dark table header variants - Bootstrap override */
+.table-dark th.sortable:hover,
+thead.table-dark th.sortable:hover,
+.table > thead.table-dark th.sortable:hover {
+    background-color: #495057 !important;
+}
+
+.table-dark th.sortable,
+thead.table-dark th.sortable,
+.table > thead.table-dark th.sortable {
+    color: #fff !important;
+}
+
+.table-dark th.sortable .sort-icon,
+thead.table-dark th.sortable .sort-icon,
+.table > thead.table-dark th.sortable .sort-icon {
+    color: rgba(255, 255, 255, 0.5) !important;
+    opacity: 1 !important;
+}
+
+.table-dark th.sortable:hover .sort-icon,
+thead.table-dark th.sortable:hover .sort-icon,
+.table > thead.table-dark th.sortable:hover .sort-icon {
+    color: #fff !important;
+}
+
+.table-dark th.sortable.sort-asc .sort-icon,
+.table-dark th.sortable.sort-desc .sort-icon,
+thead.table-dark th.sortable.sort-asc .sort-icon,
+thead.table-dark th.sortable.sort-desc .sort-icon,
+.table > thead.table-dark th.sortable.sort-asc .sort-icon,
+.table > thead.table-dark th.sortable.sort-desc .sort-icon {
+    color: #fff !important;
+    opacity: 1 !important;
+}

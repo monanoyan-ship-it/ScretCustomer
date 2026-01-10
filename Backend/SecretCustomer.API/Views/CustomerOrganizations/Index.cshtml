@@ -202,9 +202,14 @@
                                                             <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
                                                             <span class="badge bg-info ms-1" data-bind="visible: teamMembers && teamMembers.length, text: teamMembers ? teamMembers.length + ' ekip' : ''"></span>
                                                         </div>
-                                                        <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
-                                                            <i class="bi bi-arrows-move"></i>
-                                                        </button>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                                <i class="bi bi-arrows-move"></i>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger" title="Organizasyondan Çıkar" data-bind="click: function() { $root.removeFromOrganization($data); }">
+                                                                <i class="bi bi-box-arrow-right"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
 
                                                     <!-- Team Members (indented) -->
@@ -216,9 +221,14 @@
                                                                 <span data-bind="text: fullName"></span>
                                                                 <span class="badge bg-secondary ms-2 small" data-bind="text: roleName"></span>
                                                             </div>
-                                                            <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
-                                                                <i class="bi bi-arrows-move"></i>
-                                                            </button>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                                    <i class="bi bi-arrows-move"></i>
+                                                                </button>
+                                                                <button class="btn btn-outline-danger" title="Ekipten Çıkar" data-bind="click: function() { $root.removeFromTeam($data, $parent); }">
+                                                                    <i class="bi bi-box-arrow-right"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -236,9 +246,14 @@
                                                             <span data-bind="text: fullName"></span>
                                                             <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
                                                         </div>
-                                                        <button class="btn btn-sm btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
-                                                            <i class="bi bi-arrows-move"></i>
-                                                        </button>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
+                                                                <i class="bi bi-arrows-move"></i>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger" title="Organizasyondan Çıkar" data-bind="click: function() { $root.removeFromOrganization($data); }">
+                                                                <i class="bi bi-box-arrow-right"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

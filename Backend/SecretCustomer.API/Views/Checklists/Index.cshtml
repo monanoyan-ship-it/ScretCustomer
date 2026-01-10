@@ -61,11 +61,26 @@
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>@Html.T("Checklist.Name", "Adı")</th>
-                                <th>@Html.T("Common.Customer", "Firma")</th>
-                                <th class="text-center">@Html.T("Checklist.Questions", "Soru")</th>
-                                <th class="text-center">@Html.T("Common.Version", "Versiyon")</th>
-                                <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                <th class="sortable" data-bind="click: function() { sorting.toggleSort('name'); }, css: sorting.getSortClass('name')">
+                                    @Html.T("Checklist.Name", "Adı")
+                                    <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('name')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { sorting.toggleSort('customerName'); }, css: sorting.getSortClass('customerName')">
+                                    @Html.T("Common.Customer", "Firma")
+                                    <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('customerName')"></i>
+                                </th>
+                                <th class="text-center sortable" data-bind="click: function() { sorting.toggleSort('questionCount'); }, css: sorting.getSortClass('questionCount')">
+                                    @Html.T("Checklist.Questions", "Soru")
+                                    <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('questionCount')"></i>
+                                </th>
+                                <th class="text-center sortable" data-bind="click: function() { sorting.toggleSort('version'); }, css: sorting.getSortClass('version')">
+                                    @Html.T("Common.Version", "Versiyon")
+                                    <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('version')"></i>
+                                </th>
+                                <th class="text-center sortable" data-bind="click: function() { sorting.toggleSort('isActive'); }, css: sorting.getSortClass('isActive')">
+                                    @Html.T("Common.Status", "Durum")
+                                    <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('isActive')"></i>
+                                </th>
                                 <th class="text-center" style="width: 150px;">@Html.T("Common.Actions", "İşlemler")</th>
                             </tr>
                         </thead>
@@ -664,6 +679,9 @@
                 </table>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bind="click: function() { $parent.exportChecklistToExcel($data); }">
+                    <i class="bi bi-file-earmark-excel me-2"></i>@Html.T("Common.ExportExcel", "Excel'e Aktar")
+                </button>
                 <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeViewModal">
                     <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Close", "Kapat")
                 </button>

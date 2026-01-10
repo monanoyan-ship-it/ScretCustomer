@@ -108,15 +108,30 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>@Html.T("Approval.Reference", "Referans")</th>
-                                <th>@Html.T("Common.Title", "Baslik")</th>
-                                <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
-                                <th>@Html.T("Common.Status", "Durum")</th>
-                                <th>@Html.T("Common.Date", "Tarih")</th>
+                                <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('referenceNumber'); }, css: draftSorting.getSortClass('referenceNumber')">
+                                    @Html.T("Approval.Reference", "Referans")
+                                    <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('referenceNumber')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('title'); }, css: draftSorting.getSortClass('title')">
+                                    @Html.T("Common.Title", "Baslik")
+                                    <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('title')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('requestedByUserName'); }, css: draftSorting.getSortClass('requestedByUserName')">
+                                    @Html.T("Approval.RequestedBy", "Talep Eden")
+                                    <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('requestedByUserName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('status'); }, css: draftSorting.getSortClass('status')">
+                                    @Html.T("Common.Status", "Durum")
+                                    <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('status')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('requestedAt'); }, css: draftSorting.getSortClass('requestedAt')">
+                                    @Html.T("Common.Date", "Tarih")
+                                    <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('requestedAt')"></i>
+                                </th>
                                 <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: draftRequests">
+                        <tbody data-bind="foreach: sortedDraftRequests">
                             <tr>
                                 <td>
                                     <a href="#" data-bind="text: referenceNumber, click: function() { $parent.showDraftDetail($data); }" class="text-decoration-none fw-bold"></a>
@@ -165,16 +180,34 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>@Html.T("PersonnelRequest.Name", "Ad Soyad")</th>
-                                <th>@Html.T("Common.Customer", "Firma")</th>
-                                <th>@Html.T("Common.Organization", "Organizasyon")</th>
-                                <th>@Html.T("Approval.RequestedBy", "Talep Eden")</th>
-                                <th>@Html.T("Common.Status", "Durum")</th>
-                                <th>@Html.T("Common.Date", "Tarih")</th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('fullName'); }, css: personnelSorting.getSortClass('fullName')">
+                                    @Html.T("PersonnelRequest.Name", "Ad Soyad")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('fullName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('customerName'); }, css: personnelSorting.getSortClass('customerName')">
+                                    @Html.T("Common.Customer", "Firma")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('customerName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('customerOrganizationName'); }, css: personnelSorting.getSortClass('customerOrganizationName')">
+                                    @Html.T("Common.Organization", "Organizasyon")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('customerOrganizationName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('requestedByUserName'); }, css: personnelSorting.getSortClass('requestedByUserName')">
+                                    @Html.T("Approval.RequestedBy", "Talep Eden")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('requestedByUserName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('status'); }, css: personnelSorting.getSortClass('status')">
+                                    @Html.T("Common.Status", "Durum")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('status')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { personnelSorting.toggleSort('requestedAt'); }, css: personnelSorting.getSortClass('requestedAt')">
+                                    @Html.T("Common.Date", "Tarih")
+                                    <i class="bi sort-icon" data-bind="css: personnelSorting.getSortIcon('requestedAt')"></i>
+                                </th>
                                 <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: personnelRequests">
+                        <tbody data-bind="foreach: sortedPersonnelRequests">
                             <tr>
                                 <td>
                                     <a href="#" data-bind="text: fullName, click: function() { $parent.showPersonnelDetail($data); }" class="text-decoration-none fw-bold"></a>

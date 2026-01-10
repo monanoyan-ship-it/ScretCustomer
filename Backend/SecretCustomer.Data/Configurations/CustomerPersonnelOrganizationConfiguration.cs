@@ -31,8 +31,9 @@ public class CustomerPersonnelOrganizationConfiguration : IEntityTypeConfigurati
             .HasForeignKey(po => po.SupervisorId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Composite unique index: Her personel-organizasyon kombinasyonu icin tek kayit
-        builder.HasIndex(po => new { po.CustomerPersonnelId, po.CustomerOrganizationId })
+        // Composite unique index: Her personel-organizasyon-supervizor kombinasyonu icin tek kayit
+        // Ayni personel, ayni organizasyonda, farkli supervizorler altinda olabilir
+        builder.HasIndex(po => new { po.CustomerPersonnelId, po.CustomerOrganizationId, po.SupervisorId })
             .IsUnique()
             .HasFilter("\"IsDeleted\" = false");
     }

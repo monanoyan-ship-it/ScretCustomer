@@ -42,12 +42,24 @@
             searchTerm: ko.observable('')
         };
 
+        // Sorting
+        self.sorting = TableSorting.createSortState('startDate', 'desc');
+
         // Subscribe to filter changes
         Object.keys(self.filter).forEach(function(key) {
             self.filter[key].subscribe(function() {
                 self.currentPage(1);
                 self.loadTrainings();
             });
+        });
+
+        // Subscribe to sorting changes
+        self.sorting.sortBy.subscribe(function() {
+            self.currentPage(1);
+            self.loadTrainings();
+        });
+        self.sorting.sortDirection.subscribe(function() {
+            self.loadTrainings();
         });
 
         // Visible pages
@@ -183,6 +195,12 @@
             if (self.filter.endDate()) params.append('endDate', self.filter.endDate());
             if (self.filter.isMandatory()) params.append('isMandatory', 'true');
             if (self.filter.searchTerm()) params.append('searchTerm', self.filter.searchTerm());
+
+            // Sorting params
+            if (self.sorting.sortBy()) {
+                params.append('sortBy', self.sorting.sortBy());
+                params.append('sortDirection', self.sorting.sortDirection());
+            }
 
             fetch('/api/trainings?' + params.toString())
                 .then(function(response) { return response.json(); })
@@ -671,6 +689,7 @@
             self.filter.endDate('');
             self.filter.isMandatory(false);
             self.filter.searchTerm('');
+            self.sorting.reset();
         };
 
         // ========== INITIALIZE ==========

@@ -96,6 +96,19 @@ function UsersViewModel() {
     self.selectedCustomerId = ko.observable('');
     self.searchText = ko.observable('');
 
+    // ===== Sorting =====
+    self.sorting = TableSorting.createSortState('username', 'asc');
+    self.cpSorting = TableSorting.createSortState('username', 'asc');
+
+    // ===== Sorted Users =====
+    self.sortedUsers = ko.computed(function() {
+        var items = self.users();
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (!sortBy || items.length === 0) return items;
+        return TableSorting.clientSort(items, sortBy, sortDir);
+    });
+
     // ===== Editing State =====
     self.editingUser = ko.observable(null);
     self.editingCustomerPersonnel = ko.observable(null);
@@ -125,6 +138,13 @@ function UsersViewModel() {
                        (p.lastName || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.email || '').toLowerCase().indexOf(search) >= 0;
             });
+        }
+
+        // Sıralama uygula
+        var sortBy = self.cpSorting.sortBy();
+        var sortDir = self.cpSorting.sortDirection();
+        if (sortBy && list.length > 0) {
+            list = TableSorting.clientSort(list, sortBy, sortDir);
         }
 
         return list;

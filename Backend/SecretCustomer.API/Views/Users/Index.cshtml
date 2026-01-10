@@ -48,15 +48,30 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>@Html.T("User.Username", "Kullanıcı Adı")</th>
-                            <th>@Html.T("User.FullName", "Ad Soyad")</th>
-                            <th>@Html.T("User.Email", "E-posta")</th>
-                            <th>@Html.T("User.Role", "Rol")</th>
-                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('username'); }, css: sorting.getSortClass('username')">
+                                @Html.T("User.Username", "Kullanıcı Adı")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('username')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('firstName'); }, css: sorting.getSortClass('firstName')">
+                                @Html.T("User.FullName", "Ad Soyad")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('firstName')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('email'); }, css: sorting.getSortClass('email')">
+                                @Html.T("User.Email", "E-posta")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('email')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('role'); }, css: sorting.getSortClass('role')">
+                                @Html.T("User.Role", "Rol")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('role')"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('isActive'); }, css: sorting.getSortClass('isActive')">
+                                @Html.T("Common.Status", "Durum")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('isActive')"></i>
+                            </th>
                             <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>
-                    <tbody data-bind="foreach: users">
+                    <tbody data-bind="foreach: sortedUsers">
                         <tr>
                             <td><strong data-bind="text: username"></strong></td>
                             <td data-bind="text: firstName + ' ' + lastName"></td>
@@ -112,14 +127,26 @@
         <div data-bind="visible: filteredCustomerPersonnel().length > 0" class="card shadow">
             <div class="card-body">
                 <table class="table table-hover">
-                    <thead>
+                    <thead class="table-dark">
                         <tr>
-                            <th>@Html.T("User.Username", "Kullanıcı Adı")</th>
-                            <th>@Html.T("User.FullName", "Ad Soyad")</th>
-                            <th>@Html.T("CustomerPersonnel.Customer", "Müşteri")</th>
-                            <th>@Html.T("User.Email", "E-posta")</th>
-                            <th>@Html.T("User.Role", "Rol")</th>
-                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('username'); }, css: cpSorting.getSortClass('username')">
+                                @Html.T("User.Username", "Kullanıcı Adı") <i class="bi sort-icon"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('firstName'); }, css: cpSorting.getSortClass('firstName')">
+                                @Html.T("User.FullName", "Ad Soyad") <i class="bi sort-icon"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('customerName'); }, css: cpSorting.getSortClass('customerName')">
+                                @Html.T("CustomerPersonnel.Customer", "Müşteri") <i class="bi sort-icon"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('email'); }, css: cpSorting.getSortClass('email')">
+                                @Html.T("User.Email", "E-posta") <i class="bi sort-icon"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('role'); }, css: cpSorting.getSortClass('role')">
+                                @Html.T("User.Role", "Rol") <i class="bi sort-icon"></i>
+                            </th>
+                            <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('isActive'); }, css: cpSorting.getSortClass('isActive')">
+                                @Html.T("Common.Status", "Durum") <i class="bi sort-icon"></i>
+                            </th>
                             <th>@Html.T("Common.Actions", "İşlemler")</th>
                         </tr>
                     </thead>

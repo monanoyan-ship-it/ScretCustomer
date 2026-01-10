@@ -1,4 +1,6 @@
+using ClosedXML.Excel;
 using SecretCustomer.Core.DTOs.Checklist;
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
@@ -383,4 +385,128 @@ public class ChecklistService : IChecklistService
         PenaltyType.RedCard => "Kırmızı Kart",
         _ => type.ToString()
     };
+
+    public async Task<ExcelExportDto?> ExportChecklistToExcelAsync(int id)
+    {
+        var checklist = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
+        if (checklist == null) return null;
+
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Kontrol Listesi");
+
+        int row = 1;
+
+        // ===== GENEL BİLGİLER =====
+        sheet.Cell(row, 1).Value = "KONTROL LİSTESİ BİLGİLERİ";
+        sheet.Cell(row, 1).Style.Font.Bold = true;
+        sheet.Cell(row, 1).Style.Font.FontSize = 14;
+        sheet.Range(row, 1, row, 7).Merge();
+        sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.DarkBlue;
+        sheet.Range(row, 1, row, 7).Style.Font.FontColor = XLColor.White;
+        row++;
+
+        sheet.Cell(row, 1).Value = "Ad:";
+        sheet.Cell(row, 1).Style.Font.Bold = true;
+        sheet.Cell(row, 2).Value = checklist.Name;
+        sheet.Cell(row, 4).Value = "Kod:";
+        sheet.Cell(row, 4).Style.Font.Bold = true;
+        sheet.Cell(row, 5).Value = checklist.Code ?? "-";
+        row++;
+
+        sheet.Cell(row, 1).Value = "Müşteri:";
+        sheet.Cell(row, 1).Style.Font.Bold = true;
+        sheet.Cell(row, 2).Value = checklist.Customer?.CompanyName ?? "Genel";
+        sheet.Cell(row, 4).Value = "Organizasyon:";
+        sheet.Cell(row, 4).Style.Font.Bold = true;
+        sheet.Cell(row, 5).Value = checklist.CustomerOrganization?.Name ?? "-";
+        row++;
+
+        sheet.Cell(row, 1).Value = "Açıklama:";
+        sheet.Cell(row, 1).Style.Font.Bold = true;
+        sheet.Cell(row, 2).Value = checklist.Description ?? "-";
+        sheet.Range(row, 2, row, 7).Merge();
+        row++;
+
+        row++; // Boş satır
+
+        // ===== SORULAR VE ALT KRİTERLER =====
+        sheet.Cell(row, 1).Value = "SORULAR VE ALT KRİTERLER";
+        sheet.Cell(row, 1).Style.Font.Bold = true;
+        sheet.Cell(row, 1).Style.Font.FontSize = 14;
+        sheet.Range(row, 1, row, 7).Merge();
+        sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.DarkBlue;
+        sheet.Range(row, 1, row, 7).Style.Font.FontColor = XLColor.White;
+        row++;
+
+        // Tablo başlıkları
+        sheet.Cell(row, 1).Value = "Sıra";
+        sheet.Cell(row, 2).Value = "Grup";
+        sheet.Cell(row, 3).Value = "Soru / Alt Kriter";
+        sheet.Cell(row, 4).Value = "Max Puan";
+        sheet.Cell(row, 5).Value = "Ağırlık";
+        sheet.Cell(row, 6).Value = "Puan Tipi";
+        sheet.Cell(row, 7).Value = "Ceza Tipi";
+        sheet.Range(row, 1, row, 7).Style.Font.Bold = true;
+        sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+        row++;
+
+        var questions = checklist.Questions?.Where(q => !q.IsDeleted).OrderBy(q => q.Order).ToList() ?? new List<Question>();
+
+        foreach (var q in questions)
+        {
+            // Soru satırı
+            sheet.Cell(row, 1).Value = q.Order;
+            sheet.Cell(row, 2).Value = q.GroupName ?? "";
+            sheet.Cell(row, 3).Value = q.Text;
+
+            // Puansız sorular için Max Puan ve Ağırlık "-" olacak
+            if (q.ScoringType == ScoringType.Unscored)
+            {
+                sheet.Cell(row, 4).Value = "-";
+                sheet.Cell(row, 5).Value = "-";
+            }
+            else
+            {
+                sheet.Cell(row, 4).Value = q.MaxPoints;
+                sheet.Cell(row, 5).Value = (double)q.WeightPoints;
+            }
+
+            sheet.Cell(row, 6).Value = GetScoringTypeName(q.ScoringType);
+            sheet.Cell(row, 7).Value = q.PenaltyType == PenaltyType.None ? "" : GetPenaltyTypeName(q.PenaltyType);
+            sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightSteelBlue;
+            sheet.Range(row, 1, row, 7).Style.Font.Bold = true;
+            row++;
+
+            // Alt kriterler
+            var subCriteria = q.SubCriteria?.Where(sc => !sc.IsDeleted).OrderBy(sc => sc.Order).ToList() ?? new List<QuestionSubCriteria>();
+            foreach (var sc in subCriteria)
+            {
+                sheet.Cell(row, 3).Value = $"    └ {sc.Description}";
+                sheet.Cell(row, 3).Style.Font.FontColor = XLColor.FromHtml("#333333");
+                row++;
+            }
+        }
+
+        // Sütun genişlikleri
+        sheet.Column(1).Width = 8;
+        sheet.Column(2).Width = 20;
+        sheet.Column(3).Width = 50;
+        sheet.Column(4).Width = 12;
+        sheet.Column(5).Width = 12;
+        sheet.Column(6).Width = 12;
+        sheet.Column(7).Width = 12;
+
+        // Excel dosyasını byte array'e çevir
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var fileName = $"KontrolListesi_{checklist.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        return new ExcelExportDto
+        {
+            FileName = fileName,
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
 }

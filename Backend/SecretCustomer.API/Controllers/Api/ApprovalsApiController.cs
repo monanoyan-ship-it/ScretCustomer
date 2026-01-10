@@ -87,8 +87,21 @@ public class ApprovalsApiController : BaseApiController
 
         var totalCount = await query.CountAsync();
 
-        var approvals = await query
-            .OrderByDescending(a => a.RequestedAt)
+        // Dynamic sorting
+        var isAscending = filter.SortDirection?.ToLower() == "asc";
+        IOrderedQueryable<Approval> orderedQuery = filter.SortBy?.ToLower() switch
+        {
+            "referencenumber" => isAscending ? query.OrderBy(a => a.ReferenceNumber) : query.OrderByDescending(a => a.ReferenceNumber),
+            "approvaltype" => isAscending ? query.OrderBy(a => a.ApprovalType) : query.OrderByDescending(a => a.ApprovalType),
+            "status" => isAscending ? query.OrderBy(a => a.Status) : query.OrderByDescending(a => a.Status),
+            "title" => isAscending ? query.OrderBy(a => a.Title) : query.OrderByDescending(a => a.Title),
+            "requestedbyusername" => isAscending ? query.OrderBy(a => a.RequestedByUser.FirstName) : query.OrderByDescending(a => a.RequestedByUser.FirstName),
+            "requestedat" => isAscending ? query.OrderBy(a => a.RequestedAt) : query.OrderByDescending(a => a.RequestedAt),
+            "priority" => isAscending ? query.OrderBy(a => a.Priority) : query.OrderByDescending(a => a.Priority),
+            _ => query.OrderByDescending(a => a.RequestedAt)
+        };
+
+        var approvals = await orderedQuery
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Select(a => new ApprovalListDto

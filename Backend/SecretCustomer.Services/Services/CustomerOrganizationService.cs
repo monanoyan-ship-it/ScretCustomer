@@ -145,10 +145,15 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         };
     }
 
-    // Sadece junction table'dan personel sayısı
+    // Sadece junction table'dan unique personel sayısı
+    // Ayni personel farkli supervizorler altinda olsa bile 1 olarak sayilir
     private static int GetUniquePersonnelCount(CustomerOrganization org)
     {
-        return org.PersonnelAssignments?.Count ?? 0;
+        return org.PersonnelAssignments?
+            .Where(pa => !pa.IsDeleted)
+            .Select(pa => pa.CustomerPersonnelId)
+            .Distinct()
+            .Count() ?? 0;
     }
 
     public async Task<CustomerOrganizationDto> CreateAsync(CreateCustomerOrganizationDto dto)
@@ -256,14 +261,14 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new InvalidOperationException("Alt organizasyonları olan bir organizasyon silinemez. Önce alt organizasyonları silin.");
         }
 
-        // Aktif personel atamalarını ayrıca kontrol et
-        var activeAssignments = await _context.CustomerPersonnelOrganizations
+        // Tüm personel atamalarını sil (personeller havuza düşer)
+        var assignments = await _context.CustomerPersonnelOrganizations
             .Where(pa => pa.CustomerOrganizationId == id && !pa.IsDeleted)
-            .CountAsync();
+            .ToListAsync();
 
-        if (activeAssignments > 0)
+        foreach (var assignment in assignments)
         {
-            throw new InvalidOperationException($"Bu organizasyonda {activeAssignments} aktif personel var. Önce personelleri başka organizasyona taşıyın.");
+            _context.CustomerPersonnelOrganizations.Remove(assignment);
         }
 
         org.IsDeleted = true;
@@ -360,37 +365,55 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new KeyNotFoundException($"Organizasyon bulunamadı (ID: {organizationId})");
         }
 
-        // Junction table'dan personelleri ve bu org için supervisor bilgisini al
-        var assignmentsWithSupervisors = org.PersonnelAssignments?
+        // Tüm atamalar (bir personel birden fazla süpervizöre atanmış olabilir)
+        var allAssignments = org.PersonnelAssignments?
             .Where(pa => pa.CustomerPersonnel != null && !pa.IsDeleted)
-            .ToDictionary(pa => pa.CustomerPersonnelId, pa => pa.SupervisorId)
-            ?? new Dictionary<int, int?>();
+            .ToList() ?? new List<CustomerPersonnelOrganization>();
 
-        var personnel = org.PersonnelAssignments?
-            .Where(pa => pa.CustomerPersonnel != null && !pa.IsDeleted)
+        // Unique personel listesi (sadece sayım için)
+        var uniquePersonnel = allAssignments
             .Select(pa => pa.CustomerPersonnel!)
-            .ToList() ?? new List<CustomerPersonnel>();
+            .DistinctBy(p => p.Id)
+            .ToList();
 
-        // Bu organizasyonda kimin kime bağlı olduğunu junction table'dan al
-        Func<CustomerPersonnel, int?> getSupervisorInOrg = (p) =>
-            assignmentsWithSupervisors.TryGetValue(p.Id, out var supId) ? supId : null;
+        // Süpervizör -> Ekip üyeleri atamaları (her atama ayrı, aynı personel birden fazla süpervizörde görünebilir)
+        var supervisorAssignments = allAssignments
+            .Where(pa => pa.SupervisorId.HasValue)
+            .GroupBy(pa => pa.SupervisorId!.Value)
+            .ToDictionary(g => g.Key, g => g.Select(pa => pa.CustomerPersonnel!).ToList());
 
-        // Süpervizörler (Manager ve Supervisor rolleri)
-        var supervisors = personnel
+        // Süpervizörler (Manager ve Supervisor rolleri) - unique personel listesinden
+        var supervisorPersonnel = uniquePersonnel
             .Where(p => p.Role == CustomerPersonnelRole.CustomerManager || p.Role == CustomerPersonnelRole.CustomerSupervisor)
-            .Select(p => MapToPersonnelItemV2(p, personnel, assignmentsWithSupervisors))
+            .ToList();
+
+        var supervisors = supervisorPersonnel
+            .Select(p => {
+                var teamMembers = supervisorAssignments.TryGetValue(p.Id, out var members)
+                    ? members.Select(tm => MapToPersonnelItemSimple(tm)).ToList()
+                    : new List<OrganizationPersonnelItemDto>();
+
+                return new OrganizationPersonnelItemDto
+                {
+                    Id = p.Id,
+                    FullName = $"{p.FirstName} {p.LastName}".Trim(),
+                    Email = p.Email,
+                    RoleName = GetRoleName(p.Role),
+                    SupervisorId = null,
+                    TeamMembers = teamMembers
+                };
+            })
             .OrderByDescending(s => s.TeamMembers.Count == 0) // Org yöneticisi (altında kimse yok) en üste
             .ThenBy(s => s.FullName)
             .ToList();
 
-        // Bağımsız operatörler (bu organizasyonda süpervizörü olmayan VEYA süpervizörü bu org'da olmayan)
-        var independentOperators = personnel
-            .Where(p => p.Role == CustomerPersonnelRole.CustomerOperator)
-            .Where(p => {
-                var supIdInOrg = getSupervisorInOrg(p);
-                return supIdInOrg == null || !personnel.Any(s => s.Id == supIdInOrg);
-            })
-            .Select(p => MapToPersonnelItemV2(p, personnel, assignmentsWithSupervisors))
+        // Bağımsız operatörler (süpervizörü olmayan - SupervisorId = null olan atamalar)
+        // Aynı personel birden fazla bağımsız kayıt olarak görünmemeli
+        var independentOperators = allAssignments
+            .Where(pa => pa.CustomerPersonnel?.Role == CustomerPersonnelRole.CustomerOperator && pa.SupervisorId == null)
+            .Select(pa => pa.CustomerPersonnel!)
+            .DistinctBy(p => p.Id)
+            .Select(p => MapToPersonnelItemSimple(p))
             .ToList();
 
         return new OrganizationPersonnelListDto
@@ -399,6 +422,19 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             OrganizationName = org.Name,
             Supervisors = supervisors,
             Operators = independentOperators
+        };
+    }
+
+    private OrganizationPersonnelItemDto MapToPersonnelItemSimple(CustomerPersonnel p)
+    {
+        return new OrganizationPersonnelItemDto
+        {
+            Id = p.Id,
+            FullName = $"{p.FirstName} {p.LastName}".Trim(),
+            Email = p.Email,
+            RoleName = GetRoleName(p.Role),
+            SupervisorId = null,
+            TeamMembers = new List<OrganizationPersonnelItemDto>()
         };
     }
 
@@ -554,10 +590,18 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             throw new InvalidOperationException("Personel ve organizasyon farkli musterilere ait");
         }
 
-        // Zaten atanmis mi?
-        if (await _personnelOrgRepository.ExistsAsync(personnelId, organizationId))
+        // Ayni supervizorle zaten atanmis mi? (Farkli supervizorler izinli)
+        var existingAssignment = await _context.CustomerPersonnelOrganizations
+            .FirstOrDefaultAsync(po =>
+                po.CustomerPersonnelId == personnelId &&
+                po.CustomerOrganizationId == organizationId &&
+                po.SupervisorId == supervisorId &&
+                !po.IsDeleted);
+
+        if (existingAssignment != null)
         {
-            throw new InvalidOperationException("Personel zaten bu organizasyona atanmis");
+            var supervisorText = supervisorId.HasValue ? "bu supervizor altinda" : "bagimsiz olarak";
+            throw new InvalidOperationException($"Personel zaten bu organizasyona {supervisorText} atanmis");
         }
 
         // Supervisor kontrolu - junction table'dan kontrol et
@@ -625,13 +669,84 @@ public class CustomerOrganizationService : ICustomerOrganizationService
 
     public async Task RemovePersonnelFromOrganizationV2Async(int personnelId, int organizationId)
     {
-        var assignment = await _personnelOrgRepository.GetAsync(personnelId, organizationId);
-        if (assignment == null)
+        // Bu kişinin tüm atamalarını getir (aynı orgda birden fazla olabilir - farklı süpervizörlerle)
+        var allAssignments = await _context.CustomerPersonnelOrganizations
+            .Where(po => po.CustomerPersonnelId == personnelId &&
+                        po.CustomerOrganizationId == organizationId &&
+                        !po.IsDeleted)
+            .ToListAsync();
+
+        if (!allAssignments.Any())
         {
             throw new KeyNotFoundException($"Atama bulunamadi (PersonelId: {personnelId}, OrgId: {organizationId})");
         }
 
-        await _personnelOrgRepository.DeleteAsync(personnelId, organizationId);
+        // Bu kişi süpervizör mü? (altında ekip üyesi var mı?)
+        var teamMembers = await _context.CustomerPersonnelOrganizations
+            .Where(po => po.SupervisorId == personnelId &&
+                        po.CustomerOrganizationId == organizationId &&
+                        !po.IsDeleted)
+            .ToListAsync();
+
+        if (teamMembers.Any())
+        {
+            // Süpervizör siliniyor - ekip üyelerini bağımsız yap
+            foreach (var member in teamMembers)
+            {
+                // Bu ekip üyesi zaten bağımsız olarak da kayıtlı mı?
+                var existingIndependent = await _context.CustomerPersonnelOrganizations
+                    .FirstOrDefaultAsync(po =>
+                        po.CustomerPersonnelId == member.CustomerPersonnelId &&
+                        po.CustomerOrganizationId == organizationId &&
+                        po.SupervisorId == null &&
+                        !po.IsDeleted);
+
+                if (existingIndependent != null)
+                {
+                    // Zaten bağımsız kaydı var, bu süpervizör altındaki kaydı sil
+                    _context.CustomerPersonnelOrganizations.Remove(member);
+                }
+                else
+                {
+                    // Bağımsız kaydı yok, süpervizörünü null yap
+                    member.SupervisorId = null;
+                }
+            }
+        }
+
+        // Süpervizörün kendi atamalarını sil
+        foreach (var assignment in allAssignments)
+        {
+            _context.CustomerPersonnelOrganizations.Remove(assignment);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveFromTeamAsync(int personnelId, int organizationId, int supervisorId)
+    {
+        // Supervisor kontrolu
+        var supervisor = await _context.CustomerPersonnel.FindAsync(supervisorId);
+        if (supervisor == null)
+        {
+            throw new KeyNotFoundException($"Supervizor bulunamadi (ID: {supervisorId})");
+        }
+
+        // Atama var mi kontrol et
+        var assignment = await _context.CustomerPersonnelOrganizations
+            .FirstOrDefaultAsync(po =>
+                po.CustomerPersonnelId == personnelId &&
+                po.CustomerOrganizationId == organizationId &&
+                po.SupervisorId == supervisorId &&
+                !po.IsDeleted);
+
+        if (assignment == null)
+        {
+            throw new KeyNotFoundException($"Bu supervizor altinda atama bulunamadi");
+        }
+
+        // Atamayi sil
+        await _personnelOrgRepository.DeleteAsync(personnelId, organizationId, supervisorId);
     }
 
     public async Task<IEnumerable<PersonnelOrganizationAssignmentDto>> GetOrganizationPersonnelAssignmentsAsync(int organizationId)

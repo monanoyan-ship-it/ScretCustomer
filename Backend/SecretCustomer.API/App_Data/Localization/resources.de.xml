@@ -5895,4 +5895,469 @@
   <LocaleResource Name="Common.LastName">
     <Value>Nachname</Value>
   </LocaleResource>
+
+  <!-- Neue Übersetzungen - 2026-01-10 -->
+
+  <!-- Assignment -->
+  <LocaleResource Name="Assignment.Assignee">
+    <Value>Zugewiesen an</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Detail">
+    <Value>Auftragsdetail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ChecklistAutoFilled">
+    <Value>Checkliste wird automatisch aus Projektdefinition übernommen</Value>
+  </LocaleResource>
+
+  <!-- Button -->
+  <LocaleResource Name="Button.Cancel">
+    <Value>Abbrechen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.Close">
+    <Value>Schließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.CopyLink">
+    <Value>Link kopieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.Delete">
+    <Value>Löschen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.Detail">
+    <Value>Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.More">
+    <Value>Mehr</Value>
+  </LocaleResource>
+
+  <!-- Common -->
+  <LocaleResource Name="Common.AllRoles">
+    <Value>Alle Rollen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ClearFilters">
+    <Value>Filter löschen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Creating">
+    <Value>Wird erstellt...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Note">
+    <Value>Notiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Remove">
+    <Value>Entfernen</Value>
+  </LocaleResource>
+
+  <!-- CustomerPersonnel -->
+  <LocaleResource Name="CustomerPersonnel.JobTitle">
+    <Value>Berufsbezeichnung</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.JobTitlePlaceholder">
+    <Value>Berufsbezeichnung eingeben</Value>
+  </LocaleResource>
+
+  <!-- CustomerPortal -->
+  <LocaleResource Name="CustomerPortal.Menu.Profile">
+    <Value>Profil</Value>
+  </LocaleResource>
+
+  <!-- Evaluation -->
+  <LocaleResource Name="Evaluation.Answer">
+    <Value>Antwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Answers">
+    <Value>Gegebene Antworten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Assignments">
+    <Value>Aufträge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.BackToForm">
+    <Value>Zurück</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallDate">
+    <Value>Anrufdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallId">
+    <Value>Anruf-ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallIdPlaceholder">
+    <Value>Anruf-ID eingeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallInfo">
+    <Value>Anrufinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CallTime">
+    <Value>Anrufzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CompletedAt">
+    <Value>Abgeschlossen am</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ConfirmAndSave">
+    <Value>Bestätigen und Speichern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ControlTime">
+    <Value>Kontrollzeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DateFrom">
+    <Value>Von</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DateTo">
+    <Value>Bis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.DescriptionPlaceholder">
+    <Value>Beschreibung eingeben...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Descriptions">
+    <Value>Beschreibungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Details">
+    <Value>Bewertungsdetails</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Duration">
+    <Value>Dauer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Earned">
+    <Value>Verdient</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Evaluated">
+    <Value>Bewertet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluatedPerson">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluatedPersonnel">
+    <Value>Bewertetes Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationComment">
+    <Value>Bewertungskommentar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationCommentPlaceholder">
+    <Value>Bewertungskommentar eingeben...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationInfo">
+    <Value>Bewertungsinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Evaluator">
+    <Value>Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluatorNote">
+    <Value>Bewerternotiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ExpiredAssignments">
+    <Value>Abgelaufen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.FormLoading">
+    <Value>Formular wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.GivenPoints">
+    <Value>Vergebene Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ListeningsVisits">
+    <Value>Abhörungen/Besuche</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Max">
+    <Value>Max</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoActiveAssignments">
+    <Value>Keine aktiven Aufträge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoEvaluations">
+    <Value>Keine Abhör-/Besuchsaufzeichnungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoExpiredAssignments">
+    <Value>Keine abgelaufenen Aufträge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Overdue">
+    <Value>Überfällig</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Penalty">
+    <Value>Strafe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Period">
+    <Value>Zeitraum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PeriodClosed">
+    <Value>Zeitraum geschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Points">
+    <Value>Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Question">
+    <Value>Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RawScore">
+    <Value>Rohpunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Red">
+    <Value>Rot</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RedCards">
+    <Value>Rote Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RedCardWeight">
+    <Value>Gewicht Rote Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RequestRevert">
+    <Value>Zurücksetzen anfordern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertReason">
+    <Value>Grund für Zurücksetzen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertReasonPlaceholder">
+    <Value>Warum möchten Sie zum Entwurf zurückkehren?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.RevertRequestInfo">
+    <Value>Genehmigung erforderlich um die Bewertung auf Entwurf zurückzusetzen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ReviewBeforeSave">
+    <Value>Vor dem Speichern überprüfen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SaveDraft">
+    <Value>Entwurf speichern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ScoredWeight">
+    <Value>Fragengewicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SearchAssignments">
+    <Value>Projekt oder Checkliste suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SearchExpired">
+    <Value>Projekt oder Checkliste suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SearchText">
+    <Value>Suche</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SelectPeriod">
+    <Value>Zeitraum auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SelectPersonnel">
+    <Value>Personal auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SelectPersonnelPlaceholder">
+    <Value>Personal auswählen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SendRequest">
+    <Value>Anfrage senden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.ShowSummary">
+    <Value>Zusammenfassung anzeigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SubCriteria">
+    <Value>Unterkriterien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Summary">
+    <Value>Bewertungszusammenfassung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.TotalScore">
+    <Value>Gesamtpunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.TotalWeight">
+    <Value>Gesamtgewicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Unscored">
+    <Value>Ohne Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Weight">
+    <Value>Gewicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.WriteYourAnswer">
+    <Value>Ihre Antwort schreiben...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Yellow">
+    <Value>Gelb</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.YellowCards">
+    <Value>Gelbe Karte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.YellowCardWeight">
+    <Value>Gewicht Gelbe Karte</Value>
+  </LocaleResource>
+
+  <!-- Import -->
+  <LocaleResource Name="Import.AllCustomers">
+    <Value>Alle Kunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.GroupName">
+    <Value>Gruppenname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.MaxPoints">
+    <Value>Max Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.PenaltyType">
+    <Value>Straftyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.QuestionText">
+    <Value>Fragentext</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.ScoringType">
+    <Value>Bewertungstyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.SubCriteria">
+    <Value>Unterkriterien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Checklist.WeightPoints">
+    <Value>Gewicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistDescription">
+    <Value>Beschreibung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistDescriptionPlaceholder">
+    <Value>Checklisten-Beschreibung...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistImport">
+    <Value>Checkliste importieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistInfo">
+    <Value>Checklisten-Informationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistName">
+    <Value>Checklisten-Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ChecklistNamePlaceholder">
+    <Value>Checklisten-Name eingeben</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Customer">
+    <Value>Kunde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ProcessedQuestions">
+    <Value>Verarbeitete Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.QuestionsCreated">
+    <Value>Fragen erstellt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SubCriteriaCreated">
+    <Value>Unterkriterien erstellt</Value>
+  </LocaleResource>
+
+  <!-- InternalAssignments -->
+  <LocaleResource Name="InternalAssignments.ByRole">
+    <Value>Nach Rolle</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.CreateAssignments">
+    <Value>Aufträge erstellen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Created">
+    <Value>Erstellt</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Errors">
+    <Value>Fehler</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Failed">
+    <Value>Fehlgeschlagen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Individual">
+    <Value>Einzeln</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.NewAssignment">
+    <Value>Neuer Auftrag</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.NoAssignments">
+    <Value>Keine Aufträge gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.PersonnelSelected">
+    <Value>Personal ausgewählt</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.PersonnelWillBeAssigned">
+    <Value>Personal wird zugewiesen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Result">
+    <Value>Auftragsergebnis</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.SelectCustomerFirst">
+    <Value>Zuerst Kunde auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.SelectionType">
+    <Value>Auswahltyp</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.SelectPersonnel">
+    <Value>Personal auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.SelectRole">
+    <Value>Rolle auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Skipped">
+    <Value>Übersprungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.Title">
+    <Value>Interne Bewertungsaufträge</Value>
+  </LocaleResource>
+
+  <!-- Menu -->
+  <LocaleResource Name="Menu.InternalAssignments">
+    <Value>Interne Bewertungsaufträge</Value>
+  </LocaleResource>
+
+  <!-- Profile -->
+  <LocaleResource Name="Profile.ConfirmPassword">
+    <Value>Neues Passwort bestätigen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Email">
+    <Value>E-Mail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.FirstName">
+    <Value>Vorname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Info">
+    <Value>Profilinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.LastName">
+    <Value>Nachname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.NewPassword">
+    <Value>Neues Passwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordMismatch">
+    <Value>Passwörter stimmen nicht überein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Phone">
+    <Value>Telefon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.SaveChanges">
+    <Value>Änderungen speichern</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdatePassword">
+    <Value>Passwort aktualisieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Username">
+    <Value>Benutzername</Value>
+  </LocaleResource>
+
+  <!-- Project -->
+  <LocaleResource Name="Project.FileName">
+    <Value>Dateiname</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Files">
+    <Value>Projektdateien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.FileSize">
+    <Value>Größe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.NoFiles">
+    <Value>Noch keine Dateien hochgeladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.UploadDate">
+    <Value>Hochladedatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.UploadFile">
+    <Value>Datei hochladen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Uploading">
+    <Value>Wird hochgeladen...</Value>
+  </LocaleResource>
+
+  <!-- Question -->
+  <LocaleResource Name="Question.GroupName">
+    <Value>Gruppe</Value>
+  </LocaleResource>
+
+  <!-- User -->
+  <LocaleResource Name="User.UsernameHint">
+    <Value>Nur englische Buchstaben, Zahlen, Unterstrich, Punkt und Bindestrich</Value>
+  </LocaleResource>
+
+  <!-- Customer Excel Export -->
+  <LocaleResource Name="Customer.ExportToExcel">
+    <Value>Nach Excel exportieren</Value>
+  </LocaleResource>
 </Language>
