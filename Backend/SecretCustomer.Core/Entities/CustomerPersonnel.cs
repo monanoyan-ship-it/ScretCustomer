@@ -62,27 +62,6 @@ public class CustomerPersonnel : BaseEntity
     public int? PreferredLanguageId { get; set; }
     public Language? PreferredLanguage { get; set; }
 
-    // ===== YENİ: Organizasyon Bağlantısı =====
-
-    /// <summary>
-    /// Personelin birincil organizasyonu
-    /// </summary>
-    public int? OrganizationId { get; set; }
-    public CustomerOrganization? Organization { get; set; }
-
-    // ===== YENİ: Takım Lideri (Süpervizör) İlişkisi =====
-
-    /// <summary>
-    /// Bu personelin bağlı olduğu takım lideri
-    /// </summary>
-    public int? SupervisorId { get; set; }
-    public CustomerPersonnel? Supervisor { get; set; }
-
-    /// <summary>
-    /// Bu personele bağlı takım üyeleri
-    /// </summary>
-    public ICollection<CustomerPersonnel> TeamMembers { get; set; } = new List<CustomerPersonnel>();
-
     // Computed Property
     public string FullName => $"{FirstName} {LastName}";
 

@@ -16,12 +16,6 @@ public class Question : BaseEntity
     public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
-    /// <summary>
-    /// Section ID - Geriye uyumluluk için (deprecated, ileride kaldırılacak)
-    /// </summary>
-    public int? SectionId { get; set; }
-    public Section? Section { get; set; }
-
     [ExcelColumn("Soru Metni", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
         Description = "Sorunun/kriterin tam metni", SampleValue = "Çağrı standartlarına uyum")]
     public string Text { get; set; } = string.Empty;

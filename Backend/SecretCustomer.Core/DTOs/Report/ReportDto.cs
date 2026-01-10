@@ -35,6 +35,14 @@ public class EvaluationReportDto
 
     // Personnel
     public string? EvaluatedPersonnelName { get; set; }
+    public string? SupervisorName { get; set; }
+
+    // Customer/Organization
+    public string? CustomerName { get; set; }
+    public string? OrganizationName { get; set; }
+
+    // Period
+    public string? PeriodName { get; set; }
 
     // Dates
     public DateTime? EvaluationDate { get; set; }
@@ -54,6 +62,7 @@ public class EvaluationReportDto
     // Call Info
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
+    public string? CallTime { get; set; }
     public string? Duration { get; set; }
 
     // Comment
@@ -79,18 +88,18 @@ public class PagedReportResult<T>
 /// </summary>
 public class EvaluationDetailReportDto : EvaluationReportDto
 {
-    public List<SectionReportDto> Sections { get; set; } = new();
+    public List<QuestionGroupReportDto> Groups { get; set; } = new();
 }
 
 /// <summary>
-/// Bölüm rapor DTO
+/// Soru grubu rapor DTO (GroupName'e göre gruplama)
 /// </summary>
-public class SectionReportDto
+public class QuestionGroupReportDto
 {
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public int Order { get; set; }
-    public decimal? SectionScore { get; set; }
-    public decimal? SectionMaxScore { get; set; }
+    public decimal? GroupScore { get; set; }
+    public decimal? GroupMaxScore { get; set; }
     public List<QuestionAnswerReportDto> Questions { get; set; } = new();
 }
 
@@ -108,6 +117,7 @@ public class QuestionAnswerReportDto
     public decimal? MaxPoints { get; set; }
     public string? PenaltyType { get; set; }
     public string? Notes { get; set; }
+    public List<string> SelectedSubCriteria { get; set; } = new();
 }
 
 /// <summary>
@@ -198,7 +208,7 @@ public class PenaltyDetailDto
     public int AnswerId { get; set; }
     public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public string PenaltyType { get; set; } = string.Empty;
     public string ProjectName { get; set; } = string.Empty;
     public string? ChecklistName { get; set; }
@@ -216,7 +226,7 @@ public class PenaltyQuestionDto
     public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public int YellowCardCount { get; set; }
     public int RedCardCount { get; set; }
     public int TotalPenalties { get; set; }
@@ -270,8 +280,8 @@ public class PersonnelReportCardDto
     // Performans trendi
     public List<PersonnelMonthlyTrendDto> MonthlyTrend { get; set; } = new();
 
-    // Bölüm bazlı performans
-    public List<PersonnelSectionPerformanceDto> SectionPerformances { get; set; } = new();
+    // Grup bazlı performans
+    public List<PersonnelGroupPerformanceDto> GroupPerformances { get; set; } = new();
 
     // Son değerlendirmeler listesi
     public List<PersonnelEvaluationSummaryDto> RecentEvaluations { get; set; } = new();
@@ -296,11 +306,11 @@ public class PersonnelMonthlyTrendDto
 }
 
 /// <summary>
-/// Bölüm bazlı performans
+/// Grup bazlı performans
 /// </summary>
-public class PersonnelSectionPerformanceDto
+public class PersonnelGroupPerformanceDto
 {
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public int EvaluationCount { get; set; }
     public decimal AverageScore { get; set; }
     public decimal MaxPossibleScore { get; set; }
@@ -329,7 +339,7 @@ public class PersonnelEvaluationSummaryDto
 public class PersonnelStrengthWeaknessDto
 {
     public string QuestionText { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public decimal AverageScore { get; set; }
     public decimal MaxScore { get; set; }
     public decimal PercentageScore { get; set; }
@@ -399,7 +409,7 @@ public class SuggestionDetailDto
 
     // Soru bilgileri
     public string QuestionText { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
 
     // Öneri/Not içeriği
@@ -434,7 +444,7 @@ public class QuestionSuggestionSummaryDto
 {
     public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
     public int SuggestionCount { get; set; }
     public decimal AverageScore { get; set; }

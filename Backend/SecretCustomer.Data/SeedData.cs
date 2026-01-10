@@ -257,43 +257,13 @@ public static class SeedData
             await context.SaveChangesAsync();
             logger.LogInformation("Checklist created");
 
-            // 3. Sections
-            var section1 = new Section
-            {
-                ChecklistId = checklist.Id,
-                Name = "Temizlik ve Hijyen",
-                Order = 1,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var section2 = new Section
-            {
-                ChecklistId = checklist.Id,
-                Name = "Hizmet Kalitesi",
-                Order = 2,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var section3 = new Section
-            {
-                ChecklistId = checklist.Id,
-                Name = "Ürün Kalitesi",
-                Order = 3,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Sections.AddRange(section1, section2, section3);
-            await context.SaveChangesAsync();
-            logger.LogInformation("Sections created");
-
-            // 4. Questions - Direkt checklist'e bağlı
+            // 3. Questions
             var questions = new List<Question>
             {
                 // Temizlik ve Hijyen Kriterleri
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section1.Id, // Geriye uyumluluk için
                     Text = "Masalar temiz mi?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 5,
@@ -307,7 +277,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section1.Id,
                     Text = "Tuvalet temizliği nasıl?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 10,
@@ -321,7 +290,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section1.Id,
                     Text = "Genel temizlik hakkında ek gözlemler",
                     ScoringType = ScoringType.Unscored, // Puansız - sadece yorum
                     WeightPoints = 0,
@@ -337,7 +305,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section2.Id,
                     Text = "Karşılama nasıldı?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 5,
@@ -352,7 +319,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section2.Id,
                     Text = "Sipariş alma süresi uygun muydu?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 5,
@@ -366,7 +332,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section2.Id,
                     Text = "Personel ilgisi nasıldı?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 10,
@@ -382,7 +347,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section3.Id,
                     Text = "Yemek sıcaklığı uygun muydu?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 5,
@@ -396,7 +360,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section3.Id,
                     Text = "Yemek lezzeti nasıldı?",
                     ScoringType = ScoringType.Scored,
                     WeightPoints = 15,
@@ -410,7 +373,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section3.Id,
                     Text = "Porsiyon büyüklüğü uygun mu?",
                     ScoringType = ScoringType.Penalty, // Cezalı soru örneği
                     WeightPoints = 10, // Ceza miktarı (eski PenaltyValue)
@@ -428,7 +390,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section1.Id, // Temizlik
                     Text = "Personel isim kartı takıyor mu?",
                     ScoringType = ScoringType.Penalty,
                     WeightPoints = 5, // Ceza miktarı: 5 puan düşürülür
@@ -443,7 +404,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section2.Id, // Hizmet
                     Text = "Müşteriye güler yüzle yaklaşıldı mı?",
                     ScoringType = ScoringType.Penalty,
                     WeightPoints = 8, // Ceza miktarı: 8 puan düşülür
@@ -460,7 +420,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section1.Id, // Temizlik
                     Text = "Hijyen kurallarına uyuluyor mu? (Eldiven, bone vb.)",
                     ScoringType = ScoringType.Penalty,
                     WeightPoints = 25, // Ciddi ceza: 25 puan düşülür
@@ -475,7 +434,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section2.Id, // Hizmet
                     Text = "Müşteriye saygısız davranış var mı?",
                     ScoringType = ScoringType.Penalty,
                     WeightPoints = 50, // Çok ciddi ceza: 50 puan düşülür
@@ -490,7 +448,6 @@ public static class SeedData
                 new Question
                 {
                     ChecklistId = checklist.Id,
-                    SectionId = section3.Id, // Ürün
                     Text = "Bozuk/bayat ürün servisi var mı?",
                     ScoringType = ScoringType.Penalty,
                     WeightPoints = 100, // Tam sıfırlama: 100 puan düşülür

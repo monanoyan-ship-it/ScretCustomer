@@ -20,17 +20,10 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
         builder.Property(q => q.HelpText)
             .HasMaxLength(1000);
 
-        // Checklist ilişkisi (yeni ana ilişki)
+        // Checklist ilişkisi
         builder.HasOne(q => q.Checklist)
             .WithMany(c => c.Questions)
             .HasForeignKey(q => q.ChecklistId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Section ilişkisi (geriye uyumluluk - opsiyonel)
-        builder.HasOne(q => q.Section)
-            .WithMany(s => s.Questions)
-            .HasForeignKey(q => q.SectionId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
     }
 }

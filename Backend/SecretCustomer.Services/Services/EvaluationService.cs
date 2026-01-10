@@ -259,7 +259,7 @@ public class EvaluationService : IEvaluationService
                     Name = co.Name,
                     Code = co.Code,
                     Level = co.Level,
-                    PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
+                    PersonnelCount = co.PersonnelAssignments.Count(pa => !pa.CustomerPersonnel.IsDeleted && pa.CustomerPersonnel.IsActive)
                 })
                 .FirstOrDefaultAsync();
             if (org != null)
@@ -276,7 +276,7 @@ public class EvaluationService : IEvaluationService
                     Name = co.Name,
                     Code = co.Code,
                     Level = co.Level,
-                    PersonnelCount = co.Personnel.Count(p => !p.IsDeleted && p.IsActive)
+                    PersonnelCount = co.PersonnelAssignments.Count(pa => !pa.CustomerPersonnel.IsDeleted && pa.CustomerPersonnel.IsActive)
                 })
                 .OrderBy(o => o.Level)
                 .ThenBy(o => o.Name)

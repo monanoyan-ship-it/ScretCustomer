@@ -45,9 +45,6 @@ public class CustomerOrganization : BaseEntity
     // Hiyerarşi - Alt organizasyonlar
     public ICollection<CustomerOrganization> Children { get; set; } = new List<CustomerOrganization>();
 
-    // Navigation - Bu organizasyondaki personeller
-    public ICollection<CustomerPersonnel> Personnel { get; set; } = new List<CustomerPersonnel>();
-
     // Navigation - Bu organizasyonda gorevli personeller (many-to-many, her atamada farkli supervisor)
     public ICollection<CustomerPersonnelOrganization> PersonnelAssignments { get; set; } = new List<CustomerPersonnelOrganization>();
 }

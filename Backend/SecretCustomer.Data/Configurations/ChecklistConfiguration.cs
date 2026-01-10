@@ -16,10 +16,5 @@ public class ChecklistConfiguration : IEntityTypeConfiguration<Checklist>
 
         builder.Property(c => c.Description)
             .HasMaxLength(1000);
-
-        builder.HasMany(c => c.Sections)
-            .WithOne(s => s.Checklist)
-            .HasForeignKey(s => s.ChecklistId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

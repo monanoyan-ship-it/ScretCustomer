@@ -309,10 +309,6 @@ public class ExcelTemplatesApiController : BaseApiController
                     template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Checklist>(
                         dto.TemplateName, dto.Description);
                     break;
-                case "section":
-                    template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Section>(
-                        dto.TemplateName, dto.Description);
-                    break;
                 case "question":
                     template = await _excelTemplateService.CreateFromAttributesAsync<Core.Entities.Question>(
                         dto.TemplateName, dto.Description);
@@ -362,9 +358,6 @@ public class ExcelTemplatesApiController : BaseApiController
                     break;
                 case "checklist":
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Checklist>();
-                    break;
-                case "section":
-                    columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Section>();
                     break;
                 case "question":
                     columns = _excelTemplateService.GetColumnsFromAttributes<Core.Entities.Question>();

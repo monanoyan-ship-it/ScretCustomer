@@ -105,11 +105,6 @@ public class Checklist : BaseEntity
     /// </summary>
     public ICollection<Question> Questions { get; set; } = new List<Question>();
 
-    /// <summary>
-    /// Sections - Geriye uyumluluk için (deprecated)
-    /// </summary>
-    public ICollection<Section> Sections { get; set; } = new List<Section>();
-
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();
 }

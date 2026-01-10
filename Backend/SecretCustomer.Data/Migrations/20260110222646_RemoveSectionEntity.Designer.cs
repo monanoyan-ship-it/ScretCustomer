@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110222646_RemoveSectionEntity")]
+    partial class RemoveSectionEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -825,6 +828,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -838,6 +844,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SupervisorId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
@@ -857,7 +866,11 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("PreferredLanguageId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.HasIndex("CustomerId", "Email")
                         .IsUnique();
@@ -3065,13 +3078,27 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "Organization")
+                        .WithMany("Personnel")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SecretCustomer.Core.Entities.Language", "PreferredLanguage")
                         .WithMany()
                         .HasForeignKey("PreferredLanguageId");
 
+                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "Supervisor")
+                        .WithMany("TeamMembers")
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Customer");
 
+                    b.Navigation("Organization");
+
                     b.Navigation("PreferredLanguage");
+
+                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerPersonnelOrganization", b =>
@@ -3614,6 +3641,8 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.Navigation("Children");
 
+                    b.Navigation("Personnel");
+
                     b.Navigation("PersonnelAssignments");
                 });
 
@@ -3624,6 +3653,8 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Permissions");
 
                     b.Navigation("TaskAssignments");
+
+                    b.Navigation("TeamMembers");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.CustomerTaskList", b =>

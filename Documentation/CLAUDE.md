@@ -64,9 +64,9 @@ Bu dosya projenin standart pattern'lerini içerir:
 
 ## Entity Yapısı Notları
 
-- **Section**: Entity olarak var ama kullanılmıyor. Questions artık direkt Checklist'e bağlı.
+- **Section**: ~~Entity olarak var ama kullanılmıyor~~ **SİLİNDİ** (Ocak 2026). Questions artık direkt Checklist'e bağlı.
 - **GroupName**: Question entity'sinde var, sadece RAPORLAMA için gruplama amaçlı. UI'da gruplama yapılmamalı.
-- `.ThenInclude(c => c.Sections)` kullanımları temizlendi, `.ThenInclude(c => c.Questions)` kullanılmalı.
+- Section referansları kaldırıldı, `.ThenInclude(c => c.Questions)` kullanılmalı.
 
 ## Commit Kuralları
 

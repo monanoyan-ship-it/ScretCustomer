@@ -13,7 +13,6 @@ public class ApplicationDbContext : DbContext
     // DbSets
     public DbSet<User> Users { get; set; }
     public DbSet<Checklist> Checklists { get; set; }
-    public DbSet<Section> Sections { get; set; }
     public DbSet<Question> Questions { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<Assignment> Assignments { get; set; }
@@ -97,7 +96,6 @@ public class ApplicationDbContext : DbContext
         // Global query filter for soft delete
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Checklist>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Section>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Question>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Assignment>().HasQueryFilter(e => !e.IsDeleted);
@@ -166,20 +164,6 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(o => o.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // CustomerPersonnel self-referencing (Supervisor-TeamMembers)
-        modelBuilder.Entity<CustomerPersonnel>()
-            .HasOne(p => p.Supervisor)
-            .WithMany(p => p.TeamMembers)
-            .HasForeignKey(p => p.SupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // CustomerPersonnel-Organization relationship
-        modelBuilder.Entity<CustomerPersonnel>()
-            .HasOne(p => p.Organization)
-            .WithMany(o => o.Personnel)
-            .HasForeignKey(p => p.OrganizationId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         // Evaluation - EvaluatedCustomerPersonnel relationship
         modelBuilder.Entity<Evaluation>()
             .HasOne(e => e.EvaluatedCustomerPersonnel)
@@ -194,20 +178,12 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(e => e.EvaluatedOrganizationId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // ===== Checklist -> Questions İlişkisi (Section kaldırıldı) =====
+        // ===== Checklist -> Questions İlişkisi =====
         modelBuilder.Entity<Question>()
             .HasOne(q => q.Checklist)
             .WithMany(c => c.Questions)
             .HasForeignKey(q => q.ChecklistId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Section ilişkisi (geriye uyumluluk - opsiyonel)
-        modelBuilder.Entity<Question>()
-            .HasOne(q => q.Section)
-            .WithMany(s => s.Questions)
-            .HasForeignKey(q => q.SectionId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
 
         // ===== QuestionSubCriteria İlişkileri =====
         modelBuilder.Entity<QuestionSubCriteria>()

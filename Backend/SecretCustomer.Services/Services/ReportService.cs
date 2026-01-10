@@ -25,6 +25,10 @@ public class ReportService : IReportService
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.Supervisor)
+            .Include(e => e.AssignmentPeriod)
             .AsQueryable();
 
         // Apply filters
@@ -77,9 +81,19 @@ public class ReportService : IReportService
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.Customer)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.Supervisor)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
-                    .ThenInclude(q => q.Section)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
             .FirstOrDefaultAsync(e => e.Id == evaluationId);
 
         if (evaluation == null)
@@ -98,6 +112,18 @@ public class ReportService : IReportService
             EvaluatedPersonnelName = evaluation.EvaluatedPersonnel != null
                 ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
                 : evaluation.EvaluatedUnknownPersonnel,
+            CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName,
+            OrganizationName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
+                ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
+                    .Where(oa => oa.CustomerOrganization != null)
+                    .Select(oa => oa.CustomerOrganization!.Name))
+                : null,
+            SupervisorName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
+                ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
+                    .Where(oa => oa.Supervisor != null)
+                    .Select(oa => $"{oa.Supervisor!.FirstName} {oa.Supervisor.LastName}")
+                    .Distinct())
+                : null,
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             DueDate = evaluation.Assignment.DueDate,
@@ -111,16 +137,16 @@ public class ReportService : IReportService
             CallDate = evaluation.CallDate,
             Duration = evaluation.Duration,
             Comment = evaluation.EvaluationComment,
-            Sections = evaluation.Answers
-                .Where(a => a.Question?.Section != null)
-                .GroupBy(a => a.Question!.Section!)
-                .OrderBy(g => g.Key.Order)
-                .Select(g => new SectionReportDto
+            Groups = evaluation.Answers
+                .Where(a => a.Question?.GroupName != null)
+                .GroupBy(a => a.Question!.GroupName!)
+                .OrderBy(g => g.Key)
+                .Select((g, index) => new QuestionGroupReportDto
                 {
-                    SectionName = g.Key.Name,
-                    Order = g.Key.Order,
-                    SectionScore = g.Sum(a => a.EarnedPoints ?? 0),
-                    SectionMaxScore = g.Sum(a => a.Question!.WeightPoints),
+                    GroupName = g.Key,
+                    Order = index + 1,
+                    GroupScore = g.Sum(a => a.EarnedPoints ?? 0),
+                    GroupMaxScore = g.Sum(a => a.Question!.WeightPoints),
                     Questions = g.OrderBy(a => a.Question!.Order).Select(a => new QuestionAnswerReportDto
                     {
                         QuestionText = a.Question!.Text,
@@ -131,7 +157,10 @@ public class ReportService : IReportService
                         GivenPoints = a.EarnedPoints,
                         MaxPoints = a.Question.WeightPoints,
                         PenaltyType = a.AppliedPenaltyType.ToString(),
-                        Notes = a.Notes
+                        Notes = a.Notes,
+                        SelectedSubCriteria = a.SubCriteriaSelections
+                            .Select(s => s.SubCriteria.Description)
+                            .ToList()
                     }).ToList()
                 }).ToList()
         };
@@ -289,7 +318,6 @@ public class ReportService : IReportService
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
-                    .ThenInclude(q => q.Section)
             .AsQueryable();
 
         // Apply filters
@@ -333,14 +361,14 @@ public class ReportService : IReportService
         int detailRow = 2;
         foreach (var evaluation in evaluations)
         {
-            foreach (var answer in evaluation.Answers.OrderBy(a => a.Question?.Section?.Order).ThenBy(a => a.Question?.Order))
+            foreach (var answer in evaluation.Answers.OrderBy(a => a.Question?.GroupName).ThenBy(a => a.Question?.Order))
             {
                 if (answer.Question == null) continue;
 
                 detailSheet.Cell(detailRow, 1).Value = evaluation.Id.ToString();
                 detailSheet.Cell(detailRow, 2).Value = evaluation.Assignment.Project?.Name ?? "";
                 detailSheet.Cell(detailRow, 3).Value = "";
-                detailSheet.Cell(detailRow, 4).Value = answer.Question.Section?.Name ?? "";
+                detailSheet.Cell(detailRow, 4).Value = answer.Question.GroupName ?? "";
                 detailSheet.Cell(detailRow, 5).Value = answer.Question.Order;
                 detailSheet.Cell(detailRow, 6).Value = answer.Question.Text;
                 detailSheet.Cell(detailRow, 7).Value = answer.AnswerText ?? "";
@@ -382,6 +410,15 @@ public class ReportService : IReportService
             EvaluatedPersonnelName = evaluation.EvaluatedPersonnel != null
                 ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
                 : evaluation.EvaluatedUnknownPersonnel,
+            SupervisorName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
+                ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
+                    .Where(oa => oa.Supervisor != null)
+                    .Select(oa => $"{oa.Supervisor!.FirstName} {oa.Supervisor.LastName}")
+                    .Distinct())
+                : null,
+            PeriodName = evaluation.AssignmentPeriod != null
+                ? evaluation.AssignmentPeriod.StartDate.ToString("yyyyMM")
+                : null,
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             DueDate = evaluation.Assignment.DueDate,
@@ -393,6 +430,7 @@ public class ReportService : IReportService
             Status = evaluation.Status.ToString(),
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
+            CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
             Comment = evaluation.EvaluationComment
         };
@@ -411,8 +449,7 @@ public class ReportService : IReportService
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedPersonnel)
             .Include(a => a.Question)
-                .ThenInclude(q => q.Section)
-                    .ThenInclude(s => s!.Checklist)
+                .ThenInclude(q => q.Checklist)
             .Where(a => a.AppliedPenaltyType != PenaltyType.None)
             .AsQueryable();
 
@@ -449,10 +486,10 @@ public class ReportService : IReportService
                 AnswerId = a.Id,
                 QuestionId = a.QuestionId,
                 QuestionText = a.Question?.Text ?? "",
-                SectionName = a.Question?.Section?.Name ?? "",
+                GroupName = a.Question?.GroupName ?? "",
                 PenaltyType = a.AppliedPenaltyType.ToString(),
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-                ChecklistName = a.Question?.Section?.Checklist?.Name,
+                ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
@@ -467,13 +504,13 @@ public class ReportService : IReportService
         // Top penalty questions
         var topQuestions = penaltyAnswers
             .Where(a => a.Question != null)
-            .GroupBy(a => new { a.QuestionId, a.Question!.Text, a.Question.Section, a.Question.Section?.Checklist })
+            .GroupBy(a => new { a.QuestionId, a.Question!.Text, GroupName = a.Question.GroupName ?? "", ChecklistName = a.Question.Checklist?.Name ?? "" })
             .Select(g => new PenaltyQuestionDto
             {
                 QuestionId = g.Key.QuestionId,
                 QuestionText = g.Key.Text,
-                SectionName = g.Key.Section?.Name ?? "",
-                ChecklistName = g.Key.Checklist?.Name ?? "",
+                GroupName = g.Key.GroupName,
+                ChecklistName = g.Key.ChecklistName,
                 YellowCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.YellowCard),
                 RedCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.RedCard),
                 TotalPenalties = g.Count()
@@ -554,7 +591,7 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(row, 1).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             penaltiesSheet.Cell(row, 2).Value = penalty.ProjectName;
             penaltiesSheet.Cell(row, 3).Value = penalty.ChecklistName ?? "";
-            penaltiesSheet.Cell(row, 4).Value = penalty.SectionName;
+            penaltiesSheet.Cell(row, 4).Value = penalty.GroupName;
             penaltiesSheet.Cell(row, 5).Value = penalty.QuestionText;
             penaltiesSheet.Cell(row, 6).Value = penalty.PenaltyType == "YellowCard" ? "Sarı Kart" : "Kırmızı Kart";
             penaltiesSheet.Cell(row, 7).Value = penalty.EvaluatorName ?? "";
@@ -584,7 +621,7 @@ public class ReportService : IReportService
         {
             questionsSheet.Cell(row, 1).Value = q.QuestionText;
             questionsSheet.Cell(row, 2).Value = q.ChecklistName;
-            questionsSheet.Cell(row, 3).Value = q.SectionName;
+            questionsSheet.Cell(row, 3).Value = q.GroupName;
             questionsSheet.Cell(row, 4).Value = q.YellowCardCount;
             questionsSheet.Cell(row, 5).Value = q.RedCardCount;
             questionsSheet.Cell(row, 6).Value = q.TotalPenalties;
@@ -669,7 +706,6 @@ public class ReportService : IReportService
             .Include(e => e.Evaluator)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
-                    .ThenInclude(q => q.Section)
             .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.Status == EvaluationStatus.Completed);
 
         // Apply filters
@@ -720,12 +756,12 @@ public class ReportService : IReportService
             .ToList();
 
         // Bölüm bazlı performans
-        var allAnswers = evaluations.SelectMany(e => e.Answers).Where(a => a.Question?.Section != null).ToList();
-        var sectionPerformances = allAnswers
-            .GroupBy(a => a.Question!.Section!.Name)
-            .Select(g => new PersonnelSectionPerformanceDto
+        var allAnswers = evaluations.SelectMany(e => e.Answers).Where(a => !string.IsNullOrEmpty(a.Question?.GroupName)).ToList();
+        var groupPerformances = allAnswers
+            .GroupBy(a => a.Question!.GroupName!)
+            .Select(g => new PersonnelGroupPerformanceDto
             {
-                SectionName = g.Key,
+                GroupName = g.Key,
                 EvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count(),
                 AverageScore = g.Sum(a => a.EarnedPoints ?? 0),
                 MaxPossibleScore = g.Sum(a => a.Question!.WeightPoints),
@@ -757,11 +793,11 @@ public class ReportService : IReportService
         // Güçlü ve zayıf yönler (soru bazlı analiz)
         var questionPerformance = allAnswers
             .Where(a => !a.IsNA && a.Question != null)
-            .GroupBy(a => new { a.Question!.Id, a.Question.Text, SectionName = a.Question.Section?.Name ?? "" })
+            .GroupBy(a => new { a.Question!.Id, a.Question.Text, GroupName = a.Question.GroupName ?? "" })
             .Select(g => new PersonnelStrengthWeaknessDto
             {
                 QuestionText = g.Key.Text,
-                SectionName = g.Key.SectionName,
+                GroupName = g.Key.GroupName,
                 AverageScore = g.Sum(a => a.EarnedPoints ?? 0),
                 MaxScore = g.Sum(a => a.Question!.WeightPoints),
                 PercentageScore = g.Sum(a => a.Question!.WeightPoints) > 0
@@ -788,7 +824,7 @@ public class ReportService : IReportService
             TotalYellowCards = evaluations.Sum(e => e.YellowCardCount),
             TotalRedCards = evaluations.Sum(e => e.RedCardCount),
             MonthlyTrend = monthlyTrend,
-            SectionPerformances = sectionPerformances,
+            GroupPerformances = groupPerformances,
             RecentEvaluations = recentEvaluations,
             Strengths = strengths,
             Weaknesses = weaknesses
@@ -865,24 +901,24 @@ public class ReportService : IReportService
         }
         trendSheet.Columns().AdjustToContents();
 
-        // Bölüm Performansı
-        var sectionSheet = workbook.Worksheets.Add("Bölüm Performansı");
-        sectionSheet.Cell(1, 1).Value = "Bölüm";
-        sectionSheet.Cell(1, 1).Style.Font.Bold = true;
-        sectionSheet.Cell(1, 2).Value = "Değerlendirme";
-        sectionSheet.Cell(1, 2).Style.Font.Bold = true;
-        sectionSheet.Cell(1, 3).Value = "Başarı Yüzdesi";
-        sectionSheet.Cell(1, 3).Style.Font.Bold = true;
+        // Grup Performansı
+        var groupSheet = workbook.Worksheets.Add("Grup Performansı");
+        groupSheet.Cell(1, 1).Value = "Grup";
+        groupSheet.Cell(1, 1).Style.Font.Bold = true;
+        groupSheet.Cell(1, 2).Value = "Değerlendirme";
+        groupSheet.Cell(1, 2).Style.Font.Bold = true;
+        groupSheet.Cell(1, 3).Value = "Başarı Yüzdesi";
+        groupSheet.Cell(1, 3).Style.Font.Bold = true;
 
         row = 2;
-        foreach (var section in report.SectionPerformances)
+        foreach (var group in report.GroupPerformances)
         {
-            sectionSheet.Cell(row, 1).Value = section.SectionName;
-            sectionSheet.Cell(row, 2).Value = section.EvaluationCount;
-            sectionSheet.Cell(row, 3).Value = $"{section.PercentageScore:F1}%";
+            groupSheet.Cell(row, 1).Value = group.GroupName;
+            groupSheet.Cell(row, 2).Value = group.EvaluationCount;
+            groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F1}%";
             row++;
         }
-        sectionSheet.Columns().AdjustToContents();
+        groupSheet.Columns().AdjustToContents();
 
         // Son Değerlendirmeler
         var evalSheet = workbook.Worksheets.Add("Son Değerlendirmeler");
@@ -922,7 +958,7 @@ public class ReportService : IReportService
         row = 2;
         foreach (var strength in report.Strengths)
         {
-            analysisSheet.Cell(row, 1).Value = strength.SectionName;
+            analysisSheet.Cell(row, 1).Value = strength.GroupName;
             analysisSheet.Cell(row, 2).Value = strength.QuestionText;
             analysisSheet.Cell(row, 3).Value = $"{strength.PercentageScore:F1}%";
             row++;
@@ -936,7 +972,7 @@ public class ReportService : IReportService
 
         foreach (var weakness in report.Weaknesses)
         {
-            analysisSheet.Cell(row, 1).Value = weakness.SectionName;
+            analysisSheet.Cell(row, 1).Value = weakness.GroupName;
             analysisSheet.Cell(row, 2).Value = weakness.QuestionText;
             analysisSheet.Cell(row, 3).Value = $"{weakness.PercentageScore:F1}%";
             row++;
@@ -970,7 +1006,7 @@ public class ReportService : IReportService
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedPersonnel)
             .Include(a => a.Question)
-                .ThenInclude(q => q.Section)
+                .ThenInclude(q => q.Checklist)
             .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
             .Where(a => a.Evaluation.Status == EvaluationStatus.Completed)
             .AsQueryable();
@@ -1038,7 +1074,7 @@ public class ReportService : IReportService
             AnswerId = a.Id,
             QuestionId = a.QuestionId,
             QuestionText = a.Question?.Text ?? "",
-            SectionName = a.Question?.Section?.Name ?? "",
+            GroupName = a.Question?.GroupName ?? "",
             ChecklistName = a.Evaluation.Assignment.Checklist?.Name ?? "",
             Notes = a.Notes,
             RecommendationNotes = a.RecommendationNotes,
@@ -1076,8 +1112,7 @@ public class ReportService : IReportService
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
             .Include(a => a.Question)
-                .ThenInclude(q => q.Section)
-                    .ThenInclude(s => s!.Checklist)
+                .ThenInclude(q => q.Checklist)
             .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
             .Where(a => a.Evaluation.Status == EvaluationStatus.Completed)
             .AsQueryable();
@@ -1103,14 +1138,14 @@ public class ReportService : IReportService
             {
                 a.QuestionId,
                 QuestionText = a.Question!.Text,
-                SectionName = a.Question.Section?.Name ?? "",
-                ChecklistName = a.Question.Section?.Checklist?.Name ?? ""
+                GroupName = a.Question.GroupName ?? "",
+                ChecklistName = a.Question.Checklist?.Name ?? ""
             })
             .Select(g => new QuestionSuggestionSummaryDto
             {
                 QuestionId = g.Key.QuestionId,
                 QuestionText = g.Key.QuestionText,
-                SectionName = g.Key.SectionName,
+                GroupName = g.Key.GroupName,
                 ChecklistName = g.Key.ChecklistName,
                 SuggestionCount = g.Count(),
                 AverageScore = g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0).Any()
@@ -1175,7 +1210,7 @@ public class ReportService : IReportService
             detailsSheet.Cell(row, 1).Value = item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             detailsSheet.Cell(row, 2).Value = item.ProjectName;
             detailsSheet.Cell(row, 3).Value = item.ChecklistName;
-            detailsSheet.Cell(row, 4).Value = item.SectionName;
+            detailsSheet.Cell(row, 4).Value = item.GroupName;
             detailsSheet.Cell(row, 5).Value = item.QuestionText;
             detailsSheet.Cell(row, 6).Value = item.Notes ?? "";
             detailsSheet.Cell(row, 7).Value = item.RecommendationNotes ?? "";
@@ -1209,7 +1244,7 @@ public class ReportService : IReportService
         {
             questionsSheet.Cell(row, 1).Value = q.QuestionText;
             questionsSheet.Cell(row, 2).Value = q.ChecklistName;
-            questionsSheet.Cell(row, 3).Value = q.SectionName;
+            questionsSheet.Cell(row, 3).Value = q.GroupName;
             questionsSheet.Cell(row, 4).Value = q.SuggestionCount;
             questionsSheet.Cell(row, 5).Value = $"{q.AverageScore:F1}%";
             row++;

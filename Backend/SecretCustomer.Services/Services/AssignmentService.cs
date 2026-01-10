@@ -924,7 +924,7 @@ public class AssignmentService : IAssignmentService
 
         if (dto.OrganizationId.HasValue)
         {
-            personnelQuery = personnelQuery.Where(cp => cp.OrganizationId == dto.OrganizationId);
+            personnelQuery = personnelQuery.Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == dto.OrganizationId));
         }
 
         var personnelList = await personnelQuery.ToListAsync();

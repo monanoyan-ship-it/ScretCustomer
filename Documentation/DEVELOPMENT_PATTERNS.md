@@ -4,6 +4,14 @@ Bu dosya projedeki standart pattern'leri tanımlar. **YENİ BİR ÖZELLİK EKLEN
 
 ---
 
+## 🌐 Uygulama Portları
+
+- **Development Port:** `5004`
+- **URL:** `http://localhost:5004`
+- **ÖNEMLİ:** Uygulama CLI'dan başlatılmamalı, kullanıcı kendi test eder.
+
+---
+
 ## ⚠️ EN ÖNEMLİ KURAL: YALAN SÖYLEMEK YOK
 
 - **"Bilmiyorum, kontrol edeyim"** de
