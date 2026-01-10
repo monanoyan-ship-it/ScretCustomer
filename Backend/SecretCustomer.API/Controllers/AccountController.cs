@@ -115,12 +115,6 @@ public class AccountController : Controller
                 return RedirectToAction("Index", "Profile");
             }
 
-            // CustomerPersonnel kullanıcıları HER ZAMAN CustomerPortal'a yönlendir
-            if (result.CustomerId.HasValue)
-            {
-                return RedirectToAction("Dashboard", "CustomerPortal");
-            }
-
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
                 return Redirect(model.ReturnUrl);
