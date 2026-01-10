@@ -54,6 +54,9 @@ public class CreateProjectDto
     // Musteri
     public int? CustomerId { get; set; }
 
+    // Organizasyon/Sube (null ise tum firma)
+    public int? OrganizationId { get; set; }
+
     // Hedef Subeler
     public List<CreateProjectBranchDto>? Branches { get; set; }
 

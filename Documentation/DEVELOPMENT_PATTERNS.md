@@ -671,3 +671,96 @@ Bazı sayfalar farklı kullanıcı grupları için aynı/benzer işlevi sunar. B
    - Search/filter input: `autocomplete="off"`
    - Username input: `autocomplete="username"`
    - **NEDEN:** Tarayıcı autocomplete'i yanlış input'lara değer yazabilir ve KnockoutJS observable'ları bozabilir!
+
+---
+
+## 16. PostgreSQL DateTime Kuralları (ÇOK ÖNEMLİ!)
+
+### ⛔ HER YENİ DTO/ENTITY OLUŞTURURKEN BU KURALI UYGULA!
+
+PostgreSQL `timestamp with time zone` tipi sadece UTC DateTime kabul eder. `DateTimeKind.Unspecified` ile kayıt yapmaya çalışırsan hata alırsın:
+
+```
+Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported.
+```
+
+### DOĞRU - DateTime'ı UTC olarak ayarla
+
+```csharp
+// DTO'dan gelen DateTime'ı UTC'ye çevir
+var entity = new Assignment
+{
+    DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
+    CreatedAt = DateTime.UtcNow,  // Yeni kayıtlarda UtcNow kullan
+    UpdatedAt = DateTime.UtcNow
+};
+```
+
+### YANLIŞ - DateTime'ı olduğu gibi kullanma
+
+```csharp
+var entity = new Assignment
+{
+    DueDate = dto.DueDate,  // YANLIŞ! Kind=Unspecified olabilir
+    CreatedAt = DateTime.Now  // YANLIŞ! Local time
+};
+```
+
+### Checklist
+
+Her yeni entity/DTO oluştururken:
+1. [ ] `CreatedAt` alanı `DateTime.UtcNow` ile set edilmeli
+2. [ ] `UpdatedAt` alanı `DateTime.UtcNow` ile set edilmeli
+3. [ ] Frontend'den gelen DateTime'lar `DateTime.SpecifyKind(date, DateTimeKind.Utc)` ile dönüştürülmeli
+4. [ ] Nullable DateTime'lar için: `dto.Date.HasValue ? DateTime.SpecifyKind(dto.Date.Value, DateTimeKind.Utc) : null`
+
+---
+
+## 17. KnockoutJS Otomatik Arama Pattern
+
+Arama kutusuna yazıldığında otomatik arama yapmak için Knockout'un binding özelliklerini kullan.
+
+### DOĞRU - View'da event binding ile
+
+```html
+<input type="text" class="form-control"
+       data-bind="value: searchText, valueUpdate: 'input', event: { input: loadItems }"
+       placeholder="Ara..." />
+```
+
+**Açıklama:**
+- `value: searchText` - Observable'a bağlar
+- `valueUpdate: 'input'` - Her karakter değişikliğinde observable güncellenir
+- `event: { input: loadItems }` - Her değişiklikte arama fonksiyonu çağrılır
+
+### JavaScript (Sadece observable tanımı yeterli)
+
+```javascript
+self.searchText = ko.observable('');
+
+self.loadItems = function() {
+    var search = self.searchText();
+    // API çağrısı...
+};
+```
+
+### YANLIŞ - Subscribe ile manuel debounce
+
+```javascript
+// Bu gereksiz karmaşıklık!
+self._searchTimeout = null;
+self.searchText.subscribe(function() {
+    if (self._searchTimeout) clearTimeout(self._searchTimeout);
+    self._searchTimeout = setTimeout(function() {
+        self.loadItems();
+    }, 300);
+});
+```
+
+### Not
+
+Bu pattern her tuşta API çağrısı yapar. Performans kritik ise `rateLimit` extender kullanılabilir:
+
+```javascript
+self.searchText = ko.observable('').extend({ rateLimit: { timeout: 300, method: 'notifyWhenChangesStop' } });
+```

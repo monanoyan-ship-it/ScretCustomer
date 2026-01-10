@@ -25,12 +25,8 @@ function CustomerPersonnelViewModel(customerId) {
     self.newPassword = ko.observable('');
     self.confirmPassword = ko.observable('');
 
-    // Personnel roles
-    self.personnelRoles = [
-        { value: 1, text: T('Role.CustomerManager', 'Müşteri Yöneticisi') },
-        { value: 2, text: T('Role.CustomerSupervisor', 'Müşteri Süpervizörü') },
-        { value: 3, text: T('Role.CustomerOperator', 'Müşteri Operatörü') }
-    ];
+    // Personnel roles (loaded from EnumsService)
+    self.personnelRoles = ko.observableArray([]);
 
     // Computed
     self.filteredPersonnel = ko.computed(function() {
@@ -41,8 +37,8 @@ function CustomerPersonnelViewModel(customerId) {
     });
 
     self.getRoleName = function(role) {
-        var roleObj = self.personnelRoles.find(function(r) { return r.value === role; });
-        return roleObj ? roleObj.text : T('Common.Unknown', 'Bilinmeyen');
+        var roleObj = self.personnelRoles().find(function(r) { return r.id === role; });
+        return roleObj ? roleObj.name : T('Common.Unknown', 'Bilinmeyen');
     };
 
     // Load customer info
@@ -323,6 +319,10 @@ function CustomerPersonnelViewModel(customerId) {
     };
 
     // Initialize
+    // Load roles from EnumsService
+    if (EnumsService.cache && EnumsService.cache.customerPersonnelRoles) {
+        self.personnelRoles(EnumsService.toSelectOptions(EnumsService.cache.customerPersonnelRoles));
+    }
     self.loadCustomer();
     self.loadCustomers();
     self.loadPersonnel();
@@ -358,7 +358,10 @@ var TRANSLATION_KEYS = [
 
 // Apply bindings when DOM is ready
 $(document).ready(function() {
-    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+    Promise.all([
+        Localization.loadKeys(TRANSLATION_KEYS),
+        EnumsService.load()
+    ]).then(function() {
         var customerPersonnelApp = document.getElementById('customer-personnel-app');
         if (customerPersonnelApp) {
             var customerId = customerPersonnelApp.getAttribute('data-customer-id') || null;

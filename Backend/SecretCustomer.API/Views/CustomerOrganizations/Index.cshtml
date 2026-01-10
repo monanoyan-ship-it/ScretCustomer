@@ -81,6 +81,9 @@
                                 </div>
                             </div>
                             <div class="col-md-6 text-end">
+                                <button class="btn btn-light btn-sm me-2" data-bind="click: createNewPersonnel">
+                                    <i class="bi bi-person-plus me-1"></i>@Html.T("CustomerOrganization.NewPersonnel", "Yeni Personel")
+                                </button>
                                 <button class="btn btn-light btn-sm" data-bind="click: createNewOrganization">
                                     <i class="bi bi-plus-circle me-1"></i>@Html.T("CustomerOrganization.NewOrganization", "Yeni Organizasyon")
                                 </button>
@@ -456,6 +459,105 @@
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isMoveModalOpen }, style: { display: isMoveModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- Create Personnel Modal (for company without organization) -->
+    <div class="modal fade" data-bind="css: { show: isPersonnelModalOpen }, style: { display: isPersonnelModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingPersonnel">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus me-2"></i>@Html.T("CustomerOrganization.NewPersonnelTitle", "Yeni Personel Ekle")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closePersonnelModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        @Html.T("CustomerOrganization.PersonnelNoOrgInfo", "Bu personel hiçbir organizasyona atanmadan firmaya eklenecektir. Daha sonra organizasyona atayabilirsiniz.")
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Username", "Kullanıcı Adı") *</label>
+                            <input type="text" class="form-control" data-bind="value: username" placeholder="ali.veli" />
+                            <small class="text-muted">@Html.T("CustomerOrganization.UsernameHint", "Sadece İngilizce harf, rakam ve alt çizgi")</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Email", "E-posta") *</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="ali.veli@example.com" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.FirstName", "Ad") *</label>
+                            <input type="text" class="form-control" data-bind="value: firstName" placeholder="Ali" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") *</label>
+                            <input type="text" class="form-control" data-bind="value: lastName" placeholder="Veli" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Password", "Şifre") *</label>
+                            <input type="password" class="form-control" data-bind="value: password" placeholder="••••••••" />
+                            <small class="text-muted">@Html.T("CustomerOrganization.PasswordHint", "En az 6 karakter")</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Phone", "Telefon")</label>
+                            <input type="tel" class="form-control" data-bind="value: phoneNumber" placeholder="0555 123 4567" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Role", "Rol") *</label>
+                            <select class="form-select" data-bind="value: role, options: $parent.customerPersonnelRoles, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Department", "Departman")</label>
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("CustomerPersonnel.DepartmentPlaceholder", "Kalite Kontrol")" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Title", "Ünvan")</label>
+                            <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("CustomerPersonnel.TitlePlaceholder", "Kalite Müdürü")" />
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="personnelIsActive" />
+                                <label class="form-check-label" for="personnelIsActive">@Html.T("Common.Active", "Aktif")</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>
+                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="@Html.T("CustomerPersonnel.NotesPlaceholder", "Personel hakkında notlar...")"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closePersonnelModal">
+                        <i class="bi bi-x-circle me-1"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: $parent.savePersonnel, disable: $parent.isSavingPersonnel">
+                        <span data-bind="visible: !$parent.isSavingPersonnel()">
+                            <i class="bi bi-check-circle me-1"></i>@Html.T("Common.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: $parent.isSavingPersonnel">
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                            @Html.T("Common.Saving", "Kaydediliyor...")
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isPersonnelModalOpen }, style: { display: isPersonnelModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 <style>

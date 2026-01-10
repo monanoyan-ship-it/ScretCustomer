@@ -227,6 +227,8 @@ public class EvaluationService : IEvaluationService
         var assignment = await _context.Assignments
             .Include(a => a.Project)
                 .ThenInclude(p => p.Customer)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Organization)
             .Include(a => a.Checklist)
                 .ThenInclude(c => c.CustomerOrganization)
             .Include(a => a.Checklist)
@@ -241,15 +243,16 @@ public class EvaluationService : IEvaluationService
         // Mevcut evaluationlar sadece düzenleme endpoint'inden yüklenir
         // Bu fonksiyon her zaman boş form döndürür
 
-        // Organizasyon artık Checklist'ten geliyor
+        // Organizasyon önce Project'ten, yoksa Checklist'ten geliyor
         var organizations = new List<OrganizationOptionDto>();
-        int? selectedOrganizationId = assignment.Checklist?.CustomerOrganizationId;
+        // Öncelik: Project.OrganizationId > Checklist.CustomerOrganizationId
+        int? selectedOrganizationId = assignment.Project?.OrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
 
-        // Checklist'te organizasyon seçiliyse sadece o organizasyonu göster
-        if (assignment.Checklist?.CustomerOrganizationId.HasValue == true)
+        // Organizasyon seçiliyse sadece o organizasyonu göster
+        if (selectedOrganizationId.HasValue)
         {
             var org = await _context.CustomerOrganizations
-                .Where(co => co.Id == assignment.Checklist.CustomerOrganizationId && !co.IsDeleted)
+                .Where(co => co.Id == selectedOrganizationId.Value && !co.IsDeleted)
                 .Select(co => new OrganizationOptionDto
                 {
                     Id = co.Id,
@@ -280,11 +283,20 @@ public class EvaluationService : IEvaluationService
                 .ToListAsync();
         }
 
-        // Personel listesi - organizasyon seçiliyse yükle
+        // Personel listesi - organizasyon seçiliyse o organizasyonun personeli, yoksa tüm firma personeli
         var personnel = new List<PersonnelOptionDto>();
         if (selectedOrganizationId.HasValue)
         {
             personnel = await GetPersonnelByOrganizationAsync(selectedOrganizationId.Value);
+        }
+        else
+        {
+            // Organizasyon seçilmemişse (proje tüm firmayı kapsıyorsa) müşterinin tüm personelini getir
+            var customerId = assignment.Project?.CustomerId ?? assignment.Checklist?.CustomerId;
+            if (customerId.HasValue)
+            {
+                personnel = await GetPersonnelByCustomerAsync(customerId.Value);
+            }
         }
 
         // Get available periods for this assignment (only Open periods)
@@ -342,6 +354,9 @@ public class EvaluationService : IEvaluationService
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
             .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Organization)
+            .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
                     .ThenInclude(c => c.CustomerOrganization)
             .Include(e => e.Assignment)
@@ -360,12 +375,24 @@ public class EvaluationService : IEvaluationService
         if (assignment == null)
             return null;
 
-        // Organizasyon
-        int? selectedOrganizationId = evaluation.EvaluatedOrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
+        // Organizasyon - Öncelik: Evaluation > Project > Checklist
+        int? selectedOrganizationId = evaluation.EvaluatedOrganizationId
+            ?? assignment.Project?.OrganizationId
+            ?? assignment.Checklist?.CustomerOrganizationId;
+
         var personnel = new List<PersonnelOptionDto>();
         if (selectedOrganizationId.HasValue)
         {
             personnel = await GetPersonnelByOrganizationAsync(selectedOrganizationId.Value);
+        }
+        else
+        {
+            // Organizasyon seçilmemişse tüm firma personelini getir
+            var customerId = assignment.Project?.CustomerId ?? assignment.Checklist?.CustomerId;
+            if (customerId.HasValue)
+            {
+                personnel = await GetPersonnelByCustomerAsync(customerId.Value);
+            }
         }
 
         // Dönemler
@@ -954,6 +981,32 @@ public class EvaluationService : IEvaluationService
                 Name = cp.FirstName + " " + cp.LastName,
                 Title = cp.Title ?? "",
                 // Junction table'dan ilk organizasyon ID'si
+                OrganizationId = cp.OrganizationAssignments
+                    .Where(oa => !oa.IsDeleted)
+                    .Select(oa => (int?)oa.CustomerOrganizationId)
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return personnel;
+    }
+
+    /// <summary>
+    /// Müşterinin tüm personelini getirir (organizasyon seçilmemişse)
+    /// </summary>
+    public async Task<List<PersonnelOptionDto>> GetPersonnelByCustomerAsync(int customerId)
+    {
+        var personnel = await _context.CustomerPersonnel
+            .Where(cp => !cp.IsDeleted && cp.IsActive && cp.CustomerId == customerId)
+            // Süpervizörleri hariç tut
+            .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+            .OrderBy(cp => cp.FirstName)
+            .ThenBy(cp => cp.LastName)
+            .Select(cp => new PersonnelOptionDto
+            {
+                Id = cp.Id,
+                Name = cp.FirstName + " " + cp.LastName,
+                Title = cp.Title ?? "",
                 OrganizationId = cp.OrganizationAssignments
                     .Where(oa => !oa.IsDeleted)
                     .Select(oa => (int?)oa.CustomerOrganizationId)

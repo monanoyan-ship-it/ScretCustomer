@@ -51,6 +51,10 @@ public class AssignmentDto
 /// </summary>
 public class AssignmentDetailDto : AssignmentDto
 {
+    // Proje Firma/Organizasyon Bilgileri
+    public string? CustomerName { get; set; }
+    public string? OrganizationName { get; set; }
+
     public string? EvaluatorName { get; set; }
     public DateTime? EvaluationDate { get; set; }
     public string? EvaluationNotes { get; set; }

@@ -53,6 +53,10 @@ public class ProjectDto
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
 
+    // Organizasyon/Sube
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+
     // Kart sayilari
     public int TotalYellowCards { get; set; }
     public int TotalRedCards { get; set; }

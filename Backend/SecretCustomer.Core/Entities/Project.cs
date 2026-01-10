@@ -162,6 +162,12 @@ public class Project : BaseEntity
     public Customer? Customer { get; set; }
 
     /// <summary>
+    /// Proje organizasyonu/subesi (null ise tum firma)
+    /// </summary>
+    public int? OrganizationId { get; set; }
+    public CustomerOrganization? Organization { get; set; }
+
+    /// <summary>
     /// Proje takimi (atanan kullanicilar)
     /// </summary>
     public ICollection<ProjectTeamMember> TeamMembers { get; set; } = new List<ProjectTeamMember>();

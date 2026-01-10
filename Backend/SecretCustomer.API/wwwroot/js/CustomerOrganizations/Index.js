@@ -31,6 +31,12 @@ function CustomerOrganizationsViewModel() {
     self.isSaving = ko.observable(false);
     self.editingOrganization = ko.observable(null);
 
+    // Personnel Modal
+    self.isPersonnelModalOpen = ko.observable(false);
+    self.isSavingPersonnel = ko.observable(false);
+    self.editingPersonnel = ko.observable(null);
+    self.customerPersonnelRoles = ko.observableArray([]);
+
     // Move Modal
     self.isMoveModalOpen = ko.observable(false);
     self.movingPerson = ko.observable(null);
@@ -498,7 +504,8 @@ function CustomerOrganizationsViewModel() {
             order: ko.observable(0),
             isActive: ko.observable(true),
             customerId: self.selectedCustomer().id
-        });        self.isModalOpen(true);
+        });
+        self.isModalOpen(true);
     };
 
     self.editOrganization = function(org, event) {
@@ -514,7 +521,8 @@ function CustomerOrganizationsViewModel() {
                     order: ko.observable(data.order || 0),
                     isActive: ko.observable(data.isActive),
                     customerId: data.customerId
-                });                self.isModalOpen(true);
+                });
+                self.isModalOpen(true);
             })
             .catch(function(error) {
                 console.error('Error loading organization:', error);
@@ -532,7 +540,8 @@ function CustomerOrganizationsViewModel() {
             return;
         }
 
-        self.isSaving(true);        var data = {
+        self.isSaving(true);
+        var data = {
             name: name.trim(),
             code: ko.unwrap(org.code) || null,
             description: ko.unwrap(org.description) || null,
@@ -604,10 +613,137 @@ function CustomerOrganizationsViewModel() {
 
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingOrganization(null);    };
+        self.editingOrganization(null);
+    };
+
+    // ========== PERSONNEL CRUD (No Organization) ==========
+
+    self.createNewPersonnel = function() {
+        if (!self.selectedCustomer()) {
+            toastr.error('Lütfen önce bir müşteri seçin.');
+            return;
+        }
+
+        self.editingPersonnel({
+            customerId: self.selectedCustomer().id,
+            username: '',
+            email: '',
+            password: '',
+            firstName: '',
+            lastName: '',
+            phoneNumber: '',
+            department: '',
+            title: '',
+            role: '',
+            isActive: true,
+            notes: ''
+        });
+        self.isPersonnelModalOpen(true);
+    };
+
+    self.closePersonnelModal = function() {
+        self.isPersonnelModalOpen(false);
+        self.editingPersonnel(null);
+    };
+
+    self.savePersonnel = function() {
+        var personnel = self.editingPersonnel();
+        if (!personnel) return;
+
+        // Validation
+        if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
+            toastr.error('Kullanıcı adı, e-posta, ad ve soyad zorunludur.');
+            return;
+        }
+
+        // Username format validation
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(personnel.username)) {
+            toastr.error('Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir.');
+            return;
+        }
+
+        if (!personnel.password || personnel.password.length < 6) {
+            toastr.error('Şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+
+        if (!personnel.role) {
+            toastr.error('Rol seçimi zorunludur.');
+            return;
+        }
+
+        self.isSavingPersonnel(true);
+
+        // Check username uniqueness
+        fetch('/api/customer-personnel/check-username/' + encodeURIComponent(personnel.username), { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    self.isSavingPersonnel(false);
+                    toastr.error('Bu kullanıcı adı zaten kullanılıyor.');
+                    return Promise.reject('username_exists');
+                }
+                // Check email
+                return fetch('/api/customer-personnel/check-email/' + encodeURIComponent(personnel.email), { credentials: 'include' });
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    self.isSavingPersonnel(false);
+                    toastr.error('Bu e-posta adresi zaten kullanılıyor.');
+                    return Promise.reject('email_exists');
+                }
+                // All checks passed, proceed with save
+                return self.doSavePersonnel(personnel);
+            })
+            .catch(function(error) {
+                if (error !== 'username_exists' && error !== 'email_exists') {
+                    console.error('Error checking uniqueness:', error);
+                    self.isSavingPersonnel(false);
+                }
+            });
+    };
+
+    self.doSavePersonnel = function(personnel) {
+        var dataToSend = {
+            customerId: personnel.customerId,
+            username: personnel.username,
+            email: personnel.email,
+            password: personnel.password,
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            phoneNumber: personnel.phoneNumber || null,
+            department: personnel.department || null,
+            title: personnel.title || null,
+            role: parseInt(personnel.role, 10),
+            isActive: personnel.isActive,
+            notes: personnel.notes || null
+            // organizationId is intentionally NOT sent - personnel will have no organization
+        };
+
+        return ApiService.post('/customer-personnel', dataToSend)
+            .then(function() {
+                toastr.success('Personel başarıyla oluşturuldu.');
+                self.closePersonnelModal();
+                // Reload unassigned personnel
+                self.loadUnassignedPersonnel(self.selectedCustomer().id);
+            })
+            .catch(function(error) {
+                console.error('Error saving personnel:', error);
+                toastr.error('Personel kaydedilirken bir hata oluştu: ' + (error.message || ''));
+            })
+            .finally(function() {
+                self.isSavingPersonnel(false);
+            });
+    };
 
     // Initialize
     EnumsService.load().then(function() {
+        // Load customer personnel roles for dropdown
+        if (EnumsService.cache && EnumsService.cache.customerPersonnelRoles) {
+            self.customerPersonnelRoles(EnumsService.toSelectOptions(EnumsService.cache.customerPersonnelRoles));
+        }
         self.loadCustomers();
     });
 }

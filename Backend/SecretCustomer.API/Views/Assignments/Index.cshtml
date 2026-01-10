@@ -479,6 +479,13 @@
                         <div class="col-md-6">
                             <strong>@Html.T("Project.Title", "Proje"):</strong> <span data-bind="text: projectName"></span>
                         </div>
+                        <div class="col-md-6">
+                            <strong>@Html.T("Common.Customer", "Firma"):</strong>
+                            <span data-bind="text: customerName || '-'"></span>
+                            <!-- ko if: organizationName -->
+                            <small class="text-muted">(<span data-bind="text: organizationName"></span>)</small>
+                            <!-- /ko -->
+                        </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">

@@ -123,6 +123,7 @@ function ChecklistViewModel() {
 
     self._checklists = ko.observableArray([]);
     self.isLoading = ko.observable(true);
+    self.isEditLoading = ko.observable(false); // Modal için ayrı loading
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
     self.modalErrorMessage = ko.observable('');
@@ -371,8 +372,9 @@ function ChecklistViewModel() {
 
     self.editChecklist = function (checklist) {
         self.wizardStep(1);
-        self.isLoading(true);
+        self.isEditLoading(true);
         self._isLoadingChecklist = true; // Subscriber'ın org sıfırlamasını engelle
+        self.isModalOpen(true); // Modal'ı hemen aç, içinde loading göster
 
         // Soru gruplarını yükle
         self.loadQuestionGroups(checklist.id);
@@ -387,39 +389,38 @@ function ChecklistViewModel() {
                             self.organizations(orgs);
                             self.selectedCustomerId(fullChecklist.customerId);
                             self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                            self.isModalOpen(true);
-                            self.isLoading(false);
+                            self.isEditLoading(false);
                             self._isLoadingChecklist = false;
                         })
                         .catch(function () {
                             self.organizations([]);
                             self.selectedCustomerId(fullChecklist.customerId);
                             self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                            self.isModalOpen(true);
-                            self.isLoading(false);
+                            self.isEditLoading(false);
                             self._isLoadingChecklist = false;
                         });
                 } else {
                     self.selectedCustomerId(null);
                     self.organizations([]);
                     self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                    self.isModalOpen(true);
-                    self.isLoading(false);
+                    self.isEditLoading(false);
                     self._isLoadingChecklist = false;
                 }
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
                 toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
-                self.isLoading(false);
+                self.isEditLoading(false);
+                self.isModalOpen(false);
                 self._isLoadingChecklist = false;
             });
     };
 
     self.cloneChecklist = function (checklist) {
         self.wizardStep(1);
-        self.isLoading(true);
+        self.isEditLoading(true);
         self._isLoadingChecklist = true;
+        self.isModalOpen(true); // Modal'ı hemen aç, içinde loading göster
 
         // Klonlama için grupları yükle (orijinal checklist'ten)
         self.loadQuestionGroups(checklist.id);
@@ -451,31 +452,29 @@ function ChecklistViewModel() {
                             self.organizations(orgs);
                             self.selectedCustomerId(fullChecklist.customerId);
                             self.editingChecklist(new ChecklistModel(cloneData));
-                            self.isModalOpen(true);
-                            self.isLoading(false);
+                            self.isEditLoading(false);
                             self._isLoadingChecklist = false;
                         })
                         .catch(function () {
                             self.organizations([]);
                             self.selectedCustomerId(fullChecklist.customerId);
                             self.editingChecklist(new ChecklistModel(cloneData));
-                            self.isModalOpen(true);
-                            self.isLoading(false);
+                            self.isEditLoading(false);
                             self._isLoadingChecklist = false;
                         });
                 } else {
                     self.selectedCustomerId(null);
                     self.organizations([]);
                     self.editingChecklist(new ChecklistModel(cloneData));
-                    self.isModalOpen(true);
-                    self.isLoading(false);
+                    self.isEditLoading(false);
                     self._isLoadingChecklist = false;
                 }
             })
             .catch(function (error) {
                 console.error('Load checklist error:', error);
                 toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
-                self.isLoading(false);
+                self.isEditLoading(false);
+                self.isModalOpen(false);
                 self._isLoadingChecklist = false;
             });
     };

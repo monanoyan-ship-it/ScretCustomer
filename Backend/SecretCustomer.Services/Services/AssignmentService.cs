@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Assignment;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
@@ -49,6 +50,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Customer)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Organization)
+            .Include(a => a.Project)
                 .ThenInclude(p => p.Files.Where(f => !f.IsDeleted))
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
@@ -86,7 +91,10 @@ public class AssignmentService : IAssignmentService
             EvaluationStatus = dto.EvaluationStatus,
             EvaluationScore = dto.EvaluationScore,
             YellowCardCount = dto.YellowCardCount,
-            RedCardCount = dto.RedCardCount
+            RedCardCount = dto.RedCardCount,
+            // Proje Firma/Organizasyon Bilgileri
+            CustomerName = assignment.Project?.Customer?.CompanyName,
+            OrganizationName = assignment.Project?.Organization?.Name
         };
 
         // Get evaluation details
@@ -951,7 +959,7 @@ public class AssignmentService : IAssignmentService
                     ProjectId = dto.ProjectId,
                     ChecklistId = checklistId,
                     AssignedCustomerPersonnelId = personnel.Id,
-                    DueDate = dto.DueDate,
+                    DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
                     Type = AssignmentType.CustomerPersonnel,
                     UniqueLink = Guid.NewGuid().ToString("N"),
                     CreatedAt = DateTime.UtcNow,
@@ -975,13 +983,14 @@ public class AssignmentService : IAssignmentService
             catch (Exception ex)
             {
                 result.FailedCount++;
-                result.Errors.Add($"{personnel.FirstName} {personnel.LastName}: {ex.Message}");
+                var errorMessage = ExceptionHelper.GetFullExceptionChain(ex);
+                result.Errors.Add($"{personnel.FirstName} {personnel.LastName}: {errorMessage}");
                 result.Results.Add(new InternalAssignmentItemResult
                 {
                     PersonnelId = personnel.Id,
                     PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                     Status = "Failed",
-                    Message = ex.Message
+                    Message = errorMessage
                 });
             }
         }

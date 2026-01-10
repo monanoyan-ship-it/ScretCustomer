@@ -43,6 +43,7 @@ public class ProjectService : IProjectService
         var project = await _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
+            .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
@@ -57,6 +58,7 @@ public class ProjectService : IProjectService
         var project = await _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
+            .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
@@ -75,6 +77,7 @@ public class ProjectService : IProjectService
         var query = _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
+            .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
@@ -151,7 +154,8 @@ public class ProjectService : IProjectService
             Priority = dto.Priority,
             Tags = dto.Tags,
             Notes = dto.Notes,
-            CustomerId = dto.CustomerId
+            CustomerId = dto.CustomerId,
+            OrganizationId = dto.OrganizationId
         };
 
         _context.Projects.Add(project);
@@ -211,6 +215,7 @@ public class ProjectService : IProjectService
         project.Tags = dto.Tags;
         project.Notes = dto.Notes;
         project.CustomerId = dto.CustomerId;
+        project.OrganizationId = dto.OrganizationId;
         project.UpdatedAt = DateTime.UtcNow;
 
         // Update team members
@@ -551,6 +556,8 @@ public class ProjectService : IProjectService
             Notes = project.Notes,
             CustomerId = project.CustomerId,
             CustomerName = project.Customer?.CompanyName,
+            OrganizationId = project.OrganizationId,
+            OrganizationName = project.Organization?.Name,
             TotalYellowCards = yellowCards,
             TotalRedCards = redCards,
             TeamMemberCount = project.TeamMembers?.Count(m => !m.IsDeleted) ?? 0,
@@ -599,6 +606,8 @@ public class ProjectService : IProjectService
             Notes = dto.Notes,
             CustomerId = dto.CustomerId,
             CustomerName = dto.CustomerName,
+            OrganizationId = dto.OrganizationId,
+            OrganizationName = dto.OrganizationName,
             TotalYellowCards = dto.TotalYellowCards,
             TotalRedCards = dto.TotalRedCards,
             TeamMemberCount = dto.TeamMemberCount,

@@ -349,6 +349,17 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.Organization", "Organizasyon/Şube")</label>
+                                            <select class="form-select" data-bind="value: organizationId, options: $parent.availableOrganizations, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.AllCompany", "Tüm Firma")', enable: customerId()"></select>
+                                            <small class="text-muted">@Html.T("Project.OrganizationHint", "Seçilmezse proje tüm firmayı kapsar")</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</label>
+                                            <select class="form-select" data-bind="value: projectManagerId, options: $parent.users, optionsText: function(u) { return u.fullName + ' (' + u.email + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOptional", "Seçiniz (Opsiyonel)...")'"></select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label class="form-label">@Html.T("Project.StartDate", "Başlangıç Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: startDate">
                                         </div>
@@ -356,10 +367,6 @@
                                             <label class="form-label">@Html.T("Project.EndDate", "Bitiş Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: endDate">
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</label>
-                                        <select class="form-select" data-bind="value: projectManagerId, options: $parent.users, optionsText: function(u) { return u.fullName + ' (' + u.email + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectOptional", "Seçiniz (Opsiyonel)...")'"></select>
                                     </div>
                                 </div>
                             </div>

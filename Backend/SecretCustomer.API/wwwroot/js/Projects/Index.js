@@ -23,8 +23,9 @@ function ProjectEditViewModel(data) {
     self.assignmentType = ko.observable(data.assignmentType || 'InternalBranch');
     self.startDate = ko.observable(data.startDate ? data.startDate.split('T')[0] : '');
     self.endDate = ko.observable(data.endDate ? data.endDate.split('T')[0] : '');
-    self.customerId = ko.observable(data.customerId || '');
-    self.projectManagerId = ko.observable(data.projectManagerId || '');
+    self.customerId = ko.observable(data.customerId || null);
+    self.organizationId = ko.observable(data.organizationId || null);
+    self.projectManagerId = ko.observable(data.projectManagerId || null);
 
     // Targets
     self.targetCount = ko.observable(data.targetCount || null);
@@ -67,6 +68,7 @@ function ProjectEditViewModel(data) {
             startDate: self.startDate(),
             endDate: self.endDate(),
             customerId: self.customerId() || null,
+            organizationId: self.organizationId() || null,
             projectManagerId: self.projectManagerId() || null,
             targetCount: self.targetCount() || null,
             dailyQuota: self.dailyQuota() || null,
@@ -107,6 +109,7 @@ function ProjectsViewModel() {
     self.checklists = ko.observableArray([]);
     self.customers = ko.observableArray([]);
     self.users = ko.observableArray([]);
+    self.availableOrganizations = ko.observableArray([]);
 
     // Filters
     self.searchTerm = ko.observable('');
@@ -219,6 +222,27 @@ function ProjectsViewModel() {
             .catch(function() { console.error('Users could not be loaded'); });
     };
 
+    // Load organizations by customer
+    self.loadOrganizations = function(customerId) {
+        if (!customerId) {
+            self.availableOrganizations([]);
+            return;
+        }
+
+        fetch('/api/customer-organizations/by-customer/' + customerId, { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Organizasyonlar yüklenemedi');
+                return res.json();
+            })
+            .then(function(data) {
+                self.availableOrganizations(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+                self.availableOrganizations([]);
+            });
+    };
+
     // Load projects
     self.loadProjects = function() {
         self.isLoading(true);
@@ -259,7 +283,16 @@ function ProjectsViewModel() {
 
     // Open create modal
     self.openCreateModal = function() {
-        self.editingProject(new ProjectEditViewModel());
+        var editVm = new ProjectEditViewModel();
+        self.editingProject(editVm);
+        self.availableOrganizations([]);
+
+        // Subscribe to customerId changes to load organizations
+        editVm.customerId.subscribe(function(customerId) {
+            self.loadOrganizations(customerId);
+            editVm.organizationId(null); // Reset organization when customer changes
+        });
+
         self.isEditModalOpen(true);
     };
 
@@ -272,15 +305,33 @@ function ProjectsViewModel() {
                 return res.json();
             })
             .then(function(data) {
-                self.editingProject(new ProjectEditViewModel(data));
-                self.isDetailModalOpen(false);
-                self.isEditModalOpen(true);
+                // Önce organizasyonları yükle, sonra editingProject'i set et
+                var loadOrgsPromise = data.customerId
+                    ? fetch('/api/customer-organizations/by-customer/' + data.customerId, { credentials: 'include' })
+                        .then(function(res) { return res.ok ? res.json() : []; })
+                        .catch(function() { return []; })
+                    : Promise.resolve([]);
+
+                loadOrgsPromise.then(function(orgs) {
+                    self.availableOrganizations(orgs);
+
+                    var editVm = new ProjectEditViewModel(data);
+                    self.editingProject(editVm);
+
+                    // Subscribe to customerId changes to load organizations
+                    editVm.customerId.subscribe(function(customerId) {
+                        self.loadOrganizations(customerId);
+                        editVm.organizationId(null); // Reset organization when customer changes
+                    });
+
+                    self.isDetailModalOpen(false);
+                    self.isEditModalOpen(true);
+                    self.isLoadingModal(false);
+                });
             })
             .catch(function(error) {
                 console.error('Error:', error);
                 toastr.error('Proje yüklenirken bir hata oluştu.');
-            })
-            .finally(function() {
                 self.isLoadingModal(false);
             });
     };

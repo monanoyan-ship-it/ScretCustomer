@@ -252,7 +252,18 @@ function InternalAssignmentsViewModel() {
         })
             .then(function(r) {
                 if (!r.ok) {
-                    return r.json().then(function(err) { throw new Error(err.message || 'API Error'); });
+                    return r.text().then(function(text) {
+                        var errorMessage = 'API Error (Status: ' + r.status + ')';
+                        if (text) {
+                            try {
+                                var err = JSON.parse(text);
+                                errorMessage = err.message || err.title || errorMessage;
+                            } catch (e) {
+                                errorMessage = text || errorMessage;
+                            }
+                        }
+                        throw new Error(errorMessage);
+                    });
                 }
                 return r.json();
             })
@@ -365,13 +376,14 @@ function InternalAssignmentsViewModel() {
     // ===== Subscriptions =====
     self.newAssignment.customerId.subscribe(function(customerId) {
         if (customerId) {
+            // Sadece seçilen firmaya ait projeleri getir
             var filtered = self.projects().filter(function(p) {
-                return !p.customerId || p.customerId === parseInt(customerId);
+                return p.customerId === parseInt(customerId);
             });
             self.availableProjects(filtered);
             self.loadPersonnel();
         } else {
-            self.availableProjects(self.projects());
+            self.availableProjects([]);
             self.availablePersonnel([]);
         }
         self.newAssignment.projectId(null);
