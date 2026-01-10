@@ -101,7 +101,6 @@ function DashboardViewModel() {
             .then(function(response) {
                 if (!response.ok) {
                     // Any non-OK response from admin endpoint means no admin access
-                    console.log('Dashboard admin API status:', response.status);
                     self.hasAdminAccess(false);
                     return null;
                 }

@@ -51,9 +51,6 @@ function DashboardViewModel() {
                     self.percentageChange(data.percentageChange || 0);
                     self.topBranches(data.topBranches || []);
                     self.bottomBranches(data.bottomBranches || []);
-                } else {
-                    // Representative view
-                    console.log('Representative data:', data);
                 }
             })
             .catch(function(error) {

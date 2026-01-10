@@ -5610,6 +5610,12 @@
   <LocaleResource Name="Language.ImportError">
     <Value>Beim Import ist ein Fehler aufgetreten.</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.Importing">
+    <Value>Importieren...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportingMessage">
+    <Value>Übersetzungen werden importiert, bitte warten.</Value>
+  </LocaleResource>
   <LocaleResource Name="Language.ImportSuccess">
     <Value>Übersetzungen importiert.</Value>
   </LocaleResource>

@@ -19,7 +19,6 @@ function LoginViewModel() {
 
         authService.login(self.username(), self.password())
             .then(function(user) {
-                console.log('Login successful:', user);
                 window.location.hash = '#/dashboard';
             })
             .catch(function(error) {

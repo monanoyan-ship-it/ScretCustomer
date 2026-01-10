@@ -5610,6 +5610,12 @@
   <LocaleResource Name="Language.ImportError">
     <Value>İçe aktarma sırasında hata oluştu.</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.Importing">
+    <Value>İçe Aktarılıyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ImportingMessage">
+    <Value>Çeviriler içe aktarılıyor, lütfen bekleyin.</Value>
+  </LocaleResource>
   <LocaleResource Name="Language.ImportSuccess">
     <Value>çeviri içe aktarıldı.</Value>
   </LocaleResource>

@@ -173,12 +173,10 @@ function ExcelTemplatesViewModel() {
             .then(data => {
                 if (data) {
                     self.entityAttributesCache[entityType] = data;
-                    console.log(`Loaded attributes for ${entityType}:`, data);
                 }
             })
             .catch(err => {
                 // Silently fail - attributes are optional
-                console.log(`No attributes found for ${entityType}`);
             });
     };
 

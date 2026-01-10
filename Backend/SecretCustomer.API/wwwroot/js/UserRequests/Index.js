@@ -156,6 +156,8 @@ function UserRequestsViewModel() {
         // Navigate to evaluation detail
         if (request.relatedEntityId) {
             window.location.href = '/Evaluations?id=' + request.relatedEntityId;
+        } else {
+            toastr.info(T('DraftRequest.NoEvaluationLinked', 'Bu talebe bagli degerlendirme bulunamadi.'));
         }
     };
 
@@ -261,6 +263,8 @@ function UserRequestsViewModel() {
         // Navigate to evaluation if exists
         if (request.evaluationId) {
             window.location.href = '/Evaluations?id=' + request.evaluationId;
+        } else {
+            toastr.info(T('PersonnelRequest.NoEvaluationLinked', 'Bu talebe bagli degerlendirme bulunamadi.'));
         }
     };
 
@@ -422,6 +426,7 @@ var TRANSLATION_KEYS = [
     'DraftRequest.ApproveError',
     'DraftRequest.RejectSuccess',
     'DraftRequest.RejectError',
+    'DraftRequest.NoEvaluationLinked',
     'PersonnelRequest.LoadError',
     'PersonnelRequest.ApproveSuccess',
     'PersonnelRequest.ApproveError',
@@ -429,6 +434,7 @@ var TRANSLATION_KEYS = [
     'PersonnelRequest.RejectError',
     'PersonnelRequest.UsernameRequired',
     'PersonnelRequest.RejectReasonRequired',
+    'PersonnelRequest.NoEvaluationLinked',
     'Approval.Approve',
     'Approval.Reject',
     'Approval.Status.Pending',

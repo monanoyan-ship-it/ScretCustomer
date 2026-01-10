@@ -219,8 +219,6 @@ function CustomerPersonnelViewModel(customerId) {
             dataToSend.password = personnel.password;
         }
 
-        console.log('Sending personnel data:', JSON.stringify(dataToSend, null, 2));
-
         var promise = personnel.id
             ? customerApiService.updatePersonnel(personnel.id, dataToSend)
             : customerApiService.createPersonnel(dataToSend);

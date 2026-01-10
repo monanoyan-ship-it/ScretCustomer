@@ -10,6 +10,7 @@ function LanguagesViewModel() {
     self.editingId = ko.observable(null);
     self.modalErrorMessage = ko.observable('');
     self.isClearingCache = ko.observable(false);
+    self.isImporting = ko.observable(false);
 
     // Form
     self.form = {
@@ -262,17 +263,21 @@ function LanguagesViewModel() {
             confirmText: T('Language.Import', 'İçe Aktar'),
             confirmIcon: 'bi-file-earmark-arrow-down',
             onConfirm: function() {
+                self.isImporting(true);
                 $.ajax({
                     url: '/api/localization/import/' + language.id + '/default',
                     method: 'POST'
                 })
-                    .done(function (response) {
-                        toastr.success(response.message || (response.count + ' ' + T('Language.ImportSuccess', 'çeviri içe aktarıldı.')));
-                        self.loadLanguages();
-                    })
-                    .fail(function (xhr) {
-                        toastr.error(xhr.responseJSON?.message || T('Language.ImportError', 'İçe aktarma sırasında hata oluştu.'));
-                    });
+                .done(function (response) {
+                    toastr.success(response.message || (response.count + ' ' + T('Language.ImportSuccess', 'çeviri içe aktarıldı.')));
+                    self.loadLanguages();
+                })
+                .fail(function (xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Language.ImportError', 'İçe aktarma sırasında hata oluştu.'));
+                })
+                .always(function () {
+                    self.isImporting(false);
+                });
             }
         });
     };

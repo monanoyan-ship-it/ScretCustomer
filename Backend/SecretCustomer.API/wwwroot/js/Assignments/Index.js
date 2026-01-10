@@ -696,7 +696,6 @@ function AssignmentsViewModel() {
                 return res.json();
             })
             .then(function(data) {
-                console.log('Detail data:', data);
                 self.selectedDetail(data);
                 var modal = new bootstrap.Modal(document.getElementById('detailModal'));
                 modal.show();

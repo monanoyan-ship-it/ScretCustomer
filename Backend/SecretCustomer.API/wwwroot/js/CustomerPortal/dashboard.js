@@ -66,13 +66,6 @@ function CustomerDashboardViewModel() {
             self.monthlyTrendData = results[2];
             self.scoreDistributionData = results[3];
 
-            console.log('Dashboard data loaded:', {
-                stats: stats,
-                evaluations: evaluations,
-                monthlyTrend: self.monthlyTrendData,
-                scoreDistribution: self.scoreDistributionData
-            });
-
             self.stats({
                 totalEvaluations: stats.totalEvaluations || 0,
                 averageScore: stats.averageScore || 0,
@@ -97,11 +90,6 @@ function CustomerDashboardViewModel() {
 
     // Initialize charts
     self.initCharts = function() {
-        console.log('Initializing charts with data:', {
-            monthlyTrend: self.monthlyTrendData,
-            scoreDistribution: self.scoreDistributionData
-        });
-
         // Prepare monthly trend data
         var monthLabels = [];
         var scoreData = [];
@@ -205,11 +193,8 @@ function CustomerDashboardViewModel() {
                         }
                     }
                 });
-            } else {
-                console.log('No score distribution data to display');
             }
         }
-        console.log('Charts initialized');
     };
 
     // Initialize

@@ -663,9 +663,6 @@ function ChecklistViewModel() {
             data.validUntil = null;
         }
 
-        // DEBUG: API'ye giden veriyi logla
-        console.log('Checklist data to save:', JSON.stringify(data, null, 2));
-
         self.isSaving(true);
         var promise = data.id
             ? apiService.put('/checklists/' + data.id, data)
