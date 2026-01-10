@@ -114,9 +114,7 @@ function PersonnelViewModel() {
     };
 
     // Create new
-    self.createNew = function() {
-        self.modalErrorMessage('');
-        self.editingPersonnel({
+    self.createNew = function() {        self.editingPersonnel({
             id: null,
             username: ko.observable(''),
             firstName: ko.observable(''),
@@ -131,9 +129,7 @@ function PersonnelViewModel() {
     };
 
     // Edit personnel
-    self.editPersonnel = function(person) {
-        self.modalErrorMessage('');
-        self.editingPersonnel({
+    self.editPersonnel = function(person) {        self.editingPersonnel({
             id: person.id,
             username: ko.observable(person.username),
             firstName: ko.observable(person.firstName),
@@ -174,10 +170,7 @@ function PersonnelViewModel() {
             return;
         }
 
-        self.isSaving(true);
-        self.modalErrorMessage('');
-
-        var promise;
+        self.isSaving(true);        var promise;
         if (editing.id) {
             // Update
             var updateDto = {

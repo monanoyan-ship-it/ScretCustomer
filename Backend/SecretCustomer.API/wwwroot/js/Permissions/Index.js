@@ -228,10 +228,7 @@ function PermissionsViewModel() {
         self.newUserPermission.scope(1);
         self.newUserPermission.validFrom('');
         self.newUserPermission.validUntil('');
-        self.newUserPermission.notes('');
-        self.modalErrorMessage('');
-
-        if (!self.userPermissionModal) {
+        self.newUserPermission.notes('');        if (!self.userPermissionModal) {
             self.userPermissionModal = new bootstrap.Modal(document.getElementById('addUserPermissionModal'));
         }
         self.userPermissionModal.show();
@@ -244,10 +241,7 @@ function PermissionsViewModel() {
             return;
         }
 
-        self.isSaving(true);
-        self.modalErrorMessage('');
-
-        var dto = {
+        self.isSaving(true);        var dto = {
             userId: self.selectedUser().id,
             permissionId: self.newUserPermission.permissionId(),
             isGranted: self.newUserPermission.isGranted() === 'true',

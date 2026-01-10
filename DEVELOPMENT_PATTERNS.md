@@ -84,12 +84,6 @@ ko.applyBindings(new ModuleViewModel());  // YANLIŞ!
         <div class="spinner-border text-primary"></div>
     </div>
 
-    <!-- Error/Success Messages -->
-    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show">
-        <span data-bind="text: errorMessage"></span>
-        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
-    </div>
-
     <!-- Table/List -->
     <div data-bind="visible: !isLoading()">
         <!-- Empty State -->
@@ -630,6 +624,38 @@ Referans olarak `wwwroot/js/Languages/index.js` dosyasına bakılabilir.
 
 ---
 
+## 15. Paralel Sayfalar (Aynı İşlevi Farklı Kullanıcılara Sunan Sayfalar)
+
+Bazı sayfalar farklı kullanıcı grupları için aynı/benzer işlevi sunar. Bu sayfalar **birlikte güncellenmeli**:
+
+### Evaluations (Değerlendirme) Sayfaları
+
+| Sayfa | Layout | Kullanıcılar | JS Dosyası |
+|-------|--------|--------------|------------|
+| `/Evaluations/Index` | `_Layout.cshtml` | Admin, QualitySpecialist, FieldWorker | `Evaluations/Index.js` |
+| `/CustomerPortal/Evaluations` | `_CustomerLayout.cshtml` | CustomerPersonnel | `CustomerPortal/evaluations.js` |
+
+**⚠️ Bu iki sayfa neredeyse aynı yapıda!** Birine özellik eklendiğinde diğerine de eklenmeli:
+- Atamalar listesi
+- Değerlendirme ekleme/düzenleme modalı
+- Proje dosyaları indirme modalı
+- Filtreler ve arama
+
+### Sidebar'lar
+
+| Dosya | Kullanıcılar |
+|-------|--------------|
+| `_Sidebar.cshtml` (partial) | Admin, QualitySpecialist, FieldWorker |
+| `_CustomerLayout.cshtml` (inline) | CustomerPersonnel |
+
+### Kullanılmayan/Ölü Sayfalar
+
+| Sayfa | Durum | Not |
+|-------|-------|-----|
+| `/MyAssignments` | ❌ Sidebar'da linki yok | FieldWorker için tasarlanmış ama kullanılmıyor |
+
+---
+
 ## ÖZET
 
 1. **Her modül TEK Index.cshtml ile çalışır**
@@ -639,7 +665,8 @@ Referans olarak `wwwroot/js/Languages/index.js` dosyasına bakılabilir.
 5. **CDN KULLANILMAZ - Tüm kütüphaneler yerel olmalı**
 6. **Native confirm() KULLANILMAZ - showConfirmModal() kullan**
 7. **JS'de T() kullanımı için önce Localization.loadKeys() çağır**
-8. **Form input'larında AUTOCOMPLETE attribute'u MUTLAKA kullan:**
+8. **Inline alert KULLANILMAZ - Hata/başarı mesajları toastr ile sağ üstte gösterilir**
+9. **Form input'larında AUTOCOMPLETE attribute'u MUTLAKA kullan:**
    - Password input: `autocomplete="new-password"`
    - Search/filter input: `autocomplete="off"`
    - Username input: `autocomplete="username"`

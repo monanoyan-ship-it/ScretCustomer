@@ -136,15 +136,6 @@
                 </li>
             </ul>
 
-            <div class="mt-auto p-3 border-top" style="position: absolute; bottom: 0; width: 100%; border-top-color: rgba(255,255,255,0.1) !important;">
-                <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="nav-link text-white-50 bg-transparent border-0 w-100 text-start">
-                        <i class="bi bi-box-arrow-left"></i>
-                        @Html.T("CustomerPortal.Menu.Logout", "Çıkış Yap")
-                    </button>
-                </form>
-            </div>
         </nav>
 
         <!-- Main Content -->
@@ -152,14 +143,32 @@
             <!-- Top Bar -->
             <div class="customer-topbar">
                 <h4 class="mb-0">@ViewData["Title"]</h4>
-                <div class="user-info">
-                    <div class="text-end">
-                        <div class="user-name" id="customer-user-name"></div>
-                        <div class="company-name" id="customer-user-role"></div>
-                    </div>
-                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                        <i class="bi bi-person"></i>
-                    </div>
+                <div class="dropdown">
+                    <a href="#" class="user-info text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="text-end">
+                            <div class="user-name" id="customer-user-name"></div>
+                            <div class="company-name" id="customer-user-role"></div>
+                        </div>
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="/CustomerPortal/Profile">
+                                <i class="bi bi-person-circle me-2"></i>@Html.T("CustomerPortal.Menu.Profile", "Profil")
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline w-100">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-left me-2"></i>@Html.T("CustomerPortal.Menu.Logout", "Çıkış Yap")
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </div>
 

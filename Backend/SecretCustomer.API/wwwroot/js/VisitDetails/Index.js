@@ -92,9 +92,7 @@ function VisitDetailsViewModel() {
             });
     };
 
-    self.createSector = function() {
-        self.modalErrorMessage('');
-        self.editingSector({
+    self.createSector = function() {        self.editingSector({
             id: null,
             code: ko.observable(''),
             name: ko.observable(''),
@@ -106,9 +104,7 @@ function VisitDetailsViewModel() {
         self.isSectorModalOpen(true);
     };
 
-    self.editSector = function(sector) {
-        self.modalErrorMessage('');
-        self.editingSector({
+    self.editSector = function(sector) {        self.editingSector({
             id: sector.id,
             code: ko.observable(sector.code),
             name: ko.observable(sector.name),
@@ -226,9 +222,7 @@ function VisitDetailsViewModel() {
             });
     };
 
-    self.createField = function() {
-        self.modalErrorMessage('');
-        self.editingField({
+    self.createField = function() {        self.editingField({
             id: null,
             sectorId: ko.observable(self.selectedSectorIdForFields()),
             code: ko.observable(''),
@@ -249,9 +243,7 @@ function VisitDetailsViewModel() {
         self.isFieldModalOpen(true);
     };
 
-    self.editField = function(field) {
-        self.modalErrorMessage('');
-        self.editingField({
+    self.editField = function(field) {        self.editingField({
             id: field.id,
             sectorId: ko.observable(field.sectorId),
             code: ko.observable(field.code),

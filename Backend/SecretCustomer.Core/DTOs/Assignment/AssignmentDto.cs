@@ -60,6 +60,50 @@ public class AssignmentDetailDto : AssignmentDto
     /// Bu atamaya ait dönemler
     /// </summary>
     public List<AssignmentPeriodSummaryDto> Periods { get; set; } = new();
+
+    /// <summary>
+    /// Projeye ait dosyalar - QualitySpecialist/FieldWorker görebilir
+    /// </summary>
+    public List<ProjectFileInfoDto> ProjectFiles { get; set; } = new();
+}
+
+/// <summary>
+/// Proje dosyası özet bilgisi - Assignment detail için
+/// </summary>
+public class ProjectFileInfoDto
+{
+    public int Id { get; set; }
+    public string OriginalFileName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public string? Description { get; set; }
+
+    public string FileSizeDisplay
+    {
+        get
+        {
+            if (FileSize < 1024) return $"{FileSize} B";
+            if (FileSize < 1024 * 1024) return $"{FileSize / 1024.0:F1} KB";
+            if (FileSize < 1024 * 1024 * 1024) return $"{FileSize / (1024.0 * 1024):F1} MB";
+            return $"{FileSize / (1024.0 * 1024 * 1024):F1} GB";
+        }
+    }
+
+    public string FileIcon
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(ContentType)) return "bi-file-earmark";
+            if (ContentType.Contains("pdf")) return "bi-file-earmark-pdf";
+            if (ContentType.Contains("word") || ContentType.Contains("document")) return "bi-file-earmark-word";
+            if (ContentType.Contains("excel") || ContentType.Contains("spreadsheet")) return "bi-file-earmark-excel";
+            if (ContentType.Contains("image")) return "bi-file-earmark-image";
+            if (ContentType.Contains("video")) return "bi-file-earmark-play";
+            if (ContentType.Contains("audio")) return "bi-file-earmark-music";
+            if (ContentType.Contains("zip") || ContentType.Contains("rar") || ContentType.Contains("compressed")) return "bi-file-earmark-zip";
+            return "bi-file-earmark";
+        }
+    }
 }
 
 /// <summary>

@@ -339,9 +339,7 @@ function AssignmentsViewModel() {
     self.createNew = function() {
         self.isEditing(false);
         self.editingAssignment(new AssignmentEditViewModel());
-        self.selectedProjectChecklistName('');
-        self.modalErrorMessage('');
-        self.isModalOpen(true);
+        self.selectedProjectChecklistName('');        self.isModalOpen(true);
     };
 
     self.onProjectChange = function() {
@@ -391,10 +389,7 @@ function AssignmentsViewModel() {
         var url = isEdit ? '/api/assignments/' + assignmentId : '/api/assignments';
         var method = isEdit ? 'PUT' : 'POST';
 
-        self.isSaving(true);
-        self.modalErrorMessage('');
-
-        fetch(url, {
+        self.isSaving(true);        fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -453,9 +448,7 @@ function AssignmentsViewModel() {
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingAssignment(null);
-        self.isEditing(false);
-        self.modalErrorMessage('');
-    };
+        self.isEditing(false);    };
 
     // ===== Reassign =====
     self.openReassignModal = function(assignment) {
@@ -696,6 +689,11 @@ function AssignmentsViewModel() {
                 console.error('Error:', error);
                 toastr.error(T('Assignment.DetailLoadError', 'Detay yüklenirken bir hata oluştu.'));
             });
+    };
+
+    // ===== Download Project File =====
+    self.downloadProjectFile = function(file) {
+        window.location.href = '/api/project-files/' + file.id + '/download';
     };
 
     // ===== Evaluation Modal =====

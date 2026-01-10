@@ -135,13 +135,6 @@
                 <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
             </div>
             <div class="modal-body">
-                <!-- Modal Hata Mesajı -->
-                <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span data-bind="text: $root.modalErrorMessage()"></span>
-                    <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
-                </div>
-
                 <!-- Wizard Steps -->
                 <ul class="nav nav-pills nav-justified mb-4" data-bind="with: $parent">
                     <li class="nav-item">

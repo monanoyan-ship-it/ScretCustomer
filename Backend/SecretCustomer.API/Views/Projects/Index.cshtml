@@ -270,13 +270,6 @@
                     <button type="button" class="btn-close" data-bind="click: closeEditModal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: editingProject" style="max-height: 70vh; overflow-y: auto;">
-                    <!-- Modal Hata Mesajı -->
-                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span data-bind="text: $root.modalErrorMessage()"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
-                    </div>
-
                     <div class="row">
                         <!-- Left Column -->
                         <div class="col-lg-8">
@@ -550,6 +543,54 @@
                                         <div class="col-3"><div class="border rounded p-2"><h5 class="mb-0" data-bind="text: weeklyQuota || '-'"></h5><small class="text-muted">Haftalık</small></div></div>
                                         <div class="col-3"><div class="border rounded p-2"><h5 class="mb-0" data-bind="text: monthlyQuota || '-'"></h5><small class="text-muted">Aylık</small></div></div>
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Project Files -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-paperclip"></i> @Html.T("Project.Files", "Proje Dosyaları") <span class="badge bg-secondary" data-bind="text: $parent.projectFiles().length"></span></span>
+                                    <label class="btn btn-sm btn-outline-primary mb-0" data-bind="visible: $parent.canManageFiles()">
+                                        <i class="bi bi-upload"></i> @Html.T("Project.UploadFile", "Dosya Yükle")
+                                        <input type="file" class="d-none" data-bind="event: { change: function(d, e) { $parent.uploadFile(e); } }" multiple>
+                                    </label>
+                                </div>
+                                <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
+                                    <div data-bind="visible: $parent.isUploadingFile()" class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                        <span class="ms-2">@Html.T("Project.Uploading", "Yükleniyor...")</span>
+                                    </div>
+                                    <div data-bind="visible: $parent.projectFiles().length === 0 && !$parent.isUploadingFile()" class="text-center py-3 text-muted">
+                                        <i class="bi bi-folder2-open"></i> @Html.T("Project.NoFiles", "Henüz dosya eklenmemiş")
+                                    </div>
+                                    <ul class="list-group list-group-flush" data-bind="foreach: $parent.projectFiles">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi me-2" data-bind="css: $parents[1].getFileIcon(contentType)"></i>
+                                                    <div>
+                                                        <a href="#" data-bind="text: originalFileName, click: function() { $parents[1].downloadFile($data); }" class="text-decoration-none fw-medium"></a>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            <span data-bind="text: fileSizeDisplay"></span> |
+                                                            <span data-bind="text: $parents[1].formatDate(uploadedAt)"></span>
+                                                            <!-- ko if: uploadedByName --> | <span data-bind="text: uploadedByName"></span><!-- /ko -->
+                                                        </small>
+                                                        <!-- ko if: description -->
+                                                        <br><small class="text-muted fst-italic" data-bind="text: description"></small>
+                                                        <!-- /ko -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="btn-group btn-group-sm" data-bind="visible: $parents[1].canManageFiles()">
+                                                <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parents[1].downloadFile($data); }" title="@Html.T("Common.Download", "İndir")">
+                                                    <i class="bi bi-download"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parents[1].deleteFile($data); }" title="@Html.T("Common.Delete", "Sil")">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>

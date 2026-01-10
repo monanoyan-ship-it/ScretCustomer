@@ -100,13 +100,6 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeModal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Modal Hata Mesajı -->
-                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span data-bind="text: $root.modalErrorMessage()"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
-                    </div>
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Customer.CompanyName", "Şirket Adı") <span class="text-danger">*</span></label>
@@ -194,12 +187,6 @@
                     <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Modal Hata Mesajı -->
-                    <div data-bind="visible: modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span data-bind="text: modalErrorMessage()"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { modalErrorMessage(''); }"></button>
-                    </div>
 
                     <!-- Password Reset Form (Inline) -->
                     <div data-bind="visible: showChangePasswordModal" class="card border-primary mb-3">
@@ -323,13 +310,6 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closePersonnelFormModal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Modal Hata Mesajı -->
-                    <div data-bind="visible: $root.modalErrorMessage()" class="alert alert-danger alert-dismissible mb-3">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span data-bind="text: $root.modalErrorMessage()"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { $root.modalErrorMessage(''); }"></button>
-                    </div>
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
@@ -371,8 +351,8 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("Customer.Title", "Ünvan")</label>
-                        <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("Customer.TitlePlaceholder", "Kalite Müdürü")" />
+                        <label class="form-label">@Html.T("CustomerPersonnel.JobTitle", "Ünvan")</label>
+                        <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("CustomerPersonnel.JobTitlePlaceholder", "Kalite Müdürü")" />
                     </div>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="personnelIsActive" />
@@ -455,20 +435,6 @@
                 </div>
 
                 <div class="modal-body p-0">
-                    <!-- Error Message -->
-                    <div data-bind="visible: orgModalErrorMessage" class="alert alert-danger alert-dismissible m-3 mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <span data-bind="text: orgModalErrorMessage"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { orgModalErrorMessage(''); }"></button>
-                    </div>
-
-                    <!-- Success Message -->
-                    <div data-bind="visible: orgModalSuccessMessage" class="alert alert-success alert-dismissible m-3 mb-0">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <span data-bind="text: orgModalSuccessMessage"></span>
-                        <button type="button" class="btn-close" data-bind="click: function() { orgModalSuccessMessage(''); }"></button>
-                    </div>
-
                     <div class="row g-0 h-100">
                         <!-- Left Panel: Managers & Organizations (narrower) -->
                         <div class="col-2 border-end bg-light" style="min-height: calc(100vh - 200px); overflow-y: auto; max-width: 280px;">

@@ -107,9 +107,7 @@ function CustomersViewModel() {
     };
 
     // Create new customer
-    self.createNew = function() {
-        self.modalErrorMessage('');
-        self.editingCustomer({
+    self.createNew = function() {        self.editingCustomer({
             id: null,
             companyName: '',
             taxNumber: '',
@@ -126,9 +124,7 @@ function CustomersViewModel() {
     };
 
     // Edit customer
-    self.editCustomer = function(customer) {
-        self.modalErrorMessage('');
-        self.editingCustomer({
+    self.editCustomer = function(customer) {        self.editingCustomer({
             id: customer.id,
             companyName: customer.companyName,
             taxNumber: customer.taxNumber || '',
@@ -145,16 +141,14 @@ function CustomersViewModel() {
     };
 
     // Save customer
-    self.saveCustomer = function() {
-        self.modalErrorMessage('');
-        self.successMessage('');
+    self.saveCustomer = function() {        self.successMessage('');
 
         var customer = self.editingCustomer();
         if (!customer) return;
 
         // Validation
         if (!customer.companyName) {
-            self.modalErrorMessage(T('Customer.CompanyNameRequired', 'Şirket adı zorunludur.'));
+            toastr.error(T('Customer.CompanyNameRequired', 'Şirket adı zorunludur.'));
             return;
         }
 
@@ -185,7 +179,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error saving customer:', error);
-                self.modalErrorMessage(T('Customer.SaveError', 'Müşteri kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Customer.SaveError', 'Müşteri kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -195,9 +189,7 @@ function CustomersViewModel() {
     // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingCustomer(null);
-        self.modalErrorMessage('');
-    };
+        self.editingCustomer(null);    };
 
     // Delete customer
     self.deleteCustomer = function(customer) {
@@ -600,10 +592,7 @@ function CustomersViewModel() {
     self.showOrganizations = function(customer) {
         self.selectedCustomerForOrg(customer);
         self.selectedOrganization(null);
-        self.orgPersonnelList({ supervisors: [], operators: [] });
-        self.orgModalErrorMessage('');
-        self.orgModalSuccessMessage('');
-        self.orgSearchText('');
+        self.orgPersonnelList({ supervisors: [], operators: [] });        self.orgSearchText('');
         self.showOrganizationModal(true);
         self.showNewManagerForm(false);
         self.showNewSupervisorForm(false);
@@ -652,27 +641,24 @@ function CustomersViewModel() {
         var password = ko.unwrap(mgr.password);
 
         if (!firstName || !lastName || !username || !email || !password) {
-            self.orgModalErrorMessage(T('Common.AllFieldsRequired', 'Tüm alanları doldurun.'));
+            toastr.error(T('Common.AllFieldsRequired', 'Tüm alanları doldurun.'));
             return;
         }
 
         // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
         if (!usernameRegex.test(username)) {
-            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            toastr.error(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
             return;
         }
 
         // Şifre uzunluğu kontrolü
         if (password.length < 6) {
-            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            toastr.error(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
-        self.isSavingNewManager(true);
-        self.orgModalErrorMessage('');
-
-        customerApiService.createPersonnel({
+        self.isSavingNewManager(true);        customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,
             lastName: lastName,
@@ -683,7 +669,7 @@ function CustomersViewModel() {
             isActive: true
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.ManagerCreated', 'Firma yöneticisi oluşturuldu.'));
+            toastr.success(T('Personnel.ManagerCreated', 'Firma yöneticisi oluşturuldu.'));
             self.showNewManagerForm(false);
             self.loadCustomerManagers(customer.id);
             self.loadPersonnelPool(customer.id);
@@ -707,7 +693,7 @@ function CustomersViewModel() {
             } else {
                 errorMsg = error.message || error.title || JSON.stringify(error);
             }
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Yönetici oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
+            toastr.error(T('Personnel.CreateError', 'Yönetici oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingNewManager(false);
@@ -721,12 +707,12 @@ function CustomersViewModel() {
             function() {
                 customerApiService.deletePersonnel(manager.id)
                     .then(function() {
-                        self.orgModalSuccessMessage('Yönetici silindi.');
+                        toastr.success('Yönetici silindi.');
                         self.loadCustomerManagers(self.selectedCustomerForOrg().id);
                         self.loadPersonnelPool(self.selectedCustomerForOrg().id);
                     })
                     .catch(function(error) {
-                        self.orgModalErrorMessage('Yönetici silinirken hata: ' + (error.message || ''));
+                        toastr.error('Yönetici silinirken hata: ' + (error.message || ''));
                     });
             }
         );
@@ -755,16 +741,13 @@ function CustomersViewModel() {
 
     // Load organizations for customer
     self.loadOrganizations = function(customerId) {
-        self.isLoadingOrganizations(true);
-        self.orgModalErrorMessage('');
-
-        ApiService.get('/customer-organizations/by-customer/' + customerId)
+        self.isLoadingOrganizations(true);        ApiService.get('/customer-organizations/by-customer/' + customerId)
             .then(function(data) {
                 self.organizations(data || []);
             })
             .catch(function(error) {
                 console.error('Error loading organizations:', error);
-                self.orgModalErrorMessage(T('Organization.LoadError', 'Organizasyonlar yüklenirken bir hata oluştu.'));
+                toastr.error(T('Organization.LoadError', 'Organizasyonlar yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoadingOrganizations(false);
@@ -799,7 +782,7 @@ function CustomersViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading organization personnel:', error);
-                self.orgModalErrorMessage(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu.'));
+                toastr.error(T('Personnel.LoadError', 'Personeller yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoadingOrgPersonnel(false);
@@ -848,14 +831,11 @@ function CustomersViewModel() {
 
         var name = ko.unwrap(org.name);
         if (!name) {
-            self.orgModalErrorMessage(T('Organization.NameRequired', 'Organizasyon adı zorunludur.'));
+            toastr.error(T('Organization.NameRequired', 'Organizasyon adı zorunludur.'));
             return;
         }
 
-        self.isSavingOrg(true);
-        self.orgModalErrorMessage('');
-
-        var data = {
+        self.isSavingOrg(true);        var data = {
             name: name,
             code: ko.unwrap(org.code),
             description: ko.unwrap(org.description),
@@ -886,12 +866,12 @@ function CustomersViewModel() {
                         }
                     }
                 }
-                self.orgModalSuccessMessage(isNew ? T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.') : T('Organization.UpdateSuccess', 'Organizasyon güncellendi.'));
+                toastr.success(isNew ? T('Organization.CreateSuccess', 'Organizasyon oluşturuldu.') : T('Organization.UpdateSuccess', 'Organizasyon güncellendi.'));
                 self.closeOrgFormModal();
             })
             .catch(function(error) {
                 console.error('Error saving organization:', error);
-                self.orgModalErrorMessage(T('Organization.SaveError', 'Organizasyon kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
+                toastr.error(T('Organization.SaveError', 'Organizasyon kaydedilirken bir hata oluştu.') + ' ' + (error.message || ''));
             })
             .finally(function() {
                 self.isSavingOrg(false);
@@ -907,7 +887,7 @@ function CustomersViewModel() {
                     .then(function() {
                         // Array'den sil
                         self.organizations.remove(function(o) { return o.id === org.id; });
-                        self.orgModalSuccessMessage(T('Organization.DeleteSuccess', 'Organizasyon silindi.'));
+                        toastr.success(T('Organization.DeleteSuccess', 'Organizasyon silindi.'));
                         if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
                             self.selectedOrganization(null);
                             self.orgPersonnelList({ supervisors: [], operators: [] });
@@ -915,7 +895,7 @@ function CustomersViewModel() {
                     })
                     .catch(function(error) {
                         console.error('Error deleting organization:', error);
-                        self.orgModalErrorMessage(T('Organization.DeleteError', 'Organizasyon silinirken bir hata oluştu.') + ' ' + (error.message || ''));
+                        toastr.error(T('Organization.DeleteError', 'Organizasyon silinirken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -932,7 +912,7 @@ function CustomersViewModel() {
             organizationId: org.id
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.AssignSuccess', 'Personel organizasyona atandı.'));
+            toastr.success(T('Personnel.AssignSuccess', 'Personel organizasyona atandı.'));
             self.selectedPoolPersonnelId(null);
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations(self.selectedCustomerForOrg().id);
@@ -940,7 +920,7 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error assigning personnel:', error);
-            self.orgModalErrorMessage(T('Personnel.AssignError', 'Personel atanırken bir hata oluştu.') + ' ' + (error.message || ''));
+            toastr.error(T('Personnel.AssignError', 'Personel atanırken bir hata oluştu.') + ' ' + (error.message || ''));
         });
     };
 
@@ -955,7 +935,7 @@ function CustomersViewModel() {
             organizationId: org.id
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.OperatorAssignSuccess', 'Operatör organizasyona atandı.'));
+            toastr.success(T('Personnel.OperatorAssignSuccess', 'Operatör organizasyona atandı.'));
             self.selectedPoolOperatorId(null);
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations(self.selectedCustomerForOrg().id);
@@ -963,14 +943,12 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error assigning operator:', error);
-            self.orgModalErrorMessage(T('Personnel.AssignError', 'Operatör atanırken bir hata oluştu.') + ' ' + (error.message || ''));
+            toastr.error(T('Personnel.AssignError', 'Operatör atanırken bir hata oluştu.') + ' ' + (error.message || ''));
         });
     };
 
     // Edit organization personnel (opens form modal)
-    self.editOrgPersonnel = function(personnel) {
-        self.modalErrorMessage('');
-        self.editingPersonnel({
+    self.editOrgPersonnel = function(personnel) {        self.editingPersonnel({
             id: ko.observable(personnel.id),
             customerId: ko.observable(self.selectedCustomerForOrg().id),
             username: ko.observable(personnel.username),
@@ -1101,14 +1079,14 @@ function CustomersViewModel() {
             function() {
                 ApiService.put('/customer-organizations/personnel/' + personnel.id + '/supervisor', null)
                     .then(function() {
-                        self.orgModalSuccessMessage(T('Customer.MakeIndependentSuccess', 'Personel bağımsız yapıldı.'));
+                        toastr.success(T('Customer.MakeIndependentSuccess', 'Personel bağımsız yapıldı.'));
                         self.loadOrgPersonnel(org.id);
                         self.loadOrganizations(self.selectedCustomerForOrg().id);
                         self.loadPersonnelPool(self.selectedCustomerForOrg().id);
                     })
                     .catch(function(error) {
                         console.error('Error making personnel independent:', error);
-                        self.orgModalErrorMessage(T('Customer.MakeIndependentError', 'Personel bağımsız yapılırken bir hata oluştu.') + ' ' + (error.message || ''));
+                        toastr.error(T('Customer.MakeIndependentError', 'Personel bağımsız yapılırken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -1141,14 +1119,14 @@ function CustomersViewModel() {
             function() {
                 ApiService.delete('/customer-organizations/' + org.id + '/personnel/' + personnel.id)
                     .then(function() {
-                        self.orgModalSuccessMessage(T('Personnel.RemoveSuccess', 'Personel organizasyondan çıkarıldı.'));
+                        toastr.success(T('Personnel.RemoveSuccess', 'Personel organizasyondan çıkarıldı.'));
                         self.loadOrgPersonnel(org.id);
                         self.loadOrganizations(self.selectedCustomerForOrg().id);
                         self.loadPersonnelPool(self.selectedCustomerForOrg().id);
                     })
                     .catch(function(error) {
                         console.error('Error removing personnel:', error);
-                        self.orgModalErrorMessage(T('Personnel.RemoveError', 'Personel çıkarılırken bir hata oluştu.') + ' ' + (error.message || ''));
+                        toastr.error(T('Personnel.RemoveError', 'Personel çıkarılırken bir hata oluştu.') + ' ' + (error.message || ''));
                     });
             }
         );
@@ -1170,16 +1148,13 @@ function CustomersViewModel() {
 
         if (!personnel || !delegateId || !org) return;
 
-        self.isRemovingWithDelegate(true);
-        self.orgModalErrorMessage('');
-
-        // API call to transfer and remove
+        self.isRemovingWithDelegate(true);        // API call to transfer and remove
         ApiService.post('/customer-organizations/' + org.id + '/transfer-and-remove', {
             personnelIdToRemove: personnel.id,
             newSupervisorId: delegateId
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.TransferSuccess', 'Ekip üyeleri devredildi ve personel organizasyondan çıkarıldı.'));
+            toastr.success(T('Personnel.TransferSuccess', 'Ekip üyeleri devredildi ve personel organizasyondan çıkarıldı.'));
             self.closeDelegateModal();
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations(self.selectedCustomerForOrg().id);
@@ -1187,7 +1162,7 @@ function CustomersViewModel() {
         })
         .catch(function(error) {
             console.error('Error transferring and removing:', error);
-            self.orgModalErrorMessage(T('Personnel.TransferError', 'Transfer işlemi sırasında bir hata oluştu.') + ' ' + (error.message || ''));
+            toastr.error(T('Personnel.TransferError', 'Transfer işlemi sırasında bir hata oluştu.') + ' ' + (error.message || ''));
         })
         .finally(function() {
             self.isRemovingWithDelegate(false);
@@ -1227,27 +1202,24 @@ function CustomersViewModel() {
         var role = 2; // Süpervizör (sabit)
 
         if (!firstName || !lastName || !username || !email || !password) {
-            self.orgModalErrorMessage(T('Common.AllFieldsRequired', 'Tüm alanları doldurun.'));
+            toastr.error(T('Common.AllFieldsRequired', 'Tüm alanları doldurun.'));
             return;
         }
 
         // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
         if (!usernameRegex.test(username)) {
-            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            toastr.error(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
             return;
         }
 
         // Şifre uzunluğu kontrolü
         if (password.length < 6) {
-            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            toastr.error(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
-        self.isSavingNewSupervisor(true);
-        self.orgModalErrorMessage('');
-
-        // First create the personnel
+        self.isSavingNewSupervisor(true);        // First create the personnel
         customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,
@@ -1266,7 +1238,7 @@ function CustomersViewModel() {
             });
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.SupervisorCreated', 'Yönetici/Süpervizör oluşturuldu ve atandı.'));
+            toastr.success(T('Personnel.SupervisorCreated', 'Yönetici/Süpervizör oluşturuldu ve atandı.'));
             self.showNewSupervisorForm(false);
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations(customer.id);
@@ -1293,7 +1265,7 @@ function CustomersViewModel() {
             } else {
                 errorMsg = error.message || error.title || JSON.stringify(error);
             }
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Personel oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
+            toastr.error(T('Personnel.CreateError', 'Personel oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingNewSupervisor(false);
@@ -1348,27 +1320,24 @@ function CustomersViewModel() {
         var password = ko.unwrap(op.password);
 
         if (!firstName || !lastName || !username || !email || !password) {
-            self.orgModalErrorMessage(T('Common.AllFieldsRequired', 'Tüm zorunlu alanları doldurun.'));
+            toastr.error(T('Common.AllFieldsRequired', 'Tüm zorunlu alanları doldurun.'));
             return;
         }
 
         // Kullanıcı adı formatı kontrolü (sadece İngilizce harf, rakam, alt çizgi, nokta, tire)
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
         if (!usernameRegex.test(username)) {
-            self.orgModalErrorMessage(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
+            toastr.error(T('User.UsernameInvalid', 'Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.'));
             return;
         }
 
         // Şifre uzunluğu kontrolü
         if (password.length < 6) {
-            self.orgModalErrorMessage(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
+            toastr.error(T('Validation.PasswordMinLength', 'Şifre en az 6 karakter olmalıdır.'));
             return;
         }
 
-        self.isSavingOperator(true);
-        self.orgModalErrorMessage('');
-
-        // First create the personnel
+        self.isSavingOperator(true);        // First create the personnel
         customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,
@@ -1388,7 +1357,7 @@ function CustomersViewModel() {
             });
         })
         .then(function() {
-            self.orgModalSuccessMessage(T('Personnel.OperatorCreated', 'Operatör oluşturuldu ve atandı.'));
+            toastr.success(T('Personnel.OperatorCreated', 'Operatör oluşturuldu ve atandı.'));
             self.closeAddOperatorModal();
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations(customer.id);
@@ -1413,7 +1382,7 @@ function CustomersViewModel() {
             } else {
                 errorMsg = error.message || error.title || JSON.stringify(error);
             }
-            self.orgModalErrorMessage(T('Personnel.CreateError', 'Operatör oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
+            toastr.error(T('Personnel.CreateError', 'Operatör oluşturulurken bir hata oluştu.') + ' ' + errorMsg);
         })
         .finally(function() {
             self.isSavingOperator(false);

@@ -213,9 +213,7 @@ function ExcelTemplatesViewModel() {
 
     // Create New Template
     self.createNew = function() {
-        self.editingTemplate(new Template());
-        self.modalErrorMessage('');
-        self.isModalOpen(true);
+        self.editingTemplate(new Template());        self.isModalOpen(true);
     };
 
     // Edit Template
@@ -224,9 +222,7 @@ function ExcelTemplatesViewModel() {
         fetch(`/api/excel-templates/${template.id}`)
             .then(res => res.json())
             .then(data => {
-                self.editingTemplate(new Template(data));
-                self.modalErrorMessage('');
-                self.isModalOpen(true);
+                self.editingTemplate(new Template(data));                self.isModalOpen(true);
             })
             .catch(err => {
                 console.error('Error loading template:', err);
@@ -314,9 +310,7 @@ function ExcelTemplatesViewModel() {
     // Show Import Modal
     self.showImportModal = function(template) {
         self.importingTemplate(template);
-        self.selectedFile(null);
-        self.modalErrorMessage('');
-        self.isImportModalOpen(true);
+        self.selectedFile(null);        self.isImportModalOpen(true);
     };
 
     // Handle File Select

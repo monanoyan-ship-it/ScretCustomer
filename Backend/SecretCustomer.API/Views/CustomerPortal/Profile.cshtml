@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = Html.T("Profile.Title", "Profil");
+    Layout = "_CustomerLayout";
+}
+
+<div id="profile-app">
+    <!-- Loading State -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+        </div>
+    </div>
+
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Profil Bilgileri -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>@Html.T("Profile.Info", "Profil Bilgileri")</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">@Html.T("Profile.FullName", "Ad Soyad")</label>
+                        <div class="form-control-plaintext fw-bold" data-bind="text: profile().fullName || '-'"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">@Html.T("Profile.Username", "Kullanıcı Adı")</label>
+                        <div class="form-control-plaintext" data-bind="text: profile().username || '-'"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">@Html.T("Profile.Email", "E-posta")</label>
+                        <div class="form-control-plaintext" data-bind="text: profile().email || '-'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Şifre Değiştirme -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-key me-2"></i>@Html.T("Profile.ChangePassword", "Şifre Değiştir")</h5>
+                </div>
+                <div class="card-body">
+                    <form data-bind="submit: changePassword">
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Profile.CurrentPassword", "Mevcut Şifre") <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: currentPassword, attr: { type: showCurrentPassword() ? 'text' : 'password' }" required>
+                                <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleCurrentPassword">
+                                    <i class="bi" data-bind="css: showCurrentPassword() ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Profile.NewPassword", "Yeni Şifre") <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: newPassword, attr: { type: showNewPassword() ? 'text' : 'password' }" required minlength="6">
+                                <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleNewPassword">
+                                    <i class="bi" data-bind="css: showNewPassword() ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">@Html.T("Profile.PasswordMinLength", "En az 6 karakter olmalıdır")</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">@Html.T("Profile.ConfirmPassword", "Yeni Şifre (Tekrar)") <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" data-bind="value: confirmPassword, attr: { type: showConfirmPassword() ? 'text' : 'password' }" required>
+                                <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleConfirmPassword">
+                                    <i class="bi" data-bind="css: showConfirmPassword() ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                </button>
+                            </div>
+                            <!-- ko if: confirmPassword() && newPassword() !== confirmPassword() -->
+                            <small class="text-danger">@Html.T("Profile.PasswordMismatch", "Şifreler eşleşmiyor")</small>
+                            <!-- /ko -->
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100" data-bind="disable: isChangingPassword() || !canSubmitPassword()">
+                            <!-- ko if: isChangingPassword() -->
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <!-- /ko -->
+                            <i class="bi bi-check-circle me-1"></i>@Html.T("Profile.UpdatePassword", "Şifreyi Güncelle")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CustomerPortal/profile.js"></script>
+}

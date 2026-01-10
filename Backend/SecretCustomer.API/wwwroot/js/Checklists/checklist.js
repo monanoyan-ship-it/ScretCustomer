@@ -344,7 +344,6 @@ function ChecklistViewModel() {
     };
 
     self.createNew = function () {
-        self.modalErrorMessage('');
         self.wizardStep(1);
         self.selectedCustomerId(null);
         self.organizations([]);
@@ -359,7 +358,6 @@ function ChecklistViewModel() {
     };
 
     self.editChecklist = function (checklist) {
-        self.modalErrorMessage('');
         self.wizardStep(1);
         self.isLoading(true);
         self._isLoadingChecklist = true; // Subscriber'ın org sıfırlamasını engelle
@@ -407,7 +405,6 @@ function ChecklistViewModel() {
     };
 
     self.cloneChecklist = function (checklist) {
-        self.modalErrorMessage('');
         self.wizardStep(1);
         self.isLoading(true);
         self._isLoadingChecklist = true;
@@ -658,8 +655,6 @@ function ChecklistViewModel() {
         console.log('Checklist data to save:', JSON.stringify(data, null, 2));
 
         self.isSaving(true);
-        self.modalErrorMessage('');
-
         var promise = data.id
             ? apiService.put('/checklists/' + data.id, data)
             : apiService.post('/checklists', data);

@@ -203,9 +203,7 @@ function UsersViewModel() {
     };
 
     // ===== Create New =====
-    self.createNew = function() {
-        self.modalErrorMessage('');
-        if (self.activeTab() === 'users') {
+    self.createNew = function() {        if (self.activeTab() === 'users') {
             self.editingUser(new UserEditViewModel());
             self.isModalOpen(true);
         } else {
@@ -215,9 +213,7 @@ function UsersViewModel() {
     };
 
     // ===== User CRUD =====
-    self.editUser = function(user) {
-        self.modalErrorMessage('');
-        self.editingUser(new UserEditViewModel(user));
+    self.editUser = function(user) {        self.editingUser(new UserEditViewModel(user));
         self.isModalOpen(true);
     };
 
@@ -305,14 +301,10 @@ function UsersViewModel() {
 
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingUser(null);
-        self.modalErrorMessage('');
-    };
+        self.editingUser(null);    };
 
     // ===== Customer Personnel CRUD =====
-    self.editCustomerPersonnel = function(cp) {
-        self.modalErrorMessage('');
-        self.editingCustomerPersonnel(new CustomerPersonnelEditViewModel(cp));
+    self.editCustomerPersonnel = function(cp) {        self.editingCustomerPersonnel(new CustomerPersonnelEditViewModel(cp));
         self.isCustomerPersonnelModalOpen(true);
     };
 
@@ -407,20 +399,14 @@ function UsersViewModel() {
 
     self.closeCustomerPersonnelModal = function() {
         self.isCustomerPersonnelModalOpen(false);
-        self.editingCustomerPersonnel(null);
-        self.modalErrorMessage('');
-    };
+        self.editingCustomerPersonnel(null);    };
 
     // ===== Password Change =====
-    self.changePassword = function(user) {
-        self.modalErrorMessage('');
-        self.passwordChangeUser(new PasswordChangeViewModel(user, false));
+    self.changePassword = function(user) {        self.passwordChangeUser(new PasswordChangeViewModel(user, false));
         self.isPasswordModalOpen(true);
     };
 
-    self.changeCustomerPersonnelPassword = function(cp) {
-        self.modalErrorMessage('');
-        self.passwordChangeUser(new PasswordChangeViewModel(cp, true));
+    self.changeCustomerPersonnelPassword = function(cp) {        self.passwordChangeUser(new PasswordChangeViewModel(cp, true));
         self.isPasswordModalOpen(true);
     };
 
@@ -470,9 +456,7 @@ function UsersViewModel() {
 
     self.closePasswordModal = function() {
         self.isPasswordModalOpen(false);
-        self.passwordChangeUser(null);
-        self.modalErrorMessage('');
-    };
+        self.passwordChangeUser(null);    };
 
     // ===== Initialize =====
     self.loadAll();

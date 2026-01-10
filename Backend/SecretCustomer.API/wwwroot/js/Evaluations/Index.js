@@ -330,6 +330,72 @@ function EvaluationsViewModel() {
     };
 
     // ========================
+    // PROJECT FILES MODAL
+    // ========================
+
+    self.isProjectFilesModalOpen = ko.observable(false);
+    self.isLoadingProjectFiles = ko.observable(false);
+    self.projectFiles = ko.observableArray([]);
+    self.currentProjectId = null;
+
+    self.showProjectFiles = function(assignment) {
+        self.currentProjectId = assignment.projectId;
+        self.isProjectFilesModalOpen(true);
+        self.isLoadingProjectFiles(true);
+        self.projectFiles([]);
+
+        fetch('/api/project-files/project/' + assignment.projectId, { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Files API error');
+                return res.json();
+            })
+            .then(function(files) {
+                // Add helper properties for display
+                files.forEach(function(f) {
+                    f.fileSizeDisplay = formatFileSize(f.fileSize);
+                    f.fileIcon = getFileIcon(f.contentType);
+                });
+                self.projectFiles(files);
+            })
+            .catch(function(err) {
+                console.error('Error loading files:', err);
+                toastr.error(T('Project.FilesLoadError', 'Dosyalar yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.isLoadingProjectFiles(false);
+            });
+    };
+
+    self.closeProjectFilesModal = function() {
+        self.isProjectFilesModalOpen(false);
+        self.projectFiles([]);
+        self.currentProjectId = null;
+    };
+
+    self.downloadProjectFile = function(file) {
+        window.location.href = '/api/project-files/' + file.id + '/download';
+    };
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+    }
+
+    function getFileIcon(contentType) {
+        if (!contentType) return 'bi-file-earmark';
+        if (contentType.indexOf('pdf') > -1) return 'bi-file-earmark-pdf text-danger';
+        if (contentType.indexOf('word') > -1 || contentType.indexOf('document') > -1) return 'bi-file-earmark-word text-primary';
+        if (contentType.indexOf('excel') > -1 || contentType.indexOf('spreadsheet') > -1) return 'bi-file-earmark-excel text-success';
+        if (contentType.indexOf('image') > -1) return 'bi-file-earmark-image text-info';
+        if (contentType.indexOf('video') > -1) return 'bi-file-earmark-play text-warning';
+        if (contentType.indexOf('audio') > -1) return 'bi-file-earmark-music text-secondary';
+        if (contentType.indexOf('zip') > -1 || contentType.indexOf('rar') > -1) return 'bi-file-earmark-zip text-warning';
+        return 'bi-file-earmark';
+    }
+
+    // ========================
     // EVALUATE MODAL FUNCTIONS
     // ========================
 
@@ -347,10 +413,7 @@ function EvaluationsViewModel() {
 
     self.openEvaluateModal = function() {
         self.isEvaluateModalOpen(true);
-        self.isFormLoading(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-        self.formData(null);
+        self.isFormLoading(true);        self.formData(null);
         self.answers = {};
         self.isShowingSummary(false);
         self.summaryData(null);
@@ -453,10 +516,7 @@ function EvaluationsViewModel() {
 
     // Load form data
     self.loadForm = function() {
-        self.isFormLoading(true);
-        self.modalErrorMessage('');
-
-        var url = '';
+        self.isFormLoading(true);        var url = '';
         if (self.currentAssignmentId) {
             url = '/api/evaluations/form/' + self.currentAssignmentId;
         } else if (self.currentEvaluationId) {
@@ -756,11 +816,7 @@ function EvaluationsViewModel() {
             return;
         }
 
-        self.isSavingForm(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-
-        var data = self.prepareData();
+        self.isSavingForm(true);        var data = self.prepareData();
 
         fetch('/api/evaluations/draft', {
             method: 'POST',
@@ -878,11 +934,7 @@ function EvaluationsViewModel() {
 
     // Confirm and submit evaluation (onaylandığında backend'e kaydet)
     self.confirmSubmit = function() {
-        self.isSavingForm(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-
-        var data = self.prepareData();
+        self.isSavingForm(true);        var data = self.prepareData();
         var assignmentId = data.assignmentId;
 
         fetch('/api/evaluations/submit', {

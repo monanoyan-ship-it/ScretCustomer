@@ -46,7 +46,7 @@ public interface IAssignmentService
     Task DeletePeriodAsync(int periodId);
 
     // ===== İÇ DEĞERLENDİRME ATAMALARI =====
-    Task<InternalAssignmentResultDto> CreateInternalAssignmentsAsync(CreateInternalAssignmentsDto dto);
     Task<IEnumerable<AssignmentDto>> GetInternalAssignmentsAsync(InternalAssignmentFilterDto filter);
-    Task<IEnumerable<InternalAssignmentSummaryDto>> GetInternalAssignmentSummaryAsync(int? customerId = null);
+    Task<InternalAssignmentSummaryDto> GetInternalAssignmentSummaryAsync(int? customerId);
+    Task<InternalAssignmentResultDto> CreateInternalAssignmentsAsync(CreateInternalAssignmentsDto dto);
 }

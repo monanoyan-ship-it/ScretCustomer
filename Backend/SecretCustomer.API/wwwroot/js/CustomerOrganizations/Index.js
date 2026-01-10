@@ -402,9 +402,7 @@ function CustomerOrganizationsViewModel() {
             order: ko.observable(0),
             isActive: ko.observable(true),
             customerId: self.selectedCustomer().id
-        });
-        self.modalErrorMessage('');
-        self.isModalOpen(true);
+        });        self.isModalOpen(true);
     };
 
     self.editOrganization = function(org, event) {
@@ -420,9 +418,7 @@ function CustomerOrganizationsViewModel() {
                     order: ko.observable(data.order || 0),
                     isActive: ko.observable(data.isActive),
                     customerId: data.customerId
-                });
-                self.modalErrorMessage('');
-                self.isModalOpen(true);
+                });                self.isModalOpen(true);
             })
             .catch(function(error) {
                 console.error('Error loading organization:', error);
@@ -440,10 +436,7 @@ function CustomerOrganizationsViewModel() {
             return;
         }
 
-        self.isSaving(true);
-        self.modalErrorMessage('');
-
-        var data = {
+        self.isSaving(true);        var data = {
             name: name.trim(),
             code: ko.unwrap(org.code) || null,
             description: ko.unwrap(org.description) || null,
@@ -515,9 +508,7 @@ function CustomerOrganizationsViewModel() {
 
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingOrganization(null);
-        self.modalErrorMessage('');
-    };
+        self.editingOrganization(null);    };
 
     // Initialize
     EnumsService.load().then(function() {

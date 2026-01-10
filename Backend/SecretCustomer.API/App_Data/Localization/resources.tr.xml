@@ -1104,7 +1104,7 @@
     <Value>Müşteri Yöneticisi</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Role.Supervisor">
-    <Value>Müşteri Süpervizörü</Value>
+    <Value>Takım Lideri</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Role.Operator">
     <Value>Müşteri Operatörü</Value>
@@ -1975,6 +1975,9 @@
   </LocaleResource>
   <LocaleResource Name="Evaluation.AddListening">
     <Value>Değerlendirme Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Add">
+    <Value>Ekle</Value>
   </LocaleResource>
   <LocaleResource Name="Meeting.Title">
     <Value>Toplantılar</Value>
@@ -5718,7 +5721,7 @@
     <Value>Müşteri Operatörü</Value>
   </LocaleResource>
   <LocaleResource Name="Role.CustomerSupervisor">
-    <Value>Müşteri Süpervizörü</Value>
+    <Value>Takım Lideri</Value>
   </LocaleResource>
   <LocaleResource Name="Training.DeleteSuccess">
     <Value>Eğitim başarıyla silindi.</Value>

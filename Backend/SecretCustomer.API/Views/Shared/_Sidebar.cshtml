@@ -124,14 +124,6 @@
                 </a>
             </li>
 
-            <!-- İç Değerlendirmeler - CustomerPersonnel (Manager & Supervisor - başkalarına atama) -->
-            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
-                <a href="/CustomerPortal/InternalAssignments" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-person-check me-2"></i>
-                    @Html.T("Menu.InternalAssignments", "İç Değerlendirmeler")
-                </a>
-            </li>
-
             <!-- Şubeler - CustomerPersonnel (Manager & Supervisor) -->
             <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
                 <a href="/CustomerPortal/Branches" class="nav-link text-white" data-bind="click: closeSidebar">

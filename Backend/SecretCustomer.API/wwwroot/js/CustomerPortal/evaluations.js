@@ -348,10 +348,7 @@ function EvaluationsViewModel() {
 
     self.openEvaluateModal = function() {
         self.isEvaluateModalOpen(true);
-        self.isFormLoading(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-        self.formData(null);
+        self.isFormLoading(true);        self.formData(null);
         self.answers = {};
         self.isShowingSummary(false);
         self.summaryData(null);
@@ -456,10 +453,7 @@ function EvaluationsViewModel() {
 
     // Load form data
     self.loadForm = function() {
-        self.isFormLoading(true);
-        self.modalErrorMessage('');
-
-        var url = '';
+        self.isFormLoading(true);        var url = '';
         if (self.currentAssignmentId) {
             url = '/api/evaluations/form/' + self.currentAssignmentId;
         } else if (self.currentEvaluationId) {
@@ -759,11 +753,7 @@ function EvaluationsViewModel() {
             return;
         }
 
-        self.isSavingForm(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-
-        var data = self.prepareData();
+        self.isSavingForm(true);        var data = self.prepareData();
 
         fetch('/api/evaluations/draft', {
             method: 'POST',
@@ -881,11 +871,7 @@ function EvaluationsViewModel() {
 
     // Confirm and submit evaluation (onaylandığında backend'e kaydet)
     self.confirmSubmit = function() {
-        self.isSavingForm(true);
-        self.modalErrorMessage('');
-        self.formSuccessMessage('');
-
-        var data = self.prepareData();
+        self.isSavingForm(true);        var data = self.prepareData();
         var assignmentId = data.assignmentId;
 
         fetch('/api/evaluations/submit', {
@@ -944,6 +930,65 @@ function EvaluationsViewModel() {
     };
 
     // ========================
+    // PROJECT FILES MODAL
+    // ========================
+    self.isProjectFilesModalOpen = ko.observable(false);
+    self.isLoadingProjectFiles = ko.observable(false);
+    self.projectFiles = ko.observableArray([]);
+
+    self.showProjectFiles = function(assignment) {
+        self.isProjectFilesModalOpen(true);
+        self.isLoadingProjectFiles(true);
+        self.projectFiles([]);
+
+        fetch('/api/project-files/project/' + assignment.projectId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Dosyalar yüklenemedi');
+                return response.json();
+            })
+            .then(function(files) {
+                self.projectFiles(files || []);
+            })
+            .catch(function(error) {
+                console.error('Project files load error:', error);
+                toastr.error(T('Project.FilesLoadError', 'Dosyalar yüklenirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isLoadingProjectFiles(false);
+            });
+    };
+
+    self.closeProjectFilesModal = function() {
+        self.isProjectFilesModalOpen(false);
+        self.projectFiles([]);
+    };
+
+    self.downloadProjectFile = function(file) {
+        window.location.href = '/api/project-files/' + file.id + '/download';
+    };
+
+    // Helper: Format file size
+    self.formatFileSize = function(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    // Helper: Get file icon based on content type
+    self.getFileIcon = function(contentType) {
+        if (!contentType) return 'bi-file-earmark';
+        if (contentType.indexOf('pdf') >= 0) return 'bi-file-earmark-pdf text-danger';
+        if (contentType.indexOf('word') >= 0 || contentType.indexOf('document') >= 0) return 'bi-file-earmark-word text-primary';
+        if (contentType.indexOf('excel') >= 0 || contentType.indexOf('spreadsheet') >= 0) return 'bi-file-earmark-excel text-success';
+        if (contentType.indexOf('image') >= 0) return 'bi-file-earmark-image text-info';
+        if (contentType.indexOf('zip') >= 0 || contentType.indexOf('rar') >= 0) return 'bi-file-earmark-zip text-warning';
+        if (contentType.indexOf('text') >= 0) return 'bi-file-earmark-text';
+        return 'bi-file-earmark';
+    };
+
+    // ========================
     // INITIALIZE
     // ========================
     // Once EnumsService'i yukle, sonra diger verileri cek
@@ -980,7 +1025,9 @@ var TRANSLATION_KEYS = [
     // Confirm modal keys
     'Confirm.Title',
     'Confirm.Message',
-    'Common.Confirm'
+    'Common.Confirm',
+    // Project files keys
+    'Project.FilesLoadError'
 ];
 
 // Apply bindings when DOM is ready

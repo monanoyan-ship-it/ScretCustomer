@@ -39,4 +39,12 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Kullanıcı profili ve şifre değiştirme
+    /// </summary>
+    public IActionResult Profile()
+    {
+        return View();
+    }
 }

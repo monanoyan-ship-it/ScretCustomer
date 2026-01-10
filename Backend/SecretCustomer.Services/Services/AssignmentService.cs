@@ -49,6 +49,7 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Files.Where(f => !f.IsDeleted))
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
@@ -117,6 +118,22 @@ public class AssignmentService : IAssignmentService
                     .Average(e => e.ScorePercentage)
             })
             .ToList();
+
+        // Get project files
+        if (assignment.Project?.Files != null)
+        {
+            detailDto.ProjectFiles = assignment.Project.Files
+                .OrderByDescending(f => f.CreatedAt)
+                .Select(f => new ProjectFileInfoDto
+                {
+                    Id = f.Id,
+                    OriginalFileName = f.OriginalFileName,
+                    ContentType = f.ContentType,
+                    FileSize = f.FileSize,
+                    Description = f.Description
+                })
+                .ToList();
+        }
 
         return detailDto;
     }
@@ -770,64 +787,130 @@ public class AssignmentService : IAssignmentService
 
     #region İÇ DEĞERLENDİRME ATAMALARI
 
+    public async Task<IEnumerable<AssignmentDto>> GetInternalAssignmentsAsync(InternalAssignmentFilterDto filter)
+    {
+        var query = _context.Assignments
+            .Include(a => a.Project)
+            .Include(a => a.Checklist)
+            .Include(a => a.AssignedCustomerPersonnel)
+            .Where(a => !a.IsDeleted && a.AssignedCustomerPersonnelId != null);
+
+        if (filter.CustomerId.HasValue)
+        {
+            query = query.Where(a => a.Project != null && a.Project.CustomerId == filter.CustomerId);
+        }
+
+        if (filter.ProjectId.HasValue)
+        {
+            query = query.Where(a => a.ProjectId == filter.ProjectId);
+        }
+
+        if (filter.AssignedCustomerPersonnelId.HasValue)
+        {
+            query = query.Where(a => a.AssignedCustomerPersonnelId == filter.AssignedCustomerPersonnelId);
+        }
+
+        if (filter.IsCompleted.HasValue)
+        {
+            query = query.Where(a => a.IsCompleted == filter.IsCompleted.Value);
+        }
+
+        if (filter.DueDateFrom.HasValue)
+        {
+            query = query.Where(a => a.DueDate >= filter.DueDateFrom);
+        }
+
+        if (filter.DueDateTo.HasValue)
+        {
+            query = query.Where(a => a.DueDate <= filter.DueDateTo);
+        }
+
+        var assignments = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
+        return assignments.Select(MapToDto);
+    }
+
+    public async Task<InternalAssignmentSummaryDto> GetInternalAssignmentSummaryAsync(int? customerId)
+    {
+        var query = _context.Assignments
+            .Include(a => a.Project)
+                .ThenInclude(p => p!.Customer)
+            .Where(a => !a.IsDeleted && a.AssignedCustomerPersonnelId != null);
+
+        if (customerId.HasValue)
+        {
+            query = query.Where(a => a.Project != null && a.Project.CustomerId == customerId);
+        }
+
+        var assignments = await query.ToListAsync();
+
+        var customer = customerId.HasValue
+            ? await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId)
+            : null;
+
+        return new InternalAssignmentSummaryDto
+        {
+            CustomerId = customerId ?? 0,
+            CustomerName = customer?.CompanyName ?? "Tüm Müşteriler",
+            TotalAssignments = assignments.Count,
+            CompletedAssignments = assignments.Count(a => a.IsCompleted),
+            PendingAssignments = assignments.Count(a => !a.IsCompleted),
+            OverdueAssignments = assignments.Count(a => a.DueDate < DateTime.UtcNow && !a.IsCompleted),
+            CompletionRate = assignments.Count > 0
+                ? Math.Round((decimal)assignments.Count(a => a.IsCompleted) / assignments.Count * 100, 1)
+                : 0
+        };
+    }
+
     public async Task<InternalAssignmentResultDto> CreateInternalAssignmentsAsync(CreateInternalAssignmentsDto dto)
     {
         var result = new InternalAssignmentResultDto();
 
-        // Müşteri kontrolü
-        var customer = await _context.Customers.FindAsync(dto.CustomerId);
-        if (customer == null)
-            throw new KeyNotFoundException($"Müşteri bulunamadı: {dto.CustomerId}");
-
         // Proje kontrolü
         var project = await _context.Projects
             .Include(p => p.Checklist)
-            .FirstOrDefaultAsync(p => p.Id == dto.ProjectId);
+            .FirstOrDefaultAsync(p => p.Id == dto.ProjectId && !p.IsDeleted);
+
         if (project == null)
-            throw new KeyNotFoundException($"Proje bulunamadı: {dto.ProjectId}");
+            throw new KeyNotFoundException("Proje bulunamadı");
 
-        if (project.ChecklistId == 0 || project.Checklist == null)
-            throw new InvalidOperationException($"Projenin kontrol listesi tanımlı değil: {project.Name}");
+        if (project.Checklist == null || project.Checklist.IsDeleted)
+            throw new KeyNotFoundException("Projeye ait checklist bulunamadı");
 
-        // Atanacak personelleri bul
+        var checklistId = project.ChecklistId;
+
+        // Personel listesi
         var personnelQuery = _context.CustomerPersonnel
-            .Where(p => p.CustomerId == dto.CustomerId && !p.IsDeleted && p.IsActive);
+            .Where(cp => cp.CustomerId == dto.CustomerId && !cp.IsDeleted && cp.IsActive);
 
-        // Rol filtresi
-        if (dto.RoleFilter.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p => p.Role == dto.RoleFilter.Value);
-        }
-
-        // Organizasyon filtresi
-        if (dto.OrganizationId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p =>
-                p.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == dto.OrganizationId.Value && !oa.IsDeleted));
-        }
-
-        // Tek tek seçim
         if (dto.PersonnelIds != null && dto.PersonnelIds.Any())
         {
-            personnelQuery = personnelQuery.Where(p => dto.PersonnelIds.Contains(p.Id));
+            personnelQuery = personnelQuery.Where(cp => dto.PersonnelIds.Contains(cp.Id));
+        }
+        else if (dto.RoleFilter.HasValue)
+        {
+            personnelQuery = personnelQuery.Where(cp => cp.Role == dto.RoleFilter);
+        }
+
+        if (dto.OrganizationId.HasValue)
+        {
+            personnelQuery = personnelQuery.Where(cp => cp.OrganizationId == dto.OrganizationId);
         }
 
         var personnelList = await personnelQuery.ToListAsync();
         result.TotalRequested = personnelList.Count;
 
-        // Her personel için atama oluştur
         foreach (var personnel in personnelList)
         {
             try
             {
-                // Aynı checklist için zaten atama var mı?
+                // Aynı kişiye aynı proje zaten atanmış mı?
                 var existingAssignment = await _context.Assignments
-                    .AnyAsync(a => a.ProjectId == project.Id &&
-                                   a.ChecklistId == project.ChecklistId &&
-                                   a.AssignedCustomerPersonnelId == personnel.Id &&
-                                   !a.IsDeleted);
+                    .FirstOrDefaultAsync(a => a.ProjectId == dto.ProjectId
+                        && a.AssignedCustomerPersonnelId == personnel.Id
+                        && !a.IsDeleted
+                        && !a.IsCompleted);
 
-                if (existingAssignment)
+                if (existingAssignment != null)
                 {
                     result.SkippedCount++;
                     result.Results.Add(new InternalAssignmentItemResult
@@ -835,20 +918,22 @@ public class AssignmentService : IAssignmentService
                         PersonnelId = personnel.Id,
                         PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                         Status = "Skipped",
-                        Message = "Bu personele bu checklist zaten atanmış"
+                        Message = "Zaten aktif ataması var"
                     });
                     continue;
                 }
 
                 var assignment = new Assignment
                 {
-                    ProjectId = project.Id,
-                    ChecklistId = project.ChecklistId,
-                    Type = AssignmentType.CustomerPersonnel,
+                    ProjectId = dto.ProjectId,
+                    ChecklistId = checklistId,
                     AssignedCustomerPersonnelId = personnel.Id,
-                    DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
-                    UniqueLink = Guid.NewGuid().ToString(),
-                    CreatedAt = DateTime.UtcNow
+                    DueDate = dto.DueDate,
+                    Type = AssignmentType.CustomerPersonnel,
+                    UniqueLink = Guid.NewGuid().ToString("N"),
+                    CreatedAt = DateTime.UtcNow,
+                    IsCompleted = false,
+                    IsDeleted = false
                 };
 
                 _context.Assignments.Add(assignment);
@@ -861,122 +946,24 @@ public class AssignmentService : IAssignmentService
                     PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                     AssignmentId = assignment.Id,
                     Status = "Created",
-                    Message = "Atama başarıyla oluşturuldu"
+                    Message = "Atama oluşturuldu"
                 });
             }
             catch (Exception ex)
             {
-                var fullError = Core.Helpers.ExceptionHelper.GetFullExceptionChain(ex);
-
                 result.FailedCount++;
+                result.Errors.Add($"{personnel.FirstName} {personnel.LastName}: {ex.Message}");
                 result.Results.Add(new InternalAssignmentItemResult
                 {
                     PersonnelId = personnel.Id,
                     PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                     Status = "Failed",
-                    Message = fullError
+                    Message = ex.Message
                 });
-                result.Errors.Add($"{personnel.FirstName} {personnel.LastName}: {fullError}");
             }
         }
 
         return result;
-    }
-
-    public async Task<IEnumerable<AssignmentDto>> GetInternalAssignmentsAsync(InternalAssignmentFilterDto filter)
-    {
-        var query = _context.Assignments
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Customer)
-            .Include(a => a.Checklist)
-            .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
-            .Where(a => !a.IsDeleted && a.Type == AssignmentType.CustomerPersonnel);
-
-        // Müşteri filtresi
-        if (filter.CustomerId.HasValue)
-        {
-            query = query.Where(a => a.Project.CustomerId == filter.CustomerId.Value);
-        }
-
-        // Proje filtresi
-        if (filter.ProjectId.HasValue)
-        {
-            query = query.Where(a => a.ProjectId == filter.ProjectId.Value);
-        }
-
-        // Organizasyon filtresi
-        if (filter.OrganizationId.HasValue)
-        {
-            query = query.Where(a =>
-                a.AssignedCustomerPersonnel != null &&
-                a.AssignedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    oa.CustomerOrganizationId == filter.OrganizationId.Value && !oa.IsDeleted));
-        }
-
-        // Rol filtresi
-        if (filter.Role.HasValue)
-        {
-            query = query.Where(a =>
-                a.AssignedCustomerPersonnel != null &&
-                a.AssignedCustomerPersonnel.Role == filter.Role.Value);
-        }
-
-        // Tamamlanma filtresi
-        if (filter.IsCompleted.HasValue)
-        {
-            query = query.Where(a => a.IsCompleted == filter.IsCompleted.Value);
-        }
-
-        // Tarih filtresi
-        if (filter.DueDateFrom.HasValue)
-        {
-            query = query.Where(a => a.DueDate >= filter.DueDateFrom.Value);
-        }
-        if (filter.DueDateTo.HasValue)
-        {
-            query = query.Where(a => a.DueDate <= filter.DueDateTo.Value);
-        }
-
-        var assignments = await query
-            .OrderByDescending(a => a.CreatedAt)
-            .ToListAsync();
-
-        return assignments.Select(MapToDto);
-    }
-
-    public async Task<IEnumerable<InternalAssignmentSummaryDto>> GetInternalAssignmentSummaryAsync(int? customerId = null)
-    {
-        var query = _context.Assignments
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Customer)
-            .Where(a => !a.IsDeleted && a.Type == AssignmentType.CustomerPersonnel);
-
-        if (customerId.HasValue)
-        {
-            query = query.Where(a => a.Project.CustomerId == customerId.Value);
-        }
-
-        var assignments = await query.ToListAsync();
-        var now = DateTime.UtcNow;
-
-        var summaries = assignments
-            .GroupBy(a => new { a.Project.CustomerId, CustomerName = a.Project.Customer?.CompanyName ?? "" })
-            .Select(g => new InternalAssignmentSummaryDto
-            {
-                CustomerId = g.Key.CustomerId ?? 0,
-                CustomerName = g.Key.CustomerName,
-                TotalAssignments = g.Count(),
-                CompletedAssignments = g.Count(a => a.IsCompleted),
-                PendingAssignments = g.Count(a => !a.IsCompleted && a.DueDate >= now),
-                OverdueAssignments = g.Count(a => !a.IsCompleted && a.DueDate < now),
-                CompletionRate = g.Count() > 0
-                    ? Math.Round((decimal)g.Count(a => a.IsCompleted) / g.Count() * 100, 1)
-                    : 0
-            })
-            .ToList();
-
-        return summaries;
     }
 
     #endregion

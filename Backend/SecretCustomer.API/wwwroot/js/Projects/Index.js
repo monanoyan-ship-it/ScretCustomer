@@ -119,6 +119,17 @@ function ProjectsViewModel() {
     self.editingProject = ko.observable(null);
     self.viewingProject = ko.observable(null);
 
+    // File Management
+    self.projectFiles = ko.observableArray([]);
+    self.isUploadingFile = ko.observable(false);
+    self.currentUserRole = ko.observable('');
+
+    // Check if user can manage files (Admin or TeamLeader)
+    self.canManageFiles = ko.computed(function() {
+        var role = self.currentUserRole();
+        return role === 'Admin' || role === 'TeamLeader';
+    });
+
     // Project Type mappings (EnumsService'de yok, burada kalabilir)
     self.projectTypeTexts = {
         'MysteryShopping': 'Gizli Müşteri', 'CallAuditing': 'Çağrı Denetimi',
@@ -272,6 +283,7 @@ function ProjectsViewModel() {
     // Open detail modal
     self.openDetailModal = function(project) {
         self.isLoading(true);
+        self.projectFiles([]); // Clear previous files
         fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
             .then(function(res) {
                 if (!res.ok) throw new Error('Proje yüklenemedi');
@@ -280,6 +292,8 @@ function ProjectsViewModel() {
             .then(function(data) {
                 self.viewingProject(data);
                 self.isDetailModalOpen(true);
+                // Load project files
+                self.loadProjectFiles(data.id);
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -553,8 +567,137 @@ function ProjectsViewModel() {
         });
     };
 
+    // ========== FILE MANAGEMENT ==========
+
+    // Load project files
+    self.loadProjectFiles = function(projectId) {
+        fetch('/api/project-files/project/' + projectId, { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Dosyalar yüklenemedi');
+                return res.json();
+            })
+            .then(function(files) {
+                self.projectFiles(files || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading files:', error);
+                self.projectFiles([]);
+            });
+    };
+
+    // Upload file
+    self.uploadFile = function(event) {
+        var files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        var project = self.viewingProject();
+        if (!project) return;
+
+        self.isUploadingFile(true);
+
+        // Upload files one by one
+        var uploadPromises = [];
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var formData = new FormData();
+            formData.append('file', file);
+
+            uploadPromises.push(
+                fetch('/api/project-files/project/' + project.id, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                })
+                .then(function(res) {
+                    if (!res.ok) {
+                        return res.json().then(function(data) {
+                            throw new Error(data.message || 'Yükleme başarısız');
+                        });
+                    }
+                    return res.json();
+                })
+            );
+        }
+
+        Promise.all(uploadPromises)
+            .then(function(uploadedFiles) {
+                uploadedFiles.forEach(function(f) {
+                    self.projectFiles.unshift(f);
+                });
+                toastr.success(uploadedFiles.length + ' dosya yüklendi.');
+            })
+            .catch(function(error) {
+                console.error('Upload error:', error);
+                toastr.error('Dosya yüklenirken bir hata oluştu: ' + error.message);
+            })
+            .finally(function() {
+                self.isUploadingFile(false);
+                // Reset file input
+                event.target.value = '';
+            });
+    };
+
+    // Download file
+    self.downloadFile = function(file) {
+        window.open('/api/project-files/' + file.id + '/download', '_blank');
+    };
+
+    // Delete file
+    self.deleteFile = function(file) {
+        showDeleteConfirm(file.originalFileName, function() {
+            fetch('/api/project-files/' + file.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Silme başarısız');
+                toastr.success('Dosya silindi.');
+                self.projectFiles.remove(file);
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                toastr.error('Dosya silinirken bir hata oluştu.');
+            });
+        });
+    };
+
+    // Get file icon based on content type
+    self.getFileIcon = function(contentType) {
+        if (!contentType) return 'bi-file-earmark';
+
+        if (contentType.indexOf('image') >= 0) return 'bi-file-earmark-image text-success';
+        if (contentType.indexOf('pdf') >= 0) return 'bi-file-earmark-pdf text-danger';
+        if (contentType.indexOf('word') >= 0 || contentType.indexOf('document') >= 0) return 'bi-file-earmark-word text-primary';
+        if (contentType.indexOf('excel') >= 0 || contentType.indexOf('spreadsheet') >= 0) return 'bi-file-earmark-excel text-success';
+        if (contentType.indexOf('powerpoint') >= 0 || contentType.indexOf('presentation') >= 0) return 'bi-file-earmark-ppt text-warning';
+        if (contentType.indexOf('zip') >= 0 || contentType.indexOf('rar') >= 0 || contentType.indexOf('compressed') >= 0) return 'bi-file-earmark-zip text-secondary';
+        if (contentType.indexOf('text') >= 0) return 'bi-file-earmark-text';
+
+        return 'bi-file-earmark';
+    };
+
+    // Load current user role
+    self.loadCurrentUserRole = function() {
+        fetch('/api/auth/me', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) return;
+                return res.json();
+            })
+            .then(function(user) {
+                if (user && user.role) {
+                    self.currentUserRole(user.role);
+                }
+            })
+            .catch(function() {
+                // Ignore errors
+            });
+    };
+
     // Initialize
     self.init = function() {
+        // Load current user role
+        self.loadCurrentUserRole();
+
         // Once EnumsService'i yukle, sonra diger verileri cek
         EnumsService.load().then(function() {
             self.loadDropdownData();

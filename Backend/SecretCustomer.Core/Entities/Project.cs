@@ -165,6 +165,11 @@ public class Project : BaseEntity
     /// Proje takimi (atanan kullanicilar)
     /// </summary>
     public ICollection<ProjectTeamMember> TeamMembers { get; set; } = new List<ProjectTeamMember>();
+
+    /// <summary>
+    /// Proje dosyalari
+    /// </summary>
+    public ICollection<ProjectFile> Files { get; set; } = new List<ProjectFile>();
 }
 
 /// <summary>

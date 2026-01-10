@@ -41,6 +41,7 @@ public class ApplicationDbContext : DbContext
 
     // Project Management DbSets
     public DbSet<ProjectTeamMember> ProjectTeamMembers { get; set; }
+    public DbSet<ProjectFile> ProjectFiles { get; set; }
 
     // Personnel Management DbSets
     public DbSet<Personnel> Personnel { get; set; }
@@ -123,6 +124,7 @@ public class ApplicationDbContext : DbContext
 
         // Project Management Entities
         modelBuilder.Entity<ProjectTeamMember>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ProjectFile>().HasQueryFilter(e => !e.IsDeleted);
 
         // Personnel Management Entities
         modelBuilder.Entity<Personnel>().HasQueryFilter(e => !e.IsDeleted);

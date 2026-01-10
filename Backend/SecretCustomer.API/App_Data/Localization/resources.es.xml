@@ -1973,6 +1973,9 @@
   <LocaleResource Name="Evaluation.AddListening">
     <Value>Añadir Evaluación</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.Add">
+    <Value>Añadir</Value>
+  </LocaleResource>
   <LocaleResource Name="Meeting.Title">
     <Value>Reuniones</Value>
   </LocaleResource>
