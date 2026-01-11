@@ -109,9 +109,11 @@ public class ReportService : IReportService
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : null,
-            EvaluatedPersonnelName = evaluation.EvaluatedPersonnel != null
-                ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
-                : evaluation.EvaluatedUnknownPersonnel,
+            EvaluatedPersonnelName = evaluation.EvaluatedCustomerPersonnel != null
+                ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
+                : (evaluation.EvaluatedPersonnel != null
+                    ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
+                    : evaluation.EvaluatedUnknownPersonnel),
             CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName,
             OrganizationName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
                 ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
@@ -407,9 +409,11 @@ public class ReportService : IReportService
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : null,
-            EvaluatedPersonnelName = evaluation.EvaluatedPersonnel != null
-                ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
-                : evaluation.EvaluatedUnknownPersonnel,
+            EvaluatedPersonnelName = evaluation.EvaluatedCustomerPersonnel != null
+                ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
+                : (evaluation.EvaluatedPersonnel != null
+                    ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
+                    : evaluation.EvaluatedUnknownPersonnel),
             SupervisorName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
                 ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
                     .Where(oa => oa.Supervisor != null)

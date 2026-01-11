@@ -411,7 +411,36 @@
 
                         <!-- Info Cards -->
                         <div class="row mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="bi bi-building"></i> @Html.T("Evaluation.EvaluatedInfo", "Değerlendirilen Bilgileri")</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm mb-0">
+                                            <tr>
+                                                <th style="width: 40%;">@Html.T("Common.Customer", "Firma")</th>
+                                                <td data-bind="text: customerName || '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Common.Organization", "Organizasyon")</th>
+                                                <td data-bind="text: organizationName || '-'"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
+                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                            </tr>
+                                            <!-- ko if: supervisorName -->
+                                            <tr>
+                                                <th>@Html.T("Evaluation.Supervisor", "Müşteri Yöneticisi")</th>
+                                                <td data-bind="text: supervisorName"></td>
+                                            </tr>
+                                            <!-- /ko -->
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
@@ -438,7 +467,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0"><i class="bi bi-person"></i> @Html.T("Evaluation.EvaluationInfo", "Değerlendirme Bilgileri")</h6>
@@ -448,10 +477,6 @@
                                             <tr>
                                                 <th style="width: 40%;">@Html.T("Evaluation.Evaluator", "Değerlendiren")</th>
                                                 <td data-bind="text: evaluatorName || '-'"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
-                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CompletedAt", "Tamamlanma")</th>
@@ -496,24 +521,24 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-striped table-hover mb-0">
+                                    <table class="table table-sm table-striped table-hover mb-0" style="table-layout: fixed;">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 50%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center">@Html.T("Evaluation.Weight", "Ağırlık")</th>
-                                                <th class="text-center">@Html.T("Evaluation.Earned", "Kazanılan")</th>
+                                                <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
+                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
+                                                <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
                                         </thead>
                                         <tbody data-bind="foreach: answers">
                                             <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
-                                                <td>
+                                                <td class="text-wrap" data-bind="text: groupName || '-'"></td>
+                                                <td class="text-wrap">
                                                     <span data-bind="text: questionText"></span>
                                                     <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
                                                     <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
-                                                    <!-- /ko -->
-                                                    <!-- ko if: notes -->
-                                                    <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: notes"></span></small>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
@@ -554,6 +579,7 @@
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
+                                                <td class="text-wrap" data-bind="text: notes || '-'"></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -714,7 +740,7 @@
                                         <!-- Cevaplar Tablosu -->
                                         <hr>
                                         <h6 class="mb-3"><i class="bi bi-list-check"></i> @Html.T("Evaluation.Answers", "Verilen Cevaplar")</h6>
-                                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="table-responsive table-responsive-scrollable" style="max-height: 300px; overflow-y: auto;">
                                             <table class="table table-sm table-striped mb-0">
                                                 <thead class="table-light sticky-top">
                                                     <tr>

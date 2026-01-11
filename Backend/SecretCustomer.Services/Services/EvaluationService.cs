@@ -90,6 +90,7 @@ public class EvaluationService : IEvaluationService
     {
         var evaluations = await _context.Evaluations
             .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => !e.IsDeleted)
@@ -110,6 +111,7 @@ public class EvaluationService : IEvaluationService
     {
         var evaluations = await _context.Evaluations
             .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => !e.IsDeleted && e.Assignment.ProjectId == projectId)
@@ -811,6 +813,7 @@ public class EvaluationService : IEvaluationService
             AppliedPenaltyType = a.AppliedPenaltyType.ToString(),
             SectionOrder = null, // Section kaldırıldı
             SectionName = null, // Section kaldırıldı
+            GroupName = a.Question?.GroupName,
             QuestionOrder = a.Question?.Order,
             QuestionMaxPoints = a.Question?.MaxPoints ?? 5, // Sorunun max puanı (örn: 5)
             WeightPoints = a.Question?.WeightPoints ?? 0, // Ağırlık puanı
@@ -902,14 +905,38 @@ public class EvaluationService : IEvaluationService
         }
 
         string? evaluatedPersonnelName = null;
-        // CustomerPersonnel tablosundan isim çek (EvaluatedCustomerPersonnelId kullanılıyor)
+        string? customerName = null;
+        string? organizationName = null;
+        string? supervisorName = null;
+
+        // CustomerPersonnel tablosundan bilgileri çek (EvaluatedCustomerPersonnelId kullanılıyor)
         if (evaluation.EvaluatedCustomerPersonnelId.HasValue)
         {
-            var personnel = await _context.CustomerPersonnel
+            var personnelData = await _context.CustomerPersonnel
                 .Where(cp => cp.Id == evaluation.EvaluatedCustomerPersonnelId.Value)
-                .Select(cp => $"{cp.FirstName} {cp.LastName}")
+                .Include(cp => cp.Customer)
+                .Include(cp => cp.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+                .Include(cp => cp.OrganizationAssignments)
+                    .ThenInclude(oa => oa.Supervisor)
                 .FirstOrDefaultAsync();
-            evaluatedPersonnelName = personnel;
+
+            if (personnelData != null)
+            {
+                evaluatedPersonnelName = $"{personnelData.FirstName} {personnelData.LastName}";
+                customerName = personnelData.Customer?.CompanyName;
+                organizationName = personnelData.OrganizationAssignments != null
+                    ? string.Join(", ", personnelData.OrganizationAssignments
+                        .Where(oa => oa.CustomerOrganization != null)
+                        .Select(oa => oa.CustomerOrganization!.Name))
+                    : null;
+                supervisorName = personnelData.OrganizationAssignments != null
+                    ? string.Join(", ", personnelData.OrganizationAssignments
+                        .Where(oa => oa.Supervisor != null)
+                        .Select(oa => $"{oa.Supervisor!.FirstName} {oa.Supervisor.LastName}")
+                        .Distinct())
+                    : null;
+            }
         }
 
         // Load period name if exists
@@ -929,9 +956,11 @@ public class EvaluationService : IEvaluationService
             AssignmentPeriodId = evaluation.AssignmentPeriodId,
             AssignmentPeriodName = periodName,
             EvaluatorId = evaluation.EvaluatorId,
-            EvaluatorName = evaluation.Evaluator != null
-                ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
-                : null,
+            EvaluatorName = evaluation.EvaluatorCustomerPersonnel != null
+                ? $"{evaluation.EvaluatorCustomerPersonnel.FirstName} {evaluation.EvaluatorCustomerPersonnel.LastName}"
+                : (evaluation.Evaluator != null
+                    ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
+                    : null),
             Status = evaluation.Status.ToString(),
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
@@ -949,6 +978,9 @@ public class EvaluationService : IEvaluationService
             EvaluatedPersonnelId = evaluation.EvaluatedCustomerPersonnelId,
             EvaluatedPersonnelName = evaluatedPersonnelName,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
+            CustomerName = customerName,
+            OrganizationName = organizationName,
+            SupervisorName = supervisorName,
             YellowCardCount = evaluation.YellowCardCount,
             RedCardCount = evaluation.RedCardCount,
             FormOpenedAt = evaluation.FormOpenedAt,

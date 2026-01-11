@@ -122,12 +122,15 @@
                         @Html.T("CustomerPortal.Menu.Evaluations", "Değerlendirmeler")
                     </a>
                 </li>
+                @if (User.IsInRole("CustomerManager"))
+                {
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Branches" ? "active" : "")" href="/CustomerPortal/Branches">
                         <i class="bi bi-building"></i>
                         @Html.T("CustomerPortal.Menu.Branches", "Şubeler")
                     </a>
                 </li>
+                }
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")" href="/CustomerPortal/Reports">
                         <i class="bi bi-graph-up"></i>

@@ -22,6 +22,7 @@ public class EvaluationRepository : IEvaluationRepository
             query = query
                 .Include(e => e.Assignment)
                 .Include(e => e.Evaluator)
+                .Include(e => e.EvaluatorCustomerPersonnel)
                 .Include(e => e.Answers)
                     .ThenInclude(a => a.Question)
                 .Include(e => e.Answers)

@@ -33,8 +33,9 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// Şube bazlı sonuçlar
+    /// Şube bazlı sonuçlar (sadece CustomerManager)
     /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
     public IActionResult Branches()
     {
         return View();

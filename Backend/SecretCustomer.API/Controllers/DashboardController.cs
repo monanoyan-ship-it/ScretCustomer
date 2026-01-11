@@ -14,11 +14,11 @@ public class DashboardController : Controller
             return RedirectToAction("Index", "MyAssignments");
         }
 
-        // Müşteri personelini kendi dashboard'una yönlendir
+        // Müşteri personelini CustomerPortal dashboard'una yönlendir
         if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") ||
             User.IsInRole("CustomerOperator") || User.IsInRole("CustomerViewer"))
         {
-            return RedirectToAction("MyDashboard");
+            return RedirectToAction("Dashboard", "CustomerPortal");
         }
 
         return View();

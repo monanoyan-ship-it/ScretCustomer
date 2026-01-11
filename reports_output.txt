@@ -1,0 +1,601 @@
+Klasordeki dosyalar: ['459-Karne-97500192372_20260110.docx', '467-MT Karne-97500008299202597500186740_20260111.docx', 'bOSCH ÇD.xlsx', 'Ncacademy- Ford Aralık 2025 Ahmet.pptx', 'Raporlar müşteri -Genel Analiz-10.01.2026235511.xlsx', 'Raporlar- Endeks Başarı Ort.-10.01.2026235258.xlsx', 'Raporlar-Genel Başarı-.xlsx']
+
+================================================================================
+DOSYA: 459-Karne-97500192372_20260110.docx
+================================================================================
+
+--- Tablo ---
+['Ford Global Inbound 631', 'Doküman Tarihi: 10.01.2026']
+['Ford Global Inbound 631', 'Kontrol Tarihi: 31.12.2025']
+
+--- Tablo ---
+['Müşteri Temsilcisi', 'Asiye Turan']
+['Denetlenen Çağrı', '1-GAVXBSS2REGP03-1767180443.546929']
+['Toplam Puan', '95']
+['Denetmen Yorumu', 'Sessiz boşluklar oldu']
+
+--- Tablo ---
+['Grup / Soru', 'Öneriler', 'Notlar', 'Max', 'Puan', '%']
+['1 Çağrı Standartlarına Uyum - Puanlı', '', '', '', '', '']
+['Çağrı Standartlarına Uyum', '', '', '1.0', '1.0', '100.0']
+['10 İş Bilgisi - Puanlı', '', '', '', '', '']
+['İş Bilgisi', '', '', '1.0', '1.0', '100.0']
+['11 Ford markasından tatmin edici bir hiz', '', '', '', '', '']
+['Müşteri görüşmeyi hangi his ile kapattı?', 'Memnun', '', '2.0', 'NA', '.0']
+['12 Müşteri görüşmeyi hangi his ile kapat', '', '', '', '', '']
+['Müşteri ile ilişki kültürü oluşturuldu', 'Evet', '', '2.0', 'NA', '.0']
+['14 Kırmızı Kart - Cezalı', '', '', '', '', '']
+['Kırmızı Kart', '', '', '2.0', '.0', '.0']
+['15 Sarı Kart - Cezalı', '', '', '', '', '']
+['Sarı Kart', '', '', '2.0', '.0', '.0']
+['2 Müşterinin Ford İçin Önemli Olduğunu H', '', '', '', '', '']
+['Müşterinin Ford İçin Önemli Olduğunu His', '', '', '1.0', '1.0', '100.0']
+['3 Aktif Dinleme - Puanlı', '', '', '', '', '']
+['Aktif Dinleme', '', 'Sessiz boşluklar oldu', '2.0', '1.0', '50.0']
+['4 Analiz / Soru Sorma Teknikleri - Puanl', '', '', '', '', '']
+['Analiz / Soru Sorma Teknikleri', '', '', '2.0', '2.0', '100.0']
+['5 Görüşme Yönetimi ve Yönlendirme - Puan', '', '', '', '', '']
+['Görüşme Yönetimi ve Yönlendirme', '', '', '2.0', '2.0', '100.0']
+['6 Konuşma Tarzı - Puanlı', '', '', '', '', '']
+['Konuşma Tarzı', '', '', '2.0', '2.0', '100.0']
+['7 Ses Tonu ve Ses Enerjisi - Puanlı', '', '', '', '', '']
+['Ses Tonu ve Ses Enerjisi', '', '', '2.0', '2.0', '100.0']
+['8 Müşteri Algısını Yönetme - Puanlı', '', '', '', '', '']
+['Müşteri Algısını Yönetme', '', '', '2.0', '2.0', '100.0']
+['9 Kalpten Hizmet Yaklaşımı - Puanlı', '', '', '', '', '']
+['Kalpten Hizmet Yaklaşımı', 'Çok İyi (proaktif hizmet) 10 puan', '', '2.0', '2.0', '100.0']
+
+================================================================================
+DOSYA: 467-MT Karne-97500008299202597500186740_20260111.docx
+================================================================================
+BAŞARI ORTALAMASI
+GENEL ANALİZ
+
+--- Tablo ---
+['Büşra Yakışır', 'Doküman Tarihi']
+['Büşra Yakışır', '11.01.2026']
+
+--- Tablo ---
+['Concentrix Binek&Ticari Outbound Aralık2', '98.67']
+
+--- Tablo ---
+['Kontrol Sorusu', 'Puan']
+['Aktif Dinleme Yapıldı mı?', '100']
+['Analiz / Soru Sorma Teknikleri Uygulandı', '100']
+['Çağrı Standartlarına Uyum Sağladı mı?', '93.33']
+['Görüşme Yönetimi ve Yönlendirmede Yetkin', '100']
+['Kalpten Hizmet Yaklaşımı', '100']
+['Kırmızı Kart', '0']
+['Konuşma Tarzı Uygun mu?', '100']
+['Müşteri Algısını Yönetme', '93.33']
+['Müşteri görüşmeyi hangi his ile kapattı?', '0']
+['Müşteri ile ilişki kültürü oluşturuldu m', '0']
+['Müşterinin Ford İçin Önemli Olduğunu His', '93.33']
+['Sarı Kart', '0']
+['Ses Tonu ve Ses Enerjisi Uygun mu?', '100']
+
+--- Tablo ---
+['Görüşme Tarihi', 'Değerlendirilen Çağrı', 'Denetim Yorumu', 'Toplam Puan']
+['02.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme genel olarak başarılıydı. Teşekk', '100']
+['04.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme genel olarak başarılıydı. Teşekk', '100']
+['08.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme genel olarak başarılıydı. Teşekk', '100']
+['09.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', '', '100']
+['10.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme genel olarak başarılıydı. Teşekk', '100']
+['12.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Emir etkisi yaratacak kelimelerin görüşm', '95']
+['15.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Müşteri araç çalışmıyor dediğin Geçmiş o', '95']
+['17.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme genel olarak başarılıydı. Teşekk', '100']
+['19.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Teşekkür ederiz.', '100']
+['22.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Görüşme beklentiyi karşılamıştır. Teşekk', '100']
+['23.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', '', '100']
+['24.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Arama sağlamak uerine arama yapmak ifade', '100']
+['29.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', 'Arama sağlamak yerine arama yapmak ifade', '100']
+['30.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', '“Yani” günlük ifade kullanılmamasını öne', '90']
+['30.12.2025', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0', '', '100']
+
+================================================================================
+DOSYA: bOSCH ÇD.xlsx
+================================================================================
+
+--- Sheet: Genel ---
+['Firma', 'Proje', 'Değerlendirme Yapan', 'Kişi', 'Çağrı No', 'Kontrol Tarihi', 'Saat', 'Süre', 'Yorum', 'Periyot (Ay)', 'Ortalama Puan']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Emine Simsek', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjA4ZTdi', '2026-01-10 00:00:00', '14:21', '04,01', 'merhaba,çağrıda müşteri isimi farklı hitap edildi', '202601', '93']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Emine Kaya', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmY1YTI5', '2026-01-10 00:00:00', '11:57', '04,17', 'merhaba,çağrıda memnuniyet ile yardımcı olacağım ifadesi kul', '202601', '99']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Elif Sude Dorgamacı', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzk2MmMw', '2026-01-10 00:00:00', '12:49', '04,06', 'merhaba,çağrıda memnuniyet ile yardımcı olacağım ifadesi kul', '202601', '96']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Canan Ülgen', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzZiNGM3', '2026-01-10 00:00:00', '12:54', '04,00', 'merhaba,çağrıda müşteri isimi örenirken tuba mıydı isiminiz ', '202601', '80']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Büşra Aldağ', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkN2YyN2Q2', '2026-01-10 00:00:00', '13:20', '04,04', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMjRiOWRl', '2026-01-10 00:00:00', '13:19', '05,16', 'merhaba,çağrıda müşterinin kartına ulaşmak için 5 adımın tam', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzg1ZTk3', '2026-01-10 00:00:00', '13:29', '04,06', 'merhaba,çağrıda memnuniyet ile yardımcı olacağım ifadesi kul', '202601', '78']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Zehra İnci', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMTIxZmQz', '2026-01-10 00:00:00', '09:08', '04,14', 'merhaba,çağrıda adres bilgisi eksik teyit edilmiş olup il il', '202601', '83']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Yeşim Doğan', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzhiNTUy', '2026-01-10 00:00:00', '12:19', '04,03', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Sema Nur Satan', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYWJiOGZi', '2026-01-10 00:00:00', '13:49', '04,18', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Sema Nur Çakar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWNhNzNm', '2026-01-10 00:00:00', '09:31', '04,21', 'merhaba,Çağrıda alınan çağrıya ait TTSM üzerinden kayıt açıl', '202601', '']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Nisanur Demir', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMThmOGQx', '2026-01-10 00:00:00', '12:21', '04,25', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Meryem Yıldırım', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkY2VhZTcw', '2026-01-10 00:00:00', '10:02', '04,02', 'Teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Merve Fırat', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNjIyYWVm', '2026-01-10 00:00:00', '12:24', '03,59', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Hatice Ciftci', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzUxZWQ0', '2026-01-10 00:00:00', '09:32', '04,04', 'merhaba , çağrıda tarih bilgisi doğru kelimler ile belirtilm', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Kamile Şeker', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOGMyN2Rm', '2026-01-10 00:00:00', '09:01', '04,03', 'merhaba , çağrıda memnuniyet ile yardımcı olacağım ifadesi k', '202601', '99']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Gulsum Kiziltas', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTFmMWZh', '2026-01-10 00:00:00', '10:32', '04,04', 'merhaba , çağrıda profosonel olmayan kelime kulanımı mevcutt', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Gülistan Berfin Oncu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMjc1M2U2', '2026-01-10 00:00:00', '10:11', '03,54', 'merhaba Gülistan, çağrıda müşteri sokak isimi vermesine rağm', '202601', '82']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Fırat Cem Akkoç', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjc5NWJh', '2026-01-10 00:00:00', '09:08', '04,03', 'merhaba fırat, çağrıda memnuniyet ile yardımcı olacağım ifad', '202601', '98']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Fatma Çiftçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzAzZjM2', '2026-01-10 00:00:00', '09:08', '05,57', 'merhaba,çağrıda müşteri adresinin güncellendiği iletilmekte ', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Yeşim Doğan', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNDcxMzg5', '2026-01-09 00:00:00', '19:42', '04,12', 'merhaba,çağrıbaşında ses sorunu bulunmakta olup müşteri il b', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Tubanur Kocakoglu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkN2UzMjhk', '2026-01-09 00:00:00', '19:29', '04,34', 'merhaba,çağrıda cihazın garantisini 21.08.2027 yılında bitiğ', '202601', '88']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Tubanur Kocakoglu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWExMDIw', '2026-01-09 00:00:00', '17:56', '04,25', 'merhaba,çağrıda memnuniyet ile yardımcı olacağım ifadesi kul', '202601', '94']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Songül Baydıl', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkY2Q1OGYz', '2026-01-09 00:00:00', '12:52', '04,13', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Melike Urkay', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjcwOTk1', '2026-01-09 00:00:00', '08:42', '04,49', 'merhaba,çağrıda müşteri seri no kontrol ederken hatı sonland', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Hacer Elçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZGU1MzMw', '2026-01-09 00:00:00', '15:03', '04,03', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Emine Kaya', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYmUxZjU2', '2026-01-09 00:00:00', '13:06', '04,35', 'Emine merhaba,metin dedi müşteri sen Mehmet diye hitap ettin', '202601', '67']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Duygu Baykar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNjI0NGU4', '2026-01-09 00:00:00', '14:10', '04,35', 'Duygu merhaba,cihaz dün devreye alınmış ve iyi dilekler ilet', '202601', '77']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Büşra Aldağ', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzI1Yzll', '2026-01-09 00:00:00', '12:36', '04,06', 'Büşra merhaba,müşteri ismi iki gibi ancak tam anlaşılmadığı ', '202601', '90']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTAwZWY0', '2026-01-09 00:00:00', '11:54', '04,19', 'Ayşegül merhaba,mahalle bilgisi sistemde revize edilmedi ( b', '202601', '73']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Melike Urkay', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNTE3YzFi', '2026-01-09 00:00:00', '08:30', '04,08', 'Melike teşekkür ederim.', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Leyla Çakmak', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYWI3MTc2', '2026-01-09 00:00:00', '08:15', '04,19', 'Leyla merhaba,ilçe bilgisi farklı iletildi ancak teyit edip ', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Canan Ülgen', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZTA2Yjcy', '2026-01-08 00:00:00', '11:12', '04,21', 'Canan merhaba,il bilgisi teyit edilmedi, teknik adımlar doğr', '202601', '73']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Ayşe Demirkol', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjBkMjRk', '2026-01-08 00:00:00', '13:35', '04,43', 'Ayşe merhaba,bu tarz bir çağrıda kaydın açılıp açılmadığı so', '202601', '81']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkN2JiOWJm', '2026-01-08 00:00:00', '19:29', '04,08', 'Asya merhaba,ifadelere dikkat edilmeli, cümleler çok devrik', '202601', '92']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Fırat Cem Akkoç', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNTA4Yjg3', '2026-01-08 00:00:00', '10:56', '05,19', 'Fırat merhaba,senin gibi bir temsilcinin bu tarz bir konuda ', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Yeşim Doğan', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzMzYmY2', '2026-01-08 00:00:00', '16:20', '04,37', 'Yeşim merhaba,müşteri cihazında hata kodu var ve bildirim aç', '202601', '82']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Tubanur Kocakoglu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmUwNWM0', '2026-01-08 00:00:00', '17:05', '04,37', 'Tubanur merhaba,servisim yerine yetkili servis diyebiliriz, ', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Songül Baydıl', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjMwNmFl', '2026-01-08 00:00:00', '16:41', '04,08', 'Songül merhaba,soru ifadelerine dikkat etmeliyiz( doğru mudu', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Merve Fırat', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNDYyYTE0', '2026-01-08 00:00:00', '15:05', '04,12', 'Merve merhaba,"dilerseniz" ile başlayan çok sayıda cümle var', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Kamile Şeker', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmQ3YTcx', '2026-01-08 00:00:00', '13:57', '04,12', 'Kamile merhaba,müşteri yeni ev dediğinde iyi dilekler bekler', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Hatice Ciftci', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmE0MWQ2', '2026-01-08 00:00:00', '12:45', '04,22', 'Hatice merhaba,mail adresi hatalı kaydedildi,', '202601', '99']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Hacer Elçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkY2YyYjI1', '2026-01-08 00:00:00', '12:38', '04,53', 'Hacer merhaba,acele etmen kaynaklı birden fazla kez söz kest', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Fatma Balıkcın', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzQxOTIy', '2026-01-08 00:00:00', '12:07', '04,03', 'merhaba Fatma, çağrıda müşterinin sadece sana verdiği 4/5 bi', '202601', '']
+['BOSCH HOME COM', 'B Inbound 2026', 'Mehmet Emin Gayberi - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjE2ODRj', '2026-01-08 00:00:00', '12:58', '04,56', 'Merhaba Ayşegül Düğer , Devrik cümle kullanımı yapmamalısın ', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Mehmet Emin Gayberi - Uzman (Bosch)', 'Ayşe Demirkol', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWVlYWRi', '2026-01-08 00:00:00', '14:09', '04,49', 'Merhaba Ayşe Demirkol, Sessiz aralar olmamalı, İsimle hitap ', '202601', '96']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Fakiye Ozdemir', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMjU0Yzlj', '2026-01-08 00:00:00', '13:40', '04,09', 'teşekkürler', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Mehmet Emin Gayberi - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOTczOWVh', '2026-01-08 00:00:00', '13:55', '05,29', 'Merhaba Asya Etkin dinleme yapılmalı, Günlük dil kullanımı y', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Leyla Çakmak', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjE1OTdi', '2026-01-08 00:00:00', '12:19', '04,21', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Leyla Çakmak', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYmE2NTQx', '2026-01-08 00:00:00', '11:11', '04,20', 'teşekkür', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Emine Simsek', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMGM1Njkz', '2026-01-08 00:00:00', '11:26', '04,01', 'Ses tonu daha canlı ve istekli olunmalıdır.', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Betül Umut', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjlhNDIy', '2026-01-08 00:00:00', '10:43', '04,11', 'memnuniyet ile yardımcı olacağım demek yerine memnuniyet ile', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTQyN2Rl', '2026-01-08 00:00:00', '10:56', '04,22', 'müşteri isimi sorulmadan kayıtda görünen isim ile hitap edil', '202601', '70']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Elif Sude Dorgamacı', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmNkODc5', '2026-01-07 00:00:00', '19:40', '05,29', 'Elif merhaba,sessiz aralıkların inanılmaz yüksekti, müşteri ', '202601', '68']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Zehra İnci', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMGE5Yjdm', '2026-01-07 00:00:00', '17:59', '04,42', 'Zehra merhaba,çok fazla " makta-mekte " ekleri kullanılıyor.', '202601', '78']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Sema Nur Satan', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjYyMTVh', '2026-01-07 00:00:00', '15:58', '04,32', 'Semanur teşekkür ederim', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Sema Nur Çakar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTFiNTAy', '2026-01-07 00:00:00', '14:21', '04,05', 'Semanur merhaba,çok uzun boşluk ne içindi anlaşılmadı, müşte', '202601', '90']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Meryem Yıldırım', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYWJmNWNi', '2026-01-07 00:00:00', '15:18', '04,40', 'Meryem merhaba,uzun boşluklara dikkat etmelisin,ek garanti i', '202601', '93']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Gulsum Kiziltas', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzNiOGFl', '2026-01-07 00:00:00', '13:07', '04,24', 'Gülsüm merhaba,mahalle bilgisi teyit edilmedi, isim hitabı ç', '202601', '78']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Fatma Çiftçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmEzYWJm', '2026-01-07 00:00:00', '13:45', '04,30', 'Fatma merhaba,memnuniyetle yardımcı olacağım ifadesi kullanı', '202601', '99']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Fatma Balıkcın', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWY2ZGU0', '2026-01-07 00:00:00', '13:18', '04,59', 'Fatma teşekkür ederim', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Emine Simsek', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYWEyYWRl', '2026-01-07 00:00:00', '12:30', '04,28', 'Emine merhaba,soru ifadelerimize dikkat edelim,önce tesisatç', '202601', '82']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Emine Kaya', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZDY4ZmQy', '2026-01-07 00:00:00', '09:34', '04,34', 'Emine merhaba,en yakın petekten su boşaltma işlemi yapılması', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Elif Sude Dorgamacı', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODVhNjk3', '2026-01-07 00:00:00', '14:05', '06,06', 'Elif merhaba,isim hitabına dikkat etmelisin,ayrıca çok profe', '202601', '93']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Duygu Baykar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZWQ0MjJk', '2026-01-07 00:00:00', '09:40', '04,17', 'Duygu merhaba,adres teyidi eksik yapıldı', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Canan Ülgen', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMzY0YWZi', '2026-01-07 00:00:00', '12:08', '04,53', 'Canan merhaba,mahalle bilgisi teyit edilmedi, şikayet karşıs', '202601', '81']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Büşra Aldağ', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjBkNTQ4', '2026-01-07 00:00:00', '12:17', '04,29', 'Büşra merhaba,sokak bilgisi sisteme kaydedilmedi,isim hitabı', '202601', '83']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Ayşe Demirkol', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzQwMjNk', '2026-01-07 00:00:00', '12:45', '04,09', 'Ayşe merhaba,isim hitabı yeterli değildi ve acele etmeyelim', '202601', '98']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNDljNDkz', '2026-01-07 00:00:00', '08:39', '04,01', 'Ayşegül merhaba,isim hitabına dikkat etmeliyiz ve ayrıca müş', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzIwN2Q3', '2026-01-07 00:00:00', '09:48', '04,13', 'Asya merhaba,ismi tekrar sordun ancak anlaşılmamıştı ve bu n', '202601', '96']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Gülistan Berfin Oncu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWJjNGIy', '2026-01-06 00:00:00', '15:42', '04,34', 'Berfin merhaba,sorular doğru ifadelerle sorulmalı, kayda ula', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Fakiye Ozdemir', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjc4NTY5', '2026-01-06 00:00:00', '19:23', '04,35', 'Fakiye merhaba,anlaşmak çok kolay değildi ancak buna rağmen ', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Emine Kaya', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNTVmZGQw', '2026-01-06 00:00:00', '17:23', '04,03', 'merhaba,çağrıda memnuniyet ile yardımcı olacağım ifadesi kul', '202601', '99']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Elif Sude Dorgamacı', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzhmOTBk', '2026-01-06 00:00:00', '15:49', '04,17', 'merhaba, çağrıda çağrı için girilen herhangi bir kayıt ve no', '202601', '']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Duygu Baykar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNWU3NThk', '2026-01-06 00:00:00', '16:09', '04,20', 'merhaba, çağrıda adres teyidinde no bilgisi farklı verilmesi', '202601', '85']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Canan Ülgen', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNzFhNzQx', '2026-01-06 00:00:00', '13:08', '04,00', 'merhaba, çağrıda Memnuniyet ile yardımcı olacağım ifadesi ku', '202601', '92']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Büşra Aldağ', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjFlNTE2', '2026-01-06 00:00:00', '13:48', '04,14', 'merhaba, çağrıda müşteri mail adresi vermesine rağmen sistem', '202601', '84']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Ayşe Demirkol', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmM5NWI2', '2026-01-06 00:00:00', '15:23', '04,04', 'merhaba, çağrıda etkin çağrı yönetimi bulunmuyor ve ses tonu', '202601', '88']
+['BOSCH HOME COM', 'B Inbound 2026', 'Nesra Durdu - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmJiMjJi', '2026-01-06 00:00:00', '13:49', '04,07', 'merhaba, çağrıda memnuniyet ile yardımcı olacağım ifadesi bu', '202601', '79']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Nisanur Demir', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWUxYTBl', '2026-01-05 00:00:00', '17:05', '04,09', 'Nisanur merhaba,isim hitabı yeterli değildi,', '202601', '98']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Hatice Ciftci', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZWM5NTY1', '2026-01-05 00:00:00', '14:22', '04,16', 'Devrik ifadeler kullanılmamalıdır. Ses tonumuz müşteriye yar', '202601', '87']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Hacer Elçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODhkODlm', '2026-01-05 00:00:00', '09:23', '04,01', '', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Fatma Çiftçi', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODY4NTcy', '2026-01-05 00:00:00', '09:13', '04,18', 'kombi soruları doğru ifadeler ile sorulmadı.', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Fatma Balıkcın', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMGZlOGVi', '2026-01-05 00:00:00', '12:27', '04,19', '', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Fakiye Ozdemir', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmNjZGVi', '2026-01-05 00:00:00', '12:43', '04,01', 'Müşteriyi aktif dinleyelim, bilgileri tekrar ettirmeyelim.', '202601', '90']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Duygu Baykar', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZTEyNDM5', '2026-01-05 00:00:00', '11:55', '04,15', "''özür dilerim, sağlamak'' ifadesi kullanılmamalıdır. İsim y", '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Canan Ülgen', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWQxMDIw', '2026-01-05 00:00:00', '14:34', '40,', "''sağlamak'' ifadesi kullanılmamalıdır. sorular doğru ifade ", '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Büşra Aldağ', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmRiYmIw', '2026-01-05 00:00:00', '13:17', '04,01', 'müşteriyi aktif dinleyelim.', '202601', '90']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Ayşe Demirkol', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWRmZmEz', '2026-01-05 00:00:00', '16:44', '04,07', '', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Gulsum Kiziltas', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMDY1ZWEw', '2026-01-05 00:00:00', '14:45', '04,17', 'Sessizlik bulunuyor. İsim görüşmede yeterli sayıda kullanılm', '202601', '96']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Gülistan Berfin Oncu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZGUzMTJh', '2026-01-05 00:00:00', '14:18', '04,06', "''hıhım, eee'' ifadeleri kullanılmamalıdır. Adres teyidinde ", '202601', '82']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Emine Kaya', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNDkyYmU5', '2026-01-05 00:00:00', '09:52', '04,10', '', '202601', '100']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Aysegul Duger', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkN2ZjNWFk', '2026-01-04 00:00:00', '15:05', '04,04', 'görüşmede uzun süreli sessizlik bulunuyor. isim yeterli sayı', '202601', '95']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Elif Sude Dorgamacı', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNTc1YzBj', '2026-01-03 00:00:00', '16:18', '04,09', 'Memnuniyetle yardımcı olacağım ifadesi kullanılmadı. İsim gö', '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Asya Bulbul', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTcyMjFl', '2026-01-03 00:00:00', '11:36', '04,03', "Adres teyidinde il/ilçe bilgisi alınmadı. ''haklısınız'' ifa", '202601', '82']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Fırat Cem Akkoç', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzkwYjYx', '2026-01-01 00:00:00', '13:47', '04,05', "''bişey değildir'' ifadesi yerine daha uygun ifade kullanılm", '202601', '97']
+['BOSCH HOME COM', 'B Inbound 2026', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Betül Umut', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjU0Yzg2', '2026-01-01 00:00:00', '17:58', '03,43', 'Betül merhaba,isim hitabına bir miktar dikkat edilmeli,', '202601', '98']
+['BOSCH HOME COM', 'B Inbound 2026', 'Gizem Açkalmaz - Uzman (Bosch)', 'Betül Umut', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTBmYjky', '2026-01-01 00:00:00', '17:21', '04,17', 'sokak ve kat bilgisi sisteme eklenmedi. mail bilgisi sisteme', '202601', '84']
+['BOSCH HOME COM', 'Bsh Outbound 1014', 'Funda Nasuhbeyoğlu Karboğa - Uzman (Bosch)', 'Emine Türkoğlu', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWMyNDIw', '2025-12-24 00:00:00', '16:01', '00,57', 'Emine teşekkür ederim.', '202512', '100']
+['BOSCH HOME COM', 'Bsh Outbound 1014', 'Zeynur Çiftçi Köse', 'Eda Yürek', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTk1NDZj', '2025-12-23 00:00:00', '16:46', '07,50', 'Görüşmenin kontrolü müşteri temsilcisinde olmalı; görüşme ne', '202512', '82.5']
+... (daha fazla satir var)
+
+================================================================================
+DOSYA: Ncacademy- Ford Aralık 2025 Ahmet.pptx
+================================================================================
+
+--- Slide 1 ---
+FORD ARALIK
+ DEĞERLENDİRME RAPORU
+
+--- Slide 2 ---
+                     2024 hedef 85,00 
+       	     2025 hedef 90,00                 
+		
+2025 yılı kalite sonuçları, 95 puan hedefi baz alınarak değerlendirildiğinde; tüm projelerde 2024 yılına kıyasla belirgin bir iyileşme sağlandığı görülmektedir. Ancak bu gelişime rağmen, projelerin bü
+
+--- Slide 3 ---
+                     2024 hedef 85,00 
+       	     2025 hedef 90,00                 
+		
+Outbound Projeler – Yönetici DeğerlendirmesiConcentrix Binek & Ticari Outbound2024 Ort.: 78,062025 Ort.: 91,63Tablodaki en güçlü gelişim bu projede görülmektedir. 2024’e kıyasla çok ciddi bir sıçr
+En başarılı proje: Concentrix Binek & Ticari Outbound
+En kritik gelişim alanı: Inbound projelerde hedef tutarlılığı
+
+--- Slide 4 ---
+Inbound Karşılaştırmalı Analiz                    
+                     2024 hedef 85,00 
+       	     2025 hedef 90,00                 
+		
+Outbound Karşılaştırmalı Analiz                    
+
+--- Slide 5 ---
+                     2024 hedef 85,00 
+       	     2025 hedef 90,00                 
+		
+Kriter Bazlı KarşılaştırmaÇağrı Standartlarına UyumInbound: 52,21 Outbound: 99,25 Outbound ekipleri çağrı akışına ve prosedürlere yüksek oranda uyum sağlarken, Inbound tarafında standartlara uyum k
+Global Endeks Analiz                    
+
+--- Slide 6 ---
+                     2024 hedef 85,00 
+       	     2025 hedef 90,00                 
+		
+Ses Tonu ve Ses EnerjisiInbound: 91,69 Outbound: 95,03 Outbound tarafı hedef yakalanmıştır. Inbound tarafı ses enerjisi ve motivasyon konusunda gelişim ihtiyacı göstermektedir.Müşteri Algısını Yön
+Outbound tarafı çağrı standartları, görüşme yönetimi ve ses enerjisi başlıklarında Inbound’ a kıyasla belirgin şekilde daha güçlüdür.
+Inbound tarafı teknik bilgi ve analiz yetkinliği güçlü olmasına ra
+Konuşma TarzıInbound: 96,71 Outbound: 97,36  Her iki kanal da 95 puan hedefini aşmıştır. İletişim dili güçlüdür.
+
+--- Slide 7 ---
+Global Inbound Genel Endeks
+Global Outbound Genel Endeks
+
+--- Slide 8 ---
+
+--- Slide 9 ---
+
+--- Slide 10 ---
+Her iki projede de teknik ve iletişimsel beceriler görece güçlü, ancak müşteri deneyimi ve çağrı disiplinine ilişkin kriterlerde hedefin altında kalan alanlar bulunmaktadır. Genel olarak Binek &Ticari
+Concentrix Inbound Binek Ticari & Trucks Endeks Analizi
+
+--- Slide 11 ---
+
+Görüşme Yönetimi ve Yönlendirme
+Binek &Ticari: 96,59 
+Trucks: 95,97 Her iki proje de hedefi aşmıştır. Binek & Ticari çok az farkla öndedir.
+
+Konuşma Tarzı
+Binek &Ticari: 98,27 
+Trucks: 98,97 Her iki 
+Concentrix Inbound Binek Ticari & Trucks Genel Endeks
+
+--- Slide 12 ---
+Concentrix Inbound Binek Ticari Genel Endeks
+Concentrix Trucks Inbound Genel Endeks
+
+--- Slide 13 ---
+Genel değerlendirmede her iki ekip de güçlü iletişim ve müşteri odaklılık sergilemekle birlikte, 95 puan eşiği baz alındığında bazı kritik gelişim alanları öne çıkmaktadır.
+
+Güçlü Alanlar:
+Aktif Dinle
+Concentrix Outbound Binek Ticari & Trucks Genel Endeks
+
+--- Slide 14 ---
+Concentrix Binek Ticari Outbound Genel Endeks
+Concentrix Trucks Outbound Genel Endeks
+
+--- Slide 15 ---
+
+--- Slide 16 ---
+
+--- Slide 17 ---
+
+--- Slide 18 ---
+Teşekkür Ederiz
+
+================================================================================
+DOSYA: Raporlar müşteri -Genel Analiz-10.01.2026235511.xlsx
+================================================================================
+
+--- Sheet:   ---
+['Firma', 'Firma No', 'No', 'Proje', 'Değerlendirilen', 'Kişi', 'Departman', 'Çağrı No', 'Çağrı Tipi', 'Kontrol Tarihi', 'Saat', 'Süre', 'Yorum', 'Periyot', 'Periyot (Ay)', 'Toplam Puan', 'Açıklama', 'Belge']
+['FORD OTOMOTİV', '100685', '97500192372', 'Ford Global Inbound 631', '97500187618 - F Global Inbound Aralık 2025 - FORD OTOMOTİV', 'Asiye Turan', 'Ford Global 1. Takım', '1-GAVXBSS2REGP03-1767180443.546929', '', '2025-12-31 00:00:00', '14:27', '02,11', 'Sessiz boşluklar oldu', '2025', '202512', '95', '', '975/20260103/261_101/intra_dynamic_1767436569600']
+['FORD OTOMOTİV', '100685', '97500192297', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Esma Aygün', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767176033.557814', '', '2025-12-31 00:00:00', '13:13', '04,17', 'Sessiz boşluklar var Çağrı hakimiyeti yoktu bi dağıldı gibi ', '2025', '202512', '85', '', '975/20260102/261_101/intra_dynamic_1767352396314']
+['FORD OTOMOTİV', '100685', '97500192292', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Esma Aygün', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767176622.558378', '', '2025-12-31 00:00:00', '13:23', '05,03', 'Ses enerjisi biraz daha yüksek olsaydı çağrı çok daha güzel ', '2025', '202512', '95', '', '975/20260102/261_101/intra_dynamic_1767351929523']
+['FORD OTOMOTİV', '100685', '97500192259', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hatice Büşra Çalımcı', 'Ford Global 1. Takım', '1-GAVXBSS2REGP04-1767176171.549288', '', '2025-12-31 00:00:00', '13:16', '04,50', 'Çekingen pasif ve sessiz kaldı', '2025', '202512', '90', '', '975/20260102/261_101/intra_dynamic_1767339442155']
+['FORD OTOMOTİV', '100685', '97500192245', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ayşe Aktel', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767182490.495606', '', '2025-12-31 00:00:00', '15:01', '03,11', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260102/261_101/intra_dynamic_1767331787891']
+['FORD OTOMOTİV', '100685', '97500192236', 'F Buyback 1004', '97500187622 - F Buyback Aralık2025 - FORD OTOMOTİV', 'Ayşegül Uçar', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767180515.561896', '', '2025-12-31 00:00:00', '14:28', '05,54', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767290044909']
+['FORD OTOMOTİV', '100685', '97500192234', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hacer Akçakaya', 'Ford Global 3. Takım', '1-GAVXBSS2REGP01-1767185318.497872', '', '2025-12-31 00:00:00', '15:48', '02,47', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767289583265']
+['FORD OTOMOTİV', '100685', '97500192231', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Merve Ayar', 'Ford Global 2. Takım', '1-GAVXBSS2REGP09-1767171895.554356', '', '2025-12-31 00:00:00', '12:04', '02,44', 'Sesimi alabiliyor musunuz kullanımı uygun değil, sesimi duya', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767288175791']
+['FORD OTOMOTİV', '100685', '97500192229', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Merve Ayar', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767181923.495290', '', '2025-12-31 00:00:00', '14:52', '02,57', 'Biraz üstten konuştu', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767287311474']
+['FORD OTOMOTİV', '100685', '97500192227', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Merve Ayar', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767188768.500215', '', '2025-12-31 00:00:00', '16:46', '04,17', 'Sessiz boşluk oldu', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767286714069']
+['FORD OTOMOTİV', '100685', '97500192218', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'İrem Çoşkun', 'Ford Global 1. Takım', '1-GAVXBSS2REGP03-1767188107.552625', '', '2025-12-31 00:00:00', '16:35', '02,18', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767278720870']
+['FORD OTOMOTİV', '100685', '97500192203', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Evrim Kıran', 'Ford Global 2. Takım', '1-GAVXBSS2REGP03-1767166326.535020', '', '2025-12-31 00:00:00', '10:32', '02,05', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767272134420']
+['FORD OTOMOTİV', '100685', '97500192199', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ömer Aydın', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767177245.492504', '', '2025-12-31 00:00:00', '13:34', '02,30', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767270894766']
+['FORD OTOMOTİV', '100685', '97500192193', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Enes Pöhrenk', 'Ford Global 3. Takım', '1-GAVXBSS2REGP09-1767185587.566209', '', '2025-12-31 00:00:00', '15:53', '03,50', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767269064468']
+['FORD OTOMOTİV', '100685', '97500192108', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Melike Kılınç', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzczZjVk', '', '2025-12-31 00:00:00', '14:33', '10,25', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '06:42', '975/20251231/261_101/intra_dynamic_1767180815102']
+['FORD OTOMOTİV', '100685', '97500192106', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Nazan Şimşek', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZDlhNDcx', '', '2025-12-31 00:00:00', '12:35', '04,33', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767180501470']
+['FORD OTOMOTİV', '100685', '97500192099', 'F Otomotiv 629', '97500186744 - F Concentrix Trucks Outbound Aralık2025 - FORD', 'Ayten Kanpak', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmFjNzVh', '', '2025-12-31 00:00:00', '12:49', '01,27', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767179171462']
+['FORD OTOMOTİV', '100685', '97500192093', 'F Otomotiv 629', '97500186744 - F Concentrix Trucks Outbound Aralık2025 - FORD', 'Aybuke Kaya', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOTQ2ODli', '', '2025-12-31 00:00:00', '13:40', '02,01', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767185141277']
+['FORD OTOMOTİV', '100685', '97500192092', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Neslihan Ulukaya', 'Ford Global 1. Takım', '1-GAVXBSS2REGP03-1767171599.539666', '', '2025-12-31 00:00:00', '11:59', '02,16', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767178886271']
+['FORD OTOMOTİV', '100685', '97500192089', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Nazlıcan Ulu', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWI5ZWNj', '', '2025-12-31 00:00:00', '05:48', '10,18', 'Görüşme süresince canlı bir ses tonu ile konuşması ve sesin ', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767178153339']
+['FORD OTOMOTİV', '100685', '97500192069', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Rabia Yavuz', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMDc2ZjE0', '', '2025-12-31 00:00:00', '11:03', '04,05', 'Durum için üzgünüm, size yardımcı olmak isterim.” şeklinde y', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767176465998']
+['FORD OTOMOTİV', '100685', '97500192067', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Serkan Tekin', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWE3YTU5', '', '2025-12-31 00:00:00', '20:03', '04,07', 'Dediğim gibi olumsuz algı oluşturacak ifade kullanımını uygu', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767175732385']
+['FORD OTOMOTİV', '100685', '97500192064', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Sinan Alim Ertaş', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNjhjOTIx', '', '2025-12-31 00:00:00', '09:59', '06,22', '“Müşterilerimize yaklaşımımızda, onların ihtiyaçlarını öncel', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767174394352']
+['FORD OTOMOTİV', '100685', '97500192061', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Doğa Palazoğlu', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYmI0NmVl', '', '2025-12-31 00:00:00', '10:36', '12,46', 'Aracını yeni aldığını söyleyen müşteriye Hayırlı olsun güle ', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767171514638']
+['FORD OTOMOTİV', '100685', '97500192058', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Furkan Orhan', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYjI5NzVk', '', '2025-12-31 00:00:00', '11:19', '05,49', 'Görüşme sağlamak yerine görüşme yapmak ifadesi daha uygun ol', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767169680139']
+['FORD OTOMOTİV', '100685', '97500192032', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Damla Güneş', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOGY2ODU2', '', '2025-12-31 00:00:00', '08:38', '11,11', 'Daha pozitif yaklaşım tarzı canlı ve istekli bir ses tonuyla', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767166823766']
+['FORD OTOMOTİV', '100685', '97500192029', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Birgül Üstündağ', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZmNmYjgw', '', '2025-12-31 00:00:00', '00:06', '03,50', '" Sesimi alabiliyor musunuz?" ifadesi yerine "Sesimi duyabil', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767166550055']
+['FORD OTOMOTİV', '100685', '97500192303', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Esma Aygün', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767098818.536375', '', '2025-12-30 00:00:00', '15:46', '03,54', 'Biraz sessiz kaldı', '2025', '202512', '90', '', '975/20260102/261_101/intra_dynamic_1767353130059']
+['FORD OTOMOTİV', '100685', '97500192268', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hatice Büşra Çalımcı', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767078729.516326', '', '2025-12-30 00:00:00', '10:12', '03,06', 'Sorunsuz bir çağrı', '2025', '202512', '95', '', '975/20260102/261_101/intra_dynamic_1767340412860']
+['FORD OTOMOTİV', '100685', '97500192246', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ayşe Aktel', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767083298.459718', '', '2025-12-30 00:00:00', '11:28', '03,03', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260102/261_101/intra_dynamic_1767332078323']
+['FORD OTOMOTİV', '100685', '97500192243', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ayşe Aktel', 'Ford Global 1. Takım', '1-GAVXBSS2REGP04-1767079965.507048', '', '2025-12-30 00:00:00', '10:32', '05,35', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20260102/261_101/intra_dynamic_1767331078442']
+['FORD OTOMOTİV', '100685', '97500192235', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hacer Akçakaya', 'Ford Global 3. Takım', '1-GAVXBSS2REGP02-1767074854.422825', '', '2025-12-30 00:00:00', '09:07', '02,09', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767289737109']
+['FORD OTOMOTİV', '100685', '97500192230', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Merve Ayar', 'Ford Global 2. Takım', '1-GAVXBSS2REGP09-1767083304.520726', '', '2025-12-30 00:00:00', '11:28', '02,39', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767287684040']
+['FORD OTOMOTİV', '100685', '97500192216', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'İrem Çoşkun', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767078707.516282', '', '2025-12-30 00:00:00', '10:11', '03,09', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767278172525']
+['FORD OTOMOTİV', '100685', '97500192204', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Evrim Kıran', 'Ford Global 2. Takım', '1-GAVXBSS2REGP02-1767091627.435559', '', '2025-12-30 00:00:00', '13:47', '05,29', 'Destek ifadeleri yetersiz kaldı Ses enerjisi biraz düşük', '2025', '202512', '85', '', '975/20260101/261_101/intra_dynamic_1767272296789']
+['FORD OTOMOTİV', '100685', '97500192196', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ömer Aydın', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767086247.523461', '', '2025-12-30 00:00:00', '12:17', '03,36', 'Destek ifadeleri yetersiz Sessiz kalıyor, aynı anda konuşuyo', '2025', '202512', '80', '', '975/20260101/261_101/intra_dynamic_1767270110326']
+['FORD OTOMOTİV', '100685', '97500192187', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Enes Pöhrenk', 'Ford Global 3. Takım', '1-GAVXBSS2REGP09-1767086728.523905', '', '2025-12-30 00:00:00', '12:25', '05,04', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767267528964']
+['FORD OTOMOTİV', '100685', '97500192167', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ahmet Tiryaki', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767091885.466804', '', '2025-12-30 00:00:00', '13:51', '01,29', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767195948909']
+['FORD OTOMOTİV', '100685', '97500192163', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ahmet Tiryaki', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767087314.463139', '', '2025-12-30 00:00:00', '12:35', '02,20', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767195409663']
+['FORD OTOMOTİV', '100685', '97500192162', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ahmet Tiryaki', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767089016.464594', '', '2025-12-30 00:00:00', '13:03', '04,24', 'Ses enerjisi düşük, onun dışında sorun yok', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767195068692']
+['FORD OTOMOTİV', '100685', '97500192111', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Melike Kılınç', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWY4NzE0', '', '2025-12-30 00:00:00', '09:01', '06,55', 'Çağrı içerisinde sessizliğe dikkat edilmeli ve müşteriye düz', '2025', '202512', '90', '', '975/20251231/261_101/intra_dynamic_1767181379296']
+['FORD OTOMOTİV', '100685', '97500192095', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Neslihan Ulukaya', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767091815.466769', '', '2025-12-30 00:00:00', '13:50', '04,26', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767179052876']
+['FORD OTOMOTİV', '100685', '97500192091', 'F Otomotiv 629', '97500186744 - F Concentrix Trucks Outbound Aralık2025 - FORD', 'Aybuke Kaya', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzYwMmY0', '', '2025-12-30 00:00:00', '12:31', '02,06', '', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767178621166']
+['FORD OTOMOTİV', '100685', '97500192076', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Nazlıcan Ulu', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkN2Q1NDQ2', '', '2025-12-30 00:00:00', '15:23', '06,02', 'Gülümseyen ve yardıma istekli ses tonu ile konuşulmasını bek', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767177373020']
+['FORD OTOMOTİV', '100685', '97500192075', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Neslihan Ulukaya', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1767092626.467413', '', '2025-12-30 00:00:00', '14:03', '05,03', 'Zaman zaman biraz sessiz kaldı', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767177360770']
+['FORD OTOMOTİV', '100685', '97500192071', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Rabia Yavuz', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkY2I1MDg3', '', '2025-12-30 00:00:00', '14:04', '03,14', 'Şasi var mı yerine Soruların rica ifadeleriyle, sorgulama iç', '2025', '202512', '90', '', '975/20251231/261_101/intra_dynamic_1767176692380']
+['FORD OTOMOTİV', '100685', '97500192066', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Serkan Tekin', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODhmMjI4', '', '2025-12-30 00:00:00', '18:14', '07,55', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767175104980']
+['FORD OTOMOTİV', '100685', '97500192062', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Tahamert Bulut', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTA0M2M5', '', '2025-12-30 00:00:00', '21:47', '05,10', 'Görüşme süresince canlı bir ses tonu ile konuşması ve sesin ', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767172788230']
+['FORD OTOMOTİV', '100685', '97500192056', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Furkan Orhan', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNjE3ZWQ5', '', '2025-12-30 00:00:00', '13:27', '05,07', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767169333848']
+['FORD OTOMOTİV', '100685', '97500192048', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Edanur Altundaş', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTNkNjdh', '', '2025-12-30 00:00:00', '15:55', '05,58', 'Geçmiş olsun ifadesinin görüşme başında kullanılmasını bekli', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767168530807']
+['FORD OTOMOTİV', '100685', '97500192042', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Elif Pala', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNmU1NTc4', '', '2025-12-30 00:00:00', '12:30', '05,34', 'Doğru mudur ? ifadesi yerine "doğru mu ? " ifadesi kullanılm', '2025', '202512', '90', '', '975/20251231/261_101/intra_dynamic_1767167791141']
+['FORD OTOMOTİV', '100685', '97500192036', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Dilara Balsüzen', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzZlZTgz', '', '2025-12-30 00:00:00', '16:05', '05,34', 'Geçmiş olsun ifadesinin görüşme başında kullanılmasını bekli', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767167241229']
+['FORD OTOMOTİV', '100685', '97500192030', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ravza Acar Caner', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767080584.456950', '', '2025-12-30 00:00:00', '10:43', '04,00', 'Ses enerjisi düşük Çok fazla olumsuz kelime kullandı', '2025', '202512', '85', '', '975/20251231/261_101/intra_dynamic_1767166648751']
+['FORD OTOMOTİV', '100685', '97500192023', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Birgül Üstündağ', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZTNkNzky', '', '2025-12-30 00:00:00', '20:02', '07,23', 'Görüntülüyorum yerine görüyorum daha uygun olacaktır Görüşme', '2025', '202512', '80', '', '975/20251231/261_101/intra_dynamic_1767165652477']
+['FORD OTOMOTİV', '100685', '97500192020', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Beyzanur Batın', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODQyNWNi', '', '2025-12-30 00:00:00', '11:22', '06,43', 'Müşteri görüşme başında Adıyamandan aradığını söylemiştir.Mü', '2025', '202512', '90', '', '975/20251231/261_101/intra_dynamic_1767165155817']
+['FORD OTOMOTİV', '100685', '97500191998', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Kaan Karaduman', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767095307.469804', '', '2025-12-30 00:00:00', '14:48', '04,15', 'Dikkatli dinlemedi anlamadı neyi diye tekrar sordu', '2025', '202512', '90', '', '975/20251231/261_101/intra_dynamic_1767158977216']
+['FORD OTOMOTİV', '100685', '97500191996', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Kaan Karaduman', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767101529.475122', '', '2025-12-30 00:00:00', '16:32', '04,53', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767158504882']
+['FORD OTOMOTİV', '100685', '97500191961', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Umut Günay', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWVmOWEz', '', '2025-12-30 00:00:00', '15:21', '06,48', 'İşlem sağlamak yerine işlem yapmak ifadesi tercih edilmelidi', '2025', '202512', '95', '', '975/20251230/261_101/intra_dynamic_1767118794772']
+['FORD OTOMOTİV', '100685', '97500191950', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Muhsin Öngel', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMmZjMGFk', '', '2025-12-30 00:00:00', '11:35', '07,46', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz. "Var mıyd', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767117221375']
+['FORD OTOMOTİV', '100685', '97500191948', 'F Buyback 1004', '97500187622 - F Buyback Aralık2025 - FORD OTOMOTİV', 'Ayşegül Uçar', 'Ford Global 1. Takım', '1-GAVXBSS2REGP03-1767102730.524869', '', '2025-12-30 00:00:00', '16:52', '03,56', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767117139983']
+['FORD OTOMOTİV', '100685', '97500191908', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Çağatay Karaca', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMzdmN2Mx', '', '2025-12-30 00:00:00', '09:00', '02,02', 'Günün saatine uygun açılış yapılmasını bekliyoruz', '2025', '202512', '95', '', '975/20251230/261_101/intra_dynamic_1767099330083']
+['FORD OTOMOTİV', '100685', '97500191897', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Metin Yiğit Günal', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkZjBiNmMx', '', '2025-12-30 00:00:00', '05:50', '07,47', 'Tekrardan kelimesi dil bilgisel olarak önerilmez ve yanlış k', '2025', '202512', '85', '', '975/20251230/261_101/intra_dynamic_1767095332803']
+['FORD OTOMOTİV', '100685', '97500191895', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Hilal Filiz', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNjkwNjBl', '', '2025-12-30 00:00:00', '09:25', '07,04', 'Sağlamak ifade kullanımını uygun bulmuyoruz. "Var mıydı ? " ', '2025', '202512', '90', '', '975/20251230/261_101/intra_dynamic_1767094888853']
+['FORD OTOMOTİV', '100685', '97500191888', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Gaye Kümür', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMDNkNTMx', '', '2025-12-30 00:00:00', '13:38', '08,45', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767094183834']
+['FORD OTOMOTİV', '100685', '97500191876', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Büşra Yakışır', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMjJkZjk1', '', '2025-12-30 00:00:00', '14:28', '01,42', '', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767092527185']
+['FORD OTOMOTİV', '100685', '97500191870', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Büşra Yakışır', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNDIzMTMw', '', '2025-12-30 00:00:00', '13:08', '02,30', '“Yani” günlük ifade kullanılmamasını öneririz. Görüşün gibi ', '2025', '202512', '90', '', '975/20251230/261_101/intra_dynamic_1767091550535']
+['FORD OTOMOTİV', '100685', '97500191869', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Batuhan Bayraktar', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMTMwODkw', '', '2025-12-30 00:00:00', '00:13', '04,24', 'Kapanışta yardım önerisi sunulmasını tavsiye ediyoruz. Müşte', '2025', '202512', '85', '', '975/20251230/261_101/intra_dynamic_1767091032766']
+['FORD OTOMOTİV', '100685', '97500191867', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Aybüke Sevi Karayel', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWUzZmI2', '', '2025-12-30 00:00:00', '10:13', '03,34', 'Selamlamanın, enerjik ve gülen bir ses tonu ile yapılmasına ', '2025', '202512', '95', '', '975/20251230/261_101/intra_dynamic_1767090601455']
+['FORD OTOMOTİV', '100685', '97500191865', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Aslı Elçin', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkNGI5ODBl', '', '2025-12-30 00:00:00', '13:29', '03,51', 'Görüşme süresince canlı bir ses tonu ile konuşması ve sesin ', '2025', '202512', '90', '', '975/20251230/261_101/intra_dynamic_1767090418670']
+['FORD OTOMOTİV', '100685', '97500191855', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Derya Arslan', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMDhhY2Vh', '', '2025-12-30 00:00:00', '08:51', '06,36', '“Müşterilerimize yaklaşımımızda, onların ihtiyaçlarını öncel', '2025', '202512', '90', '', '975/20251230/261_101/intra_dynamic_1767088644127']
+['FORD OTOMOTİV', '100685', '97500192299', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Esma Aygün', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1766994440.482987', '', '2025-12-29 00:00:00', '10:47', '03,15', 'Ses enerjisi düşük', '2025', '202512', '90', '', '975/20260102/261_101/intra_dynamic_1767352627846']
+['FORD OTOMOTİV', '100685', '97500192271', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hatice Büşra Çalımcı', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1766996625.429330', '', '2025-12-29 00:00:00', '11:23', '03,17', 'çok formal ve soğuk negatif konuştu maktadır mektedir ekleri', '2025', '202512', '90', '', '975/20260102/261_101/intra_dynamic_1767340713339']
+['FORD OTOMOTİV', '100685', '97500192264', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Hatice Büşra Çalımcı', 'Ford Global 1. Takım', '1-GAVXBSS2REGP01-1766997235.429974', '', '2025-12-29 00:00:00', '11:33', '04,43', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260102/261_101/intra_dynamic_1767340074265']
+['FORD OTOMOTİV', '100685', '97500192228', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Merve Ayar', 'Ford Global 2. Takım', '1-GAVXBSS2REGP04-1767004017.482534', '', '2025-12-29 00:00:00', '13:26', '03,17', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767287074839']
+['FORD OTOMOTİV', '100685', '97500192217', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'İrem Çoşkun', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767002745.492204', '', '2025-12-29 00:00:00', '13:05', '03,12', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767278356294']
+['FORD OTOMOTİV', '100685', '97500192214', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'İrem Çoşkun', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767007527.497744', '', '2025-12-29 00:00:00', '14:25', '03,35', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20260101/261_101/intra_dynamic_1767276717353']
+['FORD OTOMOTİV', '100685', '97500192201', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Evrim Kıran', 'Ford Global 2. Takım', '1-GAVXBSS2REGP02-1767006217.408580', '', '2025-12-29 00:00:00', '14:03', '04,00', 'Destek ifadeleri yetersiz Ses enerjisi biraz düşük', '2025', '202512', '85', '', '975/20260102/261_101/intra_dynamic_1767374793896']
+['FORD OTOMOTİV', '100685', '97500192200', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Evrim Kıran', 'Ford Global 2. Takım', '1-GAVXBSS2REGP02-1767001192.404540', '', '2025-12-29 00:00:00', '12:39', '04,19', 'Çağrıyı müşteri yönetti, anlatıları ve sorularıyla hakimiyet', '2025', '202512', '90', '', '975/20260101/261_101/intra_dynamic_1767271394438']
+['FORD OTOMOTİV', '100685', '97500192198', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ömer Aydın', 'Ford Global 1. Takım', '1-GAVXBSS2REGP02-1767012087.413503', '', '2025-12-29 00:00:00', '15:41', '02,54', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260101/261_101/intra_dynamic_1767270450527']
+['FORD OTOMOTİV', '100685', '97500192192', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Enes Pöhrenk', 'Ford Global 3. Takım', '1-GAVXBSS2REGP01-1767015649.446077', '', '2025-12-29 00:00:00', '16:40', '03,20', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20260102/261_101/intra_dynamic_1767374865276']
+['FORD OTOMOTİV', '100685', '97500192114', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Melike Kılınç', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTljMzRh', '', '2025-12-29 00:00:00', '13:42', '05,30', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767181794475']
+['FORD OTOMOTİV', '100685', '97500192104', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Nazan Şimşek', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzg3YmRj', '', '2025-12-29 00:00:00', '16:34', '05,51', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767180063677']
+['FORD OTOMOTİV', '100685', '97500192101', 'F Otomotiv 629', '97500186744 - F Concentrix Trucks Outbound Aralık2025 - FORD', 'Ayten Kanpak', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkY2E2ZDFk', '', '2025-12-29 00:00:00', '11:31', '01,20', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767179428920']
+['FORD OTOMOTİV', '100685', '97500192088', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Neslihan Ulukaya', 'Ford Global 1. Takım', '1-GAVXBSS2REGP09-1767010596.501034', '', '2025-12-29 00:00:00', '15:16', '03,24', 'Görüşmelerin kayıt edildiği bilgisi verilmedi', '2025', '202512', '', '', '975/20251231/261_101/intra_dynamic_1767178136569']
+['FORD OTOMOTİV', '100685', '97500192060', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Doğa Palazoğlu', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYTQ5MWQ0', '', '2025-12-29 00:00:00', '14:23', '05,03', 'Görüşmeye ikinci kişiyle devam edilmesi durumunda “İyi günle', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767170932453']
+['FORD OTOMOTİV', '100685', '97500192053', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Batuhan Yavuz', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOGFmMGIy', '', '2025-12-29 00:00:00', '13:55', '01,01', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767169132905']
+['FORD OTOMOTİV', '100685', '97500192039', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ravza Acar Caner', 'Ford Global 2. Takım', '1-GAVXBSS2REGP09-1767011830.502471', '', '2025-12-29 00:00:00', '15:37', '02,06', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251231/261_101/intra_dynamic_1767167416380']
+['FORD OTOMOTİV', '100685', '97500192037', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Ravza Acar Caner', 'Ford Global 2. Takım', '1-GAVXBSS2REGP01-1767010061.441131', '', '2025-12-29 00:00:00', '15:07', '02,40', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767167248580']
+['FORD OTOMOTİV', '100685', '97500192000', 'Ford Global Outbound 632', '97500187620 - F Global Outbound Aralık2025 - FORD OTOMOTİV', 'Kaan Karaduman', 'Ford Global 2. Takım', '1-GAVXBSS2REGP09-1767008455.498728', '', '2025-12-29 00:00:00', '14:40', '03,20', 'Standart bir çağrı', '2025', '202512', '95', '', '975/20251231/261_101/intra_dynamic_1767159227725']
+['FORD OTOMOTİV', '100685', '97500191956', 'F Buyback 1004', '97500187622 - F Buyback Aralık2025 - FORD OTOMOTİV', 'Ayşegül Uçar', 'Ford Global 1. Takım', '1-GAVXBSS2REGP04-1767019469.496858', '', '2025-12-29 00:00:00', '17:44', '01,56', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767117955317']
+['FORD OTOMOTİV', '100685', '97500191953', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Muhsin Öngel', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMDU0Yzlj', '', '2025-12-29 00:00:00', '13:27', '08,59', 'Baktığımda yerine kontrol ediyorum ifadesi tercih edilmelidi', '2025', '202512', '80', '', '975/20251230/261_101/intra_dynamic_1767117575574']
+['FORD OTOMOTİV', '100685', '97500191951', 'F Buyback 1004', '97500187622 - F Buyback Aralık2025 - FORD OTOMOTİV', 'Ayşegül Uçar', 'Ford Global 1. Takım', '1-GAVXBSS2REGP04-1767019698.497004', '', '2025-12-29 00:00:00', '17:48', '02,09', 'Sorunsuz bir çağrı Sesinizi alamıyorum yerine sizi duyamıyor', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767117368922']
+['FORD OTOMOTİV', '100685', '97500191946', 'F Buyback 1004', '97500187622 - F Buyback Aralık2025 - FORD OTOMOTİV', 'Ayşegül Uçar', 'Ford Global 1. Takım', '1-GAVXBSS2REGP04-1767020012.497219', '', '2025-12-29 00:00:00', '17:53', '04,34', 'Sorunsuz bir çağrı', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767116888763']
+['FORD OTOMOTİV', '100685', '97500191907', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Çağatay Karaca', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOTEzOTk4', '', '2025-12-29 00:00:00', '10:27', '02,08', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767099204132']
+['FORD OTOMOTİV', '100685', '97500191898', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Özge Potur Ayhan', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMWY0ZjQx', '', '2025-12-29 00:00:00', '08:54', '06,41', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767096243954']
+['FORD OTOMOTİV', '100685', '97500191874', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Büşra Yakışır', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkYzc0MzMx', '', '2025-12-29 00:00:00', '10:04', '01,58', 'Arama sağlamak yerine arama yapmak ifadesi tercih edilmelidi', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767092290954']
+['FORD OTOMOTİV', '100685', '97500191839', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Derya Arslan', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOWM3NGVj', '', '2025-12-29 00:00:00', '08:40', '04,42', 'Kelime vurgularının sert ve sorgulayıcı, emir ifadeleri kull', '2025', '202512', '80', '', '975/20251230/261_101/intra_dynamic_1767084951622']
+['FORD OTOMOTİV', '100685', '97500191835', 'Ford Concentrix Inbound 633', '97500185908 - F Concentrix Trucks Inbound Aralık2025 - FORD ', 'Damla Güneş', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkOTMyMDAz', '', '2025-12-29 00:00:00', '11:07', '04,52', 'Müşterinin bizim için önemli olduğunu ses tonu ve yaklaşımım', '2025', '202512', '80', '', '975/20251230/261_101/intra_dynamic_1767084140410']
+['FORD OTOMOTİV', '100685', '97500191821', 'F Otomotiv 629', '97500186740 - Concentrix Binek&Ticari Outbound Aralık2025 - ', 'Batuhan Yavuz', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkMjI4NTA3', '', '2025-12-29 00:00:00', '09:50', '01,21', 'Görüşme beklentiyi karşılamıştır. Teşekkür ederiz.', '2025', '202512', '100', '', '975/20251230/261_101/intra_dynamic_1767078094010']
+['FORD OTOMOTİV', '100685', '97500191788', 'Ford Concentrix Inbound 633', '97500185906 - F Concentrix Binek&Ticari Inbound Aralık2025 -', 'Tuğba Sarıkaya', 'Concentrix', 'ahRzfm11c3RlcmktaGl6bWV0bGVyaXI0CxIKQWN0aXZlQ2FsbCIkODE0MjA1', '', '2025-12-29 00:00:00', '08:58', '05,50', 'Çağrı içerisinde sessizliğe dikkat edilmeli ve müşteriye düz', '2025', '202512', '95', '', '975/20251229/261_101/intra_dynamic_1767037944036']
+... (daha fazla satir var)
+
+================================================================================
+DOSYA: Raporlar- Endeks Başarı Ort.-10.01.2026235258.xlsx
+================================================================================
+
+--- Sheet: Genel Rapor ---
+['Proje', 'Kontrol Grubu', 'Periyot', 'Ortalama Puan']
+['Concentrix Binek&Ticari Outbound Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '76']
+['Concentrix Binek&Ticari Outbound Aralık2025', '10 Sarı Kart', '2025', '']
+['Concentrix Binek&Ticari Outbound Aralık2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['Concentrix Binek&Ticari Outbound Aralık2025', '12 Müşteri ile ilişki kültürü oluşturuldu', '2025', '']
+['Concentrix Binek&Ticari Outbound Aralık2025', '13 Kırmızı Kart', '2025', '']
+['Concentrix Binek&Ticari Outbound Aralık2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '92']
+['Concentrix Binek&Ticari Outbound Aralık2025', '3 Aktif Dinleme', '2025', '96']
+['Concentrix Binek&Ticari Outbound Aralık2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '100']
+['Concentrix Binek&Ticari Outbound Aralık2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '100']
+['Concentrix Binek&Ticari Outbound Aralık2025', '6 Konuşma Tarzı', '2025', '100']
+['Concentrix Binek&Ticari Outbound Aralık2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '100']
+['Concentrix Binek&Ticari Outbound Aralık2025', '8 Müşteri Algısını Yönetme', '2025', '94']
+['Concentrix Binek&Ticari Outbound Aralık2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '98']
+['F Buyback Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '100']
+['F Buyback Aralık2025', '2 Aktif Dinleme', '2025', '93.06']
+['F Buyback Aralık2025', '3 Ses Tonu ve Ses Enerjisi', '2025', '94.44']
+['F Buyback Aralık2025', '4 İş Bilgisi', '2025', '100']
+['F Buyback Aralık2025', '5 Müşteri görüşmeyi hangi his ile kapattı?', '2025', '']
+['F Buyback Aralık2025', '6 Sarı Kart', '2025', '']
+['F Buyback Aralık2025', '7 Kırmızı Kart', '2025', '']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '60.41']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '10 İş Bilgisi', '2025', '92.15']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '12 Müşteri görüşmeyi hangi his ile kapattı?', '2025', '']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '14 Kırmızı Kart', '2025', '']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '15 Sarı Kart', '2025', '']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '92.49']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '3 Aktif Dinleme', '2025', '85.32']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '97.95']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '97.44']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '6 Konuşma Tarzı', '2025', '98.46']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '94.71']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '8 Müşteri Algısını Yönetme', '2025', '87.71']
+['F Concentrix Binek&Ticari Inbound Aralık2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '97.61']
+['F Concentrix Trucks Inbound Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '48.39']
+['F Concentrix Trucks Inbound Aralık2025', '10 İş Bilgisi', '2025', '93.87']
+['F Concentrix Trucks Inbound Aralık2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['F Concentrix Trucks Inbound Aralık2025', '12 Müşteri görüşmeyi hangi his ile kapattı?', '2025', '']
+['F Concentrix Trucks Inbound Aralık2025', '14 Kırmızı Kart', '2025', '']
+['F Concentrix Trucks Inbound Aralık2025', '15 Sarı Kart', '2025', '']
+['F Concentrix Trucks Inbound Aralık2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '85.16']
+['F Concentrix Trucks Inbound Aralık2025', '3 Aktif Dinleme', '2025', '86.13']
+['F Concentrix Trucks Inbound Aralık2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '95.48']
+['F Concentrix Trucks Inbound Aralık2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '98.39']
+['F Concentrix Trucks Inbound Aralık2025', '6 Konuşma Tarzı', '2025', '100']
+['F Concentrix Trucks Inbound Aralık2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '90.97']
+['F Concentrix Trucks Inbound Aralık2025', '8 Müşteri Algısını Yönetme', '2025', '82.58']
+['F Concentrix Trucks Inbound Aralık2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '98.71']
+['F Concentrix Trucks Outbound Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '85.19']
+['F Concentrix Trucks Outbound Aralık2025', '10 Sarı Kart', '2025', '']
+['F Concentrix Trucks Outbound Aralık2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['F Concentrix Trucks Outbound Aralık2025', '12 Müşteri ile ilişki kültürü oluşturuldu', '2025', '']
+['F Concentrix Trucks Outbound Aralık2025', '13 Kırmızı Kart', '2025', '']
+['F Concentrix Trucks Outbound Aralık2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '88.89']
+['F Concentrix Trucks Outbound Aralık2025', '3 Aktif Dinleme', '2025', '98.15']
+['F Concentrix Trucks Outbound Aralık2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '98.15']
+['F Concentrix Trucks Outbound Aralık2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '100']
+['F Concentrix Trucks Outbound Aralık2025', '6 Konuşma Tarzı', '2025', '100']
+['F Concentrix Trucks Outbound Aralık2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '100']
+['F Concentrix Trucks Outbound Aralık2025', '8 Müşteri Algısını Yönetme', '2025', '87.04']
+['F Concentrix Trucks Outbound Aralık2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '100']
+['F Global Inbound Aralık 2025', '1 Çağrı Standartlarına Uyum', '2025', '56.13']
+['F Global Inbound Aralık 2025', '10 İş Bilgisi', '2025', '99.35']
+['F Global Inbound Aralık 2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['F Global Inbound Aralık 2025', '12 Müşteri görüşmeyi hangi his ile kapattı?', '2025', '']
+['F Global Inbound Aralık 2025', '14 Kırmızı Kart', '2025', '']
+['F Global Inbound Aralık 2025', '15 Sarı Kart', '2025', '']
+['F Global Inbound Aralık 2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '90.97']
+['F Global Inbound Aralık 2025', '3 Aktif Dinleme', '2025', '89.35']
+['F Global Inbound Aralık 2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '98.39']
+['F Global Inbound Aralık 2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '95.48']
+['F Global Inbound Aralık 2025', '6 Konuşma Tarzı', '2025', '97.1']
+['F Global Inbound Aralık 2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '96.77']
+['F Global Inbound Aralık 2025', '8 Müşteri Algısını Yönetme', '2025', '98.71']
+['F Global Inbound Aralık 2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '71.94']
+['F Global Outbound Aralık2025', '1 Çağrı Standartlarına Uyum', '2025', '98.93']
+['F Global Outbound Aralık2025', '10 İş Bilgisi', '2025', '99.29']
+['F Global Outbound Aralık2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['F Global Outbound Aralık2025', '12 Müşteri görüşmeyi hangi his ile kapattı?', '2025', '']
+['F Global Outbound Aralık2025', '14 Kırmızı Kart', '2025', '']
+['F Global Outbound Aralık2025', '15 Sarı Kart', '2025', '']
+['F Global Outbound Aralık2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '90.39']
+['F Global Outbound Aralık2025', '3 Aktif Dinleme', '2025', '93.06']
+['F Global Outbound Aralık2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '100']
+['F Global Outbound Aralık2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '96.26']
+['F Global Outbound Aralık2025', '6 Konuşma Tarzı', '2025', '97.86']
+['F Global Outbound Aralık2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '94.84']
+['F Global Outbound Aralık2025', '8 Müşteri Algısını Yönetme', '2025', '96.62']
+['F Global Outbound Aralık2025', '9 Kalpten Hizmet Yaklaşımı', '2025', '74.02']
+['Concentrix Binek&Ticari Outbound Kasım2025', '1 Çağrı Standartlarına Uyum', '2025', '80']
+['Concentrix Binek&Ticari Outbound Kasım2025', '10 Sarı Kart', '2025', '']
+['Concentrix Binek&Ticari Outbound Kasım2025', '11 Ford markasından tatmin edici bir hizmet aldığını hissett', '2025', '']
+['Concentrix Binek&Ticari Outbound Kasım2025', '12 Müşteri ile ilişki kültürü oluşturuldu', '2025', '']
+['Concentrix Binek&Ticari Outbound Kasım2025', '13 Kırmızı Kart', '2025', '']
+['Concentrix Binek&Ticari Outbound Kasım2025', '2 Müşterinin Ford İçin Önemli Olduğunu Hissettirme', '2025', '100']
+['Concentrix Binek&Ticari Outbound Kasım2025', '3 Aktif Dinleme', '2025', '97.78']
+['Concentrix Binek&Ticari Outbound Kasım2025', '4 Analiz / Soru Sorma Teknikleri', '2025', '100']
+['Concentrix Binek&Ticari Outbound Kasım2025', '5 Görüşme Yönetimi ve Yönlendirme', '2025', '100']
+['Concentrix Binek&Ticari Outbound Kasım2025', '6 Konuşma Tarzı', '2025', '100']
+['Concentrix Binek&Ticari Outbound Kasım2025', '7 Ses Tonu ve Ses Enerjisi', '2025', '100']
+... (daha fazla satir var)
+
+================================================================================
+DOSYA: Raporlar-Genel Başarı-.xlsx
+================================================================================
+
+--- Sheet: Genel Rapor ---
+['Periyot (Ay)', 'Proje', 'Periyot', 'Ortalama Puan']
+['202512', 'F Concentrix Trucks Outbound Aralık2025', '2025', '97.33']
+['202512', 'Concentrix Binek&Ticari Outbound Aralık2025', '2025', '97.17']
+['202512', 'F Global Outbound Aralık2025', '2025', '93.84']
+['202512', 'F Buyback Aralık2025', '2025', '93.65']
+['202512', 'F Concentrix Binek&Ticari Inbound Aralık2025', '2025', '91.63']
+['202512', 'F Global Inbound Aralık 2025', '2025', '91.19']
+['202512', 'F Concentrix Trucks Inbound Aralık2025', '2025', '90']
+['202511', 'F Buyback Kasım2025', '2025', '98.75']
+['202511', 'Concentrix Binek&Ticari Outbound Kasım2025', '2025', '98.33']
+['202511', 'F Concentrix Trucks Outbound Kasım2025', '2025', '98.17']
+['202511', 'F Global Outbound Kasım2025', '2025', '94.12']
+['202511', 'F Concentrix Binek&Ticari Inbound Kasım2025', '2025', '92.23']
+['202511', 'F Global Inbound Kasım 2025', '2025', '91.6']
+['202511', 'F Concentrix Trucks Inbound Kasım2025', '2025', '91.3']
+['202511', 'F Buyback Deneme', '2025', '89.76']
+['202510', 'F Buyback Ekim2025', '2025', '97.78']
+['202510', 'Concentrix Binek&Ticari Outbound Ekim2025', '2025', '95.39']
+['202510', 'F Concentrix Trucks Outbound Ekim2025', '2025', '95.17']
+['202510', 'F Concentrix Trucks Inbound Ekim2025', '2025', '90.24']
+['202510', 'F Concentrix Binek&Ticari Inbound Ekim2025', '2025', '90.23']
+['202510', 'F Global Outbound Ekim2025', '2025', '89.53']
+['202510', 'F Global Inbound Ekim 2025', '2025', '88.08']
+['202509', 'F Buyback Eylül2025', '2025', '99.38']
+['202509', 'F Concentrix Binek&Ticari Outbound Eylül2025', '2025', '95.72']
+['202509', 'F Concentrix Trucks Outbound Eylül2025', '2025', '94.5']
+['202509', 'F Global Outbound Eylül 2025', '2025', '93.58']
+['202509', 'F Global Inbound Eylül 2025', '2025', '91.31']
+['202509', 'F Concentrix Binek&Ticari Inbound Eylül2025', '2025', '90.33']
+['202509', 'F Concentrix Trucks Inbound Eylül2025', '2025', '89.33']
+['202508', 'F Buyback Ağustos2025', '2025', '100']
+['202508', 'F Concentrix Binek&Ticari Outbound Ağustos2025', '2025', '95.56']
+['202508', 'F Global Outbound Ağustos 2025', '2025', '91.57']
+['202508', 'F Concentrix Trucks Outbound Ağustos2025', '2025', '90.67']
+['202508', 'F Global Inbound Ağustos 2025', '2025', '89.61']
+['202508', 'F Concentrix Binek&Ticari Inbound Ağustos2025', '2025', '88.27']
+['202508', 'F Concentrix Trucks Inbound Ağustos2025', '2025', '87.8']
+['202507', 'F Buyback Temmuz 2025', '2025', '95.33']
+['202507', 'F Concentrix Trucks Outbound Temmuz2025', '2025', '95']
+['202507', 'F Concentrix Binek&Ticari Outbound Temmuz2025', '2025', '95']
+['202507', 'F Global Outbound Temmuz 2025', '2025', '92.79']
+['202507', 'F Global Inbound Temmuz2025', '2025', '88.65']
+['202507', 'F Concentrix Trucks Inbound Temmuz2025', '2025', '88.17']
+['202507', 'F Concentrix Binek&Ticari Inbound Temmuz2025', '2025', '87.33']
+['202506', 'F Buyback Haziran2025', '2025', '99.26']
+['202506', 'F Global Outbound Haziran 2025', '2025', '94.75']
+['202506', 'F Concentrix Trucks Outbound Haziran2025', '2025', '94.17']
+['202506', 'F Concentrix Binek&Ticari Outbound Haziran2025', '2025', '91.83']
+['202506', 'F Global Inbound Haziran2025', '2025', '90.23']
+['202506', 'F Concentrix Binek&Ticari Inbound Haziran2025', '2025', '89.1']
+['202506', 'F Concentrix Trucks Inbound Haziran2025', '2025', '86.17']
+['202505', 'F Global Outbound Mayıs 2025', '2025', '94.15']
+['202505', 'F Concentrix Trucks Outbound Mayıs2025', '2025', '94.02']
+['202505', 'F Concentrix Binek&Ticari Outbound Mayıs2025', '2025', '93.33']
+['202505', 'F Buyback Mayıs2025', '2025', '90.63']
+['202505', 'F Concentrix Binek&Ticari Inbound Mayıs2025', '2025', '88.4']
+['202505', 'F Global Inbound Mayıs2025', '2025', '88.32']
+['202505', 'F Concentrix Trucks Inbound Mayıs2025', '2025', '85.71']
+['202504', 'F Buyback Nisan2025', '2025', '99.23']
+['202504', 'F Global Outbound Nisan2025', '2025', '93.62']
+['202504', 'F Concentrix Binek&Ticari Outbound Nisan2025', '2025', '92.83']
+['202504', 'F Concentrix Trucks Outbound Nisan2025', '2025', '92.58']
+['202504', 'F Global Inbound Nisan2025', '2025', '90.5']
+['202504', 'F Concentrix Binek&Ticari Inbound Nisan2025', '2025', '87.32']
+['202504', 'F Concentrix Trucks Inbound Nisan2025', '2025', '86.09']
+['202503', 'F Buyback Mart2025', '2025', '95.45']
+['202503', 'F Global Outbound Mart2025', '2025', '92.89']
+['202503', 'F Webhelp Trucks Outbound Mart2025', '2025', '91.33']
+['202503', 'F Webhelp Trucks Inbound Mart2025', '2025', '86.38']
+['202503', 'F Webhelp Binek&Ticari Inbound Mart2025', '2025', '86.06']
+['202503', 'F Webhelp Binek&Ticari Outbound Mart 2025', '2025', '85.33']
+['202503', 'F Global Inbound Mart2025', '2025', '84.24']
+['202502', 'F Buyback Şubat2025', '2025', '100']
+['202502', 'F Webhelp Trucks Outbound Şubat2025', '2025', '91.75']
+['202502', 'F Global Outbound Şubat2025', '2025', '90.74']
+['202502', 'F Webhelp Binek&Ticari Inbound Şubat 2025', '2025', '86.06']
+['202502', 'F Webhelp Trucks Inbound Şubat2025', '2025', '84.74']
+['202502', 'F Global Inbound Şubat2025', '2025', '80.8']
+['202502', 'F Webhelp Binek&Ticari Outbound Şubat 2025', '2025', '78.83']
+['202501', 'F Buyback Ocak2025', '2025', '100']
+['202501', 'F Webhelp Trucks Outbound Ocak2025', '2025', '94.58']
+['202501', 'F Webhelp Binek&Ticari Outbound Ocak2025', '2025', '93.83']
+['202501', 'F Global Outbound Ocak2025', '2025', '92.18']
+['202501', 'F Webhelp Binek&Ticari Inbound Ocak2025', '2025', '86.94']
+['202501', 'F Global Inbound Ocak2025', '2025', '86.26']
+['202501', 'F Webhelp Trucks Inbound Ocak2025', '2025', '86.14']

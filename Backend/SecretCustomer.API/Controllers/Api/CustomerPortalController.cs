@@ -90,6 +90,116 @@ public class CustomerPortalApiController : ControllerBase
         return false;
     }
 
+    private int? GetPersonnelId()
+    {
+        var personnelIdClaim = User.FindFirst("PersonnelId")?.Value;
+        if (int.TryParse(personnelIdClaim, out var personnelId))
+            return personnelId;
+
+        // Token'dan manuel parse et
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+        {
+            try
+            {
+                var token = authHeader.Substring("Bearer ".Length);
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "PersonnelId")?.Value;
+                if (int.TryParse(claim, out personnelId))
+                    return personnelId;
+            }
+            catch { }
+        }
+        return null;
+    }
+
+    private string? GetPersonnelRole()
+    {
+        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (!string.IsNullOrEmpty(roleClaim))
+            return roleClaim;
+
+        // Token'dan manuel parse et
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+        {
+            try
+            {
+                var token = authHeader.Substring("Bearer ".Length);
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                return jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "role")?.Value;
+            }
+            catch { }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Süpervizör ise takımındaki personel ID'lerini döndürür, değilse null (tüm personel görülebilir)
+    /// </summary>
+    private async Task<List<int>?> GetAllowedPersonnelIdsAsync()
+    {
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
+        // CustomerManager tüm personeli görebilir
+        if (role == "CustomerManager")
+            return null;
+
+        // CustomerSupervisor
+        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            // Önce süpervizör olarak atandığı personelleri bul
+            var teamMemberIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.SupervisorId == personnelId.Value)
+                .Select(cpo => cpo.CustomerPersonnelId)
+                .Distinct()
+                .ToListAsync();
+
+            // Eğer altında eleman varsa, onları göster
+            if (teamMemberIds.Any())
+            {
+                // Kendisini de ekle
+                if (!teamMemberIds.Contains(personnelId.Value))
+                    teamMemberIds.Add(personnelId.Value);
+
+                return teamMemberIds;
+            }
+
+            // Altında eleman yoksa, atandığı organizasyonlardaki tüm personeli göster
+            var myOrganizationIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .ToListAsync();
+
+            if (myOrganizationIds.Any())
+            {
+                var orgPersonnelIds = await _context.CustomerPersonnelOrganizations
+                    .Where(cpo => myOrganizationIds.Contains(cpo.CustomerOrganizationId))
+                    .Select(cpo => cpo.CustomerPersonnelId)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Kendisini de ekle
+                if (!orgPersonnelIds.Contains(personnelId.Value))
+                    orgPersonnelIds.Add(personnelId.Value);
+
+                return orgPersonnelIds;
+            }
+
+            // Hiçbir organizasyona atanmamışsa sadece kendini görebilir
+            return new List<int> { personnelId.Value };
+        }
+
+        // CustomerOperator/CustomerViewer sadece kendini görebilir
+        if (personnelId.HasValue)
+            return new List<int> { personnelId.Value };
+
+        return new List<int>(); // Hiçbir şey göremez
+    }
+
     /// <summary>
     /// Dashboard istatistikleri
     /// </summary>
@@ -100,18 +210,46 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        // Branch system removed - use projects instead
-        var projectCount = await _context.Projects
-            .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var evaluations = await _context.Evaluations
+        // Organizasyon sayısı (Supervisor için kendi organizasyonları)
+        int organizationCount;
+        if (allowedPersonnelIds == null)
+        {
+            // Manager - tüm organizasyonlar
+            organizationCount = await _context.CustomerOrganizations
+                .CountAsync(o => o.CustomerId == customerId && !o.IsDeleted && o.IsActive);
+        }
+        else
+        {
+            // Supervisor/Operator - sadece bağlı olduğu organizasyonlar
+            organizationCount = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => allowedPersonnelIds.Contains(cpo.CustomerPersonnelId))
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .CountAsync();
+        }
+
+        // Değerlendirmeler - rol bazlı filtreleme
+        var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId)
-            .ToListAsync();
+            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
+                        e.Assignment.Project.CustomerId == customerId &&
+                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed);
+
+        // Supervisor/Operator için personel filtresi
+        if (allowedPersonnelIds != null)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e =>
+                e.EvaluatedCustomerPersonnelId.HasValue &&
+                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        var evaluations = await evaluationsQuery.ToListAsync();
 
         var totalEvaluations = evaluations.Count;
-        var averageScore = evaluations.Any() ? evaluations.Average(e => e.TotalScore ?? 0) : 0;
+        var averageScore = evaluations.Any() ? evaluations.Average(e => e.ScorePercentage ?? 0) : 0;
 
         var thisMonth = DateTime.UtcNow.Month;
         var thisYear = DateTime.UtcNow.Year;
@@ -120,8 +258,7 @@ public class CustomerPortalApiController : ControllerBase
 
         return Ok(new
         {
-            branchCount = 0, // Branch system removed
-            projectCount,
+            organizationCount,
             totalEvaluations,
             averageScore = Math.Round(averageScore, 1),
             thisMonthEvaluations
@@ -138,14 +275,26 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
         var now = DateTime.UtcNow;
         var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        var evaluations = await _context.Evaluations
+        var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId && e.CreatedAt >= startDate)
-            .ToListAsync();
+            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
+                        e.Assignment.Project.CustomerId == customerId &&
+                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed &&
+                        e.CreatedAt >= startDate);
+
+        if (allowedPersonnelIds != null)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e =>
+                e.EvaluatedCustomerPersonnelId.HasValue &&
+                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        var evaluations = await evaluationsQuery.ToListAsync();
 
         var monthlyData = new List<object>();
         for (int i = 0; i < 12; i++)
@@ -178,19 +327,31 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        var evaluations = await _context.Evaluations
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
+        var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId && e.TotalScore.HasValue)
-            .Select(e => e.TotalScore!.Value)
-            .ToListAsync();
+            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
+                        e.Assignment.Project.CustomerId == customerId &&
+                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed &&
+                        e.ScorePercentage.HasValue);
+
+        if (allowedPersonnelIds != null)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e =>
+                e.EvaluatedCustomerPersonnelId.HasValue &&
+                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        var scores = await evaluationsQuery.Select(e => e.ScorePercentage!.Value).ToListAsync();
 
         var distribution = new
         {
-            excellent = evaluations.Count(s => s >= 90),   // Mükemmel (90+)
-            good = evaluations.Count(s => s >= 80 && s < 90),  // İyi (80-89)
-            average = evaluations.Count(s => s >= 60 && s < 80), // Orta (60-79)
-            poor = evaluations.Count(s => s < 60)  // Düşük (<60)
+            excellent = scores.Count(s => s >= 90),   // Mükemmel (90+)
+            good = scores.Count(s => s >= 80 && s < 90),  // İyi (80-89)
+            average = scores.Count(s => s >= 60 && s < 80), // Orta (60-79)
+            poor = scores.Count(s => s < 60)  // Düşük (<60)
         };
 
         return Ok(distribution);
@@ -239,21 +400,38 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var evaluations = await _context.Evaluations
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
+        var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId)
-            .OrderByDescending(e => e.CreatedAt)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
+                        e.Assignment.Project.CustomerId == customerId &&
+                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed);
+
+        if (allowedPersonnelIds != null)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e =>
+                e.EvaluatedCustomerPersonnelId.HasValue &&
+                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        var evaluations = await evaluationsQuery
+            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
             .Take(count)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CreatedAt,
-                branchName = e.Assignment!.Project!.Name,
+                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                projectName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
-                score = e.TotalScore ?? 0,
+                personnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel ?? "-",
+                score = e.ScorePercentage ?? 0,
                 status = e.Status.ToString(),
                 statusText = GetStatusText(e.Status)
             })

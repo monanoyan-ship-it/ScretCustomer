@@ -59,6 +59,21 @@ public class EvaluationDto
     public string? EvaluatedPersonnelName { get; set; }
 
     /// <summary>
+    /// Müşteri firma adı
+    /// </summary>
+    public string? CustomerName { get; set; }
+
+    /// <summary>
+    /// Organizasyon adı (virgülle ayrılmış liste)
+    /// </summary>
+    public string? OrganizationName { get; set; }
+
+    /// <summary>
+    /// Müşteri Yöneticisi adı (virgülle ayrılmış liste)
+    /// </summary>
+    public string? SupervisorName { get; set; }
+
+    /// <summary>
     /// Tanımsız personel adı
     /// </summary>
     public string? EvaluatedUnknownPersonnel { get; set; }
@@ -142,6 +157,7 @@ public class AnswerDto
     // Soru bilgileri
     public int? SectionOrder { get; set; }
     public string? SectionName { get; set; }
+    public string? GroupName { get; set; }
     public int? QuestionOrder { get; set; }
 
     /// <summary>

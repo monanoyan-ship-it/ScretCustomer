@@ -83,8 +83,12 @@ body {
 }
 
 /* ===== Table Dropdown Fix - Card içinde kesilmemesi için ===== */
-.card-body,
-.table-responsive {
+/* NOT: .table-responsive-scrollable class'ı olan elementler hariç tutulur (özet tabloları için) */
+.card-body {
+    overflow: visible !important;
+}
+
+.table-responsive:not(.table-responsive-scrollable) {
     overflow: visible !important;
 }
 

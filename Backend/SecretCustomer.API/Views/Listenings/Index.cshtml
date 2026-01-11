@@ -354,11 +354,12 @@
                                     <table class="table table-sm table-striped table-hover mb-0" style="table-layout: fixed;">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 15%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 40%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
-                                                <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
+                                                <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
+                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
+                                                <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -370,9 +371,6 @@
                                                     <span data-bind="text: questionText"></span>
                                                     <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
                                                     <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
-                                                    <!-- /ko -->
-                                                    <!-- ko if: notes -->
-                                                    <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: notes"></span></small>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
@@ -399,6 +397,9 @@
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
+                                                <td class="text-wrap">
+                                                    <span data-bind="text: notes || '-'"></span>
+                                                </td>
                                             </tr>
                                             <!-- /ko -->
                                         <!-- /ko -->
@@ -407,6 +408,18 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Notlar -->
+                        <!-- ko if: comment -->
+                        <div class="card mt-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-chat-square-text"></i> @Html.T("Evaluation.Notes", "Notlar")</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0" data-bind="text: comment"></p>
+                            </div>
+                        </div>
+                        <!-- /ko -->
                     </div>
                 </div>
                 <div class="modal-footer">
