@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NewfoundAnaliz tarih="2025-12-14" versiyon="2.1">
+
+  <Ozet>
+    <TemelModuller>%100 TAMAMLANDI</TemelModuller>
+    <BekleyenOzellikler>7</BekleyenOzellikler>
+    <ToplamUyum>%97</ToplamUyum>
+    <TranskriptAnalizi>17 video analiz edildi</TranskriptAnalizi>
+    <SonGuncelleme>2025-12-14</SonGuncelleme>
+    <KaldigiYer>
+      <Tarih>2025-12-14 GBF (Gizli Banka Formu) Session (TAMAMLANDI)</Tarih>
+      <TamamlananSonIs>
+        - GBF (Gizli Banka Formu) Modülü TAMAMLANDI:
+          * BankVisitScenario enum eklendi (13 senaryo tipi)
+          * BankMysteryShopping ChecklistType eklendi
+          * BankMysteryShop VisitType eklendi
+          * BankVisitDetails entity oluşturuldu (50+ alan):
+            - Senaryo bilgileri (senaryo tipi, tamamlanma, çapraz satış)
+            - Zaman takibi (giriş/çıkış, sıra bekleme, hizmet süresi)
+            - Personel değerlendirmesi (karşılama, vedalaşma, puanlar)
+            - Şube alanları değerlendirmesi (giriş, ATM, bekleme, gişe)
+            - Tesis değerlendirmesi (temizlik, aydınlatma, klima)
+            - ATM değerlendirmesi (sayı, çalışan, temizlik)
+            - Genel değerlendirme (memnuniyet, tavsiye skoru)
+          * DTOs oluşturuldu (BankVisitDetailsDto, CreateDto, UpdateDto, SummaryDto, FilterDto, StatisticsDto)
+          * IBankVisitService interface ve BankVisitService implementation
+          * BankVisitsApiController (CRUD + statistics + Excel export)
+          * BankVisitsController (MVC)
+          * BankVisits/Index.cshtml (özet kartları, filtreler, tablo, detay/düzenleme/istatistik modalleri)
+          * BankVisits/Index.js (KnockoutJS ViewModel)
+          * EF Migration oluşturuldu ve uygulandı
+          * Build: 0 Warning, 0 Error
+      </TamamlananSonIs>
+      <SiradakiIs>
+        - PowerPoint Export (Düşük Öncelik - Kullanıcı Talebi)
+      </SiradakiIs>
+      <TestEdilecek>
+        - /BankVisits sayfası çalışıyor mu?
+        - Banka ziyareti listeleme, filtreleme çalışıyor mu?
+        - Detay modal'da tüm alanlar görüntüleniyor mu?
+        - Düzenleme modal'da kaydetme çalışıyor mu?
+        - İstatistik modal'da veriler doğru hesaplanıyor mu?
+        - Excel export çalışıyor mu?
+      </TestEdilecek>
+    </KaldigiYer>
+  </Ozet>
+
+  <TeknolojiStack>
+    <Backend>ASP.NET Core 9.0</Backend>
+    <Database>PostgreSQL</Database>
+    <ORM>Entity Framework Core</ORM>
+    <Frontend>Knockout.js, Bootstrap 5</Frontend>
+    <Charts>Chart.js</Charts>
+    <Excel>ClosedXML</Excel>
+    <Authentication>JWT Bearer Token + Cookie Auth</Authentication>
+  </TeknolojiStack>
+
+  <!-- ============================================== -->
+  <!-- VİDEO TRANSKRİPT ANALİZİ - MÜŞTERİ GERİBİLDİRİMLERİ -->
+  <!-- ============================================== -->
+
+  <VideoAnaliz>
+
+    <Video no="1-2" baslik="Form Doldurma ve Öneriler">
+      <MusteriAnlatimi>
+        - Kontrol listesi doldururken "Öneriler" alanına yazı yazılıyor
+        - "Kapanışta yardım önerisi sunulmadı" gibi notlar ekleniyor
+        - Puanı düşürürken (4'ten 2'ye) neden yazılıyor
+        - Form altında "Öneriler" bölümü var - raporda görmek istiyorlar
+        - "Not Yapıştır" butonu ile toplu not yapıştırılabiliyor
+        - Form kaydedilince: Taslak = rapora yansımaz, Kapat = rapora düşer
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>Question.Suggestion, Answer.Notes, EvaluationStatus</Karsilik>
+    </Video>
+
+    <Video no="2" baslik="Form Taslağa Alma İsteği">
+      <MusteriAnlatimi>
+        - Müşteri temsilcisi/uzman formunu kapattıktan sonra hata fark ederse
+        - "Bu form ID'sini bana yolla, ben taslağa alayım" deniliyor
+        - İSTEK: Kapatılan formu tekrar taslağa alabilme özelliği
+        - Her iki değerlendirme de karnede görünsün isteniyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>EvaluationsApiController: /revert-to-draft, /cancel endpoints + Details.cshtml UI</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Video>
+
+    <Video no="3" baslik="Firma Yetkilisi Raporları">
+      <MusteriAnlatimi>
+        - Firma yetkilileri sadece kendi firmalarının raporlarını görüyor
+        - Gördükleri: Aylık genel başarı, en düşük/yüksek ortalamalar
+        - Kırmızı kart ile ilgili yorumlar
+        - Filtre seçenekleri: Dönem, tarih aralığı
+        - Kriter bazlı ortalamalar (Aktif Dinleme vb.)
+        - Kaç çağrı dinlenmiş, hangi tarihte, hangi saatte
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>ReportsController, müşteri bazlı filtreleme</Karsilik>
+    </Video>
+
+    <Video no="4" baslik="Temsilci Karnesi">
+      <MusteriAnlatimi>
+        - Detay'a tıklayınca form görünüyor
+        - Nereden puan kırıldığı görünüyor
+        - "Karne İndir" butonu ile temsilci karnesi PDF indiriliyor
+        - MTI başarı alanı - temsilci bazlı ortalamalar
+        - Kaç çağrı dinlenmiş, ortalama puan
+        - MTI indeksi - kriter bazlı değerlendirme
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>ReportsApiController: /personnel-report-card/{id}, PersonnelReportCard.cshtml, Excel export</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Video>
+
+    <Video no="5-6" baslik="Öneriler Raporu">
+      <MusteriAnlatimi>
+        - "Öneriler" alanı ayrı bir rapor olarak isteniyor
+        - Şu an sistem yavaşlığı nedeniyle açılamıyor
+        - Firmalar bu alanı görmek istiyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>ReportsApiController: /suggestions, /suggestions/top-questions, /suggestions/export endpoints + Suggestions.cshtml + Excel export</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Video>
+
+    <Video no="7" baslik="Cezalı KL Raporu">
+      <MusteriAnlatimi>
+        - Tarih, denetlenen çağrı, hangi temsilci
+        - Hangi puan, nereden sarı kart almış
+        - Ağırlık puanı bilgisi
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>Reports/Penalties endpoint</Karsilik>
+    </Video>
+
+    <Video no="8" baslik="Organizasyon Hiyerarşisi">
+      <MusteriAnlatimi>
+        - Fort projesi örneği: Konsantrik + Grova ekipleri
+        - Her ekipte 2-3 takım lideri var
+        - Takım lideri sadece kendi ekibindeki personeli görsün
+        - Veri gizliliği - başkasının verileri görülmesin
+        - Ana grup açılıyor, altına şirketler ekleniyor
+        - Takım liderine firma yetkisi atanıyor
+        - Eurocross projesi de aynı mantık
+        - Kalite uzmanları - form alanlarını görüyor, değerlendirme yapıyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>OrganizationController, DelegationsApiController</Karsilik>
+    </Video>
+
+    <Video no="9" baslik="Dönem Açma ve Yetki">
+      <MusteriAnlatimi>
+        - Dönem açma yetkisi veriliyor
+        - Personel yükleme yetkisi veriliyor
+        - Eurocross firması çalışanları da sistemde değerlendirme yapıyor
+        - Farklı uzman unvanları tanımlanıyor
+        - Kullanıcı kendi şifresiyle giriyor, sadece kendi raporlarını görüyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>PermissionsController, role-based access</Karsilik>
+    </Video>
+
+    <Video no="10" baslik="Erişim Yönetimi">
+      <MusteriAnlatimi>
+        - Kimin hangi alanlara erişeceği ayarlanıyor
+        - Müşteri temsilcisi sadece belirli alanları görsün
+        - Şablon oluşturulabiliyor
+        - Çağrı Denetim Raporu: Kim ne yaptı, hangi projeden kaç değerlendirme
+        - Tarih bazlı filtreleme
+        - Excel'e atabilme
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>PermissionsController, ReportsController</Karsilik>
+    </Video>
+
+    <Video no="11" baslik="Değerlendirme Detayları">
+      <MusteriAnlatimi>
+        - Kim değerlendirmiş görünüyor
+        - Hangi çağrı dinlenmiş, yorum ne, kaç puan verilmiş
+        - Form açılma tarihi ve saati
+        - Taslak alındıktan sonra yapılan değişiklikler görünüyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>EvaluationsController, audit log</Karsilik>
+    </Video>
+
+    <Video no="12" baslik="Kontrol Sorusu Bazlı Analiz">
+      <MusteriAnlatimi>
+        - En çok hangi alanlardan puan kırılmış
+        - Kontrol sorusu seçip filtreleme (örn: Ses Tonu)
+        - Hangi temsilci, kaç çağrı kırılmış
+        - Excel'e atabilme
+        - Sistemde yavaşlık sorunu var
+        - Formları taslağa alma: Numara verip taslağa alınıyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>ReportsController - kriter bazlı analiz</Karsilik>
+    </Video>
+
+    <Video no="13" baslik="Personel Yükleme ve Müşteri Ziyaretleri">
+      <MusteriAnlatimi>
+        - Personel yükleme, firma tanımlama, dönem açma
+        - Çağrı tipi alanı: Şikayet mi, bilgi mi?
+        - Bölge bilgisi yazılıyor
+        - Ziyaret fotoğrafları yüklenebiliyor
+        - Eğitim modülü var (detay bilinmiyor)
+        - Günün Kişileri: Kim sisteme girmiş, kim girmemiş
+        - Login takibi yapılabiliyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>CustomerPersonnelController, CustomerVisitsApiController</Karsilik>
+    </Video>
+
+    <Video no="14" baslik="Personel Oluşturma Detayları">
+      <MusteriAnlatimi>
+        - Personel oluşturma adımları:
+          1. Müşteri seç
+          2. Başlangıç tarihi gir
+          3. TC Kimlik numarası (sorunlu - bilinmiyor)
+          4. Unvan ata
+          5. Email gir
+          6. Kullanıcı işlemleri - şifre belirle
+        - Süreç karmaşık - tek kalemde yapılabilmeli
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>CustomerPersonnelController - tek adımda yapılabilir</Karsilik>
+      <Oneri>Bizim sistemde daha basit - avantajımız</Oneri>
+    </Video>
+
+    <Video no="15" baslik="Personel Takibi">
+      <MusteriAnlatimi>
+        - Firma personelleri listesi
+        - Aktif/Pasif filtreleme
+        - Ana sayfa grafikleri isteniyor ama olmamış
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>PersonnelController, DashboardController</Karsilik>
+    </Video>
+
+    <Video no="16" baslik="Dashboard Grafikleri">
+      <MusteriAnlatimi>
+        - Temsilci bazlı grafikler isteniyor
+        - Dinlenen çağrı bölümleri
+        - Gelişim alanları
+        - Veri yükü nedeniyle yavaşlık
+        - Form hazırlama: Müşterilerle mutabakat sonrası
+        - Sarı kart/kırmızı kart alanları forma ekleniyor
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>DashboardController - Chart.js grafikleri</Karsilik>
+    </Video>
+
+    <Video no="17" baslik="Fake Kullanıcı ve Kontrol">
+      <MusteriAnlatimi>
+        - Her firma için "fake kullanıcı" oluşturuluyor
+        - Neden: Firma yetkilileri farklı alanlar görüyor
+        - Admin olarak kontrol yapılamıyor
+        - Fake kullanıcı ile firma görünümü kontrol ediliyor
+        - Değerlendirme hataları: Çağrı numarası unutulmuş, temsilci yanlış seçilmiş
+        - Dönem hatalı seçilmiş olabilir
+      </MusteriAnlatimi>
+      <BizimDurum>TAMAMLANDI</BizimDurum>
+      <Karsilik>AuthController: /impersonation/start, /end, /status endpoints + _Layout.cshtml banner + modal</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Video>
+
+  </VideoAnaliz>
+
+  <!-- ============================================== -->
+  <!-- MODÜL UYUM ANALİZİ -->
+  <!-- ============================================== -->
+
+  <Modul no="1" ad="KONTROL LİSTESİ YÖNETİMİ" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Öneriler Alanı</Ad>
+      <Detay>Her soruya öneri açıklaması eklenebilir, raporda görüntülenir</Detay>
+      <BizimKarsilik>Question.Suggestion alanı</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Not Yapıştır</Ad>
+      <Detay>Toplu not yapıştırma butonu</Detay>
+      <BizimKarsilik>UI'da mevcut</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Sarı/Kırmızı Kart</Ad>
+      <Detay>Cezalı sorular, ağırlık puanı</Detay>
+      <BizimKarsilik>IsPenalty, PenaltyType, Weight</BizimKarsilik>
+    </NewfoundOzellik>
+  </Modul>
+
+  <Modul no="2" ad="ÇAĞRI DENETLEME" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Form Kapatma/Taslak</Ad>
+      <Detay>Taslak rapora yansımaz, kapatınca düşer</Detay>
+      <BizimKarsilik>EvaluationStatus enum</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Kapatılan Formu Taslağa Alma</Ad>
+      <Detay>Hata durumunda kapatılan formu tekrar açabilme</Detay>
+      <BizimKarsilik>EvaluationsApiController: /revert-to-draft endpoint</BizimKarsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </NewfoundOzellik>
+  </Modul>
+
+  <Modul no="3" ad="RAPORLAMA" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Firma Bazlı Raporlar</Ad>
+      <Detay>Aylık başarı, ortalamalar, kriter bazlı</Detay>
+      <BizimKarsilik>ReportsController</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Cezalı KL Raporu</Ad>
+      <Detay>Sarı/kırmızı kart alanlar</Detay>
+      <BizimKarsilik>Penalties endpoint</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Temsilci Karnesi PDF</Ad>
+      <Detay>Temsilci bazlı karne indirme</Detay>
+      <BizimKarsilik>ReportsApiController: /personnel-report-card + Excel export</BizimKarsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Öneriler Raporu</Ad>
+      <Detay>Tüm önerilerin listesi</Detay>
+      <BizimKarsilik>ReportsApiController: /suggestions endpoints + Suggestions.cshtml + Excel export</BizimKarsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </NewfoundOzellik>
+  </Modul>
+
+  <Modul no="4" ad="ORGANİZASYON" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Hiyerarşik Yetkilendirme</Ad>
+      <Detay>Takım lideri sadece kendi ekibini görsün</Detay>
+      <BizimKarsilik>OrganizationController, veri gizliliği</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Dönem Açma Yetkisi</Ad>
+      <Detay>Belirli kişilere dönem açma yetkisi</Detay>
+      <BizimKarsilik>PermissionsController</BizimKarsilik>
+    </NewfoundOzellik>
+  </Modul>
+
+  <Modul no="5" ad="PERSONEL YÖNETİMİ" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Personel Oluşturma</Ad>
+      <Detay>Müşteri seç, unvan ata, şifre belirle</Detay>
+      <BizimKarsilik>CustomerPersonnelController - daha basit süreç</BizimKarsilik>
+      <Avantaj>Bizim sistemde tek adımda yapılabilir</Avantaj>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Login Takibi</Ad>
+      <Detay>Kim sisteme girmiş, kim girmemiş</Detay>
+      <BizimKarsilik>User.LastLoginAt alanı</BizimKarsilik>
+    </NewfoundOzellik>
+  </Modul>
+
+  <Modul no="6" ad="DASHBOARD" uyum="%100">
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Grafikler</Ad>
+      <Detay>Temsilci bazlı, kriter bazlı grafikler</Detay>
+      <BizimKarsilik>DashboardController + Chart.js</BizimKarsilik>
+    </NewfoundOzellik>
+    <NewfoundOzellik durum="TAMAMLANDI">
+      <Ad>Firma Olarak Görüntüle</Ad>
+      <Detay>Admin firma perspektifinden bakabilsin</Detay>
+      <BizimKarsilik>AuthController: /impersonation endpoints + _Layout impersonation banner</BizimKarsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </NewfoundOzellik>
+  </Modul>
+
+  <!-- ============================================== -->
+  <!-- BEKLEYEN ÖZELLİKLER -->
+  <!-- ============================================== -->
+
+  <TamamlananOzellikler tarih="2025-12-14">
+    <Ozellik kaynak="Video 2">
+      <Ad>Kapatılan Formu Taslağa Alma</Ad>
+      <Aciklama>Admin yetkisiyle kapatılan formu tekrar düzenlenebilir yapma</Aciklama>
+      <Karsilik>EvaluationsApiController: /revert-to-draft, /cancel + Details.cshtml UI</Karsilik>
+    </Ozellik>
+    <Ozellik kaynak="Video 4">
+      <Ad>Temsilci Karnesi PDF Export</Ad>
+      <Aciklama>Temsilci bazlı performans karnesi PDF olarak indirme</Aciklama>
+      <Karsilik>ReportsApiController: /personnel-report-card + PersonnelReportCard.cshtml + Excel export</Karsilik>
+    </Ozellik>
+    <Ozellik kaynak="Video 5-6">
+      <Ad>Öneriler Raporu</Ad>
+      <Aciklama>Tüm değerlendirmelerdeki önerilerin ve notların toplu listesi, filtreleme ve Excel export</Aciklama>
+      <Karsilik>ReportsApiController: /suggestions, /suggestions/top-questions, /suggestions/export + Suggestions.cshtml + Suggestions.js</Karsilik>
+    </Ozellik>
+    <Ozellik kaynak="Video 17">
+      <Ad>Firma Olarak Görüntüle (Impersonate)</Ad>
+      <Aciklama>Admin'in firma yetkili perspektifinden sistemi görmesi</Aciklama>
+      <Karsilik>AuthController: /impersonation endpoints + JwtHelper impersonation token + _Layout banner/modal</Karsilik>
+    </Ozellik>
+    <Ozellik kaynak="Video 3">
+      <Ad>Müşteri Portalı</Ad>
+      <Aciklama>Müşteri personelinin giriş yapıp değerlendirme sonuçlarını ve raporları göreceği portal</Aciklama>
+      <Karsilik>CustomerPortalController, CustomerPortalApiController: Login, Dashboard, Branches, Evaluations, Reports sayfaları</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Ozellik>
+    <Ozellik kaynak="Yeni">
+      <Ad>Admin AppSettings Yönetimi</Ad>
+      <Aciklama>Admin panelden dinamik sistem ayarlarını yönetme</Aciklama>
+      <Karsilik>SettingsController, AppSettingsApiController: CRUD + kategori filtresi + tip desteği</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Ozellik>
+    <Ozellik kaynak="Yeni">
+      <Ad>Çoklu Dil Desteği (Localization)</Ad>
+      <Aciklama>NopCommerce tarzı dinamik çeviri sistemi - 4 dil (TR, EN, ES, DE)</Aciklama>
+      <Karsilik>LocalizationService, LocalizationApiController, Language/LocaleStringResource entities, XML import/export</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Ozellik>
+    <Ozellik kaynak="Video 8-9">
+      <Ad>GBF (Gizli Banka Formu)</Ad>
+      <Aciklama>Banka şubelerinin gizli müşteri ziyaretleri ile değerlendirilmesi modülü</Aciklama>
+      <Karsilik>BankVisitDetails entity, BankVisitsApiController, BankVisitsController, BankVisits View + JS, 13 senaryo tipi, 50+ değerlendirme alanı</Karsilik>
+      <TamamlanmaTarihi>2025-12-14</TamamlanmaTarihi>
+    </Ozellik>
+  </TamamlananOzellikler>
+
+  <BekleyenOzellikler>
+    <!-- ORTA ÖNCELİKLİ -->
+    <Ozellik oncelik="Orta" modul="Dashboard">
+      <Ad>Mobil Uygulama</Ad>
+      <Aciklama>Mobil uygulama desteği</Aciklama>
+    </Ozellik>
+
+    <!-- DÜŞÜK ÖNCELİKLİ -->
+    <Ozellik oncelik="Düşük" modul="Raporlama">
+      <Ad>PowerPoint Export</Ad>
+      <Aciklama>Otomatik PowerPoint rapor oluşturma (Kullanıcı talebiyle öncelik düşürüldü)</Aciklama>
+    </Ozellik>
+
+    <!-- DÜŞÜK ÖNCELİKLİ -->
+    <Ozellik oncelik="Düşük" modul="9">
+      <Ad>Uzaktan Eğitim Yönetimi</Ad>
+      <Aciklama>Online eğitim modülü</Aciklama>
+    </Ozellik>
+    <Ozellik oncelik="Düşük" modul="9">
+      <Ad>İçerik Yönetimi</Ad>
+      <Aciklama>Döküman yönetim sistemi</Aciklama>
+    </Ozellik>
+    <Ozellik oncelik="Düşük" modul="9">
+      <Ad>Ekipman Yönetimi</Ad>
+      <Aciklama>Ekipman takip sistemi</Aciklama>
+    </Ozellik>
+    <Ozellik oncelik="Düşük" modul="9">
+      <Ad>Alt Yüklenici Yönetimi</Ad>
+      <Aciklama>Tedarikçi yönetimi</Aciklama>
+    </Ozellik>
+    <Ozellik oncelik="Düşük" modul="9">
+      <Ad>Destek Yönetimi</Ad>
+      <Aciklama>Destek talep sistemi</Aciklama>
+    </Ozellik>
+  </BekleyenOzellikler>
+
+  <!-- ============================================== -->
+  <!-- MÜŞTERİ SORUNLARI VE BİZİM AVANTAJLARIMIZ -->
+  <!-- ============================================== -->
+
+  <MusteriSorunlari>
+    <Sorun>Sistem yavaşlığı - veri yükü nedeniyle raporlar açılmıyor</Sorun>
+    <Sorun>Personel oluşturma süreci karmaşık - çok adımlı</Sorun>
+    <Sorun>Fake kullanıcı oluşturma zorunluluğu - firma görünümü için</Sorun>
+    <Sorun>TC Kimlik numarası bilinmediğinde sorun yaşanıyor</Sorun>
+    <Sorun>Kapatılan form tekrar açılamıyor</Sorun>
+  </MusteriSorunlari>
+
+  <BizimAvantajlar>
+    <Avantaj>Personel oluşturma tek adımda</Avantaj>
+    <Avantaj>Modern teknoloji stack - daha hızlı</Avantaj>
+    <Avantaj>TC Kimlik opsiyonel yapılabilir</Avantaj>
+    <Avantaj>Admin "Firma Olarak Görüntüle" özelliği eklenebilir</Avantaj>
+    <Avantaj>Form taslağa alma özelliği eklenebilir</Avantaj>
+  </BizimAvantajlar>
+
+  <TranskriptKaynagi>
+    <Dosya>C:\Users\ahmet\Pictures\screetcustomer\transcripts\tum_transkriptler.txt</Dosya>
+    <ToplamVideo>17</ToplamVideo>
+    <Tarih>2025-12-13</Tarih>
+  </TranskriptKaynagi>
+
+  <!-- ============================================== -->
+  <!-- İŞ HEDEFİ VE VİZYON -->
+  <!-- ============================================== -->
+
+  <IsHedefi>
+    <Gercek>
+      Bu proje başlangıçta bir müşteri tarafından yaptırıldı (Gizli Müşteri Değerlendirme Sistemi).
+    </Gercek>
+    <Vizyon>
+      Bu sistemi dinamik bir iş takip programına dönüştürmek istiyoruz.
+      Müşteriler istediğinde özelleştirip satılabilir bir ürün haline getirmek hedefleniyor.
+    </Vizyon>
+    <HedefPazar>
+      - Çağrı merkezi kalite değerlendirme şirketleri
+      - Gizli müşteri araştırma firmaları
+      - Kurumsal şirketlerin kalite departmanları
+      - Denetim ve değerlendirme şirketleri
+    </HedefPazar>
+    <DinamikOzellikler>
+      - Çoklu dil desteği (TR/EN ve daha fazlası)
+      - Özelleştirilebilir kontrol listeleri
+      - Müşteri bazlı tema/branding
+      - Modüler yapı - ihtiyaca göre açılıp kapanabilir özellikler
+    </DinamikOzellikler>
+    <EklenmeTarihi>2025-12-14</EklenmeTarihi>
+  </IsHedefi>
+
+</NewfoundAnaliz>

@@ -78,5 +78,5 @@ nul
 # Uploads
 **/uploads/
 
-# Storage (Documentation ve analiz dosyaları - müşteriye gitmeyecek)
-Storage/
+# Storage/ScreenShots (test dosyaları - repo şişmesin)
+Storage/ScreenShots/
