@@ -10,6 +10,9 @@ public class EvaluationConfiguration : IEntityTypeConfiguration<Evaluation>
     {
         builder.HasKey(e => e.Id);
 
+        // Veritabanı kolon adını korumak için
+        builder.Property(e => e.StatusId).HasColumnName("Status");
+
         builder.Property(e => e.TotalScore)
             .HasPrecision(10, 2);
 

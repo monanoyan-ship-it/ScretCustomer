@@ -56,12 +56,12 @@ public class UsersApiController : BaseApiController
         }
     }
 
-    [HttpGet("role/{role}")]
-    public async Task<IActionResult> GetByRole(UserRole role)
+    [HttpGet("role/{roleId:int}")]
+    public async Task<IActionResult> GetByRole(int roleId)
     {
         try
         {
-            var users = await _userService.GetByRoleAsync(role);
+            var users = await _userService.GetByRoleIdAsync(roleId);
             return Ok(users);
         }
         catch (Exception ex)

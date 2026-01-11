@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -70,7 +71,7 @@ public class AppSettingsApiController : BaseApiController
         var setting = await _settingsService.SetAsync(
             dto.Key,
             dto.Value ?? "",
-            dto.ValueType,
+            dto.ValueTypeId,
             dto.Category ?? "General",
             dto.Description
         );
@@ -90,7 +91,7 @@ public class AppSettingsApiController : BaseApiController
         var setting = await _settingsService.SetAsync(
             key,
             dto.Value ?? "",
-            dto.ValueType,
+            dto.ValueTypeId,
             dto.Category ?? existing.Category,
             dto.Description ?? existing.Description
         );
@@ -121,7 +122,7 @@ public class AppSettingsApiController : BaseApiController
     {
         public string Key { get; set; } = string.Empty;
         public string? Value { get; set; }
-        public SettingValueType ValueType { get; set; } = SettingValueType.String;
+        public int ValueTypeId { get; set; } = SettingValueTypes.Ids.String;
         public string? Category { get; set; }
         public string? Description { get; set; }
     }

@@ -59,7 +59,7 @@ public class UpdateExcelColumnDto
     public int? Id { get; set; }  // Null for new columns
     public string ColumnName { get; set; } = string.Empty;
     public string PropertyName { get; set; } = string.Empty;
-    public Core.Enums.ExcelColumnType ColumnType { get; set; }
+    public int ColumnTypeId { get; set; } = Core.Enums.ExcelColumnTypes.Ids.Text;
     public int Order { get; set; }
     public bool IsRequired { get; set; } = false;
     public Dictionary<string, object>? ValidationRules { get; set; }

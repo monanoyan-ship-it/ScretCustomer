@@ -22,6 +22,9 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.Property(a => a.ExternalName)
             .HasMaxLength(200);
 
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(a => a.TypeId).HasColumnName("Type");
+
         builder.HasOne(a => a.Project)
             .WithMany(p => p.Assignments)
             .HasForeignKey(a => a.ProjectId)

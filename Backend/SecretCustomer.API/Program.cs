@@ -193,6 +193,7 @@ builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IPersonnelRequestService, PersonnelRequestService>();
+builder.Services.AddScoped<ISavedFilterService, SavedFilterService>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

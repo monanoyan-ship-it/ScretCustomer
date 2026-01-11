@@ -1,5 +1,6 @@
-using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Entities;
+
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -13,7 +14,7 @@ public interface IPermissionService
     /// <summary>
     /// Kullanıcının belirli bir yetkiye sahip olup olmadığını ve scope kontrolü yapar
     /// </summary>
-    Task<bool> HasPermissionAsync(int userId, string permissionCode, PermissionScope requiredScope);
+    Task<bool> HasPermissionAsync(int userId, string permissionCode, int requiredScopeId);
 
     /// <summary>
     /// Kullanıcının tüm yetkilerini getirir (Rol + Kullanıcı özeli kombinasyonu)
@@ -23,22 +24,22 @@ public interface IPermissionService
     /// <summary>
     /// Rolün tüm yetkilerini getirir
     /// </summary>
-    Task<IEnumerable<Permission>> GetRolePermissionsAsync(UserRole role);
+    Task<IEnumerable<Permission>> GetRolePermissionsAsync(int roleId);
 
     /// <summary>
     /// Role yetki ekler veya günceller
     /// </summary>
-    Task GrantRolePermissionAsync(UserRole role, int permissionId, PermissionScope scope = PermissionScope.All);
+    Task GrantRolePermissionAsync(int roleId, int permissionId, int scopeId = PermissionScopes.Ids.All);
 
     /// <summary>
     /// Rolden yetki kaldırır
     /// </summary>
-    Task RevokeRolePermissionAsync(UserRole role, int permissionId);
+    Task RevokeRolePermissionAsync(int roleId, int permissionId);
 
     /// <summary>
     /// Kullanıcıya özel yetki ekler veya günceller
     /// </summary>
-    Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, PermissionScope scope = PermissionScope.All);
+    Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, int scopeId = PermissionScopes.Ids.All);
 
     /// <summary>
     /// Kullanıcıdan özel yetkiyi kaldırır
@@ -53,5 +54,5 @@ public interface IPermissionService
     /// <summary>
     /// Kategoriye göre permission'ları getirir
     /// </summary>
-    Task<IEnumerable<Permission>> GetPermissionsByCategoryAsync(PermissionCategory category);
+    Task<IEnumerable<Permission>> GetPermissionsByCategoryAsync(int categoryId);
 }

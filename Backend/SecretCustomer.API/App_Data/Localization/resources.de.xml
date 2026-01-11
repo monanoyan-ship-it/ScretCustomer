@@ -4656,6 +4656,9 @@
   <LocaleResource Name="Api.Resource.DeleteSuccess">
     <Value>Ressource gelöscht.</Value>
   </LocaleResource>
+  <LocaleResource Name="Api.Resource.DeleteAllSuccess">
+    <Value>{0} Übersetzungsressourcen gelöscht.</Value>
+  </LocaleResource>
   <LocaleResource Name="Api.ExcelTemplate.NotFound">
     <Value>Vorlage nicht gefunden.</Value>
   </LocaleResource>
@@ -5601,6 +5604,9 @@
   <LocaleResource Name="Language.DeleteSuccess">
     <Value>Sprache gelöscht.</Value>
   </LocaleResource>
+  <LocaleResource Name="Language.DeleteAllResources">
+    <Value>Alle löschen</Value>
+  </LocaleResource>
   <LocaleResource Name="Language.ImportConfirmMessage">
     <Value>Möchten Sie Übersetzungen aus der Datei importieren?</Value>
   </LocaleResource>
@@ -5983,12 +5989,6 @@
   <LocaleResource Name="Evaluation.NewPersonnel">
     <Value>Neues Personal</Value>
   </LocaleResource>
-  <LocaleResource Name="Common.FirstName">
-    <Value>Vorname</Value>
-  </LocaleResource>
-  <LocaleResource Name="Common.LastName">
-    <Value>Nachname</Value>
-  </LocaleResource>
 
   <!-- Neue Übersetzungen - 2026-01-10 -->
 
@@ -5998,9 +5998,6 @@
   </LocaleResource>
   <LocaleResource Name="Assignment.Detail">
     <Value>Auftragsdetail</Value>
-  </LocaleResource>
-  <LocaleResource Name="Assignment.ChecklistAutoFilled">
-    <Value>Checkliste wird automatisch aus Projektdefinition übernommen</Value>
   </LocaleResource>
 
   <!-- Button -->
@@ -6041,9 +6038,6 @@
   </LocaleResource>
 
   <!-- CustomerPersonnel -->
-  <LocaleResource Name="CustomerPersonnel.JobTitle">
-    <Value>Berufsbezeichnung</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.JobTitlePlaceholder">
     <Value>Berufsbezeichnung eingeben</Value>
   </LocaleResource>
@@ -6453,5 +6447,1128 @@
   <!-- Customer Excel Export -->
   <LocaleResource Name="Customer.ExportToExcel">
     <Value>Nach Excel exportieren</Value>
+  </LocaleResource>
+
+  <!-- Auto-generated missing translations (needs translation) -->
+  <LocaleResource Name="Account.MustChangePassword">
+    <Value>[DE] Account.MustChangePassword</Value>
+  </LocaleResource>
+  <LocaleResource Name="Account.PasswordChangeErrorMessage">
+    <Value>[DE] Account.PasswordChangeErrorMessage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RejectReason">
+    <Value>[DE] Approval.RejectReason</Value>
+  </LocaleResource>
+  <LocaleResource Name="Approval.RejectReasonPlaceholder">
+    <Value>[DE] Approval.RejectReasonPlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AddPeriodHint">
+    <Value>[DE] Assignment.AddPeriodHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AllPersons">
+    <Value>[DE] Assignment.AllPersons</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AllProjects">
+    <Value>[DE] Assignment.AllProjects</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AllStatuses">
+    <Value>[DE] Assignment.AllStatuses</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AssignedPerson">
+    <Value>[DE] Assignment.AssignedPerson</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.AssigneePerson">
+    <Value>[DE] Assignment.AssigneePerson</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelConfirm">
+    <Value>[DE] Assignment.CancelConfirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelProcessError">
+    <Value>[DE] Assignment.CancelProcessError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.CancelTitle">
+    <Value>[DE] Assignment.CancelTitle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Create">
+    <Value>[DE] Assignment.Create</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DetailLoadError">
+    <Value>[DE] Assignment.DetailLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDateFrom">
+    <Value>[DE] Assignment.DueDateFrom</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.DueDateTo">
+    <Value>[DE] Assignment.DueDateTo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Edit">
+    <Value>[DE] Assignment.Edit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.External">
+    <Value>[DE] Assignment.External</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.FilterError">
+    <Value>[DE] Assignment.FilterError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.New">
+    <Value>[DE] Assignment.New</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NewAssigneeType">
+    <Value>[DE] Assignment.NewAssigneeType</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NewDueDateOptional">
+    <Value>[DE] Assignment.NewDueDateOptional</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NoPeriods">
+    <Value>[DE] Assignment.NoPeriods</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.NoRecords">
+    <Value>[DE] Assignment.NoRecords</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Periods">
+    <Value>[DE] Assignment.Periods</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.Reassign">
+    <Value>[DE] Assignment.Reassign</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignProcessError">
+    <Value>[DE] Assignment.ReassignProcessError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
+    <Value>[DE] Assignment.ReassignReasonPlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReopenConfirm">
+    <Value>[DE] Assignment.ReopenConfirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReopenError">
+    <Value>[DE] Assignment.ReopenError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReopenProcessError">
+    <Value>[DE] Assignment.ReopenProcessError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReopenSuccess">
+    <Value>[DE] Assignment.ReopenSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ReopenTitle">
+    <Value>[DE] Assignment.ReopenTitle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.SelectFirst">
+    <Value>[DE] Assignment.SelectFirst</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ThisAssignment">
+    <Value>[DE] Assignment.ThisAssignment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.OpenForm">
+    <Value>[DE] Button.OpenForm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.QRCode">
+    <Value>[DE] Button.QRCode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.Reopen">
+    <Value>[DE] Button.Reopen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Button.Save">
+    <Value>[DE] Button.Save</Value>
+  </LocaleResource>
+  <LocaleResource Name="Card.Red">
+    <Value>[DE] Card.Red</Value>
+  </LocaleResource>
+  <LocaleResource Name="Card.Yellow">
+    <Value>[DE] Card.Yellow</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AddSubCriteria">
+    <Value>[DE] Checklist.AddSubCriteria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.AllOrganizations">
+    <Value>[DE] Checklist.AllOrganizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.General">
+    <Value>[DE] Checklist.General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.MaxPointsHelp">
+    <Value>[DE] Checklist.MaxPointsHelp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.MaxTotalPointsHelp">
+    <Value>[DE] Checklist.MaxTotalPointsHelp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Name">
+    <Value>[DE] Checklist.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoQuestionsWarning">
+    <Value>[DE] Checklist.NoQuestionsWarning</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoRedCard">
+    <Value>[DE] Checklist.NoRedCard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.NoYellowCard">
+    <Value>[DE] Checklist.NoYellowCard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.QuestionSummary">
+    <Value>[DE] Checklist.QuestionSummary</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.RedCardWeightPoints">
+    <Value>[DE] Checklist.RedCardWeightPoints</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Required">
+    <Value>[DE] Checklist.Required</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoredQuestions">
+    <Value>[DE] Checklist.ScoredQuestions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoredWeightPoints">
+    <Value>[DE] Checklist.ScoredWeightPoints</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringType">
+    <Value>[DE] Checklist.ScoringType</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringType.Penalty">
+    <Value>[DE] Checklist.ScoringType.Penalty</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringType.Scored">
+    <Value>[DE] Checklist.ScoringType.Scored</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.ScoringType.Unscored">
+    <Value>[DE] Checklist.ScoringType.Unscored</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SearchPlaceholder">
+    <Value>[DE] Checklist.SearchPlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Step2.Questions">
+    <Value>[DE] Checklist.Step2.Questions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SubCriteria">
+    <Value>[DE] Checklist.SubCriteria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SubCriteriaDescription">
+    <Value>[DE] Checklist.SubCriteriaDescription</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SubCriteriaHelp">
+    <Value>[DE] Checklist.SubCriteriaHelp</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.YellowCardWeightPoints">
+    <Value>[DE] Checklist.YellowCardWeightPoints</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Action">
+    <Value>[DE] Common.Action</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AddFilter">
+    <Value>[DE] Common.AddFilter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllFieldsRequired">
+    <Value>[DE] Common.AllFieldsRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllOrganizations">
+    <Value>[DE] Common.AllOrganizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllSupervisors">
+    <Value>[DE] Common.AllSupervisors</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AverageScore">
+    <Value>[DE] Common.AverageScore</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Branch">
+    <Value>[DE] Common.Branch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.City">
+    <Value>[DE] Common.City</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ClearAll">
+    <Value>[DE] Common.ClearAll</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ClearFilter">
+    <Value>[DE] Common.ClearFilter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.CreatedDate">
+    <Value>[DE] Common.CreatedDate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DateRange">
+    <Value>[DE] Common.DateRange</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DaysLeft">
+    <Value>[DE] Common.DaysLeft</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DaysPassed">
+    <Value>[DE] Common.DaysPassed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Department">
+    <Value>[DE] Common.Department</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Evaluation">
+    <Value>[DE] Common.Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.File">
+    <Value>[DE] Common.File</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.FullNamePlaceholder">
+    <Value>[DE] Common.FullNamePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.History">
+    <Value>[DE] Common.History</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Important">
+    <Value>[DE] Common.Important</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LinkCopied">
+    <Value>[DE] Common.LinkCopied</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LinkCopyError">
+    <Value>[DE] Common.LinkCopyError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Location">
+    <Value>[DE] Common.Location</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.News">
+    <Value>[DE] Common.News</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NoDescription">
+    <Value>[DE] Common.NoDescription</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NoRecords">
+    <Value>[DE] Common.NoRecords</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Notes">
+    <Value>[DE] Common.Notes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OpenLink">
+    <Value>[DE] Common.OpenLink</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OptionalNotes">
+    <Value>[DE] Common.OptionalNotes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Page">
+    <Value>[DE] Common.Page</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PageSize">
+    <Value>[DE] Common.PageSize</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Password">
+    <Value>[DE] Common.Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PerformedBy">
+    <Value>[DE] Common.PerformedBy</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Processing">
+    <Value>[DE] Common.Processing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Reason">
+    <Value>[DE] Common.Reason</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Records">
+    <Value>[DE] Common.Records</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Relations">
+    <Value>[DE] Common.Relations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Result">
+    <Value>[DE] Common.Result</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SearchPersonnel">
+    <Value>[DE] Common.SearchPersonnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectFilter">
+    <Value>[DE] Common.SelectFilter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Supervisor">
+    <Value>[DE] Common.Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Syncing">
+    <Value>[DE] Common.Syncing</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.System">
+    <Value>[DE] Common.System</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Tags">
+    <Value>[DE] Common.Tags</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Title">
+    <Value>[DE] Common.Title</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.TotalRecords">
+    <Value>[DE] Common.TotalRecords</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Type">
+    <Value>[DE] Common.Type</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Username">
+    <Value>[DE] Common.Username</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Version">
+    <Value>[DE] Common.Version</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ViewAll">
+    <Value>[DE] Common.ViewAll</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.AddOperator">
+    <Value>[DE] Customer.AddOperator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.AddOperatorToSupervisor">
+    <Value>[DE] Customer.AddOperatorToSupervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.AddSupervisorOrManager">
+    <Value>[DE] Customer.AddSupervisorOrManager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Description">
+    <Value>[DE] Customer.Description</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.EditOrganization">
+    <Value>[DE] Customer.EditOrganization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.HasTeamMembers">
+    <Value>[DE] Customer.HasTeamMembers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.IndependentOperatorInfo">
+    <Value>[DE] Customer.IndependentOperatorInfo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.IndependentOperators">
+    <Value>[DE] Customer.IndependentOperators</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.MakeIndependent">
+    <Value>[DE] Customer.MakeIndependent</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.MakeIndependentConfirm">
+    <Value>[DE] Customer.MakeIndependentConfirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.MakeIndependentError">
+    <Value>[DE] Customer.MakeIndependentError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.MakeIndependentSuccess">
+    <Value>[DE] Customer.MakeIndependentSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Managers">
+    <Value>[DE] Customer.Managers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewIndependentOperator">
+    <Value>[DE] Customer.NewIndependentOperator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewOrganization">
+    <Value>[DE] Customer.NewOrganization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NewSupervisor">
+    <Value>[DE] Customer.NewSupervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoIndependentOperators">
+    <Value>[DE] Customer.NoIndependentOperators</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoOrganizations">
+    <Value>[DE] Customer.NoOrganizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoPersonnelInOrg">
+    <Value>[DE] Customer.NoPersonnelInOrg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationCode">
+    <Value>[DE] Customer.OrganizationCode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationCodePlaceholder">
+    <Value>[DE] Customer.OrganizationCodePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationManagement">
+    <Value>[DE] Customer.OrganizationManagement</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationName">
+    <Value>[DE] Customer.OrganizationName</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationNamePlaceholder">
+    <Value>[DE] Customer.OrganizationNamePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Organizations">
+    <Value>[DE] Customer.Organizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrganizationsBranches">
+    <Value>[DE] Customer.OrganizationsBranches</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrgManager">
+    <Value>[DE] Customer.OrgManager</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.OrNewCreate">
+    <Value>[DE] Customer.OrNewCreate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.PersonnelStructure">
+    <Value>[DE] Customer.PersonnelStructure</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.RemoveFromOrg">
+    <Value>[DE] Customer.RemoveFromOrg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SelectDelegate">
+    <Value>[DE] Customer.SelectDelegate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SelectFromPool">
+    <Value>[DE] Customer.SelectFromPool</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SelectNewSupervisor">
+    <Value>[DE] Customer.SelectNewSupervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SelectOrganization">
+    <Value>[DE] Customer.SelectOrganization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.TeamMembersCount">
+    <Value>[DE] Customer.TeamMembersCount</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.TransferAndRemove">
+    <Value>[DE] Customer.TransferAndRemove</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Code">
+    <Value>[DE] CustomerOrganization.Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.CreateFirst">
+    <Value>[DE] CustomerOrganization.CreateFirst</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Customers">
+    <Value>[DE] CustomerOrganization.Customers</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Description">
+    <Value>[DE] CustomerOrganization.Description</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.EditOrganization">
+    <Value>[DE] CustomerOrganization.EditOrganization</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.List">
+    <Value>[DE] CustomerOrganization.List</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Name">
+    <Value>[DE] CustomerOrganization.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NamePlaceholder">
+    <Value>[DE] CustomerOrganization.NamePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NewOrganization">
+    <Value>[DE] CustomerOrganization.NewOrganization</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NewPersonnel">
+    <Value>[DE] CustomerOrganization.NewPersonnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NewPersonnelTitle">
+    <Value>[DE] CustomerOrganization.NewPersonnelTitle</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoCustomers">
+    <Value>[DE] CustomerOrganization.NoCustomers</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoOrganizations">
+    <Value>[DE] CustomerOrganization.NoOrganizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Order">
+    <Value>[DE] CustomerOrganization.Order</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.PasswordHint">
+    <Value>[DE] CustomerOrganization.PasswordHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.PersonnelNoOrgInfo">
+    <Value>[DE] CustomerOrganization.PersonnelNoOrgInfo</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.SelectCustomer">
+    <Value>[DE] CustomerOrganization.SelectCustomer</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Title">
+    <Value>[DE] CustomerOrganization.Title</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.UsernameHint">
+    <Value>[DE] CustomerOrganization.UsernameHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.AllCustomers">
+    <Value>[DE] CustomerPersonnel.AllCustomers</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Customer">
+    <Value>[DE] CustomerPersonnel.Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Edit">
+    <Value>[DE] CustomerPersonnel.Edit</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Manager">
+    <Value>[DE] CustomerPersonnel.Manager</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.New">
+    <Value>[DE] CustomerPersonnel.New</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.NoPersonnel">
+    <Value>[DE] CustomerPersonnel.NoPersonnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Operator">
+    <Value>[DE] CustomerPersonnel.Operator</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.SelectCustomer">
+    <Value>[DE] CustomerPersonnel.SelectCustomer</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.OrganizationCount">
+    <Value>[DE] CustomerPortal.Dashboard.OrganizationCount</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.AnnouncementsLoadError">
+    <Value>[DE] Dashboard.AnnouncementsLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Completed">
+    <Value>[DE] Dashboard.Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Count">
+    <Value>[DE] Dashboard.Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.DailyTarget">
+    <Value>[DE] Dashboard.DailyTarget</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.EvaluationCount">
+    <Value>[DE] Dashboard.EvaluationCount</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.MinMax">
+    <Value>[DE] Dashboard.MinMax</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.MyEvaluations">
+    <Value>[DE] Dashboard.MyEvaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.NoDataToday">
+    <Value>[DE] Dashboard.NoDataToday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.NoEvaluationsThisMonth">
+    <Value>[DE] Dashboard.NoEvaluationsThisMonth</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.NoMatchingEvaluations">
+    <Value>[DE] Dashboard.NoMatchingEvaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Period">
+    <Value>[DE] Dashboard.Period</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.PeriodTarget">
+    <Value>[DE] Dashboard.PeriodTarget</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.PersonnelAnalysis">
+    <Value>[DE] Dashboard.PersonnelAnalysis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Remaining">
+    <Value>[DE] Dashboard.Remaining</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Score">
+    <Value>[DE] Dashboard.Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.SupervisorAnalysis">
+    <Value>[DE] Dashboard.SupervisorAnalysis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Target">
+    <Value>[DE] Dashboard.Target</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.ThisWeek">
+    <Value>[DE] Dashboard.ThisWeek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Today">
+    <Value>[DE] Dashboard.Today</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TopEvaluatorsMonth">
+    <Value>[DE] Dashboard.TopEvaluatorsMonth</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.TopEvaluatorsToday">
+    <Value>[DE] Dashboard.TopEvaluatorsToday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.Total">
+    <Value>[DE] Dashboard.Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.User">
+    <Value>[DE] Dashboard.User</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.WeeklyTrend">
+    <Value>[DE] Dashboard.WeeklyTrend</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.DetailLoadError">
+    <Value>[DE] DraftRequest.DetailLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="DraftRequest.NoEvaluationLinked">
+    <Value>[DE] DraftRequest.NoEvaluationLinked</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Assignee">
+    <Value>[DE] Evaluation.Assignee</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluatedInfo">
+    <Value>[DE] Evaluation.EvaluatedInfo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Form">
+    <Value>[DE] Evaluation.Form</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.GoToForm">
+    <Value>[DE] Evaluation.GoToForm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Group">
+    <Value>[DE] Evaluation.Group</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnelFirstNameRequired">
+    <Value>[DE] Evaluation.NewPersonnelFirstNameRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NewPersonnelLastNameRequired">
+    <Value>[DE] Evaluation.NewPersonnelLastNameRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NoPersonnelFound">
+    <Value>[DE] Evaluation.NoPersonnelFound</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.PeriodOpen">
+    <Value>[DE] Evaluation.PeriodOpen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SearchPersonnel">
+    <Value>[DE] Evaluation.SearchPersonnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Supervisor">
+    <Value>[DE] Evaluation.Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.UniqueLink">
+    <Value>[DE] Evaluation.UniqueLink</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.EnterChecklistName">
+    <Value>[DE] Import.EnterChecklistName</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.AssignmentsCreated">
+    <Value>[DE] InternalAssignments.AssignmentsCreated</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.CreateError">
+    <Value>[DE] InternalAssignments.CreateError</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.DeleteError">
+    <Value>[DE] InternalAssignments.DeleteError</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.DeleteSuccess">
+    <Value>[DE] InternalAssignments.DeleteSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.DetailLoadError">
+    <Value>[DE] InternalAssignments.DetailLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.FillAllFields">
+    <Value>[DE] InternalAssignments.FillAllFields</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.LoadError">
+    <Value>[DE] InternalAssignments.LoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="InternalAssignments.ThisAssignment">
+    <Value>[DE] InternalAssignments.ThisAssignment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Key.Name">
+    <Value>[DE] Key.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.CallDate">
+    <Value>[DE] Listenings.CallDate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.CallId">
+    <Value>[DE] Listenings.CallId</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.CallTime">
+    <Value>[DE] Listenings.CallTime</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Cards">
+    <Value>[DE] Listenings.Cards</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Detail">
+    <Value>[DE] Listenings.Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Duration">
+    <Value>[DE] Listenings.Duration</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Evaluator">
+    <Value>[DE] Listenings.Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.NoRecords">
+    <Value>[DE] Listenings.NoRecords</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Period">
+    <Value>[DE] Listenings.Period</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Personnel">
+    <Value>[DE] Listenings.Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Score">
+    <Value>[DE] Listenings.Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Supervisor">
+    <Value>[DE] Listenings.Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Title">
+    <Value>[DE] Listenings.Title</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.AuditLogs">
+    <Value>[DE] Menu.AuditLogs</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.Listenings">
+    <Value>[DE] Menu.Listenings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.FilterError">
+    <Value>[DE] Message.FilterError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LinkCopied">
+    <Value>[DE] Message.LinkCopied</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LinkCopiedToClipboard">
+    <Value>[DE] Message.LinkCopiedToClipboard</Value>
+  </LocaleResource>
+  <LocaleResource Name="Message.LinkCopyError">
+    <Value>[DE] Message.LinkCopyError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.CreateSuccess">
+    <Value>[DE] Organization.CreateSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DeleteConfirm">
+    <Value>[DE] Organization.DeleteConfirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DeleteError">
+    <Value>[DE] Organization.DeleteError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DeleteSuccess">
+    <Value>[DE] Organization.DeleteSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.LoadError">
+    <Value>[DE] Organization.LoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NameRequired">
+    <Value>[DE] Organization.NameRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SaveError">
+    <Value>[DE] Organization.SaveError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.UpdateSuccess">
+    <Value>[DE] Organization.UpdateSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Password.MinLength">
+    <Value>[DE] Password.MinLength</Value>
+  </LocaleResource>
+  <LocaleResource Name="Password.Mismatch">
+    <Value>[DE] Password.Mismatch</Value>
+  </LocaleResource>
+  <LocaleResource Name="Password.ResetError">
+    <Value>[DE] Password.ResetError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Password.ResetSuccess">
+    <Value>[DE] Password.ResetSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Add">
+    <Value>[DE] Period.Add</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.CreateError">
+    <Value>[DE] Period.CreateError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.CreateSuccess">
+    <Value>[DE] Period.CreateSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.DailyTarget">
+    <Value>[DE] Period.DailyTarget</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.DailyTargetHint">
+    <Value>[DE] Period.DailyTargetHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.DateRange">
+    <Value>[DE] Period.DateRange</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.EndDate">
+    <Value>[DE] Period.EndDate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.EndDateRequired">
+    <Value>[DE] Period.EndDateRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.InvalidDateRange">
+    <Value>[DE] Period.InvalidDateRange</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Name">
+    <Value>[DE] Period.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.NameHint">
+    <Value>[DE] Period.NameHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.NamePlaceholder">
+    <Value>[DE] Period.NamePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.NameRequired">
+    <Value>[DE] Period.NameRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.StartDate">
+    <Value>[DE] Period.StartDate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.StartDateRequired">
+    <Value>[DE] Period.StartDateRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.TargetRequired">
+    <Value>[DE] Period.TargetRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.SyncPermissions">
+    <Value>[DE] Permission.SyncPermissions</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignError">
+    <Value>[DE] Personnel.AssignError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.AssignSuccess">
+    <Value>[DE] Personnel.AssignSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.ChangePassword">
+    <Value>[DE] Personnel.ChangePassword</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.ConfirmPassword">
+    <Value>[DE] Personnel.ConfirmPassword</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.CreateError">
+    <Value>[DE] Personnel.CreateError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.LastLogin">
+    <Value>[DE] Personnel.LastLogin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.ManagerCreated">
+    <Value>[DE] Personnel.ManagerCreated</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.NewPassword">
+    <Value>[DE] Personnel.NewPassword</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.OperatorAssignSuccess">
+    <Value>[DE] Personnel.OperatorAssignSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.OperatorCreated">
+    <Value>[DE] Personnel.OperatorCreated</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Password">
+    <Value>[DE] Personnel.Password</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RemoveError">
+    <Value>[DE] Personnel.RemoveError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RemoveFromOrgConfirm">
+    <Value>[DE] Personnel.RemoveFromOrgConfirm</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RemoveSuccess">
+    <Value>[DE] Personnel.RemoveSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role">
+    <Value>[DE] Personnel.Role</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.RoleRequired">
+    <Value>[DE] Personnel.RoleRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Stats">
+    <Value>[DE] Personnel.Stats</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.SupervisorCreated">
+    <Value>[DE] Personnel.SupervisorCreated</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.TransferError">
+    <Value>[DE] Personnel.TransferError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.TransferSuccess">
+    <Value>[DE] Personnel.TransferSuccess</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Username">
+    <Value>[DE] Personnel.Username</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.NoEvaluationLinked">
+    <Value>[DE] PersonnelRequest.NoEvaluationLinked</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.FillAllFields">
+    <Value>[DE] Profile.FillAllFields</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.LoadErrorMessage">
+    <Value>[DE] Profile.LoadErrorMessage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.NameRequired">
+    <Value>[DE] Profile.NameRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordChanged">
+    <Value>[DE] Profile.PasswordChanged</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordChangeError">
+    <Value>[DE] Profile.PasswordChangeError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordChangeFailed">
+    <Value>[DE] Profile.PasswordChangeFailed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.PasswordChangeRequired">
+    <Value>[DE] Profile.PasswordChangeRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateErrorMessage">
+    <Value>[DE] Profile.UpdateErrorMessage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.UpdateFailed">
+    <Value>[DE] Profile.UpdateFailed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AllCompany">
+    <Value>[DE] Project.AllCompany</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.FilesLoadError">
+    <Value>[DE] Project.FilesLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Organization">
+    <Value>[DE] Project.Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.OrganizationHint">
+    <Value>[DE] Project.OrganizationHint</Value>
+  </LocaleResource>
+  <LocaleResource Name="Question.GroupNamePlaceholder">
+    <Value>[DE] Question.GroupNamePlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DetailedExcelDownloadError">
+    <Value>[DE] Report.DetailedExcelDownloadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DetailLoadError">
+    <Value>[DE] Report.DetailLoadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExcelDownloadError">
+    <Value>[DE] Report.ExcelDownloadError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExcelExportError">
+    <Value>[DE] Report.ExcelExportError</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadErrorMessage">
+    <Value>[DE] Report.LoadErrorMessage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerPersonnel">
+    <Value>[DE] Role.CustomerPersonnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.EmailExists">
+    <Value>[DE] User.EmailExists</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.FieldWorker">
+    <Value>[DE] User.FieldWorker</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.Phone">
+    <Value>[DE] User.Phone</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.QualitySpecialist">
+    <Value>[DE] User.QualitySpecialist</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.SystemUsers">
+    <Value>[DE] User.SystemUsers</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.UsernameExists">
+    <Value>[DE] User.UsernameExists</Value>
+  </LocaleResource>
+  <LocaleResource Name="User.UsernameInvalid">
+    <Value>[DE] User.UsernameInvalid</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.CustomerRequired">
+    <Value>[DE] Validation.CustomerRequired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Validation.PasswordMinLength">
+    <Value>[DE] Validation.PasswordMinLength</Value>
+  </LocaleResource>
+
+  <!-- Synced from TR (needs German translation) -->
+  <LocaleResource Name="Api.Assignment.ProjectNotActive">
+    <Value>[DE] Proje aktif olmadığı için atama yapılamaz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.ProjectNotActive">
+    <Value>[DE] Proje aktif olmadığı için değerlendirme başlatılamaz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentStatus.Cancelled">
+    <Value>[DE] İptal Edildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentStatus.Completed">
+    <Value>[DE] Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentStatus.Expired">
+    <Value>[DE] Süresi Doldu</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentStatus.InProgress">
+    <Value>[DE] Devam Ediyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentStatus.Pending">
+    <Value>[DE] Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentType.CustomerPersonnel">
+    <Value>[DE] Müşteri Personeli Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentType.ExternalCustomer">
+    <Value>[DE] Dış Müşteri Anketi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentType.FieldWorker">
+    <Value>[DE] Saha Çalışanı Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentType.InternalBranch">
+    <Value>[DE] İç Şube Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssignmentType.InternalUser">
+    <Value>[DE] İç Kullanıcı Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last30Days">
+    <Value>[DE] Son 30 Gün</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last7Days">
+    <Value>[DE] Son 7 Gün</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastMonth">
+    <Value>[DE] Geçen Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastWeek">
+    <Value>[DE] Geçen Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisMonth">
+    <Value>[DE] Bu Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisQuarter">
+    <Value>[DE] Bu Çeyrek</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisWeek">
+    <Value>[DE] Bu Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisYear">
+    <Value>[DE] Bu Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Today">
+    <Value>[DE] Bugün</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Yesterday">
+    <Value>[DE] Dün</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationStatus.Cancelled">
+    <Value>[DE] İptal Edildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationStatus.Completed">
+    <Value>[DE] Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationStatus.Draft">
+    <Value>[DE] Taslak</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationStatus.InProgress">
+    <Value>[DE] Devam Ediyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationStatus.Pending">
+    <Value>[DE] Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Active">
+    <Value>[DE] Aktif</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Cancelled">
+    <Value>[DE] İptal Edildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Completed">
+    <Value>[DE] Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Draft">
+    <Value>[DE] Taslak</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Paused">
+    <Value>[DE] Duraklatıldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectStatus.Planned">
+    <Value>[DE] Planlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.CallAuditing">
+    <Value>[DE] Çağrı Denetleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.CustomerSatisfaction">
+    <Value>[DE] Müşteri Memnuniyeti</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.MysteryShopping">
+    <Value>[DE] Gizli Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.OnlineSurvey">
+    <Value>[DE] Online Anket</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.PhysicalAudit">
+    <Value>[DE] Fiziksel Denetim</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.QualityControl">
+    <Value>[DE] Kalite Kontrol</Value>
+  </LocaleResource>
+  <LocaleResource Name="ProjectType.TrainingEvaluation">
+    <Value>[DE] Eğitim Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.Likert">
+    <Value>[DE] Likert Ölçeği</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.MultipleChoice">
+    <Value>[DE] Çoktan Seçmeli</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.Rating">
+    <Value>[DE] Puan Derecelendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.Star">
+    <Value>[DE] Yıldız Derecelendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.Text">
+    <Value>[DE] Açık Uçlu Metin</Value>
+  </LocaleResource>
+  <LocaleResource Name="QuestionType.YesNo">
+    <Value>[DE] Evet/Hayır</Value>
   </LocaleResource>
 </Language>

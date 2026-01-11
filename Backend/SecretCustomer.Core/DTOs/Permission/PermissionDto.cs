@@ -1,6 +1,8 @@
 using SecretCustomer.Core.Enums;
 
+
 namespace SecretCustomer.Core.DTOs.Permission;
+
 
 /// <summary>
 /// Permission DTO - Yetki detayları
@@ -10,7 +12,7 @@ public class PermissionDto
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
-    public PermissionCategory Category { get; set; }
+    public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
@@ -23,13 +25,13 @@ public class PermissionDto
 public class RolePermissionDto
 {
     public int Id { get; set; }
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public int PermissionId { get; set; }
     public string PermissionCode { get; set; } = string.Empty;
     public string PermissionDisplayName { get; set; } = string.Empty;
     public bool IsGranted { get; set; }
-    public PermissionScope Scope { get; set; }
+    public int ScopeId { get; set; }
     public string ScopeName { get; set; } = string.Empty;
     public string? Notes { get; set; }
 }
@@ -46,7 +48,7 @@ public class UserPermissionDto
     public string PermissionCode { get; set; } = string.Empty;
     public string PermissionDisplayName { get; set; } = string.Empty;
     public bool IsGranted { get; set; }
-    public PermissionScope Scope { get; set; }
+    public int ScopeId { get; set; }
     public string ScopeName { get; set; } = string.Empty;
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
@@ -58,10 +60,10 @@ public class UserPermissionDto
 /// </summary>
 public class GrantRolePermissionDto
 {
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
     public int PermissionId { get; set; }
     public bool IsGranted { get; set; } = true;
-    public PermissionScope Scope { get; set; } = PermissionScope.All;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.All;
     public string? Notes { get; set; }
 }
 
@@ -73,7 +75,7 @@ public class GrantUserPermissionDto
     public int UserId { get; set; }
     public int PermissionId { get; set; }
     public bool IsGranted { get; set; } = true;
-    public PermissionScope Scope { get; set; } = PermissionScope.All;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.All;
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
     public string? Notes { get; set; }
@@ -84,9 +86,9 @@ public class GrantUserPermissionDto
 /// </summary>
 public class BulkRolePermissionDto
 {
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
     public List<int> PermissionIds { get; set; } = new();
-    public PermissionScope Scope { get; set; } = PermissionScope.All;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.All;
 }
 
 /// <summary>
@@ -94,7 +96,7 @@ public class BulkRolePermissionDto
 /// </summary>
 public class RolePermissionsSummaryDto
 {
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public int TotalPermissions { get; set; }
     public List<PermissionDto> Permissions { get; set; } = new();
@@ -107,7 +109,7 @@ public class UserPermissionsSummaryDto
 {
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public List<PermissionDto> RolePermissions { get; set; } = new();
     public List<UserPermissionDto> CustomPermissions { get; set; } = new();

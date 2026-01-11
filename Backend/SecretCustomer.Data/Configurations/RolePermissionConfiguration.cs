@@ -13,12 +13,18 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
         builder.Property(rp => rp.Notes)
             .HasMaxLength(500);
 
+        // Role -> RoleId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(rp => rp.RoleId).HasColumnName("Role");
+
+        // Scope -> ScopeId donusumunde veri kaybi olmamasi icin column adi korunuyor
+        builder.Property(rp => rp.ScopeId).HasColumnName("Scope");
+
         builder.HasOne(rp => rp.Permission)
             .WithMany(p => p.RolePermissions)
             .HasForeignKey(rp => rp.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Composite index: Her rol-permission kombinasyonu için tek kayıt
-        builder.HasIndex(rp => new { rp.Role, rp.PermissionId }).IsUnique();
+        builder.HasIndex(rp => new { rp.RoleId, rp.PermissionId }).IsUnique();
     }
 }

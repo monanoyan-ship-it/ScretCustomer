@@ -48,8 +48,8 @@ public class PersonnelService : IPersonnelService
         if (filter.IsActive.HasValue)
             query = query.Where(p => p.IsActive == filter.IsActive.Value);
 
-        if (filter.Gender.HasValue)
-            query = query.Where(p => p.Gender == filter.Gender.Value);
+        if (filter.GenderId.HasValue)
+            query = query.Where(p => p.GenderId == filter.GenderId.Value);
 
         if (!string.IsNullOrEmpty(filter.Department))
             query = query.Where(p => p.Department == filter.Department);
@@ -133,7 +133,7 @@ public class PersonnelService : IPersonnelService
             ErpNo = dto.ErpNo,
             SicilNo = dto.SicilNo,
             Title = dto.Title,
-            Gender = dto.Gender,
+            GenderId = dto.GenderId,
             BirthDate = ToUtc(dto.BirthDate),
             HireDate = ToUtc(dto.HireDate),
             Email = dto.Email,
@@ -169,7 +169,7 @@ public class PersonnelService : IPersonnelService
         personnel.ErpNo = dto.ErpNo;
         personnel.SicilNo = dto.SicilNo;
         personnel.Title = dto.Title;
-        personnel.Gender = dto.Gender;
+        personnel.GenderId = dto.GenderId;
         personnel.BirthDate = ToUtc(dto.BirthDate);
         personnel.HireDate = ToUtc(dto.HireDate);
         personnel.Email = dto.Email;
@@ -240,7 +240,7 @@ public class PersonnelService : IPersonnelService
             ErpNo = personnel.ErpNo,
             SicilNo = personnel.SicilNo,
             Title = personnel.Title,
-            Gender = personnel.Gender,
+            GenderId = personnel.GenderId,
             BirthDate = personnel.BirthDate,
             HireDate = personnel.HireDate,
             Email = personnel.Email,

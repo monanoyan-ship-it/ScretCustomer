@@ -1,5 +1,3 @@
-using SecretCustomer.Core.Enums;
-
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -20,7 +18,7 @@ public class Permission : BaseEntity
     /// <summary>
     /// Kategori
     /// </summary>
-    public PermissionCategory Category { get; set; }
+    public int CategoryId { get; set; }
 
     /// <summary>
     /// Açıklama

@@ -2,68 +2,487 @@
 function ListeningsViewModel() {
     var self = this;
 
+    // Page name for saved filters
+    self.pageName = 'Listenings';
+
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
     self.isLoadingDetail = ko.observable(false);
     self.evaluations = ko.observableArray([]);
-    self.projects = ko.observableArray([]);
     self.totalCount = ko.observable(0);
     self.showDetailModal = ko.observable(false);
     self.selectedEvaluation = ko.observable(null);
+
+    // Saved Filters State
+    self.savedFilters = ko.observableArray([]);
+    self.showSaveFilterModal = ko.observable(false);
+    self.showLoadFilterModal = ko.observable(false);
+    self.saveFilterName = ko.observable('');
+    self.saveFilterDescription = ko.observable('');
+    self.saveFilterIsDefault = ko.observable(false);
+    self.isSavingFilter = ko.observable(false);
+    self.isLoadingFilters = ko.observable(false);
+
+    // Lookup data
+    self.customers = ko.observableArray([]);
+    self.organizationsForFilter = ko.observableArray([]);
+    self.allProjects = ko.observableArray([]);
+    self.projectsForFilter = ko.observableArray([]);
+    self.evaluators = ko.observableArray([]);
+    self.dateRanges = ko.observableArray([]);
 
     // Sorting
     self.sortField = ko.observable('callDate');
     self.sortDirection = ko.observable('desc');
 
-    // Filter
-    self.filter = {
+    // Filter system
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values (for adding new filter)
+    self.tempFilter = {
+        customerIdForOrg: ko.observable(null),
+        organizationId: ko.observable(null),
         projectId: ko.observable(null),
+        evaluatorId: ko.observable(null),
+        personnelName: ko.observable(''),
+        supervisorName: ko.observable(''),
+        callId: ko.observable(''),
+        status: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        status: ko.observable(''),
-        page: ko.observable(1),
-        pageSize: ko.observable(25)
+        selectedDateRangeType: ko.observable(null) // Seçilen hızlı tarih tipi
+    };
+
+    // Tarih manuel değiştirildiğinde dateRangeType'ı temizle
+    self.tempFilter.startDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self.tempFilter.endDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self._manualDateChange = true; // Flag to track manual vs programmatic changes
+
+    // Pagination
+    self.page = ko.observable(1);
+    self.pageSize = ko.observable(25);
+
+    // Filter labels (for display)
+    self.filterLabels = {
+        customerOrganization: 'Müşteri/Org.',
+        project: 'Proje',
+        evaluator: 'Değerlendiren',
+        personnel: 'Temsilci',
+        supervisor: 'Yönetici',
+        callId: 'Çağrı No',
+        status: 'Durum',
+        dateRange: 'Tarih'
+    };
+
+    self.statusLabels = {
+        'Completed': 'Tamamlandı',
+        'InProgress': 'Devam Ediyor',
+        'Draft': 'Taslak'
     };
 
     // Computed
     self.totalPages = ko.computed(function() {
-        return Math.ceil(self.totalCount() / self.filter.pageSize()) || 1;
+        return Math.ceil(self.totalCount() / self.pageSize()) || 1;
     });
 
     self.visiblePages = ko.computed(function() {
-        var current = self.filter.page();
+        var current = self.page();
         var total = self.totalPages();
         var pages = [];
         var start = Math.max(1, current - 2);
         var end = Math.min(total, current + 2);
-
         for (var i = start; i <= end; i++) {
             pages.push(i);
         }
         return pages;
     });
 
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customerOrganization': return self.tempFilter.customerIdForOrg();
+            case 'project': return self.tempFilter.projectId();
+            case 'evaluator': return self.tempFilter.evaluatorId();
+            case 'personnel': return self.tempFilter.personnelName().trim() !== '';
+            case 'supervisor': return self.tempFilter.supervisorName().trim() !== '';
+            case 'callId': return self.tempFilter.callId().trim() !== '';
+            case 'status': return self.tempFilter.status() !== '';
+            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            default: return false;
+        }
+    });
+
     // Init
     self.init = function() {
-        self.loadProjects();
+        self.loadLookups();
+    };
+
+    // Load lookup data
+    self.loadLookups = function() {
+        ApiService.get('/reports/lookups')
+            .then(function(response) {
+                self.customers(response.customers || []);
+                self.allProjects(response.projects || []);
+                self.projectsForFilter(response.projects || []);
+                self.evaluators(response.evaluators || []);
+                self.dateRanges(response.dateRanges || []);
+
+                // Lookups yüklendikten sonra varsayılan filtreyi kontrol et
+                self.loadDefaultFilterAndSearch();
+            })
+            .catch(function(error) {
+                console.error('Error loading lookups:', error);
+                self.search(); // Hata olsa bile arama yap
+            });
+    };
+
+    // Load default filter (if any) and search
+    self.loadDefaultFilterAndSearch = function() {
+        ApiService.get('/saved-filters?pageName=' + self.pageName)
+            .then(function(response) {
+                // isDefault'u observable yap
+                var filters = (response || []).map(function(f) {
+                    var isDefaultVal = f.isDefault;
+                    f.isDefault = ko.observable(isDefaultVal);
+                    return f;
+                });
+                self.savedFilters(filters);
+
+                var defaultFilter = filters.find(function(f) { return f.isDefault(); });
+                if (defaultFilter) {
+                    self.applySavedFilter(defaultFilter);
+                } else {
+                    self.search();
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading saved filters:', error);
+                self.search();
+            });
+    };
+
+    // Load organizations for filter dropdown and filter projects by customer
+    self.loadOrganizationsForFilter = function() {
+        var customerId = self.tempFilter.customerIdForOrg();
+        if (!customerId) {
+            self.organizationsForFilter([]);
+            self.projectsForFilter(self.allProjects());
+            return;
+        }
+
+        // Filter projects by customer
+        var filteredProjects = self.allProjects().filter(function(p) {
+            return p.customerId === customerId;
+        });
+        self.projectsForFilter(filteredProjects);
+
+        // Remove incompatible filters when customer changes
+        self.removeIncompatibleFilters(customerId);
+
+        // Load organizations
+        ApiService.get('/reports/organizations/' + customerId)
+            .then(function(response) {
+                self.organizationsForFilter(response || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+            });
+    };
+
+    // Remove filters that don't belong to selected customer
+    self.removeIncompatibleFilters = function(customerId) {
+        var filtersToRemove = [];
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'project':
+                    var project = self.allProjects().find(function(p) { return p.id === filter.value; });
+                    if (project && project.customerId && project.customerId !== customerId) {
+                        filtersToRemove.push(filter);
+                    }
+                    break;
+                // Buraya ileride başka filtre tipleri eklenebilir
+            }
+        });
+
+        filtersToRemove.forEach(function(filter) {
+            self.activeFilters.remove(filter);
+            toastr.info(filter.displayValue + ' filtresi kaldırıldı (farklı müşteriye ait)');
+        });
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customerOrganization':
+                var coCustomerId = self.tempFilter.customerIdForOrg();
+                var coCustomer = self.customers().find(function(c) { return c.id === coCustomerId; });
+                if (!coCustomer) return;
+
+                var coOrgId = self.tempFilter.organizationId();
+                var coOrg = coOrgId ? self.organizationsForFilter().find(function(o) { return o.id === coOrgId; }) : null;
+
+                filter.value = { customerId: coCustomerId, organizationId: coOrgId };
+                filter.displayValue = coOrg ? coCustomer.companyName + ' / ' + coOrg.name : coCustomer.companyName;
+
+                self.tempFilter.customerIdForOrg(null);
+                self.tempFilter.organizationId(null);
+                self.organizationsForFilter([]);
+                break;
+
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                var project = self.allProjects().find(function(p) { return p.id === projectId; });
+                if (!project) return;
+                filter.value = projectId;
+                filter.displayValue = project.name;
+                self.tempFilter.projectId(null);
+                break;
+
+            case 'evaluator':
+                var evaluatorId = self.tempFilter.evaluatorId();
+                var evaluator = self.evaluators().find(function(e) { return e.id === evaluatorId; });
+                if (!evaluator) return;
+                filter.value = evaluatorId;
+                filter.displayValue = evaluator.name;
+                self.tempFilter.evaluatorId(null);
+                break;
+
+            case 'personnel':
+                var personnelName = self.tempFilter.personnelName().trim();
+                if (!personnelName) return;
+                filter.value = personnelName;
+                filter.displayValue = personnelName;
+                self.tempFilter.personnelName('');
+                break;
+
+            case 'supervisor':
+                var supervisorName = self.tempFilter.supervisorName().trim();
+                if (!supervisorName) return;
+                filter.value = supervisorName;
+                filter.displayValue = supervisorName;
+                self.tempFilter.supervisorName('');
+                break;
+
+            case 'callId':
+                var callId = self.tempFilter.callId().trim();
+                if (!callId) return;
+                filter.value = callId;
+                filter.displayValue = callId;
+                self.tempFilter.callId('');
+                break;
+
+            case 'status':
+                var status = self.tempFilter.status();
+                if (!status) return;
+                filter.value = status;
+                filter.displayValue = self.statusLabels[status] || status;
+                self.tempFilter.status('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.startDate();
+                var endDate = self.tempFilter.endDate();
+                var dateRangeType = self.tempFilter.selectedDateRangeType();
+                if (!startDate && !endDate) return;
+
+                filter.value = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    dateRangeType: dateRangeType // null ise sabit tarih, değilse dinamik
+                };
+
+                // Display value - eğer dateRangeType varsa onun adını göster
+                if (dateRangeType) {
+                    var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
+                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
+                } else {
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                }
+
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.selectedDateRangeType(null);
+                break;
+
+            default:
+                return;
+        }
+
+        // Remove existing filter of same type (except text filters which can have multiple)
+        if (type !== 'personnel' && type !== 'supervisor' && type !== 'callId') {
+            self.activeFilters.remove(function(f) { return f.type === type; });
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
         self.search();
     };
 
-    // Load projects for filter dropdown
-    self.loadProjects = function() {
-        ApiService.get('/projects')
-            .then(function(response) {
-                self.projects(response || []);
-            })
-            .catch(function(error) {
-                console.error('Error loading projects:', error);
-            });
+    // Set temp date range (quick select buttons)
+    self.setTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var formatDate = function(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        };
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = new Date(today.getTime());
+                endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday;
+                endDate = new Date(yesterday.getTime());
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekEnd = new Date(today.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() - lastWeekEnd.getDay() - (lastWeekEnd.getDay() === 0 ? 0 : 0));
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+            case 'thisQuarter':
+                var quarter = Math.floor(today.getMonth() / 3);
+                startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'thisYear':
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        // Programmatic change - don't clear dateRangeType
+        self._manualDateChange = false;
+        if (startDate) self.tempFilter.startDate(formatDate(startDate));
+        if (endDate) self.tempFilter.endDate(formatDate(endDate));
+        self.tempFilter.selectedDateRangeType(range);
+        self._manualDateChange = true;
+    };
+
+    // Build params from active filters
+    self.buildFilterParams = function() {
+        var params = {
+            page: self.page(),
+            pageSize: self.pageSize(),
+            sortField: self.sortField(),
+            sortDirection: self.sortDirection()
+        };
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customerOrganization':
+                    params.customerId = filter.value.customerId;
+                    if (filter.value.organizationId) {
+                        params.organizationId = filter.value.organizationId;
+                    }
+                    break;
+                case 'project':
+                    params.projectId = filter.value;
+                    break;
+                case 'evaluator':
+                    params.evaluatorId = filter.value;
+                    break;
+                case 'personnel':
+                    params.evaluatedPersonnelName = filter.value;
+                    break;
+                case 'supervisor':
+                    params.supervisorName = filter.value;
+                    break;
+                case 'callId':
+                    params.callId = filter.value;
+                    break;
+                case 'status':
+                    params.status = filter.value;
+                    break;
+                case 'dateRange':
+                    if (filter.value.startDate) params.startDate = filter.value.startDate;
+                    if (filter.value.endDate) params.endDate = filter.value.endDate;
+                    break;
+            }
+        });
+
+        return params;
     };
 
     // Search evaluations
     self.search = function() {
-        self.filter.page(1);
+        self.page(1);
         self.loadEvaluations();
     };
 
@@ -71,25 +490,7 @@ function ListeningsViewModel() {
     self.loadEvaluations = function() {
         self.isLoading(true);
 
-        var params = {
-            page: self.filter.page(),
-            pageSize: self.filter.pageSize(),
-            sortField: self.sortField(),
-            sortDirection: self.sortDirection()
-        };
-
-        if (self.filter.projectId()) {
-            params.projectId = self.filter.projectId();
-        }
-        if (self.filter.startDate()) {
-            params.startDate = self.filter.startDate();
-        }
-        if (self.filter.endDate()) {
-            params.endDate = self.filter.endDate();
-        }
-        if (self.filter.status()) {
-            params.status = self.filter.status();
-        }
+        var params = self.buildFilterParams();
 
         ApiService.post('/reports/evaluations', params)
             .then(function(response) {
@@ -103,15 +504,6 @@ function ListeningsViewModel() {
             .finally(function() {
                 self.isLoading(false);
             });
-    };
-
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.projectId(null);
-        self.filter.startDate('');
-        self.filter.endDate('');
-        self.filter.status('');
-        self.search();
     };
 
     // Sorting
@@ -132,21 +524,21 @@ function ListeningsViewModel() {
 
     // Pagination
     self.prevPage = function() {
-        if (self.filter.page() > 1) {
-            self.filter.page(self.filter.page() - 1);
+        if (self.page() > 1) {
+            self.page(self.page() - 1);
             self.loadEvaluations();
         }
     };
 
     self.nextPage = function() {
-        if (self.filter.page() < self.totalPages()) {
-            self.filter.page(self.filter.page() + 1);
+        if (self.page() < self.totalPages()) {
+            self.page(self.page() + 1);
             self.loadEvaluations();
         }
     };
 
     self.goToPage = function(page) {
-        self.filter.page(page);
+        self.page(page);
         self.loadEvaluations();
     };
 
@@ -178,19 +570,9 @@ function ListeningsViewModel() {
     self.exportToExcel = function() {
         self.isExporting(true);
 
-        var params = {};
-        if (self.filter.projectId()) {
-            params.projectId = self.filter.projectId();
-        }
-        if (self.filter.startDate()) {
-            params.startDate = self.filter.startDate();
-        }
-        if (self.filter.endDate()) {
-            params.endDate = self.filter.endDate();
-        }
-        if (self.filter.status()) {
-            params.status = self.filter.status();
-        }
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
 
         ApiService.downloadPost('/reports/export/excel', params, 'Dinlemeler.xlsx')
             .then(function() {
@@ -214,7 +596,6 @@ function ListeningsViewModel() {
 
     self.formatTime = function(timeStr) {
         if (!timeStr) return '';
-        // timeStr could be "14:30:00" or "14:30"
         if (typeof timeStr === 'string') {
             return timeStr.substring(0, 5);
         }
@@ -229,14 +610,7 @@ function ListeningsViewModel() {
     };
 
     self.getStatusText = function(status) {
-        var statusTexts = {
-            'Completed': 'Tamamlandı',
-            'InProgress': 'Devam Ediyor',
-            'Draft': 'Taslak',
-            'Pending': 'Bekliyor',
-            'Cancelled': 'İptal'
-        };
-        return statusTexts[status] || status;
+        return self.statusLabels[status] || status;
     };
 
     self.getStatusClass = function(status) {
@@ -248,6 +622,208 @@ function ListeningsViewModel() {
             'Cancelled': 'bg-danger'
         };
         return statusClasses[status] || 'bg-secondary';
+    };
+
+    // ==================== SAVED FILTERS ====================
+
+    // Load saved filters from API
+    self.loadSavedFilters = function() {
+        self.isLoadingFilters(true);
+        ApiService.get('/saved-filters?pageName=' + self.pageName)
+            .then(function(response) {
+                // isDefault'u observable yap
+                var filters = (response || []).map(function(f) {
+                    f.isDefault = ko.observable(f.isDefault);
+                    return f;
+                });
+                self.savedFilters(filters);
+            })
+            .catch(function(error) {
+                console.error('Error loading saved filters:', error);
+            })
+            .finally(function() {
+                self.isLoadingFilters(false);
+            });
+    };
+
+    // Open save filter modal
+    self.openSaveFilterModal = function() {
+        if (self.activeFilters().length === 0) {
+            toastr.warning('Kaydetmek için önce filtre ekleyin');
+            return;
+        }
+        self.saveFilterName('');
+        self.saveFilterDescription('');
+        self.saveFilterIsDefault(false);
+        self.showSaveFilterModal(true);
+    };
+
+    // Close save filter modal
+    self.closeSaveFilterModal = function() {
+        self.showSaveFilterModal(false);
+    };
+
+    // Get filter summary for display
+    self.getFilterSummary = function() {
+        return self.activeFilters().map(function(f) {
+            return f.label + ': ' + f.displayValue;
+        });
+    };
+
+    // Save current filters
+    self.saveFilter = function() {
+        var name = self.saveFilterName().trim();
+        if (!name) {
+            toastr.warning('Filtre adı zorunludur');
+            return;
+        }
+
+        // Convert activeFilters to serializable format
+        var filterData = {
+            filters: self.activeFilters().map(function(f) {
+                return {
+                    type: f.type,
+                    label: f.label,
+                    value: f.value,
+                    displayValue: f.displayValue
+                };
+            })
+        };
+
+        var dto = {
+            pageName: self.pageName,
+            name: name,
+            description: self.saveFilterDescription().trim() || null,
+            filterData: JSON.stringify(filterData),
+            isDefault: self.saveFilterIsDefault()
+        };
+
+        self.isSavingFilter(true);
+        ApiService.post('/saved-filters', dto)
+            .then(function(response) {
+                toastr.success('Filtre kaydedildi');
+                self.closeSaveFilterModal();
+                self.loadSavedFilters();
+            })
+            .catch(function(error) {
+                console.error('Error saving filter:', error);
+                toastr.error('Filtre kaydedilirken hata oluştu');
+            })
+            .finally(function() {
+                self.isSavingFilter(false);
+            });
+    };
+
+    // Open load filter modal
+    self.openLoadFilterModal = function() {
+        self.loadSavedFilters();
+        self.showLoadFilterModal(true);
+    };
+
+    // Close load filter modal
+    self.closeLoadFilterModal = function() {
+        self.showLoadFilterModal(false);
+    };
+
+    // Apply a saved filter
+    self.applySavedFilter = function(savedFilter) {
+        try {
+            var filterData = JSON.parse(savedFilter.filterData);
+            var filters = filterData.filters || [];
+
+            // Clear current filters
+            self.activeFilters([]);
+
+            // Apply each filter
+            filters.forEach(function(f) {
+                // dateRange filtresi için dateRangeType varsa tarihleri yeniden hesapla
+                if (f.type === 'dateRange' && f.value && f.value.dateRangeType) {
+                    // Dinamik tarih hesapla
+                    self.setTempDateRange(f.value.dateRangeType);
+                    var newStartDate = self.tempFilter.startDate();
+                    var newEndDate = self.tempFilter.endDate();
+
+                    var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === f.value.dateRangeType; });
+
+                    self.activeFilters.push({
+                        type: f.type,
+                        label: f.label,
+                        value: {
+                            startDate: newStartDate,
+                            endDate: newEndDate,
+                            dateRangeType: f.value.dateRangeType
+                        },
+                        displayValue: rangeInfo ? rangeInfo.name : f.value.dateRangeType
+                    });
+
+                    // Clear temp
+                    self.tempFilter.startDate('');
+                    self.tempFilter.endDate('');
+                    self.tempFilter.selectedDateRangeType(null);
+                } else {
+                    self.activeFilters.push({
+                        type: f.type,
+                        label: f.label,
+                        value: f.value,
+                        displayValue: f.displayValue
+                    });
+                }
+            });
+
+            self.closeLoadFilterModal();
+            self.search();
+            toastr.success('Filtre uygulandı: ' + savedFilter.name);
+        } catch (e) {
+            console.error('Error applying filter:', e);
+            toastr.error('Filtre uygulanırken hata oluştu');
+        }
+    };
+
+    // Delete a saved filter
+    self.deleteSavedFilter = function(savedFilter) {
+        if (!confirm('Bu filtreyi silmek istediğinize emin misiniz?')) return;
+
+        ApiService.delete('/saved-filters/' + savedFilter.id)
+            .then(function() {
+                toastr.success('Filtre silindi');
+                self.savedFilters.remove(savedFilter);
+            })
+            .catch(function(error) {
+                console.error('Error deleting filter:', error);
+                toastr.error('Filtre silinirken hata oluştu');
+            });
+    };
+
+    // Set a filter as default
+    self.setFilterAsDefault = function(savedFilter) {
+        ApiService.post('/saved-filters/' + savedFilter.id + '/set-default?pageName=' + self.pageName)
+            .then(function() {
+                toastr.success('Varsayılan filtre ayarlandı');
+                // Tüm filtrelerin isDefault'unu güncelle
+                self.savedFilters().forEach(function(f) {
+                    f.isDefault(f.id === savedFilter.id);
+                });
+            })
+            .catch(function(error) {
+                console.error('Error setting default filter:', error);
+                toastr.error('Varsayılan filtre ayarlanırken hata oluştu');
+            });
+    };
+
+    // Clear default filter
+    self.clearFilterDefault = function(savedFilter) {
+        ApiService.post('/saved-filters/clear-default?pageName=' + self.pageName)
+            .then(function() {
+                toastr.success('Varsayılan filtre kaldırıldı');
+                // Tüm filtrelerin isDefault'unu false yap
+                self.savedFilters().forEach(function(f) {
+                    f.isDefault(false);
+                });
+            })
+            .catch(function(error) {
+                console.error('Error clearing default filter:', error);
+                toastr.error('Varsayılan filtre kaldırılırken hata oluştu');
+            });
     };
 
     // Initialize

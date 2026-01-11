@@ -12,8 +12,8 @@ public class UserDto
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}";
     public string? PhoneNumber { get; set; }
-    public UserRole Role { get; set; }
-    public string RoleName => Role.ToString();
+    public int RoleId { get; set; }
+    public string RoleName => UserRoles.GetById(RoleId)?.SystemName ?? "";
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -48,7 +48,7 @@ public class CreateUserDto
     public string LastName { get; set; } = string.Empty;
 
     [Required]
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
 
     public bool IsActive { get; set; } = true;
 }
@@ -71,7 +71,7 @@ public class UpdateUserDto
     public string? PhoneNumber { get; set; }
 
     [Required]
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
 
     public bool IsActive { get; set; }
 }

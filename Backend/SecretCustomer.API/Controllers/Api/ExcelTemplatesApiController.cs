@@ -101,7 +101,7 @@ public class ExcelTemplatesApiController : BaseApiController
                 {
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
-                    ColumnType = c.ColumnType,
+                    ColumnTypeId = c.ColumnTypeId,
                     Order = c.Order,
                     IsRequired = c.IsRequired,
                     ValidationRules = c.ValidationRules != null
@@ -151,7 +151,7 @@ public class ExcelTemplatesApiController : BaseApiController
                     Id = c.Id ?? 0,
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
-                    ColumnType = c.ColumnType,
+                    ColumnTypeId = c.ColumnTypeId,
                     Order = c.Order,
                     IsRequired = c.IsRequired,
                     ValidationRules = c.ValidationRules != null
@@ -381,7 +381,7 @@ public class ExcelTemplatesApiController : BaseApiController
             {
                 ColumnName = c.ColumnName,
                 PropertyName = c.PropertyName,
-                ColumnType = c.ColumnType,
+                ColumnTypeId = c.ColumnTypeId,
                 Order = c.Order,
                 IsRequired = c.IsRequired,
                 ValidationRules = string.IsNullOrWhiteSpace(c.ValidationRules)
@@ -473,7 +473,7 @@ public class ExcelTemplatesApiController : BaseApiController
                 Id = c.Id,
                 ColumnName = c.ColumnName,
                 PropertyName = c.PropertyName,
-                ColumnType = c.ColumnType,
+                ColumnTypeId = c.ColumnTypeId,
                 Order = c.Order,
                 IsRequired = c.IsRequired,
                 ValidationRules = string.IsNullOrWhiteSpace(c.ValidationRules)

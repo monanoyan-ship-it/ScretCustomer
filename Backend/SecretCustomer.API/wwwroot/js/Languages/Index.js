@@ -30,6 +30,7 @@ function LanguagesViewModel() {
     self.resourceSearch = ko.observable('');
     self.resourcePrefix = ko.observable('');
     self.editingResourceId = ko.observable(null);
+    self.isDeletingAll = ko.observable(false);
     self.resourceForm = {
         name: ko.observable(''),
         value: ko.observable('')
@@ -365,6 +366,37 @@ function LanguagesViewModel() {
                 })
                 .fail(function (xhr) {
                     toastr.error(xhr.responseJSON?.message || T('Language.DeleteError', 'Silme sırasında hata oluştu.'));
+                });
+        });
+    };
+
+    // Delete all resources for a language
+    self.deleteAllResources = function () {
+        var lang = self.selectedLanguage();
+        if (!lang) return;
+
+        var count = self.resources().length;
+        if (count === 0) {
+            toastr.info(T('Language.NoResourcesToDelete', 'Silinecek kaynak yok.'));
+            return;
+        }
+
+        showDeleteConfirm(lang.name + ' için ' + count + ' çeviri kaynağının tamamı', function() {
+            self.isDeletingAll(true);
+            $.ajax({
+                url: '/api/localization/resources/' + lang.id + '/all',
+                method: 'DELETE'
+            })
+                .done(function (response) {
+                    toastr.success(response.message || T('Language.AllResourcesDeleted', 'Tüm kaynaklar silindi.'));
+                    self.resources([]);
+                    self.loadLanguages(); // Update counts
+                })
+                .fail(function (xhr) {
+                    toastr.error(xhr.responseJSON?.message || T('Language.DeleteAllError', 'Toplu silme sırasında hata oluştu.'));
+                })
+                .always(function () {
+                    self.isDeletingAll(false);
                 });
         });
     };

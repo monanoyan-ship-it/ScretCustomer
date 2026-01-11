@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -11,17 +12,27 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AuditLogsApiController : BaseApiController
 {
     private readonly IAuditLogService _auditLogService;
+    private readonly ILocalizationService _localizationService;
 
     public AuditLogsApiController(
         IAuditLogService auditLogService,
+        ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _auditLogService = auditLogService;
+        _localizationService = localizationService;
+    }
+
+    private async Task<string> GetLogTypeNameAsync(int logTypeId)
+    {
+        var item = LogTypes.GetById(logTypeId);
+        if (item == null) return "Bilinmiyor";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetLogs(
-        [FromQuery] LogType? logType = null,
+        [FromQuery] int? logTypeId = null,
         [FromQuery] string? category = null,
         [FromQuery] int? userId = null,
         [FromQuery] DateTime? fromDate = null,
@@ -30,18 +41,19 @@ public class AuditLogsApiController : BaseApiController
         [FromQuery] int pageSize = 50)
     {
         var logs = await _auditLogService.GetLogsAsync(
-            logType, category, userId, fromDate, toDate, page, pageSize);
+            logTypeId, category, userId, fromDate, toDate, page, pageSize);
 
         var totalCount = await _auditLogService.GetLogsCountAsync(
-            logType, category, userId, fromDate, toDate);
+            logTypeId, category, userId, fromDate, toDate);
 
-        return Ok(new
+        var data = new List<object>();
+        foreach (var l in logs)
         {
-            data = logs.Select(l => new
+            data.Add(new
             {
                 l.Id,
-                logType = (int)l.LogType,
-                logTypeName = GetLogTypeName(l.LogType),
+                logTypeId = l.LogTypeId,
+                logTypeName = await GetLogTypeNameAsync(l.LogTypeId),
                 l.Category,
                 l.Message,
                 l.Details,
@@ -58,7 +70,12 @@ public class AuditLogsApiController : BaseApiController
                 l.ExceptionType,
                 l.StackTrace,
                 l.CreatedAt
-            }),
+            });
+        }
+
+        return Ok(new
+        {
+            data,
             totalCount,
             page,
             pageSize,
@@ -76,8 +93,8 @@ public class AuditLogsApiController : BaseApiController
         return Ok(new
         {
             log.Id,
-            logType = (int)log.LogType,
-            logTypeName = GetLogTypeName(log.LogType),
+            logTypeId = log.LogTypeId,
+            logTypeName = await GetLogTypeNameAsync(log.LogTypeId),
             log.Category,
             log.Message,
             log.Details,
@@ -98,10 +115,13 @@ public class AuditLogsApiController : BaseApiController
     }
 
     [HttpGet("types")]
-    public IActionResult GetLogTypes()
+    public async Task<IActionResult> GetLogTypes()
     {
-        var types = Enum.GetValues<LogType>()
-            .Select(t => new { value = (int)t, name = GetLogTypeName(t) });
+        var types = new List<object>();
+        foreach (var t in LogTypes.All)
+        {
+            types.Add(new { value = t.Id, name = await GetLogTypeNameAsync(t.Id) });
+        }
 
         return Ok(types);
     }
@@ -111,23 +131,5 @@ public class AuditLogsApiController : BaseApiController
     {
         var deletedCount = await _auditLogService.DeleteOldLogsAsync(daysToKeep);
         return Ok(new { deletedCount, message = $"{deletedCount} eski log silindi" });
-    }
-
-    private static string GetLogTypeName(LogType logType)
-    {
-        return logType switch
-        {
-            LogType.Info => "Bilgi",
-            LogType.Warning => "Uyarı",
-            LogType.Error => "Hata",
-            LogType.DataCreate => "Veri Oluşturma",
-            LogType.DataUpdate => "Veri Güncelleme",
-            LogType.DataDelete => "Veri Silme",
-            LogType.Login => "Giriş",
-            LogType.Logout => "Çıkış",
-            LogType.LoginFailed => "Başarısız Giriş",
-            LogType.AccessDenied => "Erişim Reddedildi",
-            _ => logType.ToString()
-        };
     }
 }

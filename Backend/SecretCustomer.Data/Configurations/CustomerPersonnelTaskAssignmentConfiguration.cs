@@ -15,6 +15,9 @@ public class CustomerPersonnelTaskAssignmentConfiguration : IEntityTypeConfigura
         builder.Property(a => a.Notes)
             .HasMaxLength(2000);
 
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(a => a.AssignmentRoleId).HasColumnName("AssignmentRole");
+
         builder.HasIndex(a => new { a.PersonnelId, a.TaskListId });
     }
 }

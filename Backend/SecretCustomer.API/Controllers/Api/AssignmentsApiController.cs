@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Assignment;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using System.Security.Claims;
 
@@ -12,18 +13,21 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AssignmentsApiController : BaseApiController
 {
     private readonly IAssignmentService _assignmentService;
+    private readonly IProjectService _projectService;
     private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<AssignmentsApiController> _logger;
     private readonly ILocalizationService _localizationService;
 
     public AssignmentsApiController(
         IAssignmentService assignmentService,
+        IProjectService projectService,
         IQRCodeService qrCodeService,
         ILogger<AssignmentsApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _assignmentService = assignmentService;
+        _projectService = projectService;
         _qrCodeService = qrCodeService;
         _logger = logger;
         _localizationService = localizationService;
@@ -146,6 +150,17 @@ public class AssignmentsApiController : BaseApiController
     {
         try
         {
+            // Aktif proje kontrolü
+            var project = await _projectService.GetByIdAsync(dto.ProjectId);
+            if (project == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
+            }
+            if (project.Status != ProjectStatuses.Active.SystemName)
+            {
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectNotActive")));
+            }
+
             var assignment = await _assignmentService.CreateAsync(dto);
             return Ok(assignment);
         }

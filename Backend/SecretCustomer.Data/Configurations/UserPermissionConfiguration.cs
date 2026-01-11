@@ -10,6 +10,9 @@ public class UserPermissionConfiguration : IEntityTypeConfiguration<UserPermissi
     {
         builder.HasKey(up => up.Id);
 
+        // Scope -> ScopeId donusumunde veri kaybi olmamasi icin column adi korunuyor
+        builder.Property(up => up.ScopeId).HasColumnName("Scope");
+
         builder.Property(up => up.Notes)
             .HasMaxLength(500);
 

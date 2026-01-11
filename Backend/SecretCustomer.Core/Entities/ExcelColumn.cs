@@ -1,5 +1,3 @@
-using SecretCustomer.Core.Enums;
-
 namespace SecretCustomer.Core.Entities;
 
 public class ExcelColumn : BaseEntity
@@ -9,7 +7,7 @@ public class ExcelColumn : BaseEntity
 
     public string ColumnName { get; set; } = string.Empty;  // Excel'de görünecek başlık
     public string PropertyName { get; set; } = string.Empty;  // Database field adı (örn: "FirstName")
-    public ExcelColumnType ColumnType { get; set; }
+    public int ColumnTypeId { get; set; } = Enums.ExcelColumnTypes.Ids.Text;
     public int Order { get; set; }  // Kolon sırası
     public bool IsRequired { get; set; } = false;
 

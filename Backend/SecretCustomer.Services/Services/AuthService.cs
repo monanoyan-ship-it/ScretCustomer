@@ -40,6 +40,7 @@ public class AuthService : IAuthService
             await _userRepository.UpdateAsync(user);
 
             var token = _jwtHelper.GenerateToken(user);
+            var roleName = UserRoles.GetById(user.RoleId)?.SystemName ?? "";
 
             return new LoginResponseDto
             {
@@ -47,7 +48,7 @@ public class AuthService : IAuthService
                 UserId = user.Id,
                 Username = user.Username,
                 FullName = $"{user.FirstName} {user.LastName}",
-                Role = user.Role.ToString(),
+                Role = roleName,
                 MustChangePassword = user.MustChangePassword
             };
         }
@@ -75,7 +76,7 @@ public class AuthService : IAuthService
                 UserId = customerPersonnel.Id,
                 Username = customerPersonnel.Username,
                 FullName = customerPersonnel.FullName,
-                Role = customerPersonnel.Role.ToString(),
+                Role = CustomerPersonnelRoles.GetById(customerPersonnel.RoleId)?.SystemName ?? "",
                 CustomerId = customerPersonnel.CustomerId,
                 CustomerName = customerPersonnel.Customer?.CompanyName,
                 MustChangePassword = customerPersonnel.MustChangePassword
@@ -94,6 +95,7 @@ public class AuthService : IAuthService
         if (await _userRepository.ExistsByEmailAsync(dto.Email))
             throw new InvalidOperationException("Email already exists");
 
+        var roleId = UserRoles.GetBySystemName(dto.Role)?.Id ?? UserRoles.Ids.FieldWorker;
         var user = new User
         {
             Username = dto.Username,
@@ -101,11 +103,12 @@ public class AuthService : IAuthService
             PasswordHash = HashPassword(dto.Password),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            Role = Enum.Parse<UserRole>(dto.Role)
+            RoleId = roleId
         };
 
         var created = await _userRepository.CreateAsync(user);
         var token = _jwtHelper.GenerateToken(created);
+        var roleName = UserRoles.GetById(created.RoleId)?.SystemName ?? "";
 
         return new LoginResponseDto
         {
@@ -113,7 +116,7 @@ public class AuthService : IAuthService
             UserId = created.Id,
             Username = created.Username,
             FullName = $"{created.FirstName} {created.LastName}",
-            Role = created.Role.ToString()
+            Role = roleName
         };
     }
 
@@ -131,7 +134,7 @@ public class AuthService : IAuthService
             FirstName = user.FirstName,
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber,
-            Role = user.Role.ToString(),
+            Role = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt
         };
@@ -342,7 +345,7 @@ public class AuthService : IAuthService
         }
 
         // Sadece Admin impersonate edebilir
-        if (user.Role != UserRole.Admin)
+        if (user.RoleId != UserRoles.Ids.Admin)
         {
             return new ImpersonationResultDto
             {
@@ -377,7 +380,7 @@ public class AuthService : IAuthService
                 IsImpersonating = true,
                 OriginalUserId = user.Id,
                 OriginalUserName = $"{user.FirstName} {user.LastName}",
-                OriginalRole = user.Role.ToString(),
+                OriginalRole = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
                 CustomerId = customerId,
                 CustomerName = customer.CompanyName
             }

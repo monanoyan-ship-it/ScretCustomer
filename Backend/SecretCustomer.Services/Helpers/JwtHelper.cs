@@ -24,12 +24,13 @@ public class JwtHelper
 
     public string GenerateToken(User user)
     {
+        var roleName = UserRoles.GetById(user.RoleId)?.SystemName ?? "";
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new Claim(ClaimTypes.Role, roleName)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -51,19 +52,20 @@ public class JwtHelper
     /// </summary>
     public string GenerateImpersonationToken(User originalUser, int customerId, string customerName)
     {
+        var roleName = UserRoles.GetById(originalUser.RoleId)?.SystemName ?? "";
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, originalUser.Id.ToString()),
             new Claim(ClaimTypes.Name, originalUser.Username),
             new Claim(ClaimTypes.Email, originalUser.Email),
-            new Claim(ClaimTypes.Role, originalUser.Role.ToString()),
+            new Claim(ClaimTypes.Role, roleName),
             // Impersonation claims
             new Claim("IsImpersonating", "true"),
             new Claim("ImpersonatedCustomerId", customerId.ToString()),
             new Claim("ImpersonatedCustomerName", customerName),
             new Claim("OriginalUserId", originalUser.Id.ToString()),
             new Claim("OriginalUserName", $"{originalUser.FirstName} {originalUser.LastName}"),
-            new Claim("OriginalRole", originalUser.Role.ToString())
+            new Claim("OriginalRole", roleName)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -90,7 +92,7 @@ public class JwtHelper
             new Claim(ClaimTypes.NameIdentifier, personnel.Id.ToString()),
             new Claim(ClaimTypes.Name, personnel.Username),
             new Claim(ClaimTypes.Email, personnel.Email),
-            new Claim(ClaimTypes.Role, personnel.Role.ToString()),
+            new Claim(ClaimTypes.Role, CustomerPersonnelRoles.GetById(personnel.RoleId)?.SystemName ?? ""),
             new Claim("CustomerId", personnel.CustomerId.ToString()),
             new Claim("CustomerName", personnel.Customer?.CompanyName ?? ""),
             new Claim("FullName", personnel.FullName),

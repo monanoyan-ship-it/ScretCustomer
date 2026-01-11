@@ -11,8 +11,8 @@ public class AnnouncementDto
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string? Summary { get; set; }
-    public AnnouncementType Type { get; set; }
-    public string TypeName => Type.ToString();
+    public int TypeId { get; set; }
+    public string TypeName => AnnouncementTypes.GetById(TypeId)?.SystemName ?? "";
     public int Priority { get; set; }
     public DateTime PublishDate { get; set; }
     public DateTime? ExpiryDate { get; set; }
@@ -31,7 +31,7 @@ public class CreateAnnouncementDto
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string? Summary { get; set; }
-    public AnnouncementType Type { get; set; } = AnnouncementType.Info;
+    public int TypeId { get; set; } = AnnouncementTypes.Ids.Info;
     public int Priority { get; set; } = 3;
     public DateTime? PublishDate { get; set; }
     public DateTime? ExpiryDate { get; set; }
@@ -48,15 +48,15 @@ public class AnnouncementSummaryDto
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Summary { get; set; }
-    public AnnouncementType Type { get; set; }
-    public string TypeClass => Type switch
+    public int TypeId { get; set; }
+    public string TypeClass => TypeId switch
     {
-        AnnouncementType.Warning => "warning",
-        AnnouncementType.Success => "success",
-        AnnouncementType.Important => "danger",
-        AnnouncementType.News => "primary",
-        AnnouncementType.System => "secondary",
-        _ => "info"
+        1 => "warning",   // AnnouncementTypes.Ids.Warning
+        2 => "success",   // AnnouncementTypes.Ids.Success
+        3 => "danger",    // AnnouncementTypes.Ids.Important
+        4 => "primary",   // AnnouncementTypes.Ids.News
+        5 => "secondary", // AnnouncementTypes.Ids.System
+        _ => "info"       // AnnouncementTypes.Ids.Info (0)
     };
     public bool IsPinned { get; set; }
     public DateTime PublishDate { get; set; }

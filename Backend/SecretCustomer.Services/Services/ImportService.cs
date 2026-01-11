@@ -182,7 +182,7 @@ public class ImportService : IImportService
                             existingPersonnel.FirstName = firstName;
                             existingPersonnel.LastName = lastName;
                             existingPersonnel.Email = importDto.Email;
-                            existingPersonnel.Role = ParseRole(importDto.Role);
+                            existingPersonnel.RoleId = ParseRole(importDto.Role);
                             existingPersonnel.CustomerId = customer.Id;
                             // OrganizationId artık junction table'da - doğrudan set etme
                             existingPersonnel.UpdatedAt = DateTime.UtcNow;
@@ -246,7 +246,7 @@ public class ImportService : IImportService
                         // Eğer Supervisor ise, sonraki operatörler için kaydet
                         // Eğer Manager ise, supervisor'ı sıfırla (yeni grup başlangıcı)
                         int? supervisorId = null;
-                        if (role == CustomerPersonnelRole.CustomerOperator)
+                        if (role == CustomerPersonnelRoles.Ids.Operator)
                         {
                             // Mevcut supervisor'ı al
                             currentSupervisorByCompany.TryGetValue(supervisorKey, out supervisorId);
@@ -262,7 +262,7 @@ public class ImportService : IImportService
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(importDto.Password),
                             FirstName = firstName,
                             LastName = lastName,
-                            Role = role,
+                            RoleId = role,
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow
                         };
@@ -286,12 +286,12 @@ public class ImportService : IImportService
                         }
 
                         // Eğer bu kişi Supervisor ise, sonraki operatörler için kaydet
-                        if (role == CustomerPersonnelRole.CustomerSupervisor)
+                        if (role == CustomerPersonnelRoles.Ids.Supervisor)
                         {
                             currentSupervisorByCompany[supervisorKey] = created.Id;
                         }
                         // Manager gelirse supervisor sıfırlanır (isteğe bağlı)
-                        else if (role == CustomerPersonnelRole.CustomerManager)
+                        else if (role == CustomerPersonnelRoles.Ids.Manager)
                         {
                             currentSupervisorByCompany[supervisorKey] = null;
                         }
@@ -461,17 +461,17 @@ public class ImportService : IImportService
         return (firstName, lastName);
     }
 
-    private static CustomerPersonnelRole ParseRole(string role)
+    private static int ParseRole(string role)
     {
         return role.ToLowerInvariant() switch
         {
-            "customermanager" => CustomerPersonnelRole.CustomerManager,
-            "customersupervisor" => CustomerPersonnelRole.CustomerSupervisor,
-            "customeroperator" => CustomerPersonnelRole.CustomerOperator,
-            "manager" => CustomerPersonnelRole.CustomerManager,
-            "supervisor" => CustomerPersonnelRole.CustomerSupervisor,
-            "operator" => CustomerPersonnelRole.CustomerOperator,
-            _ => CustomerPersonnelRole.CustomerOperator
+            "customermanager" => CustomerPersonnelRoles.Ids.Manager,
+            "customersupervisor" => CustomerPersonnelRoles.Ids.Supervisor,
+            "customeroperator" => CustomerPersonnelRoles.Ids.Operator,
+            "manager" => CustomerPersonnelRoles.Ids.Manager,
+            "supervisor" => CustomerPersonnelRoles.Ids.Supervisor,
+            "operator" => CustomerPersonnelRoles.Ids.Operator,
+            _ => CustomerPersonnelRoles.Ids.Operator
         };
     }
 
@@ -659,8 +659,8 @@ public class ImportService : IImportService
                         Order = importDto.Order ?? maxOrder,
                         WeightPoints = importDto.WeightPoints,
                         MaxPoints = importDto.MaxPoints,
-                        ScoringType = ParseScoringType(importDto.ScoringType),
-                        PenaltyType = ParsePenaltyType(importDto.PenaltyType),
+                        ScoringTypeId = ParseScoringType(importDto.ScoringType),
+                        PenaltyTypeId = ParsePenaltyType(importDto.PenaltyType),
                         IsRequired = importDto.IsRequired,
                         HelpText = string.IsNullOrWhiteSpace(importDto.HelpText) ? null : importDto.HelpText,
                         AllowNA = true,
@@ -708,7 +708,7 @@ public class ImportService : IImportService
                         QuestionText = question.Text,
                         WeightPoints = question.WeightPoints,
                         MaxPoints = question.MaxPoints,
-                        ScoringType = question.ScoringType.ToString(),
+                        ScoringType = question.ScoringTypeId.ToString(),
                         SubCriteriaCount = importDto.SubCriteria?.Split('|', StringSplitOptions.RemoveEmptyEntries).Length ?? 0
                     });
                 }
@@ -759,31 +759,31 @@ public class ImportService : IImportService
         };
     }
 
-    private static ScoringType ParseScoringType(string value)
+    private static int ParseScoringType(string value)
     {
         return value.ToLowerInvariant() switch
         {
-            "scored" => ScoringType.Scored,
-            "unscored" => ScoringType.Unscored,
-            "penalty" => ScoringType.Penalty,
-            "puanlı" => ScoringType.Scored,
-            "puansız" => ScoringType.Unscored,
-            "cezalı" => ScoringType.Penalty,
-            _ => ScoringType.Scored
+            "scored" => ScoringTypes.Ids.Scored,
+            "unscored" => ScoringTypes.Ids.Unscored,
+            "penalty" => ScoringTypes.Ids.Penalty,
+            "puanlı" => ScoringTypes.Ids.Scored,
+            "puansız" => ScoringTypes.Ids.Unscored,
+            "cezalı" => ScoringTypes.Ids.Penalty,
+            _ => ScoringTypes.Ids.Scored
         };
     }
 
-    private static PenaltyType ParsePenaltyType(string value)
+    private static int ParsePenaltyType(string value)
     {
         return value.ToLowerInvariant() switch
         {
-            "none" => PenaltyType.None,
-            "yellowcard" => PenaltyType.YellowCard,
-            "redcard" => PenaltyType.RedCard,
-            "yok" => PenaltyType.None,
-            "sarı" or "sarı kart" or "sarıkart" => PenaltyType.YellowCard,
-            "kırmızı" or "kırmızı kart" or "kırmızıkart" => PenaltyType.RedCard,
-            _ => PenaltyType.None
+            "none" => PenaltyTypes.Ids.None,
+            "yellowcard" => PenaltyTypes.Ids.YellowCard,
+            "redcard" => PenaltyTypes.Ids.RedCard,
+            "yok" => PenaltyTypes.Ids.None,
+            "sarı" or "sarı kart" or "sarıkart" => PenaltyTypes.Ids.YellowCard,
+            "kırmızı" or "kırmızı kart" or "kırmızıkart" => PenaltyTypes.Ids.RedCard,
+            _ => PenaltyTypes.Ids.None
         };
     }
 

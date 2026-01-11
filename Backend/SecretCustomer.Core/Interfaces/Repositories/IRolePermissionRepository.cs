@@ -1,15 +1,14 @@
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.Interfaces.Repositories;
 
 public interface IRolePermissionRepository
 {
     Task<RolePermission?> GetByIdAsync(int id);
-    Task<IEnumerable<RolePermission>> GetByRoleAsync(UserRole role);
-    Task<RolePermission?> GetByRoleAndPermissionAsync(UserRole role, int permissionId);
+    Task<IEnumerable<RolePermission>> GetByRoleIdAsync(int roleId);
+    Task<RolePermission?> GetByRoleIdAndPermissionAsync(int roleId, int permissionId);
     Task<RolePermission> AddAsync(RolePermission rolePermission);
     Task UpdateAsync(RolePermission rolePermission);
     Task DeleteAsync(int id);
-    Task DeleteByRoleAndPermissionAsync(UserRole role, int permissionId);
+    Task DeleteByRoleIdAndPermissionAsync(int roleId, int permissionId);
 }

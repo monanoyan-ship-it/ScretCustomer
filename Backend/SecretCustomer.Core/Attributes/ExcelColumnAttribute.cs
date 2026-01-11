@@ -1,5 +1,3 @@
-using SecretCustomer.Core.Enums;
-
 namespace SecretCustomer.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
@@ -21,9 +19,9 @@ public class ExcelColumnAttribute : Attribute
     public bool IsRequired { get; set; } = false;
 
     /// <summary>
-    /// Sütun tipi
+    /// Sütun tipi (ExcelColumnTypes.Ids kullanın)
     /// </summary>
-    public ExcelColumnType ColumnType { get; set; } = ExcelColumnType.Text;
+    public int ColumnType { get; set; } = 1; // ExcelColumnTypes.Ids.Text
 
     /// <summary>
     /// Açıklama

@@ -111,7 +111,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
                 // Update existing column
                 existingColumn.ColumnName = column.ColumnName;
                 existingColumn.PropertyName = column.PropertyName;
-                existingColumn.ColumnType = column.ColumnType;
+                existingColumn.ColumnTypeId = column.ColumnTypeId;
                 existingColumn.Order = column.Order;
                 existingColumn.IsRequired = column.IsRequired;
                 existingColumn.ValidationRules = column.ValidationRules;

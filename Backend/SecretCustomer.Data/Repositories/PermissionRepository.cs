@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -31,15 +30,15 @@ public class PermissionRepository : IPermissionRepository
     public async Task<IEnumerable<Permission>> GetAllAsync()
     {
         return await _context.Permissions
-            .OrderBy(p => p.Category)
+            .OrderBy(p => p.CategoryId)
             .ThenBy(p => p.SortOrder)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Permission>> GetByCategoryAsync(PermissionCategory category)
+    public async Task<IEnumerable<Permission>> GetByCategoryAsync(int categoryId)
     {
         return await _context.Permissions
-            .Where(p => p.Category == category)
+            .Where(p => p.CategoryId == categoryId)
             .OrderBy(p => p.SortOrder)
             .ToListAsync();
     }

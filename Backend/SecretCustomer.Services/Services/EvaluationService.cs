@@ -141,7 +141,7 @@ public class EvaluationService : IEvaluationService
         {
             AssignmentId = assignmentId,
             EvaluatorId = evaluatorId,
-            Status = EvaluationStatus.InProgress,
+            StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
             FormOpenedAt = DateTime.UtcNow
         };
@@ -169,7 +169,7 @@ public class EvaluationService : IEvaluationService
             AssignmentId = dto.AssignmentId,
             AssignmentPeriodId = dto.AssignmentPeriodId,
             EvaluatorId = dto.EvaluatorId,
-            Status = EvaluationStatus.InProgress,
+            StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
             FormOpenedAt = DateTime.UtcNow,
             CallId = dto.CallId,
@@ -187,7 +187,7 @@ public class EvaluationService : IEvaluationService
     public async Task<EvaluationDto> SaveDraftAsync(SubmitEvaluationDto dto)
     {
         dto.SaveAsDraft = true;
-        return await ProcessEvaluationAsync(dto, EvaluationStatus.Draft);
+        return await ProcessEvaluationAsync(dto, EvaluationStatuses.Ids.Draft);
     }
 
     public async Task<EvaluationDto> UpdateDraftAsync(UpdateDraftDto dto)
@@ -199,7 +199,7 @@ public class EvaluationService : IEvaluationService
         if (evaluation == null)
             throw new KeyNotFoundException($"Evaluation with ID {dto.EvaluationId} not found");
 
-        if (evaluation.Status != EvaluationStatus.Draft && evaluation.Status != EvaluationStatus.InProgress)
+        if (evaluation.StatusId != EvaluationStatuses.Ids.Draft && evaluation.StatusId != EvaluationStatuses.Ids.InProgress)
             throw new InvalidOperationException("Only draft or in-progress evaluations can be updated");
 
         // Update answers
@@ -311,7 +311,7 @@ public class EvaluationService : IEvaluationService
                 Name = p.Name,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
-                Status = p.Status.ToString(),
+                Status = p.StatusId == PeriodStatuses.Ids.Open ? "Open" : "Closed",
                 TargetCount = p.TargetCount,
                 CompletedCount = p.CompletedCount
             })
@@ -327,8 +327,8 @@ public class EvaluationService : IEvaluationService
             CustomerName = assignment.Project?.Customer?.CompanyName,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",
-            ChecklistType = assignment.Checklist?.ChecklistType.ToString(),
-            ScoringMethod = assignment.Checklist?.ScoringMethod.ToString(),
+            ChecklistType = assignment.Checklist != null ? ChecklistTypes.GetById(assignment.Checklist.ChecklistTypeId)?.SystemName : null,
+            ScoringMethod = assignment.Checklist?.ScoringMethodId.ToString(),
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
             CallId = null,
             CallDate = null,
@@ -407,7 +407,7 @@ public class EvaluationService : IEvaluationService
                 Name = p.Name,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
-                Status = p.Status.ToString(),
+                Status = p.StatusId == PeriodStatuses.Ids.Open ? "Open" : "Closed",
                 TargetCount = p.TargetCount,
                 CompletedCount = p.CompletedCount
             })
@@ -417,13 +417,13 @@ public class EvaluationService : IEvaluationService
         {
             AssignmentId = assignment.Id,
             EvaluationId = evaluation.Id,
-            Status = evaluation.Status.ToString(),
+            Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
             ProjectName = assignment.Project?.Name ?? "",
             CustomerName = assignment.Project?.Customer?.CompanyName,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",
-            ChecklistType = assignment.Checklist?.ChecklistType.ToString(),
-            ScoringMethod = assignment.Checklist?.ScoringMethod.ToString(),
+            ChecklistType = assignment.Checklist != null ? ChecklistTypes.GetById(assignment.Checklist.ChecklistTypeId)?.SystemName : null,
+            ScoringMethod = assignment.Checklist?.ScoringMethodId.ToString(),
             MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
@@ -448,10 +448,10 @@ public class EvaluationService : IEvaluationService
 
     public async Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto)
     {
-        return await ProcessEvaluationAsync(dto, EvaluationStatus.Completed);
+        return await ProcessEvaluationAsync(dto, EvaluationStatuses.Ids.Completed);
     }
 
-    private async Task<EvaluationDto> ProcessEvaluationAsync(SubmitEvaluationDto dto, EvaluationStatus targetStatus)
+    private async Task<EvaluationDto> ProcessEvaluationAsync(SubmitEvaluationDto dto, int targetStatusId)
     {
         // Get assignment with checklist details (Sections kaldırıldı, Questions direkt Checklist'e bağlı)
         var assignment = await _context.Assignments
@@ -481,7 +481,7 @@ public class EvaluationService : IEvaluationService
                 AssignmentId = dto.AssignmentId,
                 AssignmentPeriodId = dto.AssignmentPeriodId,
                 EvaluatorId = dto.EvaluatorId,
-                Status = EvaluationStatus.InProgress,
+                StatusId = EvaluationStatuses.Ids.InProgress,
                 StartedAt = DateTime.UtcNow,
                 FormOpenedAt = dto.FormOpenedAt ?? DateTime.UtcNow
             };
@@ -520,9 +520,8 @@ public class EvaluationService : IEvaluationService
             if (answerDto.ApplyPenalty && !string.IsNullOrEmpty(answerDto.SelectedPenaltyType))
             {
                 answer.IsPenaltyApplied = true;
-                answer.AppliedPenaltyType = Enum.TryParse<PenaltyType>(answerDto.SelectedPenaltyType, out var pt)
-                    ? pt
-                    : PenaltyType.None;
+                answer.AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(answerDto.SelectedPenaltyType)?.Id
+                    ?? PenaltyTypes.Ids.None;
             }
 
             // Alt kriter seçimlerini ekle
@@ -542,7 +541,7 @@ public class EvaluationService : IEvaluationService
         }
 
         // Update evaluation fields
-        evaluation.Status = targetStatus;
+        evaluation.StatusId = targetStatusId;
         evaluation.TotalScore = scoreResult.TotalEarned;
         evaluation.MaxScore = scoreResult.MaxPossible;
         evaluation.ScorePercentage = scoreResult.Percentage;
@@ -568,7 +567,7 @@ public class EvaluationService : IEvaluationService
         evaluation.RedCardCount = scoreResult.RedCardCount;
         evaluation.UpdatedAt = DateTime.UtcNow;
 
-        if (targetStatus == EvaluationStatus.Completed)
+        if (targetStatusId == EvaluationStatuses.Ids.Completed)
         {
             evaluation.CompletedAt = DateTime.UtcNow;
             // Not: Assignment tamamlandı olarak işaretlenmiyor
@@ -578,7 +577,7 @@ public class EvaluationService : IEvaluationService
         await _context.SaveChangesAsync();
 
         // Yeni personel talebi oluştur (Listede Yok seçilmişse)
-        if (targetStatus == EvaluationStatus.Completed && dto.NewPersonnel != null &&
+        if (targetStatusId == EvaluationStatuses.Ids.Completed && dto.NewPersonnel != null &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName) &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.LastName) &&
             assignment.Project?.CustomerId != null)
@@ -610,7 +609,7 @@ public class EvaluationService : IEvaluationService
                 continue;
 
             // Puansız soruları atla
-            if (question.ScoringType == ScoringType.Unscored)
+            if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
                 continue;
 
             var answer = answers.FirstOrDefault(a => a.QuestionId == question.Id);
@@ -618,7 +617,7 @@ public class EvaluationService : IEvaluationService
                 continue;
 
             // Cezalı sorular için
-            if (question.ScoringType == ScoringType.Penalty)
+            if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
             {
                 if (answer.ApplyPenalty)
                 {
@@ -659,11 +658,11 @@ public class EvaluationService : IEvaluationService
             return answer.GivenPoints.Value;
 
         // Puansız sorular için null döndür
-        if (question.ScoringType == ScoringType.Unscored)
+        if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
             return null;
 
         // Cezalı sorular ayrıca işleniyor
-        if (question.ScoringType == ScoringType.Penalty)
+        if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
             return 0;
 
         // Ağırlık puanı ve maksimum puan sistemi
@@ -699,9 +698,8 @@ public class EvaluationService : IEvaluationService
             Notes = dto.Notes,
             RecommendationNotes = dto.RecommendationNotes,
             IsPenaltyApplied = dto.ApplyPenalty,
-            AppliedPenaltyType = Enum.TryParse<PenaltyType>(dto.SelectedPenaltyType, out var pt)
-                ? pt
-                : PenaltyType.None
+            AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(dto.SelectedPenaltyType)?.Id
+                ?? PenaltyTypes.Ids.None
         };
     }
 
@@ -714,9 +712,8 @@ public class EvaluationService : IEvaluationService
         answer.Notes = dto.Notes;
         answer.RecommendationNotes = dto.RecommendationNotes;
         answer.IsPenaltyApplied = dto.ApplyPenalty;
-        answer.AppliedPenaltyType = Enum.TryParse<PenaltyType>(dto.SelectedPenaltyType, out var pt)
-            ? pt
-            : PenaltyType.None;
+        answer.AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(dto.SelectedPenaltyType)?.Id
+            ?? PenaltyTypes.Ids.None;
         answer.UpdatedAt = DateTime.UtcNow;
     }
 
@@ -732,21 +729,21 @@ public class EvaluationService : IEvaluationService
         var order = 1;
 
         // 1. Normal Sorular (PenaltyType = None)
-        var normalQuestions = questions.Where(q => q.PenaltyType == PenaltyType.None).OrderBy(q => q.Order).ToList();
+        var normalQuestions = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.None).OrderBy(q => q.Order).ToList();
         if (normalQuestions.Any())
         {
             result.Add(CreateQuestionGroup(normalQuestions, "Sorular", order++));
         }
 
         // 2. Sarı Kartlar
-        var yellowCards = questions.Where(q => q.PenaltyType == PenaltyType.YellowCard).OrderBy(q => q.Order).ToList();
+        var yellowCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.YellowCard).OrderBy(q => q.Order).ToList();
         if (yellowCards.Any())
         {
             result.Add(CreateQuestionGroup(yellowCards, "Sarı Kartlar", order++));
         }
 
         // 3. Kırmızı Kartlar
-        var redCards = questions.Where(q => q.PenaltyType == PenaltyType.RedCard).OrderBy(q => q.Order).ToList();
+        var redCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.RedCard).OrderBy(q => q.Order).ToList();
         if (redCards.Any())
         {
             result.Add(CreateQuestionGroup(redCards, "Kırmızı Kartlar", order++));
@@ -771,10 +768,10 @@ public class EvaluationService : IEvaluationService
                 Order = q.Order,
                 IsRequired = q.IsRequired,
                 AllowNA = q.AllowNA,
-                ScoringType = q.ScoringType.ToString(),
+                ScoringType = q.ScoringTypeId.ToString(),
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
-                PenaltyType = q.PenaltyType.ToString(),
+                PenaltyType = q.PenaltyTypeId.ToString(),
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
                 SubCriteria = q.SubCriteria?
@@ -800,7 +797,7 @@ public class EvaluationService : IEvaluationService
             Id = a.Id,
             QuestionId = a.QuestionId,
             QuestionText = a.Question?.Text ?? "",
-            QuestionType = a.Question?.ScoringType.ToString(), // ScoringType kullanılıyor
+            QuestionType = a.Question?.ScoringTypeId.ToString(), // ScoringType kullanılıyor
             AnswerText = a.AnswerText,
             AnswerNumeric = a.AnswerNumeric,
             IsNA = a.IsNA,
@@ -810,7 +807,7 @@ public class EvaluationService : IEvaluationService
             RecommendationNotes = a.RecommendationNotes,
             AttachmentFileName = a.AttachmentFileName,
             IsPenaltyApplied = a.IsPenaltyApplied,
-            AppliedPenaltyType = a.AppliedPenaltyType.ToString(),
+            AppliedPenaltyType = a.AppliedPenaltyTypeId.ToString(),
             SectionOrder = null, // Section kaldırıldı
             SectionName = null, // Section kaldırıldı
             GroupName = a.Question?.GroupName,
@@ -818,8 +815,8 @@ public class EvaluationService : IEvaluationService
             QuestionMaxPoints = a.Question?.MaxPoints ?? 5, // Sorunun max puanı (örn: 5)
             WeightPoints = a.Question?.WeightPoints ?? 0, // Ağırlık puanı
             MaxPoints = a.Question?.WeightPoints, // Geriye uyumluluk için
-            ScoringType = a.Question?.ScoringType.ToString(),
-            PenaltyType = a.Question?.PenaltyType.ToString(),
+            ScoringType = a.Question?.ScoringTypeId.ToString(),
+            PenaltyType = a.Question?.PenaltyTypeId.ToString(),
             HelpText = a.Question?.HelpText,
             RecommendedNote = a.Question?.RecommendedNote,
             SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList(),
@@ -839,14 +836,14 @@ public class EvaluationService : IEvaluationService
         if (evaluation == null)
             throw new KeyNotFoundException($"Evaluation with ID {evaluationId} not found");
 
-        if (evaluation.Status == EvaluationStatus.Draft)
+        if (evaluation.StatusId == EvaluationStatuses.Ids.Draft)
             throw new InvalidOperationException("Değerlendirme zaten taslak durumunda.");
 
         // Eski durumu logla
-        var previousStatus = evaluation.Status;
+        var previousStatus = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "Unknown";
 
         // Durumu taslağa çevir
-        evaluation.Status = EvaluationStatus.Draft;
+        evaluation.StatusId = EvaluationStatuses.Ids.Draft;
         evaluation.CompletedAt = null;
         evaluation.UpdatedAt = DateTime.UtcNow;
 
@@ -873,18 +870,18 @@ public class EvaluationService : IEvaluationService
         if (evaluation == null)
             throw new KeyNotFoundException($"Evaluation with ID {evaluationId} not found");
 
-        if (evaluation.Status == EvaluationStatus.Cancelled)
+        if (evaluation.StatusId == EvaluationStatuses.Ids.Cancelled)
             throw new InvalidOperationException("Değerlendirme zaten iptal edilmiş.");
 
         // Eski durumu logla
-        var previousStatus = evaluation.Status;
+        var previousStatusName = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "Unknown";
 
         // Durumu iptal et
-        evaluation.Status = EvaluationStatus.Cancelled;
+        evaluation.StatusId = EvaluationStatuses.Ids.Cancelled;
         evaluation.UpdatedAt = DateTime.UtcNow;
 
         // Değişiklik logunu kaydet
-        var logEntry = $"\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] İptal edildi. Önceki durum: {previousStatus}. Neden: {reason ?? "Belirtilmedi"}";
+        var logEntry = $"\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] İptal edildi. Önceki durum: {previousStatusName}. Neden: {reason ?? "Belirtilmedi"}";
         evaluation.Notes = (evaluation.Notes ?? "") + logEntry;
 
         await _context.SaveChangesAsync();
@@ -961,7 +958,7 @@ public class EvaluationService : IEvaluationService
                 : (evaluation.Evaluator != null
                     ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                     : null),
-            Status = evaluation.Status.ToString(),
+            Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
             ScorePercentage = evaluation.ScorePercentage,
@@ -1004,7 +1001,7 @@ public class EvaluationService : IEvaluationService
             .Where(cp => !cp.IsDeleted && cp.IsActive)
             .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == organizationId && !oa.IsDeleted))
             // Süpervizörleri hariç tut
-            .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+            .Where(cp => cp.RoleId != CustomerPersonnelRoles.Ids.Supervisor)
             .OrderBy(cp => cp.FirstName)
             .ThenBy(cp => cp.LastName)
             .Select(cp => new PersonnelOptionDto
@@ -1031,7 +1028,7 @@ public class EvaluationService : IEvaluationService
         var personnel = await _context.CustomerPersonnel
             .Where(cp => !cp.IsDeleted && cp.IsActive && cp.CustomerId == customerId)
             // Süpervizörleri hariç tut
-            .Where(cp => cp.Role != Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+            .Where(cp => cp.RoleId != CustomerPersonnelRoles.Ids.Supervisor)
             .OrderBy(cp => cp.FirstName)
             .ThenBy(cp => cp.LastName)
             .Select(cp => new PersonnelOptionDto
@@ -1074,7 +1071,7 @@ public class EvaluationService : IEvaluationService
 
         // Admin'lere bildirim gönder
         var admins = await _context.Users
-            .Where(u => u.Role == UserRole.Admin && u.IsActive && !u.IsDeleted)
+            .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
 
@@ -1083,9 +1080,9 @@ public class EvaluationService : IEvaluationService
             var notification = new Notification
             {
                 RecipientUserId = adminId,
-                NotificationType = NotificationType.Info,
-                Channel = NotificationChannel.InApp,
-                Priority = NotificationPriority.Normal,
+                NotificationTypeId = NotificationTypes.Ids.Info,
+                ChannelId = NotificationChannels.Ids.InApp,
+                PriorityId = NotificationPriorities.Ids.Normal,
                 Title = "PersonnelRequest.New",
                 Message = $"Yeni personel talebi: {personnelRequest.FullName}",
                 ActionUrl = $"/UserRequests?tab=personnel&id={personnelRequest.Id}",

@@ -77,7 +77,7 @@
                             <td data-bind="text: firstName + ' ' + lastName"></td>
                             <td data-bind="text: email"></td>
                             <td>
-                                <span class="badge" data-bind="css: $parent.getRoleBadgeClass(role), text: $parent.getRoleDisplayName(role)"></span>
+                                <span class="badge" data-bind="css: $parent.getRoleBadgeClass(roleId), text: $parent.getRoleDisplayName(roleId)"></span>
                             </td>
                             <td>
                                 <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>

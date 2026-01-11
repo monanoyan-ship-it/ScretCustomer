@@ -20,5 +20,8 @@ public class AnswerConfiguration : IEntityTypeConfiguration<Answer>
             .WithMany(q => q.Answers)
             .HasForeignKey(a => a.QuestionId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Veritabanı kolon adlarını korumak için
+        builder.Property(a => a.AppliedPenaltyTypeId).HasColumnName("AppliedPenaltyType");
     }
 }

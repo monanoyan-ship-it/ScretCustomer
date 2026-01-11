@@ -13,14 +13,14 @@ public class Approval : BaseEntity
     public string ReferenceNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// Onay türü
+    /// Onay türü (ApprovalTypes.Ids kullanılır)
     /// </summary>
-    public ApprovalType ApprovalType { get; set; } = ApprovalType.General;
+    public int ApprovalTypeId { get; set; } = ApprovalTypes.Ids.General;
 
     /// <summary>
-    /// Durum
+    /// Durum (ApprovalStatuses.Ids kullanılır)
     /// </summary>
-    public ApprovalStatus Status { get; set; } = ApprovalStatus.Pending;
+    public int StatusId { get; set; } = ApprovalStatuses.Ids.Pending;
 
     /// <summary>
     /// Başlık
@@ -93,9 +93,9 @@ public class Approval : BaseEntity
     public string? ResponseNote { get; set; }
 
     /// <summary>
-    /// Öncelik
+    /// Öncelik (NotificationPriorities.Ids kullanılır)
     /// </summary>
-    public NotificationPriority Priority { get; set; } = NotificationPriority.Normal;
+    public int PriorityId { get; set; } = NotificationPriorities.Ids.Normal;
 
     /// <summary>
     /// Otomatik onay süresi (saat)
@@ -124,19 +124,19 @@ public class Approval : BaseEntity
 public class Notification : BaseEntity
 {
     /// <summary>
-    /// Bildirim türü
+    /// Bildirim türü (NotificationTypes.Ids kullanılır)
     /// </summary>
-    public NotificationType NotificationType { get; set; } = NotificationType.Info;
+    public int NotificationTypeId { get; set; } = NotificationTypes.Ids.Info;
 
     /// <summary>
-    /// Kanal
+    /// Kanal (NotificationChannels.Ids kullanılır)
     /// </summary>
-    public NotificationChannel Channel { get; set; } = NotificationChannel.InApp;
+    public int ChannelId { get; set; } = NotificationChannels.Ids.InApp;
 
     /// <summary>
-    /// Öncelik
+    /// Öncelik (NotificationPriorities.Ids kullanılır)
     /// </summary>
-    public NotificationPriority Priority { get; set; } = NotificationPriority.Normal;
+    public int PriorityId { get; set; } = NotificationPriorities.Ids.Normal;
 
     /// <summary>
     /// Başlık
@@ -250,9 +250,9 @@ public class NotificationSetting : BaseEntity
     public User User { get; set; } = null!;
 
     /// <summary>
-    /// Bildirim türü
+    /// Bildirim türü (NotificationTypes.Ids kullanılır)
     /// </summary>
-    public NotificationType NotificationType { get; set; }
+    public int NotificationTypeId { get; set; }
 
     /// <summary>
     /// Uygulama içi bildirimi aktif mi?

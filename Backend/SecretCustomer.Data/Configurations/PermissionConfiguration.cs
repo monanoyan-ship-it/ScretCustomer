@@ -22,7 +22,10 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
             .HasMaxLength(500);
 
         builder.HasIndex(p => p.Code).IsUnique();
-        builder.HasIndex(p => p.Category);
+        builder.HasIndex(p => p.CategoryId);
         builder.HasIndex(p => p.IsActive);
+
+        // Veritabanı kolon adlarını korumak için
+        builder.Property(p => p.CategoryId).HasColumnName("Category");
     }
 }

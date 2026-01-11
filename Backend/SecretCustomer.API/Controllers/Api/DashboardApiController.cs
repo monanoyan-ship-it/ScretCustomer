@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
@@ -283,7 +284,7 @@ public class DashboardApiController : BaseApiController
                     && targetUserIds.Contains(e.Assignment.AssignedCustomerPersonnelId.Value)
                     && e.CreatedAt.Year == targetYear
                     && e.CreatedAt.Month == targetMonth
-                    && e.Status == Core.Enums.EvaluationStatus.Completed)
+                    && e.StatusId == EvaluationStatuses.Ids.Completed)
                 .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
                 .Select(e => new
                 {
@@ -332,7 +333,7 @@ public class DashboardApiController : BaseApiController
 
                     // Supervisor listesi
                     supervisorList = await _context.CustomerPersonnel
-                        .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted && p.Role == Core.Enums.CustomerPersonnelRole.CustomerSupervisor)
+                        .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted && p.RoleId == CustomerPersonnelRoles.Ids.Supervisor)
                         .OrderBy(p => p.FirstName).ThenBy(p => p.LastName)
                         .Select(p => new { p.Id, Name = p.FirstName + " " + p.LastName })
                         .ToListAsync<object>();

@@ -31,5 +31,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Username).IsUnique();
         builder.HasIndex(u => u.Email).IsUnique();
+
+        // Role -> RoleId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(u => u.RoleId).HasColumnName("Role");
     }
 }

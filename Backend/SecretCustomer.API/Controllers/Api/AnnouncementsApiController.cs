@@ -61,7 +61,7 @@ public class AnnouncementsApiController : BaseApiController
                     Title = a.Title,
                     Content = a.Content,
                     Summary = a.Summary,
-                    Type = a.Type,
+                    TypeId = a.TypeId,
                     Priority = a.Priority,
                     PublishDate = a.PublishDate,
                     ExpiryDate = a.ExpiryDate,
@@ -114,7 +114,7 @@ public class AnnouncementsApiController : BaseApiController
                     Id = a.Id,
                     Title = a.Title,
                     Summary = a.Summary ?? (a.Content.Length > 100 ? a.Content.Substring(0, 100) + "..." : a.Content),
-                    Type = a.Type,
+                    TypeId = a.TypeId,
                     IsPinned = a.IsPinned,
                     PublishDate = a.PublishDate
                 })
@@ -155,7 +155,7 @@ public class AnnouncementsApiController : BaseApiController
                 Title = announcement.Title,
                 Content = announcement.Content,
                 Summary = announcement.Summary,
-                Type = announcement.Type,
+                TypeId = announcement.TypeId,
                 Priority = announcement.Priority,
                 PublishDate = announcement.PublishDate,
                 ExpiryDate = announcement.ExpiryDate,
@@ -193,7 +193,7 @@ public class AnnouncementsApiController : BaseApiController
                     Title = a.Title,
                     Content = a.Content,
                     Summary = a.Summary,
-                    Type = a.Type,
+                    TypeId = a.TypeId,
                     Priority = a.Priority,
                     PublishDate = a.PublishDate,
                     ExpiryDate = a.ExpiryDate,
@@ -237,7 +237,7 @@ public class AnnouncementsApiController : BaseApiController
                 Title = dto.Title,
                 Content = dto.Content,
                 Summary = dto.Summary,
-                Type = dto.Type,
+                TypeId = dto.TypeId,
                 Priority = dto.Priority,
                 PublishDate = dto.PublishDate ?? DateTime.UtcNow,
                 ExpiryDate = dto.ExpiryDate,
@@ -258,7 +258,7 @@ public class AnnouncementsApiController : BaseApiController
                 Title = announcement.Title,
                 Content = announcement.Content,
                 Summary = announcement.Summary,
-                Type = announcement.Type,
+                TypeId = announcement.TypeId,
                 Priority = announcement.Priority,
                 PublishDate = announcement.PublishDate,
                 ExpiryDate = announcement.ExpiryDate,
@@ -293,7 +293,7 @@ public class AnnouncementsApiController : BaseApiController
             announcement.Title = dto.Title;
             announcement.Content = dto.Content;
             announcement.Summary = dto.Summary;
-            announcement.Type = dto.Type;
+            announcement.TypeId = dto.TypeId;
             announcement.Priority = dto.Priority;
             announcement.PublishDate = dto.PublishDate ?? announcement.PublishDate;
             announcement.ExpiryDate = dto.ExpiryDate;

@@ -23,9 +23,9 @@ public class Announcement : BaseEntity
     public string? Summary { get; set; }
 
     /// <summary>
-    /// Duyuru tipi
+    /// Duyuru tipi (AnnouncementTypes.Ids kullanılır)
     /// </summary>
-    public AnnouncementType Type { get; set; } = AnnouncementType.Info;
+    public int TypeId { get; set; } = AnnouncementTypes.Ids.Info;
 
     /// <summary>
     /// Öncelik seviyesi (1-5, 5 en yüksek)

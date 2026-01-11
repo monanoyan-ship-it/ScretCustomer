@@ -216,6 +216,21 @@ public class LocalizationApiController : BaseApiController
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.DeleteSuccess") });
     }
 
+    [HttpDelete("resources/{languageId}/all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteAllResources(int languageId)
+    {
+        try
+        {
+            var count = await _localizationService.DeleteAllResourcesByLanguageAsync(languageId);
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.DeleteAllSuccess", (int?)null, $"{count} çeviri kaynağı silindi."), count });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message, ex));
+        }
+    }
+
     #endregion
 
     #region Import/Export

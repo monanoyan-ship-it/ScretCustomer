@@ -772,3 +772,204 @@ Bu pattern her tuşta API çağrısı yapar. Performans kritik ise `rateLimit` e
 ```javascript
 self.searchText = ko.observable('').extend({ rateLimit: { timeout: 300, method: 'notifyWhenChangesStop' } });
 ```
+
+---
+
+## 18. TypeDefinitions Pattern (Enum'lar Yerine)
+
+### Neden Enum Yerine TypeDefinitions?
+
+- **Localization desteği:** Her tip için `NameResourceKey` ile çoklu dil desteği
+- **Zengin metadata:** Icon, CSS class, description gibi ek bilgiler
+- **UI için hazır:** Frontend'e doğrudan gönderilebilir
+- **Tip güvenliği:** Ids inner class ile const int değerleri
+
+### TypeItem Sınıfı
+
+```csharp
+public record TypeItem(
+    int Id,
+    string SystemName,
+    string NameResourceKey,
+    string Description,
+    string Icon = "",
+    string CssClass = "",
+    int DisplayOrder = 0,
+    bool IsDefault = false,
+    bool IsActive = true,
+    bool IsSystem = false
+);
+```
+
+### DOĞRU - TypeDefinitions Pattern
+
+```csharp
+// Core/TypeDefinitions.cs içinde
+public static class ChecklistTypes
+{
+    public static readonly TypeItem Standard = new(0, "Standard", "ChecklistType.Standard", "Standart Checklist", "bi-list-check", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Mystery = new(1, "Mystery", "ChecklistType.Mystery", "Gizli Müşteri", "bi-incognito", "bg-warning", 2);
+    public static readonly TypeItem Survey = new(2, "Survey", "ChecklistType.Survey", "Anket", "bi-clipboard-data", "bg-info", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Standard, Mystery, Survey };
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string name) => All.FirstOrDefault(x => x.SystemName == name);
+
+    // Sabit ID'ler - DB'de ve kodda kullanılır
+    public static class Ids
+    {
+        public const int Standard = 0;
+        public const int Mystery = 1;
+        public const int Survey = 2;
+    }
+}
+```
+
+### YANLIŞ - Enum Kullanımı
+
+```csharp
+// BU ŞEKİLDE KULLANMA!
+public enum ChecklistType
+{
+    Standard = 0,
+    Mystery = 1,
+    Survey = 2
+}
+
+public class Checklist
+{
+    public ChecklistType Type { get; set; }  // YANLIŞ
+}
+```
+
+### Entity'de Kullanım
+
+```csharp
+public class Checklist : BaseEntity
+{
+    // YANLIŞ: public ChecklistType Type { get; set; }
+
+    // DOĞRU: int property + Id suffix
+    public int TypeId { get; set; }  // DB'de "TypeId" olarak saklanır
+}
+```
+
+### DB Column Mapping (Mevcut Enum → TypeDefinitions Dönüşümü)
+
+Mevcut enum column adını korumak için `HasColumnName` kullan:
+
+```csharp
+// ApplicationDbContext.cs - OnModelCreating içinde
+modelBuilder.Entity<AuditLog>()
+    .Property(a => a.LogTypeId).HasColumnName("LogType");
+
+modelBuilder.Entity<AssignmentPeriod>()
+    .Property(p => p.StatusId).HasColumnName("Status");
+
+modelBuilder.Entity<AppSettings>()
+    .Property(s => s.ValueTypeId).HasColumnName("ValueType");
+```
+
+### Service'de Kullanım - Type İsmi Alma (Localized)
+
+```csharp
+public class ChecklistService
+{
+    private readonly ILocalizationService _localizationService;
+
+    // DOĞRU - Async helper metod
+    private async Task<string> GetChecklistTypeNameAsync(int typeId)
+    {
+        var item = ChecklistTypes.GetById(typeId);
+        if (item == null) return "";
+        // NameResourceKey ile localized isim, Description fallback olarak
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
+
+    // YANLIŞ - .GetAwaiter().GetResult() KULLANMA!
+    private string GetChecklistTypeName(int typeId)
+    {
+        var item = ChecklistTypes.GetById(typeId);
+        return _localizationService.GetResourceAsync(item.NameResourceKey).GetAwaiter().GetResult(); // YANLIŞ!
+    }
+
+    // YANLIŞ - Sadece Description döndürme
+    private string GetChecklistTypeName(int typeId)
+    {
+        var item = ChecklistTypes.GetById(typeId);
+        return item?.Description ?? "";  // YANLIŞ! Localization yok
+    }
+}
+```
+
+### Async MapToDto Pattern
+
+Collection içinde async işlem varsa `Select` yerine `foreach` kullan:
+
+```csharp
+// DOĞRU - Async MapToDto
+private async Task<ChecklistDto> MapToDtoAsync(Checklist checklist)
+{
+    var questions = new List<QuestionDto>();
+    foreach (var q in checklist.Questions.OrderBy(q => q.Order))
+    {
+        questions.Add(new QuestionDto
+        {
+            Id = q.Id,
+            Text = q.Text,
+            // Async localization çağrısı
+            ScoringTypeName = await GetScoringTypeNameAsync(q.ScoringTypeId),
+            PenaltyTypeName = await GetPenaltyTypeNameAsync(q.PenaltyTypeId)
+        });
+    }
+
+    return new ChecklistDto
+    {
+        Id = checklist.Id,
+        Name = checklist.Name,
+        TypeName = await GetChecklistTypeNameAsync(checklist.TypeId),
+        Questions = questions
+    };
+}
+
+// YANLIŞ - LINQ Select içinde async
+private ChecklistDto MapToDto(Checklist checklist)
+{
+    return new ChecklistDto
+    {
+        // Select içinde await YAPILAMAZ!
+        Questions = checklist.Questions.Select(q => new QuestionDto
+        {
+            ScoringTypeName = GetScoringTypeName(q.ScoringTypeId)  // Sync metod = GetAwaiter().GetResult() gerekir = YANLIŞ
+        }).ToList()
+    };
+}
+```
+
+### Mevcut TypeDefinitions
+
+Projede tanımlı tipler (`Core/TypeDefinitions.cs`):
+
+| Class | Açıklama |
+|-------|----------|
+| `ChecklistTypes` | Checklist türleri (Standard, Mystery, Survey) |
+| `ScoringMethods` | Puanlama yöntemleri (Standard, Weighted, Percentage) |
+| `ScoringTypes` | Puanlama türleri (YesNo, Scale, Options) |
+| `PenaltyTypes` | Ceza türleri (None, Full, Half, Percentage) |
+| `PeriodStatuses` | Dönem durumları (Open, Closed) |
+| `LogTypes` | Log türleri (Info, Warning, Error, DataCreate, ...) |
+| `SettingValueTypes` | Ayar değer türleri (String, Bool, Int, Decimal, Json, DateTime) |
+| `UserRoles` | Kullanıcı rolleri (Admin, QualitySpecialist, FieldWorker, CustomerPortal) |
+| `EvaluationStatuses` | Değerlendirme durumları (Draft, Submitted, Approved, Rejected) |
+| `ProjectStatuses` | Proje durumları (Draft, Active, Paused, Completed, Cancelled) |
+
+### Checklist: Yeni Enum → TypeDefinitions Dönüşümü
+
+1. [ ] Entity'de enum property'yi `int` olarak değiştir (`EnumName` → `EnumNameId`)
+2. [ ] `TypeDefinitions.cs`'e yeni static class ekle (All, GetById, GetBySystemName, Ids)
+3. [ ] `ApplicationDbContext.cs`'de `HasColumnName` ile eski column adını koru
+4. [ ] Interface'lerde parametre tipini güncelle (`EnumType` → `int`)
+5. [ ] Service'lerde helper metod oluştur (`GetEnumNameAsync`)
+6. [ ] Helper metod MUTLAKA async olmalı: `await _localizationService.GetResourceAsync(item.NameResourceKey, ...)`
+7. [ ] MapToDto metodlarını async yap (`MapToDtoAsync`)
+8. [ ] Tüm çağrıları async/await ile güncelle

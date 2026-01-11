@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
@@ -36,13 +37,13 @@ public class AuditLogService : IAuditLogService
         return (userId, userName, ipAddress, userAgent, requestUrl, httpMethod);
     }
 
-    public async Task LogAsync(LogType logType, string message, string? category = null, string? details = null)
+    public async Task LogAsync(int logTypeId, string message, string? category = null, string? details = null)
     {
         var (userId, userName, ipAddress, userAgent, requestUrl, httpMethod) = GetRequestInfo();
 
         var log = new AuditLog
         {
-            LogType = logType,
+            LogTypeId = logTypeId,
             Category = category,
             Message = message,
             Details = details,
@@ -61,12 +62,12 @@ public class AuditLogService : IAuditLogService
 
     public async Task LogInfoAsync(string message, string? category = null, string? details = null)
     {
-        await LogAsync(LogType.Info, message, category, details);
+        await LogAsync(LogTypes.Ids.Info, message, category, details);
     }
 
     public async Task LogWarningAsync(string message, string? category = null, string? details = null)
     {
-        await LogAsync(LogType.Warning, message, category, details);
+        await LogAsync(LogTypes.Ids.Warning, message, category, details);
     }
 
     public async Task LogErrorAsync(string message, string? category = null, Exception? exception = null)
@@ -75,7 +76,7 @@ public class AuditLogService : IAuditLogService
 
         var log = new AuditLog
         {
-            LogType = LogType.Error,
+            LogTypeId = LogTypes.Ids.Error,
             Category = category,
             Message = message,
             Details = exception?.Message,
@@ -94,22 +95,22 @@ public class AuditLogService : IAuditLogService
         await _context.SaveChangesAsync();
     }
 
-    public async Task LogDataChangeAsync(LogType logType, string tableName, int recordId,
+    public async Task LogDataChangeAsync(int logTypeId, string tableName, int recordId,
         string? oldValues = null, string? newValues = null, string? message = null)
     {
         var (userId, userName, ipAddress, userAgent, requestUrl, httpMethod) = GetRequestInfo();
 
-        var actionName = logType switch
+        var actionName = logTypeId switch
         {
-            LogType.DataCreate => "oluşturuldu",
-            LogType.DataUpdate => "güncellendi",
-            LogType.DataDelete => "silindi",
+            LogTypes.Ids.DataCreate => "oluşturuldu",
+            LogTypes.Ids.DataUpdate => "güncellendi",
+            LogTypes.Ids.DataDelete => "silindi",
             _ => "değiştirildi"
         };
 
         var log = new AuditLog
         {
-            LogType = logType,
+            LogTypeId = logTypeId,
             Category = "DataChange",
             Message = message ?? $"{tableName} kaydı {actionName}",
             TableName = tableName,
@@ -135,7 +136,7 @@ public class AuditLogService : IAuditLogService
 
         var log = new AuditLog
         {
-            LogType = success ? LogType.Login : LogType.LoginFailed,
+            LogTypeId = success ? LogTypes.Ids.Login : LogTypes.Ids.LoginFailed,
             Category = "Auth",
             Message = success ? $"{userName} giriş yaptı" : $"{userName} giriş başarısız",
             Details = failReason,
@@ -158,7 +159,7 @@ public class AuditLogService : IAuditLogService
 
         var log = new AuditLog
         {
-            LogType = LogType.Logout,
+            LogTypeId = LogTypes.Ids.Logout,
             Category = "Auth",
             Message = $"{userName} çıkış yaptı",
             UserId = userId,
@@ -180,7 +181,7 @@ public class AuditLogService : IAuditLogService
 
         var log = new AuditLog
         {
-            LogType = LogType.AccessDenied,
+            LogTypeId = LogTypes.Ids.AccessDenied,
             Category = "Auth",
             Message = $"Erişim reddedildi: {resource}",
             Details = reason,
@@ -198,7 +199,7 @@ public class AuditLogService : IAuditLogService
     }
 
     public async Task<IEnumerable<AuditLog>> GetLogsAsync(
-        LogType? logType = null,
+        int? logTypeId = null,
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,
@@ -208,8 +209,8 @@ public class AuditLogService : IAuditLogService
     {
         var query = _context.AuditLogs.AsQueryable();
 
-        if (logType.HasValue)
-            query = query.Where(l => l.LogType == logType.Value);
+        if (logTypeId.HasValue)
+            query = query.Where(l => l.LogTypeId == logTypeId.Value);
 
         if (!string.IsNullOrEmpty(category))
             query = query.Where(l => l.Category == category);
@@ -231,7 +232,7 @@ public class AuditLogService : IAuditLogService
     }
 
     public async Task<int> GetLogsCountAsync(
-        LogType? logType = null,
+        int? logTypeId = null,
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,
@@ -239,8 +240,8 @@ public class AuditLogService : IAuditLogService
     {
         var query = _context.AuditLogs.AsQueryable();
 
-        if (logType.HasValue)
-            query = query.Where(l => l.LogType == logType.Value);
+        if (logTypeId.HasValue)
+            query = query.Where(l => l.LogTypeId == logTypeId.Value);
 
         if (!string.IsNullOrEmpty(category))
             query = query.Where(l => l.Category == category);

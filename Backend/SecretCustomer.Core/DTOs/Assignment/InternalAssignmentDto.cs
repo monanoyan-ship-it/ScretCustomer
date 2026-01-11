@@ -26,9 +26,9 @@ public class CreateInternalAssignmentsDto
     public List<int>? PersonnelIds { get; set; }
 
     /// <summary>
-    /// Rol bazlı toplu atama (örn: tüm süpervizörler)
+    /// Rol bazlı toplu atama (örn: tüm süpervizörler) - CustomerPersonnelRoles.Ids kullanılır
     /// </summary>
-    public CustomerPersonnelRole? RoleFilter { get; set; }
+    public int? RoleFilterId { get; set; }
 
     /// <summary>
     /// Organizasyon bazlı filtreleme (opsiyonel)
@@ -77,7 +77,7 @@ public class InternalAssignmentFilterDto
     public int? CustomerId { get; set; }
     public int? ProjectId { get; set; }
     public int? OrganizationId { get; set; }
-    public CustomerPersonnelRole? Role { get; set; }
+    public int? RoleId { get; set; }
     public bool? IsCompleted { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }

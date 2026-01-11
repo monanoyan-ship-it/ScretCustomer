@@ -792,7 +792,7 @@ function AssignmentsViewModel() {
     };
 
     self.getSaveButtonText = function() {
-        return self.isEditing() ? T('Button.Update', 'Güncelle') : T('Button.Create', 'Oluştur');
+        return self.isEditing() ? T('Common.Update', 'Güncelle') : T('Common.Create', 'Oluştur');
     };
 
     // ===== Initialize =====
@@ -861,8 +861,8 @@ var TRANSLATION_KEYS = [
     'Common.DaysLeft',
     'Assignment.Edit',
     'Assignment.Create',
-    'Button.Update',
-    'Button.Create',
+    'Common.Update',
+    'Common.Create',
     // Confirm modal keys
     'Confirm.Title',
     'Confirm.Message',

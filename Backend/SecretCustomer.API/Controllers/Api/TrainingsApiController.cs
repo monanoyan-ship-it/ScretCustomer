@@ -61,14 +61,26 @@ public class TrainingsApiController : BaseApiController
         if (filter.TrainerId.HasValue)
             query = query.Where(t => t.TrainerId == filter.TrainerId.Value);
 
-        if (!string.IsNullOrEmpty(filter.TrainingType) && Enum.TryParse<TrainingType>(filter.TrainingType, out var trainingType))
-            query = query.Where(t => t.TrainingType == trainingType);
+        if (!string.IsNullOrEmpty(filter.TrainingType))
+        {
+            var trainingTypeItem = TrainingTypes.GetBySystemName(filter.TrainingType);
+            if (trainingTypeItem != null)
+                query = query.Where(t => t.TrainingTypeId == trainingTypeItem.Id);
+        }
 
-        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<TrainingStatus>(filter.Status, out var status))
-            query = query.Where(t => t.Status == status);
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var statusItem = TrainingStatuses.GetBySystemName(filter.Status);
+            if (statusItem != null)
+                query = query.Where(t => t.StatusId == statusItem.Id);
+        }
 
-        if (!string.IsNullOrEmpty(filter.Category) && Enum.TryParse<TrainingCategory>(filter.Category, out var category))
-            query = query.Where(t => t.Category == category);
+        if (!string.IsNullOrEmpty(filter.Category))
+        {
+            var categoryItem = TrainingCategories.GetBySystemName(filter.Category);
+            if (categoryItem != null)
+                query = query.Where(t => t.CategoryId == categoryItem.Id);
+        }
 
         if (filter.StartDate.HasValue)
             query = query.Where(t => t.StartDate >= filter.StartDate.Value);
@@ -95,9 +107,9 @@ public class TrainingsApiController : BaseApiController
         {
             "code" => isAscending ? query.OrderBy(t => t.Code) : query.OrderByDescending(t => t.Code),
             "title" => isAscending ? query.OrderBy(t => t.Title) : query.OrderByDescending(t => t.Title),
-            "trainingtype" => isAscending ? query.OrderBy(t => t.TrainingType) : query.OrderByDescending(t => t.TrainingType),
-            "status" => isAscending ? query.OrderBy(t => t.Status) : query.OrderByDescending(t => t.Status),
-            "category" => isAscending ? query.OrderBy(t => t.Category) : query.OrderByDescending(t => t.Category),
+            "trainingtype" => isAscending ? query.OrderBy(t => t.TrainingTypeId) : query.OrderByDescending(t => t.TrainingTypeId),
+            "status" => isAscending ? query.OrderBy(t => t.StatusId) : query.OrderByDescending(t => t.StatusId),
+            "category" => isAscending ? query.OrderBy(t => t.CategoryId) : query.OrderByDescending(t => t.CategoryId),
             "startdate" => isAscending ? query.OrderBy(t => t.StartDate) : query.OrderByDescending(t => t.StartDate),
             "trainername" => isAscending
                 ? query.OrderBy(t => t.Trainer != null ? t.Trainer.FirstName : t.ExternalTrainerName)
@@ -116,9 +128,9 @@ public class TrainingsApiController : BaseApiController
                 Id = t.Id,
                 Code = t.Code,
                 Title = t.Title,
-                TrainingType = t.TrainingType.ToString(),
-                Status = t.Status.ToString(),
-                Category = t.Category.ToString(),
+                TrainingType = t.TrainingTypeId.ToString(),
+                Status = t.StatusId.ToString(),
+                Category = t.CategoryId.ToString(),
                 StartDate = t.StartDate,
                 EndDate = t.EndDate,
                 DurationMinutes = t.DurationMinutes,
@@ -157,9 +169,9 @@ public class TrainingsApiController : BaseApiController
             Code = training.Code,
             Title = training.Title,
             Description = training.Description,
-            TrainingType = training.TrainingType.ToString(),
-            Status = training.Status.ToString(),
-            Category = training.Category.ToString(),
+            TrainingType = TrainingTypes.GetById(training.TrainingTypeId)?.SystemName ?? training.TrainingTypeId.ToString(),
+            Status = TrainingStatuses.GetById(training.StatusId)?.SystemName ?? training.StatusId.ToString(),
+            Category = TrainingCategories.GetById(training.CategoryId)?.SystemName ?? training.CategoryId.ToString(),
             StartDate = training.StartDate,
             EndDate = training.EndDate,
             DurationMinutes = training.DurationMinutes,
@@ -194,7 +206,7 @@ public class TrainingsApiController : BaseApiController
                 ExternalName = p.ExternalName,
                 ExternalEmail = p.ExternalEmail,
                 ExternalPhone = p.ExternalPhone,
-                Status = p.Status.ToString(),
+                Status = p.StatusId.ToString(),
                 AttendanceDate = p.AttendanceDate,
                 AttendanceMinutes = p.AttendanceMinutes,
                 Score = p.Score,
@@ -235,9 +247,9 @@ public class TrainingsApiController : BaseApiController
             Code = await GenerateTrainingCode(),
             Title = dto.Title,
             Description = dto.Description,
-            TrainingType = Enum.TryParse<TrainingType>(dto.TrainingType, out var trainingType) ? trainingType : TrainingType.InPerson,
-            Status = TrainingStatus.Draft,
-            Category = Enum.TryParse<TrainingCategory>(dto.Category, out var category) ? category : TrainingCategory.General,
+            TrainingTypeId = TrainingTypes.GetBySystemName(dto.TrainingType)?.Id ?? TrainingTypes.Ids.InPerson,
+            StatusId = TrainingStatuses.Ids.Draft,
+            CategoryId = TrainingCategories.GetBySystemName(dto.Category)?.Id ?? TrainingCategories.Ids.General,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
             DurationMinutes = dto.DurationMinutes,
@@ -279,9 +291,9 @@ public class TrainingsApiController : BaseApiController
 
         training.Title = dto.Title;
         training.Description = dto.Description;
-        training.TrainingType = Enum.TryParse<TrainingType>(dto.TrainingType, out var trainingType) ? trainingType : training.TrainingType;
-        training.Status = Enum.TryParse<TrainingStatus>(dto.Status, out var status) ? status : training.Status;
-        training.Category = Enum.TryParse<TrainingCategory>(dto.Category, out var category) ? category : training.Category;
+        training.TrainingTypeId = TrainingTypes.GetBySystemName(dto.TrainingType)?.Id ?? training.TrainingTypeId;
+        training.StatusId = TrainingStatuses.GetBySystemName(dto.Status)?.Id ?? training.StatusId;
+        training.CategoryId = TrainingCategories.GetBySystemName(dto.Category)?.Id ?? training.CategoryId;
         training.StartDate = dto.StartDate;
         training.EndDate = dto.EndDate;
         training.DurationMinutes = dto.DurationMinutes;
@@ -333,7 +345,7 @@ public class TrainingsApiController : BaseApiController
         if (training == null)
             return NotFound();
 
-        training.Status = TrainingStatus.InProgress;
+        training.StatusId = TrainingStatuses.Ids.InProgress;
         if (!training.StartDate.HasValue)
             training.StartDate = DateTime.UtcNow;
 
@@ -351,7 +363,7 @@ public class TrainingsApiController : BaseApiController
         if (training == null)
             return NotFound();
 
-        training.Status = TrainingStatus.Completed;
+        training.StatusId = TrainingStatuses.Ids.Completed;
         if (!training.EndDate.HasValue)
             training.EndDate = DateTime.UtcNow;
 
@@ -369,7 +381,7 @@ public class TrainingsApiController : BaseApiController
         if (training == null)
             return NotFound();
 
-        training.Status = TrainingStatus.Cancelled;
+        training.StatusId = TrainingStatuses.Ids.Cancelled;
         await _context.SaveChangesAsync();
         return Ok();
     }
@@ -384,7 +396,7 @@ public class TrainingsApiController : BaseApiController
         if (training == null)
             return NotFound();
 
-        training.Status = TrainingStatus.Postponed;
+        training.StatusId = TrainingStatuses.Ids.Postponed;
         if (newDate.HasValue)
             training.StartDate = newDate.Value;
 
@@ -421,7 +433,7 @@ public class TrainingsApiController : BaseApiController
             ExternalName = dto.ExternalName,
             ExternalEmail = dto.ExternalEmail,
             ExternalPhone = dto.ExternalPhone,
-            Status = TrainingParticipantStatus.Invited
+            StatusId = TrainingParticipantStatuses.Ids.Invited
         };
 
         _context.TrainingParticipants.Add(participant);
@@ -440,10 +452,11 @@ public class TrainingsApiController : BaseApiController
         if (participant == null)
             return NotFound();
 
-        if (Enum.TryParse<TrainingParticipantStatus>(dto.Status, out var status))
+        var statusItem = TrainingParticipantStatuses.GetBySystemName(dto.Status);
+        if (statusItem != null)
         {
-            participant.Status = status;
-            if (status == TrainingParticipantStatus.Attended || status == TrainingParticipantStatus.Completed)
+            participant.StatusId = statusItem.Id;
+            if (statusItem.Id == TrainingParticipantStatuses.Ids.Attended || statusItem.Id == TrainingParticipantStatuses.Ids.Completed)
                 participant.AttendanceDate = DateTime.UtcNow;
         }
 
@@ -468,7 +481,7 @@ public class TrainingsApiController : BaseApiController
 
         participant.CertificateIssued = true;
         participant.CertificateDate = DateTime.UtcNow;
-        participant.Status = TrainingParticipantStatus.Completed;
+        participant.StatusId = TrainingParticipantStatuses.Ids.Completed;
 
         await _context.SaveChangesAsync();
         return Ok();
@@ -586,12 +599,12 @@ public class TrainingsApiController : BaseApiController
         var summary = new TrainingSummaryDto
         {
             TotalTrainings = await _context.Trainings.CountAsync(),
-            PlannedTrainings = await _context.Trainings.CountAsync(t => t.Status == TrainingStatus.Planned || t.Status == TrainingStatus.Approved),
-            InProgressTrainings = await _context.Trainings.CountAsync(t => t.Status == TrainingStatus.InProgress),
-            CompletedTrainings = await _context.Trainings.CountAsync(t => t.Status == TrainingStatus.Completed),
-            TotalParticipants = await _context.TrainingParticipants.CountAsync(p => p.Status == TrainingParticipantStatus.Attended || p.Status == TrainingParticipantStatus.Completed),
+            PlannedTrainings = await _context.Trainings.CountAsync(t => t.StatusId == TrainingStatuses.Ids.Planned || t.StatusId == TrainingStatuses.Ids.Approved),
+            InProgressTrainings = await _context.Trainings.CountAsync(t => t.StatusId == TrainingStatuses.Ids.InProgress),
+            CompletedTrainings = await _context.Trainings.CountAsync(t => t.StatusId == TrainingStatuses.Ids.Completed),
+            TotalParticipants = await _context.TrainingParticipants.CountAsync(p => p.StatusId == TrainingParticipantStatuses.Ids.Attended || p.StatusId == TrainingParticipantStatuses.Ids.Completed),
             CertificatesIssued = await _context.TrainingParticipants.CountAsync(p => p.CertificateIssued),
-            UpcomingTrainings = await _context.Trainings.CountAsync(t => t.StartDate > now && (t.Status == TrainingStatus.Planned || t.Status == TrainingStatus.Approved)),
+            UpcomingTrainings = await _context.Trainings.CountAsync(t => t.StartDate > now && (t.StatusId == TrainingStatuses.Ids.Planned || t.StatusId == TrainingStatuses.Ids.Approved)),
             RecentTrainings = await _context.Trainings
                 .Include(t => t.Trainer)
                 .Include(t => t.Participants)
@@ -602,9 +615,9 @@ public class TrainingsApiController : BaseApiController
                     Id = t.Id,
                     Code = t.Code,
                     Title = t.Title,
-                    TrainingType = t.TrainingType.ToString(),
-                    Status = t.Status.ToString(),
-                    Category = t.Category.ToString(),
+                    TrainingType = t.TrainingTypeId.ToString(),
+                    Status = t.StatusId.ToString(),
+                    Category = t.CategoryId.ToString(),
                     StartDate = t.StartDate,
                     TrainerName = t.Trainer != null ? t.Trainer.FirstName + " " + t.Trainer.LastName : t.ExternalTrainerName,
                     CurrentParticipants = t.Participants.Count(p => !p.IsDeleted)

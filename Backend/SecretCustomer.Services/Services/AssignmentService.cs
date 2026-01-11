@@ -118,11 +118,11 @@ public class AssignmentService : IAssignmentService
                 Name = p.Name,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
-                Status = p.Status.ToString(),
+                Status = PeriodStatuses.GetById(p.StatusId)?.SystemName ?? "",
                 TargetCount = p.TargetCount,
-                CompletedCount = p.Evaluations.Count(e => !e.IsDeleted && e.Status == Core.Enums.EvaluationStatus.Completed),
+                CompletedCount = p.Evaluations.Count(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed),
                 AverageScore = p.Evaluations
-                    .Where(e => !e.IsDeleted && e.Status == Core.Enums.EvaluationStatus.Completed && e.ScorePercentage.HasValue)
+                    .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue)
                     .Average(e => e.ScorePercentage)
             })
             .ToList();
@@ -413,9 +413,9 @@ public class AssignmentService : IAssignmentService
         // İlişkili Evaluation'ları da InProgress yap
         foreach (var evaluation in assignment.Evaluations)
         {
-            if (evaluation.Status == Core.Enums.EvaluationStatus.Completed)
+            if (evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             {
-                evaluation.Status = Core.Enums.EvaluationStatus.InProgress;
+                evaluation.StatusId = EvaluationStatuses.Ids.InProgress;
                 evaluation.CompletedAt = null;
                 evaluation.UpdatedAt = DateTime.UtcNow;
             }
@@ -515,7 +515,7 @@ public class AssignmentService : IAssignmentService
         {
             TotalAssignments = assignments.Count,
             PendingCount = assignments.Count(a => !a.IsCompleted && a.DueDate >= now),
-            InProgressCount = assignments.Count(a => !a.IsCompleted && a.Evaluations.Any(e => e.Status == EvaluationStatus.Draft)),
+            InProgressCount = assignments.Count(a => !a.IsCompleted && a.Evaluations.Any(e => e.StatusId == EvaluationStatuses.Ids.Draft)),
             CompletedCount = completed.Count,
             ExpiredCount = assignments.Count(a => !a.IsCompleted && a.DueDate < now),
             CancelledCount = 0, // IsDeleted ones are not included
@@ -597,7 +597,7 @@ public class AssignmentService : IAssignmentService
         var evaluation = assignment.Evaluations?.FirstOrDefault();
         var status = assignment.IsCompleted ? "Completed"
             : assignment.DueDate < DateTime.UtcNow ? "Expired"
-            : evaluation != null && evaluation.Status == EvaluationStatus.Draft ? "InProgress"
+            : evaluation != null && evaluation.StatusId == EvaluationStatuses.Ids.Draft ? "InProgress"
             : "Pending";
 
         return new AssignmentDto
@@ -625,7 +625,7 @@ public class AssignmentService : IAssignmentService
             CreatedAt = assignment.CreatedAt,
             Status = status,
             EvaluationId = evaluation?.Id,
-            EvaluationStatus = evaluation?.Status.ToString(),
+            EvaluationStatus = evaluation != null ? EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "" : null,
             EvaluationScore = evaluation?.ScorePercentage,
             YellowCardCount = evaluation?.YellowCardCount ?? 0,
             RedCardCount = evaluation?.RedCardCount ?? 0,
@@ -684,7 +684,7 @@ public class AssignmentService : IAssignmentService
             EndDate = endDateUtc,
             TargetCount = dto.TargetCount,
             Notes = dto.Notes,
-            Status = Core.Entities.PeriodStatus.Open,
+            StatusId = PeriodStatuses.Ids.Open,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -699,8 +699,8 @@ public class AssignmentService : IAssignmentService
             Name = period.Name,
             StartDate = period.StartDate,
             EndDate = period.EndDate,
-            Status = period.Status.ToString(),
-            StatusName = period.Status == Core.Entities.PeriodStatus.Open ? "Açık" : "Kapalı",
+            Status = PeriodStatuses.GetById(period.StatusId)?.SystemName ?? "",
+            StatusName = period.StatusId == PeriodStatuses.Ids.Open ? "Açık" : "Kapalı",
             TargetCount = period.TargetCount,
             CompletedCount = 0,
             AverageScore = null,
@@ -725,7 +725,7 @@ public class AssignmentService : IAssignmentService
         period.EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc);
         period.TargetCount = dto.TargetCount;
         period.Notes = dto.Notes;
-        period.Status = Enum.Parse<Core.Entities.PeriodStatus>(dto.Status);
+        period.StatusId = PeriodStatuses.GetBySystemName(dto.Status)?.Id ?? PeriodStatuses.Ids.Open;
         period.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -742,7 +742,7 @@ public class AssignmentService : IAssignmentService
         if (period == null)
             throw new KeyNotFoundException("Dönem bulunamadı");
 
-        period.Status = Core.Entities.PeriodStatus.Closed;
+        period.StatusId = PeriodStatuses.Ids.Closed;
         period.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -759,7 +759,7 @@ public class AssignmentService : IAssignmentService
         if (period == null)
             throw new KeyNotFoundException("Dönem bulunamadı");
 
-        period.Status = Core.Entities.PeriodStatus.Open;
+        period.StatusId = PeriodStatuses.Ids.Open;
         period.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -788,7 +788,7 @@ public class AssignmentService : IAssignmentService
     private Core.DTOs.AssignmentPeriod.AssignmentPeriodDto MapPeriodToDto(Core.Entities.AssignmentPeriod period)
     {
         var completedEvaluations = period.Evaluations?
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .ToList() ?? new List<Core.Entities.Evaluation>();
 
         return new Core.DTOs.AssignmentPeriod.AssignmentPeriodDto
@@ -798,8 +798,8 @@ public class AssignmentService : IAssignmentService
             Name = period.Name,
             StartDate = period.StartDate,
             EndDate = period.EndDate,
-            Status = period.Status.ToString(),
-            StatusName = period.Status == Core.Entities.PeriodStatus.Open ? "Açık" : "Kapalı",
+            Status = PeriodStatuses.GetById(period.StatusId)?.SystemName ?? "",
+            StatusName = period.StatusId == PeriodStatuses.Ids.Open ? "Açık" : "Kapalı",
             TargetCount = period.TargetCount,
             CompletedCount = completedEvaluations.Count,
             AverageScore = completedEvaluations.Any(e => e.ScorePercentage.HasValue)
@@ -917,9 +917,9 @@ public class AssignmentService : IAssignmentService
         {
             personnelQuery = personnelQuery.Where(cp => dto.PersonnelIds.Contains(cp.Id));
         }
-        else if (dto.RoleFilter.HasValue)
+        else if (dto.RoleFilterId.HasValue)
         {
-            personnelQuery = personnelQuery.Where(cp => cp.Role == dto.RoleFilter);
+            personnelQuery = personnelQuery.Where(cp => cp.RoleId == dto.RoleFilterId);
         }
 
         if (dto.OrganizationId.HasValue)
@@ -960,7 +960,7 @@ public class AssignmentService : IAssignmentService
                     ChecklistId = checklistId,
                     AssignedCustomerPersonnelId = personnel.Id,
                     DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
-                    Type = AssignmentType.CustomerPersonnel,
+                    TypeId = AssignmentTypes.Ids.CustomerPersonnel,
                     UniqueLink = Guid.NewGuid().ToString("N"),
                     CreatedAt = DateTime.UtcNow,
                     IsCompleted = false,

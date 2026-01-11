@@ -190,7 +190,7 @@ public class CustomerService : ICustomerService
 
         var poolPersonnel = await _context.CustomerPersonnel
             .Where(p => p.CustomerId == customerId && !p.IsDeleted && p.IsActive && !allPersonnelIds.Contains(p.Id))
-            .OrderBy(p => p.Role)
+            .OrderBy(p => p.RoleId)
             .ThenBy(p => p.FirstName)
             .ThenBy(p => p.LastName)
             .ToListAsync();
@@ -212,11 +212,11 @@ public class CustomerService : ICustomerService
         var poolLabel = await _localizationService.GetResourceAsync("Excel.Pool");
 
         // Rol isimlerini önceden yükle
-        var roleNames = new Dictionary<CustomerPersonnelRole, string>
+        var roleNames = new Dictionary<int, string>
         {
-            { CustomerPersonnelRole.CustomerManager, await _localizationService.GetResourceAsync("Role.CustomerManager") },
-            { CustomerPersonnelRole.CustomerSupervisor, await _localizationService.GetResourceAsync("Role.CustomerSupervisor") },
-            { CustomerPersonnelRole.CustomerOperator, await _localizationService.GetResourceAsync("Role.CustomerOperator") }
+            { CustomerPersonnelRoles.Ids.Manager, await _localizationService.GetResourceAsync("Role.CustomerManager") },
+            { CustomerPersonnelRoles.Ids.Supervisor, await _localizationService.GetResourceAsync("Role.CustomerSupervisor") },
+            { CustomerPersonnelRoles.Ids.Operator, await _localizationService.GetResourceAsync("Role.CustomerOperator") }
         };
 
         using var workbook = new XLWorkbook();
@@ -263,7 +263,7 @@ public class CustomerService : ICustomerService
             var supervisorPersonnel = assignments
                 .Select(pa => pa.CustomerPersonnel!)
                 .DistinctBy(p => p.Id)
-                .Where(p => p.Role == CustomerPersonnelRole.CustomerManager || p.Role == CustomerPersonnelRole.CustomerSupervisor)
+                .Where(p => p.RoleId == CustomerPersonnelRoles.Ids.Manager || p.RoleId == CustomerPersonnelRoles.Ids.Supervisor)
                 .OrderBy(p => p.FirstName)
                 .ThenBy(p => p.LastName)
                 .ToList();
@@ -308,7 +308,7 @@ public class CustomerService : ICustomerService
 
             // Bağımsız operatörler (süpervizörü olmayan)
             var independentOperators = assignments
-                .Where(pa => pa.CustomerPersonnel?.Role == CustomerPersonnelRole.CustomerOperator && pa.SupervisorId == null)
+                .Where(pa => pa.CustomerPersonnel != null && pa.CustomerPersonnel.RoleId == CustomerPersonnelRoles.Ids.Operator && pa.SupervisorId == null)
                 .Select(pa => pa.CustomerPersonnel!)
                 .DistinctBy(p => p.Id)
                 .OrderBy(p => p.FirstName)
@@ -352,7 +352,7 @@ public class CustomerService : ICustomerService
         };
     }
 
-    private static void WritePersonnelRow(IXLWorksheet sheet, int row, string orgName, string supervisorName, CustomerPersonnel p, Dictionary<CustomerPersonnelRole, string> roleNames)
+    private static void WritePersonnelRow(IXLWorksheet sheet, int row, string orgName, string supervisorName, CustomerPersonnel p, Dictionary<int, string> roleNames)
     {
         sheet.Cell(row, 1).Value = orgName;
         sheet.Cell(row, 2).Value = supervisorName;
@@ -360,7 +360,7 @@ public class CustomerService : ICustomerService
         sheet.Cell(row, 4).Value = p.Username;
         sheet.Cell(row, 5).Value = p.Email;
         sheet.Cell(row, 6).Value = p.PhoneNumber ?? "";
-        sheet.Cell(row, 7).Value = roleNames.TryGetValue(p.Role, out var roleName) ? roleName : p.Role.ToString();
+        sheet.Cell(row, 7).Value = roleNames.TryGetValue(p.RoleId, out var roleName) ? roleName : CustomerPersonnelRoles.GetById(p.RoleId)?.SystemName ?? "";
         sheet.Cell(row, 8).Value = p.Department ?? "";
         sheet.Cell(row, 9).Value = p.Title ?? "";
     }

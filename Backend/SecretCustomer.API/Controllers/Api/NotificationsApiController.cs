@@ -45,11 +45,19 @@ public class NotificationsApiController : BaseApiController
             .Where(n => n.RecipientUserId == userId)
             .AsQueryable();
 
-        if (!string.IsNullOrEmpty(filter.NotificationType) && Enum.TryParse<NotificationType>(filter.NotificationType, out var notificationType))
-            query = query.Where(n => n.NotificationType == notificationType);
+        if (!string.IsNullOrEmpty(filter.NotificationType))
+        {
+            var notificationTypeId = NotificationTypes.GetBySystemName(filter.NotificationType)?.Id;
+            if (notificationTypeId.HasValue)
+                query = query.Where(n => n.NotificationTypeId == notificationTypeId.Value);
+        }
 
-        if (!string.IsNullOrEmpty(filter.Priority) && Enum.TryParse<NotificationPriority>(filter.Priority, out var priority))
-            query = query.Where(n => n.Priority == priority);
+        if (!string.IsNullOrEmpty(filter.Priority))
+        {
+            var priorityId = NotificationPriorities.GetBySystemName(filter.Priority)?.Id;
+            if (priorityId.HasValue)
+                query = query.Where(n => n.PriorityId == priorityId.Value);
+        }
 
         if (filter.IsRead.HasValue)
             query = query.Where(n => n.IsRead == filter.IsRead.Value);
@@ -76,8 +84,8 @@ public class NotificationsApiController : BaseApiController
             .Select(n => new NotificationListDto
             {
                 Id = n.Id,
-                NotificationType = n.NotificationType.ToString(),
-                Priority = n.Priority.ToString(),
+                NotificationType = NotificationTypes.GetById(n.NotificationTypeId)!.SystemName,
+                Priority = NotificationPriorities.GetById(n.PriorityId)!.SystemName,
                 Title = n.Title,
                 Message = n.Message,
                 ActionUrl = n.ActionUrl,
@@ -99,14 +107,14 @@ public class NotificationsApiController : BaseApiController
 
         var notifications = await _context.Notifications
             .Where(n => n.RecipientUserId == userId && !n.IsRead)
-            .OrderByDescending(n => n.Priority)
+            .OrderByDescending(n => n.PriorityId)
             .ThenByDescending(n => n.CreatedAt)
             .Take(10)
             .Select(n => new NotificationListDto
             {
                 Id = n.Id,
-                NotificationType = n.NotificationType.ToString(),
-                Priority = n.Priority.ToString(),
+                NotificationType = NotificationTypes.GetById(n.NotificationTypeId)!.SystemName,
+                Priority = NotificationPriorities.GetById(n.PriorityId)!.SystemName,
                 Title = n.Title,
                 Message = n.Message,
                 ActionUrl = n.ActionUrl,
@@ -147,9 +155,9 @@ public class NotificationsApiController : BaseApiController
         var dto = new NotificationDto
         {
             Id = notification.Id,
-            NotificationType = notification.NotificationType.ToString(),
-            Channel = notification.Channel.ToString(),
-            Priority = notification.Priority.ToString(),
+            NotificationType = NotificationTypes.GetById(notification.NotificationTypeId)?.SystemName ?? "",
+            Channel = NotificationChannels.GetById(notification.ChannelId)?.SystemName ?? "",
+            Priority = NotificationPriorities.GetById(notification.PriorityId)?.SystemName ?? "",
             Title = notification.Title,
             Message = notification.Message,
             RecipientUserId = notification.RecipientUserId,
@@ -178,9 +186,9 @@ public class NotificationsApiController : BaseApiController
     {
         var notification = new Notification
         {
-            NotificationType = Enum.TryParse<NotificationType>(dto.NotificationType, out var notificationType) ? notificationType : NotificationType.Info,
-            Channel = Enum.TryParse<NotificationChannel>(dto.Channel, out var channel) ? channel : NotificationChannel.InApp,
-            Priority = Enum.TryParse<NotificationPriority>(dto.Priority, out var priority) ? priority : NotificationPriority.Normal,
+            NotificationTypeId = NotificationTypes.GetBySystemName(dto.NotificationType)?.Id ?? NotificationTypes.Ids.Info,
+            ChannelId = NotificationChannels.GetBySystemName(dto.Channel)?.Id ?? NotificationChannels.Ids.InApp,
+            PriorityId = NotificationPriorities.GetBySystemName(dto.Priority)?.Id ?? NotificationPriorities.Ids.Normal,
             Title = dto.Title,
             Message = dto.Message,
             RecipientUserId = dto.RecipientUserId,
@@ -207,22 +215,30 @@ public class NotificationsApiController : BaseApiController
     [HttpPost("bulk")]
     public async Task<IActionResult> CreateBulkNotifications([FromBody] CreateBulkNotificationDto dto)
     {
+        var notificationTypeId = NotificationTypes.GetBySystemName(dto.NotificationType)?.Id ?? NotificationTypes.Ids.Info;
+        var channelId = NotificationChannels.GetBySystemName(dto.Channel)?.Id ?? NotificationChannels.Ids.InApp;
+        var priorityId = NotificationPriorities.GetBySystemName(dto.Priority)?.Id ?? NotificationPriorities.Ids.Normal;
+        var senderId = GetCurrentUserId();
+        var groupId = Guid.NewGuid().ToString();
+        var isSent = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow;
+        var sentAt = isSent ? DateTime.UtcNow : (DateTime?)null;
+
         var notifications = dto.RecipientUserIds.Select(recipientId => new Notification
         {
-            NotificationType = Enum.TryParse<NotificationType>(dto.NotificationType, out var notificationType) ? notificationType : NotificationType.Info,
-            Channel = Enum.TryParse<NotificationChannel>(dto.Channel, out var channel) ? channel : NotificationChannel.InApp,
-            Priority = Enum.TryParse<NotificationPriority>(dto.Priority, out var priority) ? priority : NotificationPriority.Normal,
+            NotificationTypeId = notificationTypeId,
+            ChannelId = channelId,
+            PriorityId = priorityId,
             Title = dto.Title,
             Message = dto.Message,
             RecipientUserId = recipientId,
-            SenderUserId = GetCurrentUserId(),
+            SenderUserId = senderId,
             RelatedEntityId = dto.RelatedEntityId,
             RelatedEntityType = dto.RelatedEntityType,
             ActionUrl = dto.ActionUrl,
             ScheduledAt = dto.ScheduledAt,
-            GroupId = Guid.NewGuid().ToString(),
-            IsSent = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow,
-            SentAt = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow ? DateTime.UtcNow : null
+            GroupId = groupId,
+            IsSent = isSent,
+            SentAt = sentAt
         }).ToList();
 
         _context.Notifications.AddRange(notifications);
@@ -319,8 +335,8 @@ public class NotificationsApiController : BaseApiController
                 .Select(n => new NotificationListDto
                 {
                     Id = n.Id,
-                    NotificationType = n.NotificationType.ToString(),
-                    Priority = n.Priority.ToString(),
+                    NotificationType = NotificationTypes.GetById(n.NotificationTypeId)!.SystemName,
+                    Priority = NotificationPriorities.GetById(n.PriorityId)!.SystemName,
                     Title = n.Title,
                     Message = n.Message,
                     ActionUrl = n.ActionUrl,
@@ -347,7 +363,7 @@ public class NotificationsApiController : BaseApiController
             {
                 Id = s.Id,
                 UserId = s.UserId,
-                NotificationType = s.NotificationType.ToString(),
+                NotificationType = NotificationTypes.GetById(s.NotificationTypeId)!.SystemName,
                 InAppEnabled = s.InAppEnabled,
                 EmailEnabled = s.EmailEnabled,
                 SmsEnabled = s.SmsEnabled,
@@ -366,18 +382,19 @@ public class NotificationsApiController : BaseApiController
     {
         var userId = GetCurrentUserId();
 
-        if (!Enum.TryParse<NotificationType>(dto.NotificationType, out var notificationType))
+        var notificationTypeId = NotificationTypes.GetBySystemName(dto.NotificationType)?.Id;
+        if (!notificationTypeId.HasValue)
             return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Notification.InvalidType")));
 
         var setting = await _context.NotificationSettings
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.NotificationType == notificationType);
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.NotificationTypeId == notificationTypeId.Value);
 
         if (setting == null)
         {
             setting = new NotificationSetting
             {
                 UserId = userId,
-                NotificationType = notificationType
+                NotificationTypeId = notificationTypeId.Value
             };
             _context.NotificationSettings.Add(setting);
         }

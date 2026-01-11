@@ -15,19 +15,19 @@ public class Answer : BaseEntity
     public int QuestionId { get; set; }
     public Question Question { get; set; } = null!;
 
-    [ExcelColumn("Cevap (Metin)", 1, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Cevap (Metin)", 1, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Metin cevabı", SampleValue = "Çok memnunum")]
     public string? AnswerText { get; set; }
 
-    [ExcelColumn("Cevap (Sayısal)", 2, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Cevap (Sayısal)", 2, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Sayısal cevap (Likert, Star için)", SampleValue = "5")]
     public int? AnswerNumeric { get; set; }
 
-    [ExcelColumn("N/A", 3, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("N/A", 3, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "N/A olarak işaretlendi mi?", SampleValue = "false")]
     public bool IsNA { get; set; } = false;
 
-    [ExcelColumn("Kazanılan Puan", 4, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Kazanılan Puan", 4, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Bu cevap için kazanılan puan", SampleValue = "10")]
     public decimal? EarnedPoints { get; set; }
 
@@ -36,28 +36,28 @@ public class Answer : BaseEntity
     /// <summary>
     /// Verilen puan (ham puan)
     /// </summary>
-    [ExcelColumn("Verilen Puan", 5, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Verilen Puan", 5, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Değerlendirici tarafından verilen puan", SampleValue = "8")]
     public decimal? GivenPoints { get; set; }
 
     /// <summary>
     /// Değerlendirici notu
     /// </summary>
-    [ExcelColumn("Notlar", 6, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Notlar", 6, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Değerlendirici notları")]
     public string? Notes { get; set; }
 
     /// <summary>
     /// Öneri notu (önerilen açıklama)
     /// </summary>
-    [ExcelColumn("Öneri", 7, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Öneri", 7, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Değerlendirici önerisi")]
     public string? RecommendationNotes { get; set; }
 
     /// <summary>
     /// Ek dosya yolu
     /// </summary>
-    [ExcelColumn("Dosya", 8, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Dosya", 8, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Ek dosya yolu")]
     public string? AttachmentPath { get; set; }
 
@@ -69,18 +69,18 @@ public class Answer : BaseEntity
     /// <summary>
     /// Ceza uygulandı mı? (Cezalı sorular için)
     /// </summary>
-    [ExcelColumn("Ceza Uygulandı", 9, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("Ceza Uygulandı", 9, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Ceza uygulandı mı?", SampleValue = "false")]
     public bool IsPenaltyApplied { get; set; } = false;
 
     /// <summary>
-    /// Uygulanan ceza tipi
+    /// Uygulanan ceza tipi (PenaltyTypes.Ids kullanılır)
     /// </summary>
-    [ExcelColumn("Ceza Tipi", 10, ColumnType = ExcelColumnType.Dropdown,
+    [ExcelColumn("Ceza Tipi", 10, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Uygulanan ceza tipi",
         DropdownOptions = "[\"None\", \"YellowCard\", \"RedCard\"]",
         SampleValue = "None")]
-    public PenaltyType AppliedPenaltyType { get; set; } = PenaltyType.None;
+    public int AppliedPenaltyTypeId { get; set; } = PenaltyTypes.Ids.None;
 
     // Navigation - Bu cevap için seçilen alt kriterler
     public ICollection<AnswerSubCriteriaSelection> SubCriteriaSelections { get; set; } = new List<AnswerSubCriteriaSelection>();

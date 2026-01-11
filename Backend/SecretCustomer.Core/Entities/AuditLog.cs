@@ -1,42 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.Entities;
-
-/// <summary>
-/// Log türleri
-/// </summary>
-public enum LogType
-{
-    /// <summary>Bilgi mesajı</summary>
-    Info = 0,
-
-    /// <summary>Uyarı</summary>
-    Warning = 1,
-
-    /// <summary>Hata</summary>
-    Error = 2,
-
-    /// <summary>Veri oluşturma</summary>
-    DataCreate = 10,
-
-    /// <summary>Veri güncelleme</summary>
-    DataUpdate = 11,
-
-    /// <summary>Veri silme</summary>
-    DataDelete = 12,
-
-    /// <summary>Kullanıcı girişi</summary>
-    Login = 20,
-
-    /// <summary>Kullanıcı çıkışı</summary>
-    Logout = 21,
-
-    /// <summary>Başarısız giriş denemesi</summary>
-    LoginFailed = 22,
-
-    /// <summary>Yetki hatası</summary>
-    AccessDenied = 23
-}
 
 /// <summary>
 /// Sistem genelinde tüm olayları, hataları ve veri değişikliklerini kaydeden audit log
@@ -46,7 +11,7 @@ public class AuditLog
     public int Id { get; set; }
 
     /// <summary>Log türü</summary>
-    public LogType LogType { get; set; }
+    public int LogTypeId { get; set; } = LogTypes.Ids.Info;
 
     /// <summary>Log kategorisi (Controller adı, Service adı, vb.)</summary>
     [MaxLength(100)]

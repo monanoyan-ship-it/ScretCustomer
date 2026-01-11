@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IAuditLogService
 {
     // Genel loglama
-    Task LogAsync(LogType logType, string message, string? category = null, string? details = null);
+    Task LogAsync(int logTypeId, string message, string? category = null, string? details = null);
 
     // Bilgi logu
     Task LogInfoAsync(string message, string? category = null, string? details = null);
@@ -17,7 +17,7 @@ public interface IAuditLogService
     Task LogErrorAsync(string message, string? category = null, Exception? exception = null);
 
     // Veri değişikliği logu
-    Task LogDataChangeAsync(LogType logType, string tableName, int recordId,
+    Task LogDataChangeAsync(int logTypeId, string tableName, int recordId,
         string? oldValues = null, string? newValues = null, string? message = null);
 
     // Kullanıcı işlemleri logu
@@ -27,7 +27,7 @@ public interface IAuditLogService
 
     // Log sorgulama
     Task<IEnumerable<AuditLog>> GetLogsAsync(
-        LogType? logType = null,
+        int? logTypeId = null,
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,
@@ -36,7 +36,7 @@ public interface IAuditLogService
         int pageSize = 50);
 
     Task<int> GetLogsCountAsync(
-        LogType? logType = null,
+        int? logTypeId = null,
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,

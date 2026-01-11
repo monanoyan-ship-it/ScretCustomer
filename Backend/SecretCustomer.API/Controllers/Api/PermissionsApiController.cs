@@ -42,22 +42,37 @@ public class PermissionsApiController : BaseApiController
     {
         try
         {
-            var permissions = await _context.Permissions
+            var permissionsData = await _context.Permissions
                 .Where(p => !p.IsDeleted)
-                .OrderBy(p => p.Category)
+                .OrderBy(p => p.CategoryId)
                 .ThenBy(p => p.SortOrder)
-                .Select(p => new PermissionDto
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Code,
+                    p.DisplayName,
+                    p.CategoryId,
+                    p.Description,
+                    p.IsActive,
+                    p.SortOrder
+                })
+                .ToListAsync();
+
+            var permissions = new List<PermissionDto>();
+            foreach (var p in permissionsData)
+            {
+                permissions.Add(new PermissionDto
                 {
                     Id = p.Id,
                     Code = p.Code,
                     DisplayName = p.DisplayName,
-                    Category = p.Category,
-                    CategoryName = GetCategoryName(p.Category),
+                    CategoryId = p.CategoryId,
+                    CategoryName = await GetCategoryNameAsync(p.CategoryId),
                     Description = p.Description,
                     IsActive = p.IsActive,
                     SortOrder = p.SortOrder
-                })
-                .ToListAsync();
+                });
+            }
 
             return Ok(permissions);
         }
@@ -72,31 +87,46 @@ public class PermissionsApiController : BaseApiController
     /// Kategoriye göre yetkileri getirir
     /// </summary>
     [HttpGet("category/{category}")]
-    public async Task<IActionResult> GetByCategory(PermissionCategory category)
+    public async Task<IActionResult> GetByCategory(int categoryId)
     {
         try
         {
-            var permissions = await _context.Permissions
-                .Where(p => p.Category == category && !p.IsDeleted && p.IsActive)
+            var permissionsData = await _context.Permissions
+                .Where(p => p.CategoryId == categoryId && !p.IsDeleted && p.IsActive)
                 .OrderBy(p => p.SortOrder)
-                .Select(p => new PermissionDto
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Code,
+                    p.DisplayName,
+                    p.CategoryId,
+                    p.Description,
+                    p.IsActive,
+                    p.SortOrder
+                })
+                .ToListAsync();
+
+            var permissions = new List<PermissionDto>();
+            foreach (var p in permissionsData)
+            {
+                permissions.Add(new PermissionDto
                 {
                     Id = p.Id,
                     Code = p.Code,
                     DisplayName = p.DisplayName,
-                    Category = p.Category,
-                    CategoryName = GetCategoryName(p.Category),
+                    CategoryId = p.CategoryId,
+                    CategoryName = await GetCategoryNameAsync(p.CategoryId),
                     Description = p.Description,
                     IsActive = p.IsActive,
                     SortOrder = p.SortOrder
-                })
-                .ToListAsync();
+                });
+            }
 
             return Ok(permissions);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading permissions by category {Category}", category);
+            _logger.LogError(ex, "Error loading permissions by category {CategoryId}", categoryId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.LoadError"), ex));
         }
     }
@@ -111,28 +141,43 @@ public class PermissionsApiController : BaseApiController
         {
             var result = new List<RolePermissionsSummaryDto>();
 
-            foreach (UserRole role in Enum.GetValues<UserRole>())
+            foreach (var role in UserRoles.All)
             {
-                var rolePermissions = await _context.RolePermissions
-                    .Where(rp => rp.Role == role && rp.IsGranted && !rp.IsDeleted)
+                var rolePermissionsData = await _context.RolePermissions
+                    .Where(rp => rp.RoleId == role.Id && rp.IsGranted && !rp.IsDeleted)
                     .Include(rp => rp.Permission)
-                    .Select(rp => new PermissionDto
+                    .Select(rp => new
                     {
-                        Id = rp.Permission.Id,
-                        Code = rp.Permission.Code,
-                        DisplayName = rp.Permission.DisplayName,
-                        Category = rp.Permission.Category,
-                        CategoryName = GetCategoryName(rp.Permission.Category),
-                        Description = rp.Permission.Description,
-                        IsActive = rp.Permission.IsActive,
-                        SortOrder = rp.Permission.SortOrder
+                        rp.Permission.Id,
+                        rp.Permission.Code,
+                        rp.Permission.DisplayName,
+                        rp.Permission.CategoryId,
+                        rp.Permission.Description,
+                        rp.Permission.IsActive,
+                        rp.Permission.SortOrder
                     })
                     .ToListAsync();
 
+                var rolePermissions = new List<PermissionDto>();
+                foreach (var rp in rolePermissionsData)
+                {
+                    rolePermissions.Add(new PermissionDto
+                    {
+                        Id = rp.Id,
+                        Code = rp.Code,
+                        DisplayName = rp.DisplayName,
+                        CategoryId = rp.CategoryId,
+                        CategoryName = await GetCategoryNameAsync(rp.CategoryId),
+                        Description = rp.Description,
+                        IsActive = rp.IsActive,
+                        SortOrder = rp.SortOrder
+                    });
+                }
+
                 result.Add(new RolePermissionsSummaryDto
                 {
-                    Role = role,
-                    RoleName = GetRoleName(role),
+                    RoleId = role.Id,
+                    RoleName = await GetRoleNameAsync(role.Id),
                     TotalPermissions = rolePermissions.Count,
                     Permissions = rolePermissions
                 });
@@ -150,34 +195,50 @@ public class PermissionsApiController : BaseApiController
     /// <summary>
     /// Belirli bir rolün yetkilerini getirir
     /// </summary>
-    [HttpGet("roles/{role}")]
-    public async Task<IActionResult> GetRolePermissions(UserRole role)
+    [HttpGet("roles/{roleId:int}")]
+    public async Task<IActionResult> GetRolePermissions(int roleId)
     {
         try
         {
-            var rolePermissions = await _context.RolePermissions
-                .Where(rp => rp.Role == role && !rp.IsDeleted)
+            var rolePermissionsData = await _context.RolePermissions
+                .Where(rp => rp.RoleId == roleId && !rp.IsDeleted)
                 .Include(rp => rp.Permission)
-                .Select(rp => new RolePermissionDto
+                .Select(rp => new
                 {
-                    Id = rp.Id,
-                    Role = rp.Role,
-                    RoleName = GetRoleName(rp.Role),
-                    PermissionId = rp.PermissionId,
+                    rp.Id,
+                    rp.RoleId,
+                    rp.PermissionId,
                     PermissionCode = rp.Permission.Code,
                     PermissionDisplayName = rp.Permission.DisplayName,
-                    IsGranted = rp.IsGranted,
-                    Scope = rp.Scope,
-                    ScopeName = GetScopeName(rp.Scope),
-                    Notes = rp.Notes
+                    rp.IsGranted,
+                    rp.ScopeId,
+                    rp.Notes
                 })
                 .ToListAsync();
+
+            var rolePermissions = new List<RolePermissionDto>();
+            foreach (var rp in rolePermissionsData)
+            {
+                rolePermissions.Add(new RolePermissionDto
+                {
+                    Id = rp.Id,
+                    RoleId = rp.RoleId,
+                    RoleName = await GetRoleNameAsync(rp.RoleId),
+                    PermissionId = rp.PermissionId,
+                    PermissionCode = rp.PermissionCode,
+                    PermissionDisplayName = rp.PermissionDisplayName,
+                    IsGranted = rp.IsGranted,
+                    ScopeId = rp.ScopeId,
+                    ScopeName = await GetScopeNameAsync(rp.ScopeId),
+                    Notes = rp.Notes
+                });
+            }
 
             return Ok(rolePermissions);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading permissions for role {Role}", role);
+            _logger.LogError(ex, "Error loading permissions for role {RoleId}", roleId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError"), ex));
         }
     }
@@ -191,12 +252,12 @@ public class PermissionsApiController : BaseApiController
         try
         {
             var existing = await _context.RolePermissions
-                .FirstOrDefaultAsync(rp => rp.Role == dto.Role && rp.PermissionId == dto.PermissionId);
+                .FirstOrDefaultAsync(rp => rp.RoleId == dto.RoleId && rp.PermissionId == dto.PermissionId);
 
             if (existing != null)
             {
                 existing.IsGranted = dto.IsGranted;
-                existing.Scope = dto.Scope;
+                existing.ScopeId = dto.ScopeId;
                 existing.Notes = dto.Notes;
                 existing.UpdatedAt = DateTime.UtcNow;
             }
@@ -204,10 +265,10 @@ public class PermissionsApiController : BaseApiController
             {
                 await _context.RolePermissions.AddAsync(new Core.Entities.RolePermission
                 {
-                    Role = dto.Role,
+                    RoleId = dto.RoleId,
                     PermissionId = dto.PermissionId,
                     IsGranted = dto.IsGranted,
-                    Scope = dto.Scope,
+                    ScopeId = dto.ScopeId,
                     Notes = dto.Notes
                 });
             }
@@ -232,7 +293,7 @@ public class PermissionsApiController : BaseApiController
         {
             // Önce mevcut yetkileri kaldır
             var existingPermissions = await _context.RolePermissions
-                .Where(rp => rp.Role == dto.Role)
+                .Where(rp => rp.RoleId == dto.RoleId)
                 .ToListAsync();
 
             _context.RolePermissions.RemoveRange(existingPermissions);
@@ -242,10 +303,10 @@ public class PermissionsApiController : BaseApiController
             {
                 await _context.RolePermissions.AddAsync(new Core.Entities.RolePermission
                 {
-                    Role = dto.Role,
+                    RoleId = dto.RoleId,
                     PermissionId = permissionId,
                     IsGranted = true,
-                    Scope = dto.Scope
+                    ScopeId = dto.ScopeId
                 });
             }
 
@@ -262,12 +323,12 @@ public class PermissionsApiController : BaseApiController
     /// <summary>
     /// Rolden yetki kaldırır
     /// </summary>
-    [HttpDelete("roles/{role}/{permissionId}")]
-    public async Task<IActionResult> RevokeRolePermission(UserRole role, int permissionId)
+    [HttpDelete("roles/{roleId:int}/{permissionId:int}")]
+    public async Task<IActionResult> RevokeRolePermission(int roleId, int permissionId)
     {
         try
         {
-            await _permissionService.RevokeRolePermissionAsync(role, permissionId);
+            await _permissionService.RevokeRolePermissionAsync(roleId, permissionId);
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeSuccess") });
         }
         catch (Exception ex)
@@ -290,63 +351,100 @@ public class PermissionsApiController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.NotFound")));
 
             // Rol yetkileri
-            var rolePermissions = await _context.RolePermissions
-                .Where(rp => rp.Role == user.Role && rp.IsGranted && !rp.IsDeleted)
+            var rolePermissionsData = await _context.RolePermissions
+                .Where(rp => rp.RoleId == user.RoleId && rp.IsGranted && !rp.IsDeleted)
                 .Include(rp => rp.Permission)
-                .Select(rp => new PermissionDto
+                .Select(rp => new
                 {
-                    Id = rp.Permission.Id,
-                    Code = rp.Permission.Code,
-                    DisplayName = rp.Permission.DisplayName,
-                    Category = rp.Permission.Category,
-                    CategoryName = GetCategoryName(rp.Permission.Category),
-                    Description = rp.Permission.Description,
-                    IsActive = rp.Permission.IsActive,
-                    SortOrder = rp.Permission.SortOrder
+                    rp.Permission.Id,
+                    rp.Permission.Code,
+                    rp.Permission.DisplayName,
+                    rp.Permission.CategoryId,
+                    rp.Permission.Description,
+                    rp.Permission.IsActive,
+                    rp.Permission.SortOrder
                 })
                 .ToListAsync();
 
+            var rolePermissions = new List<PermissionDto>();
+            foreach (var rp in rolePermissionsData)
+            {
+                rolePermissions.Add(new PermissionDto
+                {
+                    Id = rp.Id,
+                    Code = rp.Code,
+                    DisplayName = rp.DisplayName,
+                    CategoryId = rp.CategoryId,
+                    CategoryName = await GetCategoryNameAsync(rp.CategoryId),
+                    Description = rp.Description,
+                    IsActive = rp.IsActive,
+                    SortOrder = rp.SortOrder
+                });
+            }
+
             // Kullanıcı özel yetkileri
-            var customPermissions = await _context.UserPermissions
+            var customPermissionsData = await _context.UserPermissions
                 .Where(up => up.UserId == userId && !up.IsDeleted)
                 .Include(up => up.Permission)
-                .Select(up => new UserPermissionDto
+                .Select(up => new
+                {
+                    up.Id,
+                    up.UserId,
+                    up.PermissionId,
+                    PermissionCode = up.Permission.Code,
+                    PermissionDisplayName = up.Permission.DisplayName,
+                    up.IsGranted,
+                    up.ScopeId,
+                    up.ValidFrom,
+                    up.ValidUntil,
+                    up.Notes
+                })
+                .ToListAsync();
+
+            var customPermissions = new List<UserPermissionDto>();
+            foreach (var up in customPermissionsData)
+            {
+                customPermissions.Add(new UserPermissionDto
                 {
                     Id = up.Id,
                     UserId = up.UserId,
                     UserFullName = user.FirstName + " " + user.LastName,
                     PermissionId = up.PermissionId,
-                    PermissionCode = up.Permission.Code,
-                    PermissionDisplayName = up.Permission.DisplayName,
+                    PermissionCode = up.PermissionCode,
+                    PermissionDisplayName = up.PermissionDisplayName,
                     IsGranted = up.IsGranted,
-                    Scope = up.Scope,
-                    ScopeName = GetScopeName(up.Scope),
+                    ScopeId = up.ScopeId,
+                    ScopeName = await GetScopeNameAsync(up.ScopeId),
                     ValidFrom = up.ValidFrom,
                     ValidUntil = up.ValidUntil,
                     Notes = up.Notes
-                })
-                .ToListAsync();
+                });
+            }
 
             // Efektif yetkiler (rol + özel)
             var effectivePermissions = await _permissionService.GetUserPermissionsAsync(userId);
-            var effectivePermissionDtos = effectivePermissions.Select(p => new PermissionDto
+            var effectivePermissionDtos = new List<PermissionDto>();
+            foreach (var p in effectivePermissions)
             {
-                Id = p.Id,
-                Code = p.Code,
-                DisplayName = p.DisplayName,
-                Category = p.Category,
-                CategoryName = GetCategoryName(p.Category),
-                Description = p.Description,
-                IsActive = p.IsActive,
-                SortOrder = p.SortOrder
-            }).ToList();
+                effectivePermissionDtos.Add(new PermissionDto
+                {
+                    Id = p.Id,
+                    Code = p.Code,
+                    DisplayName = p.DisplayName,
+                    CategoryId = p.CategoryId,
+                    CategoryName = await GetCategoryNameAsync(p.CategoryId),
+                    Description = p.Description,
+                    IsActive = p.IsActive,
+                    SortOrder = p.SortOrder
+                });
+            }
 
             return Ok(new UserPermissionsSummaryDto
             {
                 UserId = userId,
                 UserFullName = user.FirstName + " " + user.LastName,
-                Role = user.Role,
-                RoleName = GetRoleName(user.Role),
+                RoleId = user.RoleId,
+                RoleName = await GetRoleNameAsync(user.RoleId),
                 RolePermissions = rolePermissions,
                 CustomPermissions = customPermissions,
                 EffectivePermissions = effectivePermissionDtos
@@ -373,7 +471,7 @@ public class PermissionsApiController : BaseApiController
             if (existing != null)
             {
                 existing.IsGranted = dto.IsGranted;
-                existing.Scope = dto.Scope;
+                existing.ScopeId = dto.ScopeId;
                 existing.ValidFrom = dto.ValidFrom;
                 existing.ValidUntil = dto.ValidUntil;
                 existing.Notes = dto.Notes;
@@ -386,7 +484,7 @@ public class PermissionsApiController : BaseApiController
                     UserId = dto.UserId,
                     PermissionId = dto.PermissionId,
                     IsGranted = dto.IsGranted,
-                    Scope = dto.Scope,
+                    ScopeId = dto.ScopeId,
                     ValidFrom = dto.ValidFrom,
                     ValidUntil = dto.ValidUntil,
                     Notes = dto.Notes
@@ -427,11 +525,11 @@ public class PermissionsApiController : BaseApiController
     [HttpGet("categories")]
     public IActionResult GetCategories()
     {
-        var categories = Enum.GetValues<PermissionCategory>()
+        var categories = PermissionCategories.All
             .Select(c => new
             {
-                Value = (int)c,
-                Name = GetCategoryName(c)
+                Value = c.Id,
+                Name = c.Description ?? c.SystemName
             })
             .ToList();
 
@@ -444,11 +542,11 @@ public class PermissionsApiController : BaseApiController
     [HttpGet("scopes")]
     public IActionResult GetScopes()
     {
-        var scopes = Enum.GetValues<PermissionScope>()
+        var scopes = PermissionScopes.AllItems
             .Select(s => new
             {
-                Value = (int)s,
-                Name = GetScopeName(s)
+                Value = s.Id,
+                Name = s.Description ?? s.SystemName
             })
             .ToList();
 
@@ -459,15 +557,17 @@ public class PermissionsApiController : BaseApiController
     /// Rolleri getirir
     /// </summary>
     [HttpGet("roles-list")]
-    public IActionResult GetRoles()
+    public async Task<IActionResult> GetRoles()
     {
-        var roles = Enum.GetValues<UserRole>()
-            .Select(r => new
+        var roles = new List<object>();
+        foreach (var r in UserRoles.All)
+        {
+            roles.Add(new
             {
-                Value = (int)r,
-                Name = GetRoleName(r)
-            })
-            .ToList();
+                Value = r.Id,
+                Name = await GetRoleNameAsync(r.Id)
+            });
+        }
 
         return Ok(roles);
     }
@@ -496,47 +596,24 @@ public class PermissionsApiController : BaseApiController
         }
     }
 
-    private static string GetCategoryName(PermissionCategory category) => category switch
+    private async Task<string> GetCategoryNameAsync(int categoryId)
     {
-        PermissionCategory.Users => "Kullanıcılar",
-        PermissionCategory.Roles => "Roller",
-        PermissionCategory.Projects => "Projeler",
-        PermissionCategory.Assignments => "Atamalar",
-        PermissionCategory.Checklists => "Kontrol Listeleri",
-        PermissionCategory.Evaluations => "Değerlendirmeler",
-        PermissionCategory.Branches => "Şubeler",
-        PermissionCategory.FieldWorkers => "Saha Çalışanları",
-        PermissionCategory.Reports => "Raporlar",
-        PermissionCategory.Dashboard => "Dashboard",
-        PermissionCategory.ExcelTemplates => "Excel Şablonları",
-        PermissionCategory.Customers => "Müşteriler",
-        PermissionCategory.CustomerPersonnel => "Müşteri Personeli",
-        PermissionCategory.Settings => "Ayarlar",
-        PermissionCategory.Languages => "Diller",
-        PermissionCategory.Trainings => "Eğitimler",
-        PermissionCategory.Meetings => "Toplantılar",
-        PermissionCategory.Approvals => "Onaylar",
-        PermissionCategory.DraftRequests => "Taslak Talepleri",
-        PermissionCategory.CustomerOrganizations => "Müşteri Organizasyonları",
-        PermissionCategory.Personnel => "Personel",
-        _ => category.ToString()
-    };
+        var item = PermissionCategories.GetById(categoryId);
+        if (item == null) return categoryId.ToString();
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
-    private static string GetScopeName(PermissionScope scope) => scope switch
+    private async Task<string> GetScopeNameAsync(int scopeId)
     {
-        PermissionScope.All => "Tümü",
-        PermissionScope.Own => "Sadece Kendi",
-        PermissionScope.Branch => "Şube",
-        PermissionScope.Department => "Departman",
-        PermissionScope.Customer => "Müşteri",
-        _ => scope.ToString()
-    };
+        var item = PermissionScopes.GetById(scopeId);
+        if (item == null) return scopeId.ToString();
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
-    private static string GetRoleName(UserRole role) => role switch
+    private async Task<string> GetRoleNameAsync(int roleId)
     {
-        UserRole.Admin => "Yönetici",
-        UserRole.QualitySpecialist => "Kalite Uzmanı",
-        UserRole.FieldWorker => "Saha Çalışanı",
-        _ => role.ToString()
-    };
+        var item = UserRoles.GetById(roleId);
+        if (item == null) return roleId.ToString();
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 }

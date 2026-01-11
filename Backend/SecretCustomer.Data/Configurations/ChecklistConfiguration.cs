@@ -16,5 +16,9 @@ public class ChecklistConfiguration : IEntityTypeConfiguration<Checklist>
 
         builder.Property(c => c.Description)
             .HasMaxLength(1000);
+
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(c => c.ChecklistTypeId).HasColumnName("ChecklistType");
+        builder.Property(c => c.ScoringMethodId).HasColumnName("ScoringMethod");
     }
 }

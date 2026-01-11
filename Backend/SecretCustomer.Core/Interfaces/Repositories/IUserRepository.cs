@@ -1,5 +1,4 @@
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.Interfaces.Repositories;
 
@@ -14,7 +13,7 @@ public interface IUserRepository
     // CRUD operations
     Task<User?> GetByIdAsync(int id);
     Task<IEnumerable<User>> GetAllAsync();
-    Task<IEnumerable<User>> GetByRoleAsync(UserRole role);
+    Task<IEnumerable<User>> GetByRoleIdAsync(int roleId);
     Task<IEnumerable<User>> GetActiveUsersAsync();
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);

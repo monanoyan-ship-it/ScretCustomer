@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.DTOs.Assignment;
+using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -257,12 +258,18 @@ public class InternalAssignmentsApiController : ControllerBase
 
             // İç değerlendirme sadece Yönetici (1) ve Süpervizör (2) için yapılabilir
             // Operatörler (3) hariç tutuluyor
-            personnel = personnel.Where(p => (int)p.Role <= 2);
+            personnel = personnel.Where(p => {
+                var roleId = CustomerPersonnelRoles.GetBySystemName(p.Role)?.Id ?? 0;
+                return roleId <= CustomerPersonnelRoles.Ids.Supervisor;
+            });
 
             // Ek rol filtresi (kullanıcı seçimi)
             if (roleFilter.HasValue)
             {
-                personnel = personnel.Where(p => (int)p.Role == roleFilter.Value);
+                personnel = personnel.Where(p => {
+                    var roleId = CustomerPersonnelRoles.GetBySystemName(p.Role)?.Id ?? 0;
+                    return roleId == roleFilter.Value;
+                });
             }
 
             // Organizasyon filtresi
@@ -275,7 +282,7 @@ public class InternalAssignmentsApiController : ControllerBase
             {
                 id = p.Id,
                 fullName = p.FullName,
-                role = p.Role.ToString(),
+                role = p.Role,
                 roleName = p.RoleName,
                 organizationName = p.OrganizationName,
                 email = p.Email

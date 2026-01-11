@@ -98,7 +98,7 @@ public class PersonnelRequestService : IPersonnelRequestService
 
         // Admin'lere bildirim gönder
         var admins = await _context.Users
-            .Where(u => u.Role == UserRole.Admin && u.IsActive && !u.IsDeleted)
+            .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
 
@@ -143,7 +143,7 @@ public class PersonnelRequestService : IPersonnelRequestService
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("user@123"),
             MustChangePassword = true,
-            Role = CustomerPersonnelRole.CustomerOperator,
+            RoleId = CustomerPersonnelRoles.Ids.Operator,
             IsActive = true
         };
 
@@ -209,9 +209,9 @@ public class PersonnelRequestService : IPersonnelRequestService
         request.RejectReason = dto.RejectReason;
 
         // 2. Tamamlanmış değerlendirmeyi taslağa al
-        if (request.Evaluation != null && request.Evaluation.Status == EvaluationStatus.Completed)
+        if (request.Evaluation != null && request.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
         {
-            request.Evaluation.Status = EvaluationStatus.Draft;
+            request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
             _logger.LogInformation("Evaluation {Id} reverted to draft due to rejected personnel request", request.EvaluationId);
         }
 
@@ -235,7 +235,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         // Sadece junction table'dan cek
         return await _context.CustomerPersonnel
             .Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == customerOrganizationId)
-                      && cp.Role == CustomerPersonnelRole.CustomerSupervisor
+                      && cp.RoleId == CustomerPersonnelRoles.Ids.Supervisor
                       && cp.IsActive
                       && !cp.IsDeleted)
             .Select(cp => new ValueTuple<int, string>(cp.Id, cp.FirstName + " " + cp.LastName))
@@ -261,9 +261,9 @@ public class PersonnelRequestService : IPersonnelRequestService
         var notification = new Notification
         {
             RecipientUserId = userId,
-            NotificationType = NotificationType.Info,
-            Channel = NotificationChannel.InApp,
-            Priority = NotificationPriority.Normal,
+            NotificationTypeId = NotificationTypes.Ids.Info,
+            ChannelId = NotificationChannels.Ids.InApp,
+            PriorityId = NotificationPriorities.Ids.Normal,
             Title = title,
             Message = message,
             ActionUrl = url,

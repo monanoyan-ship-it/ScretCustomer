@@ -1,5 +1,6 @@
 using SecretCustomer.Core.Enums;
 
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -27,7 +28,7 @@ public class UserPermission : BaseEntity
     /// <summary>
     /// Yetki kapsamı
     /// </summary>
-    public PermissionScope Scope { get; set; } = PermissionScope.All;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.All;
 
     /// <summary>
     /// Geçerlilik başlangıç tarihi

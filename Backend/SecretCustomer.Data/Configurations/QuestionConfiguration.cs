@@ -25,5 +25,9 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
             .WithMany(c => c.Questions)
             .HasForeignKey(q => q.ChecklistId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Veritabanı kolon adlarını korumak için
+        builder.Property(q => q.PenaltyTypeId).HasColumnName("PenaltyType");
+        builder.Property(q => q.ScoringTypeId).HasColumnName("ScoringType");
     }
 }

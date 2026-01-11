@@ -63,11 +63,19 @@ public class MeetingsApiController : BaseApiController
         if (filter.OrganizerId.HasValue)
             query = query.Where(m => m.OrganizerId == filter.OrganizerId.Value);
 
-        if (!string.IsNullOrEmpty(filter.MeetingType) && Enum.TryParse<MeetingType>(filter.MeetingType, out var meetingType))
-            query = query.Where(m => m.MeetingType == meetingType);
+        if (!string.IsNullOrEmpty(filter.MeetingType))
+        {
+            var meetingTypeItem = MeetingTypes.GetBySystemName(filter.MeetingType);
+            if (meetingTypeItem != null)
+                query = query.Where(m => m.MeetingTypeId == meetingTypeItem.Id);
+        }
 
-        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<MeetingStatus>(filter.Status, out var status))
-            query = query.Where(m => m.Status == status);
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var statusItem = MeetingStatuses.GetBySystemName(filter.Status);
+            if (statusItem != null)
+                query = query.Where(m => m.StatusId == statusItem.Id);
+        }
 
         if (filter.StartDate.HasValue)
             query = query.Where(m => m.PlannedDate >= filter.StartDate.Value);
@@ -88,8 +96,8 @@ public class MeetingsApiController : BaseApiController
         IOrderedQueryable<Meeting> orderedQuery = filter.SortBy?.ToLower() switch
         {
             "title" => isAscending ? query.OrderBy(m => m.Title) : query.OrderByDescending(m => m.Title),
-            "meetingtype" => isAscending ? query.OrderBy(m => m.MeetingType) : query.OrderByDescending(m => m.MeetingType),
-            "status" => isAscending ? query.OrderBy(m => m.Status) : query.OrderByDescending(m => m.Status),
+            "meetingtype" => isAscending ? query.OrderBy(m => m.MeetingTypeId) : query.OrderByDescending(m => m.MeetingTypeId),
+            "status" => isAscending ? query.OrderBy(m => m.StatusId) : query.OrderByDescending(m => m.StatusId),
             "planneddate" => isAscending ? query.OrderBy(m => m.PlannedDate) : query.OrderByDescending(m => m.PlannedDate),
             "organizername" => isAscending
                 ? query.OrderBy(m => m.Organizer != null ? m.Organizer.FirstName : null)
@@ -107,8 +115,8 @@ public class MeetingsApiController : BaseApiController
             {
                 Id = m.Id,
                 Title = m.Title,
-                MeetingType = m.MeetingType.ToString(),
-                Status = m.Status.ToString(),
+                MeetingType = m.MeetingTypeId.ToString(),
+                Status = m.StatusId.ToString(),
                 PlannedDate = m.PlannedDate,
                 PlannedEndDate = m.PlannedEndDate,
                 Location = m.Location,
@@ -117,7 +125,7 @@ public class MeetingsApiController : BaseApiController
                 ProjectName = m.Project != null ? m.Project.Name : null,
                 CustomerName = m.Customer != null ? m.Customer.CompanyName : null,
                 ParticipantCount = m.Participants.Count,
-                AcceptedCount = m.Participants.Count(p => p.Status == ParticipantStatus.Accepted || p.Status == ParticipantStatus.Attended)
+                AcceptedCount = m.Participants.Count(p => p.StatusId == ParticipantStatuses.Ids.Accepted || p.StatusId == ParticipantStatuses.Ids.Attended)
             })
             .ToListAsync();
 
@@ -166,8 +174,8 @@ public class MeetingsApiController : BaseApiController
         {
             Title = dto.Title,
             Description = dto.Description,
-            MeetingType = Enum.TryParse<MeetingType>(dto.MeetingType, out var mt) ? mt : MeetingType.General,
-            Status = MeetingStatus.Planned,
+            MeetingTypeId = MeetingTypes.GetBySystemName(dto.MeetingType)?.Id ?? MeetingTypes.Ids.General,
+            StatusId = MeetingStatuses.Ids.Planned,
             PlannedDate = dto.PlannedDate,
             PlannedEndDate = dto.PlannedEndDate,
             DurationMinutes = dto.DurationMinutes,
@@ -191,7 +199,7 @@ public class MeetingsApiController : BaseApiController
                 ExternalName = participant.ExternalName,
                 ExternalEmail = participant.ExternalEmail,
                 IsRequired = participant.IsRequired,
-                Status = ParticipantStatus.Invited
+                StatusId = ParticipantStatuses.Ids.Invited
             });
         }
 
@@ -215,8 +223,8 @@ public class MeetingsApiController : BaseApiController
 
         meeting.Title = dto.Title;
         meeting.Description = dto.Description;
-        meeting.MeetingType = Enum.TryParse<MeetingType>(dto.MeetingType, out var mt) ? mt : MeetingType.General;
-        meeting.Status = Enum.TryParse<MeetingStatus>(dto.Status, out var st) ? st : MeetingStatus.Planned;
+        meeting.MeetingTypeId = MeetingTypes.GetBySystemName(dto.MeetingType)?.Id ?? meeting.MeetingTypeId;
+        meeting.StatusId = MeetingStatuses.GetBySystemName(dto.Status)?.Id ?? meeting.StatusId;
         meeting.PlannedDate = dto.PlannedDate;
         meeting.PlannedEndDate = dto.PlannedEndDate;
         meeting.DurationMinutes = dto.DurationMinutes;
@@ -263,7 +271,7 @@ public class MeetingsApiController : BaseApiController
         if (meeting == null)
             return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
-        meeting.Status = MeetingStatus.InProgress;
+        meeting.StatusId = MeetingStatuses.Ids.InProgress;
         meeting.ActualDate = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
@@ -283,7 +291,7 @@ public class MeetingsApiController : BaseApiController
         if (meeting == null)
             return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
-        meeting.Status = MeetingStatus.Completed;
+        meeting.StatusId = MeetingStatuses.Ids.Completed;
         meeting.ActualDate = dto.ActualDate ?? meeting.ActualDate ?? DateTime.UtcNow;
         meeting.ActualEndDate = dto.ActualEndDate ?? DateTime.UtcNow;
         meeting.Minutes = dto.Minutes;
@@ -296,7 +304,7 @@ public class MeetingsApiController : BaseApiController
             var participant = meeting.Participants.FirstOrDefault(p => p.Id == attendance.ParticipantId);
             if (participant != null)
             {
-                participant.Status = Enum.TryParse<ParticipantStatus>(attendance.Status, out var ps) ? ps : ParticipantStatus.NotAttended;
+                participant.StatusId = ParticipantStatuses.GetBySystemName(attendance.Status)?.Id ?? ParticipantStatuses.Ids.NotAttended;
                 participant.AttendanceNote = attendance.AttendanceNote;
             }
         }
@@ -316,7 +324,7 @@ public class MeetingsApiController : BaseApiController
         if (meeting == null)
             return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
-        meeting.Status = MeetingStatus.Cancelled;
+        meeting.StatusId = MeetingStatuses.Ids.Cancelled;
         if (!string.IsNullOrEmpty(request?.Reason))
             meeting.Notes = (meeting.Notes ?? "") + "\n[İPTAL]: " + request.Reason;
 
@@ -335,7 +343,7 @@ public class MeetingsApiController : BaseApiController
         if (meeting == null)
             return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotFound")));
 
-        meeting.Status = MeetingStatus.Postponed;
+        meeting.StatusId = MeetingStatuses.Ids.Postponed;
         meeting.PlannedDate = request.NewDate;
         meeting.PlannedEndDate = request.NewEndDate;
         if (!string.IsNullOrEmpty(request.Reason))
@@ -365,7 +373,7 @@ public class MeetingsApiController : BaseApiController
             ExternalName = dto.ExternalName,
             ExternalEmail = dto.ExternalEmail,
             IsRequired = dto.IsRequired,
-            Status = ParticipantStatus.Invited
+            StatusId = ParticipantStatuses.Ids.Invited
         };
 
         _context.MeetingParticipants.Add(participant);
@@ -406,7 +414,7 @@ public class MeetingsApiController : BaseApiController
         if (participant == null)
             return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Meeting.NotInvited")));
 
-        participant.Status = Enum.TryParse<ParticipantStatus>(dto.Status, out var ps) ? ps : ParticipantStatus.Accepted;
+        participant.StatusId = ParticipantStatuses.GetBySystemName(dto.Status)?.Id ?? ParticipantStatuses.Ids.Accepted;
         participant.ResponseNote = dto.ResponseNote;
         participant.RespondedAt = DateTime.UtcNow;
 
@@ -518,7 +526,7 @@ public class MeetingsApiController : BaseApiController
         var upcoming = await _context.Meetings
             .Include(m => m.Organizer)
             .Include(m => m.Participants)
-            .Where(m => m.PlannedDate >= today && m.Status != MeetingStatus.Cancelled && m.Status != MeetingStatus.Completed)
+            .Where(m => m.PlannedDate >= today && m.StatusId != MeetingStatuses.Ids.Cancelled && m.StatusId != MeetingStatuses.Ids.Completed)
             .Where(m => m.OrganizerId == currentUserId || m.Participants.Any(p => p.UserId == currentUserId))
             .OrderBy(m => m.PlannedDate)
             .Take(5)
@@ -527,23 +535,23 @@ public class MeetingsApiController : BaseApiController
         var summary = new MeetingSummaryDto
         {
             TotalMeetings = meetings.Count,
-            UpcomingMeetings = meetings.Count(m => m.PlannedDate >= today && m.Status != MeetingStatus.Cancelled && m.Status != MeetingStatus.Completed),
-            TodayMeetings = meetings.Count(m => m.PlannedDate.Date == today && m.Status != MeetingStatus.Cancelled),
-            CompletedMeetings = meetings.Count(m => m.Status == MeetingStatus.Completed),
-            CancelledMeetings = meetings.Count(m => m.Status == MeetingStatus.Cancelled),
+            UpcomingMeetings = meetings.Count(m => m.PlannedDate >= today && m.StatusId != MeetingStatuses.Ids.Cancelled && m.StatusId != MeetingStatuses.Ids.Completed),
+            TodayMeetings = meetings.Count(m => m.PlannedDate.Date == today && m.StatusId != MeetingStatuses.Ids.Cancelled),
+            CompletedMeetings = meetings.Count(m => m.StatusId == MeetingStatuses.Ids.Completed),
+            CancelledMeetings = meetings.Count(m => m.StatusId == MeetingStatuses.Ids.Cancelled),
             UpcomingList = upcoming.Select(m => new MeetingListDto
             {
                 Id = m.Id,
                 Title = m.Title,
-                MeetingType = m.MeetingType.ToString(),
-                Status = m.Status.ToString(),
+                MeetingType = m.MeetingTypeId.ToString(),
+                Status = m.StatusId.ToString(),
                 PlannedDate = m.PlannedDate,
                 PlannedEndDate = m.PlannedEndDate,
                 Location = m.Location,
                 IsOnline = m.IsOnline,
                 OrganizerName = m.Organizer != null ? $"{m.Organizer.FirstName} {m.Organizer.LastName}" : null,
                 ParticipantCount = m.Participants.Count,
-                AcceptedCount = m.Participants.Count(p => p.Status == ParticipantStatus.Accepted)
+                AcceptedCount = m.Participants.Count(p => p.StatusId == ParticipantStatuses.Ids.Accepted)
             }).ToList()
         };
 
@@ -559,8 +567,8 @@ public class MeetingsApiController : BaseApiController
             Id = meeting.Id,
             Title = meeting.Title,
             Description = meeting.Description,
-            MeetingType = meeting.MeetingType.ToString(),
-            Status = meeting.Status.ToString(),
+            MeetingType = meeting.MeetingTypeId.ToString(),
+            Status = meeting.StatusId.ToString(),
             PlannedDate = meeting.PlannedDate,
             PlannedEndDate = meeting.PlannedEndDate,
             ActualDate = meeting.ActualDate,
@@ -583,8 +591,8 @@ public class MeetingsApiController : BaseApiController
             ReminderHoursBefore = meeting.ReminderHoursBefore,
             CreatedAt = meeting.CreatedAt,
             ParticipantCount = meeting.Participants.Count,
-            AcceptedCount = meeting.Participants.Count(p => p.Status == ParticipantStatus.Accepted || p.Status == ParticipantStatus.Attended),
-            DeclinedCount = meeting.Participants.Count(p => p.Status == ParticipantStatus.Declined),
+            AcceptedCount = meeting.Participants.Count(p => p.StatusId == ParticipantStatuses.Ids.Accepted || p.StatusId == ParticipantStatuses.Ids.Attended),
+            DeclinedCount = meeting.Participants.Count(p => p.StatusId == ParticipantStatuses.Ids.Declined),
             Participants = meeting.Participants.Select(p => new MeetingParticipantDto
             {
                 Id = p.Id,
@@ -594,7 +602,7 @@ public class MeetingsApiController : BaseApiController
                 UserEmail = p.User?.Email,
                 ExternalName = p.ExternalName,
                 ExternalEmail = p.ExternalEmail,
-                Status = p.Status.ToString(),
+                Status = p.StatusId.ToString(),
                 IsRequired = p.IsRequired,
                 ResponseNote = p.ResponseNote,
                 RespondedAt = p.RespondedAt,

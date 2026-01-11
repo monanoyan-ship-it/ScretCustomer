@@ -13,7 +13,7 @@ public class CustomerPersonnelTaskAssignment : BaseEntity
     /// <summary>
     /// Personelin bu görevdeki rolü
     /// </summary>
-    public TaskAssignmentRole AssignmentRole { get; set; }
+    public int AssignmentRoleId { get; set; }
 
     /// <summary>
     /// Atama tarihi

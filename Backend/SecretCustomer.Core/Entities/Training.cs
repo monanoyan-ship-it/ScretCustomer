@@ -23,19 +23,19 @@ public class Training : BaseEntity
     public string? Description { get; set; }
 
     /// <summary>
-    /// Eğitim tipi
+    /// Eğitim tipi (TrainingTypes.Ids kullanılır)
     /// </summary>
-    public TrainingType TrainingType { get; set; } = TrainingType.InPerson;
+    public int TrainingTypeId { get; set; } = TrainingTypes.Ids.InPerson;
 
     /// <summary>
-    /// Durum
+    /// Durum (TrainingStatuses.Ids kullanılır)
     /// </summary>
-    public TrainingStatus Status { get; set; } = TrainingStatus.Draft;
+    public int StatusId { get; set; } = TrainingStatuses.Ids.Draft;
 
     /// <summary>
-    /// Kategori
+    /// Kategori (TrainingCategories.Ids kullanılır)
     /// </summary>
-    public TrainingCategory Category { get; set; } = TrainingCategory.General;
+    public int CategoryId { get; set; } = TrainingCategories.Ids.General;
 
     /// <summary>
     /// Başlangıç tarihi
@@ -214,9 +214,9 @@ public class TrainingParticipant : BaseEntity
     public string? ExternalPhone { get; set; }
 
     /// <summary>
-    /// Durum
+    /// Durum (TrainingParticipantStatuses.Ids kullanılır)
     /// </summary>
-    public TrainingParticipantStatus Status { get; set; } = TrainingParticipantStatus.Invited;
+    public int StatusId { get; set; } = TrainingParticipantStatuses.Ids.Invited;
 
     /// <summary>
     /// Katılım tarihi

@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
@@ -13,17 +15,23 @@ public class LocalizationService : ILocalizationService
     private readonly ApplicationDbContext _context;
     private readonly IMemoryCache _cache;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<LocalizationService> _logger;
     private const string CACHE_KEY_PREFIX = "locale_";
     private const string LANGUAGES_CACHE_KEY = "all_languages";
+
+    // Eksik key'leri takip et (aynı key'i tekrar tekrar loglamamak için)
+    private static readonly ConcurrentDictionary<string, byte> _loggedMissingKeys = new();
 
     public LocalizationService(
         ApplicationDbContext context,
         IMemoryCache cache,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<LocalizationService> logger)
     {
         _context = context;
         _cache = cache;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     #region Language Operations
@@ -147,7 +155,19 @@ public class LocalizationService : ILocalizationService
             value = resource?.ResourceValue;
 
             if (value != null)
+            {
                 _cache.Set(cacheKey, value, TimeSpan.FromMinutes(30));
+            }
+            else
+            {
+                // Eksik key'i logla (sadece ilk seferde)
+                var missingKey = $"{langId}_{resourceName}";
+                if (_loggedMissingKeys.TryAdd(missingKey, 0))
+                {
+                    _logger.LogWarning("Missing translation key: {ResourceName} (LanguageId: {LanguageId}, DefaultValue: {DefaultValue})",
+                        resourceName, langId, defaultValue ?? resourceName);
+                }
+            }
         }
 
         return value ?? defaultValue ?? resourceName;
@@ -247,6 +267,22 @@ public class LocalizationService : ILocalizationService
             await _context.SaveChangesAsync();
             ClearResourceCache(languageId, resourceName);
         }
+    }
+
+    public async Task<int> DeleteAllResourcesByLanguageAsync(int languageId)
+    {
+        var resources = await _context.LocaleStringResources
+            .Where(r => r.LanguageId == languageId)
+            .ToListAsync();
+
+        var count = resources.Count;
+        _context.LocaleStringResources.RemoveRange(resources);
+        await _context.SaveChangesAsync();
+
+        // Cache temizle
+        _cache.Remove($"{CACHE_KEY_PREFIX}all_{languageId}");
+
+        return count;
     }
 
     #endregion
@@ -407,6 +443,26 @@ public class LocalizationService : ILocalizationService
         {
             _cache.Remove($"{CACHE_KEY_PREFIX}all_{lang.Id}");
         }
+    }
+
+    #endregion
+
+    #region Missing Keys Tracking
+
+    /// <summary>
+    /// Loglanan eksik çeviri key'lerini getirir (debug için)
+    /// </summary>
+    public IEnumerable<string> GetMissingKeys()
+    {
+        return _loggedMissingKeys.Keys.Select(k => k.Contains('_') ? k.Substring(k.IndexOf('_') + 1) : k).Distinct();
+    }
+
+    /// <summary>
+    /// Eksik key loglarını temizler
+    /// </summary>
+    public void ClearMissingKeysLog()
+    {
+        _loggedMissingKeys.Clear();
     }
 
     #endregion

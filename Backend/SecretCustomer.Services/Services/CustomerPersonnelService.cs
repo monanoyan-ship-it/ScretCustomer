@@ -11,39 +11,64 @@ public class CustomerPersonnelService : ICustomerPersonnelService
     private readonly ICustomerPersonnelRepository _personnelRepository;
     private readonly ICustomerRepository _customerRepository;
     private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
+    private readonly ILocalizationService _localizationService;
 
     public CustomerPersonnelService(
         ICustomerPersonnelRepository personnelRepository,
         ICustomerRepository customerRepository,
-        ICustomerPersonnelOrganizationRepository personnelOrgRepository)
+        ICustomerPersonnelOrganizationRepository personnelOrgRepository,
+        ILocalizationService localizationService)
     {
         _personnelRepository = personnelRepository;
         _customerRepository = customerRepository;
         _personnelOrgRepository = personnelOrgRepository;
+        _localizationService = localizationService;
+    }
+
+    private async Task<string> GetRoleNameAsync(int roleId)
+    {
+        var item = CustomerPersonnelRoles.GetById(roleId);
+        if (item == null) return "Bilinmeyen";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
     }
 
     public async Task<CustomerPersonnelDto?> GetByIdAsync(int id)
     {
         var personnel = await _personnelRepository.GetByIdAsync(id, includeDetails: true);
-        return personnel == null ? null : MapToDto(personnel);
+        return personnel == null ? null : await MapToDtoAsync(personnel);
     }
 
     public async Task<IEnumerable<CustomerPersonnelDto>> GetAllAsync(bool includeInactive = false)
     {
         var personnel = await _personnelRepository.GetAllAsync(includeInactive);
-        return personnel.Select(MapToDto);
+        var result = new List<CustomerPersonnelDto>();
+        foreach (var p in personnel)
+        {
+            result.Add(await MapToDtoAsync(p));
+        }
+        return result;
     }
 
     public async Task<IEnumerable<CustomerPersonnelDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false)
     {
         var personnel = await _personnelRepository.GetByCustomerIdAsync(customerId, includeInactive);
-        return personnel.Select(MapToDto);
+        var result = new List<CustomerPersonnelDto>();
+        foreach (var p in personnel)
+        {
+            result.Add(await MapToDtoAsync(p));
+        }
+        return result;
     }
 
     public async Task<IEnumerable<CustomerPersonnelDto>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false)
     {
         var personnel = await _personnelRepository.GetByOrganizationIdAsync(organizationId, includeInactive);
-        return personnel.Select(MapToDto);
+        var result = new List<CustomerPersonnelDto>();
+        foreach (var p in personnel)
+        {
+            result.Add(await MapToDtoAsync(p));
+        }
+        return result;
     }
 
     public async Task ChangeOrganizationAsync(int personnelId, int newOrganizationId)
@@ -75,7 +100,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
     public async Task<CustomerPersonnelDto?> GetByUsernameAsync(string username)
     {
         var personnel = await _personnelRepository.GetByUsernameAsync(username);
-        return personnel == null ? null : MapToDto(personnel);
+        return personnel == null ? null : await MapToDtoAsync(personnel);
     }
 
     public async Task<CustomerPersonnelDto> CreateAsync(CreateCustomerPersonnelDto createDto)
@@ -115,7 +140,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             PhoneNumber = createDto.PhoneNumber,
             Department = createDto.Department,
             Title = createDto.Title,
-            Role = createDto.Role,
+            RoleId = CustomerPersonnelRoles.GetBySystemName(createDto.Role)?.Id ?? CustomerPersonnelRoles.Ids.Operator,
             IsActive = createDto.IsActive,
             Notes = createDto.Notes,
             CreatedAt = DateTime.UtcNow
@@ -125,7 +150,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 
         // Reload with details
         var result = await _personnelRepository.GetByIdAsync(createdPersonnel.Id, includeDetails: true);
-        return MapToDto(result!);
+        return await MapToDtoAsync(result!);
     }
 
     public async Task<CustomerPersonnelDto> UpdateAsync(int id, UpdateCustomerPersonnelDto updateDto)
@@ -164,7 +189,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         personnel.PhoneNumber = updateDto.PhoneNumber;
         personnel.Department = updateDto.Department;
         personnel.Title = updateDto.Title;
-        personnel.Role = updateDto.Role;
+        personnel.RoleId = CustomerPersonnelRoles.GetBySystemName(updateDto.Role)?.Id ?? CustomerPersonnelRoles.Ids.Operator;
         personnel.IsActive = updateDto.IsActive;
         personnel.Notes = updateDto.Notes;
 
@@ -172,7 +197,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 
         // Reload with details
         var result = await _personnelRepository.GetByIdAsync(updatedPersonnel.Id, includeDetails: true);
-        return MapToDto(result!);
+        return await MapToDtoAsync(result!);
     }
 
     public async Task DeleteAsync(int id)
@@ -238,7 +263,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         return personnel;
     }
 
-    private static CustomerPersonnelDto MapToDto(CustomerPersonnel personnel)
+    private async Task<CustomerPersonnelDto> MapToDtoAsync(CustomerPersonnel personnel)
     {
         // Sadece junction table'dan organizasyon bilgilerini al
         var orgAssignments = personnel.OrganizationAssignments?
@@ -269,8 +294,8 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             PhoneNumber = personnel.PhoneNumber,
             Department = personnel.Department,
             Title = personnel.Title,
-            Role = personnel.Role,
-            RoleName = GetRoleName(personnel.Role),
+            Role = CustomerPersonnelRoles.GetById(personnel.RoleId)?.SystemName ?? "",
+            RoleName = await GetRoleNameAsync(personnel.RoleId),
             IsActive = personnel.IsActive,
             Notes = personnel.Notes,
             TaskAssignmentCount = personnel.TaskAssignments?.Count ?? 0,
@@ -296,16 +321,5 @@ public class CustomerPersonnelService : ICustomerPersonnelService
     private async Task<bool> ExistsByEmailInCompanyAsync(string email, int customerId, int? excludeId = null)
     {
         return await _personnelRepository.ExistsByEmailInCompanyAsync(email, customerId, excludeId);
-    }
-
-    private static string GetRoleName(CustomerPersonnelRole role)
-    {
-        return role switch
-        {
-            CustomerPersonnelRole.CustomerManager => "Müşteri Yöneticisi",
-            CustomerPersonnelRole.CustomerSupervisor => "Müşteri Süpervizörü",
-            CustomerPersonnelRole.CustomerOperator => "Müşteri Operatörü",
-            _ => role.ToString()
-        };
     }
 }

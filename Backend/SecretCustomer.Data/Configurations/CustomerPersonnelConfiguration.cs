@@ -52,6 +52,9 @@ public class CustomerPersonnelConfiguration : IEntityTypeConfiguration<CustomerP
         builder.Property(p => p.Notes)
             .HasMaxLength(2000);
 
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(p => p.RoleId).HasColumnName("Role");
+
         // Relationships
         builder.HasMany(p => p.TaskAssignments)
             .WithOne(t => t.Personnel)

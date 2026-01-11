@@ -208,6 +208,21 @@ public class EvaluationsApiController : BaseApiController
     {
         try
         {
+            // Aktif proje kontrolü
+            var assignment = await _context.Assignments
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId);
+
+            if (assignment == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+            }
+
+            if (assignment.Project.StatusId != ProjectStatuses.Ids.Active)
+            {
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.ProjectNotActive")));
+            }
+
             // Set evaluator from current user if not provided
             if (!dto.EvaluatorId.HasValue)
             {
@@ -442,17 +457,17 @@ public class EvaluationsApiController : BaseApiController
             }
 
             // Sadece Completed durumundaki değerlendirmeler için talep gönderilebilir
-            if (evaluation.Status != EvaluationStatus.Completed)
+            if (evaluation.StatusId != EvaluationStatuses.Ids.Completed)
             {
                 return BadRequest(CreateErrorResponse("Sadece tamamlanmış değerlendirmeler için taslağa alma talebi gönderilebilir."));
             }
 
             // 2. Zaten bekleyen talep var mı kontrol et
             var existingRequest = await _context.Approvals
-                .AnyAsync(a => a.ApprovalType == ApprovalType.Evaluation
+                .AnyAsync(a => a.ApprovalTypeId == ApprovalTypes.Ids.Evaluation
                             && a.RelatedEntityId == id
                             && a.RelatedEntityType == "EvaluationRevert"
-                            && a.Status == ApprovalStatus.Pending);
+                            && a.StatusId == ApprovalStatuses.Ids.Pending);
 
             if (existingRequest)
             {
@@ -468,15 +483,15 @@ public class EvaluationsApiController : BaseApiController
             var approval = new Approval
             {
                 ReferenceNumber = referenceNumber,
-                ApprovalType = ApprovalType.Evaluation,
-                Status = ApprovalStatus.Pending,
+                ApprovalTypeId = ApprovalTypes.Ids.Evaluation,
+                StatusId = ApprovalStatuses.Ids.Pending,
                 Title = $"Taslağa Alma Talebi - Değerlendirme #{id}",
                 Description = dto?.Reason ?? "Neden belirtilmedi",
                 RelatedEntityId = id,
                 RelatedEntityType = "EvaluationRevert", // Taslağa alma talebi olduğunu belirtmek için
                 RequestedByUserId = userId,
                 RequestedAt = DateTime.UtcNow,
-                Priority = NotificationPriority.Normal
+                PriorityId = NotificationPriorities.Ids.Normal
             };
 
             _context.Approvals.Add(approval);

@@ -16,11 +16,11 @@ public class PersonnelDto
     public string? ErpNo { get; set; }
     public string? SicilNo { get; set; }
     public string? Title { get; set; }
-    public Gender Gender { get; set; }
-    public string GenderText => Gender switch
+    public int GenderId { get; set; }
+    public string GenderText => GenderId switch
     {
-        Gender.Male => "Erkek",
-        Gender.Female => "Kadın",
+        Genders.Ids.Male => "Erkek",
+        Genders.Ids.Female => "Kadın",
         _ => "Belirtilmemiş"
     };
     public DateTime? BirthDate { get; set; }
@@ -67,7 +67,7 @@ public class CreatePersonnelDto
     [StringLength(100, ErrorMessage = "Unvan en fazla 100 karakter olabilir")]
     public string? Title { get; set; }
 
-    public Gender Gender { get; set; } = Gender.Unspecified;
+    public int GenderId { get; set; } = Genders.Ids.Unspecified;
 
     public DateTime? BirthDate { get; set; }
 
@@ -106,7 +106,7 @@ public class PersonnelFilterDto
     public string? SearchTerm { get; set; }
     public int? CustomerId { get; set; }
     public bool? IsActive { get; set; }
-    public Gender? Gender { get; set; }
+    public int? GenderId { get; set; }
     public string? Department { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;

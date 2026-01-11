@@ -7,7 +7,8 @@ public class ExcelColumnDto
     public int Id { get; set; }
     public string ColumnName { get; set; } = string.Empty;
     public string PropertyName { get; set; } = string.Empty;
-    public ExcelColumnType ColumnType { get; set; }
+    public int ColumnTypeId { get; set; } = ExcelColumnTypes.Ids.Text;
+    public string ColumnTypeName => ExcelColumnTypes.GetById(ColumnTypeId)?.SystemName ?? "Text";
     public int Order { get; set; }
     public bool IsRequired { get; set; }
     public Dictionary<string, object>? ValidationRules { get; set; }
@@ -20,7 +21,7 @@ public class CreateExcelColumnDto
 {
     public string ColumnName { get; set; } = string.Empty;
     public string PropertyName { get; set; } = string.Empty;
-    public ExcelColumnType ColumnType { get; set; }
+    public int ColumnTypeId { get; set; } = ExcelColumnTypes.Ids.Text;
     public int Order { get; set; }
     public bool IsRequired { get; set; } = false;
     public Dictionary<string, object>? ValidationRules { get; set; }

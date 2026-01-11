@@ -42,20 +42,102 @@ public class ReportService : IReportService
             query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
 
         if (filter.StartDate.HasValue)
-            query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
 
         if (filter.EndDate.HasValue)
-            query = query.Where(e => e.CompletedAt <= filter.EndDate.Value || e.CreatedAt <= filter.EndDate.Value);
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
 
-        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<EvaluationStatus>(filter.Status, out var status))
-            query = query.Where(e => e.Status == status);
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
+            if (statusItem != null)
+                query = query.Where(e => e.StatusId == statusItem.Id);
+        }
+
+        // Customer filter
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Organization filter
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+
+        // Period filter
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        // Evaluated Personnel name search (case-insensitive)
+        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        {
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
+                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
+                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+        }
+
+        // Supervisor name search
+        if (!string.IsNullOrEmpty(filter.SupervisorName))
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    oa.Supervisor != null &&
+                    (EF.Functions.ILike(oa.Supervisor.FirstName, $"%{filter.SupervisorName}%") ||
+                     EF.Functions.ILike(oa.Supervisor.LastName, $"%{filter.SupervisorName}%"))));
+        }
+
+        // CallId search
+        if (!string.IsNullOrEmpty(filter.CallId))
+            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
 
         // Get total count
         var totalCount = await query.CountAsync();
 
+        // Apply sorting
+        var isAsc = filter.SortDirection?.ToLower() == "asc";
+        query = filter.SortField?.ToLower() switch
+        {
+            "projectname" => isAsc
+                ? query.OrderBy(e => e.Assignment.Project!.Name)
+                : query.OrderByDescending(e => e.Assignment.Project!.Name),
+            "periodname" => isAsc
+                ? query.OrderBy(e => e.AssignmentPeriod != null ? e.AssignmentPeriod.StartDate : (DateTime?)null)
+                : query.OrderByDescending(e => e.AssignmentPeriod != null ? e.AssignmentPeriod.StartDate : (DateTime?)null),
+            "evaluatedpersonnelname" => isAsc
+                ? query.OrderBy(e => e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName : e.EvaluatedUnknownPersonnel)
+                : query.OrderByDescending(e => e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName : e.EvaluatedUnknownPersonnel),
+            // supervisorname sorting is complex, fallback to callDate
+            "supervisorname" => query.OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
+            "callid" => isAsc
+                ? query.OrderBy(e => e.CallId)
+                : query.OrderByDescending(e => e.CallId),
+            "evaluatorname" => isAsc
+                ? query.OrderBy(e => e.Evaluator != null ? e.Evaluator.FirstName : "")
+                : query.OrderByDescending(e => e.Evaluator != null ? e.Evaluator.FirstName : ""),
+            "calldate" => isAsc
+                ? query.OrderBy(e => e.CallDate ?? e.CompletedAt)
+                : query.OrderByDescending(e => e.CallDate ?? e.CompletedAt),
+            "duration" => isAsc
+                ? query.OrderBy(e => e.Duration)
+                : query.OrderByDescending(e => e.Duration),
+            "scorepercentage" => isAsc
+                ? query.OrderBy(e => e.ScorePercentage)
+                : query.OrderByDescending(e => e.ScorePercentage),
+            "status" => isAsc
+                ? query.OrderBy(e => e.StatusId)
+                : query.OrderByDescending(e => e.StatusId),
+            _ => query.OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+        };
+
         // Apply pagination
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .ToListAsync();
@@ -134,7 +216,7 @@ public class ReportService : IReportService
             ScorePercentage = evaluation.ScorePercentage,
             YellowCardCount = evaluation.YellowCardCount,
             RedCardCount = evaluation.RedCardCount,
-            Status = evaluation.Status.ToString(),
+            Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
             Duration = evaluation.Duration,
@@ -158,7 +240,7 @@ public class ReportService : IReportService
                         IsNA = a.IsNA,
                         GivenPoints = a.EarnedPoints,
                         MaxPoints = a.Question.WeightPoints,
-                        PenaltyType = a.AppliedPenaltyType.ToString(),
+                        PenaltyType = a.AppliedPenaltyTypeId.ToString(),
                         Notes = a.Notes,
                         SelectedSubCriteria = a.SubCriteriaSelections
                             .Select(s => s.SubCriteria.Description)
@@ -190,13 +272,13 @@ public class ReportService : IReportService
 
         var evaluations = await query.ToListAsync();
 
-        var completedEvaluations = evaluations.Where(e => e.Status == EvaluationStatus.Completed && e.ScorePercentage.HasValue).ToList();
+        var completedEvaluations = evaluations.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue).ToList();
 
         var summary = new SummaryReportDto
         {
             TotalEvaluations = evaluations.Count,
             CompletedEvaluations = completedEvaluations.Count,
-            PendingEvaluations = evaluations.Count(e => e.Status == EvaluationStatus.Draft || e.Status == EvaluationStatus.InProgress || e.Status == EvaluationStatus.Pending),
+            PendingEvaluations = evaluations.Count(e => e.StatusId == EvaluationStatuses.Ids.Draft || e.StatusId == EvaluationStatuses.Ids.InProgress || e.StatusId == EvaluationStatuses.Ids.Pending),
             AverageScore = completedEvaluations.Any()
                 ? Math.Round(completedEvaluations.Average(e => e.ScorePercentage ?? 0), 2)
                 : 0,
@@ -378,7 +460,7 @@ public class ReportService : IReportService
                 detailSheet.Cell(detailRow, 9).Value = answer.IsNA ? "Evet" : "Hayır";
                 detailSheet.Cell(detailRow, 10).Value = answer.EarnedPoints ?? 0;
                 detailSheet.Cell(detailRow, 11).Value = answer.Question.WeightPoints;
-                detailSheet.Cell(detailRow, 12).Value = answer.AppliedPenaltyType.ToString();
+                detailSheet.Cell(detailRow, 12).Value = answer.AppliedPenaltyTypeId.ToString();
                 detailSheet.Cell(detailRow, 13).Value = answer.Notes ?? "";
                 detailRow++;
             }
@@ -431,7 +513,7 @@ public class ReportService : IReportService
             ScorePercentage = evaluation.ScorePercentage,
             YellowCardCount = evaluation.YellowCardCount,
             RedCardCount = evaluation.RedCardCount,
-            Status = evaluation.Status.ToString(),
+            Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
@@ -454,15 +536,19 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.EvaluatedPersonnel)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
-            .Where(a => a.AppliedPenaltyType != PenaltyType.None)
+            .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
             .AsQueryable();
 
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
 
-        if (!string.IsNullOrEmpty(filter.PenaltyType) && Enum.TryParse<PenaltyType>(filter.PenaltyType, out var penaltyType))
-            query = query.Where(a => a.AppliedPenaltyType == penaltyType);
+        if (!string.IsNullOrEmpty(filter.PenaltyType))
+        {
+            var penaltyTypeItem = PenaltyTypes.GetBySystemName(filter.PenaltyType);
+            if (penaltyTypeItem != null)
+                query = query.Where(a => a.AppliedPenaltyTypeId == penaltyTypeItem.Id);
+        }
 
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value || a.Evaluation.ControlDate >= filter.StartDate.Value);
@@ -476,8 +562,8 @@ public class ReportService : IReportService
         var summary = new PenaltySummaryDto
         {
             TotalPenalties = penaltyAnswers.Count,
-            TotalYellowCards = penaltyAnswers.Count(a => a.AppliedPenaltyType == PenaltyType.YellowCard),
-            TotalRedCards = penaltyAnswers.Count(a => a.AppliedPenaltyType == PenaltyType.RedCard),
+            TotalYellowCards = penaltyAnswers.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+            TotalRedCards = penaltyAnswers.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
             AffectedEvaluations = penaltyAnswers.Select(a => a.EvaluationId).Distinct().Count()
         };
 
@@ -491,7 +577,7 @@ public class ReportService : IReportService
                 QuestionId = a.QuestionId,
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
-                PenaltyType = a.AppliedPenaltyType.ToString(),
+                PenaltyType = a.AppliedPenaltyTypeId.ToString(),
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
                 ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
@@ -515,8 +601,8 @@ public class ReportService : IReportService
                 QuestionText = g.Key.Text,
                 GroupName = g.Key.GroupName,
                 ChecklistName = g.Key.ChecklistName,
-                YellowCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.YellowCard),
-                RedCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.RedCard),
+                YellowCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+                RedCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
                 TotalPenalties = g.Count()
             })
             .OrderByDescending(q => q.TotalPenalties)
@@ -536,8 +622,8 @@ public class ReportService : IReportService
                 Year = g.Key.Year,
                 Month = g.Key.Month,
                 MonthName = GetTurkishMonthName(g.Key.Month) + " " + g.Key.Year,
-                YellowCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.YellowCard),
-                RedCardCount = g.Count(a => a.AppliedPenaltyType == PenaltyType.RedCard),
+                YellowCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+                RedCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
                 TotalPenalties = g.Count()
             })
             .OrderBy(m => m.Year)
@@ -671,7 +757,7 @@ public class ReportService : IReportService
         // Değerlendirmede bulunan personelleri getir (EvaluatedCustomerPersonnel = CustomerPersonnel entity)
         var personnelFromEvaluations = await _context.Evaluations
             .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.EvaluatedCustomerPersonnelId != null && e.Status == EvaluationStatus.Completed)
+            .Where(e => e.EvaluatedCustomerPersonnelId != null && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Select(e => new
             {
                 e.EvaluatedCustomerPersonnelId,
@@ -710,7 +796,7 @@ public class ReportService : IReportService
             .Include(e => e.Evaluator)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
-            .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.Status == EvaluationStatus.Completed);
+            .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Apply filters
         if (filter.ProjectId.HasValue)
@@ -730,7 +816,7 @@ public class ReportService : IReportService
             {
                 PersonnelId = user.Id,
                 PersonnelName = $"{user.FirstName} {user.LastName}",
-                Title = user.Role.ToString(),
+                Title = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
                 Department = null
             };
         }
@@ -790,7 +876,7 @@ public class ReportService : IReportService
                 ScorePercentage = e.ScorePercentage ?? 0,
                 YellowCards = e.YellowCardCount,
                 RedCards = e.RedCardCount,
-                Status = e.Status.ToString()
+                Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? ""
             })
             .ToList();
 
@@ -819,7 +905,7 @@ public class ReportService : IReportService
         {
             PersonnelId = user.Id,
             PersonnelName = $"{user.FirstName} {user.LastName}",
-            Title = user.Role.ToString(),
+            Title = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
             Department = null,
             TotalEvaluations = evaluations.Count,
             AverageScore = completedScores.Any() ? Math.Round(completedScores.Average(), 2) : 0,
@@ -1012,7 +1098,7 @@ public class ReportService : IReportService
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
             .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
-            .Where(a => a.Evaluation.Status == EvaluationStatus.Completed)
+            .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
         // Apply filters
@@ -1097,7 +1183,7 @@ public class ReportService : IReportService
             EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
             CallId = a.Evaluation.CallId,
             IsPenaltyApplied = a.IsPenaltyApplied,
-            PenaltyType = a.AppliedPenaltyType != PenaltyType.None ? a.AppliedPenaltyType.ToString() : null
+            PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? a.AppliedPenaltyTypeId.ToString() : null
         }).ToList();
 
         return new SuggestionsReportResultDto
@@ -1118,7 +1204,7 @@ public class ReportService : IReportService
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
             .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
-            .Where(a => a.Evaluation.Status == EvaluationStatus.Completed)
+            .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
         // Apply filters

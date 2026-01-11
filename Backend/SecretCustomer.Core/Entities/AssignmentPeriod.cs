@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Enums;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -30,7 +32,7 @@ public class AssignmentPeriod : BaseEntity
     /// <summary>
     /// Dönem durumu: Open (Açık), Closed (Kapalı)
     /// </summary>
-    public PeriodStatus Status { get; set; } = PeriodStatus.Open;
+    public int StatusId { get; set; } = PeriodStatuses.Ids.Open;
 
     /// <summary>
     /// Hedef değerlendirme sayısı - Bu dönemde kaç dinleme yapılacak
@@ -60,20 +62,4 @@ public class AssignmentPeriod : BaseEntity
 
     // Navigation - Bu dönemdeki değerlendirmeler
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
-}
-
-/// <summary>
-/// Dönem durumu
-/// </summary>
-public enum PeriodStatus
-{
-    /// <summary>
-    /// Açık - Değerlendirme yapılabilir
-    /// </summary>
-    Open = 0,
-
-    /// <summary>
-    /// Kapalı - Dönem tamamlandı
-    /// </summary>
-    Closed = 1
 }

@@ -83,6 +83,9 @@ public class ApplicationDbContext : DbContext
     // System Settings (Sistem ayarları)
     public DbSet<SystemSetting> SystemSettings { get; set; }
 
+    // Saved Filters (Kaydedilmiş filtreler)
+    public DbSet<SavedFilter> SavedFilters { get; set; }
+
     // Personnel Requests (Personel Talepleri)
     public DbSet<PersonnelRequest> PersonnelRequests { get; set; }
 
@@ -207,15 +210,25 @@ public class ApplicationDbContext : DbContext
 
         // AuditLog indexleri (hızlı sorgu için)
         modelBuilder.Entity<AuditLog>()
+            .Property(a => a.LogTypeId).HasColumnName("LogType");
+        modelBuilder.Entity<AuditLog>()
             .HasIndex(a => a.CreatedAt);
         modelBuilder.Entity<AuditLog>()
-            .HasIndex(a => a.LogType);
+            .HasIndex(a => a.LogTypeId);
         modelBuilder.Entity<AuditLog>()
             .HasIndex(a => a.UserId);
         modelBuilder.Entity<AuditLog>()
             .HasIndex(a => a.Category);
         modelBuilder.Entity<AuditLog>()
             .HasIndex(a => new { a.TableName, a.RecordId });
+
+        // AssignmentPeriod Status mapping
+        modelBuilder.Entity<AssignmentPeriod>()
+            .Property(p => p.StatusId).HasColumnName("Status");
+
+        // AppSettings ValueType mapping
+        modelBuilder.Entity<AppSettings>()
+            .Property(s => s.ValueTypeId).HasColumnName("ValueType");
 
         // ===== PersonnelRequest İlişkileri =====
         modelBuilder.Entity<PersonnelRequest>()

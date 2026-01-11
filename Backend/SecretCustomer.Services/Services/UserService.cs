@@ -50,9 +50,9 @@ public class UserService : IUserService
             evaluationStats.GetValueOrDefault(u.Id, 0))).ToList();
     }
 
-    public async Task<IEnumerable<UserDto>> GetByRoleAsync(UserRole role)
+    public async Task<IEnumerable<UserDto>> GetByRoleIdAsync(int roleId)
     {
-        var users = await _userRepository.GetByRoleAsync(role);
+        var users = await _userRepository.GetByRoleIdAsync(roleId);
         return users.Select(u => MapToDto(u)).ToList();
     }
 
@@ -84,7 +84,7 @@ public class UserService : IUserService
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(createUserDto.Password),
             FirstName = createUserDto.FirstName,
             LastName = createUserDto.LastName,
-            Role = createUserDto.Role,
+            RoleId = createUserDto.RoleId,
             IsActive = createUserDto.IsActive,
             CreatedAt = DateTime.UtcNow
         };
@@ -92,8 +92,9 @@ public class UserService : IUserService
         var createdUser = await _userRepository.CreateAsync(user);
 
         // Audit Log
+        var roleName = UserRoles.GetById(createdUser.RoleId)?.SystemName ?? createdUser.RoleId.ToString();
         await _auditLogService.LogInfoAsync(
-            $"Yeni kullanıcı oluşturuldu: {createdUser.Username} ({createdUser.Role})",
+            $"Yeni kullanıcı oluşturuldu: {createdUser.Username} ({roleName})",
             "UserService");
 
         return MapToDto(createdUser);
@@ -119,7 +120,7 @@ public class UserService : IUserService
         user.FirstName = updateUserDto.FirstName;
         user.LastName = updateUserDto.LastName;
         user.PhoneNumber = updateUserDto.PhoneNumber;
-        user.Role = updateUserDto.Role;
+        user.RoleId = updateUserDto.RoleId;
         user.IsActive = updateUserDto.IsActive;
 
         var updatedUser = await _userRepository.UpdateAsync(user);
@@ -213,7 +214,7 @@ public class UserService : IUserService
             FirstName = user.FirstName,
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber,
-            Role = user.Role,
+            RoleId = user.RoleId,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,

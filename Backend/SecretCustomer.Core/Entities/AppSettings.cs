@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Enums;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -20,7 +22,7 @@ public class AppSettings
     /// <summary>
     /// Veri tipi: String, Bool, Int, Decimal, Json, DateTime
     /// </summary>
-    public SettingValueType ValueType { get; set; } = SettingValueType.String;
+    public int ValueTypeId { get; set; } = SettingValueTypes.Ids.String;
 
     /// <summary>
     /// Kategori (gruplandırma için)
@@ -54,14 +56,4 @@ public class AppSettings
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-}
-
-public enum SettingValueType
-{
-    String = 0,
-    Bool = 1,
-    Int = 2,
-    Decimal = 3,
-    Json = 4,
-    DateTime = 5
 }

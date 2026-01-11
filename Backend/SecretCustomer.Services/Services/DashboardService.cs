@@ -180,14 +180,14 @@ public class DashboardService : IDashboardService
                 ChecklistName = e.Assignment?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 EvaluationDate = e.CompletedAt ?? e.CreatedAt,
-                Status = e.Status.ToString()
+                Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? ""
             })
             .ToList();
 
         return new ScorecardDto
         {
             UserName = $"{user.FirstName} {user.LastName}",
-            Role = user.Role.ToString(),
+            Role = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
             CurrentMonthEvaluations = currentMonthCount,
             CurrentMonthAverage = Math.Round(currentMonthAverage, 2),
             LastMonthEvaluations = lastMonthCount,
@@ -219,7 +219,7 @@ public class DashboardService : IDashboardService
 
         // Bugün
         var todayEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
             .ToListAsync();
 
@@ -230,7 +230,7 @@ public class DashboardService : IDashboardService
 
         // Bu hafta
         var weekEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= weekStart && e.CompletedAt.Value.Date <= today)
             .ToListAsync();
 
@@ -241,7 +241,7 @@ public class DashboardService : IDashboardService
 
         // Bu ay
         var monthEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
             .CountAsync();
 
@@ -254,7 +254,7 @@ public class DashboardService : IDashboardService
             .ToList();
 
         var trendData = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= today.AddDays(-6))
             .GroupBy(e => e.CompletedAt!.Value.Date)
             .Select(g => new
@@ -301,7 +301,7 @@ public class DashboardService : IDashboardService
 
         // Bugün en çok değerlendirme yapanlar
         var topToday = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
@@ -329,7 +329,7 @@ public class DashboardService : IDashboardService
 
         // Bu ay en çok değerlendirme yapanlar
         var topMonth = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
@@ -357,7 +357,7 @@ public class DashboardService : IDashboardService
 
         // Kullanıcı sıralaması (aylık)
         var rankData = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed && e.EvaluatorId.HasValue)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
@@ -405,13 +405,13 @@ public class DashboardService : IDashboardService
 
         // Bugün yapılanlar
         var todayCompleted = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
             .CountAsync();
 
         // Aktif dönem
         var activePeriod = await _context.AssignmentPeriods
-            .Where(p => !p.IsDeleted && p.Status == PeriodStatus.Open)
+            .Where(p => !p.IsDeleted && p.StatusId == PeriodStatuses.Ids.Open)
             .Where(p => p.StartDate <= now && p.EndDate >= now)
             .FirstOrDefaultAsync();
 
@@ -431,7 +431,7 @@ public class DashboardService : IDashboardService
 
             // Dönemdeki tamamlanan değerlendirmeler
             periodCompleted = await _context.Evaluations
-                .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+                .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
                 .Where(e => e.CompletedAt.HasValue &&
                            e.CompletedAt.Value >= activePeriod.StartDate &&
                            e.CompletedAt.Value <= activePeriod.EndDate)
@@ -456,7 +456,7 @@ public class DashboardService : IDashboardService
 
         // Her proje için tamamlanan değerlendirmeler
         var projectCompletedCounts = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Status == EvaluationStatus.Completed)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.Assignment != null)
             .Where(e => projectIds.Contains(e.Assignment!.ProjectId))
             .GroupBy(e => e.Assignment!.ProjectId)

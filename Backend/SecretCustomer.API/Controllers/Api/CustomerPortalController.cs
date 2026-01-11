@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -236,7 +237,7 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Supervisor/Operator için personel filtresi
         if (allowedPersonnelIds != null)
@@ -284,7 +285,7 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.CreatedAt >= startDate);
 
         if (allowedPersonnelIds != null)
@@ -334,7 +335,7 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.ScorePercentage.HasValue);
 
         if (allowedPersonnelIds != null)
@@ -410,7 +411,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.Status == SecretCustomer.Core.Enums.EvaluationStatus.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (allowedPersonnelIds != null)
         {
@@ -432,12 +433,23 @@ public class CustomerPortalApiController : ControllerBase
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel ?? "-",
                 score = e.ScorePercentage ?? 0,
-                status = e.Status.ToString(),
-                statusText = GetStatusText(e.Status)
+                statusId = e.StatusId
             })
             .ToListAsync();
 
-        return Ok(evaluations);
+        var result = evaluations.Select(e => new
+        {
+            e.Id,
+            e.evaluationDate,
+            branchName = e.projectName,
+            e.checklistName,
+            e.personnelName,
+            e.score,
+            status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
+            statusText = GetStatusText(e.statusId)
+        });
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -470,14 +482,24 @@ public class CustomerPortalApiController : ControllerBase
                 branchName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
                 score = e.TotalScore ?? 0,
-                status = e.Status.ToString(),
-                statusText = GetStatusText(e.Status)
+                statusId = e.StatusId
             })
             .ToListAsync();
 
+        var mappedEvaluations = evaluations.Select(e => new
+        {
+            e.Id,
+            e.evaluationDate,
+            e.branchName,
+            e.checklistName,
+            e.score,
+            status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
+            statusText = GetStatusText(e.statusId)
+        });
+
         return Ok(new
         {
-            items = evaluations,
+            items = mappedEvaluations,
             totalCount,
             page,
             pageSize,
@@ -485,16 +507,16 @@ public class CustomerPortalApiController : ControllerBase
         });
     }
 
-    private static string GetStatusText(Core.Enums.EvaluationStatus status)
+    private static string GetStatusText(int statusId)
     {
-        return status switch
+        return statusId switch
         {
-            Core.Enums.EvaluationStatus.Pending => "Beklemede",
-            Core.Enums.EvaluationStatus.Draft => "Taslak",
-            Core.Enums.EvaluationStatus.InProgress => "Devam Ediyor",
-            Core.Enums.EvaluationStatus.Completed => "Tamamlandı",
-            Core.Enums.EvaluationStatus.Cancelled => "İptal Edildi",
-            _ => status.ToString()
+            EvaluationStatuses.Ids.Pending => "Beklemede",
+            EvaluationStatuses.Ids.Draft => "Taslak",
+            EvaluationStatuses.Ids.InProgress => "Devam Ediyor",
+            EvaluationStatuses.Ids.Completed => "Tamamlandı",
+            EvaluationStatuses.Ids.Cancelled => "İptal Edildi",
+            _ => EvaluationStatuses.GetById(statusId)?.SystemName ?? "Bilinmeyen"
         };
     }
 
@@ -527,7 +549,7 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.Status == Core.Enums.EvaluationStatus.Completed)
+                && e.StatusId == EvaluationStatuses.Ids.Completed)
             .ToListAsync();
 
         var projectPerformance = projects.Select(p =>
@@ -574,7 +596,7 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.Status == Core.Enums.EvaluationStatus.Completed)
+                && e.StatusId == EvaluationStatuses.Ids.Completed)
             .ToListAsync();
 
         var projectCount = await _context.Projects
@@ -622,7 +644,7 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.Status == Core.Enums.EvaluationStatus.Completed)
+                && e.StatusId == EvaluationStatuses.Ids.Completed)
             .ToListAsync();
 
         // Aylara göre grupla

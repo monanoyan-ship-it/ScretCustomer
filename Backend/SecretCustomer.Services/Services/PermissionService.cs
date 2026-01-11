@@ -64,7 +64,7 @@ public class PermissionService : IPermissionService
             // 2. Kullanıcı özel yetkisi yoksa, rol yetkilerine bak
             var rolePermission = await _context.RolePermissions
                 .FirstOrDefaultAsync(rp =>
-                    rp.Role == user.Role &&
+                    rp.RoleId == user.RoleId &&
                     rp.PermissionId == permission.Id);
 
             return rolePermission?.IsGranted ?? false;
@@ -79,7 +79,7 @@ public class PermissionService : IPermissionService
     /// <summary>
     /// Scope kontrolü ile yetki kontrolü
     /// </summary>
-    public async Task<bool> HasPermissionAsync(int userId, string permissionCode, PermissionScope requiredScope)
+    public async Task<bool> HasPermissionAsync(int userId, string permissionCode, int requiredScopeId)
     {
         try
         {
@@ -103,16 +103,16 @@ public class PermissionService : IPermissionService
 
             if (userPermission != null)
             {
-                return userPermission.IsGranted && userPermission.Scope >= requiredScope;
+                return userPermission.IsGranted && userPermission.ScopeId >= requiredScopeId;
             }
 
             // Rol yetkilerine bak
             var rolePermission = await _context.RolePermissions
                 .FirstOrDefaultAsync(rp =>
-                    rp.Role == user.Role &&
+                    rp.RoleId == user.RoleId &&
                     rp.PermissionId == permission.Id);
 
-            return rolePermission != null && rolePermission.IsGranted && rolePermission.Scope >= requiredScope;
+            return rolePermission != null && rolePermission.IsGranted && rolePermission.ScopeId >= requiredScopeId;
         }
         catch (Exception ex)
         {
@@ -129,7 +129,7 @@ public class PermissionService : IPermissionService
 
         // Rol yetkilerini al
         var rolePermissions = await _context.RolePermissions
-            .Where(rp => rp.Role == user.Role && rp.IsGranted)
+            .Where(rp => rp.RoleId == user.RoleId && rp.IsGranted)
             .Include(rp => rp.Permission)
             .Select(rp => rp.Permission)
             .ToListAsync();
@@ -149,51 +149,52 @@ public class PermissionService : IPermissionService
         return rolePermissions.Union(userPermissions).Distinct();
     }
 
-    public async Task<IEnumerable<Permission>> GetRolePermissionsAsync(UserRole role)
+    public async Task<IEnumerable<Permission>> GetRolePermissionsAsync(int roleId)
     {
         return await _context.RolePermissions
-            .Where(rp => rp.Role == role && rp.IsGranted)
+            .Where(rp => rp.RoleId == roleId && rp.IsGranted)
             .Include(rp => rp.Permission)
             .Select(rp => rp.Permission)
             .ToListAsync();
     }
 
-    public async Task GrantRolePermissionAsync(UserRole role, int permissionId, PermissionScope scope = PermissionScope.All)
+    public async Task GrantRolePermissionAsync(int roleId, int permissionId, int scopeId = PermissionScopes.Ids.All)
     {
         var permission = await _context.Permissions.FindAsync(permissionId);
         var existing = await _context.RolePermissions
-            .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
+            .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
 
         if (existing != null)
         {
             existing.IsGranted = true;
-            existing.Scope = scope;
+            existing.ScopeId = scopeId;
             existing.UpdatedAt = DateTime.UtcNow;
         }
         else
         {
             await _context.RolePermissions.AddAsync(new RolePermission
             {
-                Role = role,
+                RoleId = roleId,
                 PermissionId = permissionId,
                 IsGranted = true,
-                Scope = scope
+                ScopeId = scopeId
             });
         }
 
         await _context.SaveChangesAsync();
 
         // Audit Log
+        var roleName = UserRoles.GetById(roleId)?.SystemName ?? roleId.ToString();
         await _auditLogService.LogWarningAsync(
-            $"Rol yetkisi verildi: {role} - {permission?.DisplayName ?? permissionId.ToString()}",
+            $"Rol yetkisi verildi: {roleName} - {permission?.DisplayName ?? permissionId.ToString()}",
             "PermissionService");
     }
 
-    public async Task RevokeRolePermissionAsync(UserRole role, int permissionId)
+    public async Task RevokeRolePermissionAsync(int roleId, int permissionId)
     {
         var permission = await _context.Permissions.FindAsync(permissionId);
         var rolePermission = await _context.RolePermissions
-            .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
+            .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
 
         if (rolePermission != null)
         {
@@ -201,13 +202,14 @@ public class PermissionService : IPermissionService
             await _context.SaveChangesAsync();
 
             // Audit Log
+            var roleName = UserRoles.GetById(roleId)?.SystemName ?? roleId.ToString();
             await _auditLogService.LogWarningAsync(
-                $"Rol yetkisi kaldırıldı: {role} - {permission?.DisplayName ?? permissionId.ToString()}",
+                $"Rol yetkisi kaldırıldı: {roleName} - {permission?.DisplayName ?? permissionId.ToString()}",
                 "PermissionService");
         }
     }
 
-    public async Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, PermissionScope scope = PermissionScope.All)
+    public async Task GrantUserPermissionAsync(int userId, int permissionId, bool isGranted, int scopeId = PermissionScopes.Ids.All)
     {
         var user = await _userRepository.GetByIdAsync(userId);
         var permission = await _context.Permissions.FindAsync(permissionId);
@@ -217,7 +219,7 @@ public class PermissionService : IPermissionService
         if (existing != null)
         {
             existing.IsGranted = isGranted;
-            existing.Scope = scope;
+            existing.ScopeId = scopeId;
             existing.UpdatedAt = DateTime.UtcNow;
         }
         else
@@ -227,7 +229,7 @@ public class PermissionService : IPermissionService
                 UserId = userId,
                 PermissionId = permissionId,
                 IsGranted = isGranted,
-                Scope = scope
+                ScopeId = scopeId
             });
         }
 
@@ -263,15 +265,15 @@ public class PermissionService : IPermissionService
     {
         return await _context.Permissions
             .Where(p => p.IsActive)
-            .OrderBy(p => p.Category)
+            .OrderBy(p => p.CategoryId)
             .ThenBy(p => p.SortOrder)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Permission>> GetPermissionsByCategoryAsync(PermissionCategory category)
+    public async Task<IEnumerable<Permission>> GetPermissionsByCategoryAsync(int categoryId)
     {
         return await _context.Permissions
-            .Where(p => p.Category == category && p.IsActive)
+            .Where(p => p.CategoryId == categoryId && p.IsActive)
             .OrderBy(p => p.SortOrder)
             .ToListAsync();
     }

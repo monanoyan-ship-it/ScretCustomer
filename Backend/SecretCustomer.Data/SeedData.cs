@@ -36,7 +36,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                 FirstName = "Sistem",
                 LastName = "Yöneticisi",
-                Role = UserRole.Admin,
+                RoleId = UserRoles.Ids.Admin,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -96,7 +96,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                 FirstName = "Admin",
                 LastName = "User",
-                Role = UserRole.Admin,
+                RoleId = UserRoles.Ids.Admin,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -108,7 +108,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Leader@123"),
                 FirstName = "Team",
                 LastName = "Leader",
-                Role = UserRole.QualitySpecialist,
+                RoleId = UserRoles.Ids.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -120,7 +120,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
                 FirstName = "John",
                 LastName = "Evaluator",
-                Role = UserRole.QualitySpecialist,
+                RoleId = UserRoles.Ids.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -132,7 +132,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Eval@123"),
                 FirstName = "Jane",
                 LastName = "Evaluator",
-                Role = UserRole.QualitySpecialist,
+                RoleId = UserRoles.Ids.QualitySpecialist,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -149,7 +149,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Ali",
                 LastName = "Veli",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -161,7 +161,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Zeynep",
                 LastName = "Yıldız",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -173,7 +173,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Murat",
                 LastName = "Koç",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -185,7 +185,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Elif",
                 LastName = "Şahin",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -197,7 +197,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Burak",
                 LastName = "Tekin",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -209,7 +209,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Selin",
                 LastName = "Aydın",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -221,7 +221,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Emre",
                 LastName = "Çelik",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -233,7 +233,7 @@ public static class SeedData
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Field@123"),
                 FirstName = "Ayşe",
                 LastName = "Kara",
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 IsActive = false,
                 CreatedAt = DateTime.UtcNow
             };
@@ -265,10 +265,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Masalar temiz mi?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 5,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 1,
@@ -278,10 +278,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Tuvalet temizliği nasıl?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 10,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 2,
@@ -291,10 +291,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Genel temizlik hakkında ek gözlemler",
-                    ScoringType = ScoringType.Unscored, // Puansız - sadece yorum
+                    ScoringTypeId = ScoringTypes.Ids.Unscored, // Puansız - sadece yorum
                     WeightPoints = 0,
                     MaxPoints = 1,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = true,
                     IsRequired = false,
                     Order = 3,
@@ -306,10 +306,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Karşılama nasıldı?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 5,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 4,
@@ -320,10 +320,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Sipariş alma süresi uygun muydu?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 5,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = true,
                     IsRequired = true,
                     Order = 5,
@@ -333,10 +333,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Personel ilgisi nasıldı?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 10,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 6,
@@ -348,10 +348,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Yemek sıcaklığı uygun muydu?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 5,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 7,
@@ -361,10 +361,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Yemek lezzeti nasıldı?",
-                    ScoringType = ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.Ids.Scored,
                     WeightPoints = 15,
                     MaxPoints = 4,
-                    PenaltyType = PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.Ids.None,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 8,
@@ -374,10 +374,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Porsiyon büyüklüğü uygun mu?",
-                    ScoringType = ScoringType.Penalty, // Cezalı soru örneği
+                    ScoringTypeId = ScoringTypes.Ids.Penalty, // Cezalı soru örneği
                     WeightPoints = 10, // Ceza miktarı (eski PenaltyValue)
                     MaxPoints = 2,
-                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
                     AllowNA = true,
                     IsRequired = true,
                     Order = 9,
@@ -391,10 +391,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Personel isim kartı takıyor mu?",
-                    ScoringType = ScoringType.Penalty,
+                    ScoringTypeId = ScoringTypes.Ids.Penalty,
                     WeightPoints = 5, // Ceza miktarı: 5 puan düşürülür
                     MaxPoints = 2, // Evet/Hayır
-                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 10,
@@ -405,10 +405,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Müşteriye güler yüzle yaklaşıldı mı?",
-                    ScoringType = ScoringType.Penalty,
+                    ScoringTypeId = ScoringTypes.Ids.Penalty,
                     WeightPoints = 8, // Ceza miktarı: 8 puan düşülür
                     MaxPoints = 2,
-                    PenaltyType = PenaltyType.YellowCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 11,
@@ -421,10 +421,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Hijyen kurallarına uyuluyor mu? (Eldiven, bone vb.)",
-                    ScoringType = ScoringType.Penalty,
+                    ScoringTypeId = ScoringTypes.Ids.Penalty,
                     WeightPoints = 25, // Ciddi ceza: 25 puan düşülür
                     MaxPoints = 2,
-                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.RedCard,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 12,
@@ -435,10 +435,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Müşteriye saygısız davranış var mı?",
-                    ScoringType = ScoringType.Penalty,
+                    ScoringTypeId = ScoringTypes.Ids.Penalty,
                     WeightPoints = 50, // Çok ciddi ceza: 50 puan düşülür
                     MaxPoints = 2,
-                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.RedCard,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 13,
@@ -449,10 +449,10 @@ public static class SeedData
                 {
                     ChecklistId = checklist.Id,
                     Text = "Bozuk/bayat ürün servisi var mı?",
-                    ScoringType = ScoringType.Penalty,
+                    ScoringTypeId = ScoringTypes.Ids.Penalty,
                     WeightPoints = 100, // Tam sıfırlama: 100 puan düşülür
                     MaxPoints = 2,
-                    PenaltyType = PenaltyType.RedCard,
+                    PenaltyTypeId = PenaltyTypes.Ids.RedCard,
                     AllowNA = false,
                     IsRequired = true,
                     Order = 14,
@@ -471,7 +471,7 @@ public static class SeedData
                 Name = "2025 Q1 Restaurant Evaluation",
                 Description = "2025 yılı 1. çeyrek restaurant değerlendirme projesi",
                 ChecklistId = checklist.Id,
-                AssignmentType = AssignmentType.InternalBranch,
+                AssignmentTypeId = AssignmentTypes.Ids.InternalBranch,
                 StartDate = DateTime.UtcNow,
                 EndDate = DateTime.UtcNow.AddMonths(3),
                 IsActive = true,
@@ -520,7 +520,7 @@ public static class SeedData
             {
                 AssignmentId = assignment1.Id,
                 EvaluatorId = evaluator1.Id,
-                Status = Core.Enums.EvaluationStatus.Completed,
+                StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 85.5m,
                 MaxScore = 100m,
                 ScorePercentage = 85.5m,
@@ -534,7 +534,7 @@ public static class SeedData
             {
                 AssignmentId = assignment2.Id,
                 EvaluatorId = evaluator2.Id,
-                Status = Core.Enums.EvaluationStatus.Completed,
+                StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 92.0m,
                 MaxScore = 100m,
                 ScorePercentage = 92.0m,
@@ -547,7 +547,7 @@ public static class SeedData
             var evaluation3 = new Evaluation
             {
                 AssignmentId = assignment3.Id,
-                Status = Core.Enums.EvaluationStatus.Completed,
+                StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 78.0m,
                 MaxScore = 100m,
                 ScorePercentage = 78.0m,
@@ -562,7 +562,7 @@ public static class SeedData
             {
                 AssignmentId = assignment1.Id,
                 EvaluatorId = evaluator1.Id,
-                Status = Core.Enums.EvaluationStatus.Completed,
+                StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 88.0m,
                 MaxScore = 100m,
                 ScorePercentage = 88.0m,
@@ -576,7 +576,7 @@ public static class SeedData
             {
                 AssignmentId = assignment2.Id,
                 EvaluatorId = evaluator2.Id,
-                Status = Core.Enums.EvaluationStatus.Completed,
+                StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 75.5m,
                 MaxScore = 100m,
                 ScorePercentage = 75.5m,
@@ -652,7 +652,7 @@ public static class SeedData
                 PhoneNumber = "0532 111 2233",
                 Department = "Kalite Kontrol",
                 Title = "Kalite Müdürü",
-                Role = CustomerPersonnelRole.CustomerManager,
+                RoleId = CustomerPersonnelRoles.Ids.Manager,
                 IsActive = true,
                 Notes = "ABC Perakende kalite müdürü - tüm yetkilere sahip",
                 CreatedAt = DateTime.UtcNow
@@ -669,7 +669,7 @@ public static class SeedData
                 PhoneNumber = "0533 444 5566",
                 Department = "Kalite Kontrol",
                 Title = "Kalite Uzmanı",
-                Role = CustomerPersonnelRole.CustomerSupervisor,
+                RoleId = CustomerPersonnelRoles.Ids.Supervisor,
                 IsActive = true,
                 Notes = "Şube denetimlerinden sorumlu",
                 CreatedAt = DateTime.UtcNow
@@ -686,7 +686,7 @@ public static class SeedData
                 PhoneNumber = "0534 777 8899",
                 Department = "İşletme",
                 Title = "İşletme Müdürü",
-                Role = CustomerPersonnelRole.CustomerManager,
+                RoleId = CustomerPersonnelRoles.Ids.Manager,
                 IsActive = true,
                 Notes = "XYZ Restaurant Grubu işletme müdürü",
                 CreatedAt = DateTime.UtcNow
@@ -703,7 +703,7 @@ public static class SeedData
                 PhoneNumber = "0535 222 3344",
                 Department = "Mutfak",
                 Title = "Mutfak Şefi",
-                Role = CustomerPersonnelRole.CustomerOperator,
+                RoleId = CustomerPersonnelRoles.Ids.Operator,
                 IsActive = true,
                 Notes = "Mutfak operasyonları sorumlusu",
                 CreatedAt = DateTime.UtcNow
@@ -720,7 +720,7 @@ public static class SeedData
                 PhoneNumber = "0536 999 0011",
                 Department = "Yönetim",
                 Title = "Genel Müdür",
-                Role = CustomerPersonnelRole.CustomerManager,
+                RoleId = CustomerPersonnelRoles.Ids.Manager,
                 IsActive = true,
                 Notes = "Otel zinciri genel müdürü",
                 CreatedAt = DateTime.UtcNow
@@ -736,11 +736,11 @@ public static class SeedData
                 CustomerId = customer1.Id,
                 Name = "Ocak 2025 Şube Denetimleri",
                 Description = "Ocak ayı için tüm şubelerin kalite denetimi",
-                TaskType = CustomerTaskType.Inspection,
-                Priority = TaskPriority.High,
+                TaskTypeId = CustomerTaskTypes.Ids.Inspection,
+                PriorityId = TaskPriorities.Ids.High,
                 StartDate = DateTime.UtcNow.AddDays(-5),
                 EndDate = DateTime.UtcNow.AddDays(25),
-                Status = SecretCustomer.Core.Enums.TaskStatus.InProgress,
+                StatusId = TaskStatuses.Ids.InProgress,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -750,11 +750,11 @@ public static class SeedData
                 CustomerId = customer2.Id,
                 Name = "Hijyen ve Temizlik Kontrolü",
                 Description = "Restaurant şubelerinin hijyen standartları kontrolü",
-                TaskType = CustomerTaskType.Audit,
-                Priority = TaskPriority.Critical,
+                TaskTypeId = CustomerTaskTypes.Ids.Audit,
+                PriorityId = TaskPriorities.Ids.Critical,
                 StartDate = DateTime.UtcNow,
                 EndDate = DateTime.UtcNow.AddDays(14),
-                Status = SecretCustomer.Core.Enums.TaskStatus.NotStarted,
+                StatusId = TaskStatuses.Ids.NotStarted,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -768,7 +768,7 @@ public static class SeedData
             {
                 PersonnelId = personnel2.Id,
                 TaskListId = taskList1.Id,
-                AssignmentRole = TaskAssignmentRole.Owner,
+                AssignmentRoleId = TaskAssignmentRoles.Ids.Owner,
                 AssignedDate = DateTime.UtcNow.AddDays(-5),
                 Notes = "Şube denetimlerinin koordinasyonundan sorumlu",
                 IsActive = true,
@@ -779,7 +779,7 @@ public static class SeedData
             {
                 PersonnelId = personnel3.Id,
                 TaskListId = taskList2.Id,
-                AssignmentRole = TaskAssignmentRole.Owner,
+                AssignmentRoleId = TaskAssignmentRoles.Ids.Owner,
                 AssignedDate = DateTime.UtcNow,
                 Notes = "Hijyen kontrollerinin takibi",
                 IsActive = true,
@@ -790,7 +790,7 @@ public static class SeedData
             {
                 PersonnelId = personnel4.Id,
                 TaskListId = taskList2.Id,
-                AssignmentRole = TaskAssignmentRole.Assistant,
+                AssignmentRoleId = TaskAssignmentRoles.Ids.Assistant,
                 AssignedDate = DateTime.UtcNow,
                 Notes = "Mutfak hijyeni kontrolü desteği",
                 IsActive = true,
@@ -810,7 +810,7 @@ public static class SeedData
                 ErpNo = "ERP001",
                 SicilNo = "SCL001",
                 Title = "Müşteri Temsilcisi",
-                Gender = Gender.Male,
+                GenderId = Genders.Ids.Male,
                 BirthDate = new DateTime(1990, 5, 15, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2020, 3, 1, 0, 0, 0, DateTimeKind.Utc),
                 Email = "mehmet.ozkan@sube.com",
@@ -829,7 +829,7 @@ public static class SeedData
                 ErpNo = "ERP002",
                 SicilNo = "SCL002",
                 Title = "Kasa Görevlisi",
-                Gender = Gender.Female,
+                GenderId = Genders.Ids.Female,
                 BirthDate = new DateTime(1995, 8, 20, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2021, 6, 15, 0, 0, 0, DateTimeKind.Utc),
                 Email = "fatma.yildirim@sube.com",
@@ -848,7 +848,7 @@ public static class SeedData
                 ErpNo = "ERP003",
                 SicilNo = "SCL003",
                 Title = "Şube Müdürü",
-                Gender = Gender.Male,
+                GenderId = Genders.Ids.Male,
                 BirthDate = new DateTime(1985, 12, 10, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 Email = "ali.kaya@sube.com",
@@ -867,7 +867,7 @@ public static class SeedData
                 ErpNo = "ERP004",
                 SicilNo = "SCL004",
                 Title = "Garson",
-                Gender = Gender.Female,
+                GenderId = Genders.Ids.Female,
                 BirthDate = new DateTime(1998, 3, 25, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2022, 9, 1, 0, 0, 0, DateTimeKind.Utc),
                 Email = "selin.aydin@sube.com",
@@ -886,7 +886,7 @@ public static class SeedData
                 ErpNo = "ERP005",
                 SicilNo = "SCL005",
                 Title = "Aşçı",
-                Gender = Gender.Male,
+                GenderId = Genders.Ids.Male,
                 BirthDate = new DateTime(1988, 7, 5, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2018, 4, 1, 0, 0, 0, DateTimeKind.Utc),
                 Email = "mustafa.celik@sube.com",
@@ -905,7 +905,7 @@ public static class SeedData
                 ErpNo = "ERP006",
                 SicilNo = "SCL006",
                 Title = "Resepsiyonist",
-                Gender = Gender.Female,
+                GenderId = Genders.Ids.Female,
                 BirthDate = new DateTime(1992, 11, 30, 0, 0, 0, DateTimeKind.Utc),
                 HireDate = new DateTime(2019, 2, 1, 0, 0, 0, DateTimeKind.Utc),
                 Email = "zehra.arslan@sube.com",
@@ -980,109 +980,109 @@ public static class SeedData
         var permissions = new List<Permission>
         {
             // Users Management
-            new Permission { Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", Category = PermissionCategory.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", Category = PermissionCategory.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", Category = PermissionCategory.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Delete", DisplayName = "Kullanıcı Sil", Category = PermissionCategory.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", Category = PermissionCategory.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", CategoryId = PermissionCategories.Ids.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", CategoryId = PermissionCategories.Ids.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", CategoryId = PermissionCategories.Ids.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Delete", DisplayName = "Kullanıcı Sil", CategoryId = PermissionCategories.Ids.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
 
             // Projects
-            new Permission { Code = "Projects.View", DisplayName = "Projeleri Görüntüle", Category = PermissionCategory.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Create", DisplayName = "Proje Oluştur", Category = PermissionCategory.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Edit", DisplayName = "Proje Düzenle", Category = PermissionCategory.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Delete", DisplayName = "Proje Sil", Category = PermissionCategory.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", Category = PermissionCategory.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.View", DisplayName = "Projeleri Görüntüle", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Create", DisplayName = "Proje Oluştur", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Edit", DisplayName = "Proje Düzenle", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Delete", DisplayName = "Proje Sil", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
 
             // Assignments
-            new Permission { Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", Category = PermissionCategory.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Create", DisplayName = "Atama Oluştur", Category = PermissionCategory.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Edit", DisplayName = "Atama Düzenle", Category = PermissionCategory.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Delete", DisplayName = "Atama Sil", Category = PermissionCategory.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", Category = PermissionCategory.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Create", DisplayName = "Atama Oluştur", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Edit", DisplayName = "Atama Düzenle", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Delete", DisplayName = "Atama Sil", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
 
             // Checklists
-            new Permission { Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", Category = PermissionCategory.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", Category = PermissionCategory.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", Category = PermissionCategory.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", Category = PermissionCategory.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
 
             // Reports
-            new Permission { Code = "Reports.View", DisplayName = "Raporları Görüntüle", Category = PermissionCategory.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", Category = PermissionCategory.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Reports.Create", DisplayName = "Rapor Oluştur", Category = PermissionCategory.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.View", DisplayName = "Raporları Görüntüle", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Create", DisplayName = "Rapor Oluştur", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
 
             // Dashboard
-            new Permission { Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", Category = PermissionCategory.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", CategoryId = PermissionCategories.Ids.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
 
             // Permissions Management
-            new Permission { Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", Category = PermissionCategory.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", Category = PermissionCategory.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", CategoryId = PermissionCategories.Ids.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", CategoryId = PermissionCategories.Ids.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
 
             // Evaluations
-            new Permission { Code = "Evaluations.View", DisplayName = "Değerlendirmeleri Görüntüle", Category = PermissionCategory.Evaluations, SortOrder = 70, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Create", DisplayName = "Değerlendirme Oluştur", Category = PermissionCategory.Evaluations, SortOrder = 71, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Edit", DisplayName = "Değerlendirme Düzenle", Category = PermissionCategory.Evaluations, SortOrder = 72, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Delete", DisplayName = "Değerlendirme Sil", Category = PermissionCategory.Evaluations, SortOrder = 73, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.RevertToDraft", DisplayName = "Taslağa Al", Category = PermissionCategory.Evaluations, SortOrder = 74, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.View", DisplayName = "Değerlendirmeleri Görüntüle", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 70, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Create", DisplayName = "Değerlendirme Oluştur", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 71, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Edit", DisplayName = "Değerlendirme Düzenle", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 72, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Delete", DisplayName = "Değerlendirme Sil", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 73, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.RevertToDraft", DisplayName = "Taslağa Al", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 74, CreatedAt = DateTime.UtcNow },
 
             // Customers
-            new Permission { Code = "Customers.View", DisplayName = "Müşterileri Görüntüle", Category = PermissionCategory.Customers, SortOrder = 80, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Create", DisplayName = "Müşteri Oluştur", Category = PermissionCategory.Customers, SortOrder = 81, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Edit", DisplayName = "Müşteri Düzenle", Category = PermissionCategory.Customers, SortOrder = 82, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Delete", DisplayName = "Müşteri Sil", Category = PermissionCategory.Customers, SortOrder = 83, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.View", DisplayName = "Müşterileri Görüntüle", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 80, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Create", DisplayName = "Müşteri Oluştur", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 81, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Edit", DisplayName = "Müşteri Düzenle", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 82, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Delete", DisplayName = "Müşteri Sil", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 83, CreatedAt = DateTime.UtcNow },
 
             // Customer Organizations
-            new Permission { Code = "CustomerOrganizations.View", DisplayName = "Müşteri Organizasyonlarını Görüntüle", Category = PermissionCategory.CustomerOrganizations, SortOrder = 90, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Create", DisplayName = "Müşteri Organizasyonu Oluştur", Category = PermissionCategory.CustomerOrganizations, SortOrder = 91, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Edit", DisplayName = "Müşteri Organizasyonu Düzenle", Category = PermissionCategory.CustomerOrganizations, SortOrder = 92, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Delete", DisplayName = "Müşteri Organizasyonu Sil", Category = PermissionCategory.CustomerOrganizations, SortOrder = 93, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.View", DisplayName = "Müşteri Organizasyonlarını Görüntüle", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 90, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Create", DisplayName = "Müşteri Organizasyonu Oluştur", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 91, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Edit", DisplayName = "Müşteri Organizasyonu Düzenle", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 92, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Delete", DisplayName = "Müşteri Organizasyonu Sil", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 93, CreatedAt = DateTime.UtcNow },
 
             // Customer Personnel
-            new Permission { Code = "CustomerPersonnel.View", DisplayName = "Müşteri Personelini Görüntüle", Category = PermissionCategory.CustomerPersonnel, SortOrder = 100, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Create", DisplayName = "Müşteri Personeli Oluştur", Category = PermissionCategory.CustomerPersonnel, SortOrder = 101, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Edit", DisplayName = "Müşteri Personeli Düzenle", Category = PermissionCategory.CustomerPersonnel, SortOrder = 102, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Delete", DisplayName = "Müşteri Personeli Sil", Category = PermissionCategory.CustomerPersonnel, SortOrder = 103, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.View", DisplayName = "Müşteri Personelini Görüntüle", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 100, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Create", DisplayName = "Müşteri Personeli Oluştur", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 101, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Edit", DisplayName = "Müşteri Personeli Düzenle", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 102, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Delete", DisplayName = "Müşteri Personeli Sil", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 103, CreatedAt = DateTime.UtcNow },
 
             // Personnel (Şube Personeli)
-            new Permission { Code = "Personnel.View", DisplayName = "Personeli Görüntüle", Category = PermissionCategory.Personnel, SortOrder = 110, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Create", DisplayName = "Personel Oluştur", Category = PermissionCategory.Personnel, SortOrder = 111, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Edit", DisplayName = "Personel Düzenle", Category = PermissionCategory.Personnel, SortOrder = 112, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Delete", DisplayName = "Personel Sil", Category = PermissionCategory.Personnel, SortOrder = 113, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.View", DisplayName = "Personeli Görüntüle", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 110, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Create", DisplayName = "Personel Oluştur", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 111, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Edit", DisplayName = "Personel Düzenle", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 112, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Delete", DisplayName = "Personel Sil", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 113, CreatedAt = DateTime.UtcNow },
 
             // Languages
-            new Permission { Code = "Languages.View", DisplayName = "Dilleri Görüntüle", Category = PermissionCategory.Languages, SortOrder = 120, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Create", DisplayName = "Dil Oluştur", Category = PermissionCategory.Languages, SortOrder = 121, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Edit", DisplayName = "Dil Düzenle", Category = PermissionCategory.Languages, SortOrder = 122, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Delete", DisplayName = "Dil Sil", Category = PermissionCategory.Languages, SortOrder = 123, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.View", DisplayName = "Dilleri Görüntüle", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 120, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Create", DisplayName = "Dil Oluştur", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 121, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Edit", DisplayName = "Dil Düzenle", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 122, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Delete", DisplayName = "Dil Sil", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 123, CreatedAt = DateTime.UtcNow },
 
             // Trainings
-            new Permission { Code = "Trainings.View", DisplayName = "Eğitimleri Görüntüle", Category = PermissionCategory.Trainings, SortOrder = 130, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Create", DisplayName = "Eğitim Oluştur", Category = PermissionCategory.Trainings, SortOrder = 131, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Edit", DisplayName = "Eğitim Düzenle", Category = PermissionCategory.Trainings, SortOrder = 132, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Delete", DisplayName = "Eğitim Sil", Category = PermissionCategory.Trainings, SortOrder = 133, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.View", DisplayName = "Eğitimleri Görüntüle", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 130, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Create", DisplayName = "Eğitim Oluştur", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 131, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Edit", DisplayName = "Eğitim Düzenle", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 132, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Delete", DisplayName = "Eğitim Sil", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 133, CreatedAt = DateTime.UtcNow },
 
             // Meetings
-            new Permission { Code = "Meetings.View", DisplayName = "Toplantıları Görüntüle", Category = PermissionCategory.Meetings, SortOrder = 140, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Create", DisplayName = "Toplantı Oluştur", Category = PermissionCategory.Meetings, SortOrder = 141, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Edit", DisplayName = "Toplantı Düzenle", Category = PermissionCategory.Meetings, SortOrder = 142, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Delete", DisplayName = "Toplantı Sil", Category = PermissionCategory.Meetings, SortOrder = 143, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.View", DisplayName = "Toplantıları Görüntüle", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 140, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Create", DisplayName = "Toplantı Oluştur", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 141, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Edit", DisplayName = "Toplantı Düzenle", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 142, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Delete", DisplayName = "Toplantı Sil", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 143, CreatedAt = DateTime.UtcNow },
 
             // Approvals
-            new Permission { Code = "Approvals.View", DisplayName = "Onayları Görüntüle", Category = PermissionCategory.Approvals, SortOrder = 150, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Create", DisplayName = "Onay Oluştur", Category = PermissionCategory.Approvals, SortOrder = 151, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Edit", DisplayName = "Onay Düzenle", Category = PermissionCategory.Approvals, SortOrder = 152, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Delete", DisplayName = "Onay Sil", Category = PermissionCategory.Approvals, SortOrder = 153, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.View", DisplayName = "Onayları Görüntüle", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 150, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Create", DisplayName = "Onay Oluştur", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 151, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Edit", DisplayName = "Onay Düzenle", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 152, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Delete", DisplayName = "Onay Sil", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 153, CreatedAt = DateTime.UtcNow },
 
             // Excel Templates
-            new Permission { Code = "ExcelTemplates.View", DisplayName = "Excel Şablonlarını Görüntüle", Category = PermissionCategory.ExcelTemplates, SortOrder = 160, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Create", DisplayName = "Excel Şablonu Oluştur", Category = PermissionCategory.ExcelTemplates, SortOrder = 161, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Edit", DisplayName = "Excel Şablonu Düzenle", Category = PermissionCategory.ExcelTemplates, SortOrder = 162, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Delete", DisplayName = "Excel Şablonu Sil", Category = PermissionCategory.ExcelTemplates, SortOrder = 163, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.View", DisplayName = "Excel Şablonlarını Görüntüle", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 160, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Create", DisplayName = "Excel Şablonu Oluştur", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 161, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Edit", DisplayName = "Excel Şablonu Düzenle", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 162, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Delete", DisplayName = "Excel Şablonu Sil", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 163, CreatedAt = DateTime.UtcNow },
 
             // Draft Requests (Taslağa Alma Talepleri)
-            new Permission { Code = "DraftRequests.View", DisplayName = "Taslak Taleplerini Görüntüle", Category = PermissionCategory.DraftRequests, SortOrder = 170, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "DraftRequests.Approve", DisplayName = "Taslak Talebini Onayla", Category = PermissionCategory.DraftRequests, SortOrder = 171, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "DraftRequests.Reject", DisplayName = "Taslak Talebini Reddet", Category = PermissionCategory.DraftRequests, SortOrder = 172, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.View", DisplayName = "Taslak Taleplerini Görüntüle", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 170, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.Approve", DisplayName = "Taslak Talebini Onayla", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 171, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.Reject", DisplayName = "Taslak Talebini Reddet", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 172, CreatedAt = DateTime.UtcNow },
         };
 
         context.Permissions.AddRange(permissions);
@@ -1090,15 +1090,15 @@ public static class SeedData
         logger.LogInformation($"Created {permissions.Count} permissions");
 
         // Role-Permission mappings - Admin gets everything
-        var adminRole = UserRole.Admin;
+        var adminRoleId = UserRoles.Ids.Admin;
         foreach (var permission in permissions)
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Role = adminRole,
+                RoleId = adminRoleId,
                 PermissionId = permission.Id,
                 IsGranted = true,
-                Scope = PermissionScope.All,
+                ScopeId = PermissionScopes.Ids.All,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -1115,10 +1115,10 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Role = UserRole.QualitySpecialist,
+                RoleId = UserRoles.Ids.QualitySpecialist,
                 PermissionId = permission.Id,
                 IsGranted = true,
-                Scope = PermissionScope.Branch,
+                ScopeId = PermissionScopes.Ids.Branch,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -1132,10 +1132,10 @@ public static class SeedData
         {
             context.RolePermissions.Add(new RolePermission
             {
-                Role = UserRole.FieldWorker,
+                RoleId = UserRoles.Ids.FieldWorker,
                 PermissionId = permission.Id,
                 IsGranted = true,
-                Scope = PermissionScope.Own,
+                ScopeId = PermissionScopes.Ids.Own,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -1180,16 +1180,16 @@ public static class SeedData
         {
             // Admin rolü için kontrol et
             var existingAdminMapping = await context.RolePermissions
-                .AnyAsync(rp => rp.Role == UserRole.Admin && rp.PermissionId == permission.Id);
+                .AnyAsync(rp => rp.RoleId == UserRoles.Ids.Admin && rp.PermissionId == permission.Id);
 
             if (!existingAdminMapping)
             {
                 context.RolePermissions.Add(new RolePermission
                 {
-                    Role = UserRole.Admin,
+                    RoleId = UserRoles.Ids.Admin,
                     PermissionId = permission.Id,
                     IsGranted = true,
-                    Scope = PermissionScope.All,
+                    ScopeId = PermissionScopes.Ids.All,
                     CreatedAt = DateTime.UtcNow
                 });
             }
@@ -1209,109 +1209,109 @@ public static class SeedData
         return new List<Permission>
         {
             // Users Management
-            new Permission { Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", Category = PermissionCategory.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", Category = PermissionCategory.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", Category = PermissionCategory.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Delete", DisplayName = "Kullanıcı Sil", Category = PermissionCategory.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", Category = PermissionCategory.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.View", DisplayName = "Kullanıcıları Görüntüle", CategoryId = PermissionCategories.Ids.Users, SortOrder = 1, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Create", DisplayName = "Kullanıcı Oluştur", CategoryId = PermissionCategories.Ids.Users, SortOrder = 2, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Edit", DisplayName = "Kullanıcı Düzenle", CategoryId = PermissionCategories.Ids.Users, SortOrder = 3, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Delete", DisplayName = "Kullanıcı Sil", CategoryId = PermissionCategories.Ids.Users, SortOrder = 4, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Users.Manage", DisplayName = "Kullanıcı Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Users, SortOrder = 5, CreatedAt = DateTime.UtcNow },
 
             // Projects
-            new Permission { Code = "Projects.View", DisplayName = "Projeleri Görüntüle", Category = PermissionCategory.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Create", DisplayName = "Proje Oluştur", Category = PermissionCategory.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Edit", DisplayName = "Proje Düzenle", Category = PermissionCategory.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Delete", DisplayName = "Proje Sil", Category = PermissionCategory.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", Category = PermissionCategory.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.View", DisplayName = "Projeleri Görüntüle", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 10, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Create", DisplayName = "Proje Oluştur", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 11, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Edit", DisplayName = "Proje Düzenle", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 12, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Delete", DisplayName = "Proje Sil", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 13, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Projects.Manage", DisplayName = "Proje Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Projects, SortOrder = 14, CreatedAt = DateTime.UtcNow },
 
             // Assignments
-            new Permission { Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", Category = PermissionCategory.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Create", DisplayName = "Atama Oluştur", Category = PermissionCategory.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Edit", DisplayName = "Atama Düzenle", Category = PermissionCategory.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Delete", DisplayName = "Atama Sil", Category = PermissionCategory.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", Category = PermissionCategory.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.View", DisplayName = "Atamaları Görüntüle", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 20, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Create", DisplayName = "Atama Oluştur", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 21, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Edit", DisplayName = "Atama Düzenle", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 22, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Delete", DisplayName = "Atama Sil", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 23, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Assignments.Manage", DisplayName = "Atama Yönetimi (Tam Yetki)", CategoryId = PermissionCategories.Ids.Assignments, SortOrder = 24, CreatedAt = DateTime.UtcNow },
 
             // Checklists
-            new Permission { Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", Category = PermissionCategory.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", Category = PermissionCategory.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", Category = PermissionCategory.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", Category = PermissionCategory.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.View", DisplayName = "Kontrol Listelerini Görüntüle", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 30, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Create", DisplayName = "Kontrol Listesi Oluştur", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 31, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Edit", DisplayName = "Kontrol Listesi Düzenle", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 32, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Checklists.Delete", DisplayName = "Kontrol Listesi Sil", CategoryId = PermissionCategories.Ids.Checklists, SortOrder = 33, CreatedAt = DateTime.UtcNow },
 
             // Reports
-            new Permission { Code = "Reports.View", DisplayName = "Raporları Görüntüle", Category = PermissionCategory.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", Category = PermissionCategory.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Reports.Create", DisplayName = "Rapor Oluştur", Category = PermissionCategory.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.View", DisplayName = "Raporları Görüntüle", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 40, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Export", DisplayName = "Rapor Dışa Aktar", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 41, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Reports.Create", DisplayName = "Rapor Oluştur", CategoryId = PermissionCategories.Ids.Reports, SortOrder = 42, CreatedAt = DateTime.UtcNow },
 
             // Dashboard
-            new Permission { Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", Category = PermissionCategory.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Dashboard.View", DisplayName = "Dashboard Görüntüle", CategoryId = PermissionCategories.Ids.Dashboard, SortOrder = 50, CreatedAt = DateTime.UtcNow },
 
             // Permissions Management
-            new Permission { Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", Category = PermissionCategory.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", Category = PermissionCategory.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.View", DisplayName = "Yetkileri Görüntüle", CategoryId = PermissionCategories.Ids.Settings, SortOrder = 60, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Permissions.Manage", DisplayName = "Yetki Yönetimi", CategoryId = PermissionCategories.Ids.Settings, SortOrder = 61, CreatedAt = DateTime.UtcNow },
 
             // Evaluations
-            new Permission { Code = "Evaluations.View", DisplayName = "Değerlendirmeleri Görüntüle", Category = PermissionCategory.Evaluations, SortOrder = 70, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Create", DisplayName = "Değerlendirme Oluştur", Category = PermissionCategory.Evaluations, SortOrder = 71, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Edit", DisplayName = "Değerlendirme Düzenle", Category = PermissionCategory.Evaluations, SortOrder = 72, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.Delete", DisplayName = "Değerlendirme Sil", Category = PermissionCategory.Evaluations, SortOrder = 73, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Evaluations.RevertToDraft", DisplayName = "Taslağa Al", Category = PermissionCategory.Evaluations, SortOrder = 74, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.View", DisplayName = "Değerlendirmeleri Görüntüle", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 70, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Create", DisplayName = "Değerlendirme Oluştur", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 71, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Edit", DisplayName = "Değerlendirme Düzenle", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 72, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.Delete", DisplayName = "Değerlendirme Sil", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 73, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Evaluations.RevertToDraft", DisplayName = "Taslağa Al", CategoryId = PermissionCategories.Ids.Evaluations, SortOrder = 74, CreatedAt = DateTime.UtcNow },
 
             // Customers
-            new Permission { Code = "Customers.View", DisplayName = "Müşterileri Görüntüle", Category = PermissionCategory.Customers, SortOrder = 80, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Create", DisplayName = "Müşteri Oluştur", Category = PermissionCategory.Customers, SortOrder = 81, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Edit", DisplayName = "Müşteri Düzenle", Category = PermissionCategory.Customers, SortOrder = 82, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Customers.Delete", DisplayName = "Müşteri Sil", Category = PermissionCategory.Customers, SortOrder = 83, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.View", DisplayName = "Müşterileri Görüntüle", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 80, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Create", DisplayName = "Müşteri Oluştur", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 81, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Edit", DisplayName = "Müşteri Düzenle", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 82, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Customers.Delete", DisplayName = "Müşteri Sil", CategoryId = PermissionCategories.Ids.Customers, SortOrder = 83, CreatedAt = DateTime.UtcNow },
 
             // Customer Organizations
-            new Permission { Code = "CustomerOrganizations.View", DisplayName = "Müşteri Organizasyonlarını Görüntüle", Category = PermissionCategory.CustomerOrganizations, SortOrder = 90, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Create", DisplayName = "Müşteri Organizasyonu Oluştur", Category = PermissionCategory.CustomerOrganizations, SortOrder = 91, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Edit", DisplayName = "Müşteri Organizasyonu Düzenle", Category = PermissionCategory.CustomerOrganizations, SortOrder = 92, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerOrganizations.Delete", DisplayName = "Müşteri Organizasyonu Sil", Category = PermissionCategory.CustomerOrganizations, SortOrder = 93, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.View", DisplayName = "Müşteri Organizasyonlarını Görüntüle", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 90, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Create", DisplayName = "Müşteri Organizasyonu Oluştur", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 91, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Edit", DisplayName = "Müşteri Organizasyonu Düzenle", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 92, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerOrganizations.Delete", DisplayName = "Müşteri Organizasyonu Sil", CategoryId = PermissionCategories.Ids.CustomerOrganizations, SortOrder = 93, CreatedAt = DateTime.UtcNow },
 
             // Customer Personnel
-            new Permission { Code = "CustomerPersonnel.View", DisplayName = "Müşteri Personelini Görüntüle", Category = PermissionCategory.CustomerPersonnel, SortOrder = 100, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Create", DisplayName = "Müşteri Personeli Oluştur", Category = PermissionCategory.CustomerPersonnel, SortOrder = 101, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Edit", DisplayName = "Müşteri Personeli Düzenle", Category = PermissionCategory.CustomerPersonnel, SortOrder = 102, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "CustomerPersonnel.Delete", DisplayName = "Müşteri Personeli Sil", Category = PermissionCategory.CustomerPersonnel, SortOrder = 103, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.View", DisplayName = "Müşteri Personelini Görüntüle", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 100, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Create", DisplayName = "Müşteri Personeli Oluştur", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 101, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Edit", DisplayName = "Müşteri Personeli Düzenle", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 102, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "CustomerPersonnel.Delete", DisplayName = "Müşteri Personeli Sil", CategoryId = PermissionCategories.Ids.CustomerPersonnel, SortOrder = 103, CreatedAt = DateTime.UtcNow },
 
             // Personnel (Şube Personeli)
-            new Permission { Code = "Personnel.View", DisplayName = "Personeli Görüntüle", Category = PermissionCategory.Personnel, SortOrder = 110, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Create", DisplayName = "Personel Oluştur", Category = PermissionCategory.Personnel, SortOrder = 111, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Edit", DisplayName = "Personel Düzenle", Category = PermissionCategory.Personnel, SortOrder = 112, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Personnel.Delete", DisplayName = "Personel Sil", Category = PermissionCategory.Personnel, SortOrder = 113, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.View", DisplayName = "Personeli Görüntüle", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 110, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Create", DisplayName = "Personel Oluştur", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 111, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Edit", DisplayName = "Personel Düzenle", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 112, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Personnel.Delete", DisplayName = "Personel Sil", CategoryId = PermissionCategories.Ids.Personnel, SortOrder = 113, CreatedAt = DateTime.UtcNow },
 
             // Languages
-            new Permission { Code = "Languages.View", DisplayName = "Dilleri Görüntüle", Category = PermissionCategory.Languages, SortOrder = 120, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Create", DisplayName = "Dil Oluştur", Category = PermissionCategory.Languages, SortOrder = 121, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Edit", DisplayName = "Dil Düzenle", Category = PermissionCategory.Languages, SortOrder = 122, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Languages.Delete", DisplayName = "Dil Sil", Category = PermissionCategory.Languages, SortOrder = 123, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.View", DisplayName = "Dilleri Görüntüle", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 120, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Create", DisplayName = "Dil Oluştur", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 121, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Edit", DisplayName = "Dil Düzenle", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 122, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Languages.Delete", DisplayName = "Dil Sil", CategoryId = PermissionCategories.Ids.Languages, SortOrder = 123, CreatedAt = DateTime.UtcNow },
 
             // Trainings
-            new Permission { Code = "Trainings.View", DisplayName = "Eğitimleri Görüntüle", Category = PermissionCategory.Trainings, SortOrder = 130, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Create", DisplayName = "Eğitim Oluştur", Category = PermissionCategory.Trainings, SortOrder = 131, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Edit", DisplayName = "Eğitim Düzenle", Category = PermissionCategory.Trainings, SortOrder = 132, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Trainings.Delete", DisplayName = "Eğitim Sil", Category = PermissionCategory.Trainings, SortOrder = 133, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.View", DisplayName = "Eğitimleri Görüntüle", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 130, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Create", DisplayName = "Eğitim Oluştur", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 131, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Edit", DisplayName = "Eğitim Düzenle", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 132, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Trainings.Delete", DisplayName = "Eğitim Sil", CategoryId = PermissionCategories.Ids.Trainings, SortOrder = 133, CreatedAt = DateTime.UtcNow },
 
             // Meetings
-            new Permission { Code = "Meetings.View", DisplayName = "Toplantıları Görüntüle", Category = PermissionCategory.Meetings, SortOrder = 140, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Create", DisplayName = "Toplantı Oluştur", Category = PermissionCategory.Meetings, SortOrder = 141, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Edit", DisplayName = "Toplantı Düzenle", Category = PermissionCategory.Meetings, SortOrder = 142, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Meetings.Delete", DisplayName = "Toplantı Sil", Category = PermissionCategory.Meetings, SortOrder = 143, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.View", DisplayName = "Toplantıları Görüntüle", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 140, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Create", DisplayName = "Toplantı Oluştur", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 141, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Edit", DisplayName = "Toplantı Düzenle", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 142, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Meetings.Delete", DisplayName = "Toplantı Sil", CategoryId = PermissionCategories.Ids.Meetings, SortOrder = 143, CreatedAt = DateTime.UtcNow },
 
             // Approvals
-            new Permission { Code = "Approvals.View", DisplayName = "Onayları Görüntüle", Category = PermissionCategory.Approvals, SortOrder = 150, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Create", DisplayName = "Onay Oluştur", Category = PermissionCategory.Approvals, SortOrder = 151, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Edit", DisplayName = "Onay Düzenle", Category = PermissionCategory.Approvals, SortOrder = 152, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "Approvals.Delete", DisplayName = "Onay Sil", Category = PermissionCategory.Approvals, SortOrder = 153, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.View", DisplayName = "Onayları Görüntüle", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 150, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Create", DisplayName = "Onay Oluştur", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 151, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Edit", DisplayName = "Onay Düzenle", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 152, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "Approvals.Delete", DisplayName = "Onay Sil", CategoryId = PermissionCategories.Ids.Approvals, SortOrder = 153, CreatedAt = DateTime.UtcNow },
 
             // Excel Templates
-            new Permission { Code = "ExcelTemplates.View", DisplayName = "Excel Şablonlarını Görüntüle", Category = PermissionCategory.ExcelTemplates, SortOrder = 160, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Create", DisplayName = "Excel Şablonu Oluştur", Category = PermissionCategory.ExcelTemplates, SortOrder = 161, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Edit", DisplayName = "Excel Şablonu Düzenle", Category = PermissionCategory.ExcelTemplates, SortOrder = 162, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "ExcelTemplates.Delete", DisplayName = "Excel Şablonu Sil", Category = PermissionCategory.ExcelTemplates, SortOrder = 163, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.View", DisplayName = "Excel Şablonlarını Görüntüle", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 160, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Create", DisplayName = "Excel Şablonu Oluştur", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 161, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Edit", DisplayName = "Excel Şablonu Düzenle", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 162, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "ExcelTemplates.Delete", DisplayName = "Excel Şablonu Sil", CategoryId = PermissionCategories.Ids.ExcelTemplates, SortOrder = 163, CreatedAt = DateTime.UtcNow },
 
             // Draft Requests (Taslağa Alma Talepleri)
-            new Permission { Code = "DraftRequests.View", DisplayName = "Taslak Taleplerini Görüntüle", Category = PermissionCategory.DraftRequests, SortOrder = 170, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "DraftRequests.Approve", DisplayName = "Taslak Talebini Onayla", Category = PermissionCategory.DraftRequests, SortOrder = 171, CreatedAt = DateTime.UtcNow },
-            new Permission { Code = "DraftRequests.Reject", DisplayName = "Taslak Talebini Reddet", Category = PermissionCategory.DraftRequests, SortOrder = 172, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.View", DisplayName = "Taslak Taleplerini Görüntüle", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 170, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.Approve", DisplayName = "Taslak Talebini Onayla", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 171, CreatedAt = DateTime.UtcNow },
+            new Permission { Code = "DraftRequests.Reject", DisplayName = "Taslak Talebini Reddet", CategoryId = PermissionCategories.Ids.DraftRequests, SortOrder = 172, CreatedAt = DateTime.UtcNow },
         };
     }
 
@@ -1330,7 +1330,7 @@ public static class SeedData
             {
                 Key = "General.DemoMode",
                 Value = "true",
-                ValueType = SettingValueType.Bool,
+                ValueTypeId = SettingValueTypes.Ids.Bool,
                 Category = "General",
                 Description = "Demo modu aktif. True ise detaylı hata mesajları gösterilir.",
                 DisplayOrder = 1,
@@ -1340,7 +1340,7 @@ public static class SeedData
             {
                 Key = "General.AppName",
                 Value = "Gizli Müşteri Değerlendirme Sistemi",
-                ValueType = SettingValueType.String,
+                ValueTypeId = SettingValueTypes.Ids.String,
                 Category = "General",
                 Description = "Uygulama adı",
                 DisplayOrder = 2,
@@ -1350,7 +1350,7 @@ public static class SeedData
             {
                 Key = "General.Version",
                 Value = "1.0.0",
-                ValueType = SettingValueType.String,
+                ValueTypeId = SettingValueTypes.Ids.String,
                 Category = "General",
                 Description = "Uygulama versiyonu",
                 DisplayOrder = 3,
@@ -1360,7 +1360,7 @@ public static class SeedData
             {
                 Key = "General.MaintenanceMode",
                 Value = "false",
-                ValueType = SettingValueType.Bool,
+                ValueTypeId = SettingValueTypes.Ids.Bool,
                 Category = "General",
                 Description = "Bakım modu aktif mi?",
                 DisplayOrder = 4,
@@ -1372,7 +1372,7 @@ public static class SeedData
             {
                 Key = "Security.MaxLoginAttempts",
                 Value = "5",
-                ValueType = SettingValueType.Int,
+                ValueTypeId = SettingValueTypes.Ids.Int,
                 Category = "Security",
                 Description = "Maksimum başarısız giriş denemesi sayısı",
                 DisplayOrder = 1,
@@ -1382,7 +1382,7 @@ public static class SeedData
             {
                 Key = "Security.LockoutDurationMinutes",
                 Value = "15",
-                ValueType = SettingValueType.Int,
+                ValueTypeId = SettingValueTypes.Ids.Int,
                 Category = "Security",
                 Description = "Hesap kilitleme süresi (dakika)",
                 DisplayOrder = 2,
@@ -1392,7 +1392,7 @@ public static class SeedData
             {
                 Key = "Security.SessionTimeoutMinutes",
                 Value = "60",
-                ValueType = SettingValueType.Int,
+                ValueTypeId = SettingValueTypes.Ids.Int,
                 Category = "Security",
                 Description = "Oturum zaman aşımı süresi (dakika)",
                 DisplayOrder = 3,
@@ -1404,7 +1404,7 @@ public static class SeedData
             {
                 Key = "CustomerPortal.Enabled",
                 Value = "true",
-                ValueType = SettingValueType.Bool,
+                ValueTypeId = SettingValueTypes.Ids.Bool,
                 Category = "CustomerPortal",
                 Description = "Müşteri portalı aktif mi?",
                 DisplayOrder = 1,
@@ -1414,7 +1414,7 @@ public static class SeedData
             {
                 Key = "CustomerPortal.AllowSelfRegistration",
                 Value = "false",
-                ValueType = SettingValueType.Bool,
+                ValueTypeId = SettingValueTypes.Ids.Bool,
                 Category = "CustomerPortal",
                 Description = "Müşteri personeli kendi kaydını oluşturabilir mi?",
                 DisplayOrder = 2,

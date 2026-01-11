@@ -10,27 +10,27 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Müşteri Organizasyonu", Description = "Müşteri organizasyonları için Excel import/export", IsAvailable = true)]
 public class CustomerOrganization : BaseEntity
 {
-    [ExcelColumn("Organizasyon Adı", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Organizasyon Adı", 1, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Organizasyonun adı", SampleValue = "Concentrix")]
     public string Name { get; set; } = string.Empty;
 
-    [ExcelColumn("Organizasyon Kodu", 2, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Organizasyon Kodu", 2, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Organizasyon kodu", SampleValue = "CONC-001")]
     public string? Code { get; set; }
 
-    [ExcelColumn("Açıklama", 3, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Açıklama", 3, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Organizasyon açıklaması")]
     public string? Description { get; set; }
 
-    [ExcelColumn("Seviye", 4, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Seviye", 4, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Hiyerarşi seviyesi (0=kök)", SampleValue = "0")]
     public int Level { get; set; } = 0;
 
-    [ExcelColumn("Sıra", 5, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Sıra", 5, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Görüntüleme sırası", SampleValue = "1")]
     public int Order { get; set; } = 0;
 
-    [ExcelColumn("Aktif", 6, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("Aktif", 6, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Organizasyon aktif mi?", SampleValue = "true")]
     public bool IsActive { get; set; } = true;
 

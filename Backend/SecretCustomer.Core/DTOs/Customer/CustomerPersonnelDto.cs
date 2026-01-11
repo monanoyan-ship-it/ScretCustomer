@@ -20,7 +20,7 @@ public class CustomerPersonnelDto
     public string? PhoneNumber { get; set; }
     public string? Department { get; set; }
     public string? Title { get; set; }
-    public CustomerPersonnelRole Role { get; set; }
+    public string Role { get; set; } = string.Empty;
     public string RoleName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
@@ -71,7 +71,7 @@ public class CreateCustomerPersonnelDto
     public string? Title { get; set; }
 
     [Required(ErrorMessage = "Rol seçimi zorunludur")]
-    public CustomerPersonnelRole Role { get; set; }
+    public string Role { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
 
@@ -113,7 +113,7 @@ public class UpdateCustomerPersonnelDto
     public string? Title { get; set; }
 
     [Required(ErrorMessage = "Rol seçimi zorunludur")]
-    public CustomerPersonnelRole Role { get; set; }
+    public string Role { get; set; } = string.Empty;
 
     public bool IsActive { get; set; }
 

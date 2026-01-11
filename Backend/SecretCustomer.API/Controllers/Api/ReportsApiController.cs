@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Report;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -11,18 +12,87 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ReportsApiController : BaseApiController
 {
     private readonly IReportService _reportService;
+    private readonly ICustomerService _customerService;
+    private readonly ICustomerOrganizationService _organizationService;
+    private readonly IProjectService _projectService;
+    private readonly IUserService _userService;
     private readonly ILogger<ReportsApiController> _logger;
     private readonly ILocalizationService _localizationService;
 
     public ReportsApiController(
         IReportService reportService,
+        ICustomerService customerService,
+        ICustomerOrganizationService organizationService,
+        IProjectService projectService,
+        IUserService userService,
         ILogger<ReportsApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _reportService = reportService;
+        _customerService = customerService;
+        _organizationService = organizationService;
+        _projectService = projectService;
+        _userService = userService;
         _logger = logger;
         _localizationService = localizationService;
+    }
+
+    /// <summary>
+    /// Filtreler için lookup verileri (müşteri, organizasyon, proje, değerlendirici)
+    /// </summary>
+    [HttpGet("lookups")]
+    public async Task<IActionResult> GetLookups([FromQuery] int? customerId = null)
+    {
+        try
+        {
+            var customers = await _customerService.GetActiveAsync();
+            var projects = await _projectService.GetAllAsync(includeInactive: true); // Listenings filtresi için tüm projeler
+            var evaluators = await _userService.GetByRoleIdAsync(UserRoles.Ids.QualitySpecialist);
+
+            // DateRangeTypes with localized names
+            var dateRanges = new List<object>();
+            foreach (var d in DateRangeTypes.All)
+            {
+                dateRanges.Add(new
+                {
+                    d.Id,
+                    d.SystemName,
+                    Name = await _localizationService.GetResourceAsync(d.NameResourceKey)
+                });
+            }
+
+            return Ok(new
+            {
+                customers = customers.Select(c => new { c.Id, c.CompanyName }),
+                projects = projects.Select(p => new { p.Id, p.Name, p.Code, p.CustomerId }),
+                evaluators = evaluators.Select(e => new { e.Id, Name = $"{e.FirstName} {e.LastName}" }),
+                dateRanges
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading report lookups");
+            return StatusCode(500, CreateErrorResponse("Lookup verileri yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Organizasyon listesi (müşteriye göre)
+    /// </summary>
+    [HttpGet("organizations/{customerId}")]
+    public async Task<IActionResult> GetOrganizationsByCustomer(int customerId)
+    {
+        try
+        {
+            var organizations = await _organizationService.GetByCustomerIdAsync(customerId);
+            return Ok(organizations.Select(o => new { o.Id, o.Name }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading organizations for customer {CustomerId}", customerId);
+            return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken hata oluştu.", ex));
+        }
     }
 
     /// <summary>

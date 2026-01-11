@@ -12,13 +12,23 @@ public class CustomerOrganizationService : ICustomerOrganizationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
+    private readonly ILocalizationService _localizationService;
 
     public CustomerOrganizationService(
         ApplicationDbContext context,
-        ICustomerPersonnelOrganizationRepository personnelOrgRepository)
+        ICustomerPersonnelOrganizationRepository personnelOrgRepository,
+        ILocalizationService localizationService)
     {
         _context = context;
         _personnelOrgRepository = personnelOrgRepository;
+        _localizationService = localizationService;
+    }
+
+    private async Task<string> GetRoleNameAsync(int roleId)
+    {
+        var item = CustomerPersonnelRoles.GetById(roleId);
+        if (item == null) return "Bilinmeyen";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
     }
 
     public async Task<object> DebugCheckPersonnelAsync()
@@ -46,8 +56,8 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             {
                 PersonnelId = p.Id,
                 FullName = p.FirstName + " " + p.LastName,
-                Role = (int)p.Role,
-                RoleName = p.Role.ToString(),
+                Role = p.RoleId,
+                RoleName = CustomerPersonnelRoles.GetById(p.RoleId)!.SystemName,
                 OrganizationCount = p.OrganizationAssignments.Count,
                 Organizations = p.OrganizationAssignments.Select(oa => new {
                     OrgId = oa.CustomerOrganizationId,
@@ -384,37 +394,49 @@ public class CustomerOrganizationService : ICustomerOrganizationService
 
         // Süpervizörler (Manager ve Supervisor rolleri) - unique personel listesinden
         var supervisorPersonnel = uniquePersonnel
-            .Where(p => p.Role == CustomerPersonnelRole.CustomerManager || p.Role == CustomerPersonnelRole.CustomerSupervisor)
+            .Where(p => p.RoleId == CustomerPersonnelRoles.Ids.Manager || p.RoleId == CustomerPersonnelRoles.Ids.Supervisor)
             .ToList();
 
-        var supervisors = supervisorPersonnel
-            .Select(p => {
-                var teamMembers = supervisorAssignments.TryGetValue(p.Id, out var members)
-                    ? members.Select(tm => MapToPersonnelItemSimple(tm)).ToList()
-                    : new List<OrganizationPersonnelItemDto>();
-
-                return new OrganizationPersonnelItemDto
+        var supervisors = new List<OrganizationPersonnelItemDto>();
+        foreach (var p in supervisorPersonnel)
+        {
+            var teamMembers = new List<OrganizationPersonnelItemDto>();
+            if (supervisorAssignments.TryGetValue(p.Id, out var members))
+            {
+                foreach (var tm in members)
                 {
-                    Id = p.Id,
-                    FullName = $"{p.FirstName} {p.LastName}".Trim(),
-                    Email = p.Email,
-                    RoleName = GetRoleName(p.Role),
-                    SupervisorId = null,
-                    TeamMembers = teamMembers
-                };
-            })
+                    teamMembers.Add(await MapToPersonnelItemSimpleAsync(tm));
+                }
+            }
+
+            supervisors.Add(new OrganizationPersonnelItemDto
+            {
+                Id = p.Id,
+                FullName = $"{p.FirstName} {p.LastName}".Trim(),
+                Email = p.Email,
+                RoleName = await GetRoleNameAsync(p.RoleId),
+                SupervisorId = null,
+                TeamMembers = teamMembers
+            });
+        }
+        supervisors = supervisors
             .OrderByDescending(s => s.TeamMembers.Count == 0) // Org yöneticisi (altında kimse yok) en üste
             .ThenBy(s => s.FullName)
             .ToList();
 
         // Bağımsız operatörler (süpervizörü olmayan - SupervisorId = null olan atamalar)
         // Aynı personel birden fazla bağımsız kayıt olarak görünmemeli
-        var independentOperators = allAssignments
-            .Where(pa => pa.CustomerPersonnel?.Role == CustomerPersonnelRole.CustomerOperator && pa.SupervisorId == null)
+        var independentOperatorPersonnel = allAssignments
+            .Where(pa => pa.CustomerPersonnel != null && pa.CustomerPersonnel.RoleId == CustomerPersonnelRoles.Ids.Operator && pa.SupervisorId == null)
             .Select(pa => pa.CustomerPersonnel!)
             .DistinctBy(p => p.Id)
-            .Select(p => MapToPersonnelItemSimple(p))
             .ToList();
+
+        var independentOperators = new List<OrganizationPersonnelItemDto>();
+        foreach (var p in independentOperatorPersonnel)
+        {
+            independentOperators.Add(await MapToPersonnelItemSimpleAsync(p));
+        }
 
         return new OrganizationPersonnelListDto
         {
@@ -425,14 +447,14 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         };
     }
 
-    private OrganizationPersonnelItemDto MapToPersonnelItemSimple(CustomerPersonnel p)
+    private async Task<OrganizationPersonnelItemDto> MapToPersonnelItemSimpleAsync(CustomerPersonnel p)
     {
         return new OrganizationPersonnelItemDto
         {
             Id = p.Id,
             FullName = $"{p.FirstName} {p.LastName}".Trim(),
             Email = p.Email,
-            RoleName = GetRoleName(p.Role),
+            RoleName = await GetRoleNameAsync(p.RoleId),
             SupervisorId = null,
             TeamMembers = new List<OrganizationPersonnelItemDto>()
         };
@@ -446,22 +468,24 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             .Include(p => p.OrganizationAssignments)
                 .ThenInclude(oa => oa.Supervisor)
             .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
-            .OrderBy(p => p.Role)
+            .OrderBy(p => p.RoleId)
             .ThenBy(p => p.FirstName)
             .ThenBy(p => p.LastName)
             .ToListAsync();
 
-        return personnel.Select(p => {
+        var result = new List<OrganizationPersonnelSummaryDto>();
+        foreach (var p in personnel)
+        {
             // İlk organizasyon atamasından supervisor ve org bilgisini al
             var firstAssignment = p.OrganizationAssignments?.FirstOrDefault(oa => !oa.IsDeleted);
-            return new OrganizationPersonnelSummaryDto
+            result.Add(new OrganizationPersonnelSummaryDto
             {
                 Id = p.Id,
                 FullName = $"{p.FirstName} {p.LastName}",
                 Username = p.Username,
                 Email = p.Email,
-                RoleName = GetRoleName(p.Role),
-                Role = (int)p.Role,
+                RoleName = await GetRoleNameAsync(p.RoleId),
+                Role = p.RoleId,
                 IsActive = p.IsActive,
                 SupervisorId = firstAssignment?.SupervisorId,
                 SupervisorName = firstAssignment?.Supervisor != null
@@ -471,8 +495,9 @@ public class CustomerOrganizationService : ICustomerOrganizationService
                 OrganizationName = firstAssignment?.CustomerOrganization?.Name,
                 OrganizationCount = p.OrganizationAssignments?.Count(oa => !oa.IsDeleted) ?? 0,
                 ManagedOrganizationIds = new List<int>() // CustomerOrganizationManagers tablosu kaldırıldı
-            };
-        });
+            });
+        }
+        return result;
     }
 
     public async Task AssignPersonnelToOrganizationAsync(AssignPersonnelToOrganizationDto dto)
@@ -798,15 +823,20 @@ public class CustomerOrganizationService : ICustomerOrganizationService
     }
 
     // V2: Junction table'dan supervisor bilgisini kullanan versiyon
-    private OrganizationPersonnelItemDto MapToPersonnelItemV2(
+    private async Task<OrganizationPersonnelItemDto> MapToPersonnelItemV2Async(
         CustomerPersonnel p,
         List<CustomerPersonnel> allPersonnel,
         Dictionary<int, int?> supervisorMap)
     {
         // Bu organizasyonda bu süpervizöre bağlı operatörleri bul
-        var teamMembers = allPersonnel
+        var teamMemberPersonnel = allPersonnel
             .Where(op => supervisorMap.TryGetValue(op.Id, out var supId) && supId == p.Id)
-            .Select(op => new OrganizationPersonnelItemDto
+            .ToList();
+
+        var teamMembers = new List<OrganizationPersonnelItemDto>();
+        foreach (var op in teamMemberPersonnel)
+        {
+            teamMembers.Add(new OrganizationPersonnelItemDto
             {
                 Id = op.Id,
                 FirstName = op.FirstName,
@@ -817,14 +847,14 @@ public class CustomerOrganizationService : ICustomerOrganizationService
                 PhoneNumber = op.PhoneNumber,
                 Department = op.Department,
                 Title = op.Title,
-                RoleName = GetRoleName(op.Role),
-                Role = (int)op.Role,
+                RoleName = await GetRoleNameAsync(op.RoleId),
+                Role = op.RoleId,
                 IsActive = op.IsActive,
                 SupervisorId = p.Id,
                 SupervisorName = $"{p.FirstName} {p.LastName}",
                 TeamMembers = new List<OrganizationPersonnelItemDto>()
-            })
-            .ToList();
+            });
+        }
 
         // Bu personelin bu org'daki supervisor'ı
         supervisorMap.TryGetValue(p.Id, out var mySupervisorId);
@@ -843,23 +873,12 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             PhoneNumber = p.PhoneNumber,
             Department = p.Department,
             Title = p.Title,
-            RoleName = GetRoleName(p.Role),
-            Role = (int)p.Role,
+            RoleName = await GetRoleNameAsync(p.RoleId),
+            Role = p.RoleId,
             IsActive = p.IsActive,
             SupervisorId = mySupervisorId,
             SupervisorName = mySupervisor != null ? $"{mySupervisor.FirstName} {mySupervisor.LastName}" : null,
             TeamMembers = teamMembers
-        };
-    }
-
-    private static string GetRoleName(CustomerPersonnelRole role)
-    {
-        return role switch
-        {
-            CustomerPersonnelRole.CustomerManager => "Müşteri Yöneticisi",
-            CustomerPersonnelRole.CustomerSupervisor => "Müşteri Süpervizörü",
-            CustomerPersonnelRole.CustomerOperator => "Müşteri Operatörü",
-            _ => role.ToString()
         };
     }
 

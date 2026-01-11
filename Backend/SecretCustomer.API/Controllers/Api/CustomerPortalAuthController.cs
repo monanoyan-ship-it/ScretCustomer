@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Services.Helpers;
 
@@ -90,7 +91,7 @@ public class CustomerPortalAuthController : ControllerBase
                     username = personnel.Username,
                     fullName = personnel.FullName,
                     email = personnel.Email,
-                    role = personnel.Role.ToString(),
+                    role = CustomerPersonnelRoles.GetById(personnel.RoleId)?.SystemName ?? "",
                     customerId = personnel.CustomerId,
                     customerName = personnel.Customer?.CompanyName ?? ""
                 }

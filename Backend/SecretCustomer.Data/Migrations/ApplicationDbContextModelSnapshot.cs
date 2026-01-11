@@ -62,17 +62,21 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Summary")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("TargetRoles")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("TypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Type");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -102,8 +106,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<int>("AppliedPenaltyType")
-                        .HasColumnType("integer");
+                    b.Property<int>("AppliedPenaltyTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("AppliedPenaltyType");
 
                     b.Property<string>("AttachmentFileName")
                         .HasColumnType("text");
@@ -245,8 +250,9 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ValueType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ValueTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ValueType");
 
                     b.HasKey("Id");
 
@@ -267,8 +273,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("ApprovalLevel")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ApprovalType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ApprovalTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ApprovalType");
 
                     b.Property<int?>("ApprovedByUserId")
                         .HasColumnType("integer");
@@ -294,18 +301,21 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<int>("PriorityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Priority");
 
                     b.Property<string>("ReferenceNumber")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int?>("RelatedEntityId")
                         .HasColumnType("integer");
 
                     b.Property<string>("RelatedEntityType")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("timestamp with time zone");
@@ -320,10 +330,12 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ResponseNote")
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -337,11 +349,18 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ApprovalTypeId");
+
                     b.HasIndex("ApprovedByUserId");
 
                     b.HasIndex("ApproverUserId");
 
+                    b.HasIndex("ReferenceNumber")
+                        .IsUnique();
+
                     b.HasIndex("RequestedByUserId");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Approvals");
                 });
@@ -392,8 +411,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("TypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Type");
 
                     b.Property<string>("UniqueLink")
                         .IsRequired()
@@ -464,8 +484,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<int>("TargetCount")
                         .HasColumnType("integer");
@@ -515,8 +536,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("LogType")
-                        .HasColumnType("integer");
+                    b.Property<int>("LogTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("LogType");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -560,7 +582,7 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("LogType");
+                    b.HasIndex("LogTypeId");
 
                     b.HasIndex("UserId");
 
@@ -577,8 +599,9 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChecklistType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ChecklistTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ChecklistType");
 
                     b.Property<string>("Code")
                         .HasColumnType("text");
@@ -617,8 +640,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("ScoringMethod")
-                        .HasColumnType("integer");
+                    b.Property<int>("ScoringMethodId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ScoringMethod");
 
                     b.Property<string>("TemplateName")
                         .HasColumnType("text");
@@ -837,8 +861,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("PreferredLanguageId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Role");
 
                     b.Property<string>("Title")
                         .HasMaxLength(100)
@@ -944,14 +969,16 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("PermissionType")
-                        .HasColumnType("integer");
+                    b.Property<int>("PermissionTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("PermissionType");
 
                     b.Property<int>("PersonnelId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Scope")
-                        .HasColumnType("integer");
+                    b.Property<int>("ScopeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Scope");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -967,7 +994,7 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PersonnelId", "PermissionType");
+                    b.HasIndex("PersonnelId", "PermissionTypeId");
 
                     b.ToTable("CustomerPersonnelPermissions", (string)null);
                 });
@@ -983,8 +1010,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("AssignedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("AssignmentRole")
-                        .HasColumnType("integer");
+                    b.Property<int>("AssignmentRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("AssignmentRole");
 
                     b.Property<DateTime?>("CompletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -1064,17 +1092,20 @@ namespace SecretCustomer.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<int>("PriorityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Priority");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
-                    b.Property<int>("TaskType")
-                        .HasColumnType("integer");
+                    b.Property<int>("TaskTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("TaskType");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1183,8 +1214,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<decimal?>("TotalScore")
                         .HasPrecision(10, 2)
@@ -1232,8 +1264,9 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ColumnType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ColumnTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ColumnType");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1467,8 +1500,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("Location")
                         .HasColumnType("text");
 
-                    b.Property<int>("MeetingType")
-                        .HasColumnType("integer");
+                    b.Property<int>("MeetingTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("MeetingType");
 
                     b.Property<string>("Minutes")
                         .HasColumnType("text");
@@ -1500,8 +1534,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("ReminderSent")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1617,8 +1652,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("ResponseNote")
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1647,13 +1683,15 @@ namespace SecretCustomer.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActionUrl")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("AdditionalData")
                         .HasColumnType("text");
 
-                    b.Property<int>("Channel")
-                        .HasColumnType("integer");
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Channel");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1662,13 +1700,15 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ErrorMessage")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("GroupId")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1681,13 +1721,16 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<int>("NotificationType")
-                        .HasColumnType("integer");
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("NotificationType");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<int>("PriorityId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Priority");
 
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("timestamp with time zone");
@@ -1699,7 +1742,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("RelatedEntityType")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("ScheduledAt")
                         .HasColumnType("timestamp with time zone");
@@ -1715,7 +1759,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1724,6 +1769,10 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("NotificationTypeId");
 
                     b.HasIndex("RecipientUserId");
 
@@ -1755,8 +1804,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("NotificationType")
-                        .HasColumnType("integer");
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("NotificationType");
 
                     b.Property<bool>("PushEnabled")
                         .HasColumnType("boolean");
@@ -1775,7 +1825,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "NotificationTypeId")
+                        .IsUnique();
 
                     b.ToTable("NotificationSettings");
                 });
@@ -1788,8 +1839,9 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Category");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -1828,7 +1880,7 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Category");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("Code")
                         .IsUnique();
@@ -1871,8 +1923,9 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer");
+                    b.Property<int>("GenderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Gender");
 
                     b.Property<DateTime?>("HireDate")
                         .HasColumnType("timestamp with time zone");
@@ -2009,8 +2062,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<decimal?>("ActualBudget")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("AssignmentType")
-                        .HasColumnType("integer");
+                    b.Property<int>("AssignmentTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("AssignmentType");
 
                     b.Property<bool>("AutoGenerateReports")
                         .HasColumnType("boolean");
@@ -2019,7 +2073,8 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Code")
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<decimal?>("CostPerEvaluation")
                         .HasColumnType("numeric");
@@ -2076,8 +2131,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("ProjectManagerId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProjectType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ProjectTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ProjectType");
 
                     b.Property<int?>("ReportingFrequencyDays")
                         .HasColumnType("integer");
@@ -2085,8 +2141,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<string>("Tags")
                         .HasColumnType("text");
@@ -2107,11 +2164,15 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("ChecklistId");
 
+                    b.HasIndex("Code");
+
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("ProjectManagerId");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Projects");
                 });
@@ -2271,15 +2332,17 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PenaltyType")
-                        .HasColumnType("integer");
+                    b.Property<int>("PenaltyTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("PenaltyType");
 
                     b.Property<string>("RecommendedNote")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<int>("ScoringType")
-                        .HasColumnType("integer");
+                    b.Property<int>("ScoringTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ScoringType");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -2438,11 +2501,13 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("PermissionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Role");
 
-                    b.Property<int>("Scope")
-                        .HasColumnType("integer");
+                    b.Property<int>("ScopeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Scope");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2454,10 +2519,61 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("Role", "PermissionId")
+                    b.HasIndex("RoleId", "PermissionId")
                         .IsUnique();
 
                     b.ToTable("RolePermissions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.SavedFilter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FilterData")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SavedFilters");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.SystemSetting", b =>
@@ -2514,8 +2630,9 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Category");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -2590,8 +2707,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<string>("Tags")
                         .HasColumnType("text");
@@ -2603,8 +2721,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("TrainerId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TrainingType")
-                        .HasColumnType("integer");
+                    b.Property<int>("TrainingTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("TrainingType");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2741,8 +2860,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("Score")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
 
                     b.Property<int>("TrainingId")
                         .HasColumnType("integer");
@@ -2822,8 +2942,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int?>("PreferredLanguageId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Role");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2876,8 +2997,9 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("PermissionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Scope")
-                        .HasColumnType("integer");
+                    b.Property<int>("ScopeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("Scope");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2908,7 +3030,8 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.HasOne("SecretCustomer.Core.Entities.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId");
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CreatedByUser");
                 });
@@ -2955,16 +3078,18 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.HasOne("SecretCustomer.Core.Entities.User", "ApprovedByUser")
                         .WithMany()
-                        .HasForeignKey("ApprovedByUserId");
+                        .HasForeignKey("ApprovedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SecretCustomer.Core.Entities.User", "ApproverUser")
                         .WithMany()
-                        .HasForeignKey("ApproverUserId");
+                        .HasForeignKey("ApproverUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SecretCustomer.Core.Entities.User", "RequestedByUser")
                         .WithMany()
                         .HasForeignKey("RequestedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ApprovedByUser");
@@ -3291,7 +3416,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasOne("SecretCustomer.Core.Entities.User", "SenderUser")
                         .WithMany()
-                        .HasForeignKey("SenderUserId");
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("RecipientUser");
 
@@ -3372,7 +3498,7 @@ namespace SecretCustomer.Data.Migrations
                     b.HasOne("SecretCustomer.Core.Entities.Checklist", "Checklist")
                         .WithMany("Projects")
                         .HasForeignKey("ChecklistId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
@@ -3382,7 +3508,8 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasOne("SecretCustomer.Core.Entities.CustomerOrganization", "Organization")
                         .WithMany()
-                        .HasForeignKey("OrganizationId");
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SecretCustomer.Core.Entities.User", "ProjectManager")
                         .WithMany()
@@ -3482,6 +3609,17 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Permission");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.SavedFilter", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Training", b =>

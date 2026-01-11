@@ -1,5 +1,6 @@
 using SecretCustomer.Core.Enums;
 
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -11,14 +12,14 @@ public class CustomerPersonnelPermission : BaseEntity
     public CustomerPersonnel Personnel { get; set; } = null!;
 
     /// <summary>
-    /// İzin tipi
+    /// İzin tipi (CustomerPermissionTypes.Ids kullanılır)
     /// </summary>
-    public CustomerPermissionType PermissionType { get; set; }
+    public int PermissionTypeId { get; set; }
 
     /// <summary>
     /// İzin kapsamı
     /// </summary>
-    public PermissionScope Scope { get; set; } = PermissionScope.Customer;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.Customer;
 
     /// <summary>
     /// İzin aktif mi?

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Text.Json;
@@ -49,7 +50,7 @@ public class AppSettingsService : IAppSettingsService
             .ToListAsync();
     }
 
-    public async Task<AppSettings> SetAsync(string key, string value, SettingValueType valueType = SettingValueType.String,
+    public async Task<AppSettings> SetAsync(string key, string value, int valueTypeId = SettingValueTypes.Ids.String,
         string category = "General", string? description = null, int? entityId = null, string? entityType = null)
     {
         var setting = await GetByKeyAsync(key, entityId, entityType);
@@ -60,7 +61,7 @@ public class AppSettingsService : IAppSettingsService
             {
                 Key = key,
                 Value = value,
-                ValueType = valueType,
+                ValueTypeId = valueTypeId,
                 Category = category,
                 Description = description,
                 EntityId = entityId,

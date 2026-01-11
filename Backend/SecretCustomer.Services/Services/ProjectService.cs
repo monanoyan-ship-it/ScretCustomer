@@ -109,8 +109,8 @@ public class ProjectService : IProjectService
             {
                 Id = p.Id,
                 Name = p.Name,
-                Status = p.Status.ToString(),
-                ProjectType = p.ProjectType.ToString(),
+                Status = ProjectStatuses.GetById(p.StatusId)?.SystemName ?? "",
+                ProjectType = ProjectTypes.GetById(p.ProjectTypeId)?.SystemName ?? "",
                 CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
                 AverageScore = 0, // Will calculate if needed
                 DaysRemaining = Math.Max(0, daysRemaining),
@@ -135,9 +135,9 @@ public class ProjectService : IProjectService
             Name = dto.Name,
             Description = dto.Description,
             ChecklistId = dto.ChecklistId,
-            ProjectType = Enum.TryParse<ProjectType>(dto.ProjectType, out var pt) ? pt : ProjectType.MysteryShopping,
-            Status = ProjectStatus.Draft,
-            AssignmentType = Enum.TryParse<AssignmentType>(dto.AssignmentType, out var at) ? at : AssignmentType.InternalBranch,
+            ProjectTypeId = ProjectTypes.GetBySystemName(dto.ProjectType)?.Id ?? ProjectTypes.Ids.MysteryShopping,
+            StatusId = ProjectStatuses.Ids.Draft,
+            AssignmentTypeId = AssignmentTypes.GetBySystemName(dto.AssignmentType)?.Id ?? AssignmentTypes.Ids.InternalBranch,
             StartDate = ToUtc(dto.StartDate),
             EndDate = ToUtc(dto.EndDate),
             IsActive = true,
@@ -197,8 +197,8 @@ public class ProjectService : IProjectService
         project.Name = dto.Name;
         project.Description = dto.Description;
         project.ChecklistId = dto.ChecklistId;
-        project.ProjectType = Enum.TryParse<ProjectType>(dto.ProjectType, out var pt) ? pt : project.ProjectType;
-        project.AssignmentType = Enum.TryParse<AssignmentType>(dto.AssignmentType, out var at) ? at : project.AssignmentType;
+        project.ProjectTypeId = ProjectTypes.GetBySystemName(dto.ProjectType)?.Id ?? project.ProjectTypeId;
+        project.AssignmentTypeId = AssignmentTypes.GetBySystemName(dto.AssignmentType)?.Id ?? project.AssignmentTypeId;
         project.StartDate = ToUtc(dto.StartDate);
         project.EndDate = ToUtc(dto.EndDate);
         project.TargetCount = dto.TargetCount;
@@ -276,7 +276,7 @@ public class ProjectService : IProjectService
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
         project.IsActive = false;
-        project.Status = ProjectStatus.Completed;
+        project.StatusId = ProjectStatuses.Ids.Completed;
         project.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
@@ -289,9 +289,10 @@ public class ProjectService : IProjectService
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
-        if (Enum.TryParse<ProjectStatus>(dto.Status, out var status))
+        var statusItem = ProjectStatuses.GetBySystemName(dto.Status);
+        if (statusItem != null)
         {
-            project.Status = status;
+            project.StatusId = statusItem.Id;
             if (!string.IsNullOrEmpty(dto.Notes))
                 project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": " + dto.Notes;
 
@@ -318,7 +319,7 @@ public class ProjectService : IProjectService
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
-        project.Status = ProjectStatus.Completed;
+        project.StatusId = ProjectStatuses.Ids.Completed;
         project.IsActive = false;
         project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": Proje tamamlandi";
         project.UpdatedAt = DateTime.UtcNow;
@@ -333,7 +334,7 @@ public class ProjectService : IProjectService
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
-        project.Status = ProjectStatus.Cancelled;
+        project.StatusId = ProjectStatuses.Ids.Cancelled;
         project.IsActive = false;
         project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": Proje iptal edildi" + (string.IsNullOrEmpty(reason) ? "" : " - " + reason);
         project.UpdatedAt = DateTime.UtcNow;
@@ -408,7 +409,7 @@ public class ProjectService : IProjectService
             {
                 Date = g.Key,
                 TotalEvaluations = g.Count(),
-                CompletedEvaluations = g.Count(e => e.Status == EvaluationStatus.Completed),
+                CompletedEvaluations = g.Count(e => e.StatusId == EvaluationStatuses.Ids.Completed),
                 AverageScore = g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage ?? 0),
                 YellowCards = g.Sum(e => e.YellowCardCount),
                 RedCards = g.Sum(e => e.RedCardCount)
@@ -449,7 +450,7 @@ public class ProjectService : IProjectService
         var projects = await _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
-            .Where(p => p.Status == ProjectStatus.Active && !p.IsDeleted)
+            .Where(p => p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
@@ -462,7 +463,7 @@ public class ProjectService : IProjectService
         var projects = await _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
-            .Where(p => p.EndDate <= deadline && p.EndDate >= DateTime.UtcNow && p.Status == ProjectStatus.Active && !p.IsDeleted)
+            .Where(p => p.EndDate <= deadline && p.EndDate >= DateTime.UtcNow && p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
             .OrderBy(p => p.EndDate)
             .ToListAsync();
 
@@ -524,9 +525,9 @@ public class ProjectService : IProjectService
             Description = project.Description,
             ChecklistId = project.ChecklistId,
             ChecklistName = project.Checklist?.Name ?? "",
-            ProjectType = project.ProjectType.ToString(),
-            Status = project.Status.ToString(),
-            AssignmentType = project.AssignmentType.ToString(),
+            ProjectType = ProjectTypes.GetById(project.ProjectTypeId)?.SystemName ?? "",
+            Status = ProjectStatuses.GetById(project.StatusId)?.SystemName ?? "",
+            AssignmentType = AssignmentTypes.GetById(project.AssignmentTypeId)?.SystemName ?? "",
             StartDate = project.StartDate,
             EndDate = project.EndDate,
             IsActive = project.IsActive,

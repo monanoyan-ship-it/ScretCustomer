@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -21,19 +20,19 @@ public class RolePermissionRepository : IRolePermissionRepository
             .FirstOrDefaultAsync(rp => rp.Id == id);
     }
 
-    public async Task<IEnumerable<RolePermission>> GetByRoleAsync(UserRole role)
+    public async Task<IEnumerable<RolePermission>> GetByRoleIdAsync(int roleId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Permission)
-            .Where(rp => rp.Role == role)
+            .Where(rp => rp.RoleId == roleId)
             .ToListAsync();
     }
 
-    public async Task<RolePermission?> GetByRoleAndPermissionAsync(UserRole role, int permissionId)
+    public async Task<RolePermission?> GetByRoleIdAndPermissionAsync(int roleId, int permissionId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Permission)
-            .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
+            .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
 
     public async Task<RolePermission> AddAsync(RolePermission rolePermission)
@@ -59,10 +58,10 @@ public class RolePermissionRepository : IRolePermissionRepository
         }
     }
 
-    public async Task DeleteByRoleAndPermissionAsync(UserRole role, int permissionId)
+    public async Task DeleteByRoleIdAndPermissionAsync(int roleId, int permissionId)
     {
         var rolePermission = await _context.RolePermissions
-            .FirstOrDefaultAsync(rp => rp.Role == role && rp.PermissionId == permissionId);
+            .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
 
         if (rolePermission != null)
         {

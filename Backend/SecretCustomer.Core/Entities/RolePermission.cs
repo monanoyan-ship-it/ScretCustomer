@@ -1,5 +1,6 @@
 using SecretCustomer.Core.Enums;
 
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -8,9 +9,9 @@ namespace SecretCustomer.Core.Entities;
 public class RolePermission : BaseEntity
 {
     /// <summary>
-    /// Rol
+    /// Rol ID (UserRoles.Ids kullanılır)
     /// </summary>
-    public UserRole Role { get; set; }
+    public int RoleId { get; set; }
 
     /// <summary>
     /// Yetki ID
@@ -26,7 +27,7 @@ public class RolePermission : BaseEntity
     /// <summary>
     /// Yetki kapsamı (All, Own, Branch, vb.)
     /// </summary>
-    public PermissionScope Scope { get; set; } = PermissionScope.All;
+    public int ScopeId { get; set; } = PermissionScopes.Ids.All;
 
     /// <summary>
     /// Açıklama/Not

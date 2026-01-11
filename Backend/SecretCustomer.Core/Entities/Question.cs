@@ -16,27 +16,27 @@ public class Question : BaseEntity
     public int ChecklistId { get; set; }
     public Checklist Checklist { get; set; } = null!;
 
-    [ExcelColumn("Soru Metni", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Soru Metni", 1, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Sorunun/kriterin tam metni", SampleValue = "Çağrı standartlarına uyum")]
     public string Text { get; set; } = string.Empty;
 
-    [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Sorunun sırası", SampleValue = "1")]
     public int Order { get; set; }
 
     /// <summary>
     /// Puanlama tipi (Puanlı, Puansız, Cezalı)
     /// </summary>
-    [ExcelColumn("Puanlama Tipi", 3, ColumnType = ExcelColumnType.Dropdown,
+    [ExcelColumn("Puanlama Tipi", 3, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Sorunun puanlama tipi",
         DropdownOptions = "[\"Scored\", \"Unscored\", \"Penalty\"]",
         SampleValue = "Scored")]
-    public ScoringType ScoringType { get; set; } = ScoringType.Scored;
+    public int ScoringTypeId { get; set; } = ScoringTypes.Ids.Scored;
 
     /// <summary>
     /// Ağırlık puanı - Sorunun toplam skora etkisi (varsayılan 10, 10 soru = 100 puan)
     /// </summary>
-    [ExcelColumn("Ağırlık Puanı", 4, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Ağırlık Puanı", 4, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Sorunun ağırlık puanı", SampleValue = "10")]
     public decimal WeightPoints { get; set; } = 10;
 
@@ -44,45 +44,45 @@ public class Question : BaseEntity
     /// Maksimum puan - Bu soru için verilebilecek maksimum puan (0'dan MaxPoints'e kadar butonlar)
     /// 1 = Evet/Hayır, 2+ = Likert ölçeği
     /// </summary>
-    [ExcelColumn("Maks Puan", 5, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Maks Puan", 5, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Maksimum puan değeri", SampleValue = "5")]
     public int MaxPoints { get; set; } = 5;
 
     /// <summary>
-    /// Ceza tipi (Sarı Kart / Kırmızı Kart) - ScoringType=Penalty olduğunda kullanılır
+    /// Ceza tipi (Sarı Kart / Kırmızı Kart) - ScoringType=Penalty olduğunda kullanılır (PenaltyTypes.Ids kullanılır)
     /// </summary>
-    [ExcelColumn("Ceza Tipi", 6, ColumnType = ExcelColumnType.Dropdown,
+    [ExcelColumn("Ceza Tipi", 6, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Ceza tipi (Cezalı sorular için)",
         DropdownOptions = "[\"None\", \"YellowCard\", \"RedCard\"]",
         SampleValue = "None")]
-    public PenaltyType PenaltyType { get; set; } = PenaltyType.None;
+    public int PenaltyTypeId { get; set; } = PenaltyTypes.Ids.None;
 
-    [ExcelColumn("N/A İzni", 7, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("N/A İzni", 7, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "N/A seçeneğine izin verilir mi?", SampleValue = "false")]
     public bool AllowNA { get; set; } = false;
 
-    [ExcelColumn("Zorunlu", 8, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("Zorunlu", 8, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Soru zorunlu mu?", SampleValue = "true")]
     public bool IsRequired { get; set; } = true;
 
     /// <summary>
     /// Önerilen açıklama / Öneri notu
     /// </summary>
-    [ExcelColumn("Önerilen Açıklama", 9, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Önerilen Açıklama", 9, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Bu soru için önerilen açıklama/öneri")]
     public string? RecommendedNote { get; set; }
 
     /// <summary>
     /// Soru için yardımcı metin / ipucu
     /// </summary>
-    [ExcelColumn("Yardımcı Metin", 10, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Yardımcı Metin", 10, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Değerlendirici için yardımcı metin")]
     public string? HelpText { get; set; }
 
     /// <summary>
     /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
     /// </summary>
-    [ExcelColumn("Grup", 11, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Grup", 11, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Sorunun ait olduğu grup (raporlama için)", SampleValue = "İletişim")]
     public string? GroupName { get; set; }
 

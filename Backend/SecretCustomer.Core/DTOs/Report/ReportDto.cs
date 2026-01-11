@@ -5,12 +5,31 @@ namespace SecretCustomer.Core.DTOs.Report;
 /// </summary>
 public class ReportFilterDto
 {
+    // Dropdown filters
+    public int? CustomerId { get; set; }
+    public int? OrganizationId { get; set; }
     public int? ProjectId { get; set; }
     public int? EvaluatorId { get; set; }
     public int? ChecklistId { get; set; }
+    public int? PeriodId { get; set; }
+
+    // Text search filters
+    public string? EvaluatedPersonnelName { get; set; }
+    public string? SupervisorName { get; set; }
+    public string? CallId { get; set; }
+
+    // Date filters
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+
+    // Status filter
     public string? Status { get; set; }
+
+    // Sorting
+    public string? SortField { get; set; }
+    public string? SortDirection { get; set; } = "desc";
+
+    // Pagination
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
 }

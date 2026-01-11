@@ -19,6 +19,11 @@ public class CustomerTaskListConfiguration : IEntityTypeConfiguration<CustomerTa
         builder.Property(t => t.Description)
             .HasMaxLength(1000);
 
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(t => t.TaskTypeId).HasColumnName("TaskType");
+        builder.Property(t => t.PriorityId).HasColumnName("Priority");
+        builder.Property(t => t.StatusId).HasColumnName("Status");
+
         // Relationships
         builder.HasMany(t => t.PersonnelAssignments)
             .WithOne(a => a.TaskList)

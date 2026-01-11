@@ -1,4 +1,5 @@
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -9,7 +10,7 @@ public interface IAppSettingsService
     Task<IEnumerable<AppSettings>> GetByCategoryAsync(string category);
     Task<IEnumerable<AppSettings>> GetAllAsync();
     Task<IEnumerable<AppSettings>> GetByEntityAsync(int entityId, string entityType);
-    Task<AppSettings> SetAsync(string key, string value, SettingValueType valueType = SettingValueType.String,
+    Task<AppSettings> SetAsync(string key, string value, int valueTypeId = SettingValueTypes.Ids.String,
         string category = "General", string? description = null, int? entityId = null, string? entityType = null);
     Task DeleteAsync(string key, int? entityId = null, string? entityType = null);
 

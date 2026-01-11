@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -56,10 +55,10 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<User>> GetByRoleAsync(UserRole role)
+    public async Task<IEnumerable<User>> GetByRoleIdAsync(int roleId)
     {
         return await _context.Users
-            .Where(u => u.Role == role)
+            .Where(u => u.RoleId == roleId)
             .OrderBy(u => u.FirstName)
             .ThenBy(u => u.LastName)
             .ToListAsync();

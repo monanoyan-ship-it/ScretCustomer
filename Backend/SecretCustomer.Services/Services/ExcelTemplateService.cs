@@ -1,4 +1,5 @@
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Core.Attributes;
@@ -107,7 +108,7 @@ public class ExcelTemplateService : IExcelTemplateService
             {
                 column_name = c.ColumnName,
                 property_name = c.PropertyName,
-                column_type = c.ColumnType.ToString(),
+                column_type = ExcelColumnTypes.GetById(c.ColumnTypeId)?.SystemName ?? "Text",
                 order = c.Order,
                 is_required = c.IsRequired,
                 validation_rules = string.IsNullOrWhiteSpace(c.ValidationRules)
@@ -159,7 +160,7 @@ public class ExcelTemplateService : IExcelTemplateService
             {
                 column_name = c.ColumnName,
                 property_name = c.PropertyName,
-                column_type = c.ColumnType.ToString(),
+                column_type = ExcelColumnTypes.GetById(c.ColumnTypeId)?.SystemName ?? "Text",
                 order = c.Order,
                 is_required = c.IsRequired,
                 validation_rules = string.IsNullOrWhiteSpace(c.ValidationRules)
@@ -227,7 +228,7 @@ public class ExcelTemplateService : IExcelTemplateService
                 PropertyName = property.Name,
                 Order = attribute.Order,
                 IsRequired = attribute.IsRequired,
-                ColumnType = attribute.ColumnType,
+                ColumnTypeId = attribute.ColumnType,
                 Description = attribute.Description,
                 SampleValue = attribute.SampleValue,
                 ValidationRules = attribute.ValidationRules,

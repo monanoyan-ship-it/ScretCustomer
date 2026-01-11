@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Services.Helpers;
 
@@ -56,7 +57,7 @@ public class AuthController : ControllerBase
                 Id = user.UserId,
                 Username = user.Username,
                 Email = user.Username, // Using username as email fallback
-                Role = Enum.Parse<Core.Enums.UserRole>(user.Role)
+                RoleId = UserRoles.GetBySystemName(user.Role)?.Id ?? UserRoles.Ids.FieldWorker
             };
 
             var token = _jwtHelper.GenerateToken(userEntity);

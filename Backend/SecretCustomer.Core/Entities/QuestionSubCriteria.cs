@@ -17,28 +17,28 @@ public class QuestionSubCriteria : BaseEntity
     /// Alt kriter/öneri açıklaması
     /// Örnek: "İlgili davranılmadı", "İsim ile hitap etmedi"
     /// </summary>
-    [ExcelColumn("Açıklama", 1, IsRequired = true, ColumnType = ExcelColumnType.Text,
+    [ExcelColumn("Açıklama", 1, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Alt kriter açıklaması", SampleValue = "İlgili davranılmadı")]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
     /// Sıralama
     /// </summary>
-    [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Alt kriterin sırası", SampleValue = "1")]
     public int Order { get; set; }
 
     /// <summary>
     /// Ağırlık puanı - Bu alt kriter seçildiğinde düşürülecek puan
     /// </summary>
-    [ExcelColumn("Ağırlık Puanı", 3, ColumnType = ExcelColumnType.Number,
+    [ExcelColumn("Ağırlık Puanı", 3, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Seçildiğinde düşürülecek puan", SampleValue = "1")]
     public decimal WeightPoints { get; set; } = 1;
 
     /// <summary>
     /// Aktif mi?
     /// </summary>
-    [ExcelColumn("Aktif", 4, ColumnType = ExcelColumnType.Boolean,
+    [ExcelColumn("Aktif", 4, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Alt kriter aktif mi?", SampleValue = "true")]
     public bool IsActive { get; set; } = true;
 

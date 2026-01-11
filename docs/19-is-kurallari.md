@@ -163,7 +163,7 @@ Bu dokuman, SecretCustomer sistemindeki is kurallarini, tanimlari ve sayfa bazin
 **Amac:** Degerlendirme projelerinin yonetimi
 
 **Yapilabilecek Islemler:**
-| Islem | Aciklama |
+| Islem | Aciklama |şimdi 
 |-------|----------|
 | Listele | Projeleri filtrele ve goruntule |
 | Ekle | Yeni proje olustur |

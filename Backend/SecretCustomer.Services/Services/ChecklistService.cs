@@ -30,19 +30,25 @@ public class ChecklistService : IChecklistService
     public async Task<ChecklistDto?> GetByIdAsync(int id)
     {
         var checklist = await _checklistRepository.GetByIdAsync(id, includeDetails: true);
-        return checklist == null ? null : MapToDto(checklist);
+        return checklist == null ? null : await MapToDtoAsync(checklist);
     }
 
     public async Task<IEnumerable<ChecklistDto>> GetAllAsync(bool includeInactive = false)
     {
         var checklists = await _checklistRepository.GetAllAsync(includeInactive);
-        return checklists.Select(MapToDto);
+        var result = new List<ChecklistDto>();
+        foreach (var checklist in checklists)
+            result.Add(await MapToDtoAsync(checklist));
+        return result;
     }
 
     public async Task<IEnumerable<ChecklistDto>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
     {
         var checklists = await _checklistRepository.GetFilteredAsync(searchText, customerId, customerOrganizationId, includeInactive);
-        return checklists.Select(MapToDto);
+        var result = new List<ChecklistDto>();
+        foreach (var checklist in checklists)
+            result.Add(await MapToDtoAsync(checklist));
+        return result;
     }
 
     public async Task<ChecklistDto> CreateAsync(CreateChecklistDto dto)
@@ -55,8 +61,8 @@ public class ChecklistService : IChecklistService
             IsActive = true,
             Version = 1,
             // Kontrol listesi ayarları
-            ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance,
-            ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum,
+            ChecklistTypeId = ChecklistTypes.GetBySystemName(dto.ChecklistType)?.Id ?? ChecklistTypes.Ids.CallPerformance,
+            ScoringMethodId = ScoringMethods.GetBySystemName(dto.ScoringMethod)?.Id ?? ScoringMethods.Ids.Maximum,
             MaxTotalPoints = dto.MaxTotalPoints,
             Code = dto.Code,
             TemplateName = dto.TemplateName,
@@ -70,10 +76,10 @@ public class ChecklistService : IChecklistService
             {
                 Text = q.Text,
                 Order = q.Order,
-                ScoringType = Enum.TryParse<ScoringType>(q.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                ScoringTypeId = ScoringTypes.GetBySystemName(q.ScoringType)?.Id ?? ScoringTypes.Ids.Scored,
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
-                PenaltyType = Enum.TryParse<PenaltyType>(q.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                PenaltyTypeId = PenaltyTypes.GetBySystemName(q.PenaltyType)?.Id ?? PenaltyTypes.Ids.None,
                 AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
@@ -91,7 +97,7 @@ public class ChecklistService : IChecklistService
         };
 
         var created = await _checklistRepository.CreateAsync(checklist);
-        return MapToDto(created);
+        return await MapToDtoAsync(created);
     }
 
     public async Task<ChecklistDto> UpdateAsync(UpdateChecklistDto dto)
@@ -105,8 +111,8 @@ public class ChecklistService : IChecklistService
         existing.IsScored = dto.IsScored;
         existing.IsActive = dto.IsActive;
         // Kontrol listesi ayarları
-        existing.ChecklistType = Enum.TryParse<ChecklistType>(dto.ChecklistType, out var clType) ? clType : ChecklistType.CallPerformance;
-        existing.ScoringMethod = Enum.TryParse<ScoringMethod>(dto.ScoringMethod, out var scMethod) ? scMethod : ScoringMethod.Maximum;
+        existing.ChecklistTypeId = ChecklistTypes.GetBySystemName(dto.ChecklistType)?.Id ?? ChecklistTypes.Ids.CallPerformance;
+        existing.ScoringMethodId = ScoringMethods.GetBySystemName(dto.ScoringMethod)?.Id ?? existing.ScoringMethodId;
         existing.MaxTotalPoints = dto.MaxTotalPoints;
         existing.Code = dto.Code;
         existing.TemplateName = dto.TemplateName;
@@ -120,7 +126,7 @@ public class ChecklistService : IChecklistService
         UpdateQuestions(existing, dto.Questions);
 
         var updated = await _checklistRepository.UpdateAsync(existing);
-        return MapToDto(updated);
+        return await MapToDtoAsync(updated);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -144,8 +150,8 @@ public class ChecklistService : IChecklistService
             IsActive = true,
             Version = versionCount + 1,
             // Kontrol listesi ayarları
-            ChecklistType = original.ChecklistType,
-            ScoringMethod = original.ScoringMethod,
+            ChecklistTypeId = original.ChecklistTypeId,
+            ScoringMethodId = original.ScoringMethodId,
             MaxTotalPoints = original.MaxTotalPoints,
             Code = original.Code,
             TemplateName = original.TemplateName,
@@ -158,10 +164,10 @@ public class ChecklistService : IChecklistService
             {
                 Text = q.Text,
                 Order = q.Order,
-                ScoringType = q.ScoringType,
+                ScoringTypeId = q.ScoringTypeId,
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
-                PenaltyType = q.PenaltyType,
+                PenaltyTypeId = q.PenaltyTypeId,
                 AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
@@ -179,7 +185,7 @@ public class ChecklistService : IChecklistService
         };
 
         var created = await _checklistRepository.CreateAsync(cloned);
-        return MapToDto(created);
+        return await MapToDtoAsync(created);
     }
 
     private void UpdateQuestions(Checklist checklist, List<UpdateQuestionDto> questionDtos)
@@ -205,10 +211,10 @@ public class ChecklistService : IChecklistService
                 {
                     question.Text = questionDto.Text;
                     question.Order = questionDto.Order;
-                    question.ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored;
+                    question.ScoringTypeId = ScoringTypes.GetBySystemName(questionDto.ScoringType)?.Id ?? question.ScoringTypeId;
                     question.WeightPoints = questionDto.WeightPoints;
                     question.MaxPoints = questionDto.MaxPoints;
-                    question.PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None;
+                    question.PenaltyTypeId = PenaltyTypes.GetBySystemName(questionDto.PenaltyType)?.Id ?? PenaltyTypes.Ids.None;
                     question.AllowNA = questionDto.AllowNA;
                     question.IsRequired = questionDto.IsRequired;
                     question.RecommendedNote = questionDto.RecommendedNote;
@@ -228,10 +234,10 @@ public class ChecklistService : IChecklistService
                     ChecklistId = checklist.Id,
                     Text = questionDto.Text,
                     Order = questionDto.Order,
-                    ScoringType = Enum.TryParse<ScoringType>(questionDto.ScoringType, out var sType) ? sType : ScoringType.Scored,
+                    ScoringTypeId = ScoringTypes.GetBySystemName(questionDto.ScoringType)?.Id ?? ScoringTypes.Ids.Scored,
                     WeightPoints = questionDto.WeightPoints,
                     MaxPoints = questionDto.MaxPoints,
-                    PenaltyType = Enum.TryParse<PenaltyType>(questionDto.PenaltyType, out var pType) ? pType : PenaltyType.None,
+                    PenaltyTypeId = PenaltyTypes.GetBySystemName(questionDto.PenaltyType)?.Id ?? PenaltyTypes.Ids.None,
                     AllowNA = questionDto.AllowNA,
                     IsRequired = questionDto.IsRequired,
                     RecommendedNote = questionDto.RecommendedNote,
@@ -296,8 +302,38 @@ public class ChecklistService : IChecklistService
         }
     }
 
-    private ChecklistDto MapToDto(Checklist checklist)
+    private async Task<ChecklistDto> MapToDtoAsync(Checklist checklist)
     {
+        var questions = new List<QuestionDto>();
+        foreach (var q in checklist.Questions.OrderBy(q => q.Order))
+        {
+            questions.Add(new QuestionDto
+            {
+                Id = q.Id,
+                Text = q.Text,
+                Order = q.Order,
+                ScoringType = q.ScoringTypeId.ToString(),
+                ScoringTypeName = await GetScoringTypeNameAsync(q.ScoringTypeId),
+                WeightPoints = q.WeightPoints,
+                MaxPoints = q.MaxPoints,
+                PenaltyType = PenaltyTypes.GetById(q.PenaltyTypeId)?.SystemName ?? q.PenaltyTypeId.ToString(),
+                PenaltyTypeName = await GetPenaltyTypeNameAsync(q.PenaltyTypeId),
+                AllowNA = q.AllowNA,
+                IsRequired = q.IsRequired,
+                RecommendedNote = q.RecommendedNote,
+                HelpText = q.HelpText,
+                GroupName = q.GroupName,
+                SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
+                {
+                    Id = sc.Id,
+                    Description = sc.Description,
+                    Order = sc.Order,
+                    WeightPoints = sc.WeightPoints,
+                    IsActive = sc.IsActive
+                }).ToList()
+            });
+        }
+
         return new ChecklistDto
         {
             Id = checklist.Id,
@@ -307,86 +343,51 @@ public class ChecklistService : IChecklistService
             IsActive = checklist.IsActive,
             Version = checklist.Version,
             CreatedAt = checklist.CreatedAt,
-            // Kontrol listesi ayarları
-            ChecklistType = checklist.ChecklistType.ToString(),
-            ChecklistTypeName = GetChecklistTypeName(checklist.ChecklistType),
-            ScoringMethod = checklist.ScoringMethod.ToString(),
-            ScoringMethodName = GetScoringMethodName(checklist.ScoringMethod),
+            ChecklistType = ChecklistTypes.GetById(checklist.ChecklistTypeId)?.SystemName ?? "",
+            ChecklistTypeName = await GetChecklistTypeNameAsync(checklist.ChecklistTypeId),
+            ScoringMethod = checklist.ScoringMethodId.ToString(),
+            ScoringMethodName = await GetScoringMethodNameAsync(checklist.ScoringMethodId),
             MaxTotalPoints = checklist.MaxTotalPoints,
             Code = checklist.Code,
             TemplateName = checklist.TemplateName,
             ValidFrom = checklist.ValidFrom,
             ValidUntil = checklist.ValidUntil,
-            // Firma ve Organizasyon
             CustomerId = checklist.CustomerId,
             CustomerName = checklist.Customer?.CompanyName,
             CustomerOrganizationId = checklist.CustomerOrganizationId,
             CustomerOrganizationName = checklist.CustomerOrganization?.Name,
-            // Sorular - Direkt checklist'e bağlı
-            Questions = checklist.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto
-            {
-                Id = q.Id,
-                Text = q.Text,
-                Order = q.Order,
-                ScoringType = q.ScoringType.ToString(),
-                ScoringTypeName = GetScoringTypeName(q.ScoringType),
-                WeightPoints = q.WeightPoints,
-                MaxPoints = q.MaxPoints,
-                PenaltyType = q.PenaltyType.ToString(),
-                PenaltyTypeName = GetPenaltyTypeName(q.PenaltyType),
-                AllowNA = q.AllowNA,
-                IsRequired = q.IsRequired,
-                RecommendedNote = q.RecommendedNote,
-                HelpText = q.HelpText,
-                GroupName = q.GroupName,
-                // Alt Kriterler
-                SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
-                {
-                    Id = sc.Id,
-                    Description = sc.Description,
-                    Order = sc.Order,
-                    WeightPoints = sc.WeightPoints,
-                    IsActive = sc.IsActive
-                }).ToList()
-            }).ToList(),
+            Questions = questions,
             QuestionCount = checklist.Questions.Count
         };
     }
 
-    private static string GetChecklistTypeName(ChecklistType type) => type switch
+    private async Task<string> GetChecklistTypeNameAsync(int typeId)
     {
-        ChecklistType.CallPerformance => "Çağrı Performans",
-        ChecklistType.PhysicalAudit => "Fiziksel Denetim",
-        ChecklistType.MysteryShopping => "Gizli Müşteri",
-        ChecklistType.OnlineEvaluation => "Online Değerlendirme",
-        ChecklistType.Survey => "Anket",
-        _ => type.ToString()
-    };
+        var item = ChecklistTypes.GetById(typeId);
+        if (item == null) return "";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
-    private static string GetScoringMethodName(ScoringMethod method) => method switch
+    private async Task<string> GetScoringMethodNameAsync(int methodId)
     {
-        ScoringMethod.Maximum => "Maksimum",
-        ScoringMethod.Average => "Ortalama",
-        ScoringMethod.WeightedAverage => "Ağırlıklı Ortalama",
-        ScoringMethod.Sum => "Toplam",
-        _ => method.ToString()
-    };
+        var item = ScoringMethods.GetById(methodId);
+        if (item == null) return "";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
-    private static string GetScoringTypeName(ScoringType type) => type switch
+    private async Task<string> GetScoringTypeNameAsync(int typeId)
     {
-        ScoringType.Scored => "Puanlı",
-        ScoringType.Unscored => "Puansız",
-        ScoringType.Penalty => "Cezalı",
-        _ => type.ToString()
-    };
+        var item = ScoringTypes.GetById(typeId);
+        if (item == null) return "";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
-    private static string GetPenaltyTypeName(PenaltyType type) => type switch
+    private async Task<string> GetPenaltyTypeNameAsync(int typeId)
     {
-        PenaltyType.None => "Yok",
-        PenaltyType.YellowCard => "Sarı Kart",
-        PenaltyType.RedCard => "Kırmızı Kart",
-        _ => type.ToString()
-    };
+        var item = PenaltyTypes.GetById(typeId);
+        if (item == null) return "";
+        return await _localizationService.GetResourceAsync(item.NameResourceKey, (int?)null, item.Description);
+    }
 
     public async Task<ExcelExportDto?> ExportChecklistToExcelAsync(int id)
     {
@@ -480,7 +481,7 @@ public class ChecklistService : IChecklistService
             sheet.Cell(row, 3).Value = q.Text;
 
             // Puansız sorular için Max Puan ve Ağırlık "-" olacak
-            if (q.ScoringType == ScoringType.Unscored)
+            if (q.ScoringTypeId == ScoringTypes.Ids.Unscored)
             {
                 sheet.Cell(row, 4).Value = "-";
                 sheet.Cell(row, 5).Value = "-";
@@ -491,8 +492,8 @@ public class ChecklistService : IChecklistService
                 sheet.Cell(row, 5).Value = (double)q.WeightPoints;
             }
 
-            sheet.Cell(row, 6).Value = GetScoringTypeName(q.ScoringType);
-            sheet.Cell(row, 7).Value = q.PenaltyType == PenaltyType.None ? "" : GetPenaltyTypeName(q.PenaltyType);
+            sheet.Cell(row, 6).Value = await GetScoringTypeNameAsync(q.ScoringTypeId);
+            sheet.Cell(row, 7).Value = q.PenaltyTypeId == PenaltyTypes.Ids.None ? "" : await GetPenaltyTypeNameAsync(q.PenaltyTypeId);
             sheet.Range(row, 1, row, 7).Style.Fill.BackgroundColor = XLColor.LightSteelBlue;
             sheet.Range(row, 1, row, 7).Style.Font.Bold = true;
             row++;

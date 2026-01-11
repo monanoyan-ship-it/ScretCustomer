@@ -18,14 +18,14 @@ public class Meeting : BaseEntity
     public string? Description { get; set; }
 
     /// <summary>
-    /// Toplantı tipi
+    /// Toplantı tipi (MeetingTypes.Ids kullanılır)
     /// </summary>
-    public MeetingType MeetingType { get; set; } = MeetingType.General;
+    public int MeetingTypeId { get; set; } = MeetingTypes.Ids.General;
 
     /// <summary>
-    /// Toplantı durumu
+    /// Toplantı durumu (MeetingStatuses.Ids kullanılır)
     /// </summary>
-    public MeetingStatus Status { get; set; } = MeetingStatus.Planned;
+    public int StatusId { get; set; } = MeetingStatuses.Ids.Planned;
 
     /// <summary>
     /// Planlanan tarih/saat
@@ -179,9 +179,9 @@ public class MeetingParticipant : BaseEntity
     public string? ExternalEmail { get; set; }
 
     /// <summary>
-    /// Katılımcı durumu
+    /// Katılımcı durumu (ParticipantStatuses.Ids kullanılır)
     /// </summary>
-    public ParticipantStatus Status { get; set; } = ParticipantStatus.Invited;
+    public int StatusId { get; set; } = ParticipantStatuses.Ids.Invited;
 
     /// <summary>
     /// Zorunlu katılımcı mı?

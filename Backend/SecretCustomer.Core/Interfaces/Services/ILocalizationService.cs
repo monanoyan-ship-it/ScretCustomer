@@ -25,6 +25,7 @@ public interface ILocalizationService
     Task<LocaleStringResource> SetResourceAsync(int languageId, string resourceName, string resourceValue);
     Task DeleteResourceAsync(int resourceId);
     Task DeleteResourceByNameAsync(string resourceName, int languageId);
+    Task<int> DeleteAllResourcesByLanguageAsync(int languageId);
 
     // Toplu işlemler
     Task ImportResourcesAsync(int languageId, Dictionary<string, string> resources);
@@ -51,4 +52,15 @@ public interface ILocalizationService
     /// Tüm localization cache'ini temizle
     /// </summary>
     Task ClearAllCacheAsync();
+
+    // Eksik key takibi (debug için)
+    /// <summary>
+    /// Loglanan eksik çeviri key'lerini getirir
+    /// </summary>
+    IEnumerable<string> GetMissingKeys();
+
+    /// <summary>
+    /// Eksik key loglarını temizler
+    /// </summary>
+    void ClearMissingKeysLog();
 }

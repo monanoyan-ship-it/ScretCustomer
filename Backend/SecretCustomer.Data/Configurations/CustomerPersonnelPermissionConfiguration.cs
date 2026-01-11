@@ -12,9 +12,15 @@ public class CustomerPersonnelPermissionConfiguration : IEntityTypeConfiguration
 
         builder.HasKey(p => p.Id);
 
-        builder.HasIndex(p => new { p.PersonnelId, p.PermissionType });
+        builder.HasIndex(p => new { p.PersonnelId, p.PermissionTypeId });
 
         builder.Property(p => p.Description)
             .HasMaxLength(500);
+
+        // Enum -> TypeId dönüşümünde veri kaybı olmaması için column adı korunuyor
+        builder.Property(p => p.PermissionTypeId).HasColumnName("PermissionType");
+
+        // Scope -> ScopeId donusumunde veri kaybi olmamasi icin column adi korunuyor
+        builder.Property(p => p.ScopeId).HasColumnName("Scope");
     }
 }
