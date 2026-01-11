@@ -77,3 +77,6 @@ nul
 
 # Uploads
 **/uploads/
+
+# Storage (Documentation ve analiz dosyaları - müşteriye gitmeyecek)
+Storage/
