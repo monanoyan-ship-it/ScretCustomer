@@ -7613,4 +7613,13 @@
   <LocaleResource Name="Listenings.ActiveFiltersNote">
     <Value>Active filters will be applied to the report:</Value>
   </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource">
+    <Value>Evaluation Source</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Ours">
+    <Value>Our Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Internal">
+    <Value>Customer Internal Evaluations</Value>
+  </LocaleResource>
 </Language>

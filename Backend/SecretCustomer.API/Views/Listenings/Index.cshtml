@@ -39,6 +39,7 @@
                                 <option value="supervisor">@Html.T("Listenings.Supervisor", "Yönetici")</option>
                                 <option value="callId">@Html.T("Listenings.CallId", "Çağrı No")</option>
                                 <option value="status">@Html.T("Common.Status", "Durum")</option>
+                                <option value="evaluationSource">@Html.T("Listenings.EvaluationSource", "Değerlendirme Kaynağı")</option>
                                 <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
                             </select>
                         </div>
@@ -76,6 +77,10 @@
                                 <option value="InProgress">@Html.T("Evaluation.Status.InProgress", "Devam Ediyor")</option>
                                 <option value="Draft">@Html.T("Evaluation.Status.Draft", "Taslak")</option>
                             </select>
+                        </div>
+                        <!-- Evaluation Source -->
+                        <div data-bind="visible: selectedFilterType() === 'evaluationSource'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: evaluationSources, optionsText: 'name', optionsValue: 'id', value: tempFilter.evaluationSource, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                         </div>
                         <!-- Date Range -->
                         <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">

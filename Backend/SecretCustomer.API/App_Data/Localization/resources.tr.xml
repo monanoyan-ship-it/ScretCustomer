@@ -7613,4 +7613,13 @@
   <LocaleResource Name="Listenings.ActiveFiltersNote">
     <Value>Aktif filtreler rapora uygulanacaktır:</Value>
   </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource">
+    <Value>Değerlendirme Kaynağı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Ours">
+    <Value>Bizim Değerlendirmelerimiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Internal">
+    <Value>Müşteri İç Değerlendirmeleri</Value>
+  </LocaleResource>
 </Language>

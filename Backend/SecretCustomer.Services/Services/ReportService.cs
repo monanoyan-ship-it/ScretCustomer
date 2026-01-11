@@ -60,6 +60,21 @@ public class ReportService : IReportService
                 query = query.Where(e => e.StatusId == statusItem.Id);
         }
 
+        // Evaluation source filter
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+            {
+                // Müşteri iç değerlendirmeleri (CustomerPersonnel = 4)
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            }
+            else if (filter.EvaluationSource == "ours")
+            {
+                // Bizim değerlendirmelerimiz (CustomerPersonnel dışındakiler)
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+            }
+        }
+
         // Customer filter
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);

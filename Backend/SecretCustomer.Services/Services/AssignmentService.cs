@@ -189,6 +189,7 @@ public class AssignmentService : IAssignmentService
             ExternalName = dto.ExternalName,
             UniqueLink = Guid.NewGuid().ToString(),
             DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
+            TypeId = AssignmentTypes.Ids.InternalUser, // Bizim değerlendirmelerimiz
             IsCompleted = false
         };
 

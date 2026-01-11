@@ -7608,4 +7608,13 @@
   <LocaleResource Name="Listenings.ActiveFiltersNote">
     <Value>Aktive Filter werden auf den Bericht angewendet:</Value>
   </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource">
+    <Value>Bewertungsquelle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Ours">
+    <Value>Unsere Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.EvaluationSource.Internal">
+    <Value>Interne Kundenbewertungen</Value>
+  </LocaleResource>
 </Language>

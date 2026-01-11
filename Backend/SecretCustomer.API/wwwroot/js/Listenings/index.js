@@ -48,6 +48,7 @@ function ListeningsViewModel() {
     self.projectsForFilter = ko.observableArray([]);
     self.evaluators = ko.observableArray([]);
     self.dateRanges = ko.observableArray([]);
+    self.evaluationSources = ko.observableArray([]);
 
     // Sorting
     self.sortField = ko.observable('callDate');
@@ -67,6 +68,7 @@ function ListeningsViewModel() {
         supervisorName: ko.observable(''),
         callId: ko.observable(''),
         status: ko.observable(''),
+        evaluationSource: ko.observable(null),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         selectedDateRangeType: ko.observable(null) // Seçilen hızlı tarih tipi
@@ -98,6 +100,7 @@ function ListeningsViewModel() {
         supervisor: 'Yönetici',
         callId: 'Çağrı No',
         status: 'Durum',
+        evaluationSource: 'Kaynak',
         dateRange: 'Tarih'
     };
 
@@ -136,6 +139,7 @@ function ListeningsViewModel() {
             case 'supervisor': return self.tempFilter.supervisorName().trim() !== '';
             case 'callId': return self.tempFilter.callId().trim() !== '';
             case 'status': return self.tempFilter.status() !== '';
+            case 'evaluationSource': return self.tempFilter.evaluationSource();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             default: return false;
         }
@@ -155,6 +159,7 @@ function ListeningsViewModel() {
                 self.projectsForFilter(response.projects || []);
                 self.evaluators(response.evaluators || []);
                 self.dateRanges(response.dateRanges || []);
+                self.evaluationSources(response.evaluationSources || []);
 
                 // Lookups yüklendikten sonra varsayılan filtreyi kontrol et
                 self.loadDefaultFilterAndSearch();
@@ -317,6 +322,16 @@ function ListeningsViewModel() {
                 filter.value = status;
                 filter.displayValue = self.statusLabels[status] || status;
                 self.tempFilter.status('');
+                break;
+
+            case 'evaluationSource':
+                var sourceId = self.tempFilter.evaluationSource();
+                if (!sourceId) return;
+                var source = self.evaluationSources().find(function(s) { return s.id === sourceId; });
+                if (!source) return;
+                filter.value = sourceId;
+                filter.displayValue = source.name;
+                self.tempFilter.evaluationSource(null);
                 break;
 
             case 'dateRange':
@@ -486,6 +501,9 @@ function ListeningsViewModel() {
                     break;
                 case 'status':
                     params.status = filter.value;
+                    break;
+                case 'evaluationSource':
+                    params.evaluationSource = filter.value;
                     break;
                 case 'dateRange':
                     if (filter.value.startDate) params.startDate = filter.value.startDate;

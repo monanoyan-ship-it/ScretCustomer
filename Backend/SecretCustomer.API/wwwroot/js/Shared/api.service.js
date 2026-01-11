@@ -108,6 +108,72 @@ var apiService = (function() {
                 headers: getHeaders(),
                 credentials: 'include'
             }).then(handleResponse);
+        },
+
+        // POST ile dosya indirme (Excel, PDF vb.)
+        downloadPost: function(endpoint, data, filename) {
+            return fetch(BASE_URL + endpoint, {
+                method: 'POST',
+                headers: getHeaders(),
+                credentials: 'include',
+                body: JSON.stringify(data)
+            }).then(function(response) {
+                if (!response.ok) {
+                    return response.text().then(function(text) {
+                        var errorMsg = 'Dosya indirme hatası';
+                        try {
+                            var jsonError = JSON.parse(text);
+                            errorMsg = jsonError.message || errorMsg;
+                        } catch (e) {
+                            errorMsg = 'Hata kodu: ' + response.status;
+                        }
+                        return Promise.reject({ message: errorMsg });
+                    });
+                }
+                return response.blob();
+            }).then(function(blob) {
+                // Blob'u dosya olarak indir
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'download';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            });
+        },
+
+        // GET ile dosya indirme
+        downloadGet: function(endpoint, filename) {
+            return fetch(BASE_URL + endpoint, {
+                method: 'GET',
+                headers: getHeaders(),
+                credentials: 'include'
+            }).then(function(response) {
+                if (!response.ok) {
+                    return response.text().then(function(text) {
+                        var errorMsg = 'Dosya indirme hatası';
+                        try {
+                            var jsonError = JSON.parse(text);
+                            errorMsg = jsonError.message || errorMsg;
+                        } catch (e) {
+                            errorMsg = 'Hata kodu: ' + response.status;
+                        }
+                        return Promise.reject({ message: errorMsg });
+                    });
+                }
+                return response.blob();
+            }).then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'download';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            });
         }
     };
 })();

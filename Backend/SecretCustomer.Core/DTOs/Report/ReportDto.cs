@@ -25,6 +25,9 @@ public class ReportFilterDto
     // Status filter
     public string? Status { get; set; }
 
+    // Evaluation source filter (ours/internal)
+    public string? EvaluationSource { get; set; }
+
     // Sorting
     public string? SortField { get; set; }
     public string? SortDirection { get; set; } = "desc";

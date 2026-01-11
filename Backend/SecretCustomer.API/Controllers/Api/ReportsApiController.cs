@@ -62,12 +62,20 @@ public class ReportsApiController : BaseApiController
                 });
             }
 
+            // Evaluation source types (simplified: our evaluations vs customer internal)
+            var evaluationSources = new List<object>
+            {
+                new { id = "ours", name = await _localizationService.GetResourceAsync("Listenings.EvaluationSource.Ours") },
+                new { id = "internal", name = await _localizationService.GetResourceAsync("Listenings.EvaluationSource.Internal") }
+            };
+
             return Ok(new
             {
                 customers = customers.Select(c => new { c.Id, c.CompanyName }),
                 projects = projects.Select(p => new { p.Id, p.Name, p.Code, p.CustomerId }),
                 evaluators = evaluators.Select(e => new { e.Id, Name = $"{e.FirstName} {e.LastName}" }),
-                dateRanges
+                dateRanges,
+                evaluationSources
             });
         }
         catch (Exception ex)
