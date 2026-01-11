@@ -5542,6 +5542,12 @@
   <LocaleResource Name="Assignment.SelectProject">
     <Value>You must select a project!</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.SearchProject">
+    <Value>Search project, customer or organization...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ChooseProject">
+    <Value>Select Project...</Value>
+  </LocaleResource>
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Assignment updated successfully.</Value>
   </LocaleResource>

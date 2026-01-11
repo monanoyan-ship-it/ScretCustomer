@@ -5397,6 +5397,12 @@
   <LocaleResource Name="Assignment.SelectProject">
     <Value>Sie müssen ein Projekt auswählen!</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.SearchProject">
+    <Value>Projekt, Kunde oder Organisation suchen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ChooseProject">
+    <Value>Projekt auswählen...</Value>
+  </LocaleResource>
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Zuweisung erfolgreich aktualisiert.</Value>
   </LocaleResource>

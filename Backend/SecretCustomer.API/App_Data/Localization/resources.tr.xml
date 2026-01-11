@@ -5542,6 +5542,12 @@
   <LocaleResource Name="Assignment.SelectProject">
     <Value>Proje seçmelisiniz!</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.SearchProject">
+    <Value>Proje, müşteri veya organizasyon ara...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.ChooseProject">
+    <Value>Proje Seçiniz...</Value>
+  </LocaleResource>
   <LocaleResource Name="Assignment.UpdateSuccess">
     <Value>Atama başarıyla güncellendi.</Value>
   </LocaleResource>

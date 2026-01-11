@@ -14,6 +14,25 @@ function InternalAssignmentsViewModel() {
     self.availableProjects = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
 
+    // Project Picker
+    self.projectPickerSearch = ko.observable('');
+    self.isProjectPickerOpen = ko.observable(false);
+    self.selectedProjectForDisplay = ko.observable(null);
+
+    self.filteredProjectsForPicker = ko.computed(function() {
+        var search = (self.projectPickerSearch() || '').toLowerCase().trim();
+        var projects = self.availableProjects();
+
+        if (!search) return projects;
+
+        return projects.filter(function(p) {
+            return (p.name && p.name.toLowerCase().indexOf(search) > -1) ||
+                   (p.code && p.code.toLowerCase().indexOf(search) > -1) ||
+                   (p.customerName && p.customerName.toLowerCase().indexOf(search) > -1) ||
+                   (p.organizationName && p.organizationName.toLowerCase().indexOf(search) > -1);
+        });
+    });
+
     // ===== Sorting =====
     self.sorting = TableSorting.createSortState('dueDate', 'asc');
 
@@ -210,9 +229,36 @@ function InternalAssignmentsViewModel() {
         self.newAssignment.roleFilter('');
         self.newAssignment.personnelIds([]);
         self.availablePersonnel([]);
+        self.selectedProjectForDisplay(null);
+        self.projectPickerSearch('');
+        self.isProjectPickerOpen(false);
 
         var modal = new bootstrap.Modal(document.getElementById('createModal'));
         modal.show();
+    };
+
+    // Project Picker Methods
+    self.toggleProjectPicker = function() {
+        if (!self.newAssignment.customerId()) {
+            toastr.warning(T('InternalAssignments.SelectCustomerFirst', 'Önce müşteri seçiniz'));
+            return;
+        }
+        self.isProjectPickerOpen(!self.isProjectPickerOpen());
+        if (self.isProjectPickerOpen()) {
+            self.projectPickerSearch('');
+        }
+    };
+
+    self.selectProject = function(project) {
+        self.newAssignment.projectId(project.id);
+        self.selectedProjectForDisplay(project);
+        self.isProjectPickerOpen(false);
+        self.projectPickerSearch('');
+    };
+
+    self.clearSelectedProject = function() {
+        self.newAssignment.projectId(null);
+        self.selectedProjectForDisplay(null);
     };
 
     self.createAssignments = function() {
@@ -388,6 +434,8 @@ function InternalAssignmentsViewModel() {
         }
         self.newAssignment.projectId(null);
         self.newAssignment.personnelIds([]);
+        self.selectedProjectForDisplay(null);
+        self.isProjectPickerOpen(false);
     });
 
     self.newAssignment.roleFilter.subscribe(function() {

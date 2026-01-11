@@ -151,6 +151,25 @@ function AssignmentsViewModel() {
     self.availableFieldWorkers = ko.observableArray([]);
     self.selectedProjectChecklistName = ko.observable('');
 
+    // Project Picker
+    self.projectPickerSearch = ko.observable('');
+    self.isProjectPickerOpen = ko.observable(false);
+    self.selectedProjectForDisplay = ko.observable(null);
+
+    self.filteredProjectsForPicker = ko.computed(function() {
+        var search = (self.projectPickerSearch() || '').toLowerCase().trim();
+        var projects = self.availableProjects();
+
+        if (!search) return projects;
+
+        return projects.filter(function(p) {
+            return (p.name && p.name.toLowerCase().indexOf(search) > -1) ||
+                   (p.code && p.code.toLowerCase().indexOf(search) > -1) ||
+                   (p.customerName && p.customerName.toLowerCase().indexOf(search) > -1) ||
+                   (p.organizationName && p.organizationName.toLowerCase().indexOf(search) > -1);
+        });
+    });
+
     // Summary
     self.summary = ko.observable({
         totalAssignments: 0,
@@ -355,7 +374,41 @@ function AssignmentsViewModel() {
     self.createNew = function() {
         self.isEditing(false);
         self.editingAssignment(new AssignmentEditViewModel());
-        self.selectedProjectChecklistName('');        self.isModalOpen(true);
+        self.selectedProjectChecklistName('');
+        self.selectedProjectForDisplay(null);
+        self.projectPickerSearch('');
+        self.isProjectPickerOpen(false);
+        self.isModalOpen(true);
+    };
+
+    // Project Picker Methods
+    self.toggleProjectPicker = function() {
+        self.isProjectPickerOpen(!self.isProjectPickerOpen());
+        if (self.isProjectPickerOpen()) {
+            self.projectPickerSearch('');
+        }
+    };
+
+    self.selectProject = function(project) {
+        var assignment = self.editingAssignment();
+        if (!assignment) return;
+
+        assignment.projectId(project.id);
+        assignment.checklistId(project.checklistId);
+        self.selectedProjectChecklistName(project.checklistName || '');
+        self.selectedProjectForDisplay(project);
+        self.isProjectPickerOpen(false);
+        self.projectPickerSearch('');
+    };
+
+    self.clearSelectedProject = function() {
+        var assignment = self.editingAssignment();
+        if (!assignment) return;
+
+        assignment.projectId('');
+        assignment.checklistId('');
+        self.selectedProjectChecklistName('');
+        self.selectedProjectForDisplay(null);
     };
 
     self.onProjectChange = function() {
@@ -366,6 +419,7 @@ function AssignmentsViewModel() {
         if (!projectId) {
             assignment.checklistId('');
             self.selectedProjectChecklistName('');
+            self.selectedProjectForDisplay(null);
             return;
         }
 
@@ -377,6 +431,7 @@ function AssignmentsViewModel() {
         if (selectedProject) {
             assignment.checklistId(selectedProject.checklistId);
             self.selectedProjectChecklistName(selectedProject.checklistName || '');
+            self.selectedProjectForDisplay(selectedProject);
         }
     };
 
@@ -405,7 +460,8 @@ function AssignmentsViewModel() {
         var url = isEdit ? '/api/assignments/' + assignmentId : '/api/assignments';
         var method = isEdit ? 'PUT' : 'POST';
 
-        self.isSaving(true);        fetch(url, {
+        self.isSaving(true);
+        fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -464,7 +520,8 @@ function AssignmentsViewModel() {
     self.closeModal = function() {
         self.isModalOpen(false);
         self.editingAssignment(null);
-        self.isEditing(false);    };
+        self.isEditing(false);
+    };
 
     // ===== Reassign =====
     self.openReassignModal = function(assignment) {
