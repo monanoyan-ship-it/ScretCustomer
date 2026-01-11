@@ -26,11 +26,13 @@ public class ReportService : IReportService
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.Supervisor)
             .Include(e => e.AssignmentPeriod)
+            .Include(e => e.Answers)
             .AsQueryable();
 
         // Apply filters
@@ -179,6 +181,7 @@ public class ReportService : IReportService
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.Customer)
@@ -207,7 +210,9 @@ public class ReportService : IReportService
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
-                : null,
+                : (evaluation.EvaluatorCustomerPersonnel != null
+                    ? $"{evaluation.EvaluatorCustomerPersonnel.FirstName} {evaluation.EvaluatorCustomerPersonnel.LastName}"
+                    : null),
             EvaluatedPersonnelName = evaluation.EvaluatedCustomerPersonnel != null
                 ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
                 : (evaluation.EvaluatedPersonnel != null
@@ -267,6 +272,169 @@ public class ReportService : IReportService
         };
 
         return dto;
+    }
+
+    public async Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId)
+    {
+        var detail = await GetEvaluationDetailAsync(evaluationId);
+        if (detail == null)
+            return null;
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Değerlendirme Detayı");
+
+        int row = 1;
+
+        // ===== 3 BÖLÜM YAN YANA =====
+        // Başlık satırı
+        worksheet.Cell(row, 1).Value = "Değerlendirilen Bilgileri";
+        worksheet.Cell(row, 1).Style.Font.Bold = true;
+        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        worksheet.Range(row, 1, row, 2).Merge();
+
+        worksheet.Cell(row, 3).Value = "Çağrı Bilgileri";
+        worksheet.Cell(row, 3).Style.Font.Bold = true;
+        worksheet.Cell(row, 3).Style.Fill.BackgroundColor = XLColor.LightGray;
+        worksheet.Range(row, 3, row, 4).Merge();
+
+        worksheet.Cell(row, 5).Value = "Değerlendirme Bilgileri";
+        worksheet.Cell(row, 5).Style.Font.Bold = true;
+        worksheet.Cell(row, 5).Style.Fill.BackgroundColor = XLColor.LightGray;
+        worksheet.Range(row, 5, row, 6).Merge();
+        row++;
+
+        // Satır 1
+        worksheet.Cell(row, 1).Value = "Müşteri";
+        worksheet.Cell(row, 2).Value = detail.CustomerName ?? "-";
+        worksheet.Cell(row, 3).Value = "Çağrı ID";
+        worksheet.Cell(row, 4).Value = detail.CallId ?? "-";
+        worksheet.Cell(row, 5).Value = "Değerlendiren";
+        worksheet.Cell(row, 6).Value = detail.EvaluatorName ?? "-";
+        row++;
+
+        // Satır 2
+        worksheet.Cell(row, 1).Value = "Organizasyon";
+        worksheet.Cell(row, 2).Value = detail.OrganizationName ?? "-";
+        worksheet.Cell(row, 3).Value = "Çağrı Tarihi";
+        worksheet.Cell(row, 4).Value = detail.CallDate?.ToString("dd.MM.yyyy") ?? "-";
+        worksheet.Cell(row, 5).Value = "Tamamlanma";
+        worksheet.Cell(row, 6).Value = detail.CompletedAt?.ToString("dd.MM.yyyy HH:mm:ss") ?? "-";
+        row++;
+
+        // Satır 3
+        worksheet.Cell(row, 1).Value = "Değerlendirilen";
+        worksheet.Cell(row, 2).Value = detail.EvaluatedPersonnelName ?? "-";
+        worksheet.Cell(row, 3).Value = "Süre";
+        worksheet.Cell(row, 4).Value = detail.Duration ?? "-";
+        worksheet.Cell(row, 5).Value = "Durum";
+        worksheet.Cell(row, 6).Value = detail.Status ?? "-";
+        row++;
+
+        row++; // Boş satır
+
+        // ===== SORU DETAYLARI TABLOSU =====
+        var tableHeaders = new[] { "Grup", "Soru", "Cevap", "Ağırlık", "Kazanılan", "Not" };
+        for (int i = 0; i < tableHeaders.Length; i++)
+        {
+            worksheet.Cell(row, i + 1).Value = tableHeaders[i];
+            worksheet.Cell(row, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(row, i + 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Cell(row, i + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        }
+        row++;
+
+        // Tüm soruları düzleştir (flatten)
+        var allQuestions = new List<(string GroupName, QuestionAnswerReportDto Question)>();
+        foreach (var group in detail.Groups)
+        {
+            foreach (var question in group.Questions)
+            {
+                allQuestions.Add((group.GroupName, question));
+            }
+        }
+
+        // Soruları listele
+        string previousGroup = "";
+        for (int i = 0; i < allQuestions.Count; i++)
+        {
+            var (groupName, question) = allQuestions[i];
+
+            // Grup: Önceki satırla aynıysa boş, farklıysa göster
+            var showGroup = groupName != previousGroup;
+            worksheet.Cell(row, 1).Value = showGroup ? groupName : "";
+            previousGroup = groupName;
+
+            // Soru (alt kriterler varsa altına ekle)
+            var questionText = question.QuestionText ?? "";
+            if (question.SelectedSubCriteria != null && question.SelectedSubCriteria.Count > 0)
+            {
+                questionText += "\n  → " + string.Join("\n  → ", question.SelectedSubCriteria);
+            }
+            worksheet.Cell(row, 2).Value = questionText;
+            worksheet.Cell(row, 2).Style.Alignment.WrapText = true;
+
+            // Cevap: Kazanılan/Ağırlık formatında
+            var maxPts = question.MaxPoints ?? 0;
+            var earnedPts = question.GivenPoints ?? 0;
+            string answerDisplay;
+            if (question.IsNA)
+                answerDisplay = "N/A";
+            else if (maxPts > 0)
+                answerDisplay = $"{earnedPts:F0}/{maxPts:F0}";
+            else
+                answerDisplay = "-";
+            worksheet.Cell(row, 3).Value = answerDisplay;
+
+            // Ağırlık
+            worksheet.Cell(row, 4).Value = maxPts > 0 ? maxPts : (decimal?)null;
+
+            // Kazanılan
+            worksheet.Cell(row, 5).Value = maxPts > 0 ? earnedPts : (decimal?)null;
+
+            // Not (ceza varsa başına emoji ekle)
+            var noteText = question.Notes ?? "";
+            if (!string.IsNullOrEmpty(question.PenaltyType) && question.PenaltyType != "None")
+            {
+                var penaltyLabel = question.PenaltyType == "YellowCard" ? "[Sarı Kart] " :
+                                   question.PenaltyType == "RedCard" ? "[Kırmızı Kart] " : "";
+                noteText = penaltyLabel + noteText;
+            }
+            worksheet.Cell(row, 6).Value = noteText;
+
+            // Satır border
+            for (int c = 1; c <= 6; c++)
+                worksheet.Cell(row, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+            row++;
+        }
+
+        row++; // Boş satır
+
+        // ===== GENEL YORUM =====
+        worksheet.Cell(row, 1).Value = "Genel Yorum";
+        worksheet.Cell(row, 1).Style.Font.Bold = true;
+        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        row++;
+        worksheet.Cell(row, 1).Value = detail.Comment ?? "-";
+        worksheet.Range(row, 1, row, 6).Merge();
+
+        // Sütun genişlikleri
+        worksheet.Column(1).Width = 25; // Grup
+        worksheet.Column(2).Width = 40; // Soru
+        worksheet.Column(3).Width = 12; // Cevap
+        worksheet.Column(4).Width = 10; // Ağırlık
+        worksheet.Column(5).Width = 12; // Kazanılan
+        worksheet.Column(6).Width = 35; // Not
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Degerlendirme_Detay_{evaluationId}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
     }
 
     public async Task<SummaryReportDto> GetSummaryReportAsync(ReportFilterDto filter)
@@ -498,6 +666,27 @@ public class ReportService : IReportService
 
     private EvaluationReportDto MapToReportDto(Core.Entities.Evaluation evaluation)
     {
+        // Tüm yorumları topla: soru notları + genel değerlendirme yorumu
+        var allComments = new List<string>();
+
+        // Soru notlarını ekle (Notes alanı dolu olanlar)
+        if (evaluation.Answers != null)
+        {
+            var answerNotes = evaluation.Answers
+                .Where(a => !string.IsNullOrWhiteSpace(a.Notes))
+                .Select(a => a.Notes!)
+                .ToList();
+            allComments.AddRange(answerNotes);
+        }
+
+        // Genel değerlendirme yorumunu ekle
+        if (!string.IsNullOrWhiteSpace(evaluation.EvaluationComment))
+        {
+            allComments.Add(evaluation.EvaluationComment);
+        }
+
+        var combinedComment = allComments.Count > 0 ? string.Join(", ", allComments) : "-";
+
         return new EvaluationReportDto
         {
             EvaluationId = evaluation.Id,
@@ -507,7 +696,9 @@ public class ReportService : IReportService
             ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
-                : null,
+                : (evaluation.EvaluatorCustomerPersonnel != null
+                    ? $"{evaluation.EvaluatorCustomerPersonnel.FirstName} {evaluation.EvaluatorCustomerPersonnel.LastName}"
+                    : null),
             EvaluatedPersonnelName = evaluation.EvaluatedCustomerPersonnel != null
                 ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
                 : (evaluation.EvaluatedPersonnel != null
@@ -535,7 +726,7 @@ public class ReportService : IReportService
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
-            Comment = evaluation.EvaluationComment
+            Comment = combinedComment
         };
     }
 
@@ -1453,5 +1644,453 @@ public class ReportService : IReportService
 
         var monthName = _localizationService.GetResourceAsync(month.NameResourceKey).Result;
         return $"{monthName} {date.Year}";
+    }
+
+    // ===== SORU GRUBU ORTALAMA RAPORU =====
+
+    public async Task<ExcelExportDto> ExportQuestionGroupAverageReportAsync(ReportFilterDto filter)
+    {
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.AssignmentPeriod)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
+            .AsQueryable();
+
+        // Apply filters (same as GetEvaluationsAsync)
+        if (filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+
+        if (filter.ChecklistId.HasValue)
+            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
+
+        // Customer filter
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Organization filter
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+
+        // Period filter
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        // Evaluation source filter
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            else if (filter.EvaluationSource == "ours")
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+        }
+
+        var evaluations = await query.Take(10000).ToListAsync();
+
+        // Flatten to answer level and calculate group averages
+        var groupData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName) && !a.IsNA)
+                .Select(a => new
+                {
+                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
+                    Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                    GroupOrder = a.Question!.GroupName!.Split(' ').FirstOrDefault() ?? "",
+                    GroupName = a.Question.GroupName,
+                    EarnedPoints = a.EarnedPoints ?? 0,
+                    MaxPoints = a.Question.WeightPoints,
+                    EvaluationId = e.Id
+                }))
+            .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.GroupName })
+            .Select(g => new QuestionGroupAverageReportDto
+            {
+                ProjectName = $"{g.Key.ProjectName} {g.Key.PeriodName}",
+                GroupName = g.Key.GroupName,
+                Year = g.Key.Year,
+                EvaluationCount = g.Select(x => x.EvaluationId).Distinct().Count(),
+                AverageScore = g.Sum(x => x.MaxPoints) > 0
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 0)
+                    : 0
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.GroupName)
+            .ToList();
+
+        // Excel oluştur
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Soru Grubu Ortalama Raporu");
+
+        // Headers
+        var headers = new[] { "Proje", "Kontrol Grubu", "Periyot", "Ortalama Puan" };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data
+        int row = 2;
+        foreach (var item in groupData)
+        {
+            worksheet.Cell(row, 1).Value = item.ProjectName;
+            worksheet.Cell(row, 2).Value = item.GroupName;
+            worksheet.Cell(row, 3).Value = item.Year;
+            worksheet.Cell(row, 4).Value = item.AverageScore;
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Soru_Grubu_Ortalama_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    // ===== MÜŞTERİ DEĞERLENDİRME RAPORU =====
+
+    public async Task<ExcelExportDto> ExportCustomerEvaluationReportAsync(ReportFilterDto filter)
+    {
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.AssignmentPeriod)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.Customer)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.Answers)
+            .AsQueryable();
+
+        // Apply filters (same as GetEvaluationsAsync)
+        if (filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+
+        if (filter.ChecklistId.HasValue)
+            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
+            if (statusItem != null)
+                query = query.Where(e => e.StatusId == statusItem.Id);
+        }
+
+        // Evaluation source filter
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            else if (filter.EvaluationSource == "ours")
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+        }
+
+        // Customer filter
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Organization filter
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+
+        // Period filter
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        // Evaluated Personnel name search
+        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        {
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
+                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
+                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+        }
+
+        // CallId search
+        if (!string.IsNullOrEmpty(filter.CallId))
+            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .Take(10000)
+            .ToListAsync();
+
+        // Excel oluştur
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Müşteri Değerlendirme Raporu");
+
+        // Headers
+        var headers = new[]
+        {
+            "Firma",           // Customer.CompanyName
+            "Proje",           // Project.Name
+            "Değerlendirilen", // Period veya AyYıl + Company
+            "Kişi",            // EvaluatedPersonnelName
+            "Departman",       // Organization.Name
+            "Çağrı No",        // CallId
+            "Kontrol Tarihi",  // ControlDate
+            "Saat",            // CallTime
+            "Süre",            // Duration
+            "Yorum",           // Combined comments
+            "Periyot",         // Year
+            "Periyot (Ay)",    // YYYYMM
+            "Toplam Puan",     // ScorePercentage
+            "Açıklama"         // EvaluationComment
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data
+        int row = 2;
+        foreach (var e in evaluations)
+        {
+            // Firma
+            var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName ?? "";
+
+            // Değerlendirilen: Period varsa period adı, yoksa AyYıl + Company
+            var evalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt;
+            var degerlendirilenmStr = e.AssignmentPeriod != null
+                ? e.AssignmentPeriod.Name
+                : $"{FormatMonthYear(evalDate)} - {customerName}";
+
+            // Kişi
+            var personnelName = e.EvaluatedCustomerPersonnel != null
+                ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
+                : (e.EvaluatedPersonnel != null
+                    ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
+                    : e.EvaluatedUnknownPersonnel ?? "");
+
+            // Departman
+            var departmentName = e.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
+                ? string.Join(", ", e.EvaluatedCustomerPersonnel.OrganizationAssignments
+                    .Where(oa => oa.CustomerOrganization != null)
+                    .Select(oa => oa.CustomerOrganization!.Name))
+                : "";
+
+            // Yorum: Tüm answer notes + genel yorum (virgülle birleşik)
+            var allComments = new List<string>();
+            if (e.Answers != null)
+            {
+                var answerNotes = e.Answers
+                    .Where(a => !string.IsNullOrWhiteSpace(a.Notes))
+                    .Select(a => a.Notes!)
+                    .ToList();
+                allComments.AddRange(answerNotes);
+            }
+            if (!string.IsNullOrWhiteSpace(e.EvaluationComment))
+            {
+                allComments.Add(e.EvaluationComment);
+            }
+            var combinedComment = allComments.Count > 0 ? string.Join(", ", allComments) : "-";
+
+            // Periyot (Ay) - YYYYMM formatı
+            var periodMonth = evalDate.ToString("yyyyMM");
+
+            worksheet.Cell(row, 1).Value = customerName;
+            worksheet.Cell(row, 2).Value = e.Assignment.Project?.Name ?? "";
+            worksheet.Cell(row, 3).Value = degerlendirilenmStr;
+            worksheet.Cell(row, 4).Value = personnelName;
+            worksheet.Cell(row, 5).Value = departmentName;
+            worksheet.Cell(row, 6).Value = e.CallId ?? "";
+            worksheet.Cell(row, 7).Value = (e.ControlDate ?? e.CallDate)?.ToString("dd.MM.yyyy") ?? "";
+            worksheet.Cell(row, 8).Value = e.CallTime ?? (e.CallDate?.ToString("HH:mm") ?? "");
+            worksheet.Cell(row, 9).Value = e.Duration ?? "";
+            worksheet.Cell(row, 10).Value = combinedComment;
+            worksheet.Cell(row, 11).Value = evalDate.Year;
+            worksheet.Cell(row, 12).Value = periodMonth;
+            worksheet.Cell(row, 13).Value = e.ScorePercentage ?? 0;
+            worksheet.Cell(row, 14).Value = e.EvaluationComment ?? "";
+
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Musteri_Degerlendirme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    // ===== PROJE PERFORMANS RAPORU =====
+
+    public async Task<ExcelExportDto> ExportProjectPerformanceReportAsync(ReportFilterDto filter)
+    {
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.AssignmentPeriod)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue)
+            .AsQueryable();
+
+        // Apply filters
+        if (filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+
+        if (filter.ChecklistId.HasValue)
+            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
+
+        // Customer filter
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Organization filter
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+
+        // Period filter
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        // Evaluation source filter
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            else if (filter.EvaluationSource == "ours")
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+        }
+
+        var evaluations = await query.Take(50000).ToListAsync();
+
+        // Group by Period (Month) + Project and calculate averages
+        var projectData = evaluations
+            .Select(e => new
+            {
+                EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                ProjectName = e.AssignmentPeriod?.Name ?? e.Assignment.Project?.Name ?? "",
+                ScorePercentage = e.ScorePercentage!.Value
+            })
+            .GroupBy(x => new
+            {
+                PeriodMonth = x.EvalDate.ToString("yyyyMM"),
+                Year = x.EvalDate.Year,
+                x.ProjectName
+            })
+            .Select(g => new
+            {
+                PeriodMonth = g.Key.PeriodMonth,
+                ProjectName = g.Key.ProjectName,
+                Year = g.Key.Year,
+                AverageScore = Math.Round(g.Average(x => x.ScorePercentage), 2),
+                EvaluationCount = g.Count()
+            })
+            .OrderByDescending(x => x.PeriodMonth)
+            .ThenByDescending(x => x.AverageScore)
+            .ToList();
+
+        // Excel oluştur
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Proje Performans Raporu");
+
+        // Headers
+        var headers = new[] { "Periyot (Ay)", "Proje", "Periyot", "Ortalama Puan" };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data
+        int row = 2;
+        foreach (var item in projectData)
+        {
+            worksheet.Cell(row, 1).Value = item.PeriodMonth;
+            worksheet.Cell(row, 2).Value = item.ProjectName;
+            worksheet.Cell(row, 3).Value = item.Year;
+            worksheet.Cell(row, 4).Value = item.AverageScore;
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Proje_Performans_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
     }
 }

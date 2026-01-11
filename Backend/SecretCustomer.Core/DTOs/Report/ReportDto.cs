@@ -471,3 +471,37 @@ public class QuestionSuggestionSummaryDto
     public int SuggestionCount { get; set; }
     public decimal AverageScore { get; set; }
 }
+
+// ===== SORU GRUBU ORTALAMA RAPORU DTO'LARI =====
+
+/// <summary>
+/// Soru Grubu Ortalama Raporu satırı
+/// Proje + Periyot + Kontrol Grubu bazında ortalama puan
+/// </summary>
+public class QuestionGroupAverageReportDto
+{
+    /// <summary>
+    /// Proje adı (periyot dahil: "Proje Adı Aralık2025")
+    /// </summary>
+    public string ProjectName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Kontrol grubu adı (sıra numarası dahil: "1 Çağrı Standartlarına Uyum")
+    /// </summary>
+    public string GroupName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Periyot (Yıl)
+    /// </summary>
+    public int Year { get; set; }
+
+    /// <summary>
+    /// Ortalama puan (yüzde)
+    /// </summary>
+    public decimal AverageScore { get; set; }
+
+    /// <summary>
+    /// Değerlendirme sayısı
+    /// </summary>
+    public int EvaluationCount { get; set; }
+}

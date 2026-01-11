@@ -10,6 +10,9 @@ public interface IReportService
     // Değerlendirme detayı
     Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId);
 
+    // Değerlendirme detayı Excel export
+    Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId);
+
     // Özet rapor
     Task<SummaryReportDto> GetSummaryReportAsync(ReportFilterDto filter);
 
@@ -51,4 +54,19 @@ public interface IReportService
 
     // Çağrı Denetleme Raporu Excel export
     Task<ExcelExportDto> ExportCallAuditReportAsync(ReportFilterDto filter);
+
+    // ===== SORU GRUBU ORTALAMA RAPORU =====
+
+    // Soru Grubu Ortalama Raporu Excel export
+    Task<ExcelExportDto> ExportQuestionGroupAverageReportAsync(ReportFilterDto filter);
+
+    // ===== MÜŞTERİ DEĞERLENDİRME RAPORU =====
+
+    // Müşteri Değerlendirme Raporu Excel export
+    Task<ExcelExportDto> ExportCustomerEvaluationReportAsync(ReportFilterDto filter);
+
+    // ===== PROJE PERFORMANS RAPORU =====
+
+    // Proje Performans Raporu Excel export
+    Task<ExcelExportDto> ExportProjectPerformanceReportAsync(ReportFilterDto filter);
 }

@@ -657,6 +657,18 @@ function ListeningsViewModel() {
             });
     };
 
+    // Dosya adı için timestamp oluştur (yyyyMMddHHmmss)
+    self.getTimestamp = function() {
+        var now = new Date();
+        var yyyy = now.getFullYear();
+        var MM = String(now.getMonth() + 1).padStart(2, '0');
+        var dd = String(now.getDate()).padStart(2, '0');
+        var HH = String(now.getHours()).padStart(2, '0');
+        var mm = String(now.getMinutes()).padStart(2, '0');
+        var ss = String(now.getSeconds()).padStart(2, '0');
+        return yyyy + MM + dd + HH + mm + ss;
+    };
+
     // Çağrı Denetleme Raporu
     self.exportCallAuditReport = function() {
         self.isExporting(true);
@@ -665,13 +677,107 @@ function ListeningsViewModel() {
         delete params.page;
         delete params.pageSize;
 
-        ApiService.downloadPost('/reports/export/call-audit', params, 'Cagri_Denetleme_Raporu.xlsx')
+        var filename = 'Cagri_Denetleme_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/call-audit', params, filename)
             .then(function() {
                 toastr.success('Çağrı Denetleme Raporu indirildi');
                 self.closeReportsModal();
             })
             .catch(function(error) {
                 console.error('Error exporting call audit report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Soru Grubu Ortalama Raporu
+    self.exportQuestionGroupAverageReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        var filename = 'Soru_Grubu_Ortalama_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/question-group-average', params, filename)
+            .then(function() {
+                toastr.success('Soru Grubu Ortalama Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting question group average report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Müşteri Değerlendirme Raporu
+    self.exportCustomerEvaluationReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        var filename = 'Musteri_Degerlendirme_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/customer-evaluation', params, filename)
+            .then(function() {
+                toastr.success('Müşteri Değerlendirme Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting customer evaluation report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Proje Performans Raporu
+    self.exportProjectPerformanceReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        var filename = 'Proje_Performans_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/project-performance', params, filename)
+            .then(function() {
+                toastr.success('Proje Performans Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting project performance report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Değerlendirme Detay Excel Export
+    self.exportDetailToExcel = function() {
+        var evaluation = self.selectedEvaluation();
+        if (!evaluation || !evaluation.evaluationId) {
+            toastr.error('Değerlendirme bilgisi bulunamadı');
+            return;
+        }
+
+        self.isExporting(true);
+
+        var filename = 'Degerlendirme_Detay_' + evaluation.evaluationId + '_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadGet('/reports/evaluations/' + evaluation.evaluationId + '/export', filename)
+            .then(function() {
+                toastr.success('Değerlendirme detayı indirildi');
+            })
+            .catch(function(error) {
+                console.error('Error exporting evaluation detail:', error);
                 toastr.error('Rapor oluşturulurken hata oluştu');
             })
             .finally(function() {

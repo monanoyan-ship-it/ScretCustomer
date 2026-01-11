@@ -143,6 +143,27 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Değerlendirme detayı Excel export
+    /// </summary>
+    [HttpGet("evaluations/{evaluationId}/export")]
+    public async Task<IActionResult> ExportEvaluationDetail(int evaluationId)
+    {
+        try
+        {
+            var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId);
+            if (result == null)
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting evaluation detail {EvaluationId}", evaluationId);
+            return StatusCode(500, CreateErrorResponse("Değerlendirme detayı export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Özet rapor
     /// </summary>
     [HttpPost("summary")]
@@ -211,6 +232,60 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error exporting call audit report to Excel");
             return StatusCode(500, CreateErrorResponse("Çağrı denetleme raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Soru Grubu Ortalama Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/question-group-average")]
+    public async Task<IActionResult> ExportQuestionGroupAverageReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportQuestionGroupAverageReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting question group average report to Excel");
+            return StatusCode(500, CreateErrorResponse("Soru grubu ortalama raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Müşteri Değerlendirme Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/customer-evaluation")]
+    public async Task<IActionResult> ExportCustomerEvaluationReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportCustomerEvaluationReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting customer evaluation report to Excel");
+            return StatusCode(500, CreateErrorResponse("Müşteri değerlendirme raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Proje Performans Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/project-performance")]
+    public async Task<IActionResult> ExportProjectPerformanceReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportProjectPerformanceReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting project performance report to Excel");
+            return StatusCode(500, CreateErrorResponse("Proje performans raporu oluşturulurken hata oluştu.", ex));
         }
     }
 
