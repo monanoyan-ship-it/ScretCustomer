@@ -194,7 +194,7 @@ public class CustomerPortalApiController : ControllerBase
             return new List<int> { personnelId.Value };
         }
 
-        // CustomerOperator/CustomerViewer sadece kendini görebilir
+        // CustomerOperator sadece kendini görebilir
         if (personnelId.HasValue)
             return new List<int> { personnelId.Value };
 

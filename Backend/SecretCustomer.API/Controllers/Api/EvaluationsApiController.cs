@@ -121,12 +121,24 @@ public class EvaluationsApiController : BaseApiController
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
             }
 
-            var evaluations = await _evaluationService.GetByEvaluatorIdAsync(userId);
+            // CustomerPersonnel kullanıcıları için EvaluatorCustomerPersonnelId ile filtrele
+            IEnumerable<EvaluationDto> evaluations;
+            if (userType == "CustomerPersonnel")
+            {
+                evaluations = await _evaluationService.GetByEvaluatorCustomerPersonnelIdAsync(userId);
+            }
+            else
+            {
+                evaluations = await _evaluationService.GetByEvaluatorIdAsync(userId);
+            }
+
             return Ok(evaluations);
         }
         catch (Exception ex)
@@ -260,11 +272,25 @@ public class EvaluationsApiController : BaseApiController
     {
         try
         {
-            // Set evaluator from current user if not provided
-            if (!dto.EvaluatorId.HasValue)
+            // Personel kontrolü - en az biri dolu olmalı
+            if (!HasEvaluatedPersonnel(dto))
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.PersonnelRequired")));
+            }
+
+            // Set evaluator from current user if not provided
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+            {
+                // CustomerPersonnel kullanıcıları için EvaluatorCustomerPersonnelId kullan
+                if (userType == "CustomerPersonnel")
+                {
+                    dto.EvaluatorCustomerPersonnelId = userId;
+                    dto.EvaluatorId = null; // Users tablosunda yok
+                }
+                else if (!dto.EvaluatorId.HasValue)
                 {
                     dto.EvaluatorId = userId;
                 }
@@ -297,11 +323,25 @@ public class EvaluationsApiController : BaseApiController
     {
         try
         {
-            // Set evaluator from current user if not provided
-            if (!dto.EvaluatorId.HasValue)
+            // Personel kontrolü - en az biri dolu olmalı
+            if (!HasEvaluatedPersonnel(dto))
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.PersonnelRequired")));
+            }
+
+            // Set evaluator from current user if not provided
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+            {
+                // CustomerPersonnel kullanıcıları için EvaluatorCustomerPersonnelId kullan
+                if (userType == "CustomerPersonnel")
+                {
+                    dto.EvaluatorCustomerPersonnelId = userId;
+                    dto.EvaluatorId = null; // Users tablosunda yok
+                }
+                else if (!dto.EvaluatorId.HasValue)
                 {
                     dto.EvaluatorId = userId;
                 }
@@ -512,6 +552,18 @@ public class EvaluationsApiController : BaseApiController
             _logger.LogError(ex, "Error creating revert request for evaluation {EvaluationId}", id);
             return StatusCode(500, CreateErrorResponse("Talep oluşturulurken bir hata oluştu.", ex));
         }
+    }
+
+    /// <summary>
+    /// Değerlendirilen personel bilgisi var mı kontrol eder
+    /// EvaluatedPersonnelId, EvaluatedCustomerPersonnelId, EvaluatedUnknownPersonnel veya NewPersonnel'den biri dolu olmalı
+    /// </summary>
+    private static bool HasEvaluatedPersonnel(SubmitEvaluationDto dto)
+    {
+        return dto.EvaluatedPersonnelId.HasValue && dto.EvaluatedPersonnelId > 0
+            || dto.EvaluatedCustomerPersonnelId.HasValue && dto.EvaluatedCustomerPersonnelId > 0
+            || !string.IsNullOrWhiteSpace(dto.EvaluatedUnknownPersonnel)
+            || (dto.NewPersonnel != null && !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName));
     }
 }
 

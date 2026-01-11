@@ -86,6 +86,30 @@ public class EvaluationService : IEvaluationService
         return result;
     }
 
+    /// <summary>
+    /// CustomerPersonnel kullanıcısının değerlendirmelerini getirir
+    /// </summary>
+    public async Task<IEnumerable<EvaluationDto>> GetByEvaluatorCustomerPersonnelIdAsync(int customerPersonnelId)
+    {
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Checklist)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatorCustomerPersonnel)
+            .Where(e => e.EvaluatorCustomerPersonnelId == customerPersonnelId && !e.IsDeleted)
+            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .ToListAsync();
+
+        var result = new List<EvaluationDto>();
+        foreach (var eval in evaluations)
+        {
+            result.Add(await MapToDtoAsync(eval));
+        }
+        return result;
+    }
+
     public async Task<IEnumerable<EvaluationDto>> GetAllAsync(int page = 1, int pageSize = 20)
     {
         var evaluations = await _context.Evaluations
@@ -168,7 +192,9 @@ public class EvaluationService : IEvaluationService
         {
             AssignmentId = dto.AssignmentId,
             AssignmentPeriodId = dto.AssignmentPeriodId,
-            EvaluatorId = dto.EvaluatorId,
+            // User mı CustomerPersonnel mı olduğunu ayır
+            EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
+            EvaluatorCustomerPersonnelId = dto.EvaluatorCustomerPersonnelId > 0 ? dto.EvaluatorCustomerPersonnelId : null,
             StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
             FormOpenedAt = DateTime.UtcNow,
@@ -480,7 +506,9 @@ public class EvaluationService : IEvaluationService
             {
                 AssignmentId = dto.AssignmentId,
                 AssignmentPeriodId = dto.AssignmentPeriodId,
-                EvaluatorId = dto.EvaluatorId,
+                // User mı CustomerPersonnel mı olduğunu ayır
+                EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
+                EvaluatorCustomerPersonnelId = dto.EvaluatorCustomerPersonnelId > 0 ? dto.EvaluatorCustomerPersonnelId : null,
                 StatusId = EvaluationStatuses.Ids.InProgress,
                 StartedAt = DateTime.UtcNow,
                 FormOpenedAt = dto.FormOpenedAt ?? DateTime.UtcNow
@@ -768,10 +796,10 @@ public class EvaluationService : IEvaluationService
                 Order = q.Order,
                 IsRequired = q.IsRequired,
                 AllowNA = q.AllowNA,
-                ScoringType = q.ScoringTypeId.ToString(),
+                ScoringType = ScoringTypes.GetById(q.ScoringTypeId)?.SystemName ?? "Scored",
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
-                PenaltyType = q.PenaltyTypeId.ToString(),
+                PenaltyType = PenaltyTypes.GetById(q.PenaltyTypeId)?.SystemName ?? "None",
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
                 SubCriteria = q.SubCriteria?
@@ -797,7 +825,7 @@ public class EvaluationService : IEvaluationService
             Id = a.Id,
             QuestionId = a.QuestionId,
             QuestionText = a.Question?.Text ?? "",
-            QuestionType = a.Question?.ScoringTypeId.ToString(), // ScoringType kullanılıyor
+            QuestionType = a.Question != null ? ScoringTypes.GetById(a.Question.ScoringTypeId)?.SystemName : null,
             AnswerText = a.AnswerText,
             AnswerNumeric = a.AnswerNumeric,
             IsNA = a.IsNA,
@@ -807,7 +835,7 @@ public class EvaluationService : IEvaluationService
             RecommendationNotes = a.RecommendationNotes,
             AttachmentFileName = a.AttachmentFileName,
             IsPenaltyApplied = a.IsPenaltyApplied,
-            AppliedPenaltyType = a.AppliedPenaltyTypeId.ToString(),
+            AppliedPenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
             SectionOrder = null, // Section kaldırıldı
             SectionName = null, // Section kaldırıldı
             GroupName = a.Question?.GroupName,
@@ -815,8 +843,8 @@ public class EvaluationService : IEvaluationService
             QuestionMaxPoints = a.Question?.MaxPoints ?? 5, // Sorunun max puanı (örn: 5)
             WeightPoints = a.Question?.WeightPoints ?? 0, // Ağırlık puanı
             MaxPoints = a.Question?.WeightPoints, // Geriye uyumluluk için
-            ScoringType = a.Question?.ScoringTypeId.ToString(),
-            PenaltyType = a.Question?.PenaltyTypeId.ToString(),
+            ScoringType = a.Question != null ? ScoringTypes.GetById(a.Question.ScoringTypeId)?.SystemName : null,
+            PenaltyType = a.Question != null ? PenaltyTypes.GetById(a.Question.PenaltyTypeId)?.SystemName : null,
             HelpText = a.Question?.HelpText,
             RecommendedNote = a.Question?.RecommendedNote,
             SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList(),

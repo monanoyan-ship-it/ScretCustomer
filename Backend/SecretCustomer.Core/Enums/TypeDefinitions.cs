@@ -1354,3 +1354,88 @@ public static class DateRangeTypes
         public const int ThisYear = 10;
     }
 }
+
+// ============================================================
+// MONTHS (Aylar)
+// ============================================================
+public static class Months
+{
+    public static readonly TypeItem January = new(1, "January", "Common.Month.January", displayOrder: 1);
+    public static readonly TypeItem February = new(2, "February", "Common.Month.February", displayOrder: 2);
+    public static readonly TypeItem March = new(3, "March", "Common.Month.March", displayOrder: 3);
+    public static readonly TypeItem April = new(4, "April", "Common.Month.April", displayOrder: 4);
+    public static readonly TypeItem May = new(5, "May", "Common.Month.May", displayOrder: 5);
+    public static readonly TypeItem June = new(6, "June", "Common.Month.June", displayOrder: 6);
+    public static readonly TypeItem July = new(7, "July", "Common.Month.July", displayOrder: 7);
+    public static readonly TypeItem August = new(8, "August", "Common.Month.August", displayOrder: 8);
+    public static readonly TypeItem September = new(9, "September", "Common.Month.September", displayOrder: 9);
+    public static readonly TypeItem October = new(10, "October", "Common.Month.October", displayOrder: 10);
+    public static readonly TypeItem November = new(11, "November", "Common.Month.November", displayOrder: 11);
+    public static readonly TypeItem December = new(12, "December", "Common.Month.December", displayOrder: 12);
+
+    public static IEnumerable<TypeItem> All => new[] { January, February, March, April, May, June, July, August, September, October, November, December };
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    /// <summary>
+    /// DateTime'dan ay TypeItem döndürür (1-12 arası month değerinden)
+    /// </summary>
+    public static TypeItem? GetByMonth(int month) => GetById(month);
+    public static TypeItem? GetByDate(DateTime date) => GetById(date.Month);
+
+    public static class Ids
+    {
+        public const int January = 1;
+        public const int February = 2;
+        public const int March = 3;
+        public const int April = 4;
+        public const int May = 5;
+        public const int June = 6;
+        public const int July = 7;
+        public const int August = 8;
+        public const int September = 9;
+        public const int October = 10;
+        public const int November = 11;
+        public const int December = 12;
+    }
+}
+
+// ============================================================
+// DAYS OF WEEK (Haftanın Günleri)
+// ============================================================
+public static class DaysOfWeek
+{
+    // .NET DayOfWeek enum: Sunday=0, Monday=1, ..., Saturday=6
+    // Ancak iş günleri mantığı için Monday=1 başlatıyoruz
+    public static readonly TypeItem Monday = new(1, "Monday", "Common.Day.Monday", displayOrder: 1);
+    public static readonly TypeItem Tuesday = new(2, "Tuesday", "Common.Day.Tuesday", displayOrder: 2);
+    public static readonly TypeItem Wednesday = new(3, "Wednesday", "Common.Day.Wednesday", displayOrder: 3);
+    public static readonly TypeItem Thursday = new(4, "Thursday", "Common.Day.Thursday", displayOrder: 4);
+    public static readonly TypeItem Friday = new(5, "Friday", "Common.Day.Friday", displayOrder: 5);
+    public static readonly TypeItem Saturday = new(6, "Saturday", "Common.Day.Saturday", displayOrder: 6);
+    public static readonly TypeItem Sunday = new(0, "Sunday", "Common.Day.Sunday", displayOrder: 7);
+
+    public static IEnumerable<TypeItem> All => new[] { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday };
+    public static IEnumerable<TypeItem> Weekdays => new[] { Monday, Tuesday, Wednesday, Thursday, Friday };
+    public static IEnumerable<TypeItem> Weekend => new[] { Saturday, Sunday };
+
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    /// <summary>
+    /// .NET DayOfWeek enum'dan TypeItem döndürür
+    /// </summary>
+    public static TypeItem? GetByDayOfWeek(DayOfWeek dayOfWeek) => GetById((int)dayOfWeek);
+    public static TypeItem? GetByDate(DateTime date) => GetByDayOfWeek(date.DayOfWeek);
+
+    public static class Ids
+    {
+        public const int Sunday = 0;
+        public const int Monday = 1;
+        public const int Tuesday = 2;
+        public const int Wednesday = 3;
+        public const int Thursday = 4;
+        public const int Friday = 5;
+        public const int Saturday = 6;
+    }
+}

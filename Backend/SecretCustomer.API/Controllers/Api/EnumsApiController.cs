@@ -26,7 +26,9 @@ public class EnumsApiController : ControllerBase
             questionScoringTypes = QuestionScoringTypes.All.Select(MapTypeItem),
             penaltyTypes = PenaltyTypes.All.Select(MapTypeItem),
             periodStatuses = PeriodStatuses.All.Select(MapTypeItem),
-            approvalStatuses = ApprovalStatuses.All.Select(MapTypeItem)
+            approvalStatuses = ApprovalStatuses.All.Select(MapTypeItem),
+            months = Months.All.Select(MapTypeItem),
+            daysOfWeek = DaysOfWeek.All.Select(MapTypeItem)
         });
     }
 
@@ -109,6 +111,24 @@ public class EnumsApiController : ControllerBase
     public IActionResult GetApprovalStatuses()
     {
         return Ok(ApprovalStatuses.All.Select(MapTypeItem));
+    }
+
+    /// <summary>
+    /// Aylari dondurur
+    /// </summary>
+    [HttpGet("months")]
+    public IActionResult GetMonths()
+    {
+        return Ok(Months.All.Select(MapTypeItem));
+    }
+
+    /// <summary>
+    /// Haftanin gunlerini dondurur
+    /// </summary>
+    [HttpGet("days-of-week")]
+    public IActionResult GetDaysOfWeek()
+    {
+        return Ok(DaysOfWeek.All.Select(MapTypeItem));
     }
 
     private static object MapTypeItem(TypeItem item)

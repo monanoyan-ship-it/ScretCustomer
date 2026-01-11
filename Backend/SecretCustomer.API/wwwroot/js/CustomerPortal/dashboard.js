@@ -34,14 +34,7 @@ function CustomerDashboardViewModel() {
     self.loadDashboard = function() {
         self.isLoading(true);
 
-        // Get user info
-        var userInfo = localStorage.getItem('customerUser');
-        if (!userInfo) {
-            window.location.href = '/Account/Login';
-            return;
-        }
-
-        // Load all data in parallel
+        // Load all data in parallel (auth kontrolü server-side yapılıyor)
         Promise.all([
             customerApiFetch('/api/customer/portal/dashboard/stats').then(function(r) {
                 if (!r.ok) throw new Error('Stats API error: ' + r.status);

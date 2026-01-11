@@ -91,7 +91,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         return await _context.CustomerPersonnel
             .Include(p => p.Customer)
             .Include(p => p.Permissions)
-            .FirstOrDefaultAsync(p => p.Username == username);
+            .FirstOrDefaultAsync(p => p.Username.ToLower() == username.ToLower());
     }
 
     public async Task<CustomerPersonnel?> GetByEmailAsync(string email)
@@ -99,7 +99,7 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
         return await _context.CustomerPersonnel
             .Include(p => p.Customer)
             .Include(p => p.Permissions)
-            .FirstOrDefaultAsync(p => p.Email == email);
+            .FirstOrDefaultAsync(p => p.Email.ToLower() == email.ToLower());
     }
 
     public async Task<CustomerPersonnel> CreateAsync(CustomerPersonnel personnel)
@@ -129,19 +129,19 @@ public class CustomerPersonnelRepository : ICustomerPersonnelRepository
     public async Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null)
     {
         return await _context.CustomerPersonnel
-            .AnyAsync(p => p.Username == username && (excludeId == null || p.Id != excludeId));
+            .AnyAsync(p => p.Username.ToLower() == username.ToLower() && (excludeId == null || p.Id != excludeId));
     }
 
     public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
     {
         return await _context.CustomerPersonnel
-            .AnyAsync(p => p.Email == email && (excludeId == null || p.Id != excludeId));
+            .AnyAsync(p => p.Email.ToLower() == email.ToLower() && (excludeId == null || p.Id != excludeId));
     }
 
     public async Task<bool> ExistsByEmailInCompanyAsync(string email, int customerId, int? excludeId = null)
     {
         return await _context.CustomerPersonnel
-            .AnyAsync(p => p.Email == email &&
+            .AnyAsync(p => p.Email.ToLower() == email.ToLower() &&
                           p.CustomerId == customerId &&
                           (excludeId == null || p.Id != excludeId));
     }

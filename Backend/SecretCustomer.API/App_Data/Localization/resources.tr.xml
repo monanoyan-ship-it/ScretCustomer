@@ -4414,6 +4414,9 @@
   <LocaleResource Name="Api.Evaluation.SubmitError">
     <Value>Değerlendirme gönderilirken bir hata oluştu.</Value>
   </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.PersonnelRequired">
+    <Value>Değerlendirilen personel seçimi zorunludur.</Value>
+  </LocaleResource>
   <LocaleResource Name="Api.Evaluation.DraftSaveSuccess">
     <Value>Taslak başarıyla kaydedildi.</Value>
   </LocaleResource>
@@ -5271,6 +5274,27 @@
   </LocaleResource>
   <LocaleResource Name="Common.Month.December">
     <Value>Aralık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Monday">
+    <Value>Pazartesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Tuesday">
+    <Value>Salı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Wednesday">
+    <Value>Çarşamba</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Thursday">
+    <Value>Perşembe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Friday">
+    <Value>Cuma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Saturday">
+    <Value>Cumartesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Sunday">
+    <Value>Pazar</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Status.Completed">
     <Value>Tamamlandı</Value>

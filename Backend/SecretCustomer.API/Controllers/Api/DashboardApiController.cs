@@ -180,7 +180,7 @@ public class DashboardApiController : BaseApiController
     /// - CustomerManager: Tüm müşteri değerlendirmeleri
     /// </summary>
     [HttpGet("my-evaluations")]
-    [Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator,CustomerViewer")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator")]
     public async Task<IActionResult> GetMyEvaluations([FromQuery] int? year = null, [FromQuery] int? month = null)
     {
         try
@@ -411,7 +411,7 @@ public class DashboardApiController : BaseApiController
 
         var isCustomerPersonnel = userType == "CustomerPersonnel" ||
             role == "CustomerManager" || role == "CustomerSupervisor" ||
-            role == "CustomerOperator" || role == "CustomerViewer";
+            role == "CustomerOperator";
 
         return Ok(new
         {

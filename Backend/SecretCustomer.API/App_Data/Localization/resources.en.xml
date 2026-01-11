@@ -4146,6 +4146,9 @@
   <LocaleResource Name="Api.Evaluation.SubmitError">
     <Value>An error occurred while submitting evaluation.</Value>
   </LocaleResource>
+  <LocaleResource Name="Api.Evaluation.PersonnelRequired">
+    <Value>Evaluated personnel selection is required.</Value>
+  </LocaleResource>
   <LocaleResource Name="Api.Evaluation.DraftSaveSuccess">
     <Value>Draft saved successfully.</Value>
   </LocaleResource>
@@ -5003,6 +5006,27 @@
   </LocaleResource>
   <LocaleResource Name="Common.Month.December">
     <Value>December</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Monday">
+    <Value>Monday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Tuesday">
+    <Value>Tuesday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Wednesday">
+    <Value>Wednesday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Thursday">
+    <Value>Thursday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Friday">
+    <Value>Friday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Saturday">
+    <Value>Saturday</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Day.Sunday">
+    <Value>Sunday</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Status.Completed">
     <Value>Completed</Value>

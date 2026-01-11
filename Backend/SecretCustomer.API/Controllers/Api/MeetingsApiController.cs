@@ -108,19 +108,19 @@ public class MeetingsApiController : BaseApiController
             _ => query.OrderByDescending(m => m.PlannedDate) // Default
         };
 
-        var meetings = await orderedQuery
+        var meetingsRaw = await orderedQuery
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
-            .Select(m => new MeetingListDto
+            .Select(m => new
             {
-                Id = m.Id,
-                Title = m.Title,
-                MeetingType = m.MeetingTypeId.ToString(),
-                Status = m.StatusId.ToString(),
-                PlannedDate = m.PlannedDate,
-                PlannedEndDate = m.PlannedEndDate,
-                Location = m.Location,
-                IsOnline = m.IsOnline,
+                m.Id,
+                m.Title,
+                m.MeetingTypeId,
+                m.StatusId,
+                m.PlannedDate,
+                m.PlannedEndDate,
+                m.Location,
+                m.IsOnline,
                 OrganizerName = m.Organizer != null ? m.Organizer.FirstName + " " + m.Organizer.LastName : null,
                 ProjectName = m.Project != null ? m.Project.Name : null,
                 CustomerName = m.Customer != null ? m.Customer.CompanyName : null,
@@ -128,6 +128,23 @@ public class MeetingsApiController : BaseApiController
                 AcceptedCount = m.Participants.Count(p => p.StatusId == ParticipantStatuses.Ids.Accepted || p.StatusId == ParticipantStatuses.Ids.Attended)
             })
             .ToListAsync();
+
+        var meetings = meetingsRaw.Select(m => new MeetingListDto
+        {
+            Id = m.Id,
+            Title = m.Title,
+            MeetingType = MeetingTypes.GetById(m.MeetingTypeId)?.SystemName ?? "Meeting",
+            Status = MeetingStatuses.GetById(m.StatusId)?.SystemName ?? "Planned",
+            PlannedDate = m.PlannedDate,
+            PlannedEndDate = m.PlannedEndDate,
+            Location = m.Location,
+            IsOnline = m.IsOnline,
+            OrganizerName = m.OrganizerName,
+            ProjectName = m.ProjectName,
+            CustomerName = m.CustomerName,
+            ParticipantCount = m.ParticipantCount,
+            AcceptedCount = m.AcceptedCount
+        }).ToList();
 
         return Ok(new
         {
@@ -543,8 +560,8 @@ public class MeetingsApiController : BaseApiController
             {
                 Id = m.Id,
                 Title = m.Title,
-                MeetingType = m.MeetingTypeId.ToString(),
-                Status = m.StatusId.ToString(),
+                MeetingType = MeetingTypes.GetById(m.MeetingTypeId)?.SystemName ?? "Meeting",
+                Status = MeetingStatuses.GetById(m.StatusId)?.SystemName ?? "Planned",
                 PlannedDate = m.PlannedDate,
                 PlannedEndDate = m.PlannedEndDate,
                 Location = m.Location,
@@ -567,8 +584,8 @@ public class MeetingsApiController : BaseApiController
             Id = meeting.Id,
             Title = meeting.Title,
             Description = meeting.Description,
-            MeetingType = meeting.MeetingTypeId.ToString(),
-            Status = meeting.StatusId.ToString(),
+            MeetingType = MeetingTypes.GetById(meeting.MeetingTypeId)?.SystemName ?? "Meeting",
+            Status = MeetingStatuses.GetById(meeting.StatusId)?.SystemName ?? "Planned",
             PlannedDate = meeting.PlannedDate,
             PlannedEndDate = meeting.PlannedEndDate,
             ActualDate = meeting.ActualDate,
@@ -602,7 +619,7 @@ public class MeetingsApiController : BaseApiController
                 UserEmail = p.User?.Email,
                 ExternalName = p.ExternalName,
                 ExternalEmail = p.ExternalEmail,
-                Status = p.StatusId.ToString(),
+                Status = ParticipantStatuses.GetById(p.StatusId)?.SystemName ?? "Pending",
                 IsRequired = p.IsRequired,
                 ResponseNote = p.ResponseNote,
                 RespondedAt = p.RespondedAt,

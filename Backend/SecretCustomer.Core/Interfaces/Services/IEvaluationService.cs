@@ -7,6 +7,7 @@ public interface IEvaluationService
     Task<EvaluationDto?> GetByIdAsync(int id);
     Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId);
     Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId);
+    Task<IEnumerable<EvaluationDto>> GetByEvaluatorCustomerPersonnelIdAsync(int customerPersonnelId);
     Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto);
     Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId);
 

@@ -186,6 +186,37 @@ var EnumsService = (function() {
         return getCssClass(_cache.approvalStatuses, status);
     }
 
+    // Months
+    function getMonthDisplay(monthId) {
+        if (!_cache || !_cache.months) return monthId;
+        return getDisplayName(_cache.months, monthId);
+    }
+
+    // Ay numarasından lokalize edilmiş ay adı + yıl döndürür
+    // Örnek: formatMonthYear(new Date()) => "Ocak 2026"
+    function formatMonthYear(date) {
+        if (!date) return '-';
+        var d = new Date(date);
+        var monthId = d.getMonth() + 1; // JavaScript months are 0-based
+        var monthName = getMonthDisplay(monthId);
+        return monthName + ' ' + d.getFullYear();
+    }
+
+    // Days of Week
+    function getDayOfWeekDisplay(dayId) {
+        if (!_cache || !_cache.daysOfWeek) return dayId;
+        return getDisplayName(_cache.daysOfWeek, dayId);
+    }
+
+    // JavaScript Date'den lokalize edilmiş gün adı döndürür
+    // JavaScript: Sunday=0, Monday=1, ..., Saturday=6
+    function formatDayOfWeek(date) {
+        if (!date) return '-';
+        var d = new Date(date);
+        var dayId = d.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        return getDayOfWeekDisplay(dayId);
+    }
+
     // Public API
     return {
         load: load,
@@ -214,6 +245,10 @@ var EnumsService = (function() {
         getPeriodStatusCss: getPeriodStatusCss,
         getApprovalStatusDisplay: getApprovalStatusDisplay,
         getApprovalStatusCss: getApprovalStatusCss,
+        getMonthDisplay: getMonthDisplay,
+        formatMonthYear: formatMonthYear,
+        getDayOfWeekDisplay: getDayOfWeekDisplay,
+        formatDayOfWeek: formatDayOfWeek,
 
         // Cache'e dogrudan erisim (yuklendikten sonra)
         get cache() { return _cache; }

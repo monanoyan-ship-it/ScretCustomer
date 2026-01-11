@@ -952,6 +952,7 @@ function EvaluationsViewModel() {
                     }
 
                     answersForSummary.push({
+                        groupName: section.name || section.title || '-',
                         questionText: q.text,
                         scoringType: q.scoringType,
                         penaltyType: q.penaltyType,

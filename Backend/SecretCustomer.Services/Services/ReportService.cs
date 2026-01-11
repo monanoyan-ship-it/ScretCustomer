@@ -10,10 +10,12 @@ namespace SecretCustomer.Services.Services;
 public class ReportService : IReportService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
-    public ReportService(ApplicationDbContext context)
+    public ReportService(ApplicationDbContext context, ILocalizationService localizationService)
     {
         _context = context;
+        _localizationService = localizationService;
     }
 
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
@@ -255,7 +257,7 @@ public class ReportService : IReportService
                         IsNA = a.IsNA,
                         GivenPoints = a.EarnedPoints,
                         MaxPoints = a.Question.WeightPoints,
-                        PenaltyType = a.AppliedPenaltyTypeId.ToString(),
+                        PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
                         Notes = a.Notes,
                         SelectedSubCriteria = a.SubCriteriaSelections
                             .Select(s => s.SubCriteria.Description)
@@ -475,7 +477,7 @@ public class ReportService : IReportService
                 detailSheet.Cell(detailRow, 9).Value = answer.IsNA ? "Evet" : "Hayır";
                 detailSheet.Cell(detailRow, 10).Value = answer.EarnedPoints ?? 0;
                 detailSheet.Cell(detailRow, 11).Value = answer.Question.WeightPoints;
-                detailSheet.Cell(detailRow, 12).Value = answer.AppliedPenaltyTypeId.ToString();
+                detailSheet.Cell(detailRow, 12).Value = PenaltyTypes.GetById(answer.AppliedPenaltyTypeId)?.SystemName ?? "None";
                 detailSheet.Cell(detailRow, 13).Value = answer.Notes ?? "";
                 detailRow++;
             }
@@ -519,7 +521,7 @@ public class ReportService : IReportService
                 : null,
             PeriodName = evaluation.AssignmentPeriod != null
                 ? evaluation.AssignmentPeriod.StartDate.ToString("yyyyMM")
-                : null,
+                : (evaluation.CallDate.HasValue ? FormatMonthYear(evaluation.CallDate.Value) : null),
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             DueDate = evaluation.Assignment.DueDate,
@@ -592,7 +594,7 @@ public class ReportService : IReportService
                 QuestionId = a.QuestionId,
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
-                PenaltyType = a.AppliedPenaltyTypeId.ToString(),
+                PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
                 ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
@@ -1198,7 +1200,7 @@ public class ReportService : IReportService
             EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
             CallId = a.Evaluation.CallId,
             IsPenaltyApplied = a.IsPenaltyApplied,
-            PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? a.AppliedPenaltyTypeId.ToString() : null
+            PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName : null
         }).ToList();
 
         return new SuggestionsReportResultDto
@@ -1437,5 +1439,19 @@ public class ReportService : IReportService
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
+    }
+
+    /// <summary>
+    /// Tarihten ay/yıl formatında string döndürür (Ocak 2026)
+    /// Months TypeDefinition ve ILocalizationService kullanarak yerelleştirilmiş ay adı döner
+    /// </summary>
+    private string FormatMonthYear(DateTime date)
+    {
+        var month = Months.GetByDate(date);
+        if (month == null)
+            return date.ToString("MMMM yyyy", System.Globalization.CultureInfo.CurrentCulture);
+
+        var monthName = _localizationService.GetResourceAsync(month.NameResourceKey).Result;
+        return $"{monthName} {date.Year}";
     }
 }

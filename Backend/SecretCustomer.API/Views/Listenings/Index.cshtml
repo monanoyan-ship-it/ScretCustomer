@@ -220,7 +220,7 @@
                                 <span class="fw-semibold" data-bind="text: projectName"></span>
                                 <br><small class="text-muted" data-bind="text: checklistName"></small>
                             </td>
-                            <td><span class="badge bg-info" data-bind="text: periodName || '-'"></span></td>
+                            <td><span class="badge bg-info" data-bind="text: $parent.formatPeriod(periodName, callDate)"></span></td>
                             <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                             <td data-bind="text: supervisorName || '-'"></td>
                             <td><code data-bind="text: callId || '-'"></code></td>

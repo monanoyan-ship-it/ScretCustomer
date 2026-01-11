@@ -686,6 +686,35 @@ function ListeningsViewModel() {
         return date.toLocaleDateString('tr-TR');
     };
 
+    // Dönem gösterimi: dönem varsa dönem adı, yoksa çağrı tarihinden ay/yıl
+    self.formatPeriod = function(periodName, callDate) {
+        if (periodName) return periodName;
+        if (!callDate) return '-';
+
+        // EnumsService varsa kullan (lokalize edilmiş ay adları için)
+        if (typeof EnumsService !== 'undefined' && EnumsService.cache && EnumsService.cache.months) {
+            return EnumsService.formatMonthYear(callDate);
+        }
+
+        // Fallback: T fonksiyonuyla lokalize et
+        var date = new Date(callDate);
+        var monthNames = [
+            T('Common.Month.January', 'Ocak'),
+            T('Common.Month.February', 'Şubat'),
+            T('Common.Month.March', 'Mart'),
+            T('Common.Month.April', 'Nisan'),
+            T('Common.Month.May', 'Mayıs'),
+            T('Common.Month.June', 'Haziran'),
+            T('Common.Month.July', 'Temmuz'),
+            T('Common.Month.August', 'Ağustos'),
+            T('Common.Month.September', 'Eylül'),
+            T('Common.Month.October', 'Ekim'),
+            T('Common.Month.November', 'Kasım'),
+            T('Common.Month.December', 'Aralık')
+        ];
+        return monthNames[date.getMonth()] + ' ' + date.getFullYear();
+    };
+
     self.formatTime = function(timeStr) {
         if (!timeStr) return '';
         if (typeof timeStr === 'string') {

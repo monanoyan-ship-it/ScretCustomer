@@ -17,7 +17,15 @@ public class SubmitEvaluationDto
     /// </summary>
     public int? AssignmentPeriodId { get; set; }
 
+    /// <summary>
+    /// Değerlendirmeyi yapan User ID (Gizli müşteri / Admin personel)
+    /// </summary>
     public int? EvaluatorId { get; set; }
+
+    /// <summary>
+    /// Değerlendirmeyi yapan CustomerPersonnel ID (Müşteri portalı kullanıcıları için)
+    /// </summary>
+    public int? EvaluatorCustomerPersonnelId { get; set; }
 
     [Required]
     public List<SubmitAnswerDto> Answers { get; set; } = new();
@@ -170,7 +178,15 @@ public class StartEvaluationDto
     /// </summary>
     public int? AssignmentPeriodId { get; set; }
 
+    /// <summary>
+    /// Değerlendirmeyi yapan User ID
+    /// </summary>
     public int? EvaluatorId { get; set; }
+
+    /// <summary>
+    /// Değerlendirmeyi yapan CustomerPersonnel ID (Müşteri portalı için)
+    /// </summary>
+    public int? EvaluatorCustomerPersonnelId { get; set; }
 
     /// <summary>
     /// Çağrı ID/numarası

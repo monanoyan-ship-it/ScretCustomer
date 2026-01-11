@@ -120,28 +120,47 @@ public class TrainingsApiController : BaseApiController
             _ => query.OrderByDescending(t => t.StartDate ?? t.CreatedAt) // Default
         };
 
-        var trainings = await orderedQuery
+        var trainingsRaw = await orderedQuery
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
-            .Select(t => new TrainingListDto
+            .Select(t => new
             {
-                Id = t.Id,
-                Code = t.Code,
-                Title = t.Title,
-                TrainingType = t.TrainingTypeId.ToString(),
-                Status = t.StatusId.ToString(),
-                Category = t.CategoryId.ToString(),
-                StartDate = t.StartDate,
-                EndDate = t.EndDate,
-                DurationMinutes = t.DurationMinutes,
-                Location = t.Location,
-                MaxParticipants = t.MaxParticipants,
+                t.Id,
+                t.Code,
+                t.Title,
+                t.TrainingTypeId,
+                t.StatusId,
+                t.CategoryId,
+                t.StartDate,
+                t.EndDate,
+                t.DurationMinutes,
+                t.Location,
+                t.MaxParticipants,
                 CurrentParticipants = t.Participants.Count(p => !p.IsDeleted),
-                IsMandatory = t.IsMandatory,
+                t.IsMandatory,
                 TrainerName = t.Trainer != null ? t.Trainer.FirstName + " " + t.Trainer.LastName : t.ExternalTrainerName,
                 ProjectName = t.Project != null ? t.Project.Name : null
             })
             .ToListAsync();
+
+        var trainings = trainingsRaw.Select(t => new TrainingListDto
+        {
+            Id = t.Id,
+            Code = t.Code,
+            Title = t.Title,
+            TrainingType = TrainingTypes.GetById(t.TrainingTypeId)?.SystemName ?? "Internal",
+            Status = TrainingStatuses.GetById(t.StatusId)?.SystemName ?? "Planned",
+            Category = TrainingCategories.GetById(t.CategoryId)?.SystemName ?? "Technical",
+            StartDate = t.StartDate,
+            EndDate = t.EndDate,
+            DurationMinutes = t.DurationMinutes,
+            Location = t.Location,
+            MaxParticipants = t.MaxParticipants,
+            CurrentParticipants = t.CurrentParticipants,
+            IsMandatory = t.IsMandatory,
+            TrainerName = t.TrainerName,
+            ProjectName = t.ProjectName
+        }).ToList();
 
         return Ok(new { items = trainings, totalCount });
     }
@@ -169,9 +188,9 @@ public class TrainingsApiController : BaseApiController
             Code = training.Code,
             Title = training.Title,
             Description = training.Description,
-            TrainingType = TrainingTypes.GetById(training.TrainingTypeId)?.SystemName ?? training.TrainingTypeId.ToString(),
-            Status = TrainingStatuses.GetById(training.StatusId)?.SystemName ?? training.StatusId.ToString(),
-            Category = TrainingCategories.GetById(training.CategoryId)?.SystemName ?? training.CategoryId.ToString(),
+            TrainingType = TrainingTypes.GetById(training.TrainingTypeId)?.SystemName ?? "Internal",
+            Status = TrainingStatuses.GetById(training.StatusId)?.SystemName ?? "Planned",
+            Category = TrainingCategories.GetById(training.CategoryId)?.SystemName ?? "Technical",
             StartDate = training.StartDate,
             EndDate = training.EndDate,
             DurationMinutes = training.DurationMinutes,
@@ -206,7 +225,7 @@ public class TrainingsApiController : BaseApiController
                 ExternalName = p.ExternalName,
                 ExternalEmail = p.ExternalEmail,
                 ExternalPhone = p.ExternalPhone,
-                Status = p.StatusId.ToString(),
+                Status = TrainingParticipantStatuses.GetById(p.StatusId)?.SystemName ?? "Registered",
                 AttendanceDate = p.AttendanceDate,
                 AttendanceMinutes = p.AttendanceMinutes,
                 Score = p.Score,
@@ -605,24 +624,36 @@ public class TrainingsApiController : BaseApiController
             TotalParticipants = await _context.TrainingParticipants.CountAsync(p => p.StatusId == TrainingParticipantStatuses.Ids.Attended || p.StatusId == TrainingParticipantStatuses.Ids.Completed),
             CertificatesIssued = await _context.TrainingParticipants.CountAsync(p => p.CertificateIssued),
             UpcomingTrainings = await _context.Trainings.CountAsync(t => t.StartDate > now && (t.StatusId == TrainingStatuses.Ids.Planned || t.StatusId == TrainingStatuses.Ids.Approved)),
-            RecentTrainings = await _context.Trainings
+            RecentTrainings = (await _context.Trainings
                 .Include(t => t.Trainer)
                 .Include(t => t.Participants)
                 .OrderByDescending(t => t.CreatedAt)
                 .Take(5)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Code,
+                    t.Title,
+                    t.TrainingTypeId,
+                    t.StatusId,
+                    t.CategoryId,
+                    t.StartDate,
+                    TrainerName = t.Trainer != null ? t.Trainer.FirstName + " " + t.Trainer.LastName : t.ExternalTrainerName,
+                    CurrentParticipants = t.Participants.Count(p => !p.IsDeleted)
+                })
+                .ToListAsync())
                 .Select(t => new TrainingListDto
                 {
                     Id = t.Id,
                     Code = t.Code,
                     Title = t.Title,
-                    TrainingType = t.TrainingTypeId.ToString(),
-                    Status = t.StatusId.ToString(),
-                    Category = t.CategoryId.ToString(),
+                    TrainingType = TrainingTypes.GetById(t.TrainingTypeId)?.SystemName ?? "Internal",
+                    Status = TrainingStatuses.GetById(t.StatusId)?.SystemName ?? "Planned",
+                    Category = TrainingCategories.GetById(t.CategoryId)?.SystemName ?? "Technical",
                     StartDate = t.StartDate,
-                    TrainerName = t.Trainer != null ? t.Trainer.FirstName + " " + t.Trainer.LastName : t.ExternalTrainerName,
-                    CurrentParticipants = t.Participants.Count(p => !p.IsDeleted)
-                })
-                .ToListAsync()
+                    TrainerName = t.TrainerName,
+                    CurrentParticipants = t.CurrentParticipants
+                }).ToList()
         };
 
         var ratings = await _context.TrainingParticipants

@@ -708,7 +708,7 @@ public class ImportService : IImportService
                         QuestionText = question.Text,
                         WeightPoints = question.WeightPoints,
                         MaxPoints = question.MaxPoints,
-                        ScoringType = question.ScoringTypeId.ToString(),
+                        ScoringType = ScoringTypes.GetById(question.ScoringTypeId)?.SystemName ?? "Scored",
                         SubCriteriaCount = importDto.SubCriteria?.Split('|', StringSplitOptions.RemoveEmptyEntries).Length ?? 0
                     });
                 }

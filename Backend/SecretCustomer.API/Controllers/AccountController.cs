@@ -75,6 +75,7 @@ public class AccountController : Controller
                 new Claim(ClaimTypes.Email, result.Username), // Using username as email
                 new Claim(ClaimTypes.Role, result.Role),
                 new Claim("Username", result.Username),
+                new Claim("FullName", result.FullName),
                 new Claim("MustChangePassword", result.MustChangePassword.ToString())
             };
 
@@ -85,6 +86,10 @@ public class AccountController : Controller
                 claims.Add(new Claim("CustomerId", result.CustomerId.Value.ToString()));
                 if (!string.IsNullOrEmpty(result.CustomerName))
                     claims.Add(new Claim("CustomerName", result.CustomerName));
+            }
+            else
+            {
+                claims.Add(new Claim("UserType", "User"));
             }
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
