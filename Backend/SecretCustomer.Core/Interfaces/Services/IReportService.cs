@@ -46,4 +46,9 @@ public interface IReportService
 
     // Öneriler Excel export
     Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter);
+
+    // ===== ÇAĞRI DENETLEME RAPORU =====
+
+    // Çağrı Denetleme Raporu Excel export
+    Task<ExcelExportDto> ExportCallAuditReportAsync(ReportFilterDto filter);
 }

@@ -7577,4 +7577,35 @@
   <LocaleResource Name="QuestionType.YesNo">
     <Value>[DE] Evet/Hayır</Value>
   </LocaleResource>
+  <!-- Listenings Reports -->
+  <LocaleResource Name="Listenings.SavedFilters">
+    <Value>Gespeicherte Filter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Reports">
+    <Value>Berichte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ReportsDescription">
+    <Value>Berichte basierend auf aktuellen Filtern erstellen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAudit">
+    <Value>Anrufprüfungsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAuditDesc">
+    <Value>Projekt, Bewerter, Vertreter, Anruf-ID, Datum, Dauer, Kommentar und Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcel">
+    <Value>Allgemeiner Excel-Export</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcelDesc">
+    <Value>Zusammenfassende Informationen aller Abhöraufzeichnungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcel">
+    <Value>Detailliertes Excel (Fragen-Antworten)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcelDesc">
+    <Value>Detaillierter Bericht mit allen Fragen und Antworten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ActiveFiltersNote">
+    <Value>Aktive Filter werden auf den Bericht angewendet:</Value>
+  </LocaleResource>
 </Language>

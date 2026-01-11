@@ -188,6 +188,24 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Çağrı Denetleme Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/call-audit")]
+    public async Task<IActionResult> ExportCallAuditReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportCallAuditReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting call audit report to Excel");
+            return StatusCode(500, CreateErrorResponse("Çağrı denetleme raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
     // ===== CEZALI KL RAPORU =====
 
     /// <summary>

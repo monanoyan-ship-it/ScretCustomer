@@ -7582,4 +7582,35 @@
   <LocaleResource Name="Validation.PasswordMinLength">
     <Value>Validation  Password Min Length</Value>
   </LocaleResource>
+  <!-- Listenings Reports -->
+  <LocaleResource Name="Listenings.SavedFilters">
+    <Value>Saved Filters</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Reports">
+    <Value>Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ReportsDescription">
+    <Value>Generate reports based on current filters.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAudit">
+    <Value>Call Audit Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAuditDesc">
+    <Value>Project, evaluator, representative, call ID, date, duration, comment and score information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcel">
+    <Value>General Excel Export</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcelDesc">
+    <Value>Summary information of all listening records</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcel">
+    <Value>Detailed Excel (Questions-Answers)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcelDesc">
+    <Value>Detailed report including all questions and answers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ActiveFiltersNote">
+    <Value>Active filters will be applied to the report:</Value>
+  </LocaleResource>
 </Language>

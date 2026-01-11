@@ -7,10 +7,11 @@
         <h2><i class="bi bi-headphones me-2"></i>@Html.T("Listenings.Title", "Dinlemeler")</h2>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" data-bind="click: openLoadFilterModal">
-                <i class="bi bi-bookmark me-1"></i> Kayıtlı Filtreler
+                <i class="bi bi-bookmark me-1"></i> @Html.T("Listenings.SavedFilters", "Kayıtlı Filtreler")
             </button>
-            <button class="btn btn-outline-success" data-bind="click: exportToExcel, disable: isExporting">
-                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</span>
+            <!-- Raporlar Button -->
+            <button class="btn btn-outline-success" data-bind="click: openReportsModal, disable: isExporting">
+                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-spreadsheet me-1"></i> @Html.T("Listenings.Reports", "Raporlar")</span>
                 <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
             </button>
         </div>
@@ -567,6 +568,18 @@
                     <button type="button" class="btn-close btn-close-white" data-bind="click: closeLoadFilterModal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Search Box -->
+                    <div class="mb-3" data-bind="visible: savedFilters().length > 0">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Filtre ara..."
+                                   data-bind="value: savedFilterSearch, valueUpdate: 'afterkeydown'">
+                            <button class="btn btn-outline-secondary" type="button" data-bind="click: function() { savedFilterSearch(''); }, visible: savedFilterSearch()">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Loading -->
                     <div data-bind="visible: isLoadingFilters" class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
@@ -579,10 +592,16 @@
                         <p class="text-muted small">Filtreleri kaydederek hızlıca tekrar kullanabilirsiniz.</p>
                     </div>
 
+                    <!-- No Search Results -->
+                    <div data-bind="visible: !isLoadingFilters() && savedFilters().length > 0 && filteredSavedFilters().length === 0" class="text-center py-4">
+                        <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">Aramayla eşleşen filtre bulunamadı.</p>
+                    </div>
+
                     <!-- Filter List -->
-                    <div data-bind="visible: !isLoadingFilters() && savedFilters().length > 0">
+                    <div data-bind="visible: !isLoadingFilters() && filteredSavedFilters().length > 0">
                         <div class="list-group">
-                            <!-- ko foreach: savedFilters -->
+                            <!-- ko foreach: filteredSavedFilters -->
                             <div class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
@@ -622,12 +641,96 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: closeLoadFilterModal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeLoadFilterModal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: showLoadFilterModal }, style: { display: showLoadFilterModal() ? 'block' : 'none' }"></div>
+
+    <!-- Reports Modal -->
+    <div class="modal fade" data-bind="css: { show: showReportsModal }, style: { display: showReportsModal() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>@Html.T("Listenings.Reports", "Raporlar")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeReportsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">@Html.T("Listenings.ReportsDescription", "Mevcut filtrelere göre rapor oluşturun.")</p>
+
+                    <div class="list-group">
+                        <!-- Çağrı Denetleme Raporu -->
+                        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center"
+                                data-bind="click: exportCallAuditReport, disable: isExporting">
+                            <div class="me-3">
+                                <i class="bi bi-telephone fs-4 text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">@Html.T("Listenings.Report.CallAudit", "Çağrı Denetleme Raporu")</h6>
+                                <small class="text-muted">@Html.T("Listenings.Report.CallAuditDesc", "Proje, değerlendiren, temsilci, çağrı no, tarih, süre, yorum ve puan bilgileri")</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-success"><i class="bi bi-file-earmark-excel"></i> Excel</span>
+                            </div>
+                        </button>
+
+                        <!-- Genel Excel Export -->
+                        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center"
+                                data-bind="click: exportToExcel, disable: isExporting">
+                            <div class="me-3">
+                                <i class="bi bi-table fs-4 text-success"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">@Html.T("Listenings.Report.GeneralExcel", "Genel Excel Export")</h6>
+                                <small class="text-muted">@Html.T("Listenings.Report.GeneralExcelDesc", "Tüm dinleme kayıtlarının özet bilgileri")</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-success"><i class="bi bi-file-earmark-excel"></i> Excel</span>
+                            </div>
+                        </button>
+
+                        <!-- Detaylı Excel Export -->
+                        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center"
+                                data-bind="click: exportDetailedToExcel, disable: isExporting">
+                            <div class="me-3">
+                                <i class="bi bi-list-columns-reverse fs-4 text-info"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">@Html.T("Listenings.Report.DetailedExcel", "Detaylı Excel (Soru-Cevaplar)")</h6>
+                                <small class="text-muted">@Html.T("Listenings.Report.DetailedExcelDesc", "Tüm soru ve cevapları içeren detaylı rapor")</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-success"><i class="bi bi-file-earmark-excel"></i> Excel</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Aktif Filtreler Özeti -->
+                    <div class="mt-3" data-bind="visible: activeFilters().length > 0">
+                        <small class="text-muted"><i class="bi bi-funnel me-1"></i>@Html.T("Listenings.ActiveFiltersNote", "Aktif filtreler rapora uygulanacaktır:"):</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <!-- ko foreach: activeFilters -->
+                            <span class="badge bg-secondary" data-bind="text: label + ': ' + displayValue"></span>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+
+                    <!-- Export işlemi sırasında gösterilecek -->
+                    <div data-bind="visible: isExporting" class="text-center mt-3">
+                        <div class="spinner-border text-success"></div>
+                        <p class="mb-0 mt-2">@Html.T("Report.Downloading", "Rapor indiriliyor...")</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeReportsModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: showReportsModal }, style: { display: showReportsModal() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

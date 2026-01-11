@@ -14,8 +14,12 @@ function ListeningsViewModel() {
     self.showDetailModal = ko.observable(false);
     self.selectedEvaluation = ko.observable(null);
 
+    // Reports Modal State
+    self.showReportsModal = ko.observable(false);
+
     // Saved Filters State
     self.savedFilters = ko.observableArray([]);
+    self.savedFilterSearch = ko.observable('');
     self.showSaveFilterModal = ko.observable(false);
     self.showLoadFilterModal = ko.observable(false);
     self.saveFilterName = ko.observable('');
@@ -23,6 +27,19 @@ function ListeningsViewModel() {
     self.saveFilterIsDefault = ko.observable(false);
     self.isSavingFilter = ko.observable(false);
     self.isLoadingFilters = ko.observable(false);
+
+    // Filtered saved filters (for search)
+    self.filteredSavedFilters = ko.computed(function() {
+        var search = (self.savedFilterSearch() || '').toLowerCase().trim();
+        var filters = self.savedFilters();
+
+        if (!search) return filters;
+
+        return filters.filter(function(f) {
+            return (f.name && f.name.toLowerCase().indexOf(search) > -1) ||
+                   (f.description && f.description.toLowerCase().indexOf(search) > -1);
+        });
+    });
 
     // Lookup data
     self.customers = ko.observableArray([]);
@@ -566,6 +583,18 @@ function ListeningsViewModel() {
         self.selectedEvaluation(null);
     };
 
+    // ==================== REPORTS MODAL ====================
+
+    // Open reports modal
+    self.openReportsModal = function() {
+        self.showReportsModal(true);
+    };
+
+    // Close reports modal
+    self.closeReportsModal = function() {
+        self.showReportsModal(false);
+    };
+
     // Export to Excel
     self.exportToExcel = function() {
         self.isExporting(true);
@@ -577,10 +606,55 @@ function ListeningsViewModel() {
         ApiService.downloadPost('/reports/export/excel', params, 'Dinlemeler.xlsx')
             .then(function() {
                 toastr.success('Excel dosyası indirildi');
+                self.closeReportsModal();
             })
             .catch(function(error) {
                 console.error('Error exporting:', error);
                 toastr.error('Excel export sırasında hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Export Detailed to Excel (with questions/answers)
+    self.exportDetailedToExcel = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        ApiService.downloadPost('/reports/export/excel/detailed', params, 'Dinlemeler_Detayli.xlsx')
+            .then(function() {
+                toastr.success('Detaylı Excel dosyası indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting:', error);
+                toastr.error('Detaylı Excel export sırasında hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Çağrı Denetleme Raporu
+    self.exportCallAuditReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        ApiService.downloadPost('/reports/export/call-audit', params, 'Cagri_Denetleme_Raporu.xlsx')
+            .then(function() {
+                toastr.success('Çağrı Denetleme Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting call audit report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
             })
             .finally(function() {
                 self.isExporting(false);
@@ -716,6 +790,7 @@ function ListeningsViewModel() {
 
     // Open load filter modal
     self.openLoadFilterModal = function() {
+        self.savedFilterSearch('');
         self.loadSavedFilters();
         self.showLoadFilterModal(true);
     };

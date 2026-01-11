@@ -1352,4 +1352,75 @@ public class ReportService : IReportService
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
     }
+
+    // ===== ÇAĞRI DENETLEME RAPORU =====
+
+    public async Task<ExcelExportDto> ExportCallAuditReportAsync(ReportFilterDto filter)
+    {
+        // Remove pagination for export
+        filter.Page = 1;
+        filter.PageSize = 10000;
+
+        var result = await GetEvaluationsAsync(filter);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Çağrı Denetleme Raporu");
+
+        // Headers - Kullanıcının istediği sütunlar
+        var headers = new[]
+        {
+            "Proje",
+            "Değerlendirme Yapan",
+            "Kişi",
+            "Çağrı No",
+            "Kontrol Tarihi",
+            "Saat",
+            "Süre",
+            "Yorum",
+            "Periyot (Ay)",
+            "Ortalama Puan"
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data
+        int row = 2;
+        foreach (var item in result.Items)
+        {
+            // Periyot hesaplama (YYYYMM formatında)
+            var period = item.CallDate?.ToString("yyyyMM") ?? item.EvaluationDate?.ToString("yyyyMM") ?? "";
+
+            worksheet.Cell(row, 1).Value = item.ProjectName ?? "";
+            worksheet.Cell(row, 2).Value = item.EvaluatorName ?? "";
+            worksheet.Cell(row, 3).Value = item.EvaluatedPersonnelName ?? "";
+            worksheet.Cell(row, 4).Value = item.CallId ?? "";
+            worksheet.Cell(row, 5).Value = item.CallDate?.ToString("dd.MM.yyyy") ?? item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            worksheet.Cell(row, 6).Value = item.CallTime ?? (item.CallDate?.ToString("HH:mm") ?? "");
+            worksheet.Cell(row, 7).Value = item.Duration ?? "";
+            worksheet.Cell(row, 8).Value = item.Comment ?? "";
+            worksheet.Cell(row, 9).Value = period;
+            worksheet.Cell(row, 10).Value = item.ScorePercentage ?? 0;
+
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Cagri_Denetleme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
 }

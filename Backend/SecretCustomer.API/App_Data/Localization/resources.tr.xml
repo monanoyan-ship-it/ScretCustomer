@@ -7582,4 +7582,35 @@
   <LocaleResource Name="Validation.PasswordMinLength">
     <Value>Yeni şifre en az 6 karakter olmalıdır.</Value>
   </LocaleResource>
+  <!-- Listenings Reports -->
+  <LocaleResource Name="Listenings.SavedFilters">
+    <Value>Kayıtlı Filtreler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Reports">
+    <Value>Raporlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ReportsDescription">
+    <Value>Mevcut filtrelere göre rapor oluşturun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAudit">
+    <Value>Çağrı Denetleme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAuditDesc">
+    <Value>Proje, değerlendiren, temsilci, çağrı no, tarih, süre, yorum ve puan bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcel">
+    <Value>Genel Excel Export</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcelDesc">
+    <Value>Tüm dinleme kayıtlarının özet bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcel">
+    <Value>Detaylı Excel (Soru-Cevaplar)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcelDesc">
+    <Value>Tüm soru ve cevapları içeren detaylı rapor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ActiveFiltersNote">
+    <Value>Aktif filtreler rapora uygulanacaktır:</Value>
+  </LocaleResource>
 </Language>

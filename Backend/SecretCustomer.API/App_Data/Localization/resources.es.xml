@@ -7575,4 +7575,35 @@
   <LocaleResource Name="Validation.PasswordMinLength">
     <Value>[ES] Yeni şifre en az 6 karakter olmalıdır.</Value>
   </LocaleResource>
+  <!-- Listenings Reports -->
+  <LocaleResource Name="Listenings.SavedFilters">
+    <Value>Filtros guardados</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Reports">
+    <Value>Informes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ReportsDescription">
+    <Value>Generar informes según los filtros actuales.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAudit">
+    <Value>Informe de auditoría de llamadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.CallAuditDesc">
+    <Value>Proyecto, evaluador, representante, ID de llamada, fecha, duración, comentario y puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcel">
+    <Value>Exportación Excel general</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.GeneralExcelDesc">
+    <Value>Información resumida de todos los registros de escucha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcel">
+    <Value>Excel detallado (Preguntas-Respuestas)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.DetailedExcelDesc">
+    <Value>Informe detallado con todas las preguntas y respuestas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.ActiveFiltersNote">
+    <Value>Los filtros activos se aplicarán al informe:</Value>
+  </LocaleResource>
 </Language>
