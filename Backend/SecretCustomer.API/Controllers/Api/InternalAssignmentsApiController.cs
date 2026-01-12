@@ -229,7 +229,9 @@ public class InternalAssignmentsApiController : ControllerBase
                     name = p.Name,
                     code = p.Code,
                     checklistName = p.ChecklistName,
-                    customerId = p.CustomerId
+                    customerId = p.CustomerId,
+                    customerName = p.CustomerName,
+                    organizationName = p.OrganizationName
                 });
             return Ok(result);
         }

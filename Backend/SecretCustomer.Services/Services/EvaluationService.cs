@@ -617,37 +617,60 @@ public class EvaluationService : IEvaluationService
     }
 
     /// <summary>
-    /// Ceza kartlarını dahil eden puan hesaplama
+    /// Submit/Draft için puan hesaplama wrapper metodu
+    /// Asıl hesaplama CalculateScoreCore'da yapılır
     /// </summary>
     private (decimal TotalEarned, decimal MaxPossible, decimal Percentage, int YellowCardCount, int RedCardCount)
         CalculateScoreWithPenalties(List<Question> allQuestions, List<SubmitAnswerDto> answers)
+    {
+        // SubmitAnswerDto -> ScoreAnswerDto dönüşümü
+        var scoreAnswers = answers.Select(a => new ScoreAnswerDto
+        {
+            QuestionId = a.QuestionId,
+            IsIncluded = a.IsIncluded, // Frontend'den gelen değeri kullan
+            IsNA = a.IsNA,
+            GivenPoints = a.GivenPoints,
+            ApplyPenalty = a.ApplyPenalty,
+            SelectedPenaltyType = a.SelectedPenaltyType
+        }).ToList();
+
+        var result = CalculateScoreCore(allQuestions, scoreAnswers);
+        return (result.TotalEarned, result.MaxPossible, result.Percentage, result.YellowCardCount, result.RedCardCount);
+    }
+
+    /// <summary>
+    /// TEK HESAPLAMA NOKTASI - Tüm puan hesaplamaları buradan geçer
+    ///
+    /// Hesaplama Mantığı:
+    /// - Penalty sorular: Her zaman opsiyonel, sadece ApplyPenalty=true ise ceza uygulanır, ağırlığa dahil edilmez
+    /// - Unscored sorular: Puan hesabına katılmaz
+    /// - Scored sorular:
+    ///   - IsRequired=true: Her zaman dahil (cevap zorunlu)
+    ///   - IsRequired=false: IsIncluded=true ise dahil, false ise atla
+    /// </summary>
+    private ScoreCalculationResultDto CalculateScoreCore(List<Question> questions, List<ScoreAnswerDto> answers)
     {
         decimal totalEarned = 0;
         decimal totalMaxPoints = 0;
         int yellowCardCount = 0;
         int redCardCount = 0;
+        int includedQuestionCount = 0;
 
-        // N/A işaretli soruların ID'leri
-        var naQuestionIds = answers.Where(a => a.IsNA).Select(a => a.QuestionId).ToHashSet();
+        // Cevapları dictionary'e çevir (hızlı erişim için)
+        var answerDict = answers.ToDictionary(a => a.QuestionId, a => a);
 
-        foreach (var question in allQuestions)
+        foreach (var question in questions)
         {
-            // N/A sorularını atla
-            if (naQuestionIds.Contains(question.Id))
-                continue;
+            var answer = answerDict.GetValueOrDefault(question.Id);
 
-            // Puansız soruları atla
+            // 1. Puansız soruları atla
             if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
                 continue;
 
-            var answer = answers.FirstOrDefault(a => a.QuestionId == question.Id);
-            if (answer == null)
-                continue;
-
-            // Cezalı sorular için
+            // 2. Cezalı sorular - her zaman opsiyonel, sadece ceza uygulanırsa işle
             if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
             {
-                if (answer.ApplyPenalty)
+                if (answer != null && answer.ApplyPenalty)
                 {
                     if (answer.SelectedPenaltyType == "YellowCard")
                         yellowCardCount++;
@@ -657,23 +680,48 @@ public class EvaluationService : IEvaluationService
                     // Ceza puanını düş (ağırlık puanı kadar)
                     totalEarned -= question.WeightPoints;
                 }
+                // Penalty sorular ağırlığa dahil edilmez
+                continue;
             }
-            else
+
+            // 3. Normal puanlı sorular (Scored)
+            // N/A işaretli mi?
+            if (answer != null && answer.IsNA)
+                continue;
+
+            // Zorunlu olmayan soru ve dahil edilmemiş → atla
+            if (!question.IsRequired && (answer == null || !answer.IsIncluded))
+                continue;
+
+            // Bu soru hesaplamaya dahil
+            includedQuestionCount++;
+            totalMaxPoints += question.WeightPoints;
+
+            // Cevap varsa puanı hesapla
+            if (answer != null && answer.GivenPoints.HasValue)
             {
-                // Normal puanlı sorular
-                // Ağırlık puanı (WeightPoints) sistemi
-                // Toplam max puan = ağırlık puanları toplamı
-                totalMaxPoints += question.WeightPoints;
-                var earnedPoints = CalculateEarnedPoints(question, answer);
-                totalEarned += earnedPoints ?? 0;
+                // Formül: (cevap / MaxPoints) * WeightPoints
+                var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
+                var earnedPoints = (answer.GivenPoints.Value / maxPoints) * question.WeightPoints;
+                totalEarned += earnedPoints;
             }
+            // Cevap yoksa (zorunlu soru ama cevap verilmemiş) → 0 puan
         }
 
         // Yüzde hesapla
         var percentage = totalMaxPoints > 0 ? (totalEarned / totalMaxPoints) * 100 : 0;
         percentage = Math.Max(0, Math.Round(percentage, 2)); // Negatif olamaz
 
-        return (totalEarned, totalMaxPoints, percentage, yellowCardCount, redCardCount);
+        return new ScoreCalculationResultDto
+        {
+            TotalEarned = Math.Round(totalEarned, 2),
+            MaxPossible = Math.Round(totalMaxPoints, 2),
+            Percentage = percentage,
+            YellowCardCount = yellowCardCount,
+            RedCardCount = redCardCount,
+            IncludedQuestionCount = includedQuestionCount,
+            TotalQuestionCount = questions.Count(q => q.ScoringTypeId == ScoringTypes.Ids.Scored)
+        };
     }
 
     private decimal? CalculateEarnedPoints(Question question, SubmitAnswerDto answer)
@@ -1120,5 +1168,22 @@ public class EvaluationService : IEvaluationService
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Puan hesapla - API endpoint için wrapper
+    /// Checklist ID'den soruları çeker ve CalculateScoreCore'u çağırır
+    /// Kaydetmez, sadece hesaplayıp sonucu döndürür
+    /// </summary>
+    public async Task<ScoreCalculationResultDto> CalculateScoreAsync(CalculateScoreRequestDto request)
+    {
+        // Checklist'in sorularını getir
+        var questions = await _context.Questions
+            .Where(q => q.ChecklistId == request.ChecklistId && !q.IsDeleted)
+            .OrderBy(q => q.Order)
+            .ToListAsync();
+
+        // Tek hesaplama noktasını kullan
+        return CalculateScoreCore(questions, request.Answers);
     }
 }

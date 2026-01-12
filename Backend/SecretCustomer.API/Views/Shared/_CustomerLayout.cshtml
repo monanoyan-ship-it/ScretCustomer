@@ -126,8 +126,32 @@
                 {
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Branches" ? "active" : "")" href="/CustomerPortal/Branches">
-                        <i class="bi bi-building"></i>
-                        @Html.T("CustomerPortal.Menu.Branches", "Şubeler")
+                        <i class="bi bi-folder"></i>
+                        @Html.T("CustomerPortal.Menu.Projects", "Projeler")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Organizations" ? "active" : "")" href="/CustomerPortal/Organizations">
+                        <i class="bi bi-diagram-3"></i>
+                        @Html.T("CustomerPortal.Menu.Organizations", "Subeler")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Supervisors" ? "active" : "")" href="/CustomerPortal/Supervisors">
+                        <i class="bi bi-people"></i>
+                        @Html.T("CustomerPortal.Menu.Supervisors", "Supervizorler")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "InternalEvaluations" ? "active" : "")" href="/CustomerPortal/InternalEvaluations">
+                        <i class="bi bi-clipboard-check"></i>
+                        @Html.T("CustomerPortal.Menu.InternalEvaluations", "Ic Dinlemeler")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ExternalEvaluations" ? "active" : "")" href="/CustomerPortal/ExternalEvaluations">
+                        <i class="bi bi-clipboard-data"></i>
+                        @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
                     </a>
                 </li>
                 }

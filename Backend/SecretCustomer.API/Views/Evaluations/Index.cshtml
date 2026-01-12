@@ -1086,6 +1086,26 @@
                                                                     <!-- ko if: isRequired -->
                                                                     <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>
                                                                     <!-- /ko -->
+                                                                    <!-- Zorunlu olmayan puanlı sorular için dahil et toggle'ı -->
+                                                                    <!-- ko if: !isRequired && scoringType === 'Scored' -->
+                                                                    <span class="ms-2">
+                                                                        <div class="form-check form-switch d-inline-block">
+                                                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                                                   data-bind="checked: $root.getAnswer(id, isRequired).isIncluded,
+                                                                                              attr: { id: 'include_' + id }">
+                                                                            <label class="form-check-label small"
+                                                                                   data-bind="attr: { for: 'include_' + id },
+                                                                                              css: { 'text-success': $root.getAnswer(id, isRequired).isIncluded(), 'text-muted': !$root.getAnswer(id, isRequired).isIncluded() }">
+                                                                                <!-- ko if: $root.getAnswer(id, isRequired).isIncluded() -->
+                                                                                @Html.T("Evaluation.IncludedInScore", "Dahil")
+                                                                                <!-- /ko -->
+                                                                                <!-- ko ifnot: $root.getAnswer(id, isRequired).isIncluded() -->
+                                                                                @Html.T("Evaluation.ExcludedFromScore", "Hariç")
+                                                                                <!-- /ko -->
+                                                                            </label>
+                                                                        </div>
+                                                                    </span>
+                                                                    <!-- /ko -->
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1108,7 +1128,7 @@
                                                         <!-- /ko -->
 
                                                         <!-- Answer Input -->
-                                                        <div class="mt-2" data-bind="with: $root.getAnswer(id)">
+                                                        <div class="mt-2" data-bind="with: $root.getAnswer(id, isRequired)">
                                                             <!-- Puanlı ve Cezalı sorular için Likert butonları (scoringType = Scored veya Penalty) -->
                                                             <!-- ko if: ($parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty') && $parent.maxPoints !== 1 -->
                                                             <div class="btn-group btn-group-sm" role="group">
@@ -1170,7 +1190,7 @@
 
                                                     <div class="col-md-4">
                                                         <!-- Points & Penalty Section -->
-                                                        <div data-bind="with: $root.getAnswer(id)">
+                                                        <div data-bind="with: $root.getAnswer(id, isRequired)">
                                                             <!-- ko if: $parent.scoringType === 'Scored' && ($root.formData() && ($root.formData().checklistType === 'PhysicalAudit' || $root.formData().checklistType === 'Survey')) -->
                                                             <div class="mb-2">
                                                                 <label class="form-label small">@Html.T("Evaluation.GivenPoints", "Verilen Puan")</label>

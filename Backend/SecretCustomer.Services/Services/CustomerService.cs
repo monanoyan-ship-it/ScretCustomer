@@ -72,6 +72,7 @@ public class CustomerService : ICustomerService
 
         var customer = new Customer
         {
+            Code = createCustomerDto.Code,
             CompanyName = createCustomerDto.CompanyName,
             TaxNumber = createCustomerDto.TaxNumber,
             Phone = createCustomerDto.Phone,
@@ -112,6 +113,7 @@ public class CustomerService : ICustomerService
             throw new InvalidOperationException("Bu e-posta adresi ile kayıtlı bir müşteri zaten mevcut");
         }
 
+        customer.Code = updateCustomerDto.Code;
         customer.CompanyName = updateCustomerDto.CompanyName;
         customer.TaxNumber = updateCustomerDto.TaxNumber;
         customer.Phone = updateCustomerDto.Phone;
@@ -143,6 +145,7 @@ public class CustomerService : ICustomerService
         return new CustomerDto
         {
             Id = customer.Id,
+            Code = customer.Code,
             CompanyName = customer.CompanyName,
             TaxNumber = customer.TaxNumber,
             Phone = customer.Phone,

@@ -35,10 +35,46 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// Şube bazlı sonuçlar (sadece CustomerManager)
+    /// Proje bazlı sonuçlar (sadece CustomerManager)
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
     public IActionResult Branches()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Organizasyonlar/Şubeler (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult Organizations()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Süpervizörler (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult Supervisors()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// İç dinlemeler - firma personeli tarafından yapılan (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult InternalEvaluations()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Dış dinlemeler - bizim tarafımızdan yapılan (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult ExternalEvaluations()
     {
         return View();
     }

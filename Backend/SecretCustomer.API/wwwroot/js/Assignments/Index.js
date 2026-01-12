@@ -231,6 +231,10 @@ function AssignmentsViewModel() {
     // Reassign
     self.reassignData = ko.observable(new ReassignViewModel());
 
+    // Update Due Date
+    self.updateDueDateData = ko.observable({ assignmentId: ko.observable(null), newDueDate: ko.observable('') });
+    self.isSavingDueDate = ko.observable(false);
+
     // Period Form
     self.periodForm = ko.observable(new PeriodFormViewModel());
     self.periodModalError = ko.observable('');
@@ -572,6 +576,61 @@ function AssignmentsViewModel() {
             })
             .finally(function() {
                 self.isSaving(false);
+            });
+    };
+
+    // ===== Update Due Date =====
+    self.openUpdateDueDateModal = function(assignment) {
+        self.updateDueDateData().assignmentId(assignment.id);
+        self.updateDueDateData().newDueDate(assignment.dueDate ? assignment.dueDate.split('T')[0] : '');
+        var modal = new bootstrap.Modal(document.getElementById('updateDueDateModal'));
+        modal.show();
+    };
+
+    self.saveUpdateDueDate = function() {
+        var data = self.updateDueDateData();
+        var assignmentId = data.assignmentId();
+        var newDueDate = data.newDueDate();
+
+        if (!assignmentId) {
+            toastr.error(T('Assignment.NotFound', 'Atama bulunamadı.'));
+            return;
+        }
+
+        if (!newDueDate) {
+            toastr.error(T('Assignment.DueDateRequired', 'Son tarih zorunludur!'));
+            return;
+        }
+
+        self.isSavingDueDate(true);
+
+        fetch('/api/assignments/' + assignmentId + '/update-due-date', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ newDueDate: newDueDate })
+        })
+            .then(function(res) {
+                if (!res.ok) throw new Error(T('Assignment.UpdateDueDateError', 'Tarih güncelleme başarısız'));
+                return res.json();
+            })
+            .then(function(updatedAssignment) {
+                var list = self.assignments();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === updatedAssignment.id) {
+                        self.assignments.splice(i, 1, updatedAssignment);
+                        break;
+                    }
+                }
+                toastr.success(T('Assignment.UpdateDueDateSuccess', 'Tarih başarıyla güncellendi.'));
+                bootstrap.Modal.getInstance(document.getElementById('updateDueDateModal')).hide();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                toastr.error(T('Assignment.UpdateDueDateProcessError', 'Tarih güncellenirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isSavingDueDate(false);
             });
     };
 
@@ -926,7 +985,11 @@ var TRANSLATION_KEYS = [
     'Confirm.DeleteTitle',
     'Confirm.DeleteMessage',
     'Confirm.YesDelete',
-    'Common.Confirm'
+    'Common.Confirm',
+    // Update Due Date keys
+    'Assignment.UpdateDueDateError',
+    'Assignment.UpdateDueDateSuccess',
+    'Assignment.UpdateDueDateProcessError'
 ];
 
 // ===== Apply Bindings =====

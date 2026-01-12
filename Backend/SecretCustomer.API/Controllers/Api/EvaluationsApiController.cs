@@ -264,6 +264,27 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Puan hesapla - Tek merkezi hesaplama noktası
+    /// Kaydetmez, sadece hesaplayıp sonucu döndürür
+    /// Frontend'den canlı puan önizlemesi için kullanılır
+    /// </summary>
+    [HttpPost("calculate-score")]
+    [Authorize]
+    public async Task<IActionResult> CalculateScore([FromBody] CalculateScoreRequestDto request)
+    {
+        try
+        {
+            var result = await _evaluationService.CalculateScoreAsync(request);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating score for checklist {ChecklistId}", request.ChecklistId);
+            return StatusCode(500, CreateErrorResponse("Puan hesaplanırken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
     /// Degerlendirmeyi gonderir (tamamlar)
     /// </summary>
     [HttpPost("submit")]

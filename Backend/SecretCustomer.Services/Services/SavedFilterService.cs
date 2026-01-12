@@ -15,10 +15,14 @@ public class SavedFilterService : ISavedFilterService
         _context = context;
     }
 
+    /// <summary>
+    /// Admin panel için - tüm adminlerin filtrelerini getir (CustomerId null olanlar)
+    /// </summary>
     public async Task<IEnumerable<SavedFilterDto>> GetByUserAndPageAsync(int userId, string pageName)
     {
+        // Admin filtreleri: CustomerId null olanlar - tüm adminler görür
         return await _context.SavedFilters
-            .Where(f => f.UserId == userId && f.PageName == pageName && !f.IsDeleted)
+            .Where(f => f.CustomerId == null && f.PageName == pageName && !f.IsDeleted)
             .OrderByDescending(f => f.IsDefault)
             .ThenByDescending(f => f.CreatedAt)
             .Select(f => MapToDto(f))
@@ -33,17 +37,21 @@ public class SavedFilterService : ISavedFilterService
         return filter != null ? MapToDto(filter) : null;
     }
 
+    /// <summary>
+    /// Admin panel için filtre kaydet - CustomerId null, UserId kim kaydetti bilgisi
+    /// </summary>
     public async Task<SavedFilterDto> CreateAsync(int userId, CreateSavedFilterDto dto)
     {
         // Eğer varsayılan olarak işaretlendiyse, diğerlerini kaldır
         if (dto.IsDefault)
         {
-            await ClearDefaultAsync(userId, dto.PageName);
+            await ClearDefaultForAdminAsync(dto.PageName);
         }
 
         var filter = new SavedFilter
         {
-            UserId = userId,
+            UserId = userId, // Kim kaydetti bilgisi
+            CustomerId = null, // Admin filtresi
             PageName = dto.PageName,
             Name = dto.Name,
             Description = dto.Description,
@@ -57,10 +65,13 @@ public class SavedFilterService : ISavedFilterService
         return MapToDto(filter);
     }
 
+    /// <summary>
+    /// Admin filtresi sil - herhangi bir admin silebilir
+    /// </summary>
     public async Task DeleteAsync(int id, int userId)
     {
         var filter = await _context.SavedFilters
-            .FirstOrDefaultAsync(f => f.Id == id && f.UserId == userId && !f.IsDeleted);
+            .FirstOrDefaultAsync(f => f.Id == id && f.CustomerId == null && !f.IsDeleted);
 
         if (filter == null)
             throw new KeyNotFoundException("Filtre bulunamadı.");
@@ -73,12 +84,12 @@ public class SavedFilterService : ISavedFilterService
 
     public async Task SetDefaultAsync(int userId, string pageName, int filterId)
     {
-        await ClearDefaultAsync(userId, pageName);
+        await ClearDefaultForAdminAsync(pageName);
 
         if (filterId > 0)
         {
             var filter = await _context.SavedFilters
-                .FirstOrDefaultAsync(f => f.Id == filterId && f.UserId == userId && !f.IsDeleted);
+                .FirstOrDefaultAsync(f => f.Id == filterId && f.CustomerId == null && !f.IsDeleted);
 
             if (filter != null)
             {
@@ -90,10 +101,13 @@ public class SavedFilterService : ISavedFilterService
         await _context.SaveChangesAsync();
     }
 
-    private async Task ClearDefaultAsync(int userId, string pageName)
+    /// <summary>
+    /// Admin filtreleri için varsayılanları temizle (tüm adminler için)
+    /// </summary>
+    private async Task ClearDefaultForAdminAsync(string pageName)
     {
         var defaults = await _context.SavedFilters
-            .Where(f => f.UserId == userId && f.PageName == pageName && f.IsDefault && !f.IsDeleted)
+            .Where(f => f.CustomerId == null && f.PageName == pageName && f.IsDefault && !f.IsDeleted)
             .ToListAsync();
 
         foreach (var f in defaults)
@@ -108,7 +122,7 @@ public class SavedFilterService : ISavedFilterService
         return new SavedFilterDto
         {
             Id = filter.Id,
-            UserId = filter.UserId,
+            UserId = filter.UserId ?? 0,
             PageName = filter.PageName,
             Name = filter.Name,
             Description = filter.Description,

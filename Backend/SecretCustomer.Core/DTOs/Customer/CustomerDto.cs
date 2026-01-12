@@ -5,6 +5,7 @@ namespace SecretCustomer.Core.DTOs.Customer;
 public class CustomerDto
 {
     public int Id { get; set; }
+    public string? Code { get; set; }
     public string CompanyName { get; set; } = string.Empty;
     public string TaxNumber { get; set; } = string.Empty;
     public string? Phone { get; set; }
@@ -25,6 +26,8 @@ public class CustomerDto
 
 public class CreateCustomerDto
 {
+    public string? Code { get; set; }
+
     [Required(ErrorMessage = "Firma adı zorunludur")]
     [StringLength(255)]
     public string CompanyName { get; set; } = string.Empty;
@@ -59,6 +62,8 @@ public class CreateCustomerDto
 
 public class UpdateCustomerDto
 {
+    public string? Code { get; set; }
+
     [Required(ErrorMessage = "Firma adı zorunludur")]
     [StringLength(255)]
     public string CompanyName { get; set; } = string.Empty;

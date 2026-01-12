@@ -411,6 +411,33 @@ public class AssignmentsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Update due date of an assignment
+    /// </summary>
+    [HttpPost("{id}/update-due-date")]
+    [Authorize(Roles = "Admin,TeamLeader")]
+    public async Task<IActionResult> UpdateDueDate(int id, [FromBody] UpdateDueDateDto dto)
+    {
+        try
+        {
+            var updated = await _assignmentService.UpdateDueDateAsync(id, dto.NewDueDate);
+            return Ok(updated);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating due date for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Tarih güncellenirken bir hata oluştu.", ex));
+        }
+    }
+
     #endregion
 
     #region TOPLU İŞLEMLER

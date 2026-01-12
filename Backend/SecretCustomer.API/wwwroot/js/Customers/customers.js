@@ -121,6 +121,7 @@ function CustomersViewModel() {
     // Create new customer
     self.createNew = function() {        self.editingCustomer({
             id: null,
+            code: '',
             companyName: '',
             taxNumber: '',
             phone: '',
@@ -138,6 +139,7 @@ function CustomersViewModel() {
     // Edit customer
     self.editCustomer = function(customer) {        self.editingCustomer({
             id: customer.id,
+            code: customer.code || '',
             companyName: customer.companyName,
             taxNumber: customer.taxNumber || '',
             phone: customer.phone || '',

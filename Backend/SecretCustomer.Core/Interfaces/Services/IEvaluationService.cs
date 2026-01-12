@@ -62,6 +62,12 @@ public interface IEvaluationService
     /// Organizasyona göre personel listesi getir
     /// </summary>
     Task<List<PersonnelOptionDto>> GetPersonnelByOrganizationAsync(int organizationId);
+
+    /// <summary>
+    /// Puan hesapla - Tek merkezi hesaplama noktası
+    /// Kaydetmez, sadece hesaplayıp sonucu döndürür
+    /// </summary>
+    Task<ScoreCalculationResultDto> CalculateScoreAsync(CalculateScoreRequestDto request);
 }
 
 /// <summary>
@@ -194,4 +200,95 @@ public class EvaluationSubCriteriaDto
     public int Order { get; set; }
     public decimal WeightPoints { get; set; }
     public bool IsActive { get; set; } = true;
+}
+
+/// <summary>
+/// Puan hesaplama isteği
+/// </summary>
+public class CalculateScoreRequestDto
+{
+    /// <summary>
+    /// Checklist ID - Soruları almak için
+    /// </summary>
+    public int ChecklistId { get; set; }
+
+    /// <summary>
+    /// Cevaplar
+    /// </summary>
+    public List<ScoreAnswerDto> Answers { get; set; } = new();
+}
+
+/// <summary>
+/// Puan hesaplama için cevap
+/// </summary>
+public class ScoreAnswerDto
+{
+    public int QuestionId { get; set; }
+
+    /// <summary>
+    /// Soru dahil mi? (Zorunlu olmayan sorular için)
+    /// false ise bu soru hesaplamaya katılmaz
+    /// </summary>
+    public bool IsIncluded { get; set; } = true;
+
+    /// <summary>
+    /// N/A işaretli mi?
+    /// </summary>
+    public bool IsNA { get; set; }
+
+    /// <summary>
+    /// Verilen puan (0-MaxPoints arası)
+    /// </summary>
+    public decimal? GivenPoints { get; set; }
+
+    /// <summary>
+    /// Ceza uygulandı mı? (Penalty sorular için)
+    /// </summary>
+    public bool ApplyPenalty { get; set; }
+
+    /// <summary>
+    /// Seçilen ceza tipi: "YellowCard" veya "RedCard"
+    /// </summary>
+    public string? SelectedPenaltyType { get; set; }
+}
+
+/// <summary>
+/// Puan hesaplama sonucu
+/// </summary>
+public class ScoreCalculationResultDto
+{
+    /// <summary>
+    /// Kazanılan toplam puan
+    /// </summary>
+    public decimal TotalEarned { get; set; }
+
+    /// <summary>
+    /// Maksimum alınabilecek puan (dahil edilen sorulara göre)
+    /// </summary>
+    public decimal MaxPossible { get; set; }
+
+    /// <summary>
+    /// Yüzdelik puan (0-100)
+    /// </summary>
+    public decimal Percentage { get; set; }
+
+    /// <summary>
+    /// Sarı kart sayısı
+    /// </summary>
+    public int YellowCardCount { get; set; }
+
+    /// <summary>
+    /// Kırmızı kart sayısı
+    /// </summary>
+    public int RedCardCount { get; set; }
+
+    /// <summary>
+    /// Hesaplamaya dahil edilen soru sayısı
+    /// </summary>
+    public int IncludedQuestionCount { get; set; }
+
+    /// <summary>
+    /// Toplam soru sayısı (dahil edilmeyenler dahil)
+    /// </summary>
+    public int TotalQuestionCount { get; set; }
 }

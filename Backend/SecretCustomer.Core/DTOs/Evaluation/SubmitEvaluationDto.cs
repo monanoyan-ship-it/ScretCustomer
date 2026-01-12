@@ -163,6 +163,12 @@ public class SubmitAnswerDto
     /// Seçilen alt kriter ID'leri
     /// </summary>
     public List<int>? SelectedSubCriteriaIds { get; set; }
+
+    /// <summary>
+    /// Soru hesaplamaya dahil mi?
+    /// Zorunlu olmayan sorular için kullanıcı tarafından belirlenir
+    /// </summary>
+    public bool IsIncluded { get; set; } = true;
 }
 
 /// <summary>

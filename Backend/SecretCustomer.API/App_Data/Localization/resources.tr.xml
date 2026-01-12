@@ -74,6 +74,9 @@
   <LocaleResource Name="Common.Actions">
     <Value>İşlemler</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Apply">
+    <Value>Uygula</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Status">
     <Value>Durum</Value>
   </LocaleResource>
@@ -127,6 +130,9 @@
   </LocaleResource>
   <LocaleResource Name="Common.Info">
     <Value>Bilgi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Id">
+    <Value>ID</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Name">
     <Value>Ad</Value>
@@ -4144,6 +4150,141 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Ort. Puan</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.Title">
+    <Value>Projeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NotFound">
+    <Value>Proje Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NoRecords">
+    <Value>Firmanıza tanımlı proje bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Projects">
+    <Value>Projeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Organizations">
+    <Value>Şubeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Supervisors">
+    <Value>Süpervizörler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.InternalEvaluations">
+    <Value>İç Dinlemeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ExternalEvaluations">
+    <Value>Dış Dinlemeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.Title">
+    <Value>Organizasyonlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.NotFound">
+    <Value>Organizasyon Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.NoRecords">
+    <Value>Firmanıza tanımlı organizasyon bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.PersonnelCount">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.EvaluationCount">
+    <Value>Dinleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.AverageScore">
+    <Value>Ort. Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.Title">
+    <Value>Süpervizörler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.NotFound">
+    <Value>Süpervizör Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.NoRecords">
+    <Value>Firmanıza tanımlı süpervizör bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.PersonnelCount">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.EvaluationCount">
+    <Value>Dinleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.AverageScore">
+    <Value>Ort. Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.Title">
+    <Value>İç Dinlemeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NotFound">
+    <Value>Dinleme Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NoRecords">
+    <Value>İç dinleme kaydı bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.TotalCount">
+    <Value>Toplam Dinleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.AverageScore">
+    <Value>Ortalama Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.SearchPlaceholder">
+    <Value>Proje, dinleyen, dinlenen, organizasyon...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.List">
+    <Value>İç Dinleme Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
+    <Value>Dış Dinlemeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
+    <Value>Dinleme Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NoRecords">
+    <Value>Dış dinleme kaydı bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.TotalCount">
+    <Value>Toplam Dinleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.AverageScore">
+    <Value>Ortalama Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.SearchPlaceholder">
+    <Value>Proje, dinlenen, organizasyon...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
+    <Value>Dış Dinleme Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
+    <Value>Dinleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.EvaluatedPersonnel">
+    <Value>Dinlenen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Organization">
+    <Value>Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallDate">
+    <Value>Çağrı Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallTime">
+    <Value>Saat</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Duration">
+    <Value>Süre</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SavedFilters">
+    <Value>Kayıtlı Filtreler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SaveFilter">
+    <Value>Filtreyi Kaydet</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.NoSavedFilters">
+    <Value>Kayıtlı filtre yok.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.FilterNamePlaceholder">
+    <Value>Örn: Bu Ay Raporları</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SelectedFilters">
+    <Value>Seçilen Filtreler</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.Title">
     <Value>Dashboard</Value>
   </LocaleResource>
@@ -6712,6 +6853,21 @@
   <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
     <Value>Yeniden atama sebebi...</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDate">
+    <Value>Tarihi Güncelle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateError">
+    <Value>Tarih güncelleme başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateSuccess">
+    <Value>Tarih başarıyla güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateProcessError">
+    <Value>Tarih güncellenirken bir hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NewDueDate">
+    <Value>Yeni Son Tarih</Value>
+  </LocaleResource>
   <LocaleResource Name="Assignment.ReopenConfirm">
     <Value>Bu tamamlanmış atamayı yeniden açmak istediğinizden emin misiniz? Değerlendirme tekrar düzenlenebilir hale gelecektir.</Value>
   </LocaleResource>
@@ -6960,6 +7116,15 @@
   </LocaleResource>
   <LocaleResource Name="Common.TotalRecords">
     <Value>Toplam</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ThisWeek">
+    <Value>Bu Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ThisMonth">
+    <Value>Bu Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastMonth">
+    <Value>Geçen Ay</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Type">
     <Value>Tip</Value>

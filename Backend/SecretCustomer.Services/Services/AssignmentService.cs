@@ -297,6 +297,21 @@ public class AssignmentService : IAssignmentService
         if (filter.AssignedUserId.HasValue)
             query = query.Where(a => a.AssignedUserId == filter.AssignedUserId.Value);
 
+        // Status filtrelemesi
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var now = DateTime.UtcNow;
+            query = filter.Status switch
+            {
+                "Pending" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate >= now),
+                "InProgress" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate >= now),
+                "Completed" => query.Where(a => a.IsCompleted),
+                "Expired" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate < now),
+                "Cancelled" => query.Where(a => a.IsCancelled),
+                _ => query
+            };
+        }
+
         if (filter.IsCompleted.HasValue)
             query = query.Where(a => a.IsCompleted == filter.IsCompleted.Value);
 
@@ -464,6 +479,30 @@ public class AssignmentService : IAssignmentService
         // Audit Log
         await _auditLogService.LogInfoAsync(
             $"Atama yeniden atandı: {assignment.Project?.Name}",
+            "AssignmentService");
+
+        return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
+    }
+
+    public async Task<AssignmentDto> UpdateDueDateAsync(int id, DateTime newDueDate)
+    {
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (assignment == null || assignment.IsDeleted)
+            throw new KeyNotFoundException($"Atama bulunamadı: {id}");
+
+        if (assignment.IsCompleted)
+            throw new InvalidOperationException("Tamamlanmış atamanın tarihi değiştirilemez.");
+
+        assignment.DueDate = DateTime.SpecifyKind(newDueDate, DateTimeKind.Utc);
+        assignment.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        // Audit Log
+        await _auditLogService.LogInfoAsync(
+            $"Atama tarihi güncellendi: {assignment.Project?.Name} - Yeni tarih: {newDueDate:dd.MM.yyyy}",
             "AssignmentService");
 
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");

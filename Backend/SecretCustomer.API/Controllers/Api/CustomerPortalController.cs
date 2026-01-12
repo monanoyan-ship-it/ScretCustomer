@@ -557,16 +557,15 @@ public class CustomerPortalApiController : ControllerBase
             var projectEvals = evaluations.Where(e => e.Assignment.ProjectId == p.Id).ToList();
             return new
             {
-                branchId = p.Id,
-                branchName = p.Name,
-                city = "",
+                projectId = p.Id,
+                projectName = p.Name,
                 evaluationCount = projectEvals.Count,
                 averageScore = projectEvals.Any() ? Math.Round(projectEvals.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
                 minScore = projectEvals.Any() ? projectEvals.Min(e => e.TotalScore ?? 0) : 0,
                 maxScore = projectEvals.Any() ? projectEvals.Max(e => e.TotalScore ?? 0) : 0
             };
         })
-        .OrderByDescending(b => b.averageScore)
+        .OrderByDescending(p => p.averageScore)
         .ToList();
 
         return Ok(projectPerformance);
@@ -662,5 +661,449 @@ public class CustomerPortalApiController : ControllerBase
             .ToList();
 
         return Ok(monthlyData);
+    }
+
+    /// <summary>
+    /// Organizasyonlar (gruplu - hiyerarşik)
+    /// </summary>
+    [HttpGet("organizations")]
+    public async Task<IActionResult> GetOrganizations()
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var organizations = await _context.CustomerOrganizations
+            .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted)
+            .OrderBy(o => o.ParentId)
+            .ThenBy(o => o.Order)
+            .ThenBy(o => o.Name)
+            .Select(o => new
+            {
+                o.Id,
+                o.Name,
+                o.Code,
+                o.Description,
+                o.ParentId,
+                parentName = o.Parent != null ? o.Parent.Name : null,
+                o.Level,
+                o.Order,
+                personnelCount = _context.CustomerPersonnelOrganizations
+                    .Count(cpo => cpo.CustomerOrganizationId == o.Id &&
+                                  !cpo.CustomerPersonnel.IsDeleted &&
+                                  cpo.CustomerPersonnel.IsActive),
+                evaluationCount = _context.Evaluations
+                    .Count(e => e.EvaluatedOrganizationId == o.Id &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed),
+                averageScore = _context.Evaluations
+                    .Where(e => e.EvaluatedOrganizationId == o.Id &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed &&
+                               e.TotalScore.HasValue)
+                    .Average(e => (double?)e.TotalScore) ?? 0
+            })
+            .ToListAsync();
+
+        // Group by parent (null parent = root level)
+        var grouped = organizations
+            .GroupBy(o => o.parentName ?? "Genel")
+            .Select(g => new
+            {
+                groupName = g.Key,
+                organizations = g.ToList()
+            })
+            .OrderBy(g => g.groupName == "Genel" ? "" : g.groupName)
+            .ToList();
+
+        return Ok(grouped);
+    }
+
+    /// <summary>
+    /// Süpervizörler (gruplu - organizasyona göre)
+    /// </summary>
+    [HttpGet("supervisors")]
+    public async Task<IActionResult> GetSupervisors()
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        // Süpervizör olan personelleri bul (CustomerPersonnelOrganization'da SupervisorId olarak geçenler)
+        var supervisorIds = await _context.CustomerPersonnelOrganizations
+            .Where(cpo => cpo.SupervisorId.HasValue &&
+                          cpo.CustomerOrganization.CustomerId == customerId)
+            .Select(cpo => cpo.SupervisorId!.Value)
+            .Distinct()
+            .ToListAsync();
+
+        var supervisors = await _context.CustomerPersonnel
+            .Where(cp => supervisorIds.Contains(cp.Id) && cp.IsActive && !cp.IsDeleted)
+            .OrderBy(cp => cp.FirstName).ThenBy(cp => cp.LastName)
+            .Select(cp => new
+            {
+                cp.Id,
+                fullName = cp.FirstName + " " + cp.LastName,
+                cp.Email,
+                cp.Title,
+                organizations = _context.CustomerPersonnelOrganizations
+                    .Where(cpo => cpo.SupervisorId == cp.Id)
+                    .Select(cpo => new { cpo.CustomerOrganization.Id, cpo.CustomerOrganization.Name })
+                    .Distinct()
+                    .ToList(),
+                personnelCount = _context.CustomerPersonnelOrganizations
+                    .Count(cpo => cpo.SupervisorId == cp.Id),
+                evaluationCount = _context.Evaluations
+                    .Count(e => e.EvaluatorCustomerPersonnelId == cp.Id &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed),
+                averageScore = _context.Evaluations
+                    .Where(e => e.EvaluatorCustomerPersonnelId == cp.Id &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed &&
+                               e.TotalScore.HasValue)
+                    .Average(e => (double?)e.TotalScore) ?? 0
+            })
+            .ToListAsync();
+
+        // Group by first organization
+        var grouped = supervisors
+            .GroupBy(s => s.organizations.FirstOrDefault()?.Name ?? "Atanmamış")
+            .Select(g => new
+            {
+                groupName = g.Key,
+                supervisors = g.ToList()
+            })
+            .OrderBy(g => g.groupName == "Atanmamış" ? "ZZZZ" : g.groupName)
+            .ToList();
+
+        return Ok(grouped);
+    }
+
+    /// <summary>
+    /// İç dinlemeler (firma personeli tarafından yapılan)
+    /// </summary>
+    [HttpGet("evaluations/internal")]
+    public async Task<IActionResult> GetInternalEvaluations(
+        [FromQuery] int? page = 1,
+        [FromQuery] int? pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int? projectId = null,
+        [FromQuery] string? evaluatorName = null,
+        [FromQuery] string? personnelName = null,
+        [FromQuery] int? organizationId = null,
+        [FromQuery] string? callId = null)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatorCustomerPersonnel)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedOrganization)
+            .Where(e => e.Assignment.Project.CustomerId == customerId &&
+                       e.EvaluatorCustomerPersonnelId != null &&
+                       e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Date filters
+        if (startDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+        }
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+        }
+
+        // Project filter
+        if (projectId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+        }
+
+        // Evaluator name filter
+        if (!string.IsNullOrWhiteSpace(evaluatorName))
+        {
+            var evalLower = evaluatorName.ToLower();
+            query = query.Where(e => e.EvaluatorCustomerPersonnel != null &&
+                (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(evalLower));
+        }
+
+        // Personnel name filter
+        if (!string.IsNullOrWhiteSpace(personnelName))
+        {
+            var persLower = personnelName.ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(persLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(persLower)));
+        }
+
+        // Organization filter
+        if (organizationId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+        }
+
+        // CallId filter
+        if (!string.IsNullOrWhiteSpace(callId))
+        {
+            var callIdLower = callId.ToLower();
+            query = query.Where(e => e.CallId != null && e.CallId.ToLower().Contains(callIdLower));
+        }
+
+        // General search filter (legacy support)
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(e =>
+                (e.Assignment.Project.Name != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
+                (e.EvaluatorCustomerPersonnel != null && (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
+                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
+                (e.EvaluatedOrganization != null && e.EvaluatedOrganization.Name.ToLower().Contains(searchLower)) ||
+                (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
+        }
+
+        var total = await query.CountAsync();
+        var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
+            .Take(pageSize ?? 20)
+            .Select(e => new
+            {
+                e.Id,
+                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                projectName = e.Assignment.Project.Name,
+                evaluatorName = e.EvaluatorCustomerPersonnel != null ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName : null,
+                evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
+                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
+                e.TotalScore,
+                e.ScorePercentage,
+                e.YellowCardCount,
+                e.RedCardCount,
+                e.CallId,
+                e.CallDate,
+                e.CallTime,
+                e.Duration
+            })
+            .ToListAsync();
+
+        return Ok(new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) });
+    }
+
+    #region Saved Filters
+
+    /// <summary>
+    /// CustomerPortal - Kayıtlı filtreleri getir (aynı customer'ın tüm personelleri görür)
+    /// </summary>
+    [HttpGet("saved-filters")]
+    public async Task<IActionResult> GetSavedFilters([FromQuery] string page)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
+
+        var savedFilters = await _context.SavedFilters
+            .Where(f => f.CustomerId == customerId.Value && f.PageName == page && !f.IsDeleted)
+            .OrderByDescending(f => f.IsDefault)
+            .ThenByDescending(f => f.CreatedAt)
+            .Select(f => new
+            {
+                f.Id,
+                f.Name,
+                f.PageName,
+                f.FilterData,
+                f.IsDefault,
+                f.CreatedAt
+            })
+            .ToListAsync();
+
+        // Parse FilterData outside of LINQ expression
+        var result = savedFilters.Select(f => new
+        {
+            f.Id,
+            f.Name,
+            f.PageName,
+            f.IsDefault,
+            f.CreatedAt,
+            filters = System.Text.Json.JsonSerializer.Deserialize<List<object>>(f.FilterData)
+        });
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// CustomerPortal - Filtre kaydet (CustomerId ile - tüm personeller görebilir)
+    /// </summary>
+    [HttpPost("saved-filters")]
+    public async Task<IActionResult> SaveFilter([FromBody] CustomerSaveFilterRequest request)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
+
+        if (string.IsNullOrEmpty(request.Name))
+            return BadRequest(new { message = "Filtre adı zorunludur" });
+
+        var filter = new Core.Entities.SavedFilter
+        {
+            CustomerId = customerId.Value,
+            UserId = null, // CustomerPortal'dan kaydedildi
+            PageName = request.Page,
+            Name = request.Name,
+            FilterData = System.Text.Json.JsonSerializer.Serialize(request.Filters),
+            IsDefault = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.SavedFilters.Add(filter);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Filtre kaydedildi", id = filter.Id });
+    }
+
+    /// <summary>
+    /// CustomerPortal - Filtre sil (sadece kendi customer'ının filtresini silebilir)
+    /// </summary>
+    [HttpDelete("saved-filters/{id}")]
+    public async Task<IActionResult> DeleteSavedFilter(int id)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
+
+        var filter = await _context.SavedFilters
+            .FirstOrDefaultAsync(f => f.Id == id && f.CustomerId == customerId.Value);
+
+        if (filter == null)
+            return NotFound(new { message = "Filtre bulunamadı" });
+
+        filter.IsDeleted = true;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Filtre silindi" });
+    }
+
+    public class CustomerSaveFilterRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Page { get; set; } = string.Empty;
+        public List<object> Filters { get; set; } = new();
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Dış dinlemeler (bizim tarafımızdan yapılan)
+    /// </summary>
+    [HttpGet("evaluations/external")]
+    public async Task<IActionResult> GetExternalEvaluations(
+        [FromQuery] int? page = 1,
+        [FromQuery] int? pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int? projectId = null,
+        [FromQuery] string? personnelName = null,
+        [FromQuery] int? organizationId = null,
+        [FromQuery] string? callId = null)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedOrganization)
+            .Where(e => e.Assignment.Project.CustomerId == customerId &&
+                       e.EvaluatorId != null &&
+                       e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Date filters
+        if (startDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+        }
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+        }
+
+        // Project filter
+        if (projectId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+        }
+
+        // Personnel name filter
+        if (!string.IsNullOrWhiteSpace(personnelName))
+        {
+            var persLower = personnelName.ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(persLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(persLower)));
+        }
+
+        // Organization filter
+        if (organizationId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+        }
+
+        // CallId filter
+        if (!string.IsNullOrWhiteSpace(callId))
+        {
+            var callIdLower = callId.ToLower();
+            query = query.Where(e => e.CallId != null && e.CallId.ToLower().Contains(callIdLower));
+        }
+
+        // General search filter (legacy support)
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(e =>
+                (e.Assignment.Project.Name != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
+                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
+                (e.EvaluatedOrganization != null && e.EvaluatedOrganization.Name.ToLower().Contains(searchLower)) ||
+                (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
+        }
+
+        var total = await query.CountAsync();
+        var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
+            .Take(pageSize ?? 20)
+            .Select(e => new
+            {
+                e.Id,
+                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                projectName = e.Assignment.Project.Name,
+                evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
+                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
+                e.TotalScore,
+                e.ScorePercentage,
+                e.YellowCardCount,
+                e.RedCardCount,
+                e.CallId,
+                e.CallDate,
+                e.CallTime,
+                e.Duration
+            })
+            .ToListAsync();
+
+        return Ok(new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) });
     }
 }

@@ -70,37 +70,133 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="@Html.T("Project.SearchPlaceholder", "Proje ara...")" data-bind="value: searchTerm, valueUpdate: 'input'">
+            <!-- Active Filters (Chips) -->
+            <div class="mb-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9em;">
+                        <span data-bind="text: label"></span>: <span data-bind="text: displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Add Row -->
+            <div class="row g-2 align-items-end">
+                <!-- Filter Type Select -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">@Html.T("Common.FilterType", "Filtre Tipi")</label>
+                    <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                        <option value="customer">@Html.T("Common.Customer", "Müşteri")</option>
+                        <option value="projectType">@Html.T("Project.Type", "Proje Tipi")</option>
+                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                        <option value="projectManager">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</option>
+                        <option value="search">@Html.T("Common.Search", "Arama")</option>
+                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Filter Input -->
+                <div class="col-md-8">
+                    <!-- Customer Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'customer'">
+                        <label class="form-label small text-muted">@Html.T("Common.Customer", "Müşteri")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.customerId, options: customers, optionsText: function(c) { return c.companyName + (c.code ? ' (' + c.code + ')' : ''); }, optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- Project Type Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'projectType'">
+                        <label class="form-label small text-muted">@Html.T("Project.Type", "Proje Tipi")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectType">
+                            <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
+                            <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
+                            <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
+                            <option value="PhysicalAudit">@Html.T("Project.Type.PhysicalAudit", "Fiziksel Denetim")</option>
+                            <option value="OnlineSurvey">@Html.T("Project.Type.OnlineSurvey", "Online Anket")</option>
+                            <option value="CustomerSatisfaction">@Html.T("Project.Type.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
+                            <option value="TrainingEvaluation">@Html.T("Project.Type.TrainingEvaluation", "Eğitim Değerlendirme")</option>
+                            <option value="QualityControl">@Html.T("Project.Type.QualityControl", "Kalite Kontrol")</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'status'">
+                        <label class="form-label small text-muted">@Html.T("Common.Status", "Durum")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
+                            <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
+                            <option value="Draft">@Html.T("Project.Status.Draft", "Taslak")</option>
+                            <option value="Planned">@Html.T("Project.Status.Planned", "Planlandı")</option>
+                            <option value="Active">@Html.T("Project.Status.Active", "Aktif")</option>
+                            <option value="Paused">@Html.T("Project.Status.Paused", "Duraklatıldı")</option>
+                            <option value="Completed">@Html.T("Project.Status.Completed", "Tamamlandı")</option>
+                            <option value="Cancelled">@Html.T("Project.Status.Cancelled", "İptal Edildi")</option>
+                        </select>
+                    </div>
+
+                    <!-- Project Manager Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'projectManager'">
+                        <label class="form-label small text-muted">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectManagerId, options: users, optionsText: 'fullName', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- Search Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'search'">
+                        <label class="form-label small text-muted">@Html.T("Common.SearchTerm", "Arama Terimi")</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Project.SearchPlaceholder", "Proje ara...")" data-bind="value: tempFilter.searchTerm, valueUpdate: 'input'">
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'dateRange'">
+                        <label class="form-label small text-muted">@Html.T("Common.DateRange", "Tarih Aralığı")</label>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-calendar-range"></i> @Html.T("Common.QuickSelect", "Hızlı Seçim")
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">@Html.T("Common.Today", "Bugün")</a></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</a></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</a></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last7Days'); }">@Html.T("Common.Last7Days", "Son 7 Gün")</a></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last30Days'); }">@Html.T("Common.Last30Days", "Son 30 Gün")</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisQuarter'); }">@Html.T("Common.ThisQuarter", "Bu Çeyrek")</a></li>
+                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisYear'); }">@Html.T("Common.ThisYear", "Bu Yıl")</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No filter selected message -->
+                    <div data-bind="visible: !selectedFilterType()" class="text-muted small pt-4">
+                        <i class="bi bi-info-circle"></i> @Html.T("Common.SelectFilterToAdd", "Eklemek için bir filtre tipi seçin")
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" data-bind="value: statusFilter">
-                        <option value="">@Html.T("Project.AllStatuses", "Tüm Durumlar")</option>
-                        <option value="Draft">@Html.T("Project.Status.Draft", "Taslak")</option>
-                        <option value="Planned">@Html.T("Project.Status.Planned", "Planlandı")</option>
-                        <option value="Active">@Html.T("Project.Status.Active", "Aktif")</option>
-                        <option value="Paused">@Html.T("Project.Status.Paused", "Duraklatıldı")</option>
-                        <option value="Completed">@Html.T("Project.Status.Completed", "Tamamlandı")</option>
-                        <option value="Cancelled">@Html.T("Project.Status.Cancelled", "İptal Edildi")</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" data-bind="value: projectTypeFilter">
-                        <option value="">@Html.T("Project.AllTypes", "Tüm Tipler")</option>
-                        <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
-                        <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
-                        <option value="PhysicalAudit">@Html.T("Project.Type.PhysicalAudit", "Fiziksel Denetim")</option>
-                        <option value="OnlineSurvey">@Html.T("Project.Type.OnlineSurvey", "Online Anket")</option>
-                        <option value="CustomerSatisfaction">@Html.T("Project.Type.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
-                    </select>
-                </div>
-                <div class="col-md-2 text-end">
-                    <button class="btn btn-outline-secondary" data-bind="click: resetFilters">
-                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+
+                <!-- Add Filter Button -->
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-primary w-100" data-bind="click: addFilter, enable: canAddFilter">
+                        <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
                     </button>
                 </div>
             </div>
@@ -175,7 +271,17 @@
                             <td><code data-bind="text: code || '-'"></code></td>
                             <td>
                                 <a href="#" data-bind="text: name, click: function() { $parent.openDetailModal($data); }, clickBubble: false" class="fw-bold text-decoration-none"></a>
-                                <br><small class="text-muted" data-bind="text: customerName || '@Html.T("Project.NoCustomer", "Müşteri belirtilmedi")'"></small>
+                                <br><small class="text-muted">
+                                    <!-- ko if: customerName -->
+                                    <span data-bind="text: customerName"></span>
+                                    <!-- ko if: customerCode -->
+                                    (<code data-bind="text: customerCode"></code>)
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: customerName -->
+                                    @Html.T("Project.NoCustomer", "Müşteri belirtilmedi")
+                                    <!-- /ko -->
+                                </small>
                             </td>
                             <td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td>
                             <td><small data-bind="text: checklistName || '-'"></small></td>
@@ -541,7 +647,7 @@
                                                 <tr><td class="text-muted" style="width:40%;">Proje Kodu:</td><td><code data-bind="text: code || '-'"></code></td></tr>
                                                 <tr><td class="text-muted">Proje Tipi:</td><td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td></tr>
                                                 <tr><td class="text-muted">Kontrol Listesi:</td><td data-bind="text: checklistName"></td></tr>
-                                                <tr><td class="text-muted">Müşteri:</td><td data-bind="text: customerName || '-'"></td></tr>
+                                                <tr><td class="text-muted">Müşteri:</td><td><!-- ko if: customerName --><span data-bind="text: customerName"></span><!-- ko if: customerCode --> (<code data-bind="text: customerCode"></code>)<!-- /ko --><!-- /ko --><!-- ko ifnot: customerName -->-<!-- /ko --></td></tr>
                                                 <tr><td class="text-muted">Proje Yöneticisi:</td><td data-bind="text: projectManagerName || '-'"></td></tr>
                                             </table>
                                         </div>

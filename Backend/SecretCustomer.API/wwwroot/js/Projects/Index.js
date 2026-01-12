@@ -111,14 +111,265 @@ function ProjectsViewModel() {
     self.users = ko.observableArray([]);
     self.availableOrganizations = ko.observableArray([]);
 
-    // Filters
-    self.searchTerm = ko.observable('');
-    self.statusFilter = ko.observable('');
-    self.projectTypeFilter = ko.observable('');
+    // View mode
     self.viewMode = ko.observable('table');
 
     // Sorting
     self.sorting = TableSorting.createSortState('name', 'asc');
+
+    // ==================== FILTER SYSTEM ====================
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values (for adding new filter)
+    self.tempFilter = {
+        customerId: ko.observable(null),
+        projectType: ko.observable(''),
+        status: ko.observable(''),
+        projectManagerId: ko.observable(null),
+        searchTerm: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        selectedDateRangeType: ko.observable(null)
+    };
+
+    // Date range quick select tracking
+    self._manualDateChange = true;
+    self.tempFilter.startDate.subscribe(function() {
+        if (self._manualDateChange) self.tempFilter.selectedDateRangeType(null);
+    });
+    self.tempFilter.endDate.subscribe(function() {
+        if (self._manualDateChange) self.tempFilter.selectedDateRangeType(null);
+    });
+
+    // Filter labels
+    self.filterLabels = {
+        customer: 'Müşteri',
+        projectType: 'Proje Tipi',
+        status: 'Durum',
+        projectManager: 'Proje Yöneticisi',
+        search: 'Arama',
+        dateRange: 'Tarih'
+    };
+
+    self.statusLabels = {
+        'Draft': 'Taslak',
+        'Planned': 'Planlandı',
+        'Active': 'Aktif',
+        'Paused': 'Duraklatıldı',
+        'Completed': 'Tamamlandı',
+        'Cancelled': 'İptal Edildi'
+    };
+
+    // Date range options
+    self.dateRanges = [
+        { systemName: 'today', name: 'Bugün' },
+        { systemName: 'yesterday', name: 'Dün' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'lastWeek', name: 'Geçen Hafta' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'lastMonth', name: 'Geçen Ay' },
+        { systemName: 'last7Days', name: 'Son 7 Gün' },
+        { systemName: 'last30Days', name: 'Son 30 Gün' },
+        { systemName: 'thisQuarter', name: 'Bu Çeyrek' },
+        { systemName: 'thisYear', name: 'Bu Yıl' }
+    ];
+
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customer': return self.tempFilter.customerId();
+            case 'projectType': return self.tempFilter.projectType();
+            case 'status': return self.tempFilter.status();
+            case 'projectManager': return self.tempFilter.projectManagerId();
+            case 'search': return self.tempFilter.searchTerm().trim() !== '';
+            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            default: return false;
+        }
+    });
+
+    // Set temp date range (quick select)
+    self.setTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var formatDate = function(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        };
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = new Date(today.getTime());
+                endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday;
+                endDate = new Date(yesterday.getTime());
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+            case 'thisQuarter':
+                var quarter = Math.floor(today.getMonth() / 3);
+                startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'thisYear':
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        self._manualDateChange = false;
+        if (startDate) self.tempFilter.startDate(formatDate(startDate));
+        if (endDate) self.tempFilter.endDate(formatDate(endDate));
+        self.tempFilter.selectedDateRangeType(range);
+        self._manualDateChange = true;
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customer':
+                var customerId = self.tempFilter.customerId();
+                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                if (!customer) return;
+                filter.value = customerId;
+                filter.displayValue = customer.companyName + (customer.code ? ' (' + customer.code + ')' : '');
+                self.tempFilter.customerId(null);
+                break;
+
+            case 'projectType':
+                var projectType = self.tempFilter.projectType();
+                if (!projectType) return;
+                filter.value = projectType;
+                filter.displayValue = self.projectTypeTexts[projectType] || projectType;
+                self.tempFilter.projectType('');
+                break;
+
+            case 'status':
+                var status = self.tempFilter.status();
+                if (!status) return;
+                filter.value = status;
+                filter.displayValue = self.statusLabels[status] || status;
+                self.tempFilter.status('');
+                break;
+
+            case 'projectManager':
+                var managerId = self.tempFilter.projectManagerId();
+                var manager = self.users().find(function(u) { return u.id === managerId; });
+                if (!manager) return;
+                filter.value = managerId;
+                filter.displayValue = manager.fullName;
+                self.tempFilter.projectManagerId(null);
+                break;
+
+            case 'search':
+                var searchTerm = self.tempFilter.searchTerm().trim();
+                if (!searchTerm) return;
+                filter.value = searchTerm;
+                filter.displayValue = '"' + searchTerm + '"';
+                self.tempFilter.searchTerm('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.startDate();
+                var endDate = self.tempFilter.endDate();
+                var dateRangeType = self.tempFilter.selectedDateRangeType();
+                if (!startDate && !endDate) return;
+
+                filter.value = { startDate: startDate, endDate: endDate, dateRangeType: dateRangeType };
+
+                if (dateRangeType) {
+                    var rangeInfo = self.dateRanges.find(function(r) { return r.systemName === dateRangeType; });
+                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
+                } else {
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                }
+
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.selectedDateRangeType(null);
+                break;
+
+            default:
+                return;
+        }
+
+        // Remove existing filter of same type (except search which can have multiple)
+        if (type !== 'search') {
+            self.activeFilters.remove(function(f) { return f.type === type; });
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.sorting.reset();
+    };
 
     // Modals
     self.isEditModalOpen = ko.observable(false);
@@ -167,24 +418,51 @@ function ProjectsViewModel() {
         return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
     };
 
-    // Filtered projects
+    // Filtered projects (based on active filters)
     self.filteredProjects = ko.computed(function() {
         var result = self.projects();
-        var term = self.searchTerm().toLowerCase();
-        if (term) {
-            result = result.filter(function(p) {
-                return (p.name && p.name.toLowerCase().indexOf(term) >= 0) ||
-                       (p.code && p.code.toLowerCase().indexOf(term) >= 0) ||
-                       (p.description && p.description.toLowerCase().indexOf(term) >= 0) ||
-                       (p.customerName && p.customerName.toLowerCase().indexOf(term) >= 0);
-            });
-        }
-        if (self.statusFilter()) {
-            result = result.filter(function(p) { return p.status === self.statusFilter(); });
-        }
-        if (self.projectTypeFilter()) {
-            result = result.filter(function(p) { return p.projectType === self.projectTypeFilter(); });
-        }
+
+        // Apply active filters
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customer':
+                    result = result.filter(function(p) { return p.customerId === filter.value; });
+                    break;
+                case 'projectType':
+                    result = result.filter(function(p) { return p.projectType === filter.value; });
+                    break;
+                case 'status':
+                    result = result.filter(function(p) { return p.status === filter.value; });
+                    break;
+                case 'projectManager':
+                    result = result.filter(function(p) { return p.projectManagerId === filter.value; });
+                    break;
+                case 'search':
+                    var term = filter.value.toLowerCase();
+                    result = result.filter(function(p) {
+                        return (p.name && p.name.toLowerCase().indexOf(term) >= 0) ||
+                               (p.code && p.code.toLowerCase().indexOf(term) >= 0) ||
+                               (p.description && p.description.toLowerCase().indexOf(term) >= 0) ||
+                               (p.customerName && p.customerName.toLowerCase().indexOf(term) >= 0) ||
+                               (p.customerCode && p.customerCode.toLowerCase().indexOf(term) >= 0);
+                    });
+                    break;
+                case 'dateRange':
+                    var startDate = filter.value.startDate ? new Date(filter.value.startDate) : null;
+                    var endDate = filter.value.endDate ? new Date(filter.value.endDate) : null;
+                    if (endDate) endDate.setHours(23, 59, 59, 999);
+                    result = result.filter(function(p) {
+                        var pStart = new Date(p.startDate);
+                        var pEnd = new Date(p.endDate);
+                        // Proje tarihleri filtre tarih aralığıyla kesişiyorsa göster
+                        if (startDate && pEnd < startDate) return false;
+                        if (endDate && pStart > endDate) return false;
+                        return true;
+                    });
+                    break;
+            }
+        });
+
         // Apply sorting
         var sortBy = self.sorting.sortBy();
         var sortDir = self.sorting.sortDirection();
@@ -193,13 +471,6 @@ function ProjectsViewModel() {
         }
         return result;
     });
-
-    self.resetFilters = function() {
-        self.searchTerm('');
-        self.statusFilter('');
-        self.projectTypeFilter('');
-        self.sorting.reset();
-    };
 
     // Load dropdown data
     self.loadDropdownData = function() {

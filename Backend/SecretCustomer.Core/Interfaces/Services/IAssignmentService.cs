@@ -25,6 +25,7 @@ public interface IAssignmentService
     Task<AssignmentDto> CancelAssignmentAsync(int id, string? reason);
     Task<AssignmentDto> ReopenAssignmentAsync(int id);
     Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto);
+    Task<AssignmentDto> UpdateDueDateAsync(int id, DateTime newDueDate);
 
     // ===== TOPLU İŞLEMLER =====
     Task<int> DeleteByProjectIdAsync(int projectId);

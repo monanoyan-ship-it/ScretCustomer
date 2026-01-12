@@ -30,6 +30,10 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th class="sortable" data-bind="click: function() { sorting.toggleSort('code'); }, css: sorting.getSortClass('code')">
+                                @Html.T("Customer.Code", "Kod")
+                                <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('code')"></i>
+                            </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('companyName'); }, css: sorting.getSortClass('companyName')">
                                 @Html.T("Customer.CompanyName", "Şirket Adı")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('companyName')"></i>
@@ -72,6 +76,7 @@
                     </thead>
                     <tbody data-bind="foreach: sortedCustomers">
                         <tr>
+                            <td><span class="badge bg-primary" data-bind="text: code || '-'"></span></td>
                             <td data-bind="text: companyName"></td>
                             <td><span class="badge bg-secondary" data-bind="text: taxNumber || '-'"></span></td>
                             <td data-bind="text: phone || '-'"></td>
@@ -128,11 +133,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">@Html.T("Customer.Code", "Müşteri Kodu")</label>
+                            <input type="text" class="form-control" data-bind="value: code" placeholder="@Html.T("Customer.CodePlaceholder", "MUS-001")" autocomplete="off" />
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">@Html.T("Customer.CompanyName", "Şirket Adı") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: companyName" placeholder="@Html.T("Customer.CompanyNamePlaceholder", "ABC Şirketi Ltd. Şti.")" />
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">@Html.T("Customer.TaxNumber", "Vergi Numarası")</label>
                             <input type="text" class="form-control" data-bind="value: taxNumber" placeholder="1234567890" />
                         </div>

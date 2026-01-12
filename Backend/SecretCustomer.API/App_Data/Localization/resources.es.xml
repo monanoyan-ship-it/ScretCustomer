@@ -128,6 +128,9 @@
   <LocaleResource Name="Common.Info">
     <Value>Información</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Id">
+    <Value>ID</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Name">
     <Value>Nombre</Value>
   </LocaleResource>
@@ -3876,6 +3879,18 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Punt. Media</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.Title">
+    <Value>[ES] Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NotFound">
+    <Value>[ES] No Projects Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NoRecords">
+    <Value>[ES] No projects defined for your company.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Projects">
+    <Value>[ES] Projects</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.Title">
     <Value>Panel de Control</Value>
   </LocaleResource>
@@ -3950,6 +3965,66 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Logout">
     <Value>Cerrar Sesión</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.Title">
+    <Value>Evaluaciones Internas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NotFound">
+    <Value>Evaluación no encontrada</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NoRecords">
+    <Value>No se encontraron evaluaciones internas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.TotalCount">
+    <Value>Total de Evaluaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.AverageScore">
+    <Value>Puntuación Promedio</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.SearchPlaceholder">
+    <Value>Proyecto, evaluador, evaluado, organización...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.List">
+    <Value>Lista de Evaluaciones Internas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
+    <Value>Evaluaciones Externas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
+    <Value>Evaluación no encontrada</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NoRecords">
+    <Value>No se encontraron evaluaciones externas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.TotalCount">
+    <Value>Total de Evaluaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.AverageScore">
+    <Value>Puntuación Promedio</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.SearchPlaceholder">
+    <Value>Proyecto, evaluado, organización...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
+    <Value>Lista de Evaluaciones Externas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
+    <Value>Evaluador</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.EvaluatedPersonnel">
+    <Value>Evaluado</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Organization">
+    <Value>Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallDate">
+    <Value>Fecha de Llamada</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallTime">
+    <Value>Hora</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Duration">
+    <Value>Duración</Value>
   </LocaleResource>
   <LocaleResource Name="Form.Title">
     <Value>Formulario de Evaluación</Value>
@@ -6572,6 +6647,21 @@
   </LocaleResource>
   <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
     <Value>[ES] Yeniden atama sebebi...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDate">
+    <Value>[ES] Actualizar Fecha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateError">
+    <Value>[ES] Error al actualizar la fecha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateSuccess">
+    <Value>[ES] Fecha actualizada correctamente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateProcessError">
+    <Value>[ES] Se produjo un error al actualizar la fecha.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NewDueDate">
+    <Value>[ES] Nueva Fecha Límite</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenConfirm">
     <Value>[ES] Bu tamamlanmış atamayı yeniden açmak istediğinizden emin misiniz? Değerlendirme tekrar düzenlenebilir hale gelecektir.</Value>

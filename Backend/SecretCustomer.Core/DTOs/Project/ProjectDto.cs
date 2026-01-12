@@ -52,6 +52,7 @@ public class ProjectDto
     // Musteri
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
+    public string? CustomerCode { get; set; }
 
     // Organizasyon/Sube
     public int? OrganizationId { get; set; }

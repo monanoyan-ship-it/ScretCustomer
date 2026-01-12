@@ -1,4 +1,12 @@
-# Kaldığımız Yer - 9 Ocak 2026 (Son Güncelleme)
+# Kaldığımız Yer - 12 Ocak 2026 (Son Güncelleme)
+
+---
+
+## 📝 YAPILACAKLAR (Backlog)
+
+- [ ] Her rapora müşteri raporları kısmını da ekle (Raporlar menüsündeki her rapor için müşteri portalında da görünecek versiyon)
+
+---
 
 ---
 

@@ -74,6 +74,9 @@
   <LocaleResource Name="Common.Actions">
     <Value>Actions</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Apply">
+    <Value>Apply</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Status">
     <Value>Status</Value>
   </LocaleResource>
@@ -127,6 +130,9 @@
   </LocaleResource>
   <LocaleResource Name="Common.Info">
     <Value>Info</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Id">
+    <Value>ID</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Name">
     <Value>Name</Value>
@@ -3876,6 +3882,18 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Avg. Score</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.Title">
+    <Value>Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NotFound">
+    <Value>No Projects Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NoRecords">
+    <Value>No projects defined for your company.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Projects">
+    <Value>Projects</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.Title">
     <Value>Dashboard</Value>
   </LocaleResource>
@@ -3950,6 +3968,81 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Logout">
     <Value>Logout</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.Title">
+    <Value>Internal Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NotFound">
+    <Value>Evaluation Not Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NoRecords">
+    <Value>No internal evaluation records found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.TotalCount">
+    <Value>Total Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.AverageScore">
+    <Value>Average Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.SearchPlaceholder">
+    <Value>Project, evaluator, evaluated, organization...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.List">
+    <Value>Internal Evaluation List</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
+    <Value>External Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
+    <Value>Evaluation Not Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NoRecords">
+    <Value>No external evaluation records found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.TotalCount">
+    <Value>Total Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.AverageScore">
+    <Value>Average Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.SearchPlaceholder">
+    <Value>Project, evaluated, organization...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
+    <Value>External Evaluation List</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
+    <Value>Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.EvaluatedPersonnel">
+    <Value>Evaluated</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Organization">
+    <Value>Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallDate">
+    <Value>Call Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallTime">
+    <Value>Time</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Duration">
+    <Value>Duration</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SavedFilters">
+    <Value>Saved Filters</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SaveFilter">
+    <Value>Save Filter</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.NoSavedFilters">
+    <Value>No saved filters.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.FilterNamePlaceholder">
+    <Value>E.g.: This Month Reports</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.SelectedFilters">
+    <Value>Selected Filters</Value>
   </LocaleResource>
   <LocaleResource Name="Form.Title">
     <Value>Evaluation Form</Value>
@@ -6712,6 +6805,21 @@
   <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
     <Value>Assignment  Reassign Reason Placeholder</Value>
   </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDate">
+    <Value>Update Due Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateError">
+    <Value>Failed to update due date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateSuccess">
+    <Value>Due date updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateProcessError">
+    <Value>An error occurred while updating the due date.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NewDueDate">
+    <Value>New Due Date</Value>
+  </LocaleResource>
   <LocaleResource Name="Assignment.ReopenConfirm">
     <Value>Assignment  Reopen Confirm</Value>
   </LocaleResource>
@@ -6959,7 +7067,16 @@
     <Value>Common</Value>
   </LocaleResource>
   <LocaleResource Name="Common.TotalRecords">
-    <Value>Common  Total Records</Value>
+    <Value>Total Records</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ThisWeek">
+    <Value>This Week</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ThisMonth">
+    <Value>This Month</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.LastMonth">
+    <Value>Last Month</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Type">
     <Value>Common  Type</Value>

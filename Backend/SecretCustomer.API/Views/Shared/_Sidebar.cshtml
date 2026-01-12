@@ -17,9 +17,25 @@
         <ul class="nav nav-pills flex-column flex-grow-1 sidebar-nav" style="overflow-y: auto; min-height: 0;">
             <!-- Dashboard - Not for FieldWorker or CustomerPersonnel -->
             <li class="nav-item" data-bind="visible: !isFieldWorker() && !isCustomerPersonnel()">
-                <a href="/Dashboard/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                <a href="/Dashboard" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-speedometer2 me-2"></i>
                     @Html.T("Menu.Dashboard", "Dashboard")
+                </a>
+            </li>
+
+            <!-- Değerlendirmeler - FieldWorker -->
+            <li class="nav-item" data-bind="visible: isFieldWorker">
+                <a href="/Evaluations" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
+                </a>
+            </li>
+
+            <!-- Değerlendirmeler - QualitySpecialist & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
+                <a href="/Evaluations" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
                 </a>
             </li>
 
@@ -33,27 +49,27 @@
                 <div class="collapse" id="menuDefinitions">
                     <ul class="nav flex-column submenu">
                         <li>
-                            <a href="/Checklists/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Checklists" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-list-check me-2"></i>@Html.T("Menu.Checklists", "Kontrol Listeleri")
                             </a>
                         </li>
                         <li>
-                            <a href="/Projects/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Projects" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-folder me-2"></i>@Html.T("Menu.Projects", "Projeler")
                             </a>
                         </li>
                         <li>
-                            <a href="/Assignments/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Assignments" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-clipboard me-2"></i>@Html.T("Menu.Assignments", "Atamalar")
                             </a>
                         </li>
                         <li>
-                            <a href="/InternalAssignments/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/InternalAssignments" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-clipboard-check me-2"></i>@Html.T("Menu.InternalAssignments", "İç Değerlendirme Atamaları")
                             </a>
                         </li>
                         <li>
-                            <a href="/UserRequests/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/UserRequests" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-inbox me-2"></i>@Html.T("Menu.UserRequests", "Kullanıcı Talepleri")
                             </a>
                         </li>
@@ -71,17 +87,17 @@
                 <div class="collapse" id="menuUsers">
                     <ul class="nav flex-column submenu">
                         <li>
-                            <a href="/Users/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Users" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-person-gear me-2"></i>@Html.T("Menu.Users", "Kullanıcılar")
                             </a>
                         </li>
                         <li>
-                            <a href="/Customers/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Customers" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-briefcase me-2"></i>@Html.T("Menu.Customers", "Müşteriler")
                             </a>
                         </li>
                         <li>
-                            <a href="/CustomerOrganizations/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/CustomerOrganizations" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-diagram-3 me-2"></i>@Html.T("Menu.CustomerOrganizations", "Müşteri Organizasyonları")
                             </a>
                         </li>
@@ -89,57 +105,8 @@
                 </div>
             </li>
 
-            <!-- Değerlendirmeler - FieldWorker -->
-            <li class="nav-item" data-bind="visible: isFieldWorker">
-                <a href="/Evaluations/Index" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-clipboard-check me-2"></i>
-                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
-                </a>
-            </li>
-
-            <!-- ==================== MÜŞTERİ PORTALİ (CustomerPersonnel) ==================== -->
-            <!-- Dashboard - CustomerPersonnel -->
-            <li class="nav-item" data-bind="visible: isCustomerPersonnel">
-                <a href="/CustomerPortal/Dashboard" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-speedometer2 me-2"></i>
-                    @Html.T("Menu.Dashboard", "Dashboard")
-                </a>
-            </li>
-
-            <!-- Değerlendirmeler - CustomerPersonnel (atamalar + değerlendirmeler) -->
-            <li class="nav-item" data-bind="visible: isCustomerPersonnel">
-                <a href="/CustomerPortal/Evaluations" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-clipboard-check me-2"></i>
-                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
-                </a>
-            </li>
-
-            <!-- Şubeler - CustomerPersonnel (Manager & Supervisor) -->
-            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
-                <a href="/CustomerPortal/Branches" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-building me-2"></i>
-                    @Html.T("Menu.Branches", "Şubeler")
-                </a>
-            </li>
-
-            <!-- Raporlar - CustomerPersonnel (Manager & Supervisor) -->
-            <li class="nav-item" data-bind="visible: isCustomerManager || isCustomerSupervisor">
-                <a href="/CustomerPortal/Reports" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-graph-up me-2"></i>
-                    @Html.T("Menu.Reports", "Raporlar")
-                </a>
-            </li>
-
-            <!-- Değerlendirmeler - QualitySpecialist & Admin -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist || isAdmin">
-                <a href="/Evaluations/Index" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-pencil-square me-2"></i>
-                    @Html.T("Menu.Evaluations", "Değerlendirmeler")
-                </a>
-            </li>
-
             <!-- ==================== AKTİVİTELER (Admin/QualitySpecialist Only) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin || isQualitySpecialist">
+            <li class="nav-item" data-bind="visible: isAdmin() || isQualitySpecialist()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuActivities" role="button" aria-expanded="false">
                     <span><i class="bi bi-calendar3 me-2"></i>@Html.T("Menu.Activities", "Aktiviteler")</span>
@@ -148,17 +115,17 @@
                 <div class="collapse" id="menuActivities">
                     <ul class="nav flex-column submenu">
                         <li>
-                            <a href="/Meetings/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Meetings" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-calendar-event me-2"></i>@Html.T("Menu.Meetings", "Toplantılar")
                             </a>
                         </li>
                         <li>
-                            <a href="/Trainings/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Trainings" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-mortarboard me-2"></i>@Html.T("Menu.Trainings", "Eğitimler")
                             </a>
                         </li>
                         <li>
-                            <a href="/Approvals/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Approvals" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-check-circle me-2"></i>@Html.T("Menu.Approvals", "Onaylar")
                             </a>
                         </li>
@@ -167,7 +134,7 @@
             </li>
 
             <!-- ==================== RAPORLAR (Admin & QualitySpecialist) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin || isQualitySpecialist">
+            <li class="nav-item" data-bind="visible: isAdmin() || isQualitySpecialist()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuReports" role="button" aria-expanded="false">
                     <span><i class="bi bi-graph-up me-2"></i>@Html.T("Menu.ReportsMenu", "Raporlar")</span>
@@ -176,12 +143,12 @@
                 <div class="collapse" id="menuReports">
                     <ul class="nav flex-column submenu">
                         <li>
-                            <a href="/Listenings/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Listenings" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-headphones me-2"></i>@Html.T("Menu.Listenings", "Dinlemeler")
                             </a>
                         </li>
                         <li>
-                            <a href="/Reports/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Reports" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-bar-chart me-2"></i>@Html.T("Menu.Reports", "Genel Raporlar")
                             </a>
                         </li>
@@ -214,37 +181,37 @@
                 <div class="collapse" id="menuSystem">
                     <ul class="nav flex-column submenu">
                         <li>
-                            <a href="/Permissions/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Permissions" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-shield-lock me-2"></i>@Html.T("Menu.Permissions", "Yetkiler")
                             </a>
                         </li>
                         <li>
-                            <a href="/Settings/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Settings" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-sliders me-2"></i>@Html.T("Menu.Settings", "Sistem Ayarları")
                             </a>
                         </li>
                         <li>
-                            <a href="/Languages/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Languages" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-globe me-2"></i>@Html.T("Menu.Languages", "Diller")
                             </a>
                         </li>
                         <li>
-                            <a href="/Notifications/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Notifications" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-bell me-2"></i>@Html.T("Menu.Notifications", "Bildirimler")
                             </a>
                         </li>
                         <li>
-                            <a href="/AuditLogs/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/AuditLogs" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-journal-text me-2"></i>@Html.T("Menu.AuditLogs", "Sistem Logları")
                             </a>
                         </li>
                         <li>
-                            <a href="/Import/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/Import" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-upload me-2"></i>@Html.T("Menu.Import", "Veri İçe Aktarma")
                             </a>
                         </li>
                         <li>
-                            <a href="/ExcelTemplates/Index" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                            <a href="/ExcelTemplates" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-file-earmark-spreadsheet me-2"></i>@Html.T("Menu.ExcelTemplates", "Excel Şablonları")
                             </a>
                         </li>
@@ -254,25 +221,17 @@
 
             <!-- Notifications - Non-Admin users -->
             <li class="nav-item" data-bind="visible: !isAdmin()">
-                <a href="/Notifications/Index" class="nav-link text-white" data-bind="click: closeSidebar">
+                <a href="/Notifications" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-bell me-2"></i>
                     @Html.T("Menu.Notifications", "Bildirimler")
                 </a>
             </li>
         </ul>
 
-        <!-- Impersonation Button (Admin Only) -->
-        <div data-bind="visible: isAdmin" class="mt-3 px-2">
-            <button class="btn btn-outline-info btn-sm w-100" onclick="openImpersonationModal()">
-                <i class="bi bi-person-badge-fill me-2"></i>
-                @Html.T("Common.ViewAsCustomer", "Firma Olarak Görüntüle")
-            </button>
-        </div>
-
         <!-- Profile Link at Bottom -->
         <hr>
         <div class="dropdown">
-            <a href="/Profile/Index" class="d-flex align-items-center text-white text-decoration-none" data-bind="click: closeSidebar">
+            <a href="/Profile" class="d-flex align-items-center text-white text-decoration-none" data-bind="click: closeSidebar">
                 <i class="bi bi-person-circle me-2"></i>
                 <span data-bind="text: userName">@Html.T("Menu.MyProfile", "Profilim")</span>
             </a>

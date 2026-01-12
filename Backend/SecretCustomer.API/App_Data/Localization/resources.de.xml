@@ -128,6 +128,9 @@
   <LocaleResource Name="Common.Info">
     <Value>Info</Value>
   </LocaleResource>
+  <LocaleResource Name="Common.Id">
+    <Value>ID</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Name">
     <Value>Name</Value>
   </LocaleResource>
@@ -3876,6 +3879,18 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Ø Punktzahl</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.Title">
+    <Value>[DE] Projects</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NotFound">
+    <Value>[DE] No Projects Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Projects.NoRecords">
+    <Value>[DE] No projects defined for your company.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Projects">
+    <Value>[DE] Projects</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.Title">
     <Value>Dashboard</Value>
   </LocaleResource>
@@ -3950,6 +3965,66 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Logout">
     <Value>Abmelden</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.Title">
+    <Value>Interne Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NotFound">
+    <Value>Bewertung nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.NoRecords">
+    <Value>Keine internen Bewertungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.TotalCount">
+    <Value>Gesamtbewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.AverageScore">
+    <Value>Durchschnittspunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.SearchPlaceholder">
+    <Value>Projekt, Bewerter, Bewerteter, Organisation...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.InternalEvaluations.List">
+    <Value>Liste der internen Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
+    <Value>Externe Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
+    <Value>Bewertung nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NoRecords">
+    <Value>Keine externen Bewertungen gefunden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.TotalCount">
+    <Value>Gesamtbewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.AverageScore">
+    <Value>Durchschnittspunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.SearchPlaceholder">
+    <Value>Projekt, Bewerteter, Organisation...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
+    <Value>Liste der externen Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
+    <Value>Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.EvaluatedPersonnel">
+    <Value>Bewerteter</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Organization">
+    <Value>Organisation</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallDate">
+    <Value>Anrufdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.CallTime">
+    <Value>Zeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.Duration">
+    <Value>Dauer</Value>
   </LocaleResource>
   <LocaleResource Name="Form.Title">
     <Value>Bewertungsformular</Value>
@@ -6566,6 +6641,21 @@
   </LocaleResource>
   <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
     <Value>[DE] Assignment.ReassignReasonPlaceholder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDate">
+    <Value>[DE] Update Due Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateError">
+    <Value>[DE] Failed to update due date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateSuccess">
+    <Value>[DE] Due date updated successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assignment.UpdateDueDateProcessError">
+    <Value>[DE] An error occurred while updating the due date.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NewDueDate">
+    <Value>[DE] New Due Date</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenConfirm">
     <Value>[DE] Assignment.ReopenConfirm</Value>

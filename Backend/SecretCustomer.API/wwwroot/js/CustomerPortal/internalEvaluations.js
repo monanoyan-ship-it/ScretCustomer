@@ -1,0 +1,393 @@
+function CustomerInternalEvaluationsViewModel() {
+    var self = this;
+
+    // State
+    self.isLoading = ko.observable(true);
+    self.evaluations = ko.observableArray([]);
+    self.total = ko.observable(0);
+    self.averageScore = ko.observable(0);
+    self.page = ko.observable(1);
+    self.pageSize = ko.observable(20);
+
+    // Filter data
+    self.projects = ko.observableArray([]);
+    self.organizations = ko.observableArray([]);
+
+    // Filter UI
+    self.selectedFilterType = ko.observable('');
+    self.tempFilter = {
+        projectId: ko.observable(''),
+        evaluatorName: ko.observable(''),
+        personnelName: ko.observable(''),
+        organizationId: ko.observable(''),
+        callId: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        dateRangeType: ko.observable('')
+    };
+
+    // Active filters
+    self.activeFilters = ko.observableArray([]);
+
+    // Saved filters
+    self.savedFilters = ko.observableArray([]);
+    self.showSaveFilterModal = ko.observable(false);
+    self.showLoadFilterModal = ko.observable(false);
+    self.saveFilterName = ko.observable('');
+    self.isSavingFilter = ko.observable(false);
+    self.isLoadingFilters = ko.observable(false);
+
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.total() / self.pageSize()) || 1;
+    });
+
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        if (type === 'project') return self.tempFilter.projectId();
+        if (type === 'evaluator') return self.tempFilter.evaluatorName();
+        if (type === 'personnel') return self.tempFilter.personnelName();
+        if (type === 'organization') return self.tempFilter.organizationId();
+        if (type === 'callId') return self.tempFilter.callId();
+        if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
+        return false;
+    });
+
+    self.getScoreClass = function(score) {
+        if (score >= 80) return 'text-success';
+        if (score >= 60) return 'text-warning';
+        if (score > 0) return 'text-danger';
+        return 'text-muted';
+    };
+
+    // Date range labels
+    self.dateRangeLabels = {
+        'today': 'Bugün',
+        'thisWeek': 'Bu Hafta',
+        'thisMonth': 'Bu Ay',
+        'lastMonth': 'Geçen Ay'
+    };
+
+    // Calculate date range from type
+    self.calculateDateRange = function(rangeType) {
+        var today = new Date();
+        var start, end;
+
+        if (rangeType === 'today') {
+            start = end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'thisWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var weekStart = new Date(today);
+            weekStart.setDate(diff);
+            start = weekStart.toISOString().split('T')[0];
+            end = new Date().toISOString().split('T')[0];
+        } else if (rangeType === 'thisMonth') {
+            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            end = new Date().toISOString().split('T')[0];
+        } else if (rangeType === 'lastMonth') {
+            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
+            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+        }
+
+        return { start: start, end: end };
+    };
+
+    // Date range helper for UI
+    self.setDateRange = function(rangeType) {
+        var range = self.calculateDateRange(rangeType);
+        self.tempFilter.startDate(range.start);
+        self.tempFilter.endDate(range.end);
+        self.tempFilter.dateRangeType(rangeType);
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+        var label = '';
+        var displayValue = '';
+
+        if (type === 'project') {
+            filter.value = self.tempFilter.projectId();
+            var project = self.projects().find(function(p) { return p.id == filter.value; });
+            label = 'Proje';
+            displayValue = project ? project.name : filter.value;
+        } else if (type === 'evaluator') {
+            filter.value = self.tempFilter.evaluatorName();
+            label = 'Dinleyen';
+            displayValue = filter.value;
+        } else if (type === 'personnel') {
+            filter.value = self.tempFilter.personnelName();
+            label = 'Dinlenen';
+            displayValue = filter.value;
+        } else if (type === 'organization') {
+            filter.value = self.tempFilter.organizationId();
+            var org = self.organizations().find(function(o) { return o.id == filter.value; });
+            label = 'Organizasyon';
+            displayValue = org ? org.name : filter.value;
+        } else if (type === 'callId') {
+            filter.value = self.tempFilter.callId();
+            label = 'Çağrı ID';
+            displayValue = filter.value;
+        } else if (type === 'dateRange') {
+            filter.dateRangeType = self.tempFilter.dateRangeType();
+            filter.startDate = self.tempFilter.startDate();
+            filter.endDate = self.tempFilter.endDate();
+            label = 'Tarih';
+            // If it's a named range, show the name; otherwise show dates
+            if (filter.dateRangeType && self.dateRangeLabels[filter.dateRangeType]) {
+                displayValue = self.dateRangeLabels[filter.dateRangeType];
+            } else {
+                displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
+            }
+        }
+
+        // Remove existing filter of same type
+        self.activeFilters.remove(function(f) { return f.type === type; });
+
+        self.activeFilters.push({
+            type: type,
+            value: filter.value,
+            startDate: filter.startDate,
+            endDate: filter.endDate,
+            dateRangeType: filter.dateRangeType,
+            label: label,
+            displayValue: displayValue
+        });
+
+        // Reset temp
+        self.resetTempFilter();
+        self.selectedFilterType('');
+    };
+
+    self.resetTempFilter = function() {
+        self.tempFilter.projectId('');
+        self.tempFilter.evaluatorName('');
+        self.tempFilter.personnelName('');
+        self.tempFilter.organizationId('');
+        self.tempFilter.callId('');
+        self.tempFilter.startDate('');
+        self.tempFilter.endDate('');
+        self.tempFilter.dateRangeType('');
+    };
+
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+    };
+
+    self.clearFilters = function() {
+        self.activeFilters.removeAll();
+    };
+
+    // Search
+    self.search = function() {
+        self.loadEvaluations(1);
+    };
+
+    // Build query params from active filters
+    self.buildQueryParams = function() {
+        var params = {};
+        self.activeFilters().forEach(function(f) {
+            if (f.type === 'project') params.projectId = f.value;
+            if (f.type === 'evaluator') params.evaluatorName = f.value;
+            if (f.type === 'personnel') params.personnelName = f.value;
+            if (f.type === 'organization') params.organizationId = f.value;
+            if (f.type === 'callId') params.callId = f.value;
+            if (f.type === 'dateRange') {
+                // If it's a named range type, recalculate dates dynamically
+                if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                    var range = self.calculateDateRange(f.dateRangeType);
+                    params.startDate = range.start;
+                    params.endDate = range.end;
+                } else {
+                    if (f.startDate) params.startDate = f.startDate;
+                    if (f.endDate) params.endDate = f.endDate;
+                }
+            }
+        });
+        return params;
+    };
+
+    // Load evaluations
+    self.loadEvaluations = function(page) {
+        self.isLoading(true);
+        page = page || 1;
+
+        var params = self.buildQueryParams();
+        var url = '/api/customer/portal/evaluations/internal?page=' + page + '&pageSize=' + self.pageSize();
+
+        Object.keys(params).forEach(function(key) {
+            url += '&' + key + '=' + encodeURIComponent(params[key]);
+        });
+
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Dinlemeler yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.evaluations(data.items || []);
+                self.total(data.total || 0);
+                self.averageScore(data.averageScore || 0);
+                self.page(data.page || 1);
+                self.isLoading(false);
+            })
+            .catch(function(error) {
+                console.error('Internal evaluations load error:', error);
+                self.isLoading(false);
+            });
+    };
+
+    // Load filter options
+    self.loadFilterOptions = function() {
+        // Load projects
+        customerApiFetch('/api/customer/portal/branches')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                self.projects(data || []);
+            });
+
+        // Load organizations
+        customerApiFetch('/api/customer/portal/organizations')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var orgs = [];
+                (data || []).forEach(function(group) {
+                    (group.organizations || []).forEach(function(org) {
+                        orgs.push(org);
+                    });
+                });
+                self.organizations(orgs);
+            });
+    };
+
+    // Saved Filters
+    self.openSaveFilterModal = function() {
+        self.saveFilterName('');
+        self.showSaveFilterModal(true);
+    };
+
+    self.closeSaveFilterModal = function() {
+        self.showSaveFilterModal(false);
+    };
+
+    self.saveFilter = function() {
+        if (!self.saveFilterName()) return;
+        self.isSavingFilter(true);
+
+        // Prepare filters for saving - store dateRangeType for relative dates
+        var filtersToSave = self.activeFilters().map(function(f) {
+            return {
+                type: f.type,
+                value: f.value,
+                startDate: f.dateRangeType ? null : f.startDate, // Don't save dates if using range type
+                endDate: f.dateRangeType ? null : f.endDate,
+                dateRangeType: f.dateRangeType, // Save the range type (thisMonth, lastMonth, etc.)
+                label: f.label,
+                displayValue: f.displayValue
+            };
+        });
+
+        var filterData = {
+            name: self.saveFilterName(),
+            page: '/CustomerPortal/InternalEvaluations',
+            filters: filtersToSave
+        };
+
+        customerApiFetch('/api/customer/portal/saved-filters', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filterData)
+        })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Kaydetme hatasi');
+                return response.json();
+            })
+            .then(function() {
+                self.closeSaveFilterModal();
+                self.loadSavedFilters();
+                self.isSavingFilter(false);
+            })
+            .catch(function(error) {
+                console.error('Filter save error:', error);
+                self.isSavingFilter(false);
+            });
+    };
+
+    self.openLoadFilterModal = function() {
+        self.loadSavedFilters();
+        self.showLoadFilterModal(true);
+    };
+
+    self.closeLoadFilterModal = function() {
+        self.showLoadFilterModal(false);
+    };
+
+    self.loadSavedFilters = function() {
+        self.isLoadingFilters(true);
+        customerApiFetch('/api/customer/portal/saved-filters?page=/CustomerPortal/InternalEvaluations')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                self.savedFilters(data || []);
+                self.isLoadingFilters(false);
+            })
+            .catch(function() {
+                self.isLoadingFilters(false);
+            });
+    };
+
+    self.applySavedFilter = function(savedFilter) {
+        self.activeFilters.removeAll();
+        (savedFilter.filters || []).forEach(function(f) {
+            // Rebuild display value
+            var displayValue = f.displayValue;
+            var startDate = f.startDate;
+            var endDate = f.endDate;
+
+            if (f.type === 'project') {
+                var project = self.projects().find(function(p) { return p.id == f.value; });
+                if (project) displayValue = project.name;
+            } else if (f.type === 'organization') {
+                var org = self.organizations().find(function(o) { return o.id == f.value; });
+                if (org) displayValue = org.name;
+            } else if (f.type === 'dateRange' && f.dateRangeType) {
+                // Recalculate dates for relative ranges
+                var range = self.calculateDateRange(f.dateRangeType);
+                startDate = range.start;
+                endDate = range.end;
+                displayValue = self.dateRangeLabels[f.dateRangeType] || displayValue;
+            }
+
+            self.activeFilters.push({
+                type: f.type,
+                value: f.value,
+                startDate: startDate,
+                endDate: endDate,
+                dateRangeType: f.dateRangeType,
+                label: f.label,
+                displayValue: displayValue
+            });
+        });
+        self.closeLoadFilterModal();
+        self.search();
+    };
+
+    self.deleteSavedFilter = function(savedFilter) {
+        if (!confirm('Bu filtreyi silmek istediginize emin misiniz?')) return;
+        customerApiFetch('/api/customer/portal/saved-filters/' + savedFilter.id, { method: 'DELETE' })
+            .then(function() {
+                self.loadSavedFilters();
+            });
+    };
+
+    // Init
+    self.loadFilterOptions();
+    self.loadEvaluations(1);
+}
+
+$(document).ready(function() {
+    ko.applyBindings(new CustomerInternalEvaluationsViewModel(), document.getElementById('customer-internal-evaluations-app'));
+});

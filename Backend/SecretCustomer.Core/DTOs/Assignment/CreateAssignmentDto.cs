@@ -72,6 +72,15 @@ public class CancelAssignmentDto
 }
 
 /// <summary>
+/// Tarih güncelleme DTO
+/// </summary>
+public class UpdateDueDateDto
+{
+    [Required]
+    public DateTime NewDueDate { get; set; }
+}
+
+/// <summary>
 /// Atama filtreleme
 /// </summary>
 public class AssignmentFilterDto

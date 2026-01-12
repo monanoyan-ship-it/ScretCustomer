@@ -2,8 +2,8 @@
 function ListeningsViewModel() {
     var self = this;
 
-    // Page name for saved filters
-    self.pageName = 'Listenings';
+    // Page name for saved filters (URL path)
+    self.pageName = '/Listenings';
 
     // State
     self.isLoading = ko.observable(false);

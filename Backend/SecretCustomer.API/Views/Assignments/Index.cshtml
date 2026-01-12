@@ -268,6 +268,11 @@
                                                     </a>
                                                 </li>
                                                 <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
+                                                    <a class="dropdown-item" href="#" data-bind="click: $parent.openUpdateDueDateModal">
+                                                        <i class="bi bi-calendar-event"></i> @Html.T("Assignment.UpdateDueDate", "Tarihi Güncelle")
+                                                    </a>
+                                                </li>
+                                                <li data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
                                                     <a class="dropdown-item text-warning" href="#" data-bind="click: $parent.cancelAssignment">
                                                         <i class="bi bi-x-circle"></i> @Html.T("Button.Cancel", "İptal Et")
                                                     </a>
@@ -519,6 +524,31 @@
                     <button type="button" class="btn btn-primary" data-bind="click: saveReassign, disable: isSaving">
                         <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Button.Save", "Kaydet")</span>
                         <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Due Date Modal -->
+    <div class="modal fade" id="updateDueDateModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-event"></i> @Html.T("Assignment.UpdateDueDate", "Tarihi Güncelle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: updateDueDateData">
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.NewDueDate", "Yeni Son Tarih") <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" data-bind="value: newDueDate">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveUpdateDueDate, disable: isSavingDueDate">
+                        <span data-bind="visible: !isSavingDueDate()"><i class="bi bi-check"></i> @Html.T("Button.Save", "Kaydet")</span>
+                        <span data-bind="visible: isSavingDueDate"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
             </div>

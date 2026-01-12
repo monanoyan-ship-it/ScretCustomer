@@ -292,6 +292,9 @@ function EvaluationsViewModel() {
             fetch('/api/auth/me', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
+            console.log('[Evaluations] my-assignments:', results[0]);
+            console.log('[Evaluations] evaluator:', results[1]);
+            console.log('[Evaluations] me:', results[2]);
             self.allAssignments(results[0] || []);
             self.allEvaluations(results[1] || []);
             if (results[2] && results[2].role) {
@@ -540,7 +543,7 @@ function EvaluationsViewModel() {
     };
 
     // Get or create answer for a question
-    self.getAnswer = function(questionId) {
+    self.getAnswer = function(questionId, isRequired) {
         if (!self.answers[questionId]) {
             self.answers[questionId] = {
                 questionId: questionId,
@@ -552,16 +555,38 @@ function EvaluationsViewModel() {
                 recommendationNotes: ko.observable(''),
                 applyPenalty: ko.observable(false),
                 selectedPenaltyType: ko.observable(''),
-                selectedSubCriteria: ko.observableArray([])
+                selectedSubCriteria: ko.observableArray([]),
+                // Zorunlu olmayan sorular varsayılan kapalı gelir
+                isIncluded: ko.observable(isRequired !== false)
             };
 
             // Subscribe to changes to recalculate scores
-            self.answers[questionId].answerNumeric.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].answerNumeric.subscribe(function(newValue) {
+                // Puan seçildiğinde otomatik "Dahil" yap
+                if (newValue !== null && newValue !== '') {
+                    self.answers[questionId].isIncluded(true);
+                }
+                self.calculateScores();
+            });
             self.answers[questionId].answerText.subscribe(function() { self.calculateScores(); });
             self.answers[questionId].isNA.subscribe(function() { self.calculateScores(); });
-            self.answers[questionId].givenPoints.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].givenPoints.subscribe(function(newValue) {
+                // Puan girildiğinde otomatik "Dahil" yap
+                if (newValue !== null && newValue !== '') {
+                    self.answers[questionId].isIncluded(true);
+                }
+                self.calculateScores();
+            });
             self.answers[questionId].applyPenalty.subscribe(function() { self.calculateScores(); });
             self.answers[questionId].selectedPenaltyType.subscribe(function() { self.calculateScores(); });
+            self.answers[questionId].isIncluded.subscribe(function(newValue) {
+                // "Hariç"e geçirildiğinde puanları temizle
+                if (!newValue) {
+                    self.answers[questionId].answerNumeric(null);
+                    self.answers[questionId].givenPoints(null);
+                }
+                self.calculateScores();
+            });
         }
         return self.answers[questionId];
     };
@@ -637,40 +662,51 @@ function EvaluationsViewModel() {
                     self.evaluatedPersonnelId(data.evaluatedPersonnelId);
                 }
 
-                // Load existing answers
-                if (data.existingAnswers && data.existingAnswers.length > 0) {
+                // ÖNCE tüm soruları initialize et (isRequired bilgisiyle)
+                var hasExistingAnswers = data.existingAnswers && data.existingAnswers.length > 0;
+                var existingAnswerMap = {};
+                if (hasExistingAnswers) {
                     data.existingAnswers.forEach(function(a) {
-                        var answer = self.getAnswer(a.questionId);
-                        if (a.answerText) answer.answerText(a.answerText);
-                        if (a.answerNumeric) answer.answerNumeric(a.answerNumeric);
-                        answer.isNA(a.isNA || false);
-                        if (a.givenPoints) answer.givenPoints(a.givenPoints);
-                        if (a.notes) answer.notes(a.notes);
-                        if (a.recommendationNotes) answer.recommendationNotes(a.recommendationNotes);
-                        answer.applyPenalty(a.isPenaltyApplied || false);
-                        if (a.appliedPenaltyType && a.appliedPenaltyType !== 'None') {
-                            answer.selectedPenaltyType(a.appliedPenaltyType);
-                        }
-                        // Seçili alt kriterleri yükle
-                        if (a.selectedSubCriteriaIds && a.selectedSubCriteriaIds.length > 0) {
-                            answer.selectedSubCriteria(a.selectedSubCriteriaIds);
-                        }
+                        existingAnswerMap[a.questionId] = a;
                     });
                 }
 
-                // Initialize answers for all questions
-                var hasExistingAnswers = data.existingAnswers && data.existingAnswers.length > 0;
                 data.sections.forEach(function(section) {
                     section.questions.forEach(function(q) {
-                        var answer = self.getAnswer(q.id);
+                        // isRequired bilgisini geç - zorunlu sorular varsayılan dahil, opsiyonel sorular varsayılan hariç
+                        var answer = self.getAnswer(q.id, q.isRequired);
+
                         // Soru zaten YellowCard/RedCard tanımlıysa otomatik set et
                         if (q.penaltyType === 'YellowCard' || q.penaltyType === 'RedCard') {
                             answer.selectedPenaltyType(q.penaltyType);
                         }
-                        // Puanlı sorular için varsayılan olarak maxPoints değerini ata (100 puandan başla)
-                        // Sadece yeni değerlendirmede (existingAnswers yoksa) ve cevap henüz girilmemişse
-                        if (q.scoringType === 'Scored' && !hasExistingAnswers && answer.answerNumeric() === null) {
-                            answer.answerNumeric(q.maxPoints || 5);
+
+                        // Mevcut cevap varsa yükle
+                        var existingAnswer = existingAnswerMap[q.id];
+                        if (existingAnswer) {
+                            if (existingAnswer.answerText) answer.answerText(existingAnswer.answerText);
+                            if (existingAnswer.answerNumeric !== null && existingAnswer.answerNumeric !== undefined) {
+                                answer.answerNumeric(existingAnswer.answerNumeric);
+                            }
+                            answer.isNA(existingAnswer.isNA || false);
+                            if (existingAnswer.givenPoints) answer.givenPoints(existingAnswer.givenPoints);
+                            if (existingAnswer.notes) answer.notes(existingAnswer.notes);
+                            if (existingAnswer.recommendationNotes) answer.recommendationNotes(existingAnswer.recommendationNotes);
+                            answer.applyPenalty(existingAnswer.isPenaltyApplied || false);
+                            if (existingAnswer.appliedPenaltyType && existingAnswer.appliedPenaltyType !== 'None') {
+                                answer.selectedPenaltyType(existingAnswer.appliedPenaltyType);
+                            }
+                            // Seçili alt kriterleri yükle
+                            if (existingAnswer.selectedSubCriteriaIds && existingAnswer.selectedSubCriteriaIds.length > 0) {
+                                answer.selectedSubCriteria(existingAnswer.selectedSubCriteriaIds);
+                            }
+                            // Mevcut cevabı olan sorular dahil edilmiş demektir
+                            answer.isIncluded(true);
+                        } else {
+                            // Yeni değerlendirmede puanlı ve dahil edilen sorular için varsayılan max puan
+                            if (q.scoringType === 'Scored' && answer.answerNumeric() === null && answer.isIncluded()) {
+                                answer.answerNumeric(q.maxPoints || 5);
+                            }
                         }
                     });
                 });
@@ -702,24 +738,34 @@ function EvaluationsViewModel() {
         self.formData().sections.forEach(function(section) {
             section.questions.forEach(function(q) {
                 var weight = q.weightPoints || q.points || 0;
+                var answer = self.answers[q.id];
 
-                // Ağırlık gruplarını hesapla (tüm sorular için)
-                if (q.penaltyType === 'YellowCard') {
-                    yellowCardWeight += weight;
-                } else if (q.penaltyType === 'RedCard') {
-                    redCardWeight += weight;
-                } else if (q.scoringType === 'Scored') {
+                // Skip unscored questions
+                if (q.scoringType === 'Unscored') return;
+
+                // Penalty sorular: her zaman opsiyonel, ağırlık grubuna ekle ama max'a ekleme
+                if (q.scoringType === 'Penalty') {
+                    if (q.penaltyType === 'YellowCard') {
+                        yellowCardWeight += weight;
+                    } else if (q.penaltyType === 'RedCard') {
+                        redCardWeight += weight;
+                    }
+                } else {
+                    // Scored sorular için ağırlık grubu
+                    // Zorunlu olmayan ve dahil edilmemiş → ağırlık hesaba katılmaz
+                    if (!q.isRequired && (!answer || !answer.isIncluded())) {
+                        return; // Bu soruyu tamamen atla
+                    }
                     scoredWeight += weight;
                 }
 
-                var answer = self.answers[q.id];
                 if (!answer) return;
 
                 // Skip N/A questions
                 if (answer.isNA()) return;
 
-                // Skip unscored questions
-                if (q.scoringType === 'Unscored') return;
+                // Zorunlu olmayan soru ve dahil edilmemiş → atla
+                if (!q.isRequired && !answer.isIncluded()) return;
 
                 // Handle penalty questions - penaltyType sorudan geliyor (checklist'te belirlendi)
                 if (q.scoringType === 'Penalty') {
@@ -794,6 +840,7 @@ function EvaluationsViewModel() {
         Object.keys(self.answers).forEach(function(questionId) {
             var a = self.answers[questionId];
             var q = questionMap[questionId];
+
             // penaltyType sorudan geliyor (checklist'te belirlendi)
             var penaltyType = q && q.penaltyType && q.penaltyType !== 'None' ? q.penaltyType : null;
             // Cezalı sorularda: değer > 0 ise ceza uygula
@@ -811,7 +858,8 @@ function EvaluationsViewModel() {
                 recommendationNotes: a.recommendationNotes() || null,
                 applyPenalty: shouldApplyPenalty,
                 selectedPenaltyType: shouldApplyPenalty ? penaltyType : null,
-                selectedSubCriteriaIds: a.selectedSubCriteria ? a.selectedSubCriteria() : []
+                selectedSubCriteriaIds: a.selectedSubCriteria ? a.selectedSubCriteria() : [],
+                isIncluded: a.isIncluded ? a.isIncluded() : true // Zorunlu olmayan sorular için
             });
         });
 
