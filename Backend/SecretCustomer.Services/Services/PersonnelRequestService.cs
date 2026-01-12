@@ -169,11 +169,25 @@ public class PersonnelRequestService : IPersonnelRequestService
         request.ReviewedAt = DateTime.UtcNow;
         request.CreatedPersonnelId = personnel.Id;
 
-        // 3. Evaluation güncelle
-        if (request.Evaluation != null)
+        // 3. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş TÜM evaluation'ları güncelle
+        var fullName = $"{request.FirstName} {request.LastName}";
+        var evaluationsToUpdate = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment.Project.CustomerId == request.CustomerId &&
+                       e.EvaluatedUnknownPersonnel != null &&
+                       (e.EvaluatedUnknownPersonnel.ToLower() == fullName.ToLower() ||
+                        e.EvaluatedUnknownPersonnel.ToLower() == $"{request.FirstName.ToLower()} {request.LastName.ToLower()}"))
+            .ToListAsync();
+
+        foreach (var evaluation in evaluationsToUpdate)
         {
-            request.Evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
+            evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
+            evaluation.EvaluatedUnknownPersonnel = null; // Artık tanımlı personel
         }
+
+        _logger.LogInformation("Updated {Count} evaluations with new personnel ID {PersonnelId}",
+            evaluationsToUpdate.Count, personnel.Id);
 
         await _context.SaveChangesAsync();
 

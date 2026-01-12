@@ -7731,4 +7731,138 @@
   <LocaleResource Name="Listenings.EvaluationSource.Internal">
     <Value>Interne Kundenbewertungen</Value>
   </LocaleResource>
+  <!-- Report Export Headers -->
+  <LocaleResource Name="Report.Sheet.Summary">
+    <Value>Zusammenfassung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.SuggestionsList">
+    <Value>Vorschlagsliste</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.TopSuggestedQuestions">
+    <Value>Am häufigsten vorgeschlagene Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.CallAudit">
+    <Value>Anrufprüfungsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.CustomerEvaluation">
+    <Value>Kundenbewertungsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UniqueEvaluators">
+    <Value>Anzahl der Bewerter:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UniquePersonnel">
+    <Value>Anzahl des Personals:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportDate">
+    <Value>Berichtsdatum:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Notes">
+    <Value>Notizen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GivenPoints">
+    <Value>Vergebene Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MaxPoints">
+    <Value>Max. Punkte</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Percentage">
+    <Value>Prozentsatz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallId">
+    <Value>Anruf-ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Penalty">
+    <Value>Strafe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionCount">
+    <Value>Anzahl der Vorschläge</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorName">
+    <Value>Bewerter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Person">
+    <Value>Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallNo">
+    <Value>Anruf-Nr.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlDate">
+    <Value>Kontrolldatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Time">
+    <Value>Zeit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Duration">
+    <Value>Dauer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Comment">
+    <Value>Kommentar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PeriodMonth">
+    <Value>Zeitraum (Monat)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Company">
+    <Value>Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluated">
+    <Value>Bewertet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Department">
+    <Value>Abteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalScore">
+    <Value>Gesamtpunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Description">
+    <Value>Beschreibung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationCount">
+    <Value>Anzahl der Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.Evaluations">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
+    <Value>Fragengruppe Durchschnittsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.ProjectPerformance">
+    <Value>Projektleistungsbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.QuestionGroup">
+    <Value>Fragengruppe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ListeningCount">
+    <Value>Anzahl der Abhörungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ProjectCode">
+    <Value>Projektcode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatedPersonnel">
+    <Value>Bewertetes Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationDate">
+    <Value>Bewertungsdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CompletedDate">
+    <Value>Abschlussdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DueDate">
+    <Value>Fälligkeitsdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MaxScore">
+    <Value>Max. Punktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Status">
+    <Value>Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallDate">
+    <Value>Anrufdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RedCard">
+    <Value>Rote Karte</Value>
+  </LocaleResource>
+  <!-- Personnel Request -->
+  <LocaleResource Name="PersonnelRequest.AlreadyPending">
+    <Value>Für '{0}' existiert bereits eine ausstehende Personalanfrage. Bitte kontaktieren Sie Ihren Administrator.</Value>
+  </LocaleResource>
 </Language>

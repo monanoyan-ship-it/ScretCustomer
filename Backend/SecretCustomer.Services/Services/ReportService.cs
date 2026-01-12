@@ -517,15 +517,29 @@ public class ReportService : IReportService
         var result = await GetEvaluationsAsync(filter);
 
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Değerlendirmeler");
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Evaluations", "Değerlendirmeler"));
 
         // Headers
         var headers = new[]
         {
-            "Proje", "Proje Kodu", "Kontrol Listesi",
-            "Değerlendirici", "Değerlendirilen Personel", "Değerlendirme Tarihi", "Tamamlanma Tarihi",
-            "Son Tarih", "Puan", "Maks Puan", "Yüzde", "Sarı Kart", "Kırmızı Kart",
-            "Durum", "Çağrı ID", "Çağrı Tarihi", "Süre (dk)", "Yorum"
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.ProjectCode", "Proje Kodu"),
+            await _localizationService.GetResourceAsync("Report.Checklist", "Kontrol Listesi"),
+            await _localizationService.GetResourceAsync("Report.Evaluator", "Değerlendirici"),
+            await _localizationService.GetResourceAsync("Report.EvaluatedPersonnel", "Değerlendirilen Personel"),
+            await _localizationService.GetResourceAsync("Report.EvaluationDate", "Değerlendirme Tarihi"),
+            await _localizationService.GetResourceAsync("Report.CompletedDate", "Tamamlanma Tarihi"),
+            await _localizationService.GetResourceAsync("Report.DueDate", "Son Tarih"),
+            await _localizationService.GetResourceAsync("Report.Score", "Puan"),
+            await _localizationService.GetResourceAsync("Report.MaxScore", "Maks Puan"),
+            await _localizationService.GetResourceAsync("Report.Percentage", "Yüzde"),
+            await _localizationService.GetResourceAsync("Report.YellowCard", "Sarı Kart"),
+            await _localizationService.GetResourceAsync("Report.RedCard", "Kırmızı Kart"),
+            await _localizationService.GetResourceAsync("Report.Status", "Durum"),
+            await _localizationService.GetResourceAsync("Report.CallId", "Çağrı ID"),
+            await _localizationService.GetResourceAsync("Report.CallDate", "Çağrı Tarihi"),
+            await _localizationService.GetResourceAsync("Report.Duration", "Süre (dk)"),
+            await _localizationService.GetResourceAsync("Report.Comment", "Yorum")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -855,25 +869,32 @@ public class ReportService : IReportService
         using var workbook = new XLWorkbook();
 
         // Summary sheet
-        var summarySheet = workbook.Worksheets.Add("Özet");
-        summarySheet.Cell(1, 1).Value = "Toplam Cezalı";
+        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Summary", "Özet"));
+        summarySheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.TotalPenalties", "Toplam Cezalı");
         summarySheet.Cell(1, 2).Value = report.Summary.TotalPenalties;
-        summarySheet.Cell(2, 1).Value = "Sarı Kart";
+        summarySheet.Cell(2, 1).Value = await _localizationService.GetResourceAsync("Report.YellowCard", "Sarı Kart");
         summarySheet.Cell(2, 2).Value = report.Summary.TotalYellowCards;
-        summarySheet.Cell(3, 1).Value = "Kırmızı Kart";
+        summarySheet.Cell(3, 1).Value = await _localizationService.GetResourceAsync("Report.RedCard", "Kırmızı Kart");
         summarySheet.Cell(3, 2).Value = report.Summary.TotalRedCards;
-        summarySheet.Cell(4, 1).Value = "Etkilenen Değerlendirme";
+        summarySheet.Cell(4, 1).Value = await _localizationService.GetResourceAsync("Report.AffectedEvaluations", "Etkilenen Değerlendirme");
         summarySheet.Cell(4, 2).Value = report.Summary.AffectedEvaluations;
-        summarySheet.Cell(5, 1).Value = "Rapor Tarihi";
+        summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", "Rapor Tarihi");
         summarySheet.Cell(5, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
         summarySheet.Columns().AdjustToContents();
 
         // Penalties detail sheet
-        var penaltiesSheet = workbook.Worksheets.Add("Cezalı Değerlendirmeler");
+        var penaltiesSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.PenaltyEvaluations", "Cezalı Değerlendirmeler"));
         var headers = new[]
         {
-            "Tarih", "Proje", "Kontrol Listesi", "Bölüm", "Soru",
-            "Ceza Tipi", "Değerlendirici", "Denetlenen", "Not"
+            await _localizationService.GetResourceAsync("Report.Date", "Tarih"),
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Checklist", "Kontrol Listesi"),
+            await _localizationService.GetResourceAsync("Report.Section", "Bölüm"),
+            await _localizationService.GetResourceAsync("Report.Question", "Soru"),
+            await _localizationService.GetResourceAsync("Report.PenaltyType", "Ceza Tipi"),
+            await _localizationService.GetResourceAsync("Report.Evaluator", "Değerlendirici"),
+            await _localizationService.GetResourceAsync("Report.Evaluated", "Denetlenen"),
+            await _localizationService.GetResourceAsync("Report.Note", "Not")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -891,7 +912,9 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(row, 3).Value = penalty.ChecklistName ?? "";
             penaltiesSheet.Cell(row, 4).Value = penalty.GroupName;
             penaltiesSheet.Cell(row, 5).Value = penalty.QuestionText;
-            penaltiesSheet.Cell(row, 6).Value = penalty.PenaltyType == "YellowCard" ? "Sarı Kart" : "Kırmızı Kart";
+            penaltiesSheet.Cell(row, 6).Value = penalty.PenaltyType == "YellowCard"
+                ? await _localizationService.GetResourceAsync("Report.YellowCard", "Sarı Kart")
+                : await _localizationService.GetResourceAsync("Report.RedCard", "Kırmızı Kart");
             penaltiesSheet.Cell(row, 7).Value = penalty.EvaluatorName ?? "";
             penaltiesSheet.Cell(row, 8).Value = penalty.EvaluatedPersonnelName ?? "";
             penaltiesSheet.Cell(row, 9).Value = penalty.Notes ?? "";
@@ -1468,31 +1491,42 @@ public class ReportService : IReportService
         using var workbook = new XLWorkbook();
 
         // Summary sheet
-        var summarySheet = workbook.Worksheets.Add("Özet");
-        summarySheet.Cell(1, 1).Value = "ÖNERİLER RAPORU";
+        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Summary", "Özet"));
+        summarySheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.SuggestionsReport", "ÖNERİLER RAPORU");
         summarySheet.Cell(1, 1).Style.Font.Bold = true;
         summarySheet.Cell(1, 1).Style.Font.FontSize = 16;
 
-        summarySheet.Cell(3, 1).Value = "Toplam Öneri/Not:";
+        summarySheet.Cell(3, 1).Value = await _localizationService.GetResourceAsync("Report.TotalSuggestions", "Toplam Öneri/Not:");
         summarySheet.Cell(3, 2).Value = report.Summary.TotalSuggestions;
-        summarySheet.Cell(4, 1).Value = "Önerili Değerlendirme Sayısı:";
+        summarySheet.Cell(4, 1).Value = await _localizationService.GetResourceAsync("Report.EvaluationsWithSuggestions", "Önerili Değerlendirme Sayısı:");
         summarySheet.Cell(4, 2).Value = report.Summary.TotalEvaluationsWithSuggestions;
-        summarySheet.Cell(5, 1).Value = "Değerlendirici Sayısı:";
+        summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.UniqueEvaluators", "Değerlendirici Sayısı:");
         summarySheet.Cell(5, 2).Value = report.Summary.UniqueEvaluators;
-        summarySheet.Cell(6, 1).Value = "Personel Sayısı:";
+        summarySheet.Cell(6, 1).Value = await _localizationService.GetResourceAsync("Report.UniquePersonnel", "Personel Sayısı:");
         summarySheet.Cell(6, 2).Value = report.Summary.UniquePersonnel;
-        summarySheet.Cell(7, 1).Value = "Rapor Tarihi:";
+        summarySheet.Cell(7, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", "Rapor Tarihi:");
         summarySheet.Cell(7, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         summarySheet.Columns().AdjustToContents();
 
         // Details sheet
-        var detailsSheet = workbook.Worksheets.Add("Öneriler Listesi");
+        var detailsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.SuggestionsList", "Öneriler Listesi"));
         var headers = new[]
         {
-            "Tarih", "Proje", "Kontrol Listesi", "Bölüm", "Soru",
-            "Notlar", "Öneri", "Verilen Puan", "Maks Puan", "Yüzde",
-            "Değerlendirici", "Personel", "Çağrı ID", "Ceza"
+            await _localizationService.GetResourceAsync("Report.Date", "Tarih"),
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Checklist", "Kontrol Listesi"),
+            await _localizationService.GetResourceAsync("Report.Section", "Bölüm"),
+            await _localizationService.GetResourceAsync("Report.Question", "Soru"),
+            await _localizationService.GetResourceAsync("Report.Notes", "Notlar"),
+            await _localizationService.GetResourceAsync("Report.Suggestion", "Öneri"),
+            await _localizationService.GetResourceAsync("Report.GivenPoints", "Verilen Puan"),
+            await _localizationService.GetResourceAsync("Report.MaxPoints", "Maks Puan"),
+            await _localizationService.GetResourceAsync("Report.Percentage", "Yüzde"),
+            await _localizationService.GetResourceAsync("Report.Evaluator", "Değerlendirici"),
+            await _localizationService.GetResourceAsync("Report.Personnel", "Personel"),
+            await _localizationService.GetResourceAsync("Report.CallId", "Çağrı ID"),
+            await _localizationService.GetResourceAsync("Report.Penalty", "Ceza")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -1525,16 +1559,16 @@ public class ReportService : IReportService
         detailsSheet.Columns().AdjustToContents();
 
         // Top Questions sheet
-        var questionsSheet = workbook.Worksheets.Add("En Çok Öneri Yazılan Sorular");
-        questionsSheet.Cell(1, 1).Value = "Soru";
+        var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.TopSuggestedQuestions", "En Çok Öneri Yazılan Sorular"));
+        questionsSheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.Question", "Soru");
         questionsSheet.Cell(1, 1).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 2).Value = "Kontrol Listesi";
+        questionsSheet.Cell(1, 2).Value = await _localizationService.GetResourceAsync("Report.Checklist", "Kontrol Listesi");
         questionsSheet.Cell(1, 2).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 3).Value = "Bölüm";
+        questionsSheet.Cell(1, 3).Value = await _localizationService.GetResourceAsync("Report.Section", "Bölüm");
         questionsSheet.Cell(1, 3).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 4).Value = "Öneri Sayısı";
+        questionsSheet.Cell(1, 4).Value = await _localizationService.GetResourceAsync("Report.SuggestionCount", "Öneri Sayısı");
         questionsSheet.Cell(1, 4).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 5).Value = "Ort. Puan";
+        questionsSheet.Cell(1, 5).Value = await _localizationService.GetResourceAsync("Report.AverageScore", "Ort. Puan");
         questionsSheet.Cell(1, 5).Style.Font.Bold = true;
 
         row = 2;
@@ -1572,21 +1606,21 @@ public class ReportService : IReportService
         var result = await GetEvaluationsAsync(filter);
 
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Çağrı Denetleme Raporu");
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.CallAudit", "Çağrı Denetleme Raporu"));
 
         // Headers - Kullanıcının istediği sütunlar
         var headers = new[]
         {
-            "Proje",
-            "Değerlendirme Yapan",
-            "Kişi",
-            "Çağrı No",
-            "Kontrol Tarihi",
-            "Saat",
-            "Süre",
-            "Yorum",
-            "Periyot (Ay)",
-            "Ortalama Puan"
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.EvaluatorName", "Değerlendirme Yapan"),
+            await _localizationService.GetResourceAsync("Report.Person", "Kişi"),
+            await _localizationService.GetResourceAsync("Report.CallNo", "Çağrı No"),
+            await _localizationService.GetResourceAsync("Report.ControlDate", "Kontrol Tarihi"),
+            await _localizationService.GetResourceAsync("Report.Time", "Saat"),
+            await _localizationService.GetResourceAsync("Report.Duration", "Süre"),
+            await _localizationService.GetResourceAsync("Report.Comment", "Yorum"),
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -1737,10 +1771,16 @@ public class ReportService : IReportService
 
         // Excel oluştur
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Soru Grubu Ortalama Raporu");
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.QuestionGroupAverage", "Soru Grubu Ortalama Raporu"));
 
         // Headers
-        var headers = new[] { "Proje", "Kontrol Grubu", "Periyot", "Ortalama Puan" };
+        var headers = new[] {
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.QuestionGroup", "Kontrol Grubu"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.ListeningCount", "Dinleme Sayısı"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan")
+        };
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -1756,7 +1796,8 @@ public class ReportService : IReportService
             worksheet.Cell(row, 1).Value = item.ProjectName;
             worksheet.Cell(row, 2).Value = item.GroupName;
             worksheet.Cell(row, 3).Value = item.Year;
-            worksheet.Cell(row, 4).Value = item.AverageScore;
+            worksheet.Cell(row, 4).Value = item.EvaluationCount;
+            worksheet.Cell(row, 5).Value = item.AverageScore;
             row++;
         }
 
@@ -1864,25 +1905,25 @@ public class ReportService : IReportService
 
         // Excel oluştur
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Müşteri Değerlendirme Raporu");
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.CustomerEvaluation", "Müşteri Değerlendirme Raporu"));
 
         // Headers
         var headers = new[]
         {
-            "Firma",           // Customer.CompanyName
-            "Proje",           // Project.Name
-            "Değerlendirilen", // Period veya AyYıl + Company
-            "Kişi",            // EvaluatedPersonnelName
-            "Departman",       // Organization.Name
-            "Çağrı No",        // CallId
-            "Kontrol Tarihi",  // ControlDate
-            "Saat",            // CallTime
-            "Süre",            // Duration
-            "Yorum",           // Combined comments
-            "Periyot",         // Year
-            "Periyot (Ay)",    // YYYYMM
-            "Toplam Puan",     // ScorePercentage
-            "Açıklama"         // EvaluationComment
+            await _localizationService.GetResourceAsync("Report.Company", "Firma"),
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Evaluated", "Değerlendirilen"),
+            await _localizationService.GetResourceAsync("Report.Person", "Kişi"),
+            await _localizationService.GetResourceAsync("Report.Department", "Departman"),
+            await _localizationService.GetResourceAsync("Report.CallNo", "Çağrı No"),
+            await _localizationService.GetResourceAsync("Report.ControlDate", "Kontrol Tarihi"),
+            await _localizationService.GetResourceAsync("Report.Time", "Saat"),
+            await _localizationService.GetResourceAsync("Report.Duration", "Süre"),
+            await _localizationService.GetResourceAsync("Report.Comment", "Yorum"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.TotalScore", "Toplam Puan"),
+            await _localizationService.GetResourceAsync("Report.Description", "Açıklama")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -2056,10 +2097,16 @@ public class ReportService : IReportService
 
         // Excel oluştur
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Proje Performans Raporu");
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.ProjectPerformance", "Proje Performans Raporu"));
 
         // Headers
-        var headers = new[] { "Periyot (Ay)", "Proje", "Periyot", "Ortalama Puan" };
+        var headers = new[] {
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.ListeningCount", "Dinleme Sayısı"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan")
+        };
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -2075,7 +2122,8 @@ public class ReportService : IReportService
             worksheet.Cell(row, 1).Value = item.PeriodMonth;
             worksheet.Cell(row, 2).Value = item.ProjectName;
             worksheet.Cell(row, 3).Value = item.Year;
-            worksheet.Cell(row, 4).Value = item.AverageScore;
+            worksheet.Cell(row, 4).Value = item.EvaluationCount;
+            worksheet.Cell(row, 5).Value = item.AverageScore;
             row++;
         }
 

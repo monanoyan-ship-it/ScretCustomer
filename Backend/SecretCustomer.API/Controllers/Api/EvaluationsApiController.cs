@@ -149,6 +149,44 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Çağrı ID'nin müşteri için mevcut olup olmadığını kontrol eder
+    /// </summary>
+    [HttpGet("check-call-id")]
+    [Authorize]
+    public async Task<IActionResult> CheckCallIdExists([FromQuery] string callId, [FromQuery] int assignmentId, [FromQuery] int? evaluationId = null)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(callId))
+                return Ok(new { exists = false });
+
+            // Assignment'tan CustomerId'yi al
+            var assignment = await _context.Assignments
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+
+            if (assignment?.Project?.CustomerId == null)
+                return Ok(new { exists = false });
+
+            var customerId = assignment.Project.CustomerId.Value;
+
+            // Aynı müşteriye ait aynı CallId'li başka dinleme var mı?
+            var exists = await _context.Evaluations
+                .AnyAsync(e => !e.IsDeleted &&
+                              e.CallId == callId &&
+                              e.Assignment.Project.CustomerId == customerId &&
+                              (!evaluationId.HasValue || e.Id != evaluationId.Value));
+
+            return Ok(new { exists = exists });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking CallId existence");
+            return StatusCode(500, CreateErrorResponse("CallId kontrol hatası", ex));
+        }
+    }
+
+    /// <summary>
     /// Degerlendirme formunu yukler (checklist bilgileriyle)
     /// </summary>
     [HttpGet("form/{assignmentId:int}")]

@@ -7811,4 +7811,138 @@
   <LocaleResource Name="Listenings.EvaluationSource.Internal">
     <Value>Müşteri İç Değerlendirmeleri</Value>
   </LocaleResource>
+  <!-- Report Export Headers -->
+  <LocaleResource Name="Report.Sheet.Summary">
+    <Value>Özet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.SuggestionsList">
+    <Value>Öneriler Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.TopSuggestedQuestions">
+    <Value>En Çok Öneri Yazılan Sorular</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.CallAudit">
+    <Value>Çağrı Denetleme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.CustomerEvaluation">
+    <Value>Müşteri Değerlendirme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UniqueEvaluators">
+    <Value>Değerlendirici Sayısı:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UniquePersonnel">
+    <Value>Personel Sayısı:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportDate">
+    <Value>Rapor Tarihi:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Notes">
+    <Value>Notlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GivenPoints">
+    <Value>Verilen Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MaxPoints">
+    <Value>Maks Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Percentage">
+    <Value>Yüzde</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallId">
+    <Value>Çağrı ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Penalty">
+    <Value>Ceza</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionCount">
+    <Value>Öneri Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorName">
+    <Value>Değerlendirme Yapan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Person">
+    <Value>Kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallNo">
+    <Value>Çağrı No</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlDate">
+    <Value>Kontrol Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Time">
+    <Value>Saat</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Duration">
+    <Value>Süre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Comment">
+    <Value>Yorum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PeriodMonth">
+    <Value>Periyot (Ay)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Company">
+    <Value>Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluated">
+    <Value>Değerlendirilen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Department">
+    <Value>Departman</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalScore">
+    <Value>Toplam Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Description">
+    <Value>Açıklama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationCount">
+    <Value>Dinleme Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.Evaluations">
+    <Value>Değerlendirmeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
+    <Value>Soru Grubu Ortalama Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.ProjectPerformance">
+    <Value>Proje Performans Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.QuestionGroup">
+    <Value>Kontrol Grubu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ListeningCount">
+    <Value>Dinleme Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ProjectCode">
+    <Value>Proje Kodu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatedPersonnel">
+    <Value>Değerlendirilen Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationDate">
+    <Value>Değerlendirme Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CompletedDate">
+    <Value>Tamamlanma Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DueDate">
+    <Value>Son Tarih</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MaxScore">
+    <Value>Maks Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Status">
+    <Value>Durum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallDate">
+    <Value>Çağrı Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RedCard">
+    <Value>Kırmızı Kart</Value>
+  </LocaleResource>
+  <!-- Personnel Request -->
+  <LocaleResource Name="PersonnelRequest.AlreadyPending">
+    <Value>'{0}' için zaten bekleyen bir personel talebi bulunmaktadır. Yöneticinizle iletişime geçin.</Value>
+  </LocaleResource>
 </Language>

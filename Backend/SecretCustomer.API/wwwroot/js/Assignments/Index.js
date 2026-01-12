@@ -182,13 +182,167 @@ function AssignmentsViewModel() {
         averageScore: 0
     });
 
-    // ===== Filters =====
-    self.filterProjectId = ko.observable('');
-    self.filterStatus = ko.observable('');
-    self.filterAssignedUserId = ko.observable('');
-    self.filterDueDateFrom = ko.observable('');
-    self.filterDueDateTo = ko.observable('');
-    self.filterSearchTerm = ko.observable('');
+    // ===== Dynamic Filter System =====
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        projectId: ko.observable(''),
+        status: ko.observable(''),
+        assignedUserId: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        searchTerm: ko.observable('')
+    };
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'project': return !!self.tempFilter.projectId();
+            case 'status': return !!self.tempFilter.status();
+            case 'assignedUser': return !!self.tempFilter.assignedUserId();
+            case 'dateRange': return !!self.tempFilter.startDate() || !!self.tempFilter.endDate();
+            case 'search': return !!self.tempFilter.searchTerm();
+            default: return false;
+        }
+    });
+
+    // Status display names
+    self.getStatusDisplayName = function(status) {
+        var statusNames = {
+            'Pending': T('Status.Pending', 'Bekleyen'),
+            'InProgress': T('Status.InProgress', 'Devam Eden'),
+            'Completed': T('Status.Completed', 'Tamamlanan'),
+            'Expired': T('Status.Expired', 'Süresi Dolan'),
+            'Cancelled': T('Status.Cancelled', 'İptal Edilen')
+        };
+        return statusNames[status] || status;
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+
+        switch (type) {
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                var project = self.availableProjects().find(function(p) { return p.id == projectId; });
+                if (!project) return;
+                filter.label = T('Project.Title', 'Proje');
+                filter.value = projectId;
+                filter.displayValue = project.name;
+                self.tempFilter.projectId('');
+                break;
+            case 'status':
+                var status = self.tempFilter.status();
+                if (!status) return;
+                filter.label = T('Common.Status', 'Durum');
+                filter.value = status;
+                filter.displayValue = self.getStatusDisplayName(status);
+                self.tempFilter.status('');
+                break;
+            case 'assignedUser':
+                var userId = self.tempFilter.assignedUserId();
+                var user = self.allAssignableUsers().find(function(u) { return u.id == userId; });
+                if (!user) return;
+                filter.label = T('Assignment.AssignedPerson', 'Atanan Kişi');
+                filter.value = userId;
+                filter.displayValue = user.displayName;
+                self.tempFilter.assignedUserId('');
+                break;
+            case 'dateRange':
+                var start = self.tempFilter.startDate();
+                var end = self.tempFilter.endDate();
+                if (!start && !end) return;
+                filter.label = T('Common.DateRange', 'Tarih Aralığı');
+                filter.value = { start: start, end: end };
+                filter.displayValue = (start || '...') + ' - ' + (end || '...');
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                break;
+            case 'search':
+                var term = self.tempFilter.searchTerm();
+                if (!term) return;
+                filter.label = T('Common.Search', 'Arama');
+                filter.value = term;
+                filter.displayValue = '"' + term + '"';
+                self.tempFilter.searchTerm('');
+                break;
+            default:
+                return;
+        }
+
+        // Remove existing filter of same type (except search which can have multiple)
+        if (type !== 'search') {
+            self.activeFilters.remove(function(f) { return f.type === type; });
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.applyFilters();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.applyFilters();
+    };
+
+    // Set temp date range (quick select)
+    self.setTempDateRange = function(rangeType) {
+        var today = new Date();
+        var start, end;
+
+        switch (rangeType) {
+            case 'today':
+                start = end = today;
+                break;
+            case 'yesterday':
+                start = end = new Date(today.setDate(today.getDate() - 1));
+                break;
+            case 'thisWeek':
+                var day = today.getDay();
+                var diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                start = new Date(today.setDate(diff));
+                end = new Date();
+                break;
+            case 'lastWeek':
+                var day = today.getDay();
+                var diff = today.getDate() - day + (day === 0 ? -6 : 1) - 7;
+                start = new Date(new Date().setDate(diff));
+                end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                break;
+            case 'thisMonth':
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end = new Date();
+                break;
+            case 'lastMonth':
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                start = new Date(new Date().setDate(new Date().getDate() - 7));
+                end = new Date();
+                break;
+            case 'last30Days':
+                start = new Date(new Date().setDate(new Date().getDate() - 30));
+                end = new Date();
+                break;
+            default:
+                return;
+        }
+
+        self.tempFilter.startDate(start.toISOString().split('T')[0]);
+        self.tempFilter.endDate(end.toISOString().split('T')[0]);
+    };
 
     // Sorting
     self.sorting = TableSorting.createSortState('dueDate', 'desc');
@@ -199,15 +353,6 @@ function AssignmentsViewModel() {
     });
     self.sorting.sortDirection.subscribe(function() {
         self.applyFilters();
-    });
-
-    // Debounce helper
-    var searchTimeout = null;
-    self.filterSearchTerm.subscribe(function(newValue) {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            self.applyFilters();
-        }, 400); // 400ms bekle
     });
 
     // All assignable users (for filter)
@@ -328,16 +473,46 @@ function AssignmentsViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
+        // Build filter from activeFilters
         var filter = {
-            projectId: self.filterProjectId() || null,
-            status: self.filterStatus() || null,
-            assignedUserId: self.filterAssignedUserId() || null,
-            dueDateFrom: self.filterDueDateFrom() || null,
-            dueDateTo: self.filterDueDateTo() || null,
-            searchTerm: self.filterSearchTerm() || null,
+            projectId: null,
+            status: null,
+            assignedUserId: null,
+            dueDateFrom: null,
+            dueDateTo: null,
+            searchTerm: null,
             sortBy: self.sorting.sortBy() || null,
             sortDirection: self.sorting.sortDirection() || 'desc'
         };
+
+        // Collect search terms
+        var searchTerms = [];
+
+        self.activeFilters().forEach(function(f) {
+            switch (f.type) {
+                case 'project':
+                    filter.projectId = f.value;
+                    break;
+                case 'status':
+                    filter.status = f.value;
+                    break;
+                case 'assignedUser':
+                    filter.assignedUserId = f.value;
+                    break;
+                case 'dateRange':
+                    filter.dueDateFrom = f.value.start || null;
+                    filter.dueDateTo = f.value.end || null;
+                    break;
+                case 'search':
+                    searchTerms.push(f.value);
+                    break;
+            }
+        });
+
+        // Combine search terms
+        if (searchTerms.length > 0) {
+            filter.searchTerm = searchTerms.join(' ');
+        }
 
         fetch('/api/assignments/filter', {
             method: 'POST',
@@ -351,7 +526,7 @@ function AssignmentsViewModel() {
             })
             .then(function(data) {
                 self.assignments(data);
-                self.loadSummary(self.filterProjectId());
+                self.loadSummary(filter.projectId);
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -363,12 +538,8 @@ function AssignmentsViewModel() {
     };
 
     self.clearFilters = function() {
-        self.filterProjectId('');
-        self.filterStatus('');
-        self.filterAssignedUserId('');
-        self.filterDueDateFrom('');
-        self.filterDueDateTo('');
-        self.filterSearchTerm('');
+        self.activeFilters([]);
+        self.selectedFilterType('');
         self.sorting.reset();
         self.loadAssignments();
         self.loadSummary();

@@ -14,15 +14,18 @@ public class EvaluationService : IEvaluationService
     private readonly IEvaluationRepository _evaluationRepository;
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly ApplicationDbContext _context;
+    private readonly ILocalizationService _localizationService;
 
     public EvaluationService(
         IEvaluationRepository evaluationRepository,
         IAssignmentRepository assignmentRepository,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ILocalizationService localizationService)
     {
         _evaluationRepository = evaluationRepository;
         _assignmentRepository = assignmentRepository;
         _context = context;
+        _localizationService = localizationService;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -489,6 +492,20 @@ public class EvaluationService : IEvaluationService
         if (assignment == null)
             throw new KeyNotFoundException($"Assignment with ID {dto.AssignmentId} not found");
 
+        // CallId tekrar kontrolü - aynı müşteriye ait başka bir dinlemede aynı CallId varsa hata ver
+        if (!string.IsNullOrWhiteSpace(dto.CallId) && assignment.Project?.CustomerId != null)
+        {
+            var customerId = assignment.Project.CustomerId.Value;
+            var duplicateExists = await _context.Evaluations
+                .AnyAsync(e => !e.IsDeleted &&
+                              e.CallId == dto.CallId &&
+                              e.Assignment.Project.CustomerId == customerId &&
+                              (!dto.EvaluationId.HasValue || e.Id != dto.EvaluationId.Value));
+
+            if (duplicateExists)
+                throw new InvalidOperationException($"Bu Çağrı ID ({dto.CallId}) daha önce kaydedilmiş. Aynı Çağrı ID ile yeni dinleme eklenemez.");
+        }
+
         Evaluation? evaluation = null;
 
         // EvaluationId varsa onu kullan (taslak güncelleme), yoksa yeni oluştur
@@ -604,16 +621,25 @@ public class EvaluationService : IEvaluationService
 
         await _context.SaveChangesAsync();
 
-        // Yeni personel talebi oluştur (Listede Yok seçilmişse)
-        if (targetStatusId == EvaluationStatuses.Ids.Completed && dto.NewPersonnel != null &&
+        // Yeni personel talebi oluştur (Listede Yok seçilmişse - taslak dahil her durumda)
+        string? personnelRequestWarning = null;
+        if (dto.NewPersonnel != null &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName) &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.LastName) &&
             assignment.Project?.CustomerId != null)
         {
-            await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
+            personnelRequestWarning = await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
         }
 
-        return await MapToDtoAsync(evaluation);
+        var result = await MapToDtoAsync(evaluation);
+
+        // Warning varsa ekle
+        if (!string.IsNullOrEmpty(personnelRequestWarning))
+        {
+            result.Warnings.Add(personnelRequestWarning);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -1125,17 +1151,43 @@ public class EvaluationService : IEvaluationService
     /// <summary>
     /// Yeni personel talebi oluşturur (Listede Yok seçildiğinde)
     /// </summary>
-    private async Task CreatePersonnelRequestAsync(Evaluation evaluation, SubmitEvaluationDto dto, int customerId)
+    /// <returns>Warning mesajı (varsa) veya null</returns>
+    private async Task<string?> CreatePersonnelRequestAsync(Evaluation evaluation, SubmitEvaluationDto dto, int customerId)
     {
-        if (dto.NewPersonnel == null) return;
+        if (dto.NewPersonnel == null) return null;
+
+        // Bu evaluation için zaten bir talep var mı kontrol et
+        var existingRequestForEvaluation = await _context.PersonnelRequests
+            .AnyAsync(pr => pr.EvaluationId == evaluation.Id);
+
+        if (existingRequestForEvaluation) return null; // Zaten bu evaluation için talep var
+
+        var firstName = dto.NewPersonnel.FirstName.Trim();
+        var lastName = dto.NewPersonnel.LastName.Trim();
+
+        // Aynı müşteride aynı ad-soyad ile bekleyen talep var mı kontrol et
+        var existingPendingRequest = await _context.PersonnelRequests
+            .FirstOrDefaultAsync(pr => pr.CustomerId == customerId &&
+                                       pr.FirstName.ToLower() == firstName.ToLower() &&
+                                       pr.LastName.ToLower() == lastName.ToLower() &&
+                                       pr.Status == ApprovalStatuses.Ids.Pending);
+
+        if (existingPendingRequest != null)
+        {
+            // Zaten bekleyen talep var, yeni talep oluşturma ama kayda devam et
+            var message = await _localizationService.GetResourceAsync(
+                "PersonnelRequest.AlreadyPending",
+                "'{0}' için zaten bekleyen bir personel talebi bulunmaktadır. Yöneticinizle iletişime geçin.");
+            return string.Format(message, $"{firstName} {lastName}");
+        }
 
         var personnelRequest = new PersonnelRequest
         {
             EvaluationId = evaluation.Id,
             CustomerId = customerId,
             CustomerOrganizationId = dto.EvaluatedOrganizationId ?? 0,
-            FirstName = dto.NewPersonnel.FirstName.Trim(),
-            LastName = dto.NewPersonnel.LastName.Trim(),
+            FirstName = firstName,
+            LastName = lastName,
             Title = dto.NewPersonnel.Title?.Trim(),
             Notes = $"Değerlendirme #{evaluation.Id} sırasında oluşturuldu",
             RequestedByUserId = dto.EvaluatorId ?? 0,
@@ -1168,6 +1220,7 @@ public class EvaluationService : IEvaluationService
         }
 
         await _context.SaveChangesAsync();
+        return null; // Başarılı, warning yok
     }
 
     /// <summary>

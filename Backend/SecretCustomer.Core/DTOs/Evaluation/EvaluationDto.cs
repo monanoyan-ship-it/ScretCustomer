@@ -109,6 +109,11 @@ public class EvaluationDto
     public string? AssigneeName { get; set; }
 
     public List<AnswerDto> Answers { get; set; } = new();
+
+    /// <summary>
+    /// Uyarı mesajları (örn: personel talebi zaten var)
+    /// </summary>
+    public List<string> Warnings { get; set; } = new();
 }
 
 public class AnswerDto

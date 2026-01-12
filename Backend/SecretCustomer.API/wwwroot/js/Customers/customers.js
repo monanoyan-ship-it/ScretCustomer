@@ -352,7 +352,7 @@ function CustomersViewModel() {
             phoneNumber: ko.unwrap(personnel.phoneNumber) || null,
             department: ko.unwrap(personnel.department) || null,
             title: ko.unwrap(personnel.title) || null,
-            role: parseInt(ko.unwrap(personnel.role), 10),
+            role: String(ko.unwrap(personnel.role)),
             isActive: ko.unwrap(personnel.isActive)
         };
 
@@ -688,7 +688,7 @@ function CustomersViewModel() {
             username: username,
             email: email,
             password: password,
-            role: 1, // CustomerManager
+            role: '1', // CustomerManager
             isActive: true
         })
         .then(function() {
@@ -1029,7 +1029,7 @@ function CustomersViewModel() {
             phoneNumber: ko.unwrap(personnel.phoneNumber) || null,
             department: ko.unwrap(personnel.department) || null,
             title: ko.unwrap(personnel.title) || null,
-            role: parseInt(ko.unwrap(personnel.role), 10),
+            role: String(ko.unwrap(personnel.role)),
             isActive: ko.unwrap(personnel.isActive)
         };
 
@@ -1222,7 +1222,7 @@ function CustomersViewModel() {
         var username = ko.unwrap(sup.username);
         var email = ko.unwrap(sup.email);
         var password = ko.unwrap(sup.password);
-        var role = 2; // Süpervizör (sabit)
+        var role = '2'; // Süpervizör (sabit)
 
         if (!firstName || !lastName || !username || !email || !password) {
             toastr.error(T('Common.AllFieldsRequired', 'Tüm alanları doldurun.'));
@@ -1368,7 +1368,7 @@ function CustomersViewModel() {
             username: username,
             email: email,
             password: password,
-            role: 3, // Operator
+            role: '3', // Operator
             isActive: true
         })
         .then(function(newPersonnel) {

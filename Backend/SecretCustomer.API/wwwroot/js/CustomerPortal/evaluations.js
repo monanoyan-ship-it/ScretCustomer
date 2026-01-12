@@ -855,6 +855,32 @@ function EvaluationsViewModel() {
         return errors;
     };
 
+    // CallId tekrar kontrolü - aynı müşteride aynı CallId varsa hata ver
+    self.checkCallIdExists = function() {
+        return new Promise(function(resolve) {
+            var callId = self.callId();
+            if (!callId || !callId.trim()) {
+                resolve(false);
+                return;
+            }
+            var assignmentId = self.formData() ? self.formData().assignmentId : null;
+            var evaluationId = self.formData() ? self.formData().evaluationId : null;
+            if (!assignmentId) {
+                resolve(false);
+                return;
+            }
+            var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
+                      '&assignmentId=' + assignmentId;
+            if (evaluationId) {
+                url += '&evaluationId=' + evaluationId;
+            }
+            fetch(url, { credentials: 'include' })
+                .then(function(response) { return response.json(); })
+                .then(function(data) { resolve(data.exists === true); })
+                .catch(function() { resolve(false); });
+        });
+    };
+
     // Save as draft
     self.saveDraft = function() {
         // Zorunlu alan kontrolü
@@ -864,30 +890,41 @@ function EvaluationsViewModel() {
             return;
         }
 
-        self.isSavingForm(true);        var data = self.prepareData();
+        self.isSavingForm(true);
 
-        fetch('/api/evaluations/draft', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(data)
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error(T('Evaluation.DraftSaveError', 'Taslak kaydedilemedi'));
-            return response.json();
-        })
-        .then(function(result) {
-            toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
-            // Taslak kaydedilince modal kapansın ve liste yenilensin
-            self.closeEvaluateModal();
-            self.loadEvaluations();
-        })
-        .catch(function(error) {
-            console.error('Draft save error:', error);
-            toastr.error(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
-        })
-        .finally(function() {
-            self.isSavingForm(false);
+        // CallId tekrar kontrolü
+        self.checkCallIdExists().then(function(exists) {
+            if (exists) {
+                self.isSavingForm(false);
+                toastr.error(T('Evaluation.CallIdExists', 'Bu Çağrı ID daha önce kaydedilmiş. Aynı Çağrı ID ile yeni dinleme eklenemez.'));
+                return;
+            }
+
+            var data = self.prepareData();
+
+            fetch('/api/evaluations/draft', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error(T('Evaluation.DraftSaveError', 'Taslak kaydedilemedi'));
+                return response.json();
+            })
+            .then(function(result) {
+                toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+                // Taslak kaydedilince modal kapansın ve liste yenilensin
+                self.closeEvaluateModal();
+                self.loadEvaluations();
+            })
+            .catch(function(error) {
+                console.error('Draft save error:', error);
+                toastr.error(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isSavingForm(false);
+            });
         });
     };
 
@@ -900,7 +937,14 @@ function EvaluationsViewModel() {
             return;
         }
 
-        // Cevapları hazırla (sorular + verilen cevaplar)
+        // CallId tekrar kontrolü
+        self.checkCallIdExists().then(function(exists) {
+            if (exists) {
+                toastr.error(T('Evaluation.CallIdExists', 'Bu Çağrı ID daha önce kaydedilmiş. Aynı Çağrı ID ile yeni dinleme eklenemez.'));
+                return;
+            }
+
+            // Cevapları hazırla (sorular + verilen cevaplar)
         var answersForSummary = [];
         if (self.formData()) {
             self.formData().sections.forEach(function(section) {
@@ -952,28 +996,29 @@ function EvaluationsViewModel() {
             return d && d.trim().length > 0;
         });
 
-        // Özet verilerini hazırla ve göster (backend'e gitmeden)
-        self.summaryData({
-            totalScore: self.totalScoreCalc(),
-            maxScore: self.maxScoreCalc(),
-            scorePercentage: self.scorePercentageCalc(),
-            yellowCardCount: self.yellowCardCountCalc(),
-            redCardCount: self.redCardCountCalc(),
-            scoredWeight: self.scoredWeightCalc(),
-            yellowCardWeight: self.yellowCardWeightCalc(),
-            redCardWeight: self.redCardWeightCalc(),
-            evaluatedPersonnelName: self.availablePersonnel().find(function(p) {
-                return p.id === self.evaluatedPersonnelId();
-            })?.name || self.evaluatedUnknownPersonnel() || '-',
-            callId: self.callId() || '-',
-            callDate: self.callDate() || '-',
-            callTime: self.callTime() || '-',
-            duration: self.duration() || '-',
-            descriptions: filteredDescriptions,
-            evaluationComment: self.evaluationComment() || '',
-            answers: answersForSummary
+            // Özet verilerini hazırla ve göster (backend'e gitmeden)
+            self.summaryData({
+                totalScore: self.totalScoreCalc(),
+                maxScore: self.maxScoreCalc(),
+                scorePercentage: self.scorePercentageCalc(),
+                yellowCardCount: self.yellowCardCountCalc(),
+                redCardCount: self.redCardCountCalc(),
+                scoredWeight: self.scoredWeightCalc(),
+                yellowCardWeight: self.yellowCardWeightCalc(),
+                redCardWeight: self.redCardWeightCalc(),
+                evaluatedPersonnelName: self.availablePersonnel().find(function(p) {
+                    return p.id === self.evaluatedPersonnelId();
+                })?.name || self.evaluatedUnknownPersonnel() || '-',
+                callId: self.callId() || '-',
+                callDate: self.callDate() || '-',
+                callTime: self.callTime() || '-',
+                duration: self.duration() || '-',
+                descriptions: filteredDescriptions,
+                evaluationComment: self.evaluationComment() || '',
+                answers: answersForSummary
+            });
+            self.isShowingSummary(true);
         });
-        self.isShowingSummary(true);
     };
 
     // Go back to form from summary (özetten forma geri dön)

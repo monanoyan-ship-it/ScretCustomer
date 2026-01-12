@@ -70,22 +70,6 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <!-- Active Filters (Chips) -->
-            <div class="mb-3" data-bind="visible: activeFilters().length > 0">
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
-                    <!-- ko foreach: activeFilters -->
-                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9em;">
-                        <span data-bind="text: label"></span>: <span data-bind="text: displayValue"></span>
-                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" data-bind="click: $parent.removeFilter"></button>
-                    </span>
-                    <!-- /ko -->
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
-                    </button>
-                </div>
-            </div>
-
             <!-- Filter Add Row -->
             <div class="row g-2 align-items-end">
                 <!-- Filter Type Select -->
@@ -197,6 +181,22 @@
                 <div class="col-md-2">
                     <button type="button" class="btn btn-sm btn-primary w-100" data-bind="click: addFilter, enable: canAddFilter">
                         <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Filters (Chips) - ALTTA -->
+            <div class="mt-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9em;">
+                        <span data-bind="text: label"></span>: <span data-bind="text: displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
                     </button>
                 </div>
             </div>

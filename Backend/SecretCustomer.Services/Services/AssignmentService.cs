@@ -303,11 +303,10 @@ public class AssignmentService : IAssignmentService
             var now = DateTime.UtcNow;
             query = filter.Status switch
             {
-                "Pending" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate >= now),
-                "InProgress" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate >= now),
+                "Pending" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
+                "InProgress" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
                 "Completed" => query.Where(a => a.IsCompleted),
-                "Expired" => query.Where(a => !a.IsCompleted && !a.IsCancelled && a.DueDate < now),
-                "Cancelled" => query.Where(a => a.IsCancelled),
+                "Expired" => query.Where(a => !a.IsCompleted && a.DueDate < now),
                 _ => query
             };
         }

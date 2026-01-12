@@ -105,8 +105,8 @@
                 </div>
             </li>
 
-            <!-- ==================== AKTİVİTELER (Admin/QualitySpecialist Only) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin() || isQualitySpecialist()">
+            <!-- ==================== AKTİVİTELER (Admin Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuActivities" role="button" aria-expanded="false">
                     <span><i class="bi bi-calendar3 me-2"></i>@Html.T("Menu.Activities", "Aktiviteler")</span>
@@ -133,8 +133,8 @@
                 </div>
             </li>
 
-            <!-- ==================== RAPORLAR (Admin & QualitySpecialist) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin() || isQualitySpecialist()">
+            <!-- ==================== RAPORLAR (Admin Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuReports" role="button" aria-expanded="false">
                     <span><i class="bi bi-graph-up me-2"></i>@Html.T("Menu.ReportsMenu", "Raporlar")</span>
