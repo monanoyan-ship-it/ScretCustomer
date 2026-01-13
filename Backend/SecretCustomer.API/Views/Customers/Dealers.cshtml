@@ -1,0 +1,269 @@
+@{
+    ViewData["Title"] = Html.T("Dealer.Title", "Bayi Yönetimi");
+    var customerId = ViewBag.CustomerId;
+}
+
+<div id="dealers-app">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="/Customers" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left me-1"></i>@Html.T("Common.Back", "Geri")
+            </a>
+            <span class="h2 mb-0">
+                <i class="bi bi-shop me-2"></i>@Html.T("Dealer.Title", "Bayi Yönetimi")
+            </span>
+            <span class="text-muted ms-2" data-bind="text: customerName() ? '- ' + customerName() : ''"></span>
+        </div>
+        <button class="btn btn-primary" data-bind="click: createNew">
+            <i class="bi bi-plus-circle me-1"></i>@Html.T("Dealer.NewDealer", "Yeni Bayi")
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Dealer.SearchPlaceholder", "Bayi adı, kod, adres, yetkili...")"
+                           data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">@Html.T("Dealer.Type", "Bayi Tipi")</label>
+                    <select class="form-select" data-bind="value: filter.dealerTypeId">
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="1">@Html.T("DealerType.Retail", "Perakende")</option>
+                        <option value="2">@Html.T("DealerType.Wholesale", "Toptan")</option>
+                        <option value="3">@Html.T("DealerType.Franchise", "Franchise")</option>
+                        <option value="4">@Html.T("DealerType.Authorized", "Yetkili Bayi")</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filter.isActive">
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                        <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary" data-bind="click: applyFilters">
+                        <i class="bi bi-search me-1"></i>@Html.T("Common.Filter", "Filtrele")
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+        </div>
+        <p class="mt-2 text-muted">@Html.T("Dealer.Loading", "Bayi listesi yükleniyor...")</p>
+    </div>
+
+    <!-- Dealers Table -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <!-- Summary -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">
+                        @Html.T("Common.Total", "Toplam") <strong data-bind="text: dealers().length"></strong> @Html.T("Dealer.Dealer", "bayi")
+                    </span>
+                </div>
+
+                <!-- Empty State -->
+                <div data-bind="visible: dealers().length === 0" class="text-center py-5">
+                    <i class="bi bi-shop text-muted" style="font-size: 3rem;"></i>
+                    <p class="mt-3 text-muted">@Html.T("Dealer.NoDealers", "Bu müşteriye ait bayi bulunmamaktadır.")</p>
+                </div>
+
+                <!-- Table -->
+                <div data-bind="visible: dealers().length > 0" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Dealer.Code", "Kod")</th>
+                                <th>@Html.T("Dealer.Name", "Bayi Adı")</th>
+                                <th>@Html.T("Dealer.Type", "Tip")</th>
+                                <th>@Html.T("Dealer.Location", "Konum")</th>
+                                <th>@Html.T("Dealer.Contact", "İletişim")</th>
+                                <th>@Html.T("Dealer.Stats", "İstatistik")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th style="width: 120px;">@Html.T("Common.Actions", "İşlemler")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: dealers">
+                            <tr>
+                                <td><span class="badge bg-primary" data-bind="text: code"></span></td>
+                                <td>
+                                    <div>
+                                        <div class="fw-medium" data-bind="text: name"></div>
+                                        <small class="text-muted" data-bind="text: contactPerson || '-'"></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" data-bind="css: $parent.getDealerTypeBadgeClass(dealerTypeId), text: $parent.getDealerTypeName(dealerTypeId)"></span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div data-bind="text: city || '-'"></div>
+                                        <small class="text-muted" data-bind="text: district || ''"></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div data-bind="text: phone || '-'"></div>
+                                        <small class="text-muted" data-bind="text: email || ''"></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info" title="@Html.T("Dealer.VisitCount", "Ziyaret Sayısı")">
+                                        <i class="bi bi-clipboard-check me-1"></i><span data-bind="text: evaluationCount"></span>
+                                    </span>
+                                    <!-- ko if: averageScore -->
+                                    <span class="badge bg-success ms-1" title="@Html.T("Dealer.AverageScore", "Ortalama Puan")">
+                                        <i class="bi bi-star me-1"></i><span data-bind="text: averageScore ? averageScore.toFixed(1) + '%' : '-'"></span>
+                                    </span>
+                                    <!-- /ko -->
+                                </td>
+                                <td>
+                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="@Html.T("Common.Edit", "Düzenle")" data-bind="click: $parent.editDealer">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="@Html.T("Common.Delete", "Sil")" data-bind="click: $parent.deleteDealer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="dealerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: editingDealer">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <!-- ko ifnot: id -->
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("Dealer.NewDealer", "Yeni Bayi")
+                        <!-- /ko -->
+                        <!-- ko if: id -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Dealer.EditDealer", "Bayi Düzenle")
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">@Html.T("Dealer.Name", "Bayi Adı") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: name" required placeholder="ABC Bayi">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@Html.T("Dealer.Type", "Bayi Tipi") <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: dealerTypeId" required>
+                                <option value="1">@Html.T("DealerType.Retail", "Perakende")</option>
+                                <option value="2">@Html.T("DealerType.Wholesale", "Toptan")</option>
+                                <option value="3">@Html.T("DealerType.Franchise", "Franchise")</option>
+                                <option value="4">@Html.T("DealerType.Authorized", "Yetkili Bayi")</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Dealer.Address", "Adres")</label>
+                            <input type="text" class="form-control" data-bind="value: address" placeholder="Cadde, Sokak, No">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.City", "Şehir")</label>
+                            <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.District", "İlçe")</label>
+                            <input type="text" class="form-control" data-bind="value: district" placeholder="Kadıköy">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.Phone", "Telefon")</label>
+                            <input type="tel" class="form-control" data-bind="value: phone" placeholder="0216 123 4567">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.Email", "E-posta")</label>
+                            <input type="email" class="form-control" data-bind="value: email" placeholder="info@bayi.com">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Dealer.ContactPerson", "Yetkili Kişi")</label>
+                            <input type="text" class="form-control" data-bind="value: contactPerson" placeholder="Ahmet Yılmaz">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.Latitude", "Enlem (GPS)")</label>
+                            <input type="number" step="0.000001" class="form-control" data-bind="value: latitude" placeholder="41.0082">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Dealer.Longitude", "Boylam (GPS)")</label>
+                            <input type="number" step="0.000001" class="form-control" data-bind="value: longitude" placeholder="28.9784">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Dealer.Notes", "Notlar")</label>
+                            <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="Bayi hakkında notlar..."></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="isActive" data-bind="checked: isActive">
+                                <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveDealer, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">
+                            <i class="bi bi-check-circle me-2"></i>@Html.T("Common.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: $parent.isSaving">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            @Html.T("Common.Saving", "Kaydediliyor...")
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="_DeleteConfirmationModal" />
+</div>
+
+<script>
+    window.dealersConfig = {
+        customerId: @customerId
+    };
+</script>
+
+@section Scripts {
+    <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
+    <script src="~/js/Customers/dealers.js"></script>
+}

@@ -466,28 +466,48 @@
                         <div class="card-body">
                             <!-- Assignment Type Selection -->
                             <div class="mb-3">
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeUser" value="user" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeUser">@Html.T("User.Title", "Kullanıcı")</label>
+                                <!-- Fiziksel Denetim için sadece FieldWorker -->
+                                <div data-bind="visible: $parent.isPhysicalAuditProject()">
+                                    <div class="alert alert-info py-2 mb-2">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        @Html.T("Assignment.PhysicalAuditInfo", "Fiziksel Denetim projeleri sadece Saha Çalışanlarına atanabilir.")
+                                    </div>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="assignmentType" id="assignTypeFieldWorkerOnly" value="fieldworker" data-bind="checked: assignmentType">
+                                        <label class="btn btn-outline-success" for="assignTypeFieldWorkerOnly">
+                                            <i class="bi bi-person-walking me-1"></i>@Html.T("Role.FieldWorker", "Saha Çalışanı")
+                                        </label>
+                                    </div>
+                                </div>
 
-                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeFieldWorker" value="fieldworker" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeFieldWorker">@Html.T("Role.FieldWorker", "Saha Çalışanı")</label>
+                                <!-- Diğer projeler için User ve External -->
+                                <div data-bind="visible: !$parent.isPhysicalAuditProject()">
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="assignmentType" id="assignTypeUser" value="user" data-bind="checked: assignmentType">
+                                        <label class="btn btn-outline-primary" for="assignTypeUser">@Html.T("User.Title", "Kullanıcı")</label>
 
-                                    <input type="radio" class="btn-check" name="assignmentType" id="assignTypeExternal" value="external" data-bind="checked: assignmentType">
-                                    <label class="btn btn-outline-primary" for="assignTypeExternal">@Html.T("Assignment.External", "Harici")</label>
+                                        <input type="radio" class="btn-check" name="assignmentType" id="assignTypeExternal" value="external" data-bind="checked: assignmentType">
+                                        <label class="btn btn-outline-primary" for="assignTypeExternal">@Html.T("Assignment.External", "Harici")</label>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- User Selection -->
                             <div data-bind="visible: assignmentType() === 'user'">
                                 <label class="form-label">@Html.T("User.Title", "Kullanıcı")</label>
-                                <select class="form-select" data-bind="value: assignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                                <select class="form-select" data-bind="value: assignedUserId, options: $parent.filteredEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', enable: $parent.selectedProjectForDisplay()"></select>
+                                <!-- ko ifnot: $parent.selectedProjectForDisplay() -->
+                                <small class="text-muted">@Html.T("Assignment.SelectProjectFirst", "Önce proje seçiniz")</small>
+                                <!-- /ko -->
                             </div>
 
                             <!-- Field Worker Selection -->
                             <div data-bind="visible: assignmentType() === 'fieldworker'">
                                 <label class="form-label">@Html.T("Role.FieldWorker", "Saha Çalışanı")</label>
-                                <select class="form-select" data-bind="value: assignedFieldWorkerId, options: $parent.availableFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                                <select class="form-select" data-bind="value: assignedFieldWorkerId, options: $parent.filteredFieldWorkers, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', enable: $parent.selectedProjectForDisplay()"></select>
+                                <!-- ko ifnot: $parent.selectedProjectForDisplay() -->
+                                <small class="text-muted">@Html.T("Assignment.SelectProjectFirst", "Önce proje seçiniz")</small>
+                                <!-- /ko -->
                             </div>
 
                             <!-- External Email -->

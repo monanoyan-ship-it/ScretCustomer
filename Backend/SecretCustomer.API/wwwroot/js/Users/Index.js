@@ -9,7 +9,7 @@ function UserEditViewModel(data) {
     self.lastName = ko.observable(data.lastName || '');
     self.email = ko.observable(data.email || '');
     self.password = ko.observable('');
-    self.role = ko.observable(data.role !== undefined ? data.role.toString() : '2');
+    self.role = ko.observable(data.roleId !== undefined ? data.roleId.toString() : '2');
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : true);
 
     // Mevcut data'dan ViewModel olustur (guncelleme icin)
@@ -41,7 +41,7 @@ function CustomerPersonnelEditViewModel(data) {
     self.phoneNumber = ko.observable(data.phoneNumber || data.PhoneNumber || '');
     self.department = ko.observable(data.department || data.Department || '');
     self.password = ko.observable('');
-    self.role = ko.observable(data.role !== undefined ? data.role.toString() : (data.Role !== undefined ? data.Role.toString() : '1'));
+    self.role = ko.observable(data.role || data.Role || 'CustomerOperator');
     self.isActive = ko.observable(data.isActive !== undefined ? data.isActive : (data.IsActive !== undefined ? data.IsActive : true));
 
     // Mevcut data'dan ViewModel olustur (guncelleme icin)
@@ -56,7 +56,7 @@ function CustomerPersonnelEditViewModel(data) {
             email: self.email(),
             phoneNumber: self.phoneNumber(),
             department: self.department(),
-            role: parseInt(self.role()),
+            role: self.role(),
             isActive: self.isActive()
         };
     };
@@ -91,6 +91,10 @@ function UsersViewModel() {
     self.users = ko.observableArray([]);
     self.customerPersonnel = ko.observableArray([]);
     self.customers = ko.observableArray([]);
+
+    // ===== Role Lists (EnumsService'den) =====
+    self.userRoles = ko.observableArray([]);
+    self.customerPersonnelRoles = ko.observableArray([]);
 
     // ===== Filter =====
     self.selectedCustomerId = ko.observable('');
@@ -202,6 +206,18 @@ function UsersViewModel() {
         // Once EnumsService'i yukle, sonra verileri cek
         EnumsService.load()
             .then(function() {
+                // Rol listelerini EnumsService'den al
+                var cache = EnumsService.cache;
+                if (cache && cache.userRoles) {
+                    self.userRoles(cache.userRoles.map(function(r) {
+                        return { id: r.id.toString(), name: T(r.nameKey, r.nameKey.split('.').pop()) };
+                    }));
+                }
+                if (cache && cache.customerPersonnelRoles) {
+                    self.customerPersonnelRoles(cache.customerPersonnelRoles.map(function(r) {
+                        return { id: r.systemName, name: T(r.nameKey, r.nameKey.split('.').pop()) };
+                    }));
+                }
                 return Promise.all([
                     fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
                     fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
@@ -257,7 +273,7 @@ function UsersViewModel() {
             firstName: u.firstName(),
             lastName: u.lastName(),
             email: u.email(),
-            role: parseInt(u.role()),
+            roleId: parseInt(u.role()),
             isActive: u.isActive()
         };
 
@@ -356,7 +372,7 @@ function UsersViewModel() {
             email: cp.email(),
             phoneNumber: cp.phoneNumber(),
             department: cp.department(),
-            role: parseInt(cp.role()),
+            role: cp.role(),
             isActive: cp.isActive()
         };
 

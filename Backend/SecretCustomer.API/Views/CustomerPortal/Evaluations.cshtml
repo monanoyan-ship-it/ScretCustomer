@@ -1194,43 +1194,6 @@
                                                                 <textarea class="form-control form-control-sm" rows="2" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")" style="resize: vertical;"></textarea>
                                                             </div>
 
-                                                            <!-- File Attachment -->
-                                                            <div class="mb-2">
-                                                                <label class="form-label small">@Html.T("Evaluation.Attachment", "Ek Dosya")</label>
-                                                                <!-- Dosya seçme butonu (henüz dosya yoksa) -->
-                                                                <!-- ko if: !attachmentFileName() && !pendingFileName() -->
-                                                                <div>
-                                                                    <input type="file" class="d-none" data-bind="attr: { id: 'file_' + $parent.id }, event: { change: function(data, event) { $root.selectAnswerAttachment($parent.id, event); } }">
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: function() { document.getElementById('file_' + $parent.id).click(); }">
-                                                                        <i class="bi bi-paperclip"></i> @Html.T("Evaluation.SelectFile", "Dosya Seç")
-                                                                    </button>
-                                                                </div>
-                                                                <!-- /ko -->
-                                                                <!-- Pending dosya (henüz yüklenmemiş, form kaydedilince yüklenecek) -->
-                                                                <!-- ko if: pendingFileName() -->
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    <span class="text-warning small">
-                                                                        <i class="bi bi-clock-history"></i> <span data-bind="text: pendingFileName"></span>
-                                                                        <small class="text-muted">(@Html.T("Evaluation.WillUploadOnSave", "Kaydedilince yüklenecek"))</small>
-                                                                    </span>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.removePendingFile($parent.id); }" title="@Html.T("Common.Remove", "Kaldır")">
-                                                                        <i class="bi bi-x"></i>
-                                                                    </button>
-                                                                </div>
-                                                                <!-- /ko -->
-                                                                <!-- Yüklenmiş dosya -->
-                                                                <!-- ko if: attachmentFileName() && !pendingFileName() -->
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    <a href="#" class="text-decoration-none small" data-bind="click: function() { $root.downloadAnswerAttachment(answerId()); }">
-                                                                        <i class="bi bi-file-earmark"></i> <span data-bind="text: attachmentFileName"></span>
-                                                                    </a>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.deleteAnswerAttachment($parent.id, answerId()); }" title="@Html.T("Common.Delete", "Sil")">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                                <!-- /ko -->
-                                                            </div>
-
                                                             <!-- ko if: $parent.recommendedNote -->
                                                             <div class="alert alert-info py-1 px-2 small mb-0">
                                                                 <i class="bi bi-lightbulb"></i> <span data-bind="text: $parent.recommendedNote"></span>
@@ -1253,6 +1216,68 @@
                                 </div>
                                 <div class="card-body">
                                     <textarea class="form-control" rows="4" data-bind="value: evaluationComment" placeholder="@Html.T("Evaluation.EvaluationCommentPlaceholder", "Genel değerlendirme yorumunuzu yazın...")"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Attachments / Ekler -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-paperclip"></i> @Html.T("Evaluation.Attachments", "Ekler")</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Dosya seçme -->
+                                    <div class="mb-3">
+                                        <input type="file" id="cpEvaluationAttachmentInput" class="d-none" multiple data-bind="event: { change: selectAttachment }">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('cpEvaluationAttachmentInput').click();">
+                                            <i class="bi bi-plus-circle"></i> @Html.T("Evaluation.AddFiles", "Dosya Ekle")
+                                        </button>
+                                        <small class="text-muted ms-2">@Html.T("Evaluation.FilesNote", "PDF, Word, Excel, resim, ses ve video dosyaları (max 50 MB)")</small>
+                                    </div>
+
+                                    <!-- Bekleyen dosyalar (henüz yüklenmemiş) -->
+                                    <!-- ko if: pendingAttachments().length > 0 -->
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block mb-2"><i class="bi bi-clock-history"></i> @Html.T("Evaluation.PendingFiles", "Bekleyen Dosyalar") (@Html.T("Evaluation.WillUploadOnSave", "Kaydedilince yüklenecek")):</small>
+                                        <ul class="list-group list-group-flush">
+                                            <!-- ko foreach: pendingAttachments -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                <span class="text-warning">
+                                                    <i class="bi bi-file-earmark"></i> <span data-bind="text: name"></span>
+                                                    <small class="text-muted ms-2" data-bind="text: sizeDisplay"></small>
+                                                </span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $root.removePendingAttachment" title="@Html.T("Common.Remove", "Kaldır")">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </li>
+                                            <!-- /ko -->
+                                        </ul>
+                                    </div>
+                                    <!-- /ko -->
+
+                                    <!-- Yüklenmiş dosyalar -->
+                                    <!-- ko if: uploadedAttachments().length > 0 -->
+                                    <div>
+                                        <small class="text-muted d-block mb-2"><i class="bi bi-check-circle text-success"></i> @Html.T("Evaluation.UploadedFiles", "Yüklenen Dosyalar"):</small>
+                                        <ul class="list-group list-group-flush">
+                                            <!-- ko foreach: uploadedAttachments -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                <a href="#" class="text-decoration-none" data-bind="click: $root.downloadAttachment">
+                                                    <i class="bi bi-file-earmark"></i> <span data-bind="text: fileName"></span>
+                                                    <small class="text-muted ms-2" data-bind="text: sizeDisplay"></small>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $root.deleteAttachment" title="@Html.T("Common.Delete", "Sil")">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </li>
+                                            <!-- /ko -->
+                                        </ul>
+                                    </div>
+                                    <!-- /ko -->
+
+                                    <!-- Dosya yok mesajı -->
+                                    <!-- ko if: uploadedAttachments().length === 0 && pendingAttachments().length === 0 -->
+                                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoAttachments", "Henüz dosya eklenmedi.")</p>
+                                    <!-- /ko -->
                                 </div>
                             </div>
                         </div>

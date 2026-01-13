@@ -24,6 +24,11 @@ public class CreateAssignmentDto
     public DateTime DueDate { get; set; }
 
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// True ise proje aktif değilse otomatik aktif edilir
+    /// </summary>
+    public bool ForceActivateProject { get; set; } = false;
 }
 
 public class UpdateAssignmentDto

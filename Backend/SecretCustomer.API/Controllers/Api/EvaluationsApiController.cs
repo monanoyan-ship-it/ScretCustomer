@@ -15,18 +15,21 @@ namespace SecretCustomer.API.Controllers.Api;
 public class EvaluationsApiController : BaseApiController
 {
     private readonly IEvaluationService _evaluationService;
+    private readonly IFileUploadService _fileUploadService;
     private readonly ILogger<EvaluationsApiController> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly ApplicationDbContext _context;
 
     public EvaluationsApiController(
         IEvaluationService evaluationService,
+        IFileUploadService fileUploadService,
         ILogger<EvaluationsApiController> logger,
         ILocalizationService localizationService,
         ApplicationDbContext context,
         IConfiguration configuration) : base(configuration)
     {
         _evaluationService = evaluationService;
+        _fileUploadService = fileUploadService;
         _logger = logger;
         _localizationService = localizationService;
         _context = context;
@@ -82,14 +85,15 @@ public class EvaluationsApiController : BaseApiController
     {
         try
         {
-            var attachments = await _context.Answers
-                .Where(a => a.EvaluationId == id && a.AttachmentFileName != null && a.AttachmentFileName != "")
+            var attachments = await _context.EvaluationAttachments
+                .Where(a => a.EvaluationId == id && !a.IsDeleted)
                 .Select(a => new
                 {
-                    answerId = a.Id,
-                    questionId = a.QuestionId,
-                    questionText = a.Question != null ? a.Question.Text : null,
-                    fileName = a.AttachmentFileName
+                    id = a.Id,
+                    fileName = a.FileName,
+                    fileSize = a.FileSize,
+                    contentType = a.ContentType,
+                    uploadedAt = a.CreatedAt
                 })
                 .ToListAsync();
 
@@ -99,6 +103,105 @@ public class EvaluationsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error loading attachments for evaluation {EvaluationId}", id);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirmeye dosya ekler
+    /// </summary>
+    [HttpPost("{id:int}/attachments")]
+    [Authorize]
+    [RequestSizeLimit(52428800)] // 50 MB
+    public async Task<IActionResult> UploadAttachment(int id, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotSelected")));
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int? userId = null;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var parsedUserId))
+            {
+                userId = parsedUserId;
+            }
+
+            using var stream = file.OpenReadStream();
+            var result = await _fileUploadService.UploadEvaluationAttachmentAsync(
+                id,
+                stream,
+                file.FileName,
+                file.ContentType,
+                userId);
+
+            if (!result.Success)
+            {
+                return BadRequest(CreateErrorResponse(result.ErrorMessage ?? "Upload failed"));
+            }
+
+            return Ok(new
+            {
+                message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess"),
+                attachmentId = result.AttachmentId,
+                fileName = result.FileName,
+                fileSize = result.FileSize
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading attachment for evaluation {EvaluationId}", id);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirme ekini siler
+    /// </summary>
+    [HttpDelete("attachments/{attachmentId:int}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAttachment(int attachmentId)
+    {
+        try
+        {
+            var success = await _fileUploadService.DeleteEvaluationAttachmentAsync(attachmentId);
+            if (!success)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
+            }
+
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting attachment {AttachmentId}", attachmentId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirme ekini indirir
+    /// </summary>
+    [HttpGet("attachments/{attachmentId:int}/download")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DownloadAttachment(int attachmentId)
+    {
+        try
+        {
+            var result = await _fileUploadService.GetEvaluationAttachmentAsync(attachmentId);
+            if (result == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
+            }
+
+            var (fileStream, fileName, contentType) = result.Value;
+            return File(fileStream, contentType, fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading attachment {AttachmentId}", attachmentId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
 

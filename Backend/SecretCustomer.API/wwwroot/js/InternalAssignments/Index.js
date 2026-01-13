@@ -34,7 +34,7 @@ function InternalAssignmentsViewModel() {
     });
 
     // ===== Sorting =====
-    self.sorting = TableSorting.createSortState('dueDate', 'asc');
+    self.sorting = TableSorting.createSortState('createdAt', 'desc');
 
     // Sorted Assignments
     self.sortedAssignments = ko.computed(function() {

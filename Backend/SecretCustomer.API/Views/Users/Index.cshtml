@@ -226,11 +226,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">@Html.T("User.Role", "Rol") <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: role">
-                            <option value="1">@Html.T("User.Admin", "Admin")</option>
-                            <option value="2">@Html.T("User.QualitySpecialist", "Kalite Uzmanı")</option>
-                            <option value="3">@Html.T("User.FieldWorker", "Saha Çalışanı")</option>
-                        </select>
+                        <select class="form-select" data-bind="value: role, options: $root.userRoles, optionsValue: 'id', optionsText: 'name'"></select>
                     </div>
 
                     <div class="form-check">
@@ -313,11 +309,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("User.Role", "Rol") <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: role">
-                                <option value="1">@Html.T("CustomerPersonnel.Manager", "Müşteri Yöneticisi")</option>
-                                <option value="2">@Html.T("CustomerPersonnel.Supervisor", "Müşteri Süpervizörü")</option>
-                                <option value="3">@Html.T("CustomerPersonnel.Operator", "Müşteri Operatörü")</option>
-                            </select>
+                            <select class="form-select" data-bind="value: role, options: $root.customerPersonnelRoles, optionsValue: 'id', optionsText: 'name'"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("CustomerPersonnel.Department", "Departman")</label>

@@ -102,6 +102,29 @@
                     <button class="btn btn-success btn-sm" data-bind="click: search">
                         <i class="bi bi-search me-1"></i>@Html.T("Common.Search", "Ara")
                     </button>
+
+                    <!-- Reports Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bind="disable: isExporting">
+                            <span data-bind="visible: !isExporting()">
+                                <i class="bi bi-file-earmark-excel me-1"></i>@Html.T("Common.Reports", "Raporlar")
+                            </span>
+                            <span data-bind="visible: isExporting">
+                                <span class="spinner-border spinner-border-sm"></span>
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" data-bind="click: exportQuestionGroupAverageReport">
+                                <i class="bi bi-bar-chart me-2"></i>@Html.T("Report.QuestionGroupAverage", "Soru Grubu Ortalama")
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" data-bind="click: exportCustomerEvaluationReport">
+                                <i class="bi bi-people me-2"></i>@Html.T("Report.CustomerEvaluation", "Müşteri Değerlendirme")
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" data-bind="click: exportProjectPerformanceReport">
+                                <i class="bi bi-graph-up me-2"></i>@Html.T("Report.ProjectPerformance", "Proje Performans")
+                            </a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

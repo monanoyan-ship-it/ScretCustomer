@@ -48,6 +48,9 @@ public class ApplicationDbContext : DbContext
     // Question Attachments
     public DbSet<QuestionAttachment> QuestionAttachments { get; set; }
 
+    // Evaluation Attachments
+    public DbSet<EvaluationAttachment> EvaluationAttachments { get; set; }
+
     // Question Sub Criteria (Alt Kriterler/Öneriler)
     public DbSet<QuestionSubCriteria> QuestionSubCriteria { get; set; }
     public DbSet<AnswerSubCriteriaSelection> AnswerSubCriteriaSelections { get; set; }
@@ -88,6 +91,10 @@ public class ApplicationDbContext : DbContext
 
     // Personnel Requests (Personel Talepleri)
     public DbSet<PersonnelRequest> PersonnelRequests { get; set; }
+
+    // FieldWorker - Dealer Management (Bayi Yönetimi)
+    public DbSet<Dealer> Dealers { get; set; }
+    public DbSet<DealerRequest> DealerRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -157,6 +164,11 @@ public class ApplicationDbContext : DbContext
 
         // Personnel Requests
         modelBuilder.Entity<PersonnelRequest>().HasQueryFilter(e => !e.IsDeleted);
+
+        // FieldWorker - Dealer Management
+        modelBuilder.Entity<Dealer>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<DealerRequest>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<EvaluationAttachment>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== CustomerOrganization İlişkileri =====
 
@@ -272,6 +284,63 @@ public class ApplicationDbContext : DbContext
             .HasIndex(pr => pr.Status);
         modelBuilder.Entity<PersonnelRequest>()
             .HasIndex(pr => pr.EvaluationId);
+
+        // ===== Dealer İlişkileri =====
+        modelBuilder.Entity<Dealer>()
+            .HasOne(d => d.Customer)
+            .WithMany(c => c.Dealers)
+            .HasForeignKey(d => d.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Dealer indexleri
+        modelBuilder.Entity<Dealer>()
+            .HasIndex(d => d.CustomerId);
+        modelBuilder.Entity<Dealer>()
+            .HasIndex(d => d.Code);
+
+        // ===== DealerRequest İlişkileri =====
+        modelBuilder.Entity<DealerRequest>()
+            .HasOne(dr => dr.Customer)
+            .WithMany()
+            .HasForeignKey(dr => dr.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DealerRequest>()
+            .HasOne(dr => dr.RequestedByUser)
+            .WithMany()
+            .HasForeignKey(dr => dr.RequestedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DealerRequest>()
+            .HasOne(dr => dr.Dealer)
+            .WithMany()
+            .HasForeignKey(dr => dr.DealerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<DealerRequest>()
+            .HasOne(dr => dr.ProcessedByUser)
+            .WithMany()
+            .HasForeignKey(dr => dr.ProcessedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // DealerRequest indexleri
+        modelBuilder.Entity<DealerRequest>()
+            .HasIndex(dr => dr.StatusId);
+        modelBuilder.Entity<DealerRequest>()
+            .HasIndex(dr => dr.CustomerId);
+        modelBuilder.Entity<DealerRequest>()
+            .HasIndex(dr => dr.RequestedByUserId);
+
+        // ===== Evaluation - Dealer İlişkisi =====
+        modelBuilder.Entity<Evaluation>()
+            .HasOne(e => e.Dealer)
+            .WithMany(d => d.Evaluations)
+            .HasForeignKey(e => e.DealerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Evaluation VisitId indexi
+        modelBuilder.Entity<Evaluation>()
+            .HasIndex(e => e.VisitId);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,15 +18,18 @@ public class CustomerPortalApiController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ILogger<CustomerPortalApiController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly IReportService _reportService;
 
     public CustomerPortalApiController(
         ApplicationDbContext context,
         ILogger<CustomerPortalApiController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IReportService reportService)
     {
         _context = context;
         _logger = logger;
         _localizationService = localizationService;
+        _reportService = reportService;
     }
 
     private int? GetCustomerIdFromToken()
@@ -1105,5 +1109,80 @@ public class CustomerPortalApiController : ControllerBase
             .ToListAsync();
 
         return Ok(new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) });
+    }
+
+    /// <summary>
+    /// Soru Grubu Ortalama Raporu - Excel export (CustomerPortal)
+    /// </summary>
+    [HttpPost("reports/export/question-group-average")]
+    public async Task<IActionResult> ExportQuestionGroupAverageReport([FromBody] ReportFilterDto filter)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi projesinin raporunu görebilir
+            filter.ProjectCustomerId = customerId.Value;
+
+            var result = await _reportService.ExportQuestionGroupAverageReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting question group average report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Müşteri Değerlendirme Raporu - Excel export (CustomerPortal)
+    /// </summary>
+    [HttpPost("reports/export/customer-evaluation")]
+    public async Task<IActionResult> ExportCustomerEvaluationReport([FromBody] ReportFilterDto filter)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi projesinin raporunu görebilir
+            filter.ProjectCustomerId = customerId.Value;
+
+            var result = await _reportService.ExportCustomerEvaluationReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting customer evaluation report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Proje Performans Raporu - Excel export (CustomerPortal)
+    /// </summary>
+    [HttpPost("reports/export/project-performance")]
+    public async Task<IActionResult> ExportProjectPerformanceReport([FromBody] ReportFilterDto filter)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi projesinin raporunu görebilir
+            filter.ProjectCustomerId = customerId.Value;
+
+            var result = await _reportService.ExportProjectPerformanceReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting project performance report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
     }
 }

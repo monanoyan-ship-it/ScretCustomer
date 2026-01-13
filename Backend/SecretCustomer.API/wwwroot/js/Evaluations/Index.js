@@ -55,6 +55,8 @@ function EvaluationsViewModel() {
 
     // Form fields
     self.callId = ko.observable('');
+    self.callIdExists = ko.observable(false);
+    self.isCheckingCallId = ko.observable(false);
     self.callDate = ko.observable('');
     self.callTime = ko.observable('');
     self.duration = ko.observable('');
@@ -532,6 +534,9 @@ function EvaluationsViewModel() {
         self.scoredWeightCalc(0);
         self.yellowCardWeightCalc(0);
         self.redCardWeightCalc(0);
+        // Attachments reset
+        self.uploadedAttachments([]);
+        self.pendingAttachments([]);
     };
 
     self.closeEvaluateModal = function() {
@@ -559,13 +564,7 @@ function EvaluationsViewModel() {
                 selectedPenaltyType: ko.observable(''),
                 selectedSubCriteria: ko.observableArray([]),
                 // Zorunlu olmayan sorular varsayılan kapalı gelir
-                isIncluded: ko.observable(isRequired !== false),
-                // File attachment
-                attachmentFileName: ko.observable(''),
-                attachmentPath: ko.observable(''),
-                // Pending file (henüz yüklenmemiş, form kaydedilince yüklenecek)
-                pendingFile: ko.observable(null),
-                pendingFileName: ko.observable('')
+                isIncluded: ko.observable(isRequired !== false)
             };
 
             // Subscribe to changes to recalculate scores
@@ -617,57 +616,83 @@ function EvaluationsViewModel() {
         return answer.selectedSubCriteria().indexOf(subCriteriaId) >= 0;
     };
 
-    // File Attachment Functions
+    // ========================
+    // EVALUATION ATTACHMENTS (Değerlendirme Geneli Dosyalar)
+    // ========================
 
-    // Dosya seçildiğinde hafızada tut (henüz yükleme)
-    self.selectAnswerAttachment = function(questionId, event) {
-        var file = event.target.files[0];
-        if (!file) return;
+    // Yüklenmiş dosyalar (sunucudaki)
+    self.uploadedAttachments = ko.observableArray([]);
+    // Bekleyen dosyalar (henüz yüklenmemiş)
+    self.pendingAttachments = ko.observableArray([]);
 
-        var answer = self.getAnswer(questionId);
-        answer.pendingFile(file);
-        answer.pendingFileName(file.name);
+    // Dosya seçildiğinde bekleyenler listesine ekle
+    self.selectAttachment = function(data, event) {
+        var files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            self.pendingAttachments.push({
+                file: file,
+                name: file.name,
+                size: file.size,
+                sizeDisplay: formatFileSize(file.size)
+            });
+        }
 
         // Clear input for re-selection
         event.target.value = '';
-
-        toastr.info(T('Evaluation.FileSelected', 'Dosya seçildi. Form kaydedildiğinde yüklenecek.'));
+        toastr.info(T('Evaluation.FilesSelected', 'Dosyalar seçildi. Form kaydedildiğinde yüklenecek.'));
     };
 
-    // Pending dosyayı kaldır
-    self.removePendingFile = function(questionId) {
-        var answer = self.getAnswer(questionId);
-        answer.pendingFile(null);
-        answer.pendingFileName('');
+    // Bekleyen dosyayı kaldır
+    self.removePendingAttachment = function(attachment) {
+        self.pendingAttachments.remove(attachment);
     };
 
-    // Tüm pending dosyaları yükle (form kaydedildikten sonra çağrılır)
-    self.uploadPendingFiles = function() {
-        var pendingUploads = [];
+    // Yüklenmiş dosyayı sil
+    self.deleteAttachment = function(attachment) {
+        if (!confirm(T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'))) return;
 
-        for (var qId in self.answers) {
-            var answer = self.answers[qId];
-            if (answer.pendingFile() && answer.answerId()) {
-                pendingUploads.push({
-                    questionId: qId,
-                    answerId: answer.answerId(),
-                    file: answer.pendingFile()
-                });
-            }
-        }
+        fetch('/api/evaluations/attachments/' + attachment.id, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Delete failed');
+            return response.json();
+        })
+        .then(function() {
+            self.uploadedAttachments.remove(attachment);
+            toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
+        })
+        .catch(function(error) {
+            console.error('Delete error:', error);
+            toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
+        });
+    };
 
-        if (pendingUploads.length === 0) {
+    // Dosya indir
+    self.downloadAttachment = function(attachment) {
+        window.open('/api/evaluations/attachments/' + attachment.id + '/download', '_blank');
+    };
+
+    // Tüm bekleyen dosyaları yükle (form kaydedildikten sonra çağrılır)
+    self.uploadPendingAttachments = function(evaluationId) {
+        var pending = self.pendingAttachments();
+        if (pending.length === 0) {
             return Promise.resolve();
         }
 
         self.isUploadingFile(true);
 
-        var uploadPromises = pendingUploads.map(function(upload) {
+        var uploadPromises = pending.map(function(attachment) {
             var formData = new FormData();
-            formData.append('file', upload.file);
+            formData.append('file', attachment.file);
 
-            return fetch('/api/answers/' + upload.answerId + '/attachment', {
+            return fetch('/api/evaluations/' + evaluationId + '/attachments', {
                 method: 'POST',
+                credentials: 'include',
                 body: formData
             })
             .then(function(response) {
@@ -675,49 +700,50 @@ function EvaluationsViewModel() {
                 return response.json();
             })
             .then(function(result) {
-                var answer = self.answers[upload.questionId];
-                answer.attachmentFileName(result.fileName);
-                answer.pendingFile(null);
-                answer.pendingFileName('');
+                // Yüklenen dosyayı listeye ekle
+                self.uploadedAttachments.push({
+                    id: result.attachmentId,
+                    fileName: result.fileName,
+                    fileSize: result.fileSize,
+                    sizeDisplay: formatFileSize(result.fileSize)
+                });
             })
             .catch(function(error) {
-                console.error('Upload error for question ' + upload.questionId + ':', error);
+                console.error('Upload error for ' + attachment.name + ':', error);
+                toastr.error(T('Evaluation.FileUploadError', 'Dosya yüklenemedi: ') + attachment.name);
             });
         });
 
-        return Promise.all(uploadPromises).finally(function() {
+        return Promise.all(uploadPromises).then(function() {
+            // Başarılı yüklenen dosyaları bekleyenlerden temizle
+            self.pendingAttachments([]);
+        }).finally(function() {
             self.isUploadingFile(false);
         });
     };
 
-    self.downloadAnswerAttachment = function(answerId) {
-        if (!answerId) return;
-        window.open('/api/answers/' + answerId + '/attachment', '_blank');
-    };
+    // Mevcut değerlendirmenin dosyalarını yükle
+    self.loadExistingAttachments = function(evaluationId) {
+        if (!evaluationId) return;
 
-    self.deleteAnswerAttachment = function(questionId, answerId) {
-        if (!answerId) return;
-        if (!confirm(T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'))) return;
-
-        fetch('/api/answers/' + answerId + '/attachment', {
-            method: 'DELETE'
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Delete failed');
-            return response.json();
-        })
-        .then(function() {
-            var answer = self.answers[questionId];
-            if (answer) {
-                answer.attachmentFileName('');
-                answer.attachmentPath('');
-            }
-            toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
-        })
-        .catch(function(error) {
-            console.error('Delete error:', error);
-            toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
-        });
+        fetch('/api/evaluations/' + evaluationId + '/attachments', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Load failed');
+                return response.json();
+            })
+            .then(function(attachments) {
+                self.uploadedAttachments(attachments.map(function(a) {
+                    return {
+                        id: a.id,
+                        fileName: a.fileName,
+                        fileSize: a.fileSize,
+                        sizeDisplay: formatFileSize(a.fileSize)
+                    };
+                }));
+            })
+            .catch(function(error) {
+                console.error('Load attachments error:', error);
+            });
     };
 
     // Load form data
@@ -813,9 +839,6 @@ function EvaluationsViewModel() {
                             if (existingAnswer.selectedSubCriteriaIds && existingAnswer.selectedSubCriteriaIds.length > 0) {
                                 answer.selectedSubCriteria(existingAnswer.selectedSubCriteriaIds);
                             }
-                            // File attachment
-                            if (existingAnswer.attachmentFileName) answer.attachmentFileName(existingAnswer.attachmentFileName);
-                            if (existingAnswer.attachmentPath) answer.attachmentPath(existingAnswer.attachmentPath);
                             // Mevcut cevabı olan sorular dahil edilmiş demektir
                             answer.isIncluded(true);
                         } else {
@@ -828,6 +851,11 @@ function EvaluationsViewModel() {
                 });
 
                 self.calculateScores();
+
+                // Mevcut değerlendirme ise dosyaları yükle
+                if (data.evaluationId) {
+                    self.loadExistingAttachments(data.evaluationId);
+                }
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
@@ -1076,6 +1104,32 @@ function EvaluationsViewModel() {
         });
     };
 
+    // CallId değiştiğinde otomatik kontrol (debounced)
+    var callIdCheckTimeout = null;
+    self.callId.subscribe(function(newValue) {
+        // Önceki timeout'u temizle
+        if (callIdCheckTimeout) {
+            clearTimeout(callIdCheckTimeout);
+            callIdCheckTimeout = null;
+        }
+
+        // Boşsa veya form açık değilse kontrol etme
+        if (!newValue || !newValue.trim() || !self.formData()) {
+            self.callIdExists(false);
+            self.isCheckingCallId(false);
+            return;
+        }
+
+        // 500ms sonra kontrol et (debounce)
+        self.isCheckingCallId(true);
+        callIdCheckTimeout = setTimeout(function() {
+            self.checkCallIdExists().then(function(exists) {
+                self.callIdExists(exists);
+                self.isCheckingCallId(false);
+            });
+        }, 500);
+    });
+
     // Save as draft
     self.saveDraft = function(callback) {
         // Zorunlu alan kontrolü
@@ -1108,6 +1162,9 @@ function EvaluationsViewModel() {
                 return response.json();
             })
             .then(function(result) {
+                // API { message, evaluation, answers } döndürüyor
+                var savedEvaluation = result.evaluation || result;
+
                 // Update answer IDs from result
                 if (result.answers) {
                     result.answers.forEach(function(a) {
@@ -1119,8 +1176,8 @@ function EvaluationsViewModel() {
                     });
                 }
 
-                // Pending dosyaları yükle
-                return self.uploadPendingFiles().then(function() {
+                // Pending dosyaları yükle (değerlendirme ID ile)
+                return self.uploadPendingAttachments(savedEvaluation.id).then(function() {
                     if (typeof callback === 'function') {
                         // Called from file upload - just call callback
                         callback();
@@ -1276,8 +1333,8 @@ function EvaluationsViewModel() {
                 });
             }
 
-            // Pending dosyaları yükle
-            return self.uploadPendingFiles().then(function() {
+            // Pending dosyaları yükle (değerlendirme ID ile)
+            return self.uploadPendingAttachments(newEvaluation.id).then(function() {
                 // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
                 var existingIndex = -1;
                 var evaluations = self.allEvaluations();

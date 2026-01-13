@@ -295,6 +295,34 @@
                 return response;
             });
         }
+
+        // API helper for downloading files (POST request with JSON body)
+        function customerApiDownloadPost(url, data, filename) {
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                if (response.status === 401) {
+                    window.location.href = '/Account/Login';
+                    throw new Error('Unauthorized');
+                }
+                if (!response.ok) throw new Error('Download failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            });
+        }
     </script>
 
     <!-- Customer Topbar Language Selector -->

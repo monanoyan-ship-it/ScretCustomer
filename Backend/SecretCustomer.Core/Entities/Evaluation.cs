@@ -174,6 +174,23 @@ public class Evaluation : BaseEntity
         Description = "Kontrol saati")]
     public string? ControlTime { get; set; }
 
+    // ===== FIELDWORKER - BAYİ ZİYARETİ ALANLARI =====
+
+    /// <summary>
+    /// Ziyaret ID - FieldWorker değerlendirmeleri için otomatik üretilir
+    /// Format: ZYR-{YIL}-{5 HANELI SIRA} (Örn: ZYR-2024-00001)
+    /// </summary>
+    [ExcelColumn("Ziyaret ID", 17, ColumnType = ExcelColumnTypes.Ids.Text,
+        Description = "Ziyaret numarası (FieldWorker için)")]
+    public string? VisitId { get; set; }
+
+    /// <summary>
+    /// Ziyaret edilen bayi (FieldWorker değerlendirmeleri için)
+    /// </summary>
+    public int? DealerId { get; set; }
+    public Dealer? Dealer { get; set; }
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
+    public ICollection<EvaluationAttachment> Attachments { get; set; } = new List<EvaluationAttachment>();
 }

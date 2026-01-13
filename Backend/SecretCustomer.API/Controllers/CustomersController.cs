@@ -10,4 +10,10 @@ public class CustomersController : Controller
     {
         return View();
     }
+
+    public IActionResult Dealers(int id)
+    {
+        ViewBag.CustomerId = id;
+        return View();
+    }
 }

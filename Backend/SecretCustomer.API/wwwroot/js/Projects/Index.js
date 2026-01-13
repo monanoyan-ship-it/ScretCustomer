@@ -115,7 +115,7 @@ function ProjectsViewModel() {
     self.viewMode = ko.observable('table');
 
     // Sorting
-    self.sorting = TableSorting.createSortState('name', 'asc');
+    self.sorting = TableSorting.createSortState('createdAt', 'desc');
 
     // ==================== FILTER SYSTEM ====================
     self.selectedFilterType = ko.observable('');

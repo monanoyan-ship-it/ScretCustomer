@@ -30,6 +30,12 @@
                 <span class="badge bg-warning ms-2" data-bind="text: personnelCounts().pending, visible: personnelCounts().pending > 0"></span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bind="css: { active: activeTab() === 'dealer' }, click: function() { setActiveTab('dealer'); }">
+                <i class="bi bi-shop me-2"></i>@Html.T("UserRequest.DealerRequests", "Bayi Talepleri")
+                <span class="badge bg-warning ms-2" data-bind="text: dealerCounts().pending, visible: dealerCounts().pending > 0"></span>
+            </button>
+        </li>
     </ul>
 
     <!-- Summary Cards -->
@@ -246,6 +252,90 @@
         </div>
     </div>
 
+    <!-- ==================== DEALER REQUESTS TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'dealer'">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-shop me-2"></i>@Html.T("DealerRequest.AllRequests", "Bayi Talepleri")</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('requestTypeName'); }, css: dealerSorting.getSortClass('requestTypeName')">
+                                    @Html.T("DealerRequest.Type", "Talep Tipi")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('requestTypeName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('customerName'); }, css: dealerSorting.getSortClass('customerName')">
+                                    @Html.T("Common.Customer", "Firma")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('customerName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('dealerName'); }, css: dealerSorting.getSortClass('dealerName')">
+                                    @Html.T("DealerRequest.DealerInfo", "Bayi Bilgisi")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('dealerName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('requestedByUserName'); }, css: dealerSorting.getSortClass('requestedByUserName')">
+                                    @Html.T("Approval.RequestedBy", "Talep Eden")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('requestedByUserName')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('statusId'); }, css: dealerSorting.getSortClass('statusId')">
+                                    @Html.T("Common.Status", "Durum")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('statusId')"></i>
+                                </th>
+                                <th class="sortable" data-bind="click: function() { dealerSorting.toggleSort('createdAt'); }, css: dealerSorting.getSortClass('createdAt')">
+                                    @Html.T("Common.Date", "Tarih")
+                                    <i class="bi sort-icon" data-bind="css: dealerSorting.getSortIcon('createdAt')"></i>
+                                </th>
+                                <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: sortedDealerRequests">
+                            <tr>
+                                <td>
+                                    <span class="badge" data-bind="text: $parent.getDealerRequestTypeName(requestTypeId), css: $parent.getDealerRequestTypeBadge(requestTypeId)"></span>
+                                </td>
+                                <td data-bind="text: customerName"></td>
+                                <td>
+                                    <!-- ko if: dealerName -->
+                                    <span data-bind="text: dealerName"></span>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: dealerName -->
+                                    <span class="text-muted" data-bind="text: $parent.getDealerNameFromJson(requestDataJson)"></span>
+                                    <!-- /ko -->
+                                </td>
+                                <td data-bind="text: requestedByUserName"></td>
+                                <td>
+                                    <span class="badge" data-bind="text: $parent.getDealerStatusText(statusId), css: $parent.getDealerStatusBadgeClass(statusId)"></span>
+                                </td>
+                                <td data-bind="text: $parent.formatDate(createdAt)"></td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- ko if: statusId === 1 -->
+                                        <button class="btn btn-success" data-bind="click: function() { $parent.approveDealerRequest($data); }" title="@Html.T("Approval.Approve", "Onayla")">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-danger" data-bind="click: function() { $parent.showRejectDealerModal($data); }" title="@Html.T("Approval.Reject", "Reddet")">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <!-- /ko -->
+                                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showDealerDetail($data); }" title="@Html.T("Common.Detail", "Detay")">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center py-5" data-bind="visible: dealerRequests().length === 0 && !isLoading()">
+                    <i class="bi bi-inbox fa-3x text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                    <p class="text-muted">@Html.T("DealerRequest.NoRecords", "Henuz bayi talebi bulunmamaktadir.")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading -->
     <div class="text-center py-5" data-bind="visible: isLoading">
         <div class="spinner-border text-primary" role="status">
@@ -332,8 +422,128 @@
         </div>
     </div>
 
+    <!-- ==================== DEALER DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDealerDetailModalOpen }, style: { display: isDealerDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-shop me-2"></i>@Html.T("DealerRequest.Detail", "Bayi Talebi Detayi")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeDealerDetailModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: selectedDealerRequest">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>@Html.T("DealerRequest.RequestInfo", "Talep Bilgileri")</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-muted">@Html.T("DealerRequest.Type", "Talep Tipi"):</td>
+                                    <td><span class="badge" data-bind="text: $parent.getDealerRequestTypeName(requestTypeId), css: $parent.getDealerRequestTypeBadge(requestTypeId)"></span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Customer", "Firma"):</td>
+                                    <td data-bind="text: customerName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Approval.RequestedBy", "Talep Eden"):</td>
+                                    <td data-bind="text: requestedByUserName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                    <td><span class="badge" data-bind="text: $parent.getDealerStatusText(statusId), css: $parent.getDealerStatusBadgeClass(statusId)"></span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Date", "Tarih"):</td>
+                                    <td data-bind="text: $parent.formatDate(createdAt)"></td>
+                                </tr>
+                                <!-- ko if: processedAt -->
+                                <tr>
+                                    <td class="text-muted">@Html.T("DealerRequest.ProcessedAt", "Islem Tarihi"):</td>
+                                    <td data-bind="text: $parent.formatDate(processedAt)"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("DealerRequest.ProcessedBy", "Isleyen"):</td>
+                                    <td data-bind="text: processedByUserName"></td>
+                                </tr>
+                                <!-- /ko -->
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>@Html.T("DealerRequest.DealerInfo", "Bayi Bilgileri")</h6>
+                            <div data-bind="with: $parent.parseDealerRequestData(requestDataJson)">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.Name", "Bayi Adi"):</td>
+                                        <td data-bind="text: name || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.Address", "Adres"):</td>
+                                        <td data-bind="text: address || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.City", "Sehir"):</td>
+                                        <td data-bind="text: city || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.District", "Ilce"):</td>
+                                        <td data-bind="text: district || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.Phone", "Telefon"):</td>
+                                        <td data-bind="text: phone || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Dealer.ContactPerson", "Yetkili"):</td>
+                                        <td data-bind="text: contactPerson || '-'"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ko if: adminResponse -->
+                    <div class="alert alert-info mt-3">
+                        <strong>@Html.T("DealerRequest.AdminResponse", "Admin Yaniti"):</strong><br/>
+                        <span data-bind="text: adminResponse"></span>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeDealerDetailModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DEALER REJECT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDealerRejectModalOpen }, style: { display: isDealerRejectModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>@Html.T("DealerRequest.Reject", "Bayi Talebini Reddet")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeDealerRejectModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: rejectingDealerRequest">
+                    <div class="alert alert-warning">
+                        <strong>@Html.T("DealerRequest.Info", "Talep Bilgileri"):</strong><br/>
+                        <span data-bind="text: $parent.getDealerNameFromJson(requestDataJson)"></span> - <span data-bind="text: customerName"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Approval.RejectReason", "Red Sebebi")</label>
+                        <textarea class="form-control" rows="3" data-bind="value: $parent.dealerRejectReason" placeholder="@Html.T("Approval.RejectReasonPlaceholder", "Red sebebini giriniz...")"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeDealerRejectModal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: confirmDealerReject">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Approval.Reject", "Reddet")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" data-bind="css: { show: isApproveModalOpen() || isRejectModalOpen() }, style: { display: (isApproveModalOpen() || isRejectModalOpen()) ? 'block' : 'none' }"></div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen() }, style: { display: (isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen()) ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

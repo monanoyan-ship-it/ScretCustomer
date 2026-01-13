@@ -39,6 +39,13 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
 
@@ -84,9 +91,13 @@ public class ReportService : IReportService
             }
         }
 
-        // Customer filter
+        // Customer filter (evaluated personnel's customer)
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Project customer filter (for CustomerPortal - filter by project's customer)
+        if (filter.ProjectCustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
 
         // Organization filter
         if (filter.OrganizationId.HasValue)
@@ -454,6 +465,13 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
 
@@ -614,6 +632,13 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
 
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
@@ -1706,6 +1731,13 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
 
@@ -1724,9 +1756,13 @@ public class ReportService : IReportService
             query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
         }
 
-        // Customer filter
+        // Customer filter (evaluated personnel's customer)
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Project customer filter (for CustomerPortal - filter by project's customer)
+        if (filter.ProjectCustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
 
         // Organization filter
         if (filter.OrganizationId.HasValue)
@@ -1848,6 +1884,13 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
 
@@ -1887,9 +1930,13 @@ public class ReportService : IReportService
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
-        // Customer filter
+        // Customer filter (evaluated personnel's customer)
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Project customer filter (for CustomerPortal - filter by project's customer)
+        if (filter.ProjectCustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
 
         // Organization filter
         if (filter.OrganizationId.HasValue)
@@ -2004,11 +2051,31 @@ public class ReportService : IReportService
             worksheet.Cell(row, 7).Value = (e.ControlDate ?? e.CallDate)?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 8).Value = e.CallTime ?? (e.CallDate?.ToString("HH:mm") ?? "");
             worksheet.Cell(row, 9).Value = e.Duration ?? "";
+            // Açıklama: DescriptionsJson (+ ile eklenen açıklamalar) + EvaluationComment
+            var allDescriptions = new List<string>();
+            if (!string.IsNullOrWhiteSpace(e.DescriptionsJson))
+            {
+                try
+                {
+                    var descriptions = System.Text.Json.JsonSerializer.Deserialize<List<string>>(e.DescriptionsJson);
+                    if (descriptions != null)
+                    {
+                        allDescriptions.AddRange(descriptions.Where(d => !string.IsNullOrWhiteSpace(d)));
+                    }
+                }
+                catch { /* JSON parse hatası - devam et */ }
+            }
+            if (!string.IsNullOrWhiteSpace(e.EvaluationComment))
+            {
+                allDescriptions.Add(e.EvaluationComment);
+            }
+            var combinedDescription = allDescriptions.Count > 0 ? string.Join(", ", allDescriptions) : "-";
+
             worksheet.Cell(row, 10).Value = combinedComment;
             worksheet.Cell(row, 11).Value = evalDate.Year;
             worksheet.Cell(row, 12).Value = periodMonth;
             worksheet.Cell(row, 13).Value = e.ScorePercentage ?? 0;
-            worksheet.Cell(row, 14).Value = e.EvaluationComment ?? "";
+            worksheet.Cell(row, 14).Value = combinedDescription;
 
             row++;
         }
@@ -2043,6 +2110,13 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
 
@@ -2061,9 +2135,13 @@ public class ReportService : IReportService
             query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
         }
 
-        // Customer filter
+        // Customer filter (evaluated personnel's customer)
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        // Project customer filter (for CustomerPortal - filter by project's customer)
+        if (filter.ProjectCustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
 
         // Organization filter
         if (filter.OrganizationId.HasValue)
@@ -2181,6 +2259,13 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
 
         if (filter.EvaluatorId.HasValue)
             query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);

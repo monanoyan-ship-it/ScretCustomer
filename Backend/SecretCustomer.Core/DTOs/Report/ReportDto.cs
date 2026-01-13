@@ -7,8 +7,14 @@ public class ReportFilterDto
 {
     // Dropdown filters
     public int? CustomerId { get; set; }
+
+    /// <summary>
+    /// Projenin müşterisine göre filtrele (CustomerPortal için)
+    /// </summary>
+    public int? ProjectCustomerId { get; set; }
     public int? OrganizationId { get; set; }
     public int? ProjectId { get; set; }
+    public string? ProjectType { get; set; }
     public int? EvaluatorId { get; set; }
     public int? ChecklistId { get; set; }
     public int? PeriodId { get; set; }

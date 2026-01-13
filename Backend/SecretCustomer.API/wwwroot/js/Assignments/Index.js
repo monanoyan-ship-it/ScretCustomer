@@ -150,11 +150,29 @@ function AssignmentsViewModel() {
     self.availableEvaluators = ko.observableArray([]);
     self.availableFieldWorkers = ko.observableArray([]);
     self.selectedProjectChecklistName = ko.observable('');
+    self.selectedProjectType = ko.observable('');
 
     // Project Picker
     self.projectPickerSearch = ko.observable('');
     self.isProjectPickerOpen = ko.observable(false);
     self.selectedProjectForDisplay = ko.observable(null);
+
+    // Proje tipine göre atama tipi belirleme (Saha Çalışanı gerektiren projeler)
+    self.isPhysicalAuditProject = ko.computed(function() {
+        var projectType = self.selectedProjectType();
+        return projectType === 'PhysicalAudit' || projectType === 'MysteryShopping';
+    });
+
+    // Proje seçiliyse kullanıcı listesi, seçili değilse boş
+    self.filteredEvaluators = ko.computed(function() {
+        if (!self.selectedProjectForDisplay()) return [];
+        return self.availableEvaluators();
+    });
+
+    self.filteredFieldWorkers = ko.computed(function() {
+        if (!self.selectedProjectForDisplay()) return [];
+        return self.availableFieldWorkers();
+    });
 
     self.filteredProjectsForPicker = ko.computed(function() {
         var search = (self.projectPickerSearch() || '').toLowerCase().trim();
@@ -345,7 +363,7 @@ function AssignmentsViewModel() {
     };
 
     // Sorting
-    self.sorting = TableSorting.createSortState('dueDate', 'desc');
+    self.sorting = TableSorting.createSortState('createdAt', 'desc');
 
     // Subscribe to sorting changes
     self.sorting.sortBy.subscribe(function() {
@@ -431,24 +449,34 @@ function AssignmentsViewModel() {
         fetch('/api/projects', { credentials: 'include' })
             .then(function(res) { return res.json(); })
             .then(function(data) {
-                self.availableProjects(data.filter(function(p) { return p.isActive; }));
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                self.availableProjects(data.filter(function(p) {
+                    // Aktif olmayan projeleri filtrele
+                    if (!p.isActive) return false;
+                    // Bitiş tarihi geçmiş projeleri filtrele
+                    if (p.endDate) {
+                        var endDate = new Date(p.endDate);
+                        if (endDate < today) return false;
+                    }
+                    return true;
+                }));
             })
             .catch(function(error) { console.error('Error loading projects:', error); });
     };
 
     self.loadEvaluators = function() {
-        // Admin (role 1), QualitySpecialist (role 2), FieldWorker (role 3) kullanıcılarını çek
+        // Admin (role 1) ve QualitySpecialist (role 2) kullanıcılarını çek
+        // FieldWorker'lar ayrı yükleniyor (loadFieldWorkers)
         Promise.all([
             fetch('/api/users/role/1', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/users/role/3', { credentials: 'include' }).then(function(r) { return r.json(); })
+            fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
             var admins = results[0] || [];
             var qualitySpecialists = results[1] || [];
-            var fieldWorkers = results[2] || [];
             // Birleştir ve tekrarları kaldır (id'ye göre)
-            var combined = admins.concat(qualitySpecialists).concat(fieldWorkers);
+            var combined = admins.concat(qualitySpecialists);
             var unique = [];
             var ids = {};
             combined.forEach(function(u) {
@@ -462,10 +490,17 @@ function AssignmentsViewModel() {
         .catch(function(error) { console.error('Error loading evaluators:', error); });
     };
 
-    // FieldWorker modülü kaldırıldı - artık sadece User'lar kullanılıyor
+    // FieldWorker rolündeki kullanıcıları yükle
     self.loadFieldWorkers = function() {
-        // FieldWorker API artık mevcut değil, boş array set et
-        self.availableFieldWorkers([]);
+        fetch('/api/users/role/3', { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.availableFieldWorkers(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading field workers:', error);
+                self.availableFieldWorkers([]);
+            });
     };
 
     // ===== Filter Methods =====
@@ -551,6 +586,7 @@ function AssignmentsViewModel() {
         self.editingAssignment(new AssignmentEditViewModel());
         self.selectedProjectChecklistName('');
         self.selectedProjectForDisplay(null);
+        self.selectedProjectType('');
         self.projectPickerSearch('');
         self.isProjectPickerOpen(false);
         self.isModalOpen(true);
@@ -572,8 +608,16 @@ function AssignmentsViewModel() {
         assignment.checklistId(project.checklistId);
         self.selectedProjectChecklistName(project.checklistName || '');
         self.selectedProjectForDisplay(project);
+        self.selectedProjectType(project.projectType || '');
         self.isProjectPickerOpen(false);
         self.projectPickerSearch('');
+
+        // Proje tipine göre atama türünü otomatik seç
+        if (project.projectType === 'PhysicalAudit' || project.projectType === 'MysteryShopping') {
+            assignment.assignmentType('fieldworker');
+        } else {
+            assignment.assignmentType('user');
+        }
     };
 
     self.clearSelectedProject = function() {
@@ -582,8 +626,11 @@ function AssignmentsViewModel() {
 
         assignment.projectId('');
         assignment.checklistId('');
+        assignment.assignedUserId('');
+        assignment.assignedFieldWorkerId('');
         self.selectedProjectChecklistName('');
         self.selectedProjectForDisplay(null);
+        self.selectedProjectType('');
     };
 
     self.onProjectChange = function() {
@@ -595,6 +642,7 @@ function AssignmentsViewModel() {
             assignment.checklistId('');
             self.selectedProjectChecklistName('');
             self.selectedProjectForDisplay(null);
+            self.selectedProjectType('');
             return;
         }
 
@@ -607,10 +655,18 @@ function AssignmentsViewModel() {
             assignment.checklistId(selectedProject.checklistId);
             self.selectedProjectChecklistName(selectedProject.checklistName || '');
             self.selectedProjectForDisplay(selectedProject);
+            self.selectedProjectType(selectedProject.projectType || '');
+
+            // Proje tipine göre atama türünü otomatik seç
+            if (selectedProject.projectType === 'PhysicalAudit' || selectedProject.projectType === 'MysteryShopping') {
+                assignment.assignmentType('fieldworker');
+            } else {
+                assignment.assignmentType('user');
+            }
         }
     };
 
-    self.saveAssignment = function() {
+    self.saveAssignment = function(forceActivate) {
         var assignment = self.editingAssignment();
 
         // Validation
@@ -635,6 +691,11 @@ function AssignmentsViewModel() {
         var url = isEdit ? '/api/assignments/' + assignmentId : '/api/assignments';
         var method = isEdit ? 'PUT' : 'POST';
 
+        // forceActivate parametresi ile çağrıldıysa DTO'ya ekle (true boolean olmalı, KO click event objesi değil)
+        if (forceActivate === true) {
+            dto.forceActivateProject = true;
+        }
+
         self.isSaving(true);
         fetch(url, {
             method: method,
@@ -643,7 +704,16 @@ function AssignmentsViewModel() {
             body: JSON.stringify(dto)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error(T('Message.SaveError', 'Kayıt başarısız'));
+                if (!response.ok) {
+                    return response.json().then(function(errorData) {
+                        console.log('API Error Response:', errorData);
+                        // PROJECT_NOT_ACTIVE hatası ise özel işlem yap
+                        if (errorData.errorCode === 'PROJECT_NOT_ACTIVE') {
+                            throw { isProjectNotActive: true, message: errorData.message };
+                        }
+                        throw new Error(errorData.message || T('Message.SaveError', 'Kayıt başarısız'));
+                    });
+                }
                 return response.json();
             })
             .then(function(savedAssignment) {
@@ -666,7 +736,23 @@ function AssignmentsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error:', error);
-                toastr.error(T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
+                // Proje aktif değil hatası - onay modal göster
+                if (error.isProjectNotActive) {
+                    self.isSaving(false);
+                    showConfirmModal({
+                        title: T('Assignment.ActivateProjectTitle', 'Proje Aktif Değil'),
+                        message: T('Assignment.ActivateProjectMessage', 'Bu proje henüz aktif değil. Projeyi aktif edip atamayı oluşturmak ister misiniz?'),
+                        type: 'warning',
+                        confirmText: T('Assignment.ActivateAndSave', 'Aktif Et ve Kaydet'),
+                        confirmIcon: 'bi-play-fill',
+                        onConfirm: function() {
+                            // Onay verildi - forceActivate ile tekrar dene
+                            self.saveAssignment(true);
+                        }
+                    });
+                    return;
+                }
+                toastr.error(error.message || T('Assignment.SaveError', 'Atama kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);

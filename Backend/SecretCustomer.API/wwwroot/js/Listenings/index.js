@@ -54,9 +54,10 @@ function ListeningsViewModel() {
     self.evaluators = ko.observableArray([]);
     self.dateRanges = ko.observableArray([]);
     self.evaluationSources = ko.observableArray([]);
+    self.projectTypes = ko.observableArray([]);
 
     // Sorting
-    self.sortField = ko.observable('callDate');
+    self.sortField = ko.observable('createdAt');
     self.sortDirection = ko.observable('desc');
 
     // Filter system
@@ -68,6 +69,7 @@ function ListeningsViewModel() {
         customerIdForOrg: ko.observable(null),
         organizationId: ko.observable(null),
         projectId: ko.observable(null),
+        projectType: ko.observable(null),
         evaluatorId: ko.observable(null),
         personnelName: ko.observable(''),
         supervisorName: ko.observable(''),
@@ -100,6 +102,7 @@ function ListeningsViewModel() {
     self.filterLabels = {
         customerOrganization: 'Müşteri/Org.',
         project: 'Proje',
+        projectType: 'Proje Tipi',
         evaluator: 'Değerlendiren',
         personnel: 'Temsilci',
         supervisor: 'Yönetici',
@@ -139,6 +142,7 @@ function ListeningsViewModel() {
         switch (type) {
             case 'customerOrganization': return self.tempFilter.customerIdForOrg();
             case 'project': return self.tempFilter.projectId();
+            case 'projectType': return self.tempFilter.projectType();
             case 'evaluator': return self.tempFilter.evaluatorId();
             case 'personnel': return self.tempFilter.personnelName().trim() !== '';
             case 'supervisor': return self.tempFilter.supervisorName().trim() !== '';
@@ -165,6 +169,11 @@ function ListeningsViewModel() {
                 self.evaluators(response.evaluators || []);
                 self.dateRanges(response.dateRanges || []);
                 self.evaluationSources(response.evaluationSources || []);
+
+                // Proje tiplerini EnumsService'den al
+                if (EnumsService.cache && EnumsService.cache.projectTypes) {
+                    self.projectTypes(EnumsService.cache.projectTypes);
+                }
 
                 // Lookups yüklendikten sonra varsayılan filtreyi kontrol et
                 self.loadDefaultFilterAndSearch();
@@ -286,6 +295,15 @@ function ListeningsViewModel() {
                 filter.value = projectId;
                 filter.displayValue = project.name;
                 self.tempFilter.projectId(null);
+                break;
+
+            case 'projectType':
+                var projectTypeId = self.tempFilter.projectType();
+                var projectType = self.projectTypes().find(function(pt) { return pt.id === projectTypeId; });
+                if (!projectType) return;
+                filter.value = projectType.systemName;
+                filter.displayValue = T(projectType.nameKey, projectType.systemName);
+                self.tempFilter.projectType(null);
                 break;
 
             case 'evaluator':
@@ -491,6 +509,9 @@ function ListeningsViewModel() {
                     break;
                 case 'project':
                     params.projectId = filter.value;
+                    break;
+                case 'projectType':
+                    params.projectType = filter.value;
                     break;
                 case 'evaluator':
                     params.evaluatorId = filter.value;
@@ -1110,7 +1131,16 @@ function ListeningsViewModel() {
     };
 
     self.downloadAttachment = function(attachment) {
-        window.open('/api/answers/' + attachment.answerId + '/attachment', '_blank');
+        window.open('/api/evaluations/attachments/' + attachment.id + '/download', '_blank');
+    };
+
+    // Dosya boyutunu formatla
+    self.formatFileSize = function(bytes) {
+        if (!bytes) return '-';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
     };
 
     // Initialize

@@ -59,4 +59,9 @@ public class Customer : BaseEntity
     /// Firma altındaki organizasyonlar
     /// </summary>
     public ICollection<CustomerOrganization> Organizations { get; set; } = new List<CustomerOrganization>();
+
+    /// <summary>
+    /// Firma altındaki bayiler (FieldWorker ziyaretleri için)
+    /// </summary>
+    public ICollection<Dealer> Dealers { get; set; } = new List<Dealer>();
 }

@@ -422,7 +422,12 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">@Html.T("Project.Type", "Proje Tipi") <span class="text-danger">*</span></label>
+                                            <label class="form-label">
+                                                @Html.T("Project.Type", "Proje Tipi") <span class="text-danger">*</span>
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 app-tooltip" data-tooltip-key="project-types" data-tooltip-title="@Html.T("Project.TypeInfo", "Proje Tipi Bilgisi")">
+                                                    <i class="bi bi-info-circle text-info"></i>
+                                                </button>
+                                            </label>
                                             <select class="form-select" data-bind="value: projectType">
                                                 <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
                                                 <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
@@ -781,6 +786,7 @@
     <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
 
     <partial name="_DeleteConfirmationModal" />
+
 </div>
 
 @section Scripts {

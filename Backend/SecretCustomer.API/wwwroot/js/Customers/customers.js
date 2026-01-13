@@ -234,6 +234,11 @@ function CustomersViewModel() {
         self.loadPersonnel(customer.id);
     };
 
+    // Navigate to dealers page for customer
+    self.showDealers = function(customer) {
+        window.location.href = '/Customers/Dealers/' + customer.id;
+    };
+
     // Load personnel for customer
     self.loadPersonnel = function(customerId) {
         self.isLoadingPersonnel(true);

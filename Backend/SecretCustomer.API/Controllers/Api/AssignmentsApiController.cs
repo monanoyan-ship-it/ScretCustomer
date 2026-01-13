@@ -156,9 +156,23 @@ public class AssignmentsApiController : BaseApiController
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
+
             if (project.Status != ProjectStatuses.Active.SystemName)
             {
-                return BadRequest(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectNotActive")));
+                // ForceActivateProject true ise projeyi aktif et
+                if (dto.ForceActivateProject)
+                {
+                    await _projectService.StartProjectAsync(dto.ProjectId);
+                }
+                else
+                {
+                    // Özel hata kodu ile dön - frontend bunu yakalayıp onay isteyecek
+                    return BadRequest(new {
+                        message = await _localizationService.GetResourceAsync("Api.Assignment.ProjectNotActive"),
+                        errorCode = "PROJECT_NOT_ACTIVE",
+                        projectId = dto.ProjectId
+                    });
+                }
             }
 
             var assignment = await _assignmentService.CreateAsync(dto);

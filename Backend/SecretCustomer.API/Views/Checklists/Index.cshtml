@@ -206,20 +206,10 @@
                         <textarea class="form-control" data-bind="value: description" rows="2" placeholder="@Html.T("Checklist.DescriptionPlaceholder", "Kontrol listesi hakkında kısa açıklama...")"></textarea>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">@Html.T("Checklist.MaxTotalPoints", "Maks. Toplam Puan")</label>
-                            <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" />
-                            <small class="text-muted">@Html.T("Checklist.MaxTotalPointsHelp", "Varsayılan: 100")</small>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">@Html.T("Checklist.ValidFrom", "Geçerlilik Başlangıç")</label>
-                            <input type="date" class="form-control" data-bind="value: validFrom" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">@Html.T("Checklist.ValidUntil", "Geçerlilik Bitiş")</label>
-                            <input type="date" class="form-control" data-bind="value: validUntil" />
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Checklist.MaxTotalPoints", "Maks. Toplam Puan")</label>
+                        <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" style="max-width: 200px;" />
+                        <small class="text-muted">@Html.T("Checklist.MaxTotalPointsHelp", "Varsayılan: 100")</small>
                     </div>
 
                     <div class="row">
