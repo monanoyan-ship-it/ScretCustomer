@@ -37,6 +37,16 @@ function CustomerInternalEvaluationsViewModel() {
     self.isSavingFilter = ko.observable(false);
     self.isLoadingFilters = ko.observable(false);
 
+    // Details modal
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
+
+    // Attachments modal
+    self.isAttachmentsModalOpen = ko.observable(false);
+    self.isAttachmentsLoading = ko.observable(false);
+    self.attachments = ko.observableArray([]);
+
     self.totalPages = ko.computed(function() {
         return Math.ceil(self.total() / self.pageSize()) || 1;
     });
@@ -381,6 +391,65 @@ function CustomerInternalEvaluationsViewModel() {
             .then(function() {
                 self.loadSavedFilters();
             });
+    };
+
+    // Details Modal Functions
+    self.showDetails = function(evaluation) {
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        customerApiFetch('/api/evaluations/' + evaluation.id)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Detay yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                self.closeDetailsModal();
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
+    };
+
+    // Attachments Modal Functions
+    self.showAttachments = function(evaluation) {
+        self.isAttachmentsModalOpen(true);
+        self.isAttachmentsLoading(true);
+        self.attachments([]);
+
+        customerApiFetch('/api/evaluations/' + evaluation.id + '/attachments')
+            .then(function(response) {
+                if (!response.ok) throw new Error('Dosyalar yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.attachments(data || []);
+            })
+            .catch(function(error) {
+                console.error('Attachments load error:', error);
+            })
+            .finally(function() {
+                self.isAttachmentsLoading(false);
+            });
+    };
+
+    self.closeAttachmentsModal = function() {
+        self.isAttachmentsModalOpen(false);
+        self.attachments([]);
+    };
+
+    self.downloadAttachment = function(attachment) {
+        window.open('/api/answers/' + attachment.answerId + '/attachment', '_blank');
     };
 
     // Init

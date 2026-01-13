@@ -7938,9 +7938,6 @@
   <LocaleResource Name="Report.CallDate">
     <Value>Çağrı Tarihi</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.RedCard">
-    <Value>Kırmızı Kart</Value>
-  </LocaleResource>
   <!-- MT Raporu -->
   <LocaleResource Name="Report.Sheet.MTBasari">
     <Value>MT Başarı</Value>

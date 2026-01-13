@@ -3960,6 +3960,18 @@
   <LocaleResource Name="CustomerPortal.Menu.Branches">
     <Value>Filialen</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Organizations">
+    <Value>Filialen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Supervisors">
+    <Value>Supervisoren</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.InternalEvaluations">
+    <Value>Interne Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ExternalEvaluations">
+    <Value>Externe Bewertungen</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Reports">
     <Value>Berichte</Value>
   </LocaleResource>

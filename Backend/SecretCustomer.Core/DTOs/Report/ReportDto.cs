@@ -35,6 +35,12 @@ public class ReportFilterDto
     // Pagination
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
+
+    /// <summary>
+    /// Export için kullanılıyor mu? true ise sadece Completed değerlendirmeler dahil edilir.
+    /// PRENSIP: Raporlara (Excel export) taslak değerlendirmeler hiçbir zaman dahil edilmez.
+    /// </summary>
+    public bool ForExport { get; set; } = false;
 }
 
 /// <summary>

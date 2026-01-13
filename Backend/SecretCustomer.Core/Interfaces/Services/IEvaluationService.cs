@@ -68,6 +68,12 @@ public interface IEvaluationService
     /// Kaydetmez, sadece hesaplayıp sonucu döndürür
     /// </summary>
     Task<ScoreCalculationResultDto> CalculateScoreAsync(CalculateScoreRequestDto request);
+
+    /// <summary>
+    /// Mevcut değerlendirmenin puanını yeniden hesapla ve kaydet
+    /// Eski bug nedeniyle 0 kalan puanları düzeltmek için kullanılır
+    /// </summary>
+    Task<(bool Success, string Message)> RecalculateScoreAsync(int evaluationId);
 }
 
 /// <summary>

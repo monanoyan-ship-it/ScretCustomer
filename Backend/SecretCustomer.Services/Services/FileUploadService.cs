@@ -23,8 +23,10 @@ public class FileUploadService : IFileUploadService
         _configuration = configuration;
         _logger = logger;
         _uploadPath = _configuration["FileUpload:Path"] ?? Path.Combine(Directory.GetCurrentDirectory(), "uploads", "answers");
+    }
 
-        // Ensure directory exists
+    private void EnsureDirectoryExists()
+    {
         if (!Directory.Exists(_uploadPath))
         {
             Directory.CreateDirectory(_uploadPath);
@@ -35,6 +37,9 @@ public class FileUploadService : IFileUploadService
     {
         try
         {
+            // Ensure directory exists
+            EnsureDirectoryExists();
+
             // Validate file extension
             var extension = Path.GetExtension(fileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))

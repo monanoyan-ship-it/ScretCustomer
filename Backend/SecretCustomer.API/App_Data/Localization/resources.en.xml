@@ -3963,6 +3963,18 @@
   <LocaleResource Name="CustomerPortal.Menu.Branches">
     <Value>Branches</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Organizations">
+    <Value>Branches</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.Supervisors">
+    <Value>Supervisors</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.InternalEvaluations">
+    <Value>Internal Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ExternalEvaluations">
+    <Value>External Evaluations</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Reports">
     <Value>Reports</Value>
   </LocaleResource>
@@ -4010,6 +4022,44 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
     <Value>External Evaluation List</Value>
+  </LocaleResource>
+  <!-- Organizations -->
+  <LocaleResource Name="CustomerPortal.Organizations.Title">
+    <Value>Organizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.NotFound">
+    <Value>Organization Not Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.NoRecords">
+    <Value>No organizations found for your company.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.PersonnelCount">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.EvaluationCount">
+    <Value>Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Organizations.AverageScore">
+    <Value>Avg. Score</Value>
+  </LocaleResource>
+  <!-- Supervisors -->
+  <LocaleResource Name="CustomerPortal.Supervisors.Title">
+    <Value>Supervisors</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.NotFound">
+    <Value>Supervisor Not Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.NoRecords">
+    <Value>No supervisors found for your company.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.PersonnelCount">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.EvaluationCount">
+    <Value>Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Supervisors.AverageScore">
+    <Value>Avg. Score</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
     <Value>Evaluator</Value>

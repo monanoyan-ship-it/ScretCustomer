@@ -127,7 +127,7 @@ public class CustomerPortalProfileController : BaseApiController
                 if (emailExists)
                 {
                     return BadRequest(CreateErrorResponse(
-                        await _localizationService.GetResourceAsync("Api.Profile.EmailExists", "Bu e-posta adresi zaten kullanılıyor.")));
+                        await _localizationService.GetResourceAsync("Api.Profile.EmailExists", defaultValue: "Bu e-posta adresi zaten kullanılıyor.")));
                 }
 
                 personnel.Email = dto.Email.Trim();
@@ -186,20 +186,20 @@ public class CustomerPortalProfileController : BaseApiController
             if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, personnel.PasswordHash))
             {
                 return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.WrongPassword", "Mevcut şifre yanlış.")));
+                    await _localizationService.GetResourceAsync("Api.Profile.WrongPassword", defaultValue: "Mevcut şifre yanlış.")));
             }
 
             // Yeni şifre validasyonu
             if (string.IsNullOrEmpty(dto.NewPassword) || dto.NewPassword.Length < 6)
             {
                 return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.PasswordTooShort", "Şifre en az 6 karakter olmalıdır.")));
+                    await _localizationService.GetResourceAsync("Api.Profile.PasswordTooShort", defaultValue: "Şifre en az 6 karakter olmalıdır.")));
             }
 
             if (dto.NewPassword != dto.ConfirmPassword)
             {
                 return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.PasswordMismatch", "Şifreler eşleşmiyor.")));
+                    await _localizationService.GetResourceAsync("Api.Profile.PasswordMismatch", defaultValue: "Şifreler eşleşmiyor.")));
             }
 
             // Şifreyi güncelle
@@ -209,7 +209,7 @@ public class CustomerPortalProfileController : BaseApiController
 
             _logger.LogInformation("CustomerPersonnel {Id} changed their password", userId);
 
-            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Profile.PasswordChanged", "Şifreniz başarıyla değiştirildi.") });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Profile.PasswordChanged", defaultValue: "Şifreniz başarıyla değiştirildi.") });
         }
         catch (Exception ex)
         {

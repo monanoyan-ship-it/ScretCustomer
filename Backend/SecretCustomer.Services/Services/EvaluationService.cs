@@ -650,12 +650,12 @@ public class EvaluationService : IEvaluationService
         CalculateScoreWithPenalties(List<Question> allQuestions, List<SubmitAnswerDto> answers)
     {
         // SubmitAnswerDto -> ScoreAnswerDto dönüşümü
+        // GivenPoints yoksa AnswerNumeric'i kullan (normal 0-5 arası puanlama için)
         var scoreAnswers = answers.Select(a => new ScoreAnswerDto
         {
             QuestionId = a.QuestionId,
-            IsIncluded = a.IsIncluded, // Frontend'den gelen değeri kullan
             IsNA = a.IsNA,
-            GivenPoints = a.GivenPoints,
+            GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
             ApplyPenalty = a.ApplyPenalty,
             SelectedPenaltyType = a.SelectedPenaltyType
         }).ToList();
@@ -671,8 +671,9 @@ public class EvaluationService : IEvaluationService
     /// - Penalty sorular: Her zaman opsiyonel, sadece ApplyPenalty=true ise ceza uygulanır, ağırlığa dahil edilmez
     /// - Unscored sorular: Puan hesabına katılmaz
     /// - Scored sorular:
-    ///   - IsRequired=true: Her zaman dahil (cevap zorunlu)
-    ///   - IsRequired=false: IsIncluded=true ise dahil, false ise atla
+    ///   - Cevap verilmişse → hesaplamaya dahil
+    ///   - Cevap verilmemişse + zorunlu değilse → atla
+    ///   - Cevap verilmemişse + zorunluysa → 0 puan olarak dahil
     /// </summary>
     private ScoreCalculationResultDto CalculateScoreCore(List<Question> questions, List<ScoreAnswerDto> answers)
     {
@@ -715,8 +716,11 @@ public class EvaluationService : IEvaluationService
             if (answer != null && answer.IsNA)
                 continue;
 
-            // Zorunlu olmayan soru ve dahil edilmemiş → atla
-            if (!question.IsRequired && (answer == null || !answer.IsIncluded))
+            // Cevap verilmiş mi?
+            bool hasAnswer = answer != null && answer.GivenPoints.HasValue;
+
+            // Zorunlu olmayan soru ve cevap verilmemiş → atla
+            if (!question.IsRequired && !hasAnswer)
                 continue;
 
             // Bu soru hesaplamaya dahil
@@ -724,11 +728,11 @@ public class EvaluationService : IEvaluationService
             totalMaxPoints += question.WeightPoints;
 
             // Cevap varsa puanı hesapla
-            if (answer != null && answer.GivenPoints.HasValue)
+            if (hasAnswer)
             {
                 // Formül: (cevap / MaxPoints) * WeightPoints
                 var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
-                var earnedPoints = (answer.GivenPoints.Value / maxPoints) * question.WeightPoints;
+                var earnedPoints = (answer!.GivenPoints!.Value / maxPoints) * question.WeightPoints;
                 totalEarned += earnedPoints;
             }
             // Cevap yoksa (zorunlu soru ama cevap verilmemiş) → 0 puan
@@ -1238,5 +1242,58 @@ public class EvaluationService : IEvaluationService
 
         // Tek hesaplama noktasını kullan
         return CalculateScoreCore(questions, request.Answers);
+    }
+
+    /// <summary>
+    /// Mevcut değerlendirmenin puanını yeniden hesapla ve kaydet
+    /// </summary>
+    public async Task<(bool Success, string Message)> RecalculateScoreAsync(int evaluationId)
+    {
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Checklist)
+                    .ThenInclude(c => c!.Questions)
+            .Include(e => e.Answers)
+            .FirstOrDefaultAsync(e => e.Id == evaluationId);
+
+        if (evaluation == null)
+            return (false, "Değerlendirme bulunamadı.");
+
+        if (evaluation.StatusId != EvaluationStatuses.Ids.Completed)
+            return (false, "Sadece tamamlanmış değerlendirmeler yeniden hesaplanabilir.");
+
+        var questions = evaluation.Assignment.Checklist?.Questions
+            .Where(q => !q.IsDeleted)
+            .ToList() ?? new List<Question>();
+
+        if (!questions.Any())
+            return (false, "Checklist soruları bulunamadı.");
+
+        // Answer'ları ScoreAnswerDto'ya dönüştür
+        var scoreAnswers = evaluation.Answers.Select(a => new ScoreAnswerDto
+        {
+            QuestionId = a.QuestionId,
+            IsNA = a.IsNA,
+            // GivenPoints yoksa AnswerNumeric'i kullan
+            GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
+            ApplyPenalty = a.AppliedPenaltyTypeId > 0,
+            SelectedPenaltyType = a.AppliedPenaltyTypeId > 0
+                ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName
+                : null
+        }).ToList();
+
+        // Yeniden hesapla
+        var result = CalculateScoreCore(questions, scoreAnswers);
+
+        // Sonuçları kaydet
+        evaluation.TotalScore = result.TotalEarned;
+        evaluation.MaxScore = result.MaxPossible;
+        evaluation.ScorePercentage = result.Percentage;
+        evaluation.YellowCardCount = result.YellowCardCount;
+        evaluation.RedCardCount = result.RedCardCount;
+
+        await _context.SaveChangesAsync();
+
+        return (true, $"Puan yeniden hesaplandı: %{result.Percentage:F1}");
     }
 }

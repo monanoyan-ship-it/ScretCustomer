@@ -116,7 +116,7 @@ public class AccountController : Controller
             if (result.MustChangePassword)
             {
                 TempData["MustChangePassword"] = true;
-                TempData["Info"] = await _localizationService.GetResourceAsync("Account.MustChangePassword", "İlk giriş veya şifre sıfırlama sonrası şifrenizi değiştirmeniz gerekmektedir.");
+                TempData["Info"] = await _localizationService.GetResourceAsync("Account.MustChangePassword", defaultValue: "İlk giriş veya şifre sıfırlama sonrası şifrenizi değiştirmeniz gerekmektedir.");
                 return RedirectToAction("Index", "Profile");
             }
 

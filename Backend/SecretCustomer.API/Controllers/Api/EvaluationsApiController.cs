@@ -74,6 +74,35 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Degerlendirmenin ekli dosyalarini listeler
+    /// </summary>
+    [HttpGet("{id:int}/attachments")]
+    [Authorize]
+    public async Task<IActionResult> GetAttachments(int id)
+    {
+        try
+        {
+            var attachments = await _context.Answers
+                .Where(a => a.EvaluationId == id && a.AttachmentFileName != null && a.AttachmentFileName != "")
+                .Select(a => new
+                {
+                    answerId = a.Id,
+                    questionId = a.QuestionId,
+                    questionText = a.Question != null ? a.Question.Text : null,
+                    fileName = a.AttachmentFileName
+                })
+                .ToListAsync();
+
+            return Ok(attachments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading attachments for evaluation {EvaluationId}", id);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
+        }
+    }
+
+    /// <summary>
     /// Atama bazli degerlendirme getirir
     /// </summary>
     [HttpGet("assignment/{assignmentId:int}")]
@@ -356,10 +385,18 @@ public class EvaluationsApiController : BaseApiController
             }
 
             var evaluation = await _evaluationService.SubmitEvaluationAsync(dto);
+
+            // Answer ID'leri frontend'e dön (dosya yükleme için gerekli)
+            var answers = await _context.Answers
+                .Where(a => a.EvaluationId == evaluation.Id)
+                .Select(a => new { a.Id, a.QuestionId })
+                .ToListAsync();
+
             return Ok(new
             {
                 message = await _localizationService.GetResourceAsync("Api.Evaluation.SubmitSuccess"),
-                evaluation
+                evaluation,
+                answers
             });
         }
         catch (KeyNotFoundException ex)
@@ -407,10 +444,18 @@ public class EvaluationsApiController : BaseApiController
             }
 
             var evaluation = await _evaluationService.SaveDraftAsync(dto);
+
+            // Answer ID'leri frontend'e dön (dosya yükleme için gerekli)
+            var answers = await _context.Answers
+                .Where(a => a.EvaluationId == evaluation.Id)
+                .Select(a => new { a.Id, a.QuestionId })
+                .ToListAsync();
+
             return Ok(new
             {
                 message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveSuccess"),
-                evaluation
+                evaluation,
+                answers
             });
         }
         catch (KeyNotFoundException ex)
@@ -623,6 +668,60 @@ public class EvaluationsApiController : BaseApiController
             || dto.EvaluatedCustomerPersonnelId.HasValue && dto.EvaluatedCustomerPersonnelId > 0
             || !string.IsNullOrWhiteSpace(dto.EvaluatedUnknownPersonnel)
             || (dto.NewPersonnel != null && !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName));
+    }
+
+    /// <summary>
+    /// Tamamlanmış değerlendirmelerin puanlarını yeniden hesaplar (Admin only)
+    /// Eski bug nedeniyle 0 kalan puanları düzeltmek için kullanılır
+    /// </summary>
+    [HttpPost("recalculate-scores")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RecalculateScores([FromQuery] int? projectId = null)
+    {
+        try
+        {
+            var query = _context.Evaluations
+                .Include(e => e.Assignment)
+                    .ThenInclude(a => a.Checklist)
+                        .ThenInclude(c => c!.Questions)
+                .Include(e => e.Answers)
+                .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
+
+            if (projectId.HasValue)
+                query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+
+            var evaluations = await query.ToListAsync();
+            int updatedCount = 0;
+            int errorCount = 0;
+
+            foreach (var evaluation in evaluations)
+            {
+                try
+                {
+                    var result = await _evaluationService.RecalculateScoreAsync(evaluation.Id);
+                    if (result.Success)
+                        updatedCount++;
+                    else
+                        errorCount++;
+                }
+                catch
+                {
+                    errorCount++;
+                }
+            }
+
+            return Ok(new {
+                message = $"{updatedCount} değerlendirme güncellendi, {errorCount} hata oluştu.",
+                updatedCount,
+                errorCount,
+                totalProcessed = evaluations.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error recalculating scores");
+            return StatusCode(500, CreateErrorResponse("Puanlar yeniden hesaplanırken hata oluştu.", ex));
+        }
     }
 }
 

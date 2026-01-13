@@ -496,7 +496,10 @@ function EvaluationsViewModel() {
                 isIncluded: ko.observable(isRequired !== false),
                 // File attachment
                 attachmentFileName: ko.observable(''),
-                attachmentPath: ko.observable('')
+                attachmentPath: ko.observable(''),
+                // Pending file (henüz yüklenmemiş, form kaydedilince yüklenecek)
+                pendingFile: ko.observable(null),
+                pendingFileName: ko.observable('')
             };
 
             // Subscribe to changes to recalculate scores
@@ -549,57 +552,75 @@ function EvaluationsViewModel() {
     };
 
     // File Attachment Functions
-    self.uploadAnswerAttachment = function(questionId, event) {
+
+    // Dosya seçildiğinde hafızada tut (henüz yükleme)
+    self.selectAnswerAttachment = function(questionId, event) {
         var file = event.target.files[0];
         if (!file) return;
 
         var answer = self.getAnswer(questionId);
-        var answerId = answer.answerId();
+        answer.pendingFile(file);
+        answer.pendingFileName(file.name);
 
-        if (!answerId) {
-            // First save as draft to get answerId
-            toastr.info(T('Evaluation.SavingDraftForAttachment', 'Dosya eklemek için önce taslak kaydediliyor...'));
-            self.saveDraft(function() {
-                // After save, try again
-                var updatedAnswer = self.getAnswer(questionId);
-                if (updatedAnswer.answerId()) {
-                    self.doUploadAttachment(updatedAnswer.answerId(), file, questionId);
-                } else {
-                    toastr.error(T('Evaluation.CannotAttachFile', 'Dosya eklenemedi. Lütfen önce formu kaydedin.'));
-                }
-            });
-            return;
-        }
+        // Clear input for re-selection
+        event.target.value = '';
 
-        self.doUploadAttachment(answerId, file, questionId);
+        toastr.info(T('Evaluation.FileSelected', 'Dosya seçildi. Form kaydedildiğinde yüklenecek.'));
     };
 
-    self.doUploadAttachment = function(answerId, file, questionId) {
-        self.isUploadingFile(true);
-        var formData = new FormData();
-        formData.append('file', file);
+    // Pending dosyayı kaldır
+    self.removePendingFile = function(questionId) {
+        var answer = self.getAnswer(questionId);
+        answer.pendingFile(null);
+        answer.pendingFileName('');
+    };
 
-        fetch('/api/answers/' + answerId + '/attachment', {
-            method: 'POST',
-            body: formData
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Upload failed');
-            return response.json();
-        })
-        .then(function(result) {
-            var answer = self.getAnswer(questionId);
-            answer.attachmentFileName(result.fileName);
-            toastr.success(T('Evaluation.FileUploaded', 'Dosya yüklendi'));
-        })
-        .catch(function(error) {
-            console.error('Upload error:', error);
-            toastr.error(T('Evaluation.FileUploadError', 'Dosya yüklenirken hata oluştu'));
-        })
-        .finally(function() {
+    // Tüm pending dosyaları yükle (form kaydedildikten sonra çağrılır)
+    self.uploadPendingFiles = function() {
+        var pendingUploads = [];
+
+        for (var qId in self.answers) {
+            var answer = self.answers[qId];
+            if (answer.pendingFile() && answer.answerId()) {
+                pendingUploads.push({
+                    questionId: qId,
+                    answerId: answer.answerId(),
+                    file: answer.pendingFile()
+                });
+            }
+        }
+
+        if (pendingUploads.length === 0) {
+            return Promise.resolve();
+        }
+
+        self.isUploadingFile(true);
+
+        var uploadPromises = pendingUploads.map(function(upload) {
+            var formData = new FormData();
+            formData.append('file', upload.file);
+
+            return fetch('/api/answers/' + upload.answerId + '/attachment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Upload failed');
+                return response.json();
+            })
+            .then(function(result) {
+                var answer = self.answers[upload.questionId];
+                answer.attachmentFileName(result.fileName);
+                answer.pendingFile(null);
+                answer.pendingFileName('');
+            })
+            .catch(function(error) {
+                console.error('Upload error for question ' + upload.questionId + ':', error);
+            });
+        });
+
+        return Promise.all(uploadPromises).finally(function() {
             self.isUploadingFile(false);
-            // Clear input
-            document.getElementById('file_' + questionId).value = '';
         });
     };
 
@@ -608,7 +629,7 @@ function EvaluationsViewModel() {
         window.open('/api/answers/' + answerId + '/attachment', '_blank');
     };
 
-    self.deleteAnswerAttachment = function(answerId) {
+    self.deleteAnswerAttachment = function(questionId, answerId) {
         if (!answerId) return;
         if (!confirm(T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'))) return;
 
@@ -620,13 +641,10 @@ function EvaluationsViewModel() {
             return response.json();
         })
         .then(function() {
-            // Find and update the answer
-            for (var qId in self.answers) {
-                if (self.answers[qId].answerId() === answerId) {
-                    self.answers[qId].attachmentFileName('');
-                    self.answers[qId].attachmentPath('');
-                    break;
-                }
+            var answer = self.answers[questionId];
+            if (answer) {
+                answer.attachmentFileName('');
+                answer.attachmentPath('');
             }
             toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
         })
@@ -876,18 +894,27 @@ function EvaluationsViewModel() {
                 a.answerNumeric() !== null && a.answerNumeric() !== '' &&
                 parseFloat(a.answerNumeric()) > 0;
 
+            var answerNumericVal = a.answerNumeric() !== null && a.answerNumeric() !== '' ? parseFloat(a.answerNumeric()) : null;
+            var givenPointsVal = a.givenPoints() !== null && a.givenPoints() !== '' ? parseFloat(a.givenPoints()) : null;
+
+            // isIncluded: Eğer cevap verilmişse (puan veya givenPoints varsa) true olmalı
+            var isIncludedVal = a.isIncluded ? a.isIncluded() : true;
+            if (answerNumericVal !== null || givenPointsVal !== null) {
+                isIncludedVal = true;
+            }
+
             answers.push({
                 questionId: questionId,
                 answerText: a.answerText() || null,
-                answerNumeric: a.answerNumeric() || null,
+                answerNumeric: answerNumericVal,
                 isNA: a.isNA(),
-                givenPoints: a.givenPoints() ? parseFloat(a.givenPoints()) : null,
+                givenPoints: givenPointsVal,
                 notes: a.notes() || null,
                 recommendationNotes: a.recommendationNotes() || null,
                 applyPenalty: shouldApplyPenalty,
                 selectedPenaltyType: shouldApplyPenalty ? penaltyType : null,
                 selectedSubCriteriaIds: a.selectedSubCriteria ? a.selectedSubCriteria() : [],
-                isIncluded: a.isIncluded ? a.isIncluded() : true
+                isIncluded: isIncludedVal
             });
         });
 
@@ -1014,21 +1041,26 @@ function EvaluationsViewModel() {
                 // Update answer IDs from result
                 if (result.answers) {
                     result.answers.forEach(function(a) {
-                        if (self.answers[a.questionId]) {
-                            self.answers[a.questionId].answerId(a.id);
+                        // questionId string'e çevir (object keys string olduğu için)
+                        var qId = String(a.questionId);
+                        if (self.answers[qId]) {
+                            self.answers[qId].answerId(a.id);
                         }
                     });
                 }
 
-                if (typeof callback === 'function') {
-                    // Called from file upload - just call callback
-                    callback();
-                } else {
-                    toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
-                    // Taslak kaydedilince modal kapansın ve liste yenilensin
-                    self.closeEvaluateModal();
-                    self.loadEvaluations();
-                }
+                // Pending dosyaları yükle
+                return self.uploadPendingFiles().then(function() {
+                    if (typeof callback === 'function') {
+                        // Called from file upload - just call callback
+                        callback();
+                    } else {
+                        toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+                        // Taslak kaydedilince modal kapansın ve liste yenilensin
+                        self.closeEvaluateModal();
+                        self.loadEvaluations();
+                    }
+                });
             })
             .catch(function(error) {
                 console.error('Draft save error:', error);
@@ -1154,40 +1186,54 @@ function EvaluationsViewModel() {
             return response.json();
         })
         .then(function(result) {
-            // API { message, evaluation } döndürüyor
+            // API { message, evaluation, answers } döndürüyor
             var newEvaluation = result.evaluation || result;
 
-            // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
-            var existingIndex = -1;
-            var evaluations = self.allEvaluations();
-            for (var i = 0; i < evaluations.length; i++) {
-                if (evaluations[i].id === newEvaluation.id) {
-                    existingIndex = i;
-                    break;
+            // Update answer IDs from result
+            if (result.answers) {
+                result.answers.forEach(function(a) {
+                    // questionId string'e çevir (object keys string olduğu için)
+                    var qId = String(a.questionId);
+                    if (self.answers[qId]) {
+                        self.answers[qId].answerId(a.id);
+                    }
+                });
+            }
+
+            // Pending dosyaları yükle
+            return self.uploadPendingFiles().then(function() {
+                // Yeni degerlendirmeyi ekle veya mevcut olani guncelle
+                var existingIndex = -1;
+                var evaluations = self.allEvaluations();
+                for (var i = 0; i < evaluations.length; i++) {
+                    if (evaluations[i].id === newEvaluation.id) {
+                        existingIndex = i;
+                        break;
+                    }
                 }
-            }
 
-            if (existingIndex >= 0) {
-                // Mevcut degerlendirmeyi guncelle
-                self.allEvaluations.splice(existingIndex, 1, newEvaluation);
-            } else {
-                // Yeni degerlendirme ekle
-                self.allEvaluations.push(newEvaluation);
-            }
-
-            // Assignment'i tamamlandi olarak isaretle
-            var assignments = self.allAssignments();
-            for (var j = 0; j < assignments.length; j++) {
-                if (assignments[j].id === assignmentId) {
-                    assignments[j].isCompleted = true;
-                    self.allAssignments.splice(j, 1, assignments[j]);
-                    break;
+                if (existingIndex >= 0) {
+                    // Mevcut degerlendirmeyi guncelle
+                    self.allEvaluations.splice(existingIndex, 1, newEvaluation);
+                } else {
+                    // Yeni degerlendirme ekle
+                    self.allEvaluations.push(newEvaluation);
                 }
-            }
 
-            toastr.success(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla kaydedildi.'));
-            self.closeEvaluateModal();
-            self.loadEvaluations();
+                // Assignment'i tamamlandi olarak isaretle
+                var assignments = self.allAssignments();
+                for (var j = 0; j < assignments.length; j++) {
+                    if (assignments[j].id === assignmentId) {
+                        assignments[j].isCompleted = true;
+                        self.allAssignments.splice(j, 1, assignments[j]);
+                        break;
+                    }
+                }
+
+                toastr.success(T('Evaluation.SubmitSuccess', 'Değerlendirme başarıyla kaydedildi.'));
+                self.closeEvaluateModal();
+                self.loadEvaluations();
+            });
         })
         .catch(function(error) {
             console.error('Submit error:', error);

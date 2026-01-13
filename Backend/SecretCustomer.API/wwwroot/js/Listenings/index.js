@@ -17,6 +17,11 @@ function ListeningsViewModel() {
     // Reports Modal State
     self.showReportsModal = ko.observable(false);
 
+    // Attachments Modal State
+    self.isAttachmentsModalOpen = ko.observable(false);
+    self.isAttachmentsLoading = ko.observable(false);
+    self.attachments = ko.observableArray([]);
+
     // Saved Filters State
     self.savedFilters = ko.observableArray([]);
     self.savedFilterSearch = ko.observable('');
@@ -1075,6 +1080,37 @@ function ListeningsViewModel() {
                 console.error('Error clearing default filter:', error);
                 toastr.error('Varsayılan filtre kaldırılırken hata oluştu');
             });
+    };
+
+    // Attachments Modal Functions
+    self.showAttachments = function(evaluation) {
+        self.isAttachmentsModalOpen(true);
+        self.isAttachmentsLoading(true);
+        self.attachments([]);
+
+        fetch('/api/evaluations/' + evaluation.evaluationId + '/attachments', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Dosyalar yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.attachments(data || []);
+            })
+            .catch(function(error) {
+                console.error('Attachments load error:', error);
+            })
+            .finally(function() {
+                self.isAttachmentsLoading(false);
+            });
+    };
+
+    self.closeAttachmentsModal = function() {
+        self.isAttachmentsModalOpen(false);
+        self.attachments([]);
+    };
+
+    self.downloadAttachment = function(attachment) {
+        window.open('/api/answers/' + attachment.answerId + '/attachment', '_blank');
     };
 
     // Initialize

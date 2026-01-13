@@ -1210,20 +1210,34 @@
                                                             <!-- File Attachment -->
                                                             <div class="mb-2">
                                                                 <label class="form-label small">@Html.T("Evaluation.Attachment", "Ek Dosya")</label>
-                                                                <!-- ko if: !attachmentFileName() -->
+                                                                <!-- Dosya seçme butonu (henüz dosya yoksa) -->
+                                                                <!-- ko if: !attachmentFileName() && !pendingFileName() -->
                                                                 <div>
-                                                                    <input type="file" class="d-none" data-bind="attr: { id: 'file_' + questionId }, event: { change: function(data, event) { $root.uploadAnswerAttachment(questionId, event); } }">
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: function() { document.getElementById('file_' + questionId).click(); }, disable: $root.isUploadingFile()">
+                                                                    <input type="file" class="d-none" data-bind="attr: { id: 'file_' + questionId }, event: { change: function(data, event) { $root.selectAnswerAttachment(questionId, event); } }">
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: function() { document.getElementById('file_' + questionId).click(); }">
                                                                         <i class="bi bi-paperclip"></i> @Html.T("Evaluation.SelectFile", "Dosya Seç")
                                                                     </button>
                                                                 </div>
                                                                 <!-- /ko -->
-                                                                <!-- ko if: attachmentFileName() -->
+                                                                <!-- Pending dosya (henüz yüklenmemiş, form kaydedilince yüklenecek) -->
+                                                                <!-- ko if: pendingFileName() -->
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <span class="text-warning small">
+                                                                        <i class="bi bi-clock-history"></i> <span data-bind="text: pendingFileName"></span>
+                                                                        <small class="text-muted">(@Html.T("Evaluation.WillUploadOnSave", "Kaydedilince yüklenecek"))</small>
+                                                                    </span>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.removePendingFile(questionId); }" title="@Html.T("Common.Remove", "Kaldır")">
+                                                                        <i class="bi bi-x"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <!-- /ko -->
+                                                                <!-- Yüklenmiş dosya -->
+                                                                <!-- ko if: attachmentFileName() && !pendingFileName() -->
                                                                 <div class="d-flex align-items-center gap-2">
                                                                     <a href="#" class="text-decoration-none small" data-bind="click: function() { $root.downloadAnswerAttachment(answerId()); }">
                                                                         <i class="bi bi-file-earmark"></i> <span data-bind="text: attachmentFileName"></span>
                                                                     </a>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.deleteAnswerAttachment(answerId()); }" title="@Html.T("Common.Delete", "Sil")">
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.deleteAnswerAttachment(questionId, answerId()); }" title="@Html.T("Common.Delete", "Sil")">
                                                                         <i class="bi bi-trash"></i>
                                                                     </button>
                                                                 </div>
