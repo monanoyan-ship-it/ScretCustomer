@@ -1207,6 +1207,29 @@
                                                                 <textarea class="form-control form-control-sm" rows="2" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")" style="resize: vertical;"></textarea>
                                                             </div>
 
+                                                            <!-- File Attachment -->
+                                                            <div class="mb-2">
+                                                                <label class="form-label small">@Html.T("Evaluation.Attachment", "Ek Dosya")</label>
+                                                                <!-- ko if: !attachmentFileName() -->
+                                                                <div>
+                                                                    <input type="file" class="d-none" data-bind="attr: { id: 'file_' + questionId }, event: { change: function(data, event) { $root.uploadAnswerAttachment(questionId, event); } }">
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: function() { document.getElementById('file_' + questionId).click(); }, disable: $root.isUploadingFile()">
+                                                                        <i class="bi bi-paperclip"></i> @Html.T("Evaluation.SelectFile", "Dosya Seç")
+                                                                    </button>
+                                                                </div>
+                                                                <!-- /ko -->
+                                                                <!-- ko if: attachmentFileName() -->
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <a href="#" class="text-decoration-none small" data-bind="click: function() { $root.downloadAnswerAttachment(answerId()); }">
+                                                                        <i class="bi bi-file-earmark"></i> <span data-bind="text: attachmentFileName"></span>
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.deleteAnswerAttachment(answerId()); }" title="@Html.T("Common.Delete", "Sil")">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <!-- /ko -->
+                                                            </div>
+
                                                             <!-- ko if: $parent.recommendedNote -->
                                                             <div class="alert alert-info py-1 px-2 small mb-0">
                                                                 <i class="bi bi-lightbulb"></i> <span data-bind="text: $parent.recommendedNote"></span>

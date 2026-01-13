@@ -7893,6 +7893,46 @@
   <LocaleResource Name="Report.RedCard">
     <Value>Red Card</Value>
   </LocaleResource>
+  <!-- MT Report -->
+  <LocaleResource Name="Report.Sheet.MTBasari">
+    <Value>MT Success</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTGelisimAlani">
+    <Value>MT Development Area</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTSurecAnalizi">
+    <Value>MT Process Analysis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTEndeksBasari">
+    <Value>MT Index Success Analysis</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Representative">
+    <Value>Representative</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalCallCount">
+    <Value>Total Call Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlQuestion">
+    <Value>Control Question</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ErrorCount">
+    <Value>Error Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CriteriaSuccessScore">
+    <Value>Criteria Success Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AuditComment">
+    <Value>Audit Comment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallCount">
+    <Value>Call Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MT">
+    <Value>MT Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MTDesc">
+    <Value>Success, development area, process analysis and index success (4 sheets)</Value>
+  </LocaleResource>
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">
     <Value>A pending personnel request already exists for '{0}'. Please contact your administrator.</Value>

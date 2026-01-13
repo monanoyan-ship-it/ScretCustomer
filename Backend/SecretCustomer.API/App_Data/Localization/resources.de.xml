@@ -7861,6 +7861,46 @@
   <LocaleResource Name="Report.RedCard">
     <Value>Rote Karte</Value>
   </LocaleResource>
+  <!-- MT Bericht -->
+  <LocaleResource Name="Report.Sheet.MTBasari">
+    <Value>MT Erfolg</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTGelisimAlani">
+    <Value>MT Entwicklungsbereich</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTSurecAnalizi">
+    <Value>MT Prozessanalyse</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTEndeksBasari">
+    <Value>MT Index-Erfolgsanalyse</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Representative">
+    <Value>Kundenvertreter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalCallCount">
+    <Value>Gesamtanzahl der Anrufe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlQuestion">
+    <Value>Kontrollfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ErrorCount">
+    <Value>Fehleranzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CriteriaSuccessScore">
+    <Value>Kriterien-Erfolgspunktzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AuditComment">
+    <Value>Prüfungskommentar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallCount">
+    <Value>Anrufanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MT">
+    <Value>MT Bericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MTDesc">
+    <Value>Erfolg, Entwicklungsbereich, Prozessanalyse und Index-Erfolg (4 Blätter)</Value>
+  </LocaleResource>
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">
     <Value>Für '{0}' existiert bereits eine ausstehende Personalanfrage. Bitte kontaktieren Sie Ihren Administrator.</Value>

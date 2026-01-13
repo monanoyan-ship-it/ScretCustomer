@@ -43,6 +43,7 @@ function EvaluationsViewModel() {
     self.isEvaluateModalOpen = ko.observable(false);
     self.isFormLoading = ko.observable(false);
     self.isSavingForm = ko.observable(false);
+    self.isUploadingFile = ko.observable(false);
     self.modalErrorMessage = ko.observable('');
     self.formSuccessMessage = ko.observable('');
     self.formData = ko.observable(null);
@@ -481,6 +482,7 @@ function EvaluationsViewModel() {
         if (!self.answers[questionId]) {
             self.answers[questionId] = {
                 questionId: questionId,
+                answerId: ko.observable(null),
                 answerText: ko.observable(''),
                 answerNumeric: ko.observable(null),
                 isNA: ko.observable(false),
@@ -491,7 +493,10 @@ function EvaluationsViewModel() {
                 selectedPenaltyType: ko.observable(''),
                 selectedSubCriteria: ko.observableArray([]),
                 // Zorunlu olmayan sorular varsayılan kapalı gelir
-                isIncluded: ko.observable(isRequired !== false)
+                isIncluded: ko.observable(isRequired !== false),
+                // File attachment
+                attachmentFileName: ko.observable(''),
+                attachmentPath: ko.observable('')
             };
 
             // Subscribe to changes to recalculate scores
@@ -541,6 +546,94 @@ function EvaluationsViewModel() {
     self.isSubCriteriaSelected = function(questionId, subCriteriaId) {
         var answer = self.getAnswer(questionId);
         return answer.selectedSubCriteria().indexOf(subCriteriaId) >= 0;
+    };
+
+    // File Attachment Functions
+    self.uploadAnswerAttachment = function(questionId, event) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        var answer = self.getAnswer(questionId);
+        var answerId = answer.answerId();
+
+        if (!answerId) {
+            // First save as draft to get answerId
+            toastr.info(T('Evaluation.SavingDraftForAttachment', 'Dosya eklemek için önce taslak kaydediliyor...'));
+            self.saveDraft(function() {
+                // After save, try again
+                var updatedAnswer = self.getAnswer(questionId);
+                if (updatedAnswer.answerId()) {
+                    self.doUploadAttachment(updatedAnswer.answerId(), file, questionId);
+                } else {
+                    toastr.error(T('Evaluation.CannotAttachFile', 'Dosya eklenemedi. Lütfen önce formu kaydedin.'));
+                }
+            });
+            return;
+        }
+
+        self.doUploadAttachment(answerId, file, questionId);
+    };
+
+    self.doUploadAttachment = function(answerId, file, questionId) {
+        self.isUploadingFile(true);
+        var formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/api/answers/' + answerId + '/attachment', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Upload failed');
+            return response.json();
+        })
+        .then(function(result) {
+            var answer = self.getAnswer(questionId);
+            answer.attachmentFileName(result.fileName);
+            toastr.success(T('Evaluation.FileUploaded', 'Dosya yüklendi'));
+        })
+        .catch(function(error) {
+            console.error('Upload error:', error);
+            toastr.error(T('Evaluation.FileUploadError', 'Dosya yüklenirken hata oluştu'));
+        })
+        .finally(function() {
+            self.isUploadingFile(false);
+            // Clear input
+            document.getElementById('file_' + questionId).value = '';
+        });
+    };
+
+    self.downloadAnswerAttachment = function(answerId) {
+        if (!answerId) return;
+        window.open('/api/answers/' + answerId + '/attachment', '_blank');
+    };
+
+    self.deleteAnswerAttachment = function(answerId) {
+        if (!answerId) return;
+        if (!confirm(T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'))) return;
+
+        fetch('/api/answers/' + answerId + '/attachment', {
+            method: 'DELETE'
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Delete failed');
+            return response.json();
+        })
+        .then(function() {
+            // Find and update the answer
+            for (var qId in self.answers) {
+                if (self.answers[qId].answerId() === answerId) {
+                    self.answers[qId].attachmentFileName('');
+                    self.answers[qId].attachmentPath('');
+                    break;
+                }
+            }
+            toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
+        })
+        .catch(function(error) {
+            console.error('Delete error:', error);
+            toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
+        });
     };
 
     // Load form data
@@ -618,6 +711,8 @@ function EvaluationsViewModel() {
                         // Mevcut cevap varsa yükle
                         var existingAnswer = existingAnswerMap[q.id];
                         if (existingAnswer) {
+                            // Answer ID
+                            if (existingAnswer.id) answer.answerId(existingAnswer.id);
                             if (existingAnswer.answerText) answer.answerText(existingAnswer.answerText);
                             if (existingAnswer.answerNumeric !== null && existingAnswer.answerNumeric !== undefined) {
                                 answer.answerNumeric(existingAnswer.answerNumeric);
@@ -634,6 +729,9 @@ function EvaluationsViewModel() {
                             if (existingAnswer.selectedSubCriteriaIds && existingAnswer.selectedSubCriteriaIds.length > 0) {
                                 answer.selectedSubCriteria(existingAnswer.selectedSubCriteriaIds);
                             }
+                            // File attachment
+                            if (existingAnswer.attachmentFileName) answer.attachmentFileName(existingAnswer.attachmentFileName);
+                            if (existingAnswer.attachmentPath) answer.attachmentPath(existingAnswer.attachmentPath);
                             // Mevcut cevabı olan sorular dahil edilmiş demektir
                             answer.isIncluded(true);
                         } else {
@@ -882,7 +980,7 @@ function EvaluationsViewModel() {
     };
 
     // Save as draft
-    self.saveDraft = function() {
+    self.saveDraft = function(callback) {
         // Zorunlu alan kontrolü
         var validationErrors = self.validateRequiredFields();
         if (validationErrors.length > 0) {
@@ -913,10 +1011,24 @@ function EvaluationsViewModel() {
                 return response.json();
             })
             .then(function(result) {
-                toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
-                // Taslak kaydedilince modal kapansın ve liste yenilensin
-                self.closeEvaluateModal();
-                self.loadEvaluations();
+                // Update answer IDs from result
+                if (result.answers) {
+                    result.answers.forEach(function(a) {
+                        if (self.answers[a.questionId]) {
+                            self.answers[a.questionId].answerId(a.id);
+                        }
+                    });
+                }
+
+                if (typeof callback === 'function') {
+                    // Called from file upload - just call callback
+                    callback();
+                } else {
+                    toastr.success(T('Evaluation.DraftSaved', 'Taslak başarıyla kaydedildi.'));
+                    // Taslak kaydedilince modal kapansın ve liste yenilensin
+                    self.closeEvaluateModal();
+                    self.loadEvaluations();
+                }
             })
             .catch(function(error) {
                 console.error('Draft save error:', error);

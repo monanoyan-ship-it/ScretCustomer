@@ -289,6 +289,24 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// MT Raporu - Excel export (4 sheet: Başarı, Gelişim Alanı, Süreç Analizi, Endeks Başarı)
+    /// </summary>
+    [HttpPost("export/mt-report")]
+    public async Task<IActionResult> ExportMTReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportMTReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting MT report to Excel");
+            return StatusCode(500, CreateErrorResponse("MT raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
     // ===== CEZALI KL RAPORU =====
 
     /// <summary>

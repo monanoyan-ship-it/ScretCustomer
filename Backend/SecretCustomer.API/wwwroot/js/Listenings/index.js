@@ -761,6 +761,29 @@ function ListeningsViewModel() {
             });
     };
 
+    // MT Raporu (4 sheet)
+    self.exportMTReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        var filename = 'MT_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/mt-report', params, filename)
+            .then(function() {
+                toastr.success('MT Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting MT report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
     // Değerlendirme Detay Excel Export
     self.exportDetailToExcel = function() {
         var evaluation = self.selectedEvaluation();

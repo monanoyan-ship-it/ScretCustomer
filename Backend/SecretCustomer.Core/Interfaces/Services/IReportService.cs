@@ -69,4 +69,9 @@ public interface IReportService
 
     // Proje Performans Raporu Excel export
     Task<ExcelExportDto> ExportProjectPerformanceReportAsync(ReportFilterDto filter);
+
+    // ===== MT RAPORU (4 Sheet) =====
+
+    // MT Raporu Excel export (Başarı, Gelişim Alanı, Süreç Analizi, Endeks Başarı)
+    Task<ExcelExportDto> ExportMTReportAsync(ReportFilterDto filter);
 }

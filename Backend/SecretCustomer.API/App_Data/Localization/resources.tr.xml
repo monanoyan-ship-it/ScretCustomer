@@ -3893,7 +3893,7 @@
     <Value>En Çok Öneri Yazılan Sorular</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Suggestion">
-    <Value>öneri</Value>
+    <Value>Öneri</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ReportInfo">
     <Value>Rapor Bilgileri</Value>
@@ -7940,6 +7940,46 @@
   </LocaleResource>
   <LocaleResource Name="Report.RedCard">
     <Value>Kırmızı Kart</Value>
+  </LocaleResource>
+  <!-- MT Raporu -->
+  <LocaleResource Name="Report.Sheet.MTBasari">
+    <Value>MT Başarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTGelisimAlani">
+    <Value>MT Gelişim Alanı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTSurecAnalizi">
+    <Value>MT Süreç Analizi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTEndeksBasari">
+    <Value>MT Endeks Başarı Analizi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Representative">
+    <Value>Müşteri Temsilcisi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalCallCount">
+    <Value>Toplam Çağrı Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlQuestion">
+    <Value>Kontrol Sorusu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ErrorCount">
+    <Value>Hata Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CriteriaSuccessScore">
+    <Value>Kriter Başarı Puanı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AuditComment">
+    <Value>Denetim Yorumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallCount">
+    <Value>Çağrı Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MT">
+    <Value>MT Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MTDesc">
+    <Value>Başarı, gelişim alanı, süreç analizi ve endeks başarı (4 sheet)</Value>
   </LocaleResource>
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">

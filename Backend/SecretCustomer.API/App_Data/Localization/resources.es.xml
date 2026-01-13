@@ -7859,6 +7859,46 @@
   <LocaleResource Name="Report.RedCard">
     <Value>Tarjeta Roja</Value>
   </LocaleResource>
+  <!-- Informe MT -->
+  <LocaleResource Name="Report.Sheet.MTBasari">
+    <Value>MT Éxito</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTGelisimAlani">
+    <Value>MT Área de Desarrollo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTSurecAnalizi">
+    <Value>MT Análisis de Proceso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.MTEndeksBasari">
+    <Value>MT Análisis de Éxito del Índice</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Representative">
+    <Value>Representante</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalCallCount">
+    <Value>Número Total de Llamadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlQuestion">
+    <Value>Pregunta de Control</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ErrorCount">
+    <Value>Número de Errores</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CriteriaSuccessScore">
+    <Value>Puntuación de Éxito del Criterio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AuditComment">
+    <Value>Comentario de Auditoría</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CallCount">
+    <Value>Número de Llamadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MT">
+    <Value>Informe MT</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.MTDesc">
+    <Value>Éxito, área de desarrollo, análisis de proceso e índice de éxito (4 hojas)</Value>
+  </LocaleResource>
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">
     <Value>Ya existe una solicitud de personal pendiente para '{0}'. Por favor, contacte con su administrador.</Value>

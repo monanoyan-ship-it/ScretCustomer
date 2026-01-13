@@ -2141,4 +2141,467 @@ public class ReportService : IReportService
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
     }
+
+    // ===== MT RAPORU (4 Sheet) =====
+
+    public async Task<ExcelExportDto> ExportMTReportAsync(ReportFilterDto filter)
+    {
+        // Get evaluations with all necessary includes
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p!.Customer)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.AssignmentPeriod)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
+            .AsQueryable();
+
+        // Apply filters
+        if (filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
+
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedOrganizationId == filter.OrganizationId.Value);
+
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            else if (filter.EvaluationSource == "ours")
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+        }
+
+        var evaluations = await query.Take(50000).ToListAsync();
+
+        using var workbook = new XLWorkbook();
+
+        // ===== SHEET 1: MT Başarı =====
+        await CreateMTBasariSheet(workbook, evaluations);
+
+        // ===== SHEET 2: MT Gelişim Alanı =====
+        await CreateMTGelisimAlaniSheet(workbook, evaluations);
+
+        // ===== SHEET 3: MT Süreç Analizi =====
+        await CreateMTSurecAnaliziSheet(workbook, evaluations);
+
+        // ===== SHEET 4: MT Endeks Başarı Analizi =====
+        await CreateMTEndeksBasariSheet(workbook, evaluations);
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"MT_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    private async Task CreateMTBasariSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
+    {
+        var sheetName = await _localizationService.GetResourceAsync("Report.Sheet.MTBasari", "MT Başarı");
+        var worksheet = workbook.Worksheets.Add(sheetName);
+
+        // Headers
+        var headers = new[]
+        {
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Representative", "Müşteri Temsilcisi"),
+            await _localizationService.GetResourceAsync("Report.Department", "Departman"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan"),
+            await _localizationService.GetResourceAsync("Report.TotalCallCount", "Toplam Çağrı Sayısı")
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Group by Project, Personnel, Department, Year
+        var groupedData = evaluations
+            .Where(e => e.ScorePercentage.HasValue)
+            .Select(e => new
+            {
+                ProjectName = e.Assignment.Project?.Name ?? "",
+                PersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
+                    : e.EvaluatedUnknownPersonnel ?? "-",
+                Department = e.EvaluatedOrganization?.Name ?? e.Assignment.Project?.Customer?.CompanyName ?? "-",
+                Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                Score = e.ScorePercentage!.Value
+            })
+            .GroupBy(x => new { x.ProjectName, x.PersonnelName, x.Department, x.Year })
+            .Select(g => new
+            {
+                g.Key.ProjectName,
+                g.Key.PersonnelName,
+                g.Key.Department,
+                g.Key.Year,
+                AverageScore = Math.Round(g.Average(x => x.Score), 2),
+                CallCount = g.Count()
+            })
+            .OrderByDescending(x => x.AverageScore)
+            .ToList();
+
+        int row = 2;
+        foreach (var item in groupedData)
+        {
+            worksheet.Cell(row, 1).Value = item.ProjectName;
+            worksheet.Cell(row, 2).Value = item.PersonnelName;
+            worksheet.Cell(row, 3).Value = item.Department;
+            worksheet.Cell(row, 4).Value = item.Year;
+            worksheet.Cell(row, 5).Value = item.AverageScore;
+            worksheet.Cell(row, 6).Value = item.CallCount;
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+    }
+
+    private async Task CreateMTGelisimAlaniSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
+    {
+        var sheetName = await _localizationService.GetResourceAsync("Report.Sheet.MTGelisimAlani", "MT Gelişim Alanı");
+        var worksheet = workbook.Worksheets.Add(sheetName);
+
+        // Headers
+        var headers = new[]
+        {
+            await _localizationService.GetResourceAsync("Report.Representative", "Müşteri Temsilcisi"),
+            await _localizationService.GetResourceAsync("Report.Department", "Departman"),
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.Suggestion", "Öneri"),
+            await _localizationService.GetResourceAsync("Report.CallCount", "Çağrı Sayısı")
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Get evaluation IDs for filtering
+        var evaluationIds = evaluations.Select(e => e.Id).ToList();
+
+        // Query suggestions directly from database
+        // 1. SubCriteriaSelections
+        var subCriteriaSuggestions = await _context.AnswerSubCriteriaSelections
+            .Include(s => s.SubCriteria)
+            .Include(s => s.Answer)
+                .ThenInclude(a => a.Evaluation)
+                    .ThenInclude(e => e.Assignment)
+                        .ThenInclude(a => a.Project)
+                            .ThenInclude(p => p!.Customer)
+            .Include(s => s.Answer)
+                .ThenInclude(a => a.Evaluation)
+                    .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+            .Include(s => s.Answer)
+                .ThenInclude(a => a.Evaluation)
+                    .ThenInclude(e => e.EvaluatedOrganization)
+            .Where(s => evaluationIds.Contains(s.Answer.EvaluationId))
+            .Where(s => s.SubCriteria != null && s.SubCriteria.Description != null && s.SubCriteria.Description != "")
+            .Select(s => new
+            {
+                PersonnelName = s.Answer.Evaluation.EvaluatedCustomerPersonnel != null
+                    ? s.Answer.Evaluation.EvaluatedCustomerPersonnel.FirstName + " " + s.Answer.Evaluation.EvaluatedCustomerPersonnel.LastName
+                    : s.Answer.Evaluation.EvaluatedUnknownPersonnel ?? "-",
+                Department = s.Answer.Evaluation.EvaluatedOrganization != null
+                    ? s.Answer.Evaluation.EvaluatedOrganization.Name
+                    : (s.Answer.Evaluation.Assignment.Project != null && s.Answer.Evaluation.Assignment.Project.Customer != null
+                        ? s.Answer.Evaluation.Assignment.Project.Customer.CompanyName
+                        : "-"),
+                ProjectName = s.Answer.Evaluation.Assignment.Project != null ? s.Answer.Evaluation.Assignment.Project.Name : "",
+                EvalDate = s.Answer.Evaluation.CallDate ?? s.Answer.Evaluation.CompletedAt ?? s.Answer.Evaluation.CreatedAt,
+                Suggestion = s.SubCriteria!.Description
+            })
+            .ToListAsync();
+
+        // 2. RecommendationNotes and Notes from Answers
+        var answerSuggestions = await _context.Answers
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.Assignment)
+                    .ThenInclude(a => a.Project)
+                        .ThenInclude(p => p!.Customer)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedOrganization)
+            .Where(a => evaluationIds.Contains(a.EvaluationId))
+            .Where(a => (a.RecommendationNotes != null && a.RecommendationNotes != "") || (a.Notes != null && a.Notes != ""))
+            .ToListAsync();
+
+        // Combine all suggestions
+        var suggestionList = new List<(string PersonnelName, string Department, string ProjectName, DateTime EvalDate, string Suggestion)>();
+
+        // Add SubCriteria suggestions
+        foreach (var s in subCriteriaSuggestions)
+        {
+            suggestionList.Add((s.PersonnelName, s.Department, s.ProjectName, s.EvalDate, s.Suggestion));
+        }
+
+        // Add Answer suggestions (RecommendationNotes and Notes)
+        foreach (var a in answerSuggestions)
+        {
+            var personnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
+                : a.Evaluation.EvaluatedUnknownPersonnel ?? "-";
+            var department = a.Evaluation.EvaluatedOrganization?.Name ?? a.Evaluation.Assignment.Project?.Customer?.CompanyName ?? "-";
+            var projectName = a.Evaluation.Assignment.Project?.Name ?? "";
+            var evalDate = a.Evaluation.CallDate ?? a.Evaluation.CompletedAt ?? a.Evaluation.CreatedAt;
+
+            if (!string.IsNullOrWhiteSpace(a.RecommendationNotes))
+                suggestionList.Add((personnelName, department, projectName, evalDate, a.RecommendationNotes));
+
+            if (!string.IsNullOrWhiteSpace(a.Notes))
+                suggestionList.Add((personnelName, department, projectName, evalDate, a.Notes));
+        }
+
+        // Group and aggregate
+        var suggestionData = suggestionList
+            .GroupBy(x => new
+            {
+                x.PersonnelName,
+                x.Department,
+                x.ProjectName,
+                Year = x.EvalDate.Year,
+                PeriodMonth = x.EvalDate.ToString("yyyyMM"),
+                x.Suggestion
+            })
+            .Select(g => new
+            {
+                g.Key.PersonnelName,
+                g.Key.Department,
+                g.Key.ProjectName,
+                g.Key.Year,
+                g.Key.PeriodMonth,
+                g.Key.Suggestion,
+                CallCount = g.Count()
+            })
+            .OrderBy(x => x.PersonnelName)
+            .ThenBy(x => x.PeriodMonth)
+            .ToList();
+
+        int row = 2;
+        foreach (var item in suggestionData)
+        {
+            worksheet.Cell(row, 1).Value = item.PersonnelName;
+            worksheet.Cell(row, 2).Value = item.Department;
+            worksheet.Cell(row, 3).Value = item.ProjectName;
+            worksheet.Cell(row, 4).Value = item.Year;
+            worksheet.Cell(row, 5).Value = item.PeriodMonth;
+            worksheet.Cell(row, 6).Value = item.Suggestion;
+            worksheet.Cell(row, 7).Value = item.CallCount;
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+    }
+
+    private async Task CreateMTSurecAnaliziSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
+    {
+        var sheetName = await _localizationService.GetResourceAsync("Report.Sheet.MTSurecAnalizi", "MT Süreç Analizi");
+        var worksheet = workbook.Worksheets.Add(sheetName);
+
+        // Headers
+        var headers = new[]
+        {
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.Representative", "Müşteri Temsilcisi"),
+            await _localizationService.GetResourceAsync("Report.ControlQuestion", "Kontrol Sorusu"),
+            await _localizationService.GetResourceAsync("Report.Period", "Periyot"),
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan"),
+            await _localizationService.GetResourceAsync("Report.ErrorCount", "Hata Sayısı")
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Flatten to answer level and group by Project, Personnel, Question
+        var processData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && a.Question.MaxPoints > 0 && !a.IsNA)
+                .Select(a => new
+                {
+                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    PersonnelName = e.EvaluatedCustomerPersonnel != null
+                        ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
+                        : e.EvaluatedUnknownPersonnel ?? "-",
+                    QuestionText = a.Question!.Text,
+                    EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                    ScorePercentage = (a.GivenPoints ?? 0) / a.Question.MaxPoints * 100,
+                    IsError = (a.GivenPoints ?? 0) < a.Question.MaxPoints
+                }))
+            .GroupBy(x => new
+            {
+                x.ProjectName,
+                x.PersonnelName,
+                x.QuestionText,
+                Year = x.EvalDate.Year,
+                PeriodMonth = x.EvalDate.ToString("yyyyMM")
+            })
+            .Select(g => new
+            {
+                g.Key.ProjectName,
+                g.Key.PersonnelName,
+                g.Key.QuestionText,
+                g.Key.Year,
+                g.Key.PeriodMonth,
+                AverageScore = Math.Round(g.Average(x => x.ScorePercentage), 0),
+                ErrorCount = g.Count(x => x.IsError)
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.PersonnelName)
+            .ThenBy(x => x.QuestionText)
+            .ToList();
+
+        int row = 2;
+        foreach (var item in processData)
+        {
+            worksheet.Cell(row, 1).Value = item.ProjectName;
+            worksheet.Cell(row, 2).Value = item.PersonnelName;
+            worksheet.Cell(row, 3).Value = item.QuestionText;
+            worksheet.Cell(row, 4).Value = item.Year;
+            worksheet.Cell(row, 5).Value = item.PeriodMonth;
+            worksheet.Cell(row, 6).Value = item.AverageScore;
+            worksheet.Cell(row, 7).Value = item.ErrorCount > 0 ? item.ErrorCount : (int?)null;
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+    }
+
+    private async Task CreateMTEndeksBasariSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
+    {
+        var sheetName = await _localizationService.GetResourceAsync("Report.Sheet.MTEndeksBasari", "MT Endeks Başarı Analizi");
+        var worksheet = workbook.Worksheets.Add(sheetName);
+
+        // Headers
+        var headers = new[]
+        {
+            await _localizationService.GetResourceAsync("Report.Project", "Proje"),
+            await _localizationService.GetResourceAsync("Report.QuestionGroup", "Kontrol Grubu"),
+            await _localizationService.GetResourceAsync("Report.ControlQuestion", "Kontrol Sorusu"),
+            await _localizationService.GetResourceAsync("Report.Representative", "Müşteri Temsilcisi"),
+            await _localizationService.GetResourceAsync("Report.Department", "Departman"),
+            await _localizationService.GetResourceAsync("Report.CallNo", "Çağrı No"),
+            await _localizationService.GetResourceAsync("Report.PeriodMonth", "Periyot (Ay)"),
+            await _localizationService.GetResourceAsync("Report.CriteriaSuccessScore", "Kriter Başarı Puanı"),
+            await _localizationService.GetResourceAsync("Report.AuditComment", "Denetim Yorumu"),
+            await _localizationService.GetResourceAsync("Report.Suggestion", "Öneriler"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", "Ortalama Puan")
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Flatten to answer level with full details
+        var detailData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && a.Question.MaxPoints > 0)
+                .Select(a => {
+                    // Collect suggestions from multiple sources
+                    var suggestions = new List<string>();
+
+                    // SubCriteriaSelections
+                    if (a.SubCriteriaSelections != null)
+                    {
+                        suggestions.AddRange(a.SubCriteriaSelections
+                            .Where(s => s.SubCriteria != null && !string.IsNullOrWhiteSpace(s.SubCriteria.Description))
+                            .Select(s => s.SubCriteria!.Description));
+                    }
+
+                    // RecommendationNotes
+                    if (!string.IsNullOrWhiteSpace(a.RecommendationNotes))
+                        suggestions.Add(a.RecommendationNotes);
+
+                    // Notes
+                    if (!string.IsNullOrWhiteSpace(a.Notes))
+                        suggestions.Add(a.Notes);
+
+                    return new
+                    {
+                        ProjectName = e.Assignment.Project?.Name ?? "",
+                        GroupName = a.Question!.GroupName ?? "-",
+                        QuestionText = a.Question.Text,
+                        PersonnelName = e.EvaluatedCustomerPersonnel != null
+                            ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
+                            : e.EvaluatedUnknownPersonnel ?? "-",
+                        Department = e.EvaluatedOrganization?.Name ?? e.Assignment.Project?.Customer?.CompanyName ?? "-",
+                        CallId = e.CallId ?? "-",
+                        PeriodMonth = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).ToString("yyyyMM"),
+                        CriteriaScore = a.Question.MaxPoints > 0
+                            ? Math.Round((a.GivenPoints ?? 0) / a.Question.MaxPoints * 100, 0)
+                            : 0,
+                        AuditComment = e.EvaluationComment ?? "",
+                        Suggestions = string.Join(", ", suggestions),
+                        AverageScore = e.ScorePercentage ?? 0
+                    };
+                }))
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.GroupName)
+            .ThenBy(x => x.QuestionText)
+            .ToList();
+
+        int row = 2;
+        foreach (var item in detailData)
+        {
+            worksheet.Cell(row, 1).Value = item.ProjectName;
+            worksheet.Cell(row, 2).Value = item.GroupName;
+            worksheet.Cell(row, 3).Value = item.QuestionText;
+            worksheet.Cell(row, 4).Value = item.PersonnelName;
+            worksheet.Cell(row, 5).Value = item.Department;
+            worksheet.Cell(row, 6).Value = item.CallId;
+            worksheet.Cell(row, 7).Value = item.PeriodMonth;
+            worksheet.Cell(row, 8).Value = item.CriteriaScore;
+            worksheet.Cell(row, 9).Value = item.AuditComment;
+            worksheet.Cell(row, 10).Value = item.Suggestions;
+            worksheet.Cell(row, 11).Value = Math.Round(item.AverageScore, 0);
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+    }
 }
