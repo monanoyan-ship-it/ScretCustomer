@@ -274,7 +274,7 @@
                                     <div class="progress me-2" style="height: 6px; width: 50px;">
                                         <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning' : 'bg-danger')"></div>
                                     </div>
-                                    <small data-bind="text: (scorePercentage || 0).toFixed(0) + '%'"></small>
+                                    <small data-bind="text: (scorePercentage || 0).toFixed(2) + '%'"></small>
                                 </div>
                             </td>
                             <td>
@@ -478,7 +478,7 @@
                             <div class="col-md-3">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
                                         <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
@@ -739,15 +739,11 @@
                                     <div class="card-body p-4">
                                         <!-- Puan Özeti -->
                                         <div class="text-center mb-4">
-                                            <div class="display-4 fw-bold text-primary" data-bind="text: totalScore.toFixed(1)"></div>
-                                            <div class="text-muted">
-                                                / <span data-bind="text: maxScore.toFixed(1)"></span> @Html.T("Evaluation.Points", "puan")
-                                            </div>
+                                            <div class="display-4 fw-bold text-primary" data-bind="text: scorePercentage.toFixed(2)"></div>
                                             <div class="progress mt-3" style="height: 25px;">
                                                 <div class="progress-bar" role="progressbar"
-                                                     data-bind="style: { width: scorePercentage.toFixed(0) + '%' },
+                                                     data-bind="style: { width: scorePercentage.toFixed(2) + '%' },
                                                                 css: { 'bg-success': scorePercentage >= 70, 'bg-warning': scorePercentage >= 50 && scorePercentage < 70, 'bg-danger': scorePercentage < 50 }">
-                                                    <span class="fw-bold" data-bind="text: '%' + scorePercentage.toFixed(1)"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1096,11 +1092,7 @@
                                     <div class="card-body py-2">
                                         <div class="row align-items-center">
                                             <div class="col-auto">
-                                                <h5 class="mb-0">
-                                                    @Html.T("Evaluation.Score", "Puan"): <span class="text-primary" data-bind="text: totalScoreCalc().toFixed(1)"></span>
-                                                    / <span data-bind="text: maxScoreCalc().toFixed(1)"></span>
-                                                    (<span data-bind="text: scorePercentageCalc().toFixed(1)"></span>%)
-                                                </h5>
+                                                <h4 class="mb-0 fw-bold text-primary" data-bind="text: scorePercentageCalc().toFixed(2)"></h4>
                                             </div>
                                             <div class="col">
                                                 <div class="progress" style="height: 20px;">

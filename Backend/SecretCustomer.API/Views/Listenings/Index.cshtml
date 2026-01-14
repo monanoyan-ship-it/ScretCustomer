@@ -236,7 +236,7 @@
                             <td data-bind="text: $parent.formatTime(callTime) || '-'"></td>
                             <td data-bind="text: duration ? duration + ' dk' : '-'"></td>
                             <td>
-                                <span class="badge fs-6" data-bind="text: scorePercentage != null ? scorePercentage.toFixed(1) + '%' : '-', css: $parent.getScoreClass(scorePercentage)"></span>
+                                <span class="badge fs-6" data-bind="text: scorePercentage != null ? scorePercentage.toFixed(2) + '%' : '-', css: $parent.getScoreClass(scorePercentage)"></span>
                             </td>
                             <td>
                                 <!-- ko if: yellowCardCount > 0 -->
@@ -320,7 +320,7 @@
                             <div class="col-md-3">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
                                         <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>

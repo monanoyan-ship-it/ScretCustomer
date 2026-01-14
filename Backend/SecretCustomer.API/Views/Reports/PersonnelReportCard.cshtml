@@ -287,7 +287,7 @@
                                 <td data-bind="text: checklistName"></td>
                                 <td data-bind="text: evaluatorName || '-'"></td>
                                 <td class="text-center">
-                                    <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                    <span class="badge" data-bind="text: scorePercentage.toFixed(2) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                 </td>
                                 <td class="text-center">
                                     <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>

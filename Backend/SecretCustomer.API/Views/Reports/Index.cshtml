@@ -202,7 +202,7 @@
                                                         css: (scorePercentage || 0) >= 70 ? 'bg-success' : ((scorePercentage || 0) >= 50 ? 'bg-warning' : 'bg-danger')">
                                         </div>
                                     </div>
-                                    <strong data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></strong>
+                                    <strong data-bind="text: (scorePercentage || 0).toFixed(2) + '%'"></strong>
                                 </div>
                             </td>
                             <td>
@@ -273,7 +273,7 @@
                             <h6 class="border-bottom pb-2">@Html.T("Report.Scoring", "Puanlama")</h6>
                             <div class="row text-center">
                                 <div class="col">
-                                    <h2 class="mb-0 text-primary" data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></h2>
+                                    <h2 class="mb-0 text-primary" data-bind="text: (scorePercentage || 0).toFixed(2) + '%'"></h2>
                                     <small class="text-muted">@Html.T("Report.Score", "Puan")</small>
                                 </div>
                                 <div class="col">

@@ -216,7 +216,7 @@
                                 <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                 <td data-bind="text: organizationName || '-'"></td>
                                 <td class="text-center">
-                                    <span class="fw-bold" data-bind="text: (scorePercentage || 0).toFixed(1), css: $parent.getScoreClass(scorePercentage || 0)"></span>
+                                    <span class="fw-bold" data-bind="text: (scorePercentage || 0).toFixed(2), css: $parent.getScoreClass(scorePercentage || 0)"></span>
                                 </td>
                                 <td class="text-center">
                                     <!-- ko if: yellowCardCount > 0 -->
@@ -373,7 +373,7 @@
                             <div class="col-md-3">
                                 <div class="card border-0 bg-light">
                                     <div class="card-body text-center">
-                                        <h4 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%'"></h4>
+                                        <h4 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%'"></h4>
                                         <small class="text-muted">@Html.T("Common.Score", "Puan")</small>
                                     </div>
                                 </div>
