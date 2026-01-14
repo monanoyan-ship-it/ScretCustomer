@@ -578,3 +578,100 @@ public class QuestionGroupAverageReportDto
     /// </summary>
     public int EvaluationCount { get; set; }
 }
+
+// ===== ANKET SONUÇLARI RAPORU DTO'LARI =====
+
+/// <summary>
+/// Anket Sonuçları ana DTO
+/// </summary>
+public class SurveyResultsDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? OrganizationName { get; set; }
+
+    // Özet istatistikler
+    public int TotalResponses { get; set; }
+    public int TotalInvited { get; set; }
+    public decimal CompletionRate { get; set; }
+    public decimal AverageScore { get; set; }
+    public int TotalQuestions { get; set; }
+
+    // Soru bazlı sonuçlar
+    public List<SurveyQuestionResultDto> QuestionResults { get; set; } = new();
+
+    // Katılımcı listesi
+    public List<SurveyRespondentDto> Respondents { get; set; } = new();
+}
+
+/// <summary>
+/// Soru bazlı anket sonucu
+/// </summary>
+public class SurveyQuestionResultDto
+{
+    public int QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public int Order { get; set; }
+    public bool ShowScoreInput { get; set; }
+
+    // Yanıt istatistikleri
+    public int ResponseCount { get; set; }
+    public decimal? AverageScore { get; set; }
+
+    // Puan dağılımı (showScoreInput true ise)
+    public List<ScoreDistributionDto>? ScoreDistribution { get; set; }
+
+    // Alt kriter seçim sonuçları
+    public List<SubCriteriaResultDto>? SubCriteriaResults { get; set; }
+
+    // Yorumlar
+    public List<SurveyCommentDto>? Comments { get; set; }
+}
+
+/// <summary>
+/// Puan dağılımı
+/// </summary>
+public class ScoreDistributionDto
+{
+    public int Score { get; set; }
+    public int Count { get; set; }
+    public decimal Percentage { get; set; }
+}
+
+/// <summary>
+/// Alt kriter seçim sonucu
+/// </summary>
+public class SubCriteriaResultDto
+{
+    public int SubCriteriaId { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int SelectionCount { get; set; }
+    public decimal SelectionPercentage { get; set; }
+}
+
+/// <summary>
+/// Anket yorumu
+/// </summary>
+public class SurveyCommentDto
+{
+    public int EvaluationId { get; set; }
+    public string? RespondentName { get; set; }
+    public string Comment { get; set; } = string.Empty;
+    public DateTime? Date { get; set; }
+}
+
+/// <summary>
+/// Anket katılımcısı
+/// </summary>
+public class SurveyRespondentDto
+{
+    public int PersonnelId { get; set; }
+    public int? EvaluationId { get; set; }
+    public string? FullName { get; set; }
+    public string? Email { get; set; }
+    public string? OrganizationName { get; set; }
+    public decimal? Score { get; set; }
+    public DateTime? CompletedAt { get; set; }
+}

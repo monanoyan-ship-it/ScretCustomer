@@ -1557,3 +1557,23 @@ public static class SurveyIdentityTypes
         public const int Identified = 2;
     }
 }
+
+// ============================================================
+// SELECTION TYPES (Seçim Tipleri - SubCriteria için)
+// ============================================================
+public static class SelectionTypes
+{
+    public static readonly TypeItem Single = new(1, "Single", "SelectionType.Single", "Tek Seçim", "bi-circle", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Multiple = new(2, "Multiple", "SelectionType.Multiple", "Çoklu Seçim", "bi-check2-square", "bg-info", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { Single, Multiple };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Single = 1;
+        public const int Multiple = 2;
+    }
+}

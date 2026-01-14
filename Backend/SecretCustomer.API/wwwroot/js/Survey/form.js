@@ -44,7 +44,8 @@ function SurveyFormViewModel() {
         var count = 0;
         self.questions().forEach(function(q) {
             var answer = q.answer();
-            if (answer.isNA() || answer.score() !== null || (q.scoringType === 'Descriptive' && answer.comment())) {
+            var hasSubCriteriaSelection = answer.selectedSubCriteriaIds && answer.selectedSubCriteriaIds().length > 0;
+            if (answer.isNA() || answer.score() !== null || hasSubCriteriaSelection || (q.scoringType === 'Descriptive' && answer.comment())) {
                 count++;
             }
         });
@@ -98,6 +99,16 @@ function SurveyFormViewModel() {
     // Load questions from API response
     self.loadQuestions = function(questionsData) {
         var questions = (questionsData || []).map(function(q, index) {
+            // SubCriteria observables
+            var subCriteriaList = (q.subCriteria || []).map(function(sc) {
+                return {
+                    id: sc.id,
+                    description: sc.description,
+                    order: sc.order || 0,
+                    isSelected: ko.observable(false)
+                };
+            });
+
             return {
                 id: q.id,
                 text: q.text,
@@ -108,14 +119,43 @@ function SurveyFormViewModel() {
                 scoringType: q.scoringType || 'Scored',
                 maxPoints: q.maxPoints || 10,
                 weightPoints: q.weightPoints || 1,
+                // SubCriteria settings
+                selectionTypeId: q.selectionTypeId || 2, // 1=Single, 2=Multiple
+                showScoreInput: q.showScoreInput !== false, // Default true
+                subCriteria: subCriteriaList,
+                hasSubCriteria: subCriteriaList.length > 0,
+                // Answer model
                 answer: ko.observable({
                     score: ko.observable(null),
                     isNA: ko.observable(false),
-                    comment: ko.observable('')
+                    comment: ko.observable(''),
+                    selectedSubCriteriaIds: ko.observableArray([])
                 })
             };
         });
         self.questions(questions);
+    };
+
+    // SubCriteria selection toggle (for Single selection type)
+    self.selectSubCriteria = function(question, subCriteria) {
+        if (question.selectionTypeId === 1) {
+            // Single selection: unselect all others first
+            question.subCriteria.forEach(function(sc) {
+                sc.isSelected(sc.id === subCriteria.id);
+            });
+            // Update answer
+            var answer = question.answer();
+            answer.selectedSubCriteriaIds([subCriteria.id]);
+        } else {
+            // Multiple selection: toggle
+            subCriteria.isSelected(!subCriteria.isSelected());
+            // Update answer
+            var answer = question.answer();
+            var selectedIds = question.subCriteria
+                .filter(function(sc) { return sc.isSelected(); })
+                .map(function(sc) { return sc.id; });
+            answer.selectedSubCriteriaIds(selectedIds);
+        }
     };
 
     // Submit survey
@@ -132,6 +172,7 @@ function SurveyFormViewModel() {
             var score = answer.score();
             var isNA = answer.isNA();
             var comment = answer.comment();
+            var selectedSubCriteriaIds = answer.selectedSubCriteriaIds ? answer.selectedSubCriteriaIds() : [];
 
             // Skip unanswered questions (except descriptive which only need comment)
             if (q.scoringType === 'Descriptive') {
@@ -140,15 +181,17 @@ function SurveyFormViewModel() {
                         questionId: q.id,
                         score: null,
                         isNA: false,
-                        comment: comment
+                        comment: comment,
+                        selectedSubCriteriaIds: selectedSubCriteriaIds
                     });
                 }
-            } else if (isNA || score !== null) {
+            } else if (isNA || score !== null || selectedSubCriteriaIds.length > 0) {
                 answers.push({
                     questionId: q.id,
                     score: isNA ? null : score,
                     isNA: isNA,
-                    comment: comment || null
+                    comment: comment || null,
+                    selectedSubCriteriaIds: selectedSubCriteriaIds
                 });
             }
         });

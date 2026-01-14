@@ -36,6 +36,10 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     base.helpText = ko.observable(data.helpText || '');
     base.groupName = ko.observable(data.groupName || '');
 
+    // SubCriteria ayarları (Online Anket için)
+    base.selectionTypeId = ko.observable(data.selectionTypeId || 2); // Varsayılan: Multiple (2)
+    base.showScoreInput = ko.observable(data.showScoreInput !== false); // Varsayılan: true
+
     // scoringType değiştiğinde weightPoints'i otomatik ayarla
     base.scoringType.subscribe(function(newValue) {
         if (newValue === 'Unscored') {

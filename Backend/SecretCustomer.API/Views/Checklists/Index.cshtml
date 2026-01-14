@@ -377,6 +377,24 @@
                                         </div>
 
                                         <div class="mt-2" data-bind="visible: _showSubCriteria">
+                                            <!-- Online Anket Ayarları -->
+                                            <div class="row mb-3 bg-light p-2 rounded">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">@Html.T("Question.SelectionType", "Seçim Tipi")</label>
+                                                    <select class="form-select form-select-sm" data-bind="value: selectionTypeId">
+                                                        <option value="1">@Html.T("SelectionType.Single", "Tek Seçim")</option>
+                                                        <option value="2">@Html.T("SelectionType.Multiple", "Çoklu Seçim")</option>
+                                                    </select>
+                                                    <small class="text-muted">@Html.T("Question.SelectionTypeHelp", "Anket formunda tek veya çoklu seçim")</small>
+                                                </div>
+                                                <div class="col-md-4 d-flex align-items-center">
+                                                    <div class="form-check mt-3">
+                                                        <input type="checkbox" class="form-check-input" data-bind="checked: showScoreInput" />
+                                                        <label class="form-check-label">@Html.T("Question.ShowScoreInput", "Puan girişini göster")</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <!-- Mevcut Alt Kriterler -->
                                             <div data-bind="foreach: subCriteria">
                                                 <div class="row mb-1 align-items-center">

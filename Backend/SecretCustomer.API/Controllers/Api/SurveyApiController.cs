@@ -270,8 +270,9 @@ public class SurveyApiController : ControllerBase
 
         var isAnonymous = project.SurveyIdentityTypeId == SurveyIdentityTypes.Ids.Anonymous;
 
-        // Checklist sorularını getir
+        // Checklist sorularını getir (SubCriteria dahil)
         var questions = await _context.Questions
+            .Include(q => q.SubCriteria)
             .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
             .OrderBy(q => q.GroupName)
             .ThenBy(q => q.Order)
@@ -285,7 +286,20 @@ public class SurveyApiController : ControllerBase
                 ScoringType = ScoringTypes.GetById(q.ScoringTypeId).SystemName,
                 q.MaxPoints,
                 q.WeightPoints,
-                q.AllowNA
+                q.AllowNA,
+                // Yeni alanlar
+                q.SelectionTypeId,
+                q.ShowScoreInput,
+                SubCriteria = q.SubCriteria
+                    .Where(sc => sc.IsActive && !sc.IsDeleted)
+                    .OrderBy(sc => sc.Order)
+                    .Select(sc => new
+                    {
+                        sc.Id,
+                        sc.Description,
+                        sc.Order
+                    })
+                    .ToList()
             })
             .ToListAsync();
 
@@ -431,8 +445,24 @@ public class SurveyApiController : ControllerBase
                 };
 
                 _context.Answers.Add(answer);
+                await _context.SaveChangesAsync(); // Answer ID gerekli
 
-                // Puan hesapla (N/A değilse)
+                // Seçilen SubCriteria'ları kaydet
+                if (answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any())
+                {
+                    foreach (var subCriteriaId in answerDto.SelectedSubCriteriaIds)
+                    {
+                        _context.AnswerSubCriteriaSelections.Add(new AnswerSubCriteriaSelection
+                        {
+                            AnswerId = answer.Id,
+                            SubCriteriaId = subCriteriaId,
+                            SelectedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                // Puan hesapla (N/A değilse ve showScoreInput true ise)
                 if (!answerDto.IsNA && answerDto.Score.HasValue && question.ScoringTypeId == ScoringTypes.Ids.Scored)
                 {
                     totalWeight += question.WeightPoints;
@@ -911,6 +941,11 @@ public class SurveyAnswerDto
     /// Yorum (opsiyonel)
     /// </summary>
     public string? Comment { get; set; }
+
+    /// <summary>
+    /// Seçilen alt kriter ID'leri (Online anket için)
+    /// </summary>
+    public List<int>? SelectedSubCriteriaIds { get; set; }
 }
 
 #endregion

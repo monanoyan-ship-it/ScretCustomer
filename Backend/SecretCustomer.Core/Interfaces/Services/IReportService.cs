@@ -81,4 +81,12 @@ public interface IReportService
 
     // MT Raporu Excel export (Başarı, Gelişim Alanı, Süreç Analizi, Endeks Başarı)
     Task<ExcelExportDto> ExportMTReportAsync(ReportFilterDto filter);
+
+    // ===== ANKET SONUÇLARI RAPORU =====
+
+    // Anket sonuçları raporu (Online Survey projeleri için)
+    Task<SurveyResultsDto?> GetSurveyResultsAsync(int projectId, DateTime? startDate, DateTime? endDate);
+
+    // Anket sonuçları Excel export
+    Task<ExcelExportDto?> ExportSurveyResultsToExcelAsync(int projectId, DateTime? startDate, DateTime? endDate);
 }

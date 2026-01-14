@@ -581,6 +581,56 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    // ===== ANKET SONUÇLARI RAPORU =====
+
+    /// <summary>
+    /// Anket Sonuçları Raporu - Online Survey projeleri için
+    /// </summary>
+    [HttpGet("survey-results/{projectId}")]
+    public async Task<IActionResult> GetSurveyResults(
+        int projectId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        try
+        {
+            var result = await _reportService.GetSurveyResultsAsync(projectId, startDate, endDate);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading survey results for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Anket sonuçları yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Anket Sonuçları Excel Export
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export")]
+    public async Task<IActionResult> ExportSurveyResults(
+        int projectId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyResultsToExcelAsync(projectId, startDate, endDate);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting survey results for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Anket sonuçları export edilirken hata oluştu.", ex));
+        }
+    }
+
     /// <summary>
     /// Öneriler Raporu Excel Export
     /// </summary>

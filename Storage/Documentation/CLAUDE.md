@@ -124,3 +124,4 @@ Bu modüller artık doğru SPA Modal Pattern'i kullanıyor:
 - ✅ Trainings (tek Index.cshtml)
 - ✅ Meetings (tek Index.cshtml)
 - ✅ Approvals (tek Index.cshtml)
+

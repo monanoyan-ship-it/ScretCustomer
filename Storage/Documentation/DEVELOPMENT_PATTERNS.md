@@ -1132,3 +1132,42 @@ Projede tanımlı tipler (`Core/TypeDefinitions.cs`):
 6. [ ] Helper metod MUTLAKA async olmalı: `await _localizationService.GetResourceAsync(item.NameResourceKey, ...)`
 7. [ ] MapToDto metodlarını async yap (`MapToDtoAsync`)
 8. [ ] Tüm çağrıları async/await ile güncelle
+
+---
+
+## 14. Proje Tipi Bazlı Raporlama Pattern'i
+
+**Her proje tipi için ayrı rapor controller'ı oluşturulur:**
+
+| Proje Tipi | Controller | Sayfa | Not |
+|------------|------------|-------|-----|
+| CallAuditing (Çağrı Denetimi) | ReportsApiController | /Reports | Varsayılan (mevcut raporlar) |
+| OnlineSurvey (Online Anket) | ReportsApiController (SurveyResults) | /Reports/SurveyResults | Ayrı sayfa |
+| MysteryShopping | (ileride) ayrı controller | /Reports/MysteryShopping | - |
+| PhysicalAudit | (ileride) ayrı controller | /Reports/PhysicalAudit | - |
+
+### Kurallar:
+
+1. **ReportService varsayılan olarak `ProjectTypeId == CallAuditing` filtreler**
+2. Yeni proje tipi raporu eklendiğinde:
+   - Yeni controller/action oluştur
+   - `== ProjectTypeId` kullan (`!=` DEĞİL - **pozitif filtreleme**)
+   - Sidebar'a menü linki ekle
+3. **Mevcut Proje Tipleri** (`TypeDefinitions.cs`):
+   ```
+   MysteryShopping=1, CallAuditing=2, PhysicalAudit=3, OnlineSurvey=4
+   CustomerSatisfaction=5, TrainingEvaluation=6, QualityControl=7
+   ```
+
+### Örnek Filter Kullanımı:
+
+```csharp
+// DOĞRU - Pozitif filtreleme
+if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+{
+    query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+}
+
+// YANLIŞ - Negatif filtreleme (kullanılmamalı)
+query = query.Where(e => e.Assignment.Project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey);
+```

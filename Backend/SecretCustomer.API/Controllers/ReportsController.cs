@@ -32,4 +32,12 @@ public class ReportsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Anket Sonuçları - Online Survey Results
+    /// </summary>
+    public IActionResult SurveyResults()
+    {
+        return View();
+    }
 }

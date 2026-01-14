@@ -86,6 +86,18 @@ public class Question : BaseEntity
         Description = "Sorunun ait olduğu grup (raporlama için)", SampleValue = "İletişim")]
     public string? GroupName { get; set; }
 
+    /// <summary>
+    /// Alt kriter seçim tipi (Tek Seçim / Çoklu Seçim)
+    /// SubCriteria varsa bu ayara göre radio veya checkbox gösterilir
+    /// </summary>
+    public int SelectionTypeId { get; set; } = SelectionTypes.Ids.Multiple;
+
+    /// <summary>
+    /// Puan girişi gösterilsin mi?
+    /// false ise sadece SubCriteria seçimi yapılır (anketler için)
+    /// </summary>
+    public bool ShowScoreInput { get; set; } = true;
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<QuestionAttachment> Attachments { get; set; } = new List<QuestionAttachment>();
