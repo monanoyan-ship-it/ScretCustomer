@@ -404,11 +404,12 @@ function ProjectsViewModel() {
     self.isSurveyModalOpen = ko.observable(false);
     self.isSurveyLoading = ko.observable(false);
     self.isSurveySending = ko.observable(false);
+    self.isRetrying = ko.observable(false);
     self.surveyProject = ko.observable(null);
     self.surveyPersonnelStats = ko.observable(null);
-    self.surveyUrl = ko.observable('');
-    self.surveyEmailTemplateId = ko.observable(null);
     self.surveyResult = ko.observable(null);
+    self.invitationStats = ko.observable(null);
+    self.invitationList = ko.observableArray([]);
 
     // Check if user can manage files (Admin or TeamLeader)
     self.canManageFiles = ko.computed(function() {
@@ -1106,13 +1107,14 @@ function ProjectsViewModel() {
         self.surveyProject(project);
         self.surveyPersonnelStats(null);
         self.surveyResult(null);
-        self.surveyUrl('');
-        self.surveyEmailTemplateId(project.emailTemplateId || null);
+        self.invitationStats(null);
+        self.invitationList([]);
         self.isSurveyModalOpen(true);
         document.body.classList.add('modal-open');
 
-        // Load personnel preview
+        // Load personnel preview and invitation stats
         self.loadSurveyPersonnelPreview(project.id);
+        self.loadInvitationStats(project.id);
     };
 
     // Close survey modal
@@ -1122,6 +1124,80 @@ function ProjectsViewModel() {
         self.surveyProject(null);
         self.surveyPersonnelStats(null);
         self.surveyResult(null);
+        self.invitationStats(null);
+        self.invitationList([]);
+    };
+
+    // Load invitation stats
+    self.loadInvitationStats = function(projectId) {
+        fetch('/api/surveys/' + projectId + '/invitation-stats', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.invitationStats(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading invitation stats:', error);
+            });
+    };
+
+    // Load invitation list (optional - for detailed view)
+    self.loadInvitationList = function(projectId, status) {
+        var url = '/api/surveys/' + projectId + '/invitations';
+        if (status) url += '?status=' + status;
+
+        fetch(url, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.invitationList(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading invitations:', error);
+            });
+    };
+
+    // Retry failed invitations
+    self.retryFailedInvitations = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var stats = self.invitationStats();
+        if (!stats || stats.failed === 0) {
+            toastr.info('Yeniden gönderilecek başarısız davetiye yok.');
+            return;
+        }
+
+        if (!confirm('Toplam ' + stats.failed + ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?')) {
+            return;
+        }
+
+        self.isRetrying(true);
+
+        var baseUrl = window.location.origin + '/Survey/Form';
+        var dto = { baseUrl: baseUrl };
+
+        fetch('/api/surveys/' + project.id + '/retry-failed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            if (result.success) {
+                toastr.success(result.message);
+                // Refresh stats
+                self.loadInvitationStats(project.id);
+            } else {
+                toastr.error(result.message || 'Yeniden gönderim sırasında hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error retrying invitations:', error);
+            toastr.error('Yeniden gönderim sırasında bir hata oluştu.');
+        })
+        .finally(function() {
+            self.isRetrying(false);
+        });
     };
 
     // Load personnel preview for survey
@@ -1147,6 +1223,12 @@ function ProjectsViewModel() {
         var project = self.surveyProject();
         if (!project) return;
 
+        // Email şablonu kontrolü
+        if (!project.emailTemplateId) {
+            toastr.error('Proje için email şablonu seçilmemiş. Proje ayarlarından şablon seçin.');
+            return;
+        }
+
         var stats = self.surveyPersonnelStats();
         if (!stats || stats.withEmail === 0) {
             toastr.warning('Email adresi olan personel bulunamadı.');
@@ -1161,9 +1243,12 @@ function ProjectsViewModel() {
         self.isSurveySending(true);
         self.surveyResult(null);
 
+        // BaseUrl otomatik oluştur
+        var baseUrl = window.location.origin + '/Survey/Form';
+
         var dto = {
-            surveyUrl: self.surveyUrl() || null,
-            emailTemplateId: self.surveyEmailTemplateId() || null
+            baseUrl: baseUrl
+            // emailTemplateId gönderilmiyor - projede tanımlı şablon kullanılacak
         };
 
         fetch('/api/surveys/' + project.id + '/send-invitations', {
@@ -1177,6 +1262,8 @@ function ProjectsViewModel() {
             self.surveyResult(result);
             if (result.success) {
                 toastr.success(result.message);
+                // Refresh invitation stats
+                self.loadInvitationStats(project.id);
             } else {
                 toastr.error(result.message || 'Gönderim sırasında hata oluştu.');
             }

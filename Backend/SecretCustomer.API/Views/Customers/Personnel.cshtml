@@ -1,0 +1,251 @@
+@{
+    Layout = "_LayoutPopup";
+    ViewData["Title"] = Html.T("CustomerPersonnel.Title", "Müşteri Personeli");
+    var customerId = ViewBag.CustomerId;
+    var customerName = ViewBag.CustomerName;
+}
+
+<div id="personnel-app">
+    <!-- Header -->
+    <div class="popup-header">
+        <h4>
+            <i class="bi bi-people me-2"></i>@Html.T("CustomerPersonnel.Title", "Müşteri Personeli")
+            <small class="text-muted ms-2">- @customerName</small>
+        </h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success btn-sm" data-bind="click: exportToExcel" title="Excel'e Aktar">
+                <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </button>
+            <button class="btn btn-primary" data-bind="click: createNew">
+                <i class="bi bi-plus-circle me-1"></i>@Html.T("CustomerPersonnel.NewPersonnel", "Yeni Personel")
+            </button>
+            <button class="btn btn-secondary" onclick="window.close()">
+                <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+            </button>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body py-2">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <input type="text" class="form-control form-control-sm"
+                           placeholder="@Html.T("Common.Search", "Ara...")"
+                           data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
+                </div>
+                <div class="col-md-8 text-end">
+                    <span class="text-muted small" data-bind="text: totalCount() + ' kayıt'"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div data-bind="visible: !isLoading() && totalCount() === 0" class="alert alert-info">
+        <i class="bi bi-info-circle"></i> @Html.T("CustomerPersonnel.NoPersonnel", "Henüz personel bulunmamaktadır.")
+    </div>
+
+    <!-- Personnel Table -->
+    <div data-bind="visible: !isLoading() && totalCount() > 0" class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>@Html.T("Common.FullName", "Ad Soyad")</th>
+                            <th>@Html.T("User.Username", "Kullanıcı Adı")</th>
+                            <th>@Html.T("Common.Email", "E-posta")</th>
+                            <th>@Html.T("Common.Role", "Rol")</th>
+                            <th>@Html.T("Common.Status", "Durum")</th>
+                            <th class="text-center" style="width: 150px;">@Html.T("Common.Actions", "İşlemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: paginatedPersonnel">
+                        <tr>
+                            <td>
+                                <span data-bind="text: fullName || (firstName + ' ' + lastName)"></span>
+                            </td>
+                            <td><code data-bind="text: username"></code></td>
+                            <td data-bind="text: email"></td>
+                            <td>
+                                <span class="badge" data-bind="text: $parent.getRoleName(role), css: $parent.getRoleBadgeClass(role)"></span>
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Düzenle" data-bind="click: $parent.editPersonnel">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-warning" title="Şifre Sıfırla" data-bind="click: $parent.showResetPassword">
+                                        <i class="bi bi-key"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Sil" data-bind="click: $parent.deletePersonnel">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
+            <div class="text-muted small">
+                <span data-bind="text: ((currentPage() - 1) * parseInt(pageSize(), 10) + 1) + '-' + Math.min(currentPage() * parseInt(pageSize(), 10), totalCount()) + ' / ' + totalCount()"></span>
+                @Html.T("Common.Records", "kayıt")
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                        <a class="page-link" href="#" data-bind="click: previousPage"><i class="bi bi-chevron-left"></i></a>
+                    </li>
+                    <!-- ko foreach: ko.utils.range(1, totalPages()) -->
+                    <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }, visible: $data === 1 || $data === $parent.totalPages() || Math.abs($data - $parent.currentPage()) <= 2">
+                        <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                    </li>
+                    <!-- /ko -->
+                    <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage"><i class="bi bi-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+            <select class="form-select form-select-sm" style="width: auto;" data-bind="value: pageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="personnelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" data-bind="with: editingPersonnel">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <!-- ko if: id() -->
+                        <i class="bi bi-pencil me-2"></i>Personel Düzenle
+                        <!-- /ko -->
+                        <!-- ko ifnot: id() -->
+                        <i class="bi bi-plus-circle me-2"></i>Yeni Personel
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Common.FirstName", "Ad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: firstName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: lastName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("User.Username", "Kullanıcı Adı") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: username">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Common.Email", "E-posta") <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" data-bind="value: email">
+                        </div>
+                        <!-- ko ifnot: id() -->
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Common.Password", "Şifre") <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" data-bind="value: password">
+                        </div>
+                        <!-- /ko -->
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Common.Phone", "Telefon")</label>
+                            <input type="text" class="form-control" data-bind="value: phoneNumber">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Common.Role", "Rol") <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: role">
+                                <option value="1">Firma Yöneticisi</option>
+                                <option value="2">Süpervizör</option>
+                                <option value="3">Operatör</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("CustomerPersonnel.Department", "Departman")</label>
+                            <input type="text" class="form-control" data-bind="value: department">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("CustomerPersonnel.JobTitle", "Ünvan")</label>
+                            <input type="text" class="form-control" data-bind="value: title">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="isActive" data-bind="checked: isActive">
+                                <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.savePersonnel, disable: $parent.isSaving">
+                        <span data-bind="visible: !$parent.isSaving()">@Html.T("Common.Save", "Kaydet")</span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-key me-2"></i>Şifre Sıfırla</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3" data-bind="text: selectedPersonnelName"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Şifre <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" data-bind="value: newPassword">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre Tekrar <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" data-bind="value: confirmPassword">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-warning btn-sm" data-bind="click: resetPassword, disable: isResettingPassword">
+                        <span data-bind="visible: !isResettingPassword()">Şifreyi Sıfırla</span>
+                        <span data-bind="visible: isResettingPassword"><span class="spinner-border spinner-border-sm me-1"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="_DeleteConfirmationModal" />
+</div>
+
+<script>
+    window.personnelConfig = {
+        customerId: @customerId
+    };
+</script>
+
+@section Scripts {
+    <script src="~/js/Shared/api.service.js"></script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
+    <script src="~/js/Customers/personnel.js"></script>
+}

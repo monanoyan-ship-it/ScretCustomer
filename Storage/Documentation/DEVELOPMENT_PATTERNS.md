@@ -664,12 +664,171 @@ Bazı sayfalar farklı kullanıcı grupları için aynı/benzer işlevi sunar. B
 
 ---
 
+## 19. Popup Pattern (Büyük Formlar İçin)
+
+Modal yerine ayrı pencerede açılan popup pattern. Büyük ve karmaşık formlar için (örn: Email Şablonları, Personel Yönetimi) kullanılır.
+
+### Ne Zaman Popup Kullanılmalı?
+
+- Form çok fazla alan içeriyorsa (modal'a sığmıyorsa)
+- WYSIWYG editor veya kod editörü gibi büyük bileşenler varsa
+- Kullanıcının ana sayfayı görmesi gerekiyorsa (karşılaştırma için)
+- Alt detay yönetimi için (Müşteri → Personel, Organizasyonlar gibi)
+
+### Yapı
+
+```
+Views/
+  ModuleName/
+    Index.cshtml          # Liste sayfası (ana layout)
+    Popup.cshtml          # Popup view (_LayoutPopup layout)
+wwwroot/js/
+  ModuleName/
+    index.js              # Liste VM + popup açma
+    popup.js              # Popup VM
+```
+
+### Index'ten Popup Açma
+
+```javascript
+// index.js
+self.openPopup = function(item) {
+    var url = '/ModuleName/Popup/' + item.id;
+    var popup = window.open(url, 'module_' + item.id, 'width=1200,height=750,scrollbars=yes,resizable=yes');
+    if (popup) popup.focus();
+};
+
+// Global refresh fonksiyonu - popup kapanınca çağrılır
+function refreshList() {
+    if (window.vm) {
+        window.vm.loadItems();
+    }
+}
+
+var vm = null;
+$(document).ready(function() {
+    vm = new IndexViewModel();
+    ko.applyBindings(vm, document.getElementById('module-app'));
+});
+```
+
+### Popup View Template
+
+```html
+@{
+    Layout = "_LayoutPopup";
+    ViewData["Title"] = "Popup Başlığı";
+    var itemId = ViewBag.ItemId;
+}
+
+<div id="popup-app">
+    <!-- Header -->
+    <div class="popup-header">
+        <h4>
+            <i class="bi bi-icon me-2"></i>Popup Başlığı
+        </h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" data-bind="click: save, disable: isSaving">
+                <span data-bind="visible: !isSaving()"><i class="bi bi-save"></i> Kaydet</span>
+                <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="window.close()">
+                <i class="bi bi-x-lg"></i> Kapat
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="card shadow-sm">
+        <!-- Form içeriği -->
+    </div>
+</div>
+
+<script>
+    window.popupConfig = {
+        itemId: @(itemId ?? "null")
+    };
+</script>
+
+@section Scripts {
+    <script src="~/js/ModuleName/popup.js"></script>
+}
+```
+
+### Popup JS Template
+
+```javascript
+// popup.js
+function PopupViewModel() {
+    var self = this;
+    var config = window.popupConfig || {};
+
+    self.isLoading = ko.observable(true);
+    self.isSaving = ko.observable(false);
+
+    // Save and notify opener
+    self.save = function() {
+        self.isSaving(true);
+        fetch('/api/module/' + config.itemId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ /* data */ }),
+            credentials: 'include'
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                toastr.success(result.message);
+                // Opener'a bildir
+                if (window.opener && window.opener.refreshList) {
+                    window.opener.refreshList();
+                }
+                setTimeout(function() { window.close(); }, 1000);
+            } else {
+                toastr.error(result.message);
+            }
+        })
+        .finally(function() {
+            self.isSaving(false);
+        });
+    };
+
+    // Initialize
+    self.loadData();
+}
+
+$(document).ready(function() {
+    ko.applyBindings(new PopupViewModel(), document.getElementById('popup-app'));
+});
+```
+
+### Popup Pattern Kullanan Modüller
+
+- **EmailTemplates** - Editor.cshtml (WYSIWYG editor içerir)
+- **Customers/Personnel** - Personnel.cshtml
+- **Customers/Organizations** - Organizations.cshtml
+- **Customers/Dealers** - Dealers.cshtml
+- **Survey/Form** - Halka açık anket formu
+
+### Popup vs Modal Karşılaştırma
+
+| Özellik | Modal | Popup |
+|---------|-------|-------|
+| Form boyutu | Küçük-orta | Büyük |
+| Ana sayfa görünürlüğü | Kapalı (backdrop) | Açık (yan yana) |
+| Çoklu açılabilirlik | Hayır | Evet |
+| Layout | Aynı sayfa | _LayoutPopup |
+| WYSIWYG/Kod editörü | Zor | Kolay |
+| Kullanım alanı | Basit CRUD | Karmaşık formlar |
+
+---
+
 ## ÖZET
 
 1. **Her modül TEK Index.cshtml ile çalışır**
-2. **Create/Edit/Detail işlemleri MODAL ile yapılır**
+2. **Basit formlar MODAL ile, büyük/karmaşık formlar POPUP ile yapılır**
 3. **ko.applyBindings MUTLAKA spesifik div'e bağlanır**
-4. **Ayrı sayfa (Create.cshtml, Edit.cshtml, Detail.cshtml) OLMAZ**
+4. **Ayrı sayfa (Create.cshtml, Edit.cshtml, Detail.cshtml) OLMAZ** (Popup hariç)
 5. **CDN KULLANILMAZ - Tüm kütüphaneler yerel olmalı**
 6. **Native confirm() KULLANILMAZ - showConfirmModal() kullan**
 7. **JS'de T() kullanımı için önce Localization.loadKeys() çağır**

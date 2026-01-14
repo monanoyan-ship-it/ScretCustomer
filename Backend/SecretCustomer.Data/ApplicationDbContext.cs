@@ -96,6 +96,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Dealer> Dealers { get; set; }
     public DbSet<DealerRequest> DealerRequests { get; set; }
 
+    // Survey Invitations (Anket Davetiyeleri)
+    public DbSet<SurveyInvitation> SurveyInvitations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -338,6 +341,27 @@ public class ApplicationDbContext : DbContext
         // Evaluation VisitId indexi
         modelBuilder.Entity<Evaluation>()
             .HasIndex(e => e.VisitId);
+
+        // ===== SurveyInvitation İlişkileri =====
+        modelBuilder.Entity<SurveyInvitation>()
+            .HasOne(si => si.Project)
+            .WithMany()
+            .HasForeignKey(si => si.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SurveyInvitation>()
+            .HasOne(si => si.CustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(si => si.CustomerPersonnelId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // SurveyInvitation indexleri
+        modelBuilder.Entity<SurveyInvitation>()
+            .HasIndex(si => si.ProjectId);
+        modelBuilder.Entity<SurveyInvitation>()
+            .HasIndex(si => si.CustomerPersonnelId);
+        modelBuilder.Entity<SurveyInvitation>()
+            .HasIndex(si => si.Status);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

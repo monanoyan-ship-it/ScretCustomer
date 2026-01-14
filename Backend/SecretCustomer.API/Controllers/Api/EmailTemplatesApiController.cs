@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -13,10 +14,12 @@ namespace SecretCustomer.API.Controllers.Api;
 public class EmailTemplatesApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public EmailTemplatesApiController(ApplicationDbContext context)
+    public EmailTemplatesApiController(ApplicationDbContext context, IEmailService emailService)
     {
         _context = context;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -311,6 +314,58 @@ public class EmailTemplatesApiController : ControllerBase
 
         return Ok(new { subject, body });
     }
+
+    /// <summary>
+    /// Şablonu test emaili olarak gönder
+    /// </summary>
+    [HttpPost("{id}/send-test")]
+    public async Task<IActionResult> SendTestEmail(int id, [FromBody] SendTestEmailDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.ToEmail))
+        {
+            return BadRequest(new { success = false, message = "Email adresi gerekli." });
+        }
+
+        var template = await _context.EmailTemplates.FindAsync(id);
+        if (template == null || template.IsDeleted)
+        {
+            return NotFound(new { success = false, message = "Şablon bulunamadı." });
+        }
+
+        // Placeholder'ları örnek verilerle doldur
+        var body = template.Body;
+        body = body.Replace(EmailPlaceholders.SurveyLink, "https://survey.example.com/test123");
+        body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
+        body = body.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
+        body = body.Replace(EmailPlaceholders.OrganizationName, "Test Şubesi");
+        body = body.Replace(EmailPlaceholders.BranchName, "Test Mağazası");
+        body = body.Replace(EmailPlaceholders.RecipientName, "Test Kullanıcı");
+        body = body.Replace(EmailPlaceholders.RecipientFirstName, "Test");
+        body = body.Replace(EmailPlaceholders.RecipientLastName, "Kullanıcı");
+        body = body.Replace(EmailPlaceholders.RecipientEmail, dto.ToEmail);
+        body = body.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
+        body = body.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
+        body = body.Replace(EmailPlaceholders.DueDate, DateTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.StartDate, DateTime.Now.ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.EndDate, DateTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+        var subject = "[TEST] " + template.Subject;
+        subject = subject.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
+        subject = subject.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
+        subject = subject.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
+
+        var result = await _emailService.SendEmailAsync(dto.ToEmail, subject, body, isHtml: true);
+
+        if (result.Success)
+        {
+            return Ok(new { success = true, message = $"Test emaili {dto.ToEmail} adresine gönderildi." });
+        }
+
+        return BadRequest(new { success = false, message = result.ErrorMessage });
+    }
 }
 
 // DTOs
@@ -351,4 +406,9 @@ public class PreviewEmailDto
 {
     public string Subject { get; set; } = string.Empty;
     public string Body { get; set; } = string.Empty;
+}
+
+public class SendTestEmailDto
+{
+    public string? ToEmail { get; set; }
 }

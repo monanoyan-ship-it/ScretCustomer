@@ -185,6 +185,7 @@ function DealersViewModel() {
                 toastr.success(isNew ? 'Bayi başarıyla oluşturuldu.' : 'Bayi başarıyla güncellendi.');
                 self.hideModal();
                 self.loadDealers();
+                self.notifyParent();
             })
             .catch(function(error) {
                 console.error('Error saving dealer:', error);
@@ -204,6 +205,7 @@ function DealersViewModel() {
                     .then(function() {
                         toastr.success('Bayi başarıyla silindi.');
                         self.loadDealers();
+                        self.notifyParent();
                     })
                     .catch(function(error) {
                         console.error('Error deleting dealer:', error);
@@ -232,6 +234,19 @@ function DealersViewModel() {
             self.modal.hide();
         }
         self.editingDealer(null);
+    };
+
+    // Notify parent window to refresh
+    self.notifyParent = function() {
+        if (window.opener && !window.opener.closed) {
+            try {
+                if (window.opener.vm && typeof window.opener.vm.loadCustomers === 'function') {
+                    window.opener.vm.loadCustomers();
+                }
+            } catch (e) {
+                console.log('Could not notify parent:', e);
+            }
+        }
     };
 
     // Initialize

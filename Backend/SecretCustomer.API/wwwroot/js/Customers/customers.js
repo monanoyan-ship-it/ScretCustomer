@@ -300,17 +300,18 @@ function CustomersViewModel() {
 
     // ========== PERSONNEL MANAGEMENT ==========
     
-    // Show personnel modal
+    // Show personnel popup
     self.showPersonnel = function(customer) {
-        self.selectedCustomerForPersonnel(customer);
-        self.personnelSearchText('');
-        self.showPersonnelModal(true);
-        self.loadPersonnel(customer.id);
+        var url = '/Customers/Personnel/' + customer.id;
+        var popup = window.open(url, 'personnel_' + customer.id, 'width=1100,height=700,scrollbars=yes,resizable=yes');
+        if (popup) popup.focus();
     };
 
-    // Navigate to dealers page for customer
+    // Show dealers popup
     self.showDealers = function(customer) {
-        window.location.href = '/Customers/Dealers/' + customer.id;
+        var url = '/Customers/Dealers/' + customer.id;
+        var popup = window.open(url, 'dealers_' + customer.id, 'width=1200,height=750,scrollbars=yes,resizable=yes');
+        if (popup) popup.focus();
     };
 
     // Load personnel for customer
@@ -691,17 +692,11 @@ function CustomersViewModel() {
     self.selectedDelegateId = ko.observable(null);
     self.isRemovingWithDelegate = ko.observable(false);
 
-    // Show organizations modal
+    // Show organizations popup
     self.showOrganizations = function(customer) {
-        self.selectedCustomerForOrg(customer);
-        self.selectedOrganization(null);
-        self.orgPersonnelList({ supervisors: [], operators: [] });        self.orgSearchText('');
-        self.showOrganizationModal(true);
-        self.showNewManagerForm(false);
-        self.showNewSupervisorForm(false);
-        self.loadOrganizations(customer.id);
-        self.loadPersonnelPool(customer.id);
-        self.loadCustomerManagers(customer.id);
+        var url = '/Customers/Organizations/' + customer.id;
+        var popup = window.open(url, 'organizations_' + customer.id, 'width=1200,height=750,scrollbars=yes,resizable=yes');
+        if (popup) popup.focus();
     };
 
     // Load customer managers (role = 1)
@@ -1591,8 +1586,12 @@ var TRANSLATION_KEYS = [
 ];
 
 // Apply bindings when DOM is ready
+// Global ViewModel reference for popup windows
+var vm = null;
+
 $(document).ready(function() {
     Localization.loadKeys(TRANSLATION_KEYS).then(function() {
-        ko.applyBindings(new CustomersViewModel(), document.getElementById('customers-app'));
+        vm = new CustomersViewModel();
+        ko.applyBindings(vm, document.getElementById('customers-app'));
     });
 });

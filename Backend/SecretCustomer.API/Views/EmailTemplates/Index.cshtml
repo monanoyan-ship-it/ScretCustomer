@@ -6,9 +6,9 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-envelope-paper"></i> Email Şablonları</h2>
-        <a href="/EmailTemplates/Create" class="btn btn-primary">
+        <button class="btn btn-primary" data-bind="click: createTemplate">
             <i class="bi bi-plus-lg"></i> Yeni Şablon
-        </a>
+        </button>
     </div>
 
     <!-- Filters -->
@@ -44,40 +44,60 @@
 
     <!-- Templates List -->
     <div data-bind="visible: !isLoading()">
-        <div class="row" data-bind="foreach: filteredTemplates">
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm" data-bind="css: { 'border-primary': isDefault, 'opacity-50': !isActive }">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>
-                            <i data-bind="class: $parent.getTypeIcon(templateTypeId)"></i>
-                            <span data-bind="text: templateTypeName" class="badge bg-secondary ms-1"></span>
-                        </span>
-                        <div>
-                            <span data-bind="visible: isDefault" class="badge bg-primary">Varsayılan</span>
-                            <span data-bind="visible: !isActive" class="badge bg-danger">Pasif</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title" data-bind="text: name"></h5>
-                        <p class="card-text small text-muted" data-bind="text: description || 'Açıklama yok'"></p>
-                        <div class="small">
-                            <strong>Konu:</strong> <span data-bind="text: subject"></span>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent">
-                        <div class="btn-group w-100">
-                            <a data-bind="attr: { href: '/EmailTemplates/Edit/' + id }" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i> Düzenle
-                            </a>
-                            <button class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.duplicateTemplate">
-                                <i class="bi bi-copy"></i> Kopyala
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteTemplate">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <div class="card shadow-sm" data-bind="visible: filteredTemplates().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Şablon Adı</th>
+                            <th>Tip</th>
+                            <th>Konu</th>
+                            <th class="text-center" style="width: 100px;">Durum</th>
+                            <th class="text-end" style="width: 180px;">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: filteredTemplates">
+                        <tr data-bind="css: { 'table-warning': isDefault, 'opacity-50': !isActive }">
+                            <td>
+                                <strong data-bind="text: name"></strong>
+                                <!-- ko if: description -->
+                                <br><small class="text-muted" data-bind="text: description"></small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    <i data-bind="class: $parent.getTypeIcon(templateTypeId)"></i>
+                                    <span data-bind="text: templateTypeName"></span>
+                                </span>
+                            </td>
+                            <td><small data-bind="text: subject"></small></td>
+                            <td class="text-center">
+                                <span data-bind="visible: isDefault" class="badge bg-primary">Varsayılan</span>
+                                <span data-bind="visible: isActive && !isDefault" class="badge bg-success">Aktif</span>
+                                <span data-bind="visible: !isActive" class="badge bg-danger">Pasif</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary" data-bind="click: $parent.showPreview" title="Önizleme">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.editTemplate" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.showTestModal" title="Test Email">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" data-bind="click: $parent.duplicateTemplate" title="Kopyala">
+                                        <i class="bi bi-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteTemplate" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -85,119 +105,61 @@
         <div data-bind="visible: filteredTemplates().length === 0" class="text-center py-5 text-muted">
             <i class="bi bi-inbox fs-1"></i>
             <p class="mt-2">Henüz email şablonu bulunmuyor.</p>
-            <a href="/EmailTemplates/Create" class="btn btn-primary">
+            <button class="btn btn-primary" data-bind="click: createTemplate">
                 <i class="bi bi-plus-lg"></i> İlk Şablonu Oluştur
-            </a>
+            </button>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Email Önizleme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 p-2 bg-light rounded">
+                        <strong>Konu:</strong> <span data-bind="text: previewSubject"></span>
+                    </div>
+                    <div class="border rounded p-3" data-bind="html: previewBody"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email Modal -->
+    <div class="modal fade" id="testEmailModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-send me-2"></i>Test Email Gönder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-2">Şablon: <strong data-bind="text: testTemplateName"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label">Email Adresi <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" placeholder="test@example.com"
+                               data-bind="value: testEmail" autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-info btn-sm" data-bind="click: sendTestEmail, disable: isSendingTest">
+                        <span data-bind="visible: !isSendingTest()"><i class="bi bi-send"></i> Gönder</span>
+                        <span data-bind="visible: isSendingTest"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        function EmailTemplatesViewModel() {
-            var self = this;
-
-            self.isLoading = ko.observable(true);
-            self.templates = ko.observableArray([]);
-            self.templateTypes = ko.observableArray([]);
-            self.filterTypeId = ko.observable('');
-            self.filterStatus = ko.observable('');
-
-            // Filtered templates
-            self.filteredTemplates = ko.computed(function() {
-                var list = self.templates();
-                var typeId = self.filterTypeId();
-                var status = self.filterStatus();
-
-                if (typeId) {
-                    list = list.filter(function(t) { return t.templateTypeId == typeId; });
-                }
-                if (status === 'active') {
-                    list = list.filter(function(t) { return t.isActive; });
-                } else if (status === 'inactive') {
-                    list = list.filter(function(t) { return !t.isActive; });
-                }
-
-                return list;
-            });
-
-            // Get type icon
-            self.getTypeIcon = function(typeId) {
-                var type = self.templateTypes().find(function(t) { return t.id === typeId; });
-                return type ? type.icon : 'bi bi-envelope';
-            };
-
-            // Load templates
-            self.loadTemplates = function() {
-                self.isLoading(true);
-                fetch('/api/email-templates', { credentials: 'include' })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        self.templates(data);
-                    })
-                    .finally(function() {
-                        self.isLoading(false);
-                    });
-            };
-
-            // Load types
-            self.loadTypes = function() {
-                fetch('/api/email-templates/types', { credentials: 'include' })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        self.templateTypes(data);
-                    });
-            };
-
-            // Delete template
-            self.deleteTemplate = function(template) {
-                if (!confirm('Bu şablonu silmek istediğinize emin misiniz?')) return;
-
-                fetch('/api/email-templates/' + template.id, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        toastr.success(result.message);
-                        self.loadTemplates();
-                    } else {
-                        toastr.error(result.message);
-                    }
-                });
-            };
-
-            // Duplicate template
-            self.duplicateTemplate = function(template) {
-                fetch('/api/email-templates/' + template.id + '/duplicate', {
-                    method: 'POST',
-                    credentials: 'include'
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        toastr.success(result.message);
-                        self.loadTemplates();
-                    } else {
-                        toastr.error(result.message);
-                    }
-                });
-            };
-
-            // Clear filters
-            self.clearFilters = function() {
-                self.filterTypeId('');
-                self.filterStatus('');
-            };
-
-            // Init
-            self.loadTypes();
-            self.loadTemplates();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            ko.applyBindings(new EmailTemplatesViewModel(), document.getElementById('email-templates-app'));
-        });
-    </script>
+    <script src="~/js/EmailTemplates/index.js"></script>
 }

@@ -73,6 +73,11 @@
                                 <i class="bi bi-inbox me-2"></i>@Html.T("Menu.UserRequests", "Kullanıcı Talepleri")
                             </a>
                         </li>
+                        <li>
+                            <a href="/EmailTemplates" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-envelope-paper me-2"></i>@Html.T("Menu.EmailTemplates", "Email Şablonları")
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -193,11 +198,6 @@
                         <li>
                             <a href="/Settings/Smtp" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-envelope-at me-2"></i>@Html.T("Menu.SmtpSettings", "SMTP Ayarları")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/EmailTemplates" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-envelope-paper me-2"></i>@Html.T("Menu.EmailTemplates", "Email Şablonları")
                             </a>
                         </li>
                         <li>

@@ -1,23 +1,24 @@
 @{
+    Layout = "_LayoutPopup";
     ViewData["Title"] = Html.T("Dealer.Title", "Bayi Yönetimi");
     var customerId = ViewBag.CustomerId;
 }
 
 <div id="dealers-app">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="/Customers" class="btn btn-outline-secondary btn-sm me-3">
-                <i class="bi bi-arrow-left me-1"></i>@Html.T("Common.Back", "Geri")
-            </a>
-            <span class="h2 mb-0">
-                <i class="bi bi-shop me-2"></i>@Html.T("Dealer.Title", "Bayi Yönetimi")
-            </span>
-            <span class="text-muted ms-2" data-bind="text: customerName() ? '- ' + customerName() : ''"></span>
+    <div class="popup-header">
+        <h4>
+            <i class="bi bi-shop me-2"></i>@Html.T("Dealer.Title", "Bayi Yönetimi")
+            <small class="text-muted ms-2" data-bind="text: customerName() ? '- ' + customerName() : ''"></small>
+        </h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bind="click: createNew">
+                <i class="bi bi-plus-circle me-1"></i>@Html.T("Dealer.NewDealer", "Yeni Bayi")
+            </button>
+            <button class="btn btn-secondary" onclick="window.close()">
+                <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+            </button>
         </div>
-        <button class="btn btn-primary" data-bind="click: createNew">
-            <i class="bi bi-plus-circle me-1"></i>@Html.T("Dealer.NewDealer", "Yeni Bayi")
-        </button>
     </div>
 
     <!-- Filters -->
