@@ -38,7 +38,7 @@ public class CreateChecklistDto
     public int? CustomerOrganizationId { get; set; }
 
     /// <summary>
-    /// Sorular - Direkt checklist'e bağlı (Section yok!)
+    /// Sorular - Direkt checklist'e bağlı, GroupName ile gruplandırılır
     /// </summary>
     public List<CreateQuestionDto> Questions { get; set; } = new();
 }

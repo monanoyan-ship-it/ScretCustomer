@@ -29,24 +29,43 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <!-- Müşteri Seçimi -->
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.Customer", "Müşteri")</label>
+                    <select class="form-select" data-bind="value: selectedCustomerId, options: customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Report.AllCustomers", "Tüm Müşteriler")', event: { change: onCustomerChange }"></select>
+                </div>
+                <!-- Organizasyon Seçimi -->
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.Organization", "Şube/Organizasyon")</label>
+                    <select class="form-select" data-bind="value: selectedOrganizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllOrganizations", "Tüm Şubeler")', event: { change: onOrganizationChange }, enable: organizations().length > 0"></select>
+                </div>
+                <!-- Temsilci Seçimi -->
+                <div class="col-md-3">
                     <label class="form-label">@Html.T("Report.Personnel", "Temsilci")</label>
-                    <select class="form-select" data-bind="value: selectedPersonnelId, options: personnelList, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectPersonnel", "Temsilci Seçin...")'"></select>
+                    <select class="form-select" data-bind="value: selectedPersonnelId, options: filteredPersonnelList, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectPersonnel", "Temsilci Seçin...")', enable: personnelList().length > 0"></select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.StartDate", "Başlangıç Tarihi")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.startDate">
+                <!-- Tarih Aralığı -->
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.DateRange", "Tarih Aralığı")</label>
+                    <div class="input-group">
+                        <input type="date" class="form-control" data-bind="value: filter.startDate" placeholder="Başlangıç">
+                        <span class="input-group-text">-</span>
+                        <input type="date" class="form-control" data-bind="value: filter.endDate" placeholder="Bitiş">
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.EndDate", "Bitiş Tarihi")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.endDate">
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> @Html.T("Report.HierarchyHint", "Müşteri seçince şubeler, şube seçince o şubenin temsilcileri filtrelenir.")
+                    </small>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-3 d-flex align-items-end">
                     <button class="btn btn-primary w-100" data-bind="click: loadReport, disable: !selectedPersonnelId()">
                         <i class="bi bi-search"></i> @Html.T("Report.GetReport", "Rapor Getir")
                     </button>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-3 d-flex align-items-end">
                     <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
                         <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                     </button>
@@ -174,25 +193,25 @@
             </div>
         </div>
 
-        <!-- Section Performance & Strengths/Weaknesses -->
+        <!-- Group Performance & Strengths/Weaknesses -->
         <div class="row mb-4">
-            <!-- Section Performance -->
-            <div class="col-md-6" data-bind="visible: report() && report().sectionPerformances.length > 0">
+            <!-- Group Performance -->
+            <div class="col-md-6" data-bind="visible: report() && report().groupPerformances && report().groupPerformances.length > 0">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0"><i class="bi bi-list-task"></i> @Html.T("Report.SectionPerformance", "Bölüm Performansı")</h6>
+                        <h6 class="mb-0"><i class="bi bi-list-task"></i> @Html.T("Report.GroupPerformance", "Grup Performansı")</h6>
                     </div>
                     <div class="card-body p-0">
                         <table class="table table-sm mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>@Html.T("Report.Section", "Bölüm")</th>
+                                    <th>@Html.T("Report.QuestionGroup", "Soru Grubu")</th>
                                     <th class="text-center">@Html.T("Report.SuccessRate", "Başarı %")</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: report().sectionPerformances">
+                            <tbody data-bind="foreach: report().groupPerformances">
                                 <tr>
-                                    <td data-bind="text: sectionName"></td>
+                                    <td data-bind="text: groupName"></td>
                                     <td class="text-center">
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar" role="progressbar"

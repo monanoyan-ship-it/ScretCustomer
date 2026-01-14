@@ -206,9 +206,17 @@ public class ExcelExportDto
 public class PenaltyFilterDto
 {
     public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
+    public int? OrganizationId { get; set; }
+    public int? ChecklistId { get; set; }
+    public int? EvaluatorId { get; set; }
     public string? PenaltyType { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+
+    // Pagination
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
 }
 
 /// <summary>
@@ -219,7 +227,15 @@ public class PenaltyReportResultDto
     public PenaltySummaryDto Summary { get; set; } = new();
     public List<PenaltyDetailDto> Penalties { get; set; } = new();
     public List<PenaltyQuestionDto> TopPenaltyQuestions { get; set; } = new();
+    public List<PenaltyOrganizationDto> TopPenaltyOrganizations { get; set; } = new();
+    public List<PenaltyPersonnelDto> TopPenaltyPersonnel { get; set; } = new();
     public List<PenaltyMonthlyTrendDto> MonthlyTrend { get; set; } = new();
+
+    // Pagination info
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }
 
 /// <summary>
@@ -245,6 +261,8 @@ public class PenaltyDetailDto
     public string GroupName { get; set; } = string.Empty;
     public string PenaltyType { get; set; } = string.Empty;
     public string ProjectName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? OrganizationName { get; set; }
     public string? ChecklistName { get; set; }
     public string? EvaluatorName { get; set; }
     public string? EvaluatedPersonnelName { get; set; }
@@ -264,6 +282,33 @@ public class PenaltyQuestionDto
     public int YellowCardCount { get; set; }
     public int RedCardCount { get; set; }
     public int TotalPenalties { get; set; }
+}
+
+/// <summary>
+/// En çok ceza alan organizasyon/şube
+/// </summary>
+public class PenaltyOrganizationDto
+{
+    public int OrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int TotalPenalties { get; set; }
+}
+
+/// <summary>
+/// En çok ceza alan personel
+/// </summary>
+public class PenaltyPersonnelDto
+{
+    public int PersonnelId { get; set; }
+    public string PersonnelName { get; set; } = string.Empty;
+    public string OrganizationName { get; set; } = string.Empty;
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int TotalPenalties { get; set; }
+    public int EvaluationCount { get; set; }
 }
 
 /// <summary>
@@ -388,6 +433,22 @@ public class PersonnelListItemDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Title { get; set; }
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+}
+
+/// <summary>
+/// Organizasyon listesi (rapor filtresi için)
+/// </summary>
+public class OrganizationListItemDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public int EvaluationCount { get; set; }
 }
 
 // ===== ÖNERİLER RAPORU DTO'LARI (Video 5-6) =====

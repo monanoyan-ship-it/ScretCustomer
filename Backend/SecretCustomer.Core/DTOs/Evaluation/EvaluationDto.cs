@@ -160,8 +160,6 @@ public class AnswerDto
     public string? AppliedPenaltyType { get; set; }
 
     // Soru bilgileri
-    public int? SectionOrder { get; set; }
-    public string? SectionName { get; set; }
     public string? GroupName { get; set; }
     public int? QuestionOrder { get; set; }
 

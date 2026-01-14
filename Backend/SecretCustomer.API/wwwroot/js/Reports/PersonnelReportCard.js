@@ -6,9 +6,17 @@ function PersonnelReportCardViewModel() {
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
     self.errorMessage = ko.observable('');
-    self.personnelList = ko.observableArray([]);
-    self.selectedPersonnelId = ko.observable('');
     self.report = ko.observable(null);
+
+    // Hierarchical selection data
+    self.customers = ko.observableArray([]);
+    self.organizations = ko.observableArray([]);
+    self.personnelList = ko.observableArray([]);
+
+    // Selection state
+    self.selectedCustomerId = ko.observable('');
+    self.selectedOrganizationId = ko.observable('');
+    self.selectedPersonnelId = ko.observable('');
 
     // Filter
     self.filter = {
@@ -16,15 +24,94 @@ function PersonnelReportCardViewModel() {
         endDate: ko.observable('')
     };
 
-    // Load personnel list
-    self.loadPersonnelList = function() {
-        fetch('/api/reports/personnel-list', { credentials: 'include' })
+    // Computed: Filtered organizations based on customer selection
+    self.filteredOrganizations = ko.computed(function() {
+        var customerId = self.selectedCustomerId();
+        if (!customerId) return self.organizations();
+        return self.organizations().filter(function(o) {
+            return o.customerId == customerId;
+        });
+    });
+
+    // Computed: Filtered personnel based on customer and organization selection
+    self.filteredPersonnelList = ko.computed(function() {
+        var customerId = self.selectedCustomerId();
+        var organizationId = self.selectedOrganizationId();
+        var list = self.personnelList();
+
+        if (customerId) {
+            list = list.filter(function(p) {
+                return p.customerId == customerId;
+            });
+        }
+
+        if (organizationId) {
+            list = list.filter(function(p) {
+                return p.organizationId == organizationId;
+            });
+        }
+
+        return list;
+    });
+
+    // Load customers with evaluations
+    self.loadCustomers = function() {
+        fetch('/api/reports/report-card/customers', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Musteri listesi yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.customers(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading customers:', error);
+            });
+    };
+
+    // Load organizations with evaluations
+    self.loadOrganizations = function(customerId) {
+        var url = '/api/reports/report-card/organizations';
+        if (customerId) {
+            url += '?customerId=' + customerId;
+        }
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Organizasyon listesi yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.organizations(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+            });
+    };
+
+    // Load personnel list (with optional filters)
+    self.loadPersonnelList = function(customerId, organizationId) {
+        var url = '/api/reports/personnel-list';
+        var params = [];
+
+        if (customerId) {
+            params.push('customerId=' + customerId);
+        }
+        if (organizationId) {
+            params.push('organizationId=' + organizationId);
+        }
+
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        fetch(url, { credentials: 'include' })
             .then(function(response) {
                 if (!response.ok) throw new Error('Personel listesi yuklenemedi');
                 return response.json();
             })
             .then(function(data) {
-                self.personnelList(data);
+                self.personnelList(data || []);
 
                 // Pre-select if initial personnel ID is provided
                 if (typeof initialPersonnelId !== 'undefined' && initialPersonnelId) {
@@ -36,6 +123,32 @@ function PersonnelReportCardViewModel() {
                 console.error('Error loading personnel list:', error);
                 toastr.error('Personel listesi yuklenirken bir hata olustu.');
             });
+    };
+
+    // Customer change handler
+    self.onCustomerChange = function() {
+        var customerId = self.selectedCustomerId();
+
+        // Reset downstream selections
+        self.selectedOrganizationId('');
+        self.selectedPersonnelId('');
+        self.report(null);
+
+        // Reload organizations
+        self.loadOrganizations(customerId);
+    };
+
+    // Organization change handler
+    self.onOrganizationChange = function() {
+        var customerId = self.selectedCustomerId();
+        var organizationId = self.selectedOrganizationId();
+
+        // Reset personnel selection
+        self.selectedPersonnelId('');
+        self.report(null);
+
+        // Reload personnel list (optional - for better performance we use computed filter)
+        // self.loadPersonnelList(customerId, organizationId);
     };
 
     // Load report
@@ -86,11 +199,16 @@ function PersonnelReportCardViewModel() {
 
     // Clear filters
     self.clearFilters = function() {
+        self.selectedCustomerId('');
+        self.selectedOrganizationId('');
         self.selectedPersonnelId('');
         self.filter.startDate('');
         self.filter.endDate('');
         self.report(null);
         self.errorMessage('');
+
+        // Reload all organizations
+        self.loadOrganizations();
     };
 
     // Export to Excel
@@ -155,6 +273,8 @@ function PersonnelReportCardViewModel() {
     };
 
     // Initialize
+    self.loadCustomers();
+    self.loadOrganizations();
     self.loadPersonnelList();
 }
 

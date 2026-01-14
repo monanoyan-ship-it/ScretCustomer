@@ -94,6 +94,17 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         return org == null ? null : MapToDto(org);
     }
 
+    public async Task<IEnumerable<CustomerOrganizationDto>> GetAllAsync()
+    {
+        var orgs = await _context.CustomerOrganizations
+            .Include(o => o.Customer)
+            .Where(o => o.IsActive)
+            .OrderBy(o => o.Customer!.CompanyName)
+            .ThenBy(o => o.Name)
+            .ToListAsync();
+        return orgs.Select(MapToDto);
+    }
+
     public async Task<IEnumerable<CustomerOrganizationDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false)
     {
         var query = _context.CustomerOrganizations

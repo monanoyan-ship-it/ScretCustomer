@@ -373,7 +373,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = null,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            Sections = BuildSectionsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            Groups = BuildGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
         };
     }
@@ -468,7 +468,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = evaluation.AssignmentPeriodId,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            Sections = BuildSectionsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            Groups = BuildGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = evaluation.Answers
                 .Select(a => MapAnswerToDto(a))
                 .ToList()
@@ -482,7 +482,7 @@ public class EvaluationService : IEvaluationService
 
     private async Task<EvaluationDto> ProcessEvaluationAsync(SubmitEvaluationDto dto, int targetStatusId)
     {
-        // Get assignment with checklist details (Sections kaldırıldı, Questions direkt Checklist'e bağlı)
+        // Get assignment with checklist details (Questions direkt Checklist'e bağlı, GroupName ile gruplandırılır)
         var assignment = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
@@ -826,12 +826,12 @@ public class EvaluationService : IEvaluationService
     /// <summary>
     /// Soruları PenaltyType'a göre grupla: Sorular, Sarı Kartlar, Kırmızı Kartlar
     /// </summary>
-    private List<EvaluationSectionDto> BuildSectionsFromQuestions(List<Question>? questions)
+    private List<EvaluationGroupDto> BuildGroupsFromQuestions(List<Question>? questions)
     {
         if (questions == null || !questions.Any())
-            return new List<EvaluationSectionDto>();
+            return new List<EvaluationGroupDto>();
 
-        var result = new List<EvaluationSectionDto>();
+        var result = new List<EvaluationGroupDto>();
         var order = 1;
 
         // 1. Normal Sorular (PenaltyType = None)
@@ -858,9 +858,9 @@ public class EvaluationService : IEvaluationService
         return result;
     }
 
-    private EvaluationSectionDto CreateQuestionGroup(List<Question> questions, string name, int order)
+    private EvaluationGroupDto CreateQuestionGroup(List<Question> questions, string name, int order)
     {
-        return new EvaluationSectionDto
+        return new EvaluationGroupDto
         {
             Id = order,
             Name = name,
@@ -914,8 +914,6 @@ public class EvaluationService : IEvaluationService
             AttachmentFileName = a.AttachmentFileName,
             IsPenaltyApplied = a.IsPenaltyApplied,
             AppliedPenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
-            SectionOrder = null, // Section kaldırıldı
-            SectionName = null, // Section kaldırıldı
             GroupName = a.Question?.GroupName,
             QuestionOrder = a.Question?.Order,
             QuestionMaxPoints = a.Question?.MaxPoints ?? 5, // Sorunun max puanı (örn: 5)

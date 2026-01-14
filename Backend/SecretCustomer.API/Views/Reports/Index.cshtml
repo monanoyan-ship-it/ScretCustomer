@@ -288,13 +288,13 @@
                         </div>
                     </div>
 
-                    <!-- Sections -->
-                    <div data-bind="foreach: sections">
+                    <!-- Question Groups -->
+                    <div data-bind="foreach: groups">
                         <div class="card mb-3">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">
-                                    <span data-bind="text: order"></span>. <span data-bind="text: sectionName"></span>
-                                    <span class="float-end badge bg-primary" data-bind="text: (sectionScore || 0).toFixed(1) + '/' + (sectionMaxScore || 0).toFixed(1)"></span>
+                                    <span data-bind="text: order"></span>. <span data-bind="text: groupName"></span>
+                                    <span class="float-end badge bg-primary" data-bind="text: (groupScore || 0).toFixed(1) + '/' + (groupMaxScore || 0).toFixed(1)"></span>
                                 </h6>
                             </div>
                             <div class="card-body p-0">

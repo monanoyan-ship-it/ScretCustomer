@@ -19,7 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database Configuration
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // Dealer entity migration'ı henüz oluşturulmadı - geliştirme aşamasında
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -266,6 +270,7 @@ using (var scope = app.Services.CreateScope())
     }
     else
     {
+        // Development: Normal seed data
         await SeedData.InitializeAsync(context, logger);
     }
 }

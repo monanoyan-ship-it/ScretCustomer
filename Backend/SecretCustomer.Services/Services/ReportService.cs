@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
@@ -785,10 +786,13 @@ public class ReportService : IReportService
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
                     .ThenInclude(a => a.Project)
+                        .ThenInclude(p => p!.Customer)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.EvaluatedPersonnel)
+                .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedOrganization)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
             .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
@@ -797,6 +801,18 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.CustomerId.HasValue)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId == filter.OrganizationId.Value);
+
+        if (filter.ChecklistId.HasValue)
+            query = query.Where(a => a.Question.ChecklistId == filter.ChecklistId.Value);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(a => a.Evaluation.EvaluatorId == filter.EvaluatorId.Value);
 
         if (!string.IsNullOrEmpty(filter.PenaltyType))
         {
@@ -822,9 +838,14 @@ public class ReportService : IReportService
             AffectedEvaluations = penaltyAnswers.Select(a => a.EvaluationId).Distinct().Count()
         };
 
-        // Detailed penalties
+        // Total count before pagination
+        var totalCount = penaltyAnswers.Count;
+
+        // Detailed penalties with pagination
         var penalties = penaltyAnswers
             .OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
             .Select(a => new PenaltyDetailDto
             {
                 EvaluationId = a.EvaluationId,
@@ -834,13 +855,17 @@ public class ReportService : IReportService
                 GroupName = a.Question?.GroupName ?? "",
                 PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
                 ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
+                CustomerName = a.Evaluation.Assignment.Project?.Customer?.CompanyName,
+                OrganizationName = a.Evaluation.EvaluatedOrganization?.Name,
                 ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
-                EvaluatedPersonnelName = a.Evaluation.EvaluatedPersonnel != null
-                    ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
-                    : a.Evaluation.EvaluatedUnknownPersonnel,
+                EvaluatedPersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                    ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
+                    : (a.Evaluation.EvaluatedPersonnel != null
+                        ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
+                        : a.Evaluation.EvaluatedUnknownPersonnel),
                 EvaluationDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt,
                 Notes = a.Notes
             })
@@ -861,6 +886,55 @@ public class ReportService : IReportService
                 TotalPenalties = g.Count()
             })
             .OrderByDescending(q => q.TotalPenalties)
+            .Take(10)
+            .ToList();
+
+        // Top penalty organizations
+        var topOrganizations = penaltyAnswers
+            .Where(a => a.Evaluation.EvaluatedOrganization != null)
+            .GroupBy(a => new
+            {
+                OrgId = a.Evaluation.EvaluatedOrganizationId ?? 0,
+                OrgName = a.Evaluation.EvaluatedOrganization?.Name ?? "",
+                CustomerName = a.Evaluation.Assignment.Project?.Customer?.CompanyName ?? ""
+            })
+            .Where(g => g.Key.OrgId > 0)
+            .Select(g => new PenaltyOrganizationDto
+            {
+                OrganizationId = g.Key.OrgId,
+                OrganizationName = g.Key.OrgName,
+                CustomerName = g.Key.CustomerName,
+                YellowCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+                RedCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
+                TotalPenalties = g.Count()
+            })
+            .OrderByDescending(o => o.TotalPenalties)
+            .Take(10)
+            .ToList();
+
+        // Top penalty personnel
+        var topPersonnel = penaltyAnswers
+            .Where(a => a.Evaluation.EvaluatedCustomerPersonnel != null)
+            .GroupBy(a => new
+            {
+                PersonnelId = a.Evaluation.EvaluatedCustomerPersonnelId ?? 0,
+                PersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                    ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
+                    : "",
+                OrgName = a.Evaluation.EvaluatedOrganization?.Name ?? ""
+            })
+            .Where(g => g.Key.PersonnelId > 0)
+            .Select(g => new PenaltyPersonnelDto
+            {
+                PersonnelId = g.Key.PersonnelId,
+                PersonnelName = g.Key.PersonnelName,
+                OrganizationName = g.Key.OrgName,
+                YellowCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+                RedCardCount = g.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
+                TotalPenalties = g.Count(),
+                EvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count()
+            })
+            .OrderByDescending(p => p.TotalPenalties)
             .Take(10)
             .ToList();
 
@@ -891,7 +965,12 @@ public class ReportService : IReportService
             Summary = summary,
             Penalties = penalties,
             TopPenaltyQuestions = topQuestions,
-            MonthlyTrend = monthlyTrend
+            TopPenaltyOrganizations = topOrganizations,
+            TopPenaltyPersonnel = topPersonnel,
+            MonthlyTrend = monthlyTrend,
+            TotalCount = totalCount,
+            Page = filter.Page,
+            PageSize = filter.PageSize
         };
     }
 
@@ -1016,19 +1095,112 @@ public class ReportService : IReportService
 
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
 
-    public async Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync()
+    public async Task<IEnumerable<CustomerListItemDto>> GetCustomersWithEvaluationsAsync()
+    {
+        // Değerlendirmesi olan müşterileri getir (Project üzerinden Customer)
+        var customersFromEvaluations = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Customer)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.Assignment.Project.CustomerId != null)
+            .Select(e => new
+            {
+                e.Assignment.Project.Customer!.Id,
+                e.Assignment.Project.Customer.CompanyName,
+                e.Assignment.Project.Customer.TaxNumber,
+                e.Assignment.Project.Customer.IsActive
+            })
+            .Distinct()
+            .ToListAsync();
+
+        return customersFromEvaluations
+            .GroupBy(c => c.Id)
+            .Select(g => new CustomerListItemDto
+            {
+                Id = g.Key,
+                CompanyName = g.First().CompanyName,
+                TaxNumber = g.First().TaxNumber,
+                IsActive = g.First().IsActive
+            })
+            .OrderBy(c => c.CompanyName)
+            .ToList();
+    }
+
+    public async Task<IEnumerable<OrganizationListItemDto>> GetOrganizationsWithEvaluationsAsync(int? customerId)
+    {
+        // Değerlendirmesi olan organizasyonları getir
+        var query = _context.Evaluations
+            .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Customer)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.EvaluatedOrganizationId != null);
+
+        if (customerId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.Project.CustomerId == customerId.Value);
+        }
+
+        var orgsFromEvaluations = await query
+            .Select(e => new
+            {
+                e.EvaluatedOrganization!.Id,
+                e.EvaluatedOrganization.Name,
+                e.EvaluatedOrganization.CustomerId,
+                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : ""
+            })
+            .ToListAsync();
+
+        return orgsFromEvaluations
+            .GroupBy(o => o.Id)
+            .Select(g => new OrganizationListItemDto
+            {
+                Id = g.Key,
+                Name = g.First().Name,
+                CustomerId = g.First().CustomerId,
+                CustomerName = g.First().CustomerName,
+                EvaluationCount = g.Count()
+            })
+            .OrderBy(o => o.Name)
+            .ToList();
+    }
+
+    public async Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync(int? customerId = null, int? organizationId = null)
     {
         // Değerlendirmede bulunan personelleri getir (EvaluatedCustomerPersonnel = CustomerPersonnel entity)
-        var personnelFromEvaluations = await _context.Evaluations
+        var query = _context.Evaluations
             .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.EvaluatedCustomerPersonnelId != null && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Customer)
+            .Where(e => e.EvaluatedCustomerPersonnelId != null && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Müşteriye göre filtrele
+        if (customerId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.Project.CustomerId == customerId.Value);
+        }
+
+        // Organizasyona göre filtrele
+        if (organizationId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+        }
+
+        var personnelFromEvaluations = await query
             .Select(e => new
             {
                 e.EvaluatedCustomerPersonnelId,
                 e.EvaluatedCustomerPersonnel!.FirstName,
-                e.EvaluatedCustomerPersonnel.LastName
+                e.EvaluatedCustomerPersonnel.LastName,
+                CustomerId = e.Assignment.Project.CustomerId,
+                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : "",
+                OrganizationId = e.EvaluatedOrganizationId,
+                OrganizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : ""
             })
-            .Distinct()
             .ToListAsync();
 
         return personnelFromEvaluations
@@ -1037,7 +1209,11 @@ public class ReportService : IReportService
             {
                 Id = g.Key!.Value,
                 Name = $"{g.First().FirstName} {g.First().LastName}",
-                Title = null
+                Title = null,
+                CustomerId = g.First().CustomerId,
+                CustomerName = g.First().CustomerName,
+                OrganizationId = g.First().OrganizationId,
+                OrganizationName = g.First().OrganizationName
             })
             .OrderBy(p => p.Name)
             .ToList();

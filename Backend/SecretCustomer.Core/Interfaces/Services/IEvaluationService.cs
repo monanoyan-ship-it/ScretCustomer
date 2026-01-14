@@ -120,8 +120,8 @@ public class EvaluationFormDto
     public int? SelectedPeriodId { get; set; }
     public List<PeriodOptionDto> AvailablePeriods { get; set; } = new();
 
-    // Bölümler ve sorular
-    public List<EvaluationSectionDto> Sections { get; set; } = new();
+    // Soru grupları
+    public List<EvaluationGroupDto> Groups { get; set; } = new();
 
     // Mevcut cevaplar (düzenleme için)
     public List<AnswerDto> ExistingAnswers { get; set; } = new();
@@ -155,7 +155,7 @@ public class PeriodOptionDto
     public int CompletedCount { get; set; }
 }
 
-public class EvaluationSectionDto
+public class EvaluationGroupDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -1,18 +1,18 @@
 @{
-    ViewData["Title"] = @Html.T("Report.PenaltyReport", "Cezalı KL Raporu");
+    ViewData["Title"] = @Html.T("Report.PenaltyReport", "Cezali KL Raporu");
 }
 
 <div id="penalties-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-card-checklist text-danger"></i> @Html.T("Report.PenaltyReport", "Cezalı KL Raporu")</h2>
+        <h2><i class="bi bi-card-checklist text-danger"></i> @Html.T("Report.PenaltyReport", "Cezali KL Raporu")</h2>
         <div class="btn-group">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
-                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "İndiriliyor...")
+                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
                 </span>
             </button>
         </div>
@@ -26,27 +26,39 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tüm Projeler")'"></select>
+                    <label class="form-label">@Html.T("Report.Customer", "Musteri")</label>
+                    <select class="form-select" data-bind="value: filter.customerId, options: customers, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllCustomers", "Tum Musteriler")', event: { change: onCustomerChange }"></select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Branch", "Şube")</label>
-                    <select class="form-select" data-bind="value: filter.branchId, options: branches, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllBranches", "Tüm Şubeler")'"></select>
+                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
+                    <select class="form-select" data-bind="value: filter.projectId, options: filteredProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tum Projeler")'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.Organization", "Organizasyon")</label>
+                    <select class="form-select" data-bind="value: filter.organizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllOrganizations", "Tum Organizasyonlar")'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.Checklist", "Kontrol Listesi")</label>
+                    <select class="form-select" data-bind="value: filter.checklistId, options: checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllChecklists", "Tum Listeler")'"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Report.Evaluator", "Degerlendirici")</label>
+                    <select class="form-select" data-bind="value: filter.evaluatorId, options: evaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Report.AllEvaluators", "Tum Degerlendiriciler")'"></select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@Html.T("Report.PenaltyType", "Ceza Tipi")</label>
                     <select class="form-select" data-bind="value: filter.penaltyType">
-                        <option value="">@Html.T("Common.All", "Tümü")</option>
-                        <option value="YellowCard">@Html.T("Report.YellowCard", "Sarı Kart")</option>
-                        <option value="RedCard">@Html.T("Report.RedCard", "Kırmızı Kart")</option>
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="YellowCard">@Html.T("Report.YellowCard", "Sari Kart")</option>
+                        <option value="RedCard">@Html.T("Report.RedCard", "Kirmizi Kart")</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.StartDate", "Başlangıç")</label>
+                    <label class="form-label">@Html.T("Report.StartDate", "Baslangic")</label>
                     <input type="date" class="form-control" data-bind="value: filter.startDate">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.EndDate", "Bitiş")</label>
+                    <label class="form-label">@Html.T("Report.EndDate", "Bitis")</label>
                     <input type="date" class="form-control" data-bind="value: filter.endDate">
                 </div>
                 <div class="col-md-12 d-flex justify-content-end">
@@ -70,7 +82,7 @@
                 <div class="card-body py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.TotalPenalties", "Toplam Cezalı")</h6>
+                            <h6 class="text-white-50 mb-1">@Html.T("Report.TotalPenalties", "Toplam Cezali")</h6>
                             <h2 class="mb-0" data-bind="text: summary().totalPenalties"></h2>
                         </div>
                         <i class="bi bi-card-fill fs-1 opacity-50"></i>
@@ -83,7 +95,7 @@
                 <div class="card-body py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-dark-50 mb-1">@Html.T("Report.YellowCard", "Sarı Kart")</h6>
+                            <h6 class="text-dark-50 mb-1">@Html.T("Report.YellowCard", "Sari Kart")</h6>
                             <h2 class="mb-0" data-bind="text: summary().totalYellowCards"></h2>
                         </div>
                         <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
@@ -96,7 +108,7 @@
                 <div class="card-body py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.RedCard", "Kırmızı Kart")</h6>
+                            <h6 class="text-white-50 mb-1">@Html.T("Report.RedCard", "Kirmizi Kart")</h6>
                             <h2 class="mb-0" data-bind="text: summary().totalRedCards"></h2>
                         </div>
                         <i class="bi bi-x-circle fs-1 opacity-50"></i>
@@ -109,7 +121,7 @@
                 <div class="card-body py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.AffectedEvaluations", "Etkilenen Değerlendirme")</h6>
+                            <h6 class="text-white-50 mb-1">@Html.T("Report.AffectedEvaluations", "Etkilenen Degerlendirme")</h6>
                             <h2 class="mb-0" data-bind="text: summary().affectedEvaluations"></h2>
                         </div>
                         <i class="bi bi-clipboard-x fs-1 opacity-50"></i>
@@ -122,7 +134,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yukleniyor...")</p>
     </div>
 
     <div data-bind="visible: !isLoading()" class="row">
@@ -130,18 +142,18 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> @Html.T("Report.TopPenaltyQuestions", "En Çok Ceza Alan Sorular")</h5>
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> @Html.T("Report.TopPenaltyQuestions", "En Cok Ceza Alan Sorular")</h5>
                 </div>
                 <div class="card-body p-0">
                     <div data-bind="visible: topPenaltyQuestions().length === 0" class="text-center text-muted py-4">
                         <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">@Html.T("Report.NoDataYet", "Henüz veri bulunmamaktadır.")</p>
+                        <p class="mt-2">@Html.T("Report.NoDataYet", "Henuz veri bulunmamaktadir.")</p>
                     </div>
                     <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyQuestions">
                         <li class="list-group-item d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
                                 <div class="fw-bold" data-bind="text: questionText"></div>
-                                <small class="text-muted" data-bind="text: checklistName + ' - ' + sectionName"></small>
+                                <small class="text-muted" data-bind="text: checklistName + ' - ' + groupName"></small>
                             </div>
                             <div class="text-end">
                                 <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCount > 0">
@@ -157,25 +169,62 @@
             </div>
         </div>
 
-        <!-- Top Penalty Branches -->
+        <!-- Top Penalty Organizations -->
         <div class="col-md-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="bi bi-building"></i> @Html.T("Report.TopPenaltyBranches", "En Çok Ceza Alan Şubeler")</h5>
+                    <h5 class="mb-0"><i class="bi bi-building"></i> @Html.T("Report.TopPenaltyOrganizations", "En Cok Ceza Alan Organizasyonlar")</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div data-bind="visible: topPenaltyBranches().length === 0" class="text-center text-muted py-4">
+                    <div data-bind="visible: topPenaltyOrganizations().length === 0" class="text-center text-muted py-4">
                         <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">@Html.T("Report.NoDataYet", "Henüz veri bulunmamaktadır.")</p>
+                        <p class="mt-2">@Html.T("Report.NoDataYet", "Henuz veri bulunmamaktadir.")</p>
                     </div>
-                    <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyBranches">
+                    <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyOrganizations">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <span data-bind="text: projectName || name"></span>
+                                <span class="fw-bold" data-bind="text: organizationName"></span>
+                                <small class="text-muted d-block" data-bind="text: customerName"></small>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-warning text-dark me-1" data-bind="text: yellowCardCount + ' @Html.T("Report.Yellow", "Sarı")'"></span>
-                                <span class="badge bg-danger" data-bind="text: redCardCount + ' @Html.T("Report.Red", "Kırmızı")'"></span>
+                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span>
+                                </span>
+                                <span class="badge bg-danger" data-bind="visible: redCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Penalty Personnel -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-x"></i> @Html.T("Report.TopPenaltyPersonnel", "En Cok Ceza Alan Personeller")</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: topPenaltyPersonnel().length === 0" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">@Html.T("Report.NoDataYet", "Henuz veri bulunmamaktadir.")</p>
+                    </div>
+                    <ul class="list-group list-group-flush" data-bind="foreach: topPenaltyPersonnel">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold" data-bind="text: personnelName"></span>
+                                <small class="text-muted d-block" data-bind="text: organizationName"></small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary me-1" data-bind="text: evaluationCount + ' deg.'"></span>
+                                <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: yellowCardCount"></span>
+                                </span>
+                                <span class="badge bg-danger" data-bind="visible: redCardCount > 0">
+                                    <i class="bi bi-card-fill"></i> <span data-bind="text: redCardCount"></span>
+                                </span>
                             </div>
                         </li>
                     </ul>
@@ -184,13 +233,13 @@
         </div>
 
         <!-- Monthly Trend Chart -->
-        <div class="col-12 mb-4">
-            <div class="card shadow">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> @Html.T("Report.MonthlyPenaltyTrend", "Aylık Ceza Trendi")</h5>
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> @Html.T("Report.MonthlyPenaltyTrend", "Aylik Ceza Trendi")</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="penaltyTrendChart" style="max-height: 300px;"></canvas>
+                    <canvas id="penaltyTrendChart" style="max-height: 250px;"></canvas>
                 </div>
             </div>
         </div>
@@ -199,24 +248,37 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> @Html.T("Report.PenaltyEvaluations", "Cezalı Değerlendirmeler")</h5>
-                    <span class="badge bg-danger" data-bind="text: penalties().length + ' @Html.T("Report.Records", "kayıt")'"></span>
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> @Html.T("Report.PenaltyEvaluations", "Cezali Degerlendirmeler")</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger" data-bind="text: totalCount() + ' @Html.T("Report.Records", "kayit")'"></span>
+                        <!-- Pagination -->
+                        <div class="btn-group btn-group-sm" data-bind="visible: totalPages() > 1">
+                            <button class="btn btn-outline-secondary" data-bind="click: previousPage, disable: filter.page() <= 1">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <span class="btn btn-outline-secondary disabled" data-bind="text: filter.page() + ' / ' + totalPages()"></span>
+                            <button class="btn btn-outline-secondary" data-bind="click: nextPage, disable: filter.page() >= totalPages()">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div data-bind="visible: penalties().length === 0" class="text-center text-muted py-5">
                         <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">@Html.T("Report.NoPenaltyEvaluations", "Cezalı değerlendirme bulunamadı.")</p>
+                        <p class="mt-2">@Html.T("Report.NoPenaltyEvaluations", "Cezali degerlendirme bulunamadi.")</p>
                     </div>
                     <div data-bind="visible: penalties().length > 0" class="table-responsive">
                         <table class="table table-hover table-striped mb-0">
                             <thead class="table-dark">
                                 <tr>
                                     <th>@Html.T("Report.Date", "Tarih")</th>
-                                    <th>@Html.T("Report.ProjectBranch", "Proje / Şube")</th>
+                                    <th>@Html.T("Report.ProjectOrg", "Proje / Organizasyon")</th>
                                     <th>@Html.T("Report.Question", "Soru")</th>
                                     <th>@Html.T("Report.PenaltyType", "Ceza Tipi")</th>
-                                    <th>@Html.T("Report.Evaluator", "Değerlendirici")</th>
+                                    <th>@Html.T("Report.Evaluator", "Degerlendirici")</th>
                                     <th>@Html.T("Report.EvaluatedPerson", "Denetlenen")</th>
+                                    <th class="text-center" style="width: 50px;">@Html.T("Common.Actions", "Islem")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: penalties">
@@ -226,25 +288,47 @@
                                     </td>
                                     <td>
                                         <span data-bind="text: projectName"></span>
-                                        <small class="text-muted d-block" data-bind="text: checklistName"></small>
+                                        <small class="text-muted d-block" data-bind="text: organizationName || checklistName || '-'"></small>
                                     </td>
                                     <td>
                                         <span data-bind="text: questionText"></span>
-                                        <small class="text-muted d-block" data-bind="text: sectionName"></small>
+                                        <small class="text-muted d-block" data-bind="text: groupName"></small>
                                     </td>
                                     <td>
                                         <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">
-                                            <i class="bi bi-card-fill"></i> @Html.T("Report.YellowCard", "Sarı Kart")
+                                            <i class="bi bi-card-fill"></i> @Html.T("Report.YellowCard", "Sari Kart")
                                         </span>
                                         <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">
-                                            <i class="bi bi-card-fill"></i> @Html.T("Report.RedCard", "Kırmızı Kart")
+                                            <i class="bi bi-card-fill"></i> @Html.T("Report.RedCard", "Kirmizi Kart")
                                         </span>
                                     </td>
                                     <td data-bind="text: evaluatorName || '-'"></td>
                                     <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td class="text-center">
+                                        <a class="btn btn-sm btn-outline-primary" data-bind="attr: { href: '/Evaluations?evaluationId=' + evaluationId }" target="_blank" title="@Html.T("Report.ViewEvaluation", "Degerlendirmeyi Gor")">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <!-- Bottom Pagination -->
+                <div class="card-footer bg-white d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
+                    <small class="text-muted">
+                        @Html.T("Report.ShowingRecords", "Gosterilen"):
+                        <span data-bind="text: ((filter.page() - 1) * filter.pageSize()) + 1"></span> -
+                        <span data-bind="text: Math.min(filter.page() * filter.pageSize(), totalCount())"></span>
+                        / <span data-bind="text: totalCount()"></span>
+                    </small>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" data-bind="click: previousPage, disable: filter.page() <= 1">
+                            <i class="bi bi-chevron-left"></i> @Html.T("Common.Previous", "Onceki")
+                        </button>
+                        <button class="btn btn-outline-primary" data-bind="click: nextPage, disable: filter.page() >= totalPages()">
+                            @Html.T("Common.Next", "Sonraki") <i class="bi bi-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>

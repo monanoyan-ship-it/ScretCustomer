@@ -40,7 +40,7 @@ public class UpdateChecklistDto
     public int? CustomerOrganizationId { get; set; }
 
     /// <summary>
-    /// Sorular - Direkt checklist'e bağlı (Section yok!)
+    /// Sorular - Direkt checklist'e bağlı, GroupName ile gruplandırılır
     /// </summary>
     public List<UpdateQuestionDto> Questions { get; set; } = new();
 }

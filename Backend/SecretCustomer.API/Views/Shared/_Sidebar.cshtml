@@ -324,49 +324,74 @@
 
     function highlightActiveMenu() {
         var currentPath = window.location.pathname.toLowerCase();
-        // Normalize: remove trailing slash and /index suffix
-        var normalizedCurrent = currentPath.replace(/\/index$/i, '').replace(/\/$/, '');
+        // Normalize: remove trailing slash and /index suffix, convert backslash to forward slash
+        var normalizedCurrent = currentPath
+            .replace(/\\/g, '/')
+            .replace(/\/index$/i, '')
+            .replace(/\/$/, '');
 
-        // Find all submenu links
+        // First: CLEAR all active states
+        var allLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+        allLinks.forEach(function(link) {
+            link.classList.remove('active');
+            link.style.backgroundColor = '';
+            link.style.borderRadius = '';
+        });
+
+        // Second: find exact match (prioritize longer/more specific paths)
         var menuLinks = document.querySelectorAll('.sidebar-nav .submenu .nav-link');
+        var bestMatch = null;
+        var bestMatchLength = 0;
 
         menuLinks.forEach(function(link) {
             var href = link.getAttribute('href');
             if (href) {
-                var linkPath = href.toLowerCase();
-                var normalizedLink = linkPath.replace(/\/index$/i, '').replace(/\/$/, '');
+                var linkPath = href.toLowerCase()
+                    .replace(/\\/g, '/')
+                    .replace(/\/index$/i, '')
+                    .replace(/\/$/, '');
 
-                // Exact match after normalization
-                if (normalizedCurrent === normalizedLink) {
-                    // Add active class to the link
-                    link.classList.add('active');
-                    link.classList.remove('text-white-50');
-                    link.classList.add('text-white');
-
-                    // Find and expand parent collapse
-                    var parentCollapse = link.closest('.collapse');
-                    if (parentCollapse) {
-                        parentCollapse.classList.add('show');
-
-                        // Update the toggle button state
-                        var toggleBtn = document.querySelector('[href="#' + parentCollapse.id + '"]');
-                        if (toggleBtn) {
-                            toggleBtn.classList.remove('collapsed');
-                            toggleBtn.setAttribute('aria-expanded', 'true');
-                        }
-                    }
+                // Exact match - prioritize longer paths (more specific)
+                if (normalizedCurrent === linkPath && linkPath.length > bestMatchLength) {
+                    bestMatch = link;
+                    bestMatchLength = linkPath.length;
                 }
             }
         });
 
-        // Also check top-level menu items (Dashboard, Notifications for non-admin)
+        // Apply active state only to the best (most specific) match
+        if (bestMatch) {
+            bestMatch.classList.add('active');
+            bestMatch.classList.remove('text-white-50');
+            bestMatch.classList.add('text-white');
+            bestMatch.style.backgroundColor = 'rgba(13, 110, 253, 0.2)';
+            bestMatch.style.borderRadius = '4px';
+
+            // Find and expand parent collapse
+            var parentCollapse = bestMatch.closest('.collapse');
+            if (parentCollapse) {
+                parentCollapse.classList.add('show');
+
+                // Update the toggle button state
+                var toggleBtn = document.querySelector('[href="#' + parentCollapse.id + '"]');
+                if (toggleBtn) {
+                    toggleBtn.classList.remove('collapsed');
+                    toggleBtn.setAttribute('aria-expanded', 'true');
+                }
+            }
+            return; // Exit after applying submenu match
+        }
+
+        // Only check top-level if no submenu match found
         var topLevelLinks = document.querySelectorAll('.sidebar-nav > .nav-item > a.nav-link:not([data-bs-toggle])');
         topLevelLinks.forEach(function(link) {
             var href = link.getAttribute('href');
             if (href) {
-                var linkPath = href.toLowerCase();
-                var normalizedLink = linkPath.replace(/\/index$/i, '').replace(/\/$/, '');
-                if (normalizedCurrent === normalizedLink) {
+                var linkPath = href.toLowerCase()
+                    .replace(/\\/g, '/')
+                    .replace(/\/index$/i, '')
+                    .replace(/\/$/, '');
+                if (normalizedCurrent === linkPath) {
                     link.classList.add('active');
                     link.style.backgroundColor = 'rgba(13, 110, 253, 0.3)';
                 }

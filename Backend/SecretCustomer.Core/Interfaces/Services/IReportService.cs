@@ -1,3 +1,4 @@
+using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.DTOs.Report;
 
 namespace SecretCustomer.Core.Interfaces.Services;
@@ -30,8 +31,14 @@ public interface IReportService
 
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
 
-    // Değerlendirilen personel listesi
-    Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync();
+    // Değerlendirmesi olan müşteri listesi
+    Task<IEnumerable<CustomerListItemDto>> GetCustomersWithEvaluationsAsync();
+
+    // Değerlendirmesi olan organizasyon listesi
+    Task<IEnumerable<OrganizationListItemDto>> GetOrganizationsWithEvaluationsAsync(int? customerId);
+
+    // Değerlendirilen personel listesi (müşteri ve organizasyona göre filtrelenebilir)
+    Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync(int? customerId = null, int? organizationId = null);
 
     // Temsilci Karnesi raporu
     Task<PersonnelReportCardDto?> GetPersonnelReportCardAsync(PersonnelReportCardFilterDto filter);

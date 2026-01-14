@@ -1,5 +1,5 @@
 // Checklist ViewModel - Model Pattern ile Gelismis Kontrol Listesi Yonetimi
-// YENİ YAPI: Checklist -> Questions -> SubCriteria (Section kaldırıldı)
+// YAPI: Checklist -> Questions -> SubCriteria (Sorular GroupName ile gruplandırılır)
 
 // SubCriteria Model - Alt Kriter/Öneri
 var SubCriteriaModel = function (data) {

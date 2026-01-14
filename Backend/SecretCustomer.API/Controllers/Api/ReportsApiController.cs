@@ -315,18 +315,30 @@ public class ReportsApiController : BaseApiController
     [HttpGet("penalties")]
     public async Task<IActionResult> GetPenaltiesReport(
         [FromQuery] int? projectId,
+        [FromQuery] int? customerId,
+        [FromQuery] int? organizationId,
+        [FromQuery] int? checklistId,
+        [FromQuery] int? evaluatorId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         try
         {
             var filter = new PenaltyFilterDto
             {
                 ProjectId = projectId,
+                CustomerId = customerId,
+                OrganizationId = organizationId,
+                ChecklistId = checklistId,
+                EvaluatorId = evaluatorId,
                 PenaltyType = penaltyType,
                 StartDate = startDate,
-                EndDate = endDate
+                EndDate = endDate,
+                Page = page,
+                PageSize = pageSize
             };
             var result = await _reportService.GetPenaltiesReportAsync(filter);
             return Ok(result);
@@ -344,6 +356,10 @@ public class ReportsApiController : BaseApiController
     [HttpGet("penalties/export")]
     public async Task<IActionResult> ExportPenaltiesToExcel(
         [FromQuery] int? projectId,
+        [FromQuery] int? customerId,
+        [FromQuery] int? organizationId,
+        [FromQuery] int? checklistId,
+        [FromQuery] int? evaluatorId,
         [FromQuery] string? penaltyType,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -353,9 +369,15 @@ public class ReportsApiController : BaseApiController
             var filter = new PenaltyFilterDto
             {
                 ProjectId = projectId,
+                CustomerId = customerId,
+                OrganizationId = organizationId,
+                ChecklistId = checklistId,
+                EvaluatorId = evaluatorId,
                 PenaltyType = penaltyType,
                 StartDate = startDate,
-                EndDate = endDate
+                EndDate = endDate,
+                Page = 1,
+                PageSize = int.MaxValue // Export için pagination yok
             };
             var result = await _reportService.ExportPenaltiesToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -370,14 +392,52 @@ public class ReportsApiController : BaseApiController
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
 
     /// <summary>
-    /// Değerlendirilen personel listesini getirir (karne için seçim)
+    /// Değerlendirmesi olan müşteri listesini getirir (karne için seçim)
     /// </summary>
-    [HttpGet("personnel-list")]
-    public async Task<IActionResult> GetPersonnelList()
+    [HttpGet("report-card/customers")]
+    public async Task<IActionResult> GetReportCardCustomers()
     {
         try
         {
-            var personnel = await _reportService.GetEvaluatedPersonnelListAsync();
+            var customers = await _reportService.GetCustomersWithEvaluationsAsync();
+            return Ok(customers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading customers for report card");
+            return StatusCode(500, CreateErrorResponse("Müşteri listesi yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirmesi olan organizasyon listesini getirir (müşteriye göre filtrelenir)
+    /// </summary>
+    [HttpGet("report-card/organizations")]
+    public async Task<IActionResult> GetReportCardOrganizations([FromQuery] int? customerId)
+    {
+        try
+        {
+            var organizations = await _reportService.GetOrganizationsWithEvaluationsAsync(customerId);
+            return Ok(organizations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading organizations for report card");
+            return StatusCode(500, CreateErrorResponse("Organizasyon listesi yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirilen personel listesini getirir (karne için seçim)
+    /// </summary>
+    [HttpGet("personnel-list")]
+    public async Task<IActionResult> GetPersonnelList(
+        [FromQuery] int? customerId,
+        [FromQuery] int? organizationId)
+    {
+        try
+        {
+            var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId, organizationId);
             return Ok(personnel);
         }
         catch (Exception ex)

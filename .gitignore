@@ -81,3 +81,6 @@ tmpclaude*
 
 # Storage/ScreenShots (test dosyaları - repo şişmesin)
 Storage/ScreenShots/
+
+# Local test migrations (commit edilmeyecek)
+**/Migrations/*LocalTest*

@@ -26,6 +26,24 @@ public class CustomerOrganizationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Tüm organizasyonları getir (filtreler için)
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var organizations = await _organizationService.GetAllAsync();
+            return Ok(organizations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading all organizations");
+            return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken bir hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
     /// DEBUG: Organizasyon ve personel ilişkisini kontrol et
     /// </summary>
     [HttpGet("debug/check-personnel")]
