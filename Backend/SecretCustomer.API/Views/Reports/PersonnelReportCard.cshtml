@@ -175,7 +175,7 @@
                                         <th class="text-center">@Html.T("Report.RedCard", "Kırmızı Kart")</th>
                                     </tr>
                                 </thead>
-                                <tbody data-bind="foreach: report().monthlyTrend">
+                                <tbody data-bind="foreach: report() ? report().monthlyTrend : []">
                                     <tr>
                                         <td data-bind="text: monthName"></td>
                                         <td class="text-center" data-bind="text: evaluationCount"></td>
@@ -209,7 +209,7 @@
                                     <th class="text-center">@Html.T("Report.SuccessRate", "Başarı %")</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: report().groupPerformances">
+                            <tbody data-bind="foreach: report() ? report().groupPerformances : []">
                                 <tr>
                                     <td data-bind="text: groupName"></td>
                                     <td class="text-center">
@@ -239,7 +239,7 @@
                         <div class="p-2 bg-success bg-opacity-10" data-bind="visible: report() && report().strengths.length > 0">
                             <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle"></i> @Html.T("Report.Strengths", "Güçlü Yönler")</small>
                         </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: report().strengths">
+                        <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().strengths : []">
                             <li class="list-group-item py-1 small">
                                 <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
                                 <span data-bind="text: questionText"></span>
@@ -250,7 +250,7 @@
                         <div class="p-2 bg-danger bg-opacity-10" data-bind="visible: report() && report().weaknesses.length > 0">
                             <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> @Html.T("Report.NeedsImprovement", "Geliştirilmesi Gereken")</small>
                         </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: report().weaknesses">
+                        <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
                             <li class="list-group-item py-1 small">
                                 <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
                                 <span data-bind="text: questionText"></span>
@@ -280,7 +280,7 @@
                                 <th class="text-center">@Html.T("Common.Actions", "İşlem")</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: report().recentEvaluations">
+                        <tbody data-bind="foreach: report() ? report().recentEvaluations : []">
                             <tr>
                                 <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
                                 <td data-bind="text: projectName"></td>

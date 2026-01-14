@@ -167,6 +167,36 @@ public class Project : BaseEntity
     public int? OrganizationId { get; set; }
     public CustomerOrganization? Organization { get; set; }
 
+    // ===== ANKET AYARLARI (Survey Settings) =====
+
+    /// <summary>
+    /// Anket kimlik tipi (Anonim/Açık)
+    /// Sadece ProjectTypeId = OnlineSurvey olduğunda kullanılır
+    /// </summary>
+    public int? SurveyIdentityTypeId { get; set; }
+
+    /// <summary>
+    /// Anket davetiye email şablonu
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+    public EmailTemplate? EmailTemplate { get; set; }
+
+    /// <summary>
+    /// Anket hatırlatma email şablonu
+    /// </summary>
+    public int? ReminderEmailTemplateId { get; set; }
+    public EmailTemplate? ReminderEmailTemplate { get; set; }
+
+    /// <summary>
+    /// Hatırlatma mail gönderilsin mi?
+    /// </summary>
+    public bool SendReminderEmails { get; set; } = false;
+
+    /// <summary>
+    /// Hatırlatma gün sayısı (bitiş tarihinden X gün önce)
+    /// </summary>
+    public int? ReminderDaysBeforeEnd { get; set; }
+
     /// <summary>
     /// Proje takimi (atanan kullanicilar)
     /// </summary>

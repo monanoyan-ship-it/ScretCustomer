@@ -2,6 +2,30 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SecretCustomer.Core.DTOs.Customer;
 
+/// <summary>
+/// Liste görünümü için hafif DTO - Include kullanmadan projection ile çekilir
+/// </summary>
+public class CustomerListDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
+    public string? TaxNumber { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public string? City { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime? ContractStartDate { get; set; }
+    public DateTime? ContractEndDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    // Aggregate counts (COUNT subqueries ile hesaplanır)
+    public int PersonnelCount { get; set; }
+    public int OrganizationCount { get; set; }
+    public int BranchCount { get; set; }
+    public int ProjectCount { get; set; }
+}
+
 public class CustomerDto
 {
     public int Id { get; set; }

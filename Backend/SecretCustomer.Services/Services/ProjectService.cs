@@ -48,6 +48,8 @@ public class ProjectService : IProjectService
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
+            .Include(p => p.EmailTemplate)
+            .Include(p => p.ReminderEmailTemplate)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         return project == null ? null : MapToDto(project);
@@ -64,6 +66,8 @@ public class ProjectService : IProjectService
                 .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
                 .ThenInclude(tm => tm.User)
+            .Include(p => p.EmailTemplate)
+            .Include(p => p.ReminderEmailTemplate)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         if (project == null)
@@ -82,6 +86,8 @@ public class ProjectService : IProjectService
             .Include(p => p.Assignments)
                 .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
+            .Include(p => p.EmailTemplate)
+            .Include(p => p.ReminderEmailTemplate)
             .Where(p => !p.IsDeleted);
 
         if (!includeInactive)
@@ -117,6 +123,121 @@ public class ProjectService : IProjectService
                 IsOverdue = daysRemaining < 0
             };
         });
+    }
+
+    /// <summary>
+    /// Liste görünümü için optimize edilmiş method - Projection kullanır
+    /// </summary>
+    public async Task<IEnumerable<ProjectListDto>> GetListAsync(
+        string? searchText = null,
+        int? customerId = null,
+        string? projectType = null,
+        string? status = null,
+        int? projectManagerId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        bool includeInactive = false)
+    {
+        var query = _context.Projects
+            .Where(p => !p.IsDeleted)
+            .AsQueryable();
+
+        if (!includeInactive)
+            query = query.Where(p => p.IsActive);
+
+        // Filtreler
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var search = searchText.ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(search) ||
+                (p.Code != null && p.Code.ToLower().Contains(search)) ||
+                (p.Description != null && p.Description.ToLower().Contains(search)));
+        }
+
+        if (customerId.HasValue)
+            query = query.Where(p => p.CustomerId == customerId.Value);
+
+        if (!string.IsNullOrWhiteSpace(projectType))
+        {
+            var typeItem = ProjectTypes.GetBySystemName(projectType);
+            if (typeItem != null)
+                query = query.Where(p => p.ProjectTypeId == typeItem.Id);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var statusItem = ProjectStatuses.GetBySystemName(status);
+            if (statusItem != null)
+                query = query.Where(p => p.StatusId == statusItem.Id);
+        }
+
+        if (projectManagerId.HasValue)
+            query = query.Where(p => p.ProjectManagerId == projectManagerId.Value);
+
+        if (startDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(p => p.StartDate >= start || p.EndDate >= start);
+        }
+
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(p => p.StartDate <= end || p.EndDate <= end);
+        }
+
+        return await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new ProjectListDto
+            {
+                Id = p.Id,
+                Code = p.Code,
+                Name = p.Name,
+                Description = p.Description,
+                ChecklistId = p.ChecklistId,
+                ChecklistName = p.Checklist != null ? p.Checklist.Name : null,
+                ProjectType = ProjectTypes.GetById(p.ProjectTypeId) != null ? ProjectTypes.GetById(p.ProjectTypeId)!.SystemName : "",
+                Status = ProjectStatuses.GetById(p.StatusId) != null ? ProjectStatuses.GetById(p.StatusId)!.SystemName : "",
+                AssignmentType = AssignmentTypes.GetById(p.AssignmentTypeId) != null ? AssignmentTypes.GetById(p.AssignmentTypeId)!.SystemName : "",
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                IsActive = p.IsActive,
+                CreatedAt = p.CreatedAt,
+                TotalAssignments = p.Assignments.Count(a => !a.IsDeleted),
+                CompletedAssignments = p.Assignments.Count(a => !a.IsDeleted && a.IsCompleted),
+                CompletionPercentage = p.Assignments.Count(a => !a.IsDeleted) > 0
+                    ? Math.Round((decimal)p.Assignments.Count(a => !a.IsDeleted && a.IsCompleted) / p.Assignments.Count(a => !a.IsDeleted) * 100, 1)
+                    : 0,
+                CustomerId = p.CustomerId,
+                CustomerName = p.Customer != null ? p.Customer.CompanyName : null,
+                CustomerCode = p.Customer != null ? p.Customer.Code : null,
+                OrganizationId = p.OrganizationId,
+                OrganizationName = p.Organization != null ? p.Organization.Name : null,
+                ProjectManagerId = p.ProjectManagerId,
+                ProjectManagerName = p.ProjectManager != null ? p.ProjectManager.FirstName + " " + p.ProjectManager.LastName : null,
+                TargetCount = p.TargetCount,
+                // İstatistikler
+                AverageScore = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                    .Any()
+                    ? Math.Round(p.Assignments
+                        .Where(a => !a.IsDeleted)
+                        .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                        .Average(e => e.ScorePercentage!.Value), 1)
+                    : 0,
+                TotalYellowCards = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                    .Sum(e => e.YellowCardCount),
+                TotalRedCards = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                    .Sum(e => e.RedCardCount),
+                TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
+            })
+            .ToListAsync();
     }
 
     public async Task<ProjectDto> CreateAsync(CreateProjectDto dto)
@@ -155,7 +276,15 @@ public class ProjectService : IProjectService
             Tags = dto.Tags,
             Notes = dto.Notes,
             CustomerId = dto.CustomerId,
-            OrganizationId = dto.OrganizationId
+            OrganizationId = dto.OrganizationId,
+            // Survey Settings
+            SurveyIdentityTypeId = !string.IsNullOrEmpty(dto.SurveyIdentityType)
+                ? SurveyIdentityTypes.GetBySystemName(dto.SurveyIdentityType)?.Id
+                : null,
+            EmailTemplateId = dto.EmailTemplateId,
+            ReminderEmailTemplateId = dto.ReminderEmailTemplateId,
+            SendReminderEmails = dto.SendReminderEmails,
+            ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd
         };
 
         _context.Projects.Add(project);
@@ -216,6 +345,14 @@ public class ProjectService : IProjectService
         project.Notes = dto.Notes;
         project.CustomerId = dto.CustomerId;
         project.OrganizationId = dto.OrganizationId;
+        // Survey Settings
+        project.SurveyIdentityTypeId = !string.IsNullOrEmpty(dto.SurveyIdentityType)
+            ? SurveyIdentityTypes.GetBySystemName(dto.SurveyIdentityType)?.Id
+            : null;
+        project.EmailTemplateId = dto.EmailTemplateId;
+        project.ReminderEmailTemplateId = dto.ReminderEmailTemplateId;
+        project.SendReminderEmails = dto.SendReminderEmails;
+        project.ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd;
         project.UpdatedAt = DateTime.UtcNow;
 
         // Update team members
@@ -560,6 +697,16 @@ public class ProjectService : IProjectService
             CustomerCode = project.Customer?.Code,
             OrganizationId = project.OrganizationId,
             OrganizationName = project.Organization?.Name,
+            // Survey Settings
+            SurveyIdentityType = project.SurveyIdentityTypeId.HasValue
+                ? SurveyIdentityTypes.GetById(project.SurveyIdentityTypeId.Value)?.SystemName
+                : null,
+            EmailTemplateId = project.EmailTemplateId,
+            EmailTemplateName = project.EmailTemplate?.Name,
+            ReminderEmailTemplateId = project.ReminderEmailTemplateId,
+            ReminderEmailTemplateName = project.ReminderEmailTemplate?.Name,
+            SendReminderEmails = project.SendReminderEmails,
+            ReminderDaysBeforeEnd = project.ReminderDaysBeforeEnd,
             TotalYellowCards = yellowCards,
             TotalRedCards = redCards,
             TeamMemberCount = project.TeamMembers?.Count(m => !m.IsDeleted) ?? 0,
@@ -611,6 +758,14 @@ public class ProjectService : IProjectService
             CustomerCode = dto.CustomerCode,
             OrganizationId = dto.OrganizationId,
             OrganizationName = dto.OrganizationName,
+            // Survey Settings
+            SurveyIdentityType = dto.SurveyIdentityType,
+            EmailTemplateId = dto.EmailTemplateId,
+            EmailTemplateName = dto.EmailTemplateName,
+            ReminderEmailTemplateId = dto.ReminderEmailTemplateId,
+            ReminderEmailTemplateName = dto.ReminderEmailTemplateName,
+            SendReminderEmails = dto.SendReminderEmails,
+            ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd,
             TotalYellowCards = dto.TotalYellowCards,
             TotalRedCards = dto.TotalRedCards,
             TeamMemberCount = dto.TeamMemberCount,

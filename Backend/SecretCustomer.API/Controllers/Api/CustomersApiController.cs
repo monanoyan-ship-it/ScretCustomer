@@ -25,12 +25,15 @@ public class CustomersApiController : BaseApiController
         _localizationService = localizationService;
     }
 
+    /// <summary>
+    /// Get all customers - optimized with projection (no Include)
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
         try
         {
-            var customers = await _customerService.GetAllAsync(includeInactive);
+            var customers = await _customerService.GetListAsync(includeInactive);
             return Ok(customers);
         }
         catch (Exception ex)

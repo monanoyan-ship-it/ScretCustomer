@@ -1,10 +1,12 @@
 using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Checklist;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 
 namespace SecretCustomer.Services.Services;
 
@@ -12,11 +14,13 @@ public class ChecklistService : IChecklistService
 {
     private readonly IChecklistRepository _checklistRepository;
     private readonly ILocalizationService _localizationService;
+    private readonly ApplicationDbContext _context;
 
-    public ChecklistService(IChecklistRepository checklistRepository, ILocalizationService localizationService)
+    public ChecklistService(IChecklistRepository checklistRepository, ILocalizationService localizationService, ApplicationDbContext context)
     {
         _checklistRepository = checklistRepository;
         _localizationService = localizationService;
+        _context = context;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -49,6 +53,58 @@ public class ChecklistService : IChecklistService
         foreach (var checklist in checklists)
             result.Add(await MapToDtoAsync(checklist));
         return result;
+    }
+
+    /// <summary>
+    /// Liste görünümü için optimize edilmiş method - Projection kullanır, Questions yüklemez
+    /// </summary>
+    public async Task<IEnumerable<ChecklistListDto>> GetListAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    {
+        var query = _context.Checklists
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
+
+        if (!includeInactive)
+            query = query.Where(c => c.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var search = searchText.ToLower();
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(search) ||
+                (c.Description != null && c.Description.ToLower().Contains(search)) ||
+                (c.Code != null && c.Code.ToLower().Contains(search)));
+        }
+
+        if (customerId.HasValue)
+            query = query.Where(c => c.CustomerId == customerId.Value);
+
+        if (customerOrganizationId.HasValue)
+            query = query.Where(c => c.CustomerOrganizationId == customerOrganizationId.Value);
+
+        return await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new ChecklistListDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                IsScored = c.IsScored,
+                IsActive = c.IsActive,
+                Version = c.Version,
+                CreatedAt = c.CreatedAt,
+                ChecklistType = ChecklistTypes.GetById(c.ChecklistTypeId) != null ? ChecklistTypes.GetById(c.ChecklistTypeId)!.SystemName : "CallPerformance",
+                Code = c.Code,
+                MaxTotalPoints = c.MaxTotalPoints,
+                ValidFrom = c.ValidFrom,
+                ValidUntil = c.ValidUntil,
+                CustomerId = c.CustomerId,
+                CustomerName = c.Customer != null ? c.Customer.CompanyName : null,
+                CustomerOrganizationId = c.CustomerOrganizationId,
+                CustomerOrganizationName = c.CustomerOrganization != null ? c.CustomerOrganization.Name : null,
+                QuestionCount = c.Questions.Count(q => !q.IsDeleted)
+            })
+            .ToListAsync();
     }
 
     public async Task<ChecklistDto> CreateAsync(CreateChecklistDto dto)

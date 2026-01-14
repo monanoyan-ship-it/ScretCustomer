@@ -224,7 +224,7 @@
                         <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
                     </button>
                     <div class="flex-grow-1"></div>
-                    <span class="text-muted small" data-bind="text: assignments().length + ' kayıt'"></span>
+                    <span class="text-muted small" data-bind="text: totalCount() + ' kayıt'"></span>
                 </div>
             </div>
         </div>
@@ -239,12 +239,12 @@
     <!-- Assignments -->
     <div data-bind="visible: !isLoading()">
         <!-- Empty State -->
-        <div data-bind="visible: assignments().length === 0" class="alert alert-info">
+        <div data-bind="visible: allAssignments().length === 0" class="alert alert-info">
             <i class="bi bi-info-circle"></i> @Html.T("Assignment.NoRecords", "Henüz atama bulunmamaktadır veya filtrelere uygun sonuç yoktur.")
         </div>
 
         <!-- Assignments Table -->
-        <div data-bind="visible: assignments().length > 0" class="card shadow">
+        <div data-bind="visible: allAssignments().length > 0" class="card shadow">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
@@ -369,6 +369,34 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <!-- Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((currentPage() - 1) * parseInt(pageSize(), 10) + 1) + '-' + Math.min(currentPage() * parseInt(pageSize(), 10), totalCount()) + ' / ' + totalCount()"></span>
+                    @Html.T("Common.Records", "kayıt")
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: previousPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: ko.utils.range(1, totalPages()) -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }, visible: $data === 1 || $data === $parent.totalPages() || Math.abs($data - $parent.currentPage()) <= 2">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                            <a class="page-link" href="#" data-bind="click: nextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: pageSize">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
             </div>
         </div>
     </div>

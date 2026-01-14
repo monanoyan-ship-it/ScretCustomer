@@ -1,0 +1,387 @@
+@{
+    ViewData["Title"] = "SMTP Ayarları";
+}
+
+<div id="smtp-settings-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-envelope-at"></i> SMTP Ayarları</h2>
+        <div>
+            <button class="btn btn-outline-info me-2" data-bind="click: testConnection, disable: isTesting">
+                <span data-bind="visible: !isTesting()">
+                    <i class="bi bi-plug"></i> Bağlantıyı Test Et
+                </span>
+                <span data-bind="visible: isTesting">
+                    <span class="spinner-border spinner-border-sm"></span> Test ediliyor...
+                </span>
+            </button>
+            <button class="btn btn-primary" data-bind="click: saveSettings, disable: isSaving">
+                <span data-bind="visible: !isSaving()">
+                    <i class="bi bi-save"></i> Kaydet
+                </span>
+                <span data-bind="visible: isSaving">
+                    <span class="spinner-border spinner-border-sm"></span> Kaydediliyor...
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div data-bind="visible: successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span data-bind="text: successMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { successMessage(''); }"></button>
+    </div>
+    <div data-bind="visible: errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: errorMessage"></span>
+        <button type="button" class="btn-close" data-bind="click: function() { errorMessage(''); }"></button>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Ayarlar yükleniyor...</p>
+    </div>
+
+    <!-- Settings Form -->
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Sol Panel: Sunucu Ayarları -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-server"></i> Sunucu Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Enabled -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enabled" data-bind="checked: settings.enabled" style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label ms-2" for="enabled">
+                                <strong>SMTP Servisi Aktif</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted">Devre dışı bırakırsanız sistem email göndermez.</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- Host -->
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Sunucu <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" placeholder="smtp.gmail.com" data-bind="value: settings.host">
+                        <small class="text-muted">Örn: smtp.gmail.com, smtp.office365.com, smtp.yandex.com</small>
+                    </div>
+
+                    <!-- Port -->
+                    <div class="mb-3">
+                        <label class="form-label">Port <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: settings.port">
+                            <option value="25">25 (SMTP)</option>
+                            <option value="465">465 (SMTPS / SSL)</option>
+                            <option value="587">587 (Submission / TLS) - Önerilen</option>
+                            <option value="2525">2525 (Alternatif)</option>
+                        </select>
+                    </div>
+
+                    <!-- Use SSL -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="useSsl" data-bind="checked: settings.useSsl">
+                            <label class="form-check-label" for="useSsl">
+                                SSL/TLS Kullan (StartTLS)
+                            </label>
+                        </div>
+                        <small class="text-muted">Güvenli bağlantı için önerilir.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Kimlik Doğrulama -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-key"></i> Kimlik Doğrulama</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı Adı / Email</label>
+                        <input type="text" class="form-control" placeholder="user@domain.com" data-bind="value: settings.username">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label class="form-label">Şifre / Uygulama Şifresi</label>
+                        <div class="input-group">
+                            <input class="form-control" placeholder="••••••••"
+                                   data-bind="value: settings.password, attr: { type: showPassword() ? 'text' : 'password' }">
+                            <button class="btn btn-outline-secondary" type="button" data-bind="click: togglePassword">
+                                <i data-bind="css: showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Gmail için "Uygulama Şifresi" kullanın.</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- From Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Gönderen Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" placeholder="noreply@domain.com" data-bind="value: settings.fromEmail">
+                    </div>
+
+                    <!-- From Name -->
+                    <div class="mb-3">
+                        <label class="form-label">Gönderen Adı</label>
+                        <input type="text" class="form-control" placeholder="Secret Customer" data-bind="value: settings.fromName">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email -->
+    <div data-bind="visible: !isLoading()" class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-send"></i> Test Email Gönder</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label">Test Email Adresi</label>
+                    <input type="email" class="form-control" placeholder="test@example.com" data-bind="value: testEmail">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-info w-100" data-bind="click: sendTestEmail, disable: isSendingTest">
+                        <span data-bind="visible: !isSendingTest()">
+                            <i class="bi bi-envelope-arrow-up"></i> Test Maili Gönder
+                        </span>
+                        <span data-bind="visible: isSendingTest">
+                            <span class="spinner-border spinner-border-sm"></span> Gönderiliyor...
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <small class="text-muted mt-2 d-block">
+                <i class="bi bi-info-circle"></i> Test maili göndermeden önce ayarları kaydedin.
+            </small>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-question-circle"></i> Yardım</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6><i class="bi bi-google text-danger"></i> Gmail</h6>
+                    <ul class="small">
+                        <li>Host: smtp.gmail.com</li>
+                        <li>Port: 587</li>
+                        <li>SSL: Evet</li>
+                        <li><a href="https://myaccount.google.com/apppasswords" target="_blank">Uygulama Şifresi</a> oluşturun</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="bi bi-microsoft text-primary"></i> Outlook / Office 365</h6>
+                    <ul class="small">
+                        <li>Host: smtp.office365.com</li>
+                        <li>Port: 587</li>
+                        <li>SSL: Evet</li>
+                        <li>Normal şifre kullanabilirsiniz</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="bi bi-envelope text-warning"></i> Yandex</h6>
+                    <ul class="small">
+                        <li>Host: smtp.yandex.com</li>
+                        <li>Port: 465 veya 587</li>
+                        <li>SSL: Evet</li>
+                        <li>Normal şifre kullanabilirsiniz</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function SmtpSettingsViewModel() {
+            var self = this;
+
+            // State
+            self.isLoading = ko.observable(true);
+            self.isSaving = ko.observable(false);
+            self.isTesting = ko.observable(false);
+            self.isSendingTest = ko.observable(false);
+            self.successMessage = ko.observable('');
+            self.errorMessage = ko.observable('');
+            self.showPassword = ko.observable(false);
+            self.testEmail = ko.observable('');
+
+            // Settings
+            self.settings = {
+                host: ko.observable(''),
+                port: ko.observable('587'),
+                username: ko.observable(''),
+                password: ko.observable(''),
+                useSsl: ko.observable(true),
+                fromEmail: ko.observable(''),
+                fromName: ko.observable('Secret Customer'),
+                enabled: ko.observable(true)
+            };
+
+            // Load settings
+            self.loadSettings = function() {
+                self.isLoading(true);
+                fetch('/api/smtp/settings', { credentials: 'include' })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        self.settings.host(data.host || '');
+                        self.settings.port(String(data.port || 587));
+                        self.settings.username(data.username || '');
+                        self.settings.password(data.password || '');
+                        self.settings.useSsl(data.useSsl !== false);
+                        self.settings.fromEmail(data.fromEmail || '');
+                        self.settings.fromName(data.fromName || 'Secret Customer');
+                        self.settings.enabled(data.enabled !== false);
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        self.errorMessage('Ayarlar yüklenirken hata oluştu.');
+                    })
+                    .finally(function() {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Save settings
+            self.saveSettings = function() {
+                self.isSaving(true);
+                self.errorMessage('');
+                self.successMessage('');
+
+                var data = {
+                    host: self.settings.host(),
+                    port: parseInt(self.settings.port()),
+                    username: self.settings.username(),
+                    password: self.settings.password(),
+                    useSsl: self.settings.useSsl(),
+                    fromEmail: self.settings.fromEmail(),
+                    fromName: self.settings.fromName(),
+                    enabled: self.settings.enabled()
+                };
+
+                fetch('/api/smtp/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        self.successMessage(result.message);
+                        toastr.success(result.message);
+                    } else {
+                        self.errorMessage(result.message);
+                        toastr.error(result.message);
+                    }
+                })
+                .catch(function(error) {
+                    self.errorMessage('Kaydetme sırasında hata oluştu.');
+                    toastr.error('Kaydetme sırasında hata oluştu.');
+                })
+                .finally(function() {
+                    self.isSaving(false);
+                });
+            };
+
+            // Test connection
+            self.testConnection = function() {
+                self.isTesting(true);
+                self.errorMessage('');
+                self.successMessage('');
+
+                fetch('/api/smtp/test-connection', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        self.successMessage(result.message);
+                        toastr.success(result.message);
+                    } else {
+                        self.errorMessage(result.message);
+                        toastr.error(result.message);
+                    }
+                })
+                .catch(function(error) {
+                    self.errorMessage('Bağlantı testi sırasında hata oluştu.');
+                    toastr.error('Bağlantı testi sırasında hata oluştu.');
+                })
+                .finally(function() {
+                    self.isTesting(false);
+                });
+            };
+
+            // Send test email
+            self.sendTestEmail = function() {
+                if (!self.testEmail()) {
+                    toastr.warning('Lütfen bir email adresi girin.');
+                    return;
+                }
+
+                self.isSendingTest(true);
+                self.errorMessage('');
+                self.successMessage('');
+
+                fetch('/api/smtp/send-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ toEmail: self.testEmail() }),
+                    credentials: 'include'
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        self.successMessage(result.message);
+                        toastr.success(result.message);
+                    } else {
+                        self.errorMessage(result.message);
+                        toastr.error(result.message);
+                    }
+                })
+                .catch(function(error) {
+                    self.errorMessage('Test maili gönderilirken hata oluştu.');
+                    toastr.error('Test maili gönderilirken hata oluştu.');
+                })
+                .finally(function() {
+                    self.isSendingTest(false);
+                });
+            };
+
+            // Toggle password visibility
+            self.togglePassword = function() {
+                self.showPassword(!self.showPassword());
+            };
+
+            // Initialize
+            self.loadSettings();
+        }
+
+        // Apply bindings
+        document.addEventListener('DOMContentLoaded', function() {
+            var element = document.getElementById('smtp-settings-app');
+            if (element) {
+                ko.applyBindings(new SmtpSettingsViewModel(), element);
+            }
+        });
+    </script>
+}

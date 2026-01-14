@@ -88,8 +88,8 @@ function UsersViewModel() {
     self.modalErrorMessage = ko.observable('');
 
     // ===== Data =====
-    self.users = ko.observableArray([]);
-    self.customerPersonnel = ko.observableArray([]);
+    self.allUsers = ko.observableArray([]);
+    self.allCustomerPersonnel = ko.observableArray([]);
     self.customers = ko.observableArray([]);
 
     // ===== Role Lists (EnumsService'den) =====
@@ -99,19 +99,87 @@ function UsersViewModel() {
     // ===== Filter =====
     self.selectedCustomerId = ko.observable('');
     self.searchText = ko.observable('');
+    self.usersSearchText = ko.observable('');
 
     // ===== Sorting =====
     self.sorting = TableSorting.createSortState('username', 'asc');
     self.cpSorting = TableSorting.createSortState('username', 'asc');
 
-    // ===== Sorted Users =====
-    self.sortedUsers = ko.computed(function() {
-        var items = self.users();
+    // ===== Users Pagination =====
+    self.usersPage = ko.observable(1);
+    self.usersPageSize = ko.observable(20);
+
+    // Filtered and sorted users (before pagination)
+    self.filteredAndSortedUsers = ko.computed(function() {
+        var items = self.allUsers();
+        var search = (self.usersSearchText() || '').toLowerCase();
+
+        if (search) {
+            items = items.filter(function(u) {
+                return (u.username || '').toLowerCase().indexOf(search) >= 0 ||
+                       (u.firstName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (u.lastName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (u.email || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
         var sortBy = self.sorting.sortBy();
         var sortDir = self.sorting.sortDirection();
-        if (!sortBy || items.length === 0) return items;
-        return TableSorting.clientSort(items, sortBy, sortDir);
+        if (sortBy && items.length > 0) {
+            items = TableSorting.clientSort(items, sortBy, sortDir);
+        }
+        return items;
     });
+
+    // Paginated users
+    self.sortedUsers = ko.computed(function() {
+        var list = self.filteredAndSortedUsers();
+        var page = parseInt(self.usersPage(), 10);
+        var pageSize = parseInt(self.usersPageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Backwards compatibility
+    self.users = self.sortedUsers;
+
+    self.usersTotalCount = ko.computed(function() {
+        return self.filteredAndSortedUsers().length;
+    });
+
+    self.usersTotalPages = ko.computed(function() {
+        return Math.ceil(self.usersTotalCount() / parseInt(self.usersPageSize(), 10)) || 1;
+    });
+
+    self.usersPageSize.subscribe(function() {
+        self.usersPage(1);
+    });
+
+    self.usersSearchText.subscribe(function() {
+        self.usersPage(1);
+    });
+
+    self.usersGoToPage = function(page) {
+        if (page >= 1 && page <= self.usersTotalPages()) {
+            self.usersPage(page);
+        }
+    };
+
+    self.usersPreviousPage = function() {
+        if (self.usersPage() > 1) {
+            self.usersPage(self.usersPage() - 1);
+        }
+    };
+
+    self.usersNextPage = function() {
+        if (self.usersPage() < self.usersTotalPages()) {
+            self.usersPage(self.usersPage() + 1);
+        }
+    };
+
+    // ===== Customer Personnel Pagination =====
+    self.cpPage = ko.observable(1);
+    self.cpPageSize = ko.observable(20);
 
     // ===== Editing State =====
     self.editingUser = ko.observable(null);
@@ -123,9 +191,9 @@ function UsersViewModel() {
     self.isCustomerPersonnelModalOpen = ko.observable(false);
     self.isPasswordModalOpen = ko.observable(false);
 
-    // ===== Filtered Customer Personnel =====
-    self.filteredCustomerPersonnel = ko.computed(function() {
-        var list = self.customerPersonnel();
+    // ===== Filtered Customer Personnel (before pagination) =====
+    self.allFilteredCustomerPersonnel = ko.computed(function() {
+        var list = self.allCustomerPersonnel();
         var customerId = self.selectedCustomerId();
         var search = (self.searchText() || '').toLowerCase();
 
@@ -153,6 +221,56 @@ function UsersViewModel() {
 
         return list;
     });
+
+    // Paginated customer personnel
+    self.filteredCustomerPersonnel = ko.computed(function() {
+        var list = self.allFilteredCustomerPersonnel();
+        var page = parseInt(self.cpPage(), 10);
+        var pageSize = parseInt(self.cpPageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Backwards compatibility
+    self.customerPersonnel = self.filteredCustomerPersonnel;
+
+    self.cpTotalCount = ko.computed(function() {
+        return self.allFilteredCustomerPersonnel().length;
+    });
+
+    self.cpTotalPages = ko.computed(function() {
+        return Math.ceil(self.cpTotalCount() / parseInt(self.cpPageSize(), 10)) || 1;
+    });
+
+    self.cpPageSize.subscribe(function() {
+        self.cpPage(1);
+    });
+
+    self.selectedCustomerId.subscribe(function() {
+        self.cpPage(1);
+    });
+
+    self.searchText.subscribe(function() {
+        self.cpPage(1);
+    });
+
+    self.cpGoToPage = function(page) {
+        if (page >= 1 && page <= self.cpTotalPages()) {
+            self.cpPage(page);
+        }
+    };
+
+    self.cpPreviousPage = function() {
+        if (self.cpPage() > 1) {
+            self.cpPage(self.cpPage() - 1);
+        }
+    };
+
+    self.cpNextPage = function() {
+        if (self.cpPage() < self.cpTotalPages()) {
+            self.cpPage(self.cpPage() + 1);
+        }
+    };
 
     // ===== Tab Switch =====
     self.switchTab = function(tab) {
@@ -183,14 +301,20 @@ function UsersViewModel() {
     self.loadUsers = function() {
         fetch('/api/users', { credentials: 'include' })
             .then(function(res) { return res.json(); })
-            .then(function(data) { self.users(data || []); })
+            .then(function(data) {
+                self.allUsers(data || []);
+                self.usersPage(1);
+            })
             .catch(function(err) { console.error('Error loading users:', err); });
     };
 
     self.loadCustomerPersonnel = function() {
         fetch('/api/customer-personnel', { credentials: 'include' })
             .then(function(res) { return res.json(); })
-            .then(function(data) { self.customerPersonnel(data || []); })
+            .then(function(data) {
+                self.allCustomerPersonnel(data || []);
+                self.cpPage(1);
+            })
             .catch(function(err) { console.error('Error loading customer personnel:', err); });
     };
 
@@ -225,9 +349,11 @@ function UsersViewModel() {
                 ]);
             })
             .then(function(results) {
-                self.users(results[0] || []);
-                self.customerPersonnel(results[1] || []);
+                self.allUsers(results[0] || []);
+                self.allCustomerPersonnel(results[1] || []);
                 self.customers(results[2] || []);
+                self.usersPage(1);
+                self.cpPage(1);
             })
             .catch(function(err) {
                 console.error('Error loading data:', err);
@@ -300,13 +426,13 @@ function UsersViewModel() {
         .then(function(savedUser) {
             if (isNew) {
                 // Yeni kayit: array'e ekle
-                self.users.push(savedUser);
+                self.allUsers.push(savedUser);
             } else {
                 // Guncelleme: array'de bul ve guncelle
-                var users = self.users();
+                var users = self.allUsers();
                 for (var i = 0; i < users.length; i++) {
                     if (users[i].id === savedUser.id) {
-                        self.users.splice(i, 1, savedUser);
+                        self.allUsers.splice(i, 1, savedUser);
                         break;
                     }
                 }
@@ -327,7 +453,7 @@ function UsersViewModel() {
             fetch('/api/users/' + user.id, { method: 'DELETE', credentials: 'include' })
                 .then(function() {
                     toastr.success('Kullanıcı silindi.');
-                    self.users.remove(user);
+                    self.allUsers.remove(user);
                 })
                 .catch(function(err) {
                     toastr.error('Silme hatası.');
@@ -398,13 +524,13 @@ function UsersViewModel() {
         .then(function(savedCp) {
             if (isNew) {
                 // Yeni kayit: array'e ekle
-                self.customerPersonnel.push(savedCp);
+                self.allCustomerPersonnel.push(savedCp);
             } else {
                 // Guncelleme: array'de bul ve guncelle
-                var list = self.customerPersonnel();
+                var list = self.allCustomerPersonnel();
                 for (var i = 0; i < list.length; i++) {
                     if (list[i].id === savedCp.id) {
-                        self.customerPersonnel.splice(i, 1, savedCp);
+                        self.allCustomerPersonnel.splice(i, 1, savedCp);
                         break;
                     }
                 }
@@ -425,7 +551,7 @@ function UsersViewModel() {
             fetch('/api/customer-personnel/' + cp.id, { method: 'DELETE', credentials: 'include' })
                 .then(function() {
                     toastr.success('Müşteri personeli silindi.');
-                    self.customerPersonnel.remove(cp);
+                    self.allCustomerPersonnel.remove(cp);
                 })
                 .catch(function(err) {
                     toastr.error('Silme hatası.');

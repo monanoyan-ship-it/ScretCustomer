@@ -26,7 +26,7 @@
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { activeTab('evaluations'); }" href="#">
                 <i class="bi bi-headphones"></i> @Html.T("Evaluation.ListeningsVisits", "Dinlemeler/Ziyaretler")
-                <span class="badge bg-success" data-bind="text: allEvaluationsList().length"></span>
+                <span class="badge bg-success" data-bind="text: evaluationsTotalCount()"></span>
             </a>
         </li>
         <li class="nav-item">
@@ -39,21 +39,31 @@
 
     <!-- Aktif Atamalar Tab -->
     <div data-bind="visible: activeTab() === 'assignments' && !isLoading()">
-        <!-- Search -->
-        <div class="mb-3">
-            <div class="input-group" style="max-width: 400px;">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchAssignments", "Proje veya kontrol listesi ara...")">
+        <!-- Assignments Loading Spinner -->
+        <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
+        </div>
+
+        <div data-bind="visible: !isAssignmentsLoading()">
+            <!-- Search -->
+            <div class="mb-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchAssignments", "Proje veya kontrol listesi ara...")">
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div data-bind="visible: activeAssignments().length === 0" class="alert alert-info">
+                <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoActiveAssignments", "Aktif atama bulunmamaktadır.")
             </div>
         </div>
 
-        <!-- Empty State -->
-        <div data-bind="visible: activeAssignments().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoActiveAssignments", "Aktif atama bulunmamaktadır.")
-        </div>
-
         <!-- Assignments Table -->
-        <div class="card shadow-sm" data-bind="visible: activeAssignments().length > 0">
+        <div class="card shadow-sm" data-bind="visible: !isAssignmentsLoading() && activeAssignments().length > 0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
@@ -114,48 +124,93 @@
 
     <!-- Dinlemeler/Ziyaretler Tab -->
     <div data-bind="visible: activeTab() === 'evaluations' && !isLoading()">
-        <!-- Filters -->
+        <!-- Filter Bar -->
         <div class="card mb-3">
             <div class="card-body py-2">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.SearchText", "Arama")</label>
-                        <input type="text" class="form-control form-control-sm" data-bind="value: evaluationsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, personel, çağrı ID...")">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Common.Status", "Durum")</label>
-                        <select class="form-select form-select-sm" data-bind="value: evaluationsStatusFilter">
-                            <option value="">@Html.T("Common.All", "Tümü")</option>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Filter Type Select -->
+                    <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalSelectedFilterType">
+                        <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
+                        <option value="search">@Html.T("Common.Search", "Arama")</option>
+                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                    </select>
+
+                    <!-- ko if: evalSelectedFilterType() === 'status' -->
+                    <!-- Status Filter Input -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalTempFilter.status">
+                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
                             <option value="Completed">@Html.T("Common.Status.Completed", "Tamamlandı")</option>
                             <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Ediyor")</option>
                         </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.DateFrom", "Başlangıç")</label>
-                        <input type="date" class="form-control form-control-sm" data-bind="value: evaluationsDateFrom">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.DateTo", "Bitiş")</label>
-                        <input type="date" class="form-control form-control-sm" data-bind="value: evaluationsDateTo">
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearEvaluationsFilters">
-                            <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Filtreleri Temizle")
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
                         </button>
-                        <span class="ms-2 text-muted small" data-bind="text: allEvaluationsList().length + ' kayıt'"></span>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'search' -->
+                    <!-- Search Filter Input -->
+                    <div class="d-flex gap-1">
+                        <input type="text" class="form-control form-control-sm" style="width: 200px;"
+                               data-bind="value: evalTempFilter.searchTerm, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, personel, çağrı ID...")">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'dateRange' -->
+                    <!-- Date Range Filter Input -->
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <span data-bind="text: evalTempFilter.selectedDateRangeType() ? evalDateRanges.find(function(r) { return r.systemName === evalTempFilter.selectedDateRangeType(); })?.name : '@Html.T("Common.QuickSelect", "Hızlı Seç")'"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <!-- ko foreach: evalDateRanges -->
+                                <li><a class="dropdown-item" href="#" data-bind="text: name, click: function() { $parent.evalSetTempDateRange(systemName); }"></a></li>
+                                <!-- /ko -->
+                            </ul>
+                        </div>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.startDate">
+                        <span class="text-muted">-</span>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.endDate">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Active Filter Chips -->
+                    <!-- ko foreach: evalActiveFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" data-bind="click: $parent.evalRemoveFilter"></button>
+                    </span>
+                    <!-- /ko -->
+
+                    <!-- Clear All & Count -->
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" data-bind="visible: evalActiveFilters().length > 0, click: evalClearFilters">
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Temizle")
+                        </button>
+                        <span class="text-muted small" data-bind="text: evaluationsTotalCount() + ' kayıt'"></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Empty State -->
-        <div data-bind="visible: allEvaluationsList().length === 0" class="alert alert-info">
+        <div data-bind="visible: evaluationsTotalCount() === 0" class="alert alert-info">
             <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoEvaluations", "Henüz dinleme/ziyaret kaydı bulunmamaktadır.")
         </div>
 
         <!-- Evaluations Table -->
-        <div class="card shadow-sm" data-bind="visible: allEvaluationsList().length > 0">
+        <div class="card shadow-sm" data-bind="visible: evaluationsTotalCount() > 0">
             <div class="table-responsive">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
@@ -260,26 +315,71 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: evaluationsTotalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((evaluationsPage() - 1) * evaluationsPageSize() + 1) + '-' + Math.min(evaluationsPage() * evaluationsPageSize(), evaluationsTotalCount()) + ' / ' + evaluationsTotalCount()"></span>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: evaluationsPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: evaluationsFirstPage"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item" data-bind="css: { disabled: evaluationsPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: evaluationsPrevPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: evaluationsPageNumbers -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.evaluationsPage() }">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.evaluationsGoToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: evaluationsPage() === evaluationsTotalPages() }">
+                            <a class="page-link" href="#" data-bind="click: evaluationsNextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item" data-bind="css: { disabled: evaluationsPage() === evaluationsTotalPages() }">
+                            <a class="page-link" href="#" data-bind="click: evaluationsLastPage"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <div>
+                    <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evaluationsPageSize">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Tarihi Geçmiş Atamalar Tab -->
     <div data-bind="visible: activeTab() === 'expired' && !isLoading()">
-        <!-- Search -->
-        <div class="mb-3">
-            <div class="input-group" style="max-width: 400px;">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" data-bind="value: expiredSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchExpired", "Proje veya kontrol listesi ara...")">
+        <!-- Loading Spinner -->
+        <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
+        </div>
+
+        <div data-bind="visible: !isAssignmentsLoading()">
+            <!-- Search -->
+            <div class="mb-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" data-bind="value: expiredSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchExpired", "Proje veya kontrol listesi ara...")">
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div data-bind="visible: expiredAssignments().length === 0" class="alert alert-info">
+                <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoExpiredAssignments", "Tarihi geçmiş atama bulunmamaktadır.")
             </div>
         </div>
 
-        <!-- Empty State -->
-        <div data-bind="visible: expiredAssignments().length === 0" class="alert alert-info">
-            <i class="bi bi-info-circle"></i> @Html.T("Evaluation.NoExpiredAssignments", "Tarihi geçmiş atama bulunmamaktadır.")
-        </div>
-
         <!-- Expired Assignments Table -->
-        <div class="card shadow-sm" data-bind="visible: expiredAssignments().length > 0">
+        <div class="card shadow-sm" data-bind="visible: !isAssignmentsLoading() && expiredAssignments().length > 0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-warning">

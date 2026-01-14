@@ -1507,3 +1507,53 @@ public static class RequestTypes
         public const int NewPersonnel = 3;
     }
 }
+
+// ============================================================
+// EMAIL TEMPLATE TYPES (Email Şablon Tipleri)
+// ============================================================
+public static class EmailTemplateTypes
+{
+    public static readonly TypeItem SurveyInvitation = new(1, "SurveyInvitation", "EmailTemplateType.SurveyInvitation", "Anket Davetiyesi", "bi-envelope-paper", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem SurveyReminder = new(2, "SurveyReminder", "EmailTemplateType.SurveyReminder", "Anket Hatırlatma", "bi-bell", "bg-warning text-dark", 2);
+    public static readonly TypeItem SurveyThankYou = new(3, "SurveyThankYou", "EmailTemplateType.SurveyThankYou", "Anket Teşekkür", "bi-heart", "bg-success", 3);
+    public static readonly TypeItem ReportNotification = new(4, "ReportNotification", "EmailTemplateType.ReportNotification", "Rapor Bildirimi", "bi-file-earmark-bar-graph", "bg-info", 4);
+    public static readonly TypeItem PasswordReset = new(5, "PasswordReset", "EmailTemplateType.PasswordReset", "Şifre Sıfırlama", "bi-key", "bg-danger", 5);
+    public static readonly TypeItem WelcomeEmail = new(6, "WelcomeEmail", "EmailTemplateType.WelcomeEmail", "Hoş Geldiniz", "bi-hand-wave", "bg-secondary", 6);
+    public static readonly TypeItem Custom = new(7, "Custom", "EmailTemplateType.Custom", "Özel Şablon", "bi-palette", "bg-dark", 7);
+
+    public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int SurveyInvitation = 1;
+        public const int SurveyReminder = 2;
+        public const int SurveyThankYou = 3;
+        public const int ReportNotification = 4;
+        public const int PasswordReset = 5;
+        public const int WelcomeEmail = 6;
+        public const int Custom = 7;
+    }
+}
+
+// ============================================================
+// SURVEY IDENTITY TYPES (Anket Kimlik Tipleri)
+// ============================================================
+public static class SurveyIdentityTypes
+{
+    public static readonly TypeItem Anonymous = new(1, "Anonymous", "SurveyIdentityType.Anonymous", "Anonim (Kimlik Kapalı)", "bi-incognito", "bg-secondary", 1, isDefault: true);
+    public static readonly TypeItem Identified = new(2, "Identified", "SurveyIdentityType.Identified", "Kimlik Açık", "bi-person-badge", "bg-primary", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { Anonymous, Identified };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Anonymous = 1;
+        public const int Identified = 2;
+    }
+}

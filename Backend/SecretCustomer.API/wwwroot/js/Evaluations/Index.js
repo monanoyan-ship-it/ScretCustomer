@@ -6,19 +6,223 @@ function EvaluationsViewModel() {
     // LIST STATE
     // ========================
     self.isLoading = ko.observable(true);
+    self.isAssignmentsLoading = ko.observable(true); // Assignments için ayrı loading state
     self.errorMessage = ko.observable('');
     self.activeTab = ko.observable('assignments');
     self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
     self.filterStatus = ko.observable('');
     // Her tab için ayrı search
     self.assignmentsSearch = ko.observable('');
-    self.evaluationsSearch = ko.observable('');
     self.expiredSearch = ko.observable('');
 
-    // Dinlemeler/Ziyaretler filtreleri
-    self.evaluationsStatusFilter = ko.observable('');
-    self.evaluationsDateFrom = ko.observable('');
-    self.evaluationsDateTo = ko.observable('');
+    // Dinlemeler/Ziyaretler pagination
+    self.evaluationsPage = ko.observable(1);
+    self.evaluationsPageSize = ko.observable(20);
+
+    // ==================== EVALUATIONS FILTER SYSTEM ====================
+    self.evalSelectedFilterType = ko.observable('');
+    self.evalActiveFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.evalTempFilter = {
+        status: ko.observable(''),
+        searchTerm: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        selectedDateRangeType: ko.observable(null)
+    };
+
+    // Filter labels
+    self.evalFilterLabels = {
+        status: 'Durum',
+        search: 'Arama',
+        dateRange: 'Tarih'
+    };
+
+    self.evalStatusLabels = {
+        'Completed': 'Tamamlandı',
+        'Draft': 'Taslak',
+        'InProgress': 'Devam Ediyor'
+    };
+
+    // Date range options
+    self.evalDateRanges = [
+        { systemName: 'today', name: 'Bugün' },
+        { systemName: 'yesterday', name: 'Dün' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'lastWeek', name: 'Geçen Hafta' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'lastMonth', name: 'Geçen Ay' },
+        { systemName: 'last7Days', name: 'Son 7 Gün' },
+        { systemName: 'last30Days', name: 'Son 30 Gün' }
+    ];
+
+    // Date range quick select tracking
+    self._evalManualDateChange = true;
+    self.evalTempFilter.startDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedDateRangeType(null);
+    });
+    self.evalTempFilter.endDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedDateRangeType(null);
+    });
+
+    // Can add filter check
+    self.evalCanAddFilter = ko.computed(function() {
+        var type = self.evalSelectedFilterType();
+        if (!type) return false;
+        switch (type) {
+            case 'status': return self.evalTempFilter.status();
+            case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
+            case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
+            default: return false;
+        }
+    });
+
+    // Helper: format date
+    self._evalFormatDate = function(date) {
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    };
+
+    // Set temp date range (quick select)
+    self.evalSetTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = new Date(today.getTime());
+                endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday;
+                endDate = new Date(yesterday.getTime());
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        self._evalManualDateChange = false;
+        if (startDate) self.evalTempFilter.startDate(self._evalFormatDate(startDate));
+        if (endDate) self.evalTempFilter.endDate(self._evalFormatDate(endDate));
+        self.evalTempFilter.selectedDateRangeType(range);
+        self._evalManualDateChange = true;
+    };
+
+    // Add filter
+    self.evalAddFilter = function() {
+        var type = self.evalSelectedFilterType();
+        if (!type) return;
+
+        // Aynı tipte filtre varsa önce kaldır
+        self.evalActiveFilters.remove(function(f) { return f.type === type; });
+
+        var filter = {
+            type: type,
+            label: self.evalFilterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'status':
+                var status = self.evalTempFilter.status();
+                if (!status) return;
+                filter.value = status;
+                filter.displayValue = self.evalStatusLabels[status] || status;
+                self.evalTempFilter.status('');
+                break;
+
+            case 'search':
+                var searchTerm = self.evalTempFilter.searchTerm().trim();
+                if (!searchTerm) return;
+                filter.value = searchTerm;
+                filter.displayValue = '"' + searchTerm + '"';
+                self.evalTempFilter.searchTerm('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.evalTempFilter.startDate();
+                var endDate = self.evalTempFilter.endDate();
+                if (!startDate && !endDate) return;
+                filter.value = { start: startDate, end: endDate };
+                if (startDate && endDate) {
+                    filter.displayValue = startDate + ' - ' + endDate;
+                } else if (startDate) {
+                    filter.displayValue = startDate + ' →';
+                } else {
+                    filter.displayValue = '→ ' + endDate;
+                }
+                self.evalTempFilter.startDate('');
+                self.evalTempFilter.endDate('');
+                self.evalTempFilter.selectedDateRangeType(null);
+                break;
+        }
+
+        self.evalActiveFilters.push(filter);
+        self.evalSelectedFilterType('');
+        self.evaluationsPage(1);
+    };
+
+    // Remove filter
+    self.evalRemoveFilter = function(filter) {
+        self.evalActiveFilters.remove(filter);
+        self.evaluationsPage(1);
+    };
+
+    // Clear all filters
+    self.evalClearFilters = function() {
+        self.evalActiveFilters.removeAll();
+        self.evalSelectedFilterType('');
+        self.evalTempFilter.status('');
+        self.evalTempFilter.searchTerm('');
+        self.evalTempFilter.startDate('');
+        self.evalTempFilter.endDate('');
+        self.evalTempFilter.selectedDateRangeType(null);
+        self.evaluationsPage(1);
+    };
 
     // List Data
     self.allAssignments = ko.observableArray([]);
@@ -200,14 +404,21 @@ function EvaluationsViewModel() {
         return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
-    // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
-    self.allEvaluationsList = ko.computed(function() {
-        var search = self.evaluationsSearch().toLowerCase();
-        var statusFilter = self.evaluationsStatusFilter();
-        var dateFrom = self.evaluationsDateFrom();
-        var dateTo = self.evaluationsDateTo();
+    // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar) - Filtrelenmiş liste
+    self.filteredEvaluationsList = ko.computed(function() {
+        var filters = self.evalActiveFilters();
         var sortBy = self.evaluationsSorting.sortBy();
         var sortDir = self.evaluationsSorting.sortDirection();
+
+        // Aktif filtreleri çıkar
+        var searchFilter = filters.find(function(f) { return f.type === 'search'; });
+        var statusFilter = filters.find(function(f) { return f.type === 'status'; });
+        var dateFilter = filters.find(function(f) { return f.type === 'dateRange'; });
+
+        var search = searchFilter ? searchFilter.value.toLowerCase() : '';
+        var status = statusFilter ? statusFilter.value : '';
+        var dateFrom = dateFilter && dateFilter.value.start ? dateFilter.value.start : '';
+        var dateTo = dateFilter && dateFilter.value.end ? dateFilter.value.end : '';
 
         var filtered = self.allEvaluations().filter(function(e) {
             // Text arama
@@ -220,18 +431,26 @@ function EvaluationsViewModel() {
                 if (!matchesSearch) return false;
             }
             // Durum filtresi
-            if (statusFilter && e.status !== statusFilter) return false;
-            // Tarih filtreleri (callDate kullan)
-            if (dateFrom && e.callDate) {
-                var evalDate = new Date(e.callDate);
-                var fromDate = new Date(dateFrom);
-                if (evalDate < fromDate) return false;
-            }
-            if (dateTo && e.callDate) {
-                var evalDate = new Date(e.callDate);
-                var toDate = new Date(dateTo);
-                toDate.setHours(23, 59, 59, 999);
-                if (evalDate > toDate) return false;
+            if (status && e.status !== status) return false;
+
+            // Tarih filtreleri (callDate, completedAt veya createdAt kullan)
+            if (dateFrom || dateTo) {
+                var dateStr = e.callDate || e.completedAt || e.createdAt;
+                if (!dateStr) return false; // Tarihi olmayan kayıtları filtrele
+
+                var evalDate = new Date(dateStr);
+                evalDate.setHours(0, 0, 0, 0);
+
+                if (dateFrom) {
+                    var fromDate = new Date(dateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (evalDate < fromDate) return false;
+                }
+                if (dateTo) {
+                    var toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (evalDate > toDate) return false;
+                }
             }
             return true;
         });
@@ -239,13 +458,53 @@ function EvaluationsViewModel() {
         return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
-    // Filtreleri temizle
-    self.clearEvaluationsFilters = function() {
-        self.evaluationsSearch('');
-        self.evaluationsStatusFilter('');
-        self.evaluationsDateFrom('');
-        self.evaluationsDateTo('');
+    // Sayfa boyutu değişince sayfa 1'e dön
+    self.evaluationsPageSize.subscribe(function() { self.evaluationsPage(1); });
+
+    // Pagination computed'ları
+    self.evaluationsTotalCount = ko.computed(function() {
+        return self.filteredEvaluationsList().length;
+    });
+
+    self.evaluationsTotalPages = ko.computed(function() {
+        return Math.ceil(self.evaluationsTotalCount() / parseInt(self.evaluationsPageSize(), 10)) || 1;
+    });
+
+    // Sayfalanmış liste (view'da kullanılacak)
+    self.allEvaluationsList = ko.computed(function() {
+        var list = self.filteredEvaluationsList();
+        var page = parseInt(self.evaluationsPage(), 10);
+        var pageSize = parseInt(self.evaluationsPageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Pagination fonksiyonları
+    self.evaluationsGoToPage = function(page) {
+        if (page >= 1 && page <= self.evaluationsTotalPages()) {
+            self.evaluationsPage(page);
+        }
     };
+    self.evaluationsPrevPage = function() {
+        if (self.evaluationsPage() > 1) self.evaluationsPage(self.evaluationsPage() - 1);
+    };
+    self.evaluationsNextPage = function() {
+        if (self.evaluationsPage() < self.evaluationsTotalPages()) self.evaluationsPage(self.evaluationsPage() + 1);
+    };
+    self.evaluationsFirstPage = function() { self.evaluationsPage(1); };
+    self.evaluationsLastPage = function() { self.evaluationsPage(self.evaluationsTotalPages()); };
+
+    // Sayfa numaraları dizisi (max 5 sayfa göster)
+    self.evaluationsPageNumbers = ko.computed(function() {
+        var current = self.evaluationsPage();
+        var total = self.evaluationsTotalPages();
+        var pages = [];
+        var start = Math.max(1, current - 2);
+        var end = Math.min(total, start + 4);
+        if (end - start < 4) start = Math.max(1, end - 4);
+        for (var i = start; i <= end; i++) pages.push(i);
+        return pages;
+    });
 
     // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
     self.expiredAssignments = ko.computed(function() {
@@ -289,19 +548,17 @@ function EvaluationsViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
+        // Önce evaluations ve user bilgisini yükle (hızlı)
         Promise.all([
-            fetch('/api/assignments/my-assignments', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/evaluations/evaluator', { credentials: 'include' }).then(function(r) { return r.json(); }),
             fetch('/api/auth/me', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
-            console.log('[Evaluations] my-assignments:', results[0]);
-            console.log('[Evaluations] evaluator:', results[1]);
-            console.log('[Evaluations] me:', results[2]);
-            self.allAssignments(results[0] || []);
-            self.allEvaluations(results[1] || []);
-            if (results[2] && results[2].role) {
-                self.currentUserRole(results[2].role);
+            console.log('[Evaluations] evaluator:', results[0]);
+            console.log('[Evaluations] me:', results[1]);
+            self.allEvaluations(results[0] || []);
+            if (results[1] && results[1].role) {
+                self.currentUserRole(results[1].role);
             }
         })
         .catch(function(error) {
@@ -311,6 +568,21 @@ function EvaluationsViewModel() {
         .finally(function() {
             self.isLoading(false);
         });
+
+        // Assignments'ı ayrı yükle (arka planda)
+        self.isAssignmentsLoading(true);
+        fetch('/api/assignments/my-assignments', { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                console.log('[Evaluations] my-assignments:', data);
+                self.allAssignments(data || []);
+            })
+            .catch(function(error) {
+                console.error('Assignments load error:', error);
+            })
+            .finally(function() {
+                self.isAssignmentsLoading(false);
+            });
     };
 
     // ========================

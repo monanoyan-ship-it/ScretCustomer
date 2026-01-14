@@ -192,7 +192,6 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
-builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 builder.Services.AddScoped<IImportService, ImportService>();
@@ -201,6 +200,7 @@ builder.Services.AddScoped<ISavedFilterService, SavedFilterService>();
 builder.Services.AddScoped<IDealerService, DealerService>();
 builder.Services.AddScoped<IDealerRequestService, DealerRequestService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

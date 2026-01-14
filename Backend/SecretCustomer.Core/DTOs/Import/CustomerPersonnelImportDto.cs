@@ -3,9 +3,9 @@ using SecretCustomer.Core.Enums;
 namespace SecretCustomer.Core.DTOs.Import;
 
 /// <summary>
-/// CSV'den okunan personel verisi
+/// CSV'den okunan müşteri personeli verisi (CustomerPersonnel import)
 /// </summary>
-public class PersonnelImportDto
+public class CustomerPersonnelImportDto
 {
     public string FullName { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
@@ -31,12 +31,11 @@ public class ImportResultDto
     public int PersonnelSkipped { get; set; }
     public List<string> Errors { get; set; } = new();
     public List<string> Warnings { get; set; } = new();
-    public List<ImportedPersonnelInfo> ImportedPersonnel { get; set; } = new();
+    public List<ImportedCustomerPersonnelInfo> ImportedPersonnel { get; set; } = new();
 
     /// <summary>
     /// Birden fazla eşleşme bulunan firma adları.
     /// Key: CSV'deki firma adı, Value: Eşleşen firmalar
-    /// Frontend bu listeyi gösterip kullanıcıya seçtirmeli.
     /// </summary>
     public Dictionary<string, List<CompanyMatchInfo>> AmbiguousCompanyMatches { get; set; } = new();
 }
@@ -51,9 +50,9 @@ public class CompanyMatchInfo
 }
 
 /// <summary>
-/// Import edilen personel bilgisi
+/// Import edilen müşteri personeli bilgisi
 /// </summary>
-public class ImportedPersonnelInfo
+public class ImportedCustomerPersonnelInfo
 {
     public int Id { get; set; }
     public string FullName { get; set; } = string.Empty;

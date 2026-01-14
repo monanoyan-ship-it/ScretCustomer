@@ -1,5 +1,51 @@
 namespace SecretCustomer.Core.DTOs.Assignment;
 
+/// <summary>
+/// Liste görünümü için hafif DTO - Include kullanmadan projection ile çekilir
+/// </summary>
+public class AssignmentListDto
+{
+    public int Id { get; set; }
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? ProjectCode { get; set; }
+    public int ChecklistId { get; set; }
+    public string ChecklistName { get; set; } = string.Empty;
+    public int? AssignedUserId { get; set; }
+    public string? AssignedUserName { get; set; }
+    public int? AssignedCustomerPersonnelId { get; set; }
+    public string? AssignedCustomerPersonnelName { get; set; }
+    public string? ExternalEmail { get; set; }
+    public string? ExternalName { get; set; }
+    public string UniqueLink { get; set; } = string.Empty;
+    public DateTime DueDate { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string Status { get; set; } = "Pending";
+
+    // Evaluation bilgileri (COUNT ve aggregate ile)
+    public int? EvaluationId { get; set; }
+    public decimal? EvaluationScore { get; set; }
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int EvaluationCount { get; set; }
+
+    // Computed properties
+    public string AssigneeName => AssignedUserName
+        ?? AssignedCustomerPersonnelName
+        ?? ExternalName
+        ?? ExternalEmail
+        ?? "Atanmamış";
+
+    public string AssigneeType => AssignedUserId.HasValue ? "User"
+        : AssignedCustomerPersonnelId.HasValue ? "CustomerPersonnel"
+        : !string.IsNullOrEmpty(ExternalEmail) ? "External"
+        : "Unassigned";
+
+    public int DaysRemaining => (DueDate - DateTime.UtcNow).Days;
+}
+
 public class AssignmentDto
 {
     public int Id { get; set; }

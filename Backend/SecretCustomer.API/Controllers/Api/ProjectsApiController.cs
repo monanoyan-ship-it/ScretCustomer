@@ -28,15 +28,25 @@ public class ProjectsApiController : BaseApiController
     #region CRUD Operations
 
     /// <summary>
-    /// Tüm projeleri getir
+    /// Tüm projeleri getir - Optimize edilmiş liste
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search = null,
+        [FromQuery] int? customerId = null,
+        [FromQuery] string? projectType = null,
+        [FromQuery] string? status = null,
+        [FromQuery] int? projectManagerId = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] bool includeInactive = false)
     {
         try
         {
-            var projects = await _projectService.GetAllAsync(includeInactive);
+            // Optimize edilmiş liste methodu kullan
+            var projects = await _projectService.GetListAsync(
+                search, customerId, projectType, status, projectManagerId, startDate, endDate, includeInactive);
             return Ok(projects);
         }
         catch (Exception ex)

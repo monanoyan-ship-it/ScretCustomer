@@ -47,6 +47,13 @@ function ProjectEditViewModel(data) {
     self.tags = ko.observable(data.tags || '');
     self.notes = ko.observable(data.notes || '');
 
+    // Survey Settings (OnlineSurvey proje tipi için)
+    self.surveyIdentityType = ko.observable(data.surveyIdentityType || 'Anonymous');
+    self.emailTemplateId = ko.observable(data.emailTemplateId || null);
+    self.reminderEmailTemplateId = ko.observable(data.reminderEmailTemplateId || null);
+    self.sendReminderEmails = ko.observable(data.sendReminderEmails || false);
+    self.reminderDaysBeforeEnd = ko.observable(data.reminderDaysBeforeEnd || null);
+
     // Team Members
     self.teamMembers = ko.observableArray([]);
 
@@ -82,6 +89,12 @@ function ProjectEditViewModel(data) {
             priority: self.priority() || null,
             tags: self.tags() || null,
             notes: self.notes() || null,
+            // Survey Settings
+            surveyIdentityType: self.projectType() === 'OnlineSurvey' ? self.surveyIdentityType() : null,
+            emailTemplateId: self.projectType() === 'OnlineSurvey' ? self.emailTemplateId() : null,
+            reminderEmailTemplateId: self.projectType() === 'OnlineSurvey' ? self.reminderEmailTemplateId() : null,
+            sendReminderEmails: self.projectType() === 'OnlineSurvey' ? self.sendReminderEmails() : false,
+            reminderDaysBeforeEnd: self.projectType() === 'OnlineSurvey' ? self.reminderDaysBeforeEnd() : null,
             teamMembers: self.teamMembers().map(function(tm) {
                 return { userId: tm.userId(), role: tm.role() };
             }).filter(function(tm) { return tm.userId; })
@@ -110,12 +123,17 @@ function ProjectsViewModel() {
     self.customers = ko.observableArray([]);
     self.users = ko.observableArray([]);
     self.availableOrganizations = ko.observableArray([]);
+    self.emailTemplates = ko.observableArray([]);
 
     // View mode
     self.viewMode = ko.observable('table');
 
     // Sorting
     self.sorting = TableSorting.createSortState('createdAt', 'desc');
+
+    // Pagination
+    self.currentPage = ko.observable(1);
+    self.pageSize = ko.observable(20);
 
     // ==================== FILTER SYSTEM ====================
     self.selectedFilterType = ko.observable('');
@@ -382,6 +400,16 @@ function ProjectsViewModel() {
     self.isUploadingFile = ko.observable(false);
     self.currentUserRole = ko.observable('');
 
+    // Survey Modal
+    self.isSurveyModalOpen = ko.observable(false);
+    self.isSurveyLoading = ko.observable(false);
+    self.isSurveySending = ko.observable(false);
+    self.surveyProject = ko.observable(null);
+    self.surveyPersonnelStats = ko.observable(null);
+    self.surveyUrl = ko.observable('');
+    self.surveyEmailTemplateId = ko.observable(null);
+    self.surveyResult = ko.observable(null);
+
     // Check if user can manage files (Admin or TeamLeader)
     self.canManageFiles = ko.computed(function() {
         var role = self.currentUserRole();
@@ -418,8 +446,8 @@ function ProjectsViewModel() {
         return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
     };
 
-    // Filtered projects (based on active filters)
-    self.filteredProjects = ko.computed(function() {
+    // Filtered projects (based on active filters) - Tam liste
+    self.allFilteredProjects = ko.computed(function() {
         var result = self.projects();
 
         // Apply active filters
@@ -454,7 +482,6 @@ function ProjectsViewModel() {
                     result = result.filter(function(p) {
                         var pStart = new Date(p.startDate);
                         var pEnd = new Date(p.endDate);
-                        // Proje tarihleri filtre tarih aralığıyla kesişiyorsa göster
                         if (startDate && pEnd < startDate) return false;
                         if (endDate && pStart > endDate) return false;
                         return true;
@@ -470,6 +497,46 @@ function ProjectsViewModel() {
             result = TableSorting.clientSort(result, sortBy, sortDir);
         }
         return result;
+    });
+
+    // Pagination computed'ları
+    self.totalCount = ko.computed(function() { return self.allFilteredProjects().length; });
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
+    });
+
+    // Sayfalanmış liste (view'da kullanılacak)
+    self.filteredProjects = ko.computed(function() {
+        var list = self.allFilteredProjects();
+        var page = parseInt(self.currentPage(), 10);
+        var pageSize = parseInt(self.pageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Filtre değişince sayfa 1'e dön
+    self.activeFilters.subscribe(function() { self.currentPage(1); });
+    self.pageSize.subscribe(function() { self.currentPage(1); });
+
+    // Pagination fonksiyonları
+    self.goToPage = function(page) {
+        if (page >= 1 && page <= self.totalPages()) self.currentPage(page);
+    };
+    self.prevPage = function() { if (self.currentPage() > 1) self.currentPage(self.currentPage() - 1); };
+    self.nextPage = function() { if (self.currentPage() < self.totalPages()) self.currentPage(self.currentPage() + 1); };
+    self.firstPage = function() { self.currentPage(1); };
+    self.lastPage = function() { self.currentPage(self.totalPages()); };
+
+    // Sayfa numaraları dizisi
+    self.pageNumbers = ko.computed(function() {
+        var current = self.currentPage();
+        var total = self.totalPages();
+        var pages = [];
+        var start = Math.max(1, current - 2);
+        var end = Math.min(total, start + 4);
+        if (end - start < 4) start = Math.max(1, end - 4);
+        for (var i = start; i <= end; i++) pages.push(i);
+        return pages;
     });
 
     // Load dropdown data
@@ -491,6 +558,12 @@ function ProjectsViewModel() {
             .then(function(res) { return res.json(); })
             .then(function(data) { self.users(data || []); })
             .catch(function() { console.error('Users could not be loaded'); });
+
+        // Load email templates (for survey projects)
+        fetch('/api/email-templates?templateTypeId=1', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.emailTemplates(data || []); })
+            .catch(function() { console.error('Email templates could not be loaded'); });
     };
 
     // Load organizations by customer
@@ -1024,6 +1097,98 @@ function ProjectsViewModel() {
             .catch(function() {
                 // Ignore errors
             });
+    };
+
+    // ==================== SURVEY MODAL FUNCTIONS ====================
+
+    // Open survey invitation modal
+    self.openSurveyModal = function(project) {
+        self.surveyProject(project);
+        self.surveyPersonnelStats(null);
+        self.surveyResult(null);
+        self.surveyUrl('');
+        self.surveyEmailTemplateId(project.emailTemplateId || null);
+        self.isSurveyModalOpen(true);
+        document.body.classList.add('modal-open');
+
+        // Load personnel preview
+        self.loadSurveyPersonnelPreview(project.id);
+    };
+
+    // Close survey modal
+    self.closeSurveyModal = function() {
+        self.isSurveyModalOpen(false);
+        document.body.classList.remove('modal-open');
+        self.surveyProject(null);
+        self.surveyPersonnelStats(null);
+        self.surveyResult(null);
+    };
+
+    // Load personnel preview for survey
+    self.loadSurveyPersonnelPreview = function(projectId) {
+        self.isSurveyLoading(true);
+
+        fetch('/api/surveys/' + projectId + '/personnel-preview', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.surveyPersonnelStats(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading personnel preview:', error);
+                toastr.error('Personel listesi yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isSurveyLoading(false);
+            });
+    };
+
+    // Send survey invitations
+    self.sendSurveyInvitations = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var stats = self.surveyPersonnelStats();
+        if (!stats || stats.withEmail === 0) {
+            toastr.warning('Email adresi olan personel bulunamadı.');
+            return;
+        }
+
+        // Confirmation
+        if (!confirm('Toplam ' + stats.withEmail + ' kişiye anket davetiyesi gönderilecek. Devam etmek istiyor musunuz?')) {
+            return;
+        }
+
+        self.isSurveySending(true);
+        self.surveyResult(null);
+
+        var dto = {
+            surveyUrl: self.surveyUrl() || null,
+            emailTemplateId: self.surveyEmailTemplateId() || null
+        };
+
+        fetch('/api/surveys/' + project.id + '/send-invitations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            self.surveyResult(result);
+            if (result.success) {
+                toastr.success(result.message);
+            } else {
+                toastr.error(result.message || 'Gönderim sırasında hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error sending invitations:', error);
+            toastr.error('Davetiye gönderilirken bir hata oluştu.');
+            self.surveyResult({ success: false, message: 'Beklenmeyen bir hata oluştu.' });
+        })
+        .finally(function() {
+            self.isSurveySending(false);
+        });
     };
 
     // Initialize

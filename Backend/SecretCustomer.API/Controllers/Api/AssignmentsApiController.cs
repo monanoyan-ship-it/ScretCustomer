@@ -37,23 +37,23 @@ public class AssignmentsApiController : BaseApiController
 
     /// <summary>
     /// Get all assignments - Only Admin and TeamLeader can access
+    /// Optimized with projection (no Include)
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader")]
-    public async Task<IActionResult> GetAll([FromQuery] int? projectId = null)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int? projectId = null,
+        [FromQuery] int? assignedUserId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? searchTerm = null)
     {
         try
         {
-            IEnumerable<AssignmentDto> assignments;
-
-            if (projectId.HasValue && projectId != 0)
-            {
-                assignments = await _assignmentService.GetByProjectIdAsync(projectId.Value);
-            }
-            else
-            {
-                assignments = await _assignmentService.GetAllAsync();
-            }
+            var assignments = await _assignmentService.GetListAsync(
+                projectId: projectId != 0 ? projectId : null,
+                assignedUserId: assignedUserId,
+                status: status,
+                searchTerm: searchTerm);
 
             return Ok(assignments);
         }

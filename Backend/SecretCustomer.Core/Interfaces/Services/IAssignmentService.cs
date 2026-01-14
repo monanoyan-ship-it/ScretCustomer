@@ -9,6 +9,15 @@ public interface IAssignmentService
     Task<AssignmentDto?> GetByIdAsync(int id);
     Task<AssignmentDetailDto?> GetDetailByIdAsync(int id);
     Task<IEnumerable<AssignmentDto>> GetAllAsync();
+
+    /// <summary>
+    /// Performans için optimize edilmiş liste metodu - projection kullanır
+    /// </summary>
+    Task<IEnumerable<AssignmentListDto>> GetListAsync(
+        int? projectId = null,
+        int? assignedUserId = null,
+        string? status = null,
+        string? searchTerm = null);
     Task<AssignmentDto?> GetByUniqueLinkAsync(string uniqueLink);
     Task<AssignmentDto> CreateAsync(CreateAssignmentDto dto);
     Task UpdateAsync(int id, UpdateAssignmentDto dto);

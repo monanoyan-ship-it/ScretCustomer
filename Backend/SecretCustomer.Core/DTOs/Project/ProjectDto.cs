@@ -1,5 +1,52 @@
 namespace SecretCustomer.Core.DTOs.Project;
 
+/// <summary>
+/// Liste görünümü için hafif DTO
+/// </summary>
+public class ProjectListDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int ChecklistId { get; set; }
+    public string? ChecklistName { get; set; }
+    public string ProjectType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string AssignmentType { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    // İstatistikler (COUNT ile hesaplanır)
+    public int TotalAssignments { get; set; }
+    public int CompletedAssignments { get; set; }
+    public decimal CompletionPercentage { get; set; }
+
+    // Müşteri
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? CustomerCode { get; set; }
+
+    // Organizasyon
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+
+    // Yönetici
+    public int? ProjectManagerId { get; set; }
+    public string? ProjectManagerName { get; set; }
+
+    // Hedef
+    public int? TargetCount { get; set; }
+
+    // İstatistikler
+    public decimal AverageScore { get; set; }
+    public int TotalYellowCards { get; set; }
+    public int TotalRedCards { get; set; }
+    public int TeamMemberCount { get; set; }
+}
+
 public class ProjectDto
 {
     public int Id { get; set; }
@@ -57,6 +104,15 @@ public class ProjectDto
     // Organizasyon/Sube
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
+
+    // ===== ANKET AYARLARI (Survey Settings) =====
+    public string? SurveyIdentityType { get; set; }
+    public int? EmailTemplateId { get; set; }
+    public string? EmailTemplateName { get; set; }
+    public int? ReminderEmailTemplateId { get; set; }
+    public string? ReminderEmailTemplateName { get; set; }
+    public bool SendReminderEmails { get; set; }
+    public int? ReminderDaysBeforeEnd { get; set; }
 
     // Kart sayilari
     public int TotalYellowCards { get; set; }

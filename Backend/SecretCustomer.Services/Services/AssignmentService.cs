@@ -161,6 +161,87 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<AssignmentListDto>> GetListAsync(
+        int? projectId = null,
+        int? assignedUserId = null,
+        string? status = null,
+        string? searchTerm = null)
+    {
+        var now = DateTime.UtcNow;
+        var query = _context.Assignments
+            .Where(a => !a.IsDeleted)
+            .AsQueryable();
+
+        // Filters
+        if (projectId.HasValue)
+            query = query.Where(a => a.ProjectId == projectId.Value);
+
+        if (assignedUserId.HasValue)
+            query = query.Where(a => a.AssignedUserId == assignedUserId.Value);
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = status switch
+            {
+                "Pending" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
+                "InProgress" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
+                "Completed" => query.Where(a => a.IsCompleted),
+                "Expired" => query.Where(a => !a.IsCompleted && a.DueDate < now),
+                _ => query
+            };
+        }
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+            query = query.Where(a =>
+                (a.Project != null && a.Project.Name.ToLower().Contains(term)) ||
+                (a.Checklist != null && a.Checklist.Name.ToLower().Contains(term)) ||
+                (a.AssignedUser != null && (a.AssignedUser.FirstName + " " + a.AssignedUser.LastName).ToLower().Contains(term)) ||
+                (a.ExternalEmail != null && a.ExternalEmail.ToLower().Contains(term)) ||
+                (a.ExternalName != null && a.ExternalName.ToLower().Contains(term)));
+        }
+
+        // Projection - Include kullanmadan
+        return await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Select(a => new AssignmentListDto
+            {
+                Id = a.Id,
+                ProjectId = a.ProjectId,
+                ProjectName = a.Project != null ? a.Project.Name : "",
+                ProjectCode = a.Project != null ? a.Project.Code : null,
+                ChecklistId = a.ChecklistId,
+                ChecklistName = a.Checklist != null ? a.Checklist.Name : "",
+                AssignedUserId = a.AssignedUserId,
+                AssignedUserName = a.AssignedUser != null
+                    ? a.AssignedUser.FirstName + " " + a.AssignedUser.LastName
+                    : null,
+                AssignedCustomerPersonnelId = a.AssignedCustomerPersonnelId,
+                AssignedCustomerPersonnelName = a.AssignedCustomerPersonnel != null
+                    ? a.AssignedCustomerPersonnel.FirstName + " " + a.AssignedCustomerPersonnel.LastName
+                    : null,
+                ExternalEmail = a.ExternalEmail,
+                ExternalName = a.ExternalName,
+                UniqueLink = a.UniqueLink,
+                DueDate = a.DueDate,
+                IsCompleted = a.IsCompleted,
+                CompletedAt = a.CompletedAt,
+                CreatedAt = a.CreatedAt,
+                Status = a.IsCompleted ? "Completed"
+                    : a.DueDate < now ? "Expired"
+                    : a.Evaluations.Any(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Draft) ? "InProgress"
+                    : "Pending",
+                // Evaluation aggregate'leri
+                EvaluationId = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => (int?)e.Id).FirstOrDefault(),
+                EvaluationScore = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.ScorePercentage).FirstOrDefault(),
+                YellowCardCount = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.YellowCardCount).FirstOrDefault(),
+                RedCardCount = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.RedCardCount).FirstOrDefault(),
+                EvaluationCount = a.Evaluations.Count(e => !e.IsDeleted)
+            })
+            .ToListAsync();
+    }
+
     public async Task<AssignmentDto?> GetByUniqueLinkAsync(string uniqueLink)
     {
         var assignment = await _assignmentRepository.GetByUniqueLinkAsync(uniqueLink, includeDetails: true);

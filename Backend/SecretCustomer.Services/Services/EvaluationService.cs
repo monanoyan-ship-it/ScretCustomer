@@ -80,13 +80,48 @@ public class EvaluationService : IEvaluationService
 
     public async Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId)
     {
-        var evaluations = await _evaluationRepository.GetByEvaluatorIdAsync(evaluatorId);
-        var result = new List<EvaluationDto>();
-        foreach (var eval in evaluations)
-        {
-            result.Add(await MapToDtoAsync(eval));
-        }
-        return result;
+        // Projection kullanarak N+1 problemini çöz
+        return await _context.Evaluations
+            .Where(e => e.EvaluatorId == evaluatorId && !e.IsDeleted)
+            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .Select(e => new EvaluationDto
+            {
+                Id = e.Id,
+                AssignmentId = e.AssignmentId,
+                AssignmentPeriodId = e.AssignmentPeriodId,
+                AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
+                EvaluatorId = e.EvaluatorId,
+                EvaluatorName = e.EvaluatorCustomerPersonnel != null
+                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                    : (e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null),
+                Status = EvaluationStatuses.GetById(e.StatusId) != null ? EvaluationStatuses.GetById(e.StatusId)!.SystemName : "",
+                TotalScore = e.TotalScore,
+                MaxScore = e.MaxScore,
+                ScorePercentage = e.ScorePercentage,
+                StartedAt = e.StartedAt,
+                CompletedAt = e.CompletedAt,
+                Notes = e.Notes,
+                EvaluationComment = e.EvaluationComment,
+                CallId = e.CallId,
+                CallDate = e.CallDate,
+                CallTime = e.CallTime,
+                Duration = e.Duration,
+                EvaluatedPersonnelId = e.EvaluatedCustomerPersonnelId,
+                EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel,
+                EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
+                    ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
+                YellowCardCount = e.YellowCardCount,
+                RedCardCount = e.RedCardCount,
+                FormOpenedAt = e.FormOpenedAt,
+                ControlDate = e.ControlDate,
+                ControlTime = e.ControlTime,
+                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+            })
+            .ToListAsync();
     }
 
     /// <summary>
@@ -94,63 +129,142 @@ public class EvaluationService : IEvaluationService
     /// </summary>
     public async Task<IEnumerable<EvaluationDto>> GetByEvaluatorCustomerPersonnelIdAsync(int customerPersonnelId)
     {
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatorCustomerPersonnel)
+        // Projection kullanarak N+1 problemini çöz
+        return await _context.Evaluations
             .Where(e => e.EvaluatorCustomerPersonnelId == customerPersonnelId && !e.IsDeleted)
             .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .Select(e => new EvaluationDto
+            {
+                Id = e.Id,
+                AssignmentId = e.AssignmentId,
+                AssignmentPeriodId = e.AssignmentPeriodId,
+                AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
+                EvaluatorId = e.EvaluatorId,
+                EvaluatorName = e.EvaluatorCustomerPersonnel != null
+                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                    : (e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null),
+                Status = EvaluationStatuses.GetById(e.StatusId) != null ? EvaluationStatuses.GetById(e.StatusId)!.SystemName : "",
+                TotalScore = e.TotalScore,
+                MaxScore = e.MaxScore,
+                ScorePercentage = e.ScorePercentage,
+                StartedAt = e.StartedAt,
+                CompletedAt = e.CompletedAt,
+                Notes = e.Notes,
+                EvaluationComment = e.EvaluationComment,
+                CallId = e.CallId,
+                CallDate = e.CallDate,
+                CallTime = e.CallTime,
+                Duration = e.Duration,
+                EvaluatedPersonnelId = e.EvaluatedCustomerPersonnelId,
+                EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel,
+                EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
+                    ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
+                YellowCardCount = e.YellowCardCount,
+                RedCardCount = e.RedCardCount,
+                FormOpenedAt = e.FormOpenedAt,
+                ControlDate = e.ControlDate,
+                ControlTime = e.ControlTime,
+                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+            })
             .ToListAsync();
-
-        var result = new List<EvaluationDto>();
-        foreach (var eval in evaluations)
-        {
-            result.Add(await MapToDtoAsync(eval));
-        }
-        return result;
     }
 
     public async Task<IEnumerable<EvaluationDto>> GetAllAsync(int page = 1, int pageSize = 20)
     {
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Evaluator)
-            .Include(e => e.EvaluatorCustomerPersonnel)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+        // Projection kullanarak N+1 problemini çöz
+        return await _context.Evaluations
             .Where(e => !e.IsDeleted)
             .OrderByDescending(e => e.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(e => new EvaluationDto
+            {
+                Id = e.Id,
+                AssignmentId = e.AssignmentId,
+                AssignmentPeriodId = e.AssignmentPeriodId,
+                AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
+                EvaluatorId = e.EvaluatorId,
+                EvaluatorName = e.EvaluatorCustomerPersonnel != null
+                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                    : (e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null),
+                Status = EvaluationStatuses.GetById(e.StatusId) != null ? EvaluationStatuses.GetById(e.StatusId)!.SystemName : "",
+                TotalScore = e.TotalScore,
+                MaxScore = e.MaxScore,
+                ScorePercentage = e.ScorePercentage,
+                StartedAt = e.StartedAt,
+                CompletedAt = e.CompletedAt,
+                Notes = e.Notes,
+                EvaluationComment = e.EvaluationComment,
+                CallId = e.CallId,
+                CallDate = e.CallDate,
+                CallTime = e.CallTime,
+                Duration = e.Duration,
+                EvaluatedPersonnelId = e.EvaluatedCustomerPersonnelId,
+                EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel,
+                EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
+                    ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
+                YellowCardCount = e.YellowCardCount,
+                RedCardCount = e.RedCardCount,
+                FormOpenedAt = e.FormOpenedAt,
+                ControlDate = e.ControlDate,
+                ControlTime = e.ControlTime,
+                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+            })
             .ToListAsync();
-
-        var result = new List<EvaluationDto>();
-        foreach (var eval in evaluations)
-        {
-            result.Add(await MapToDtoAsync(eval));
-        }
-        return result;
     }
 
     public async Task<IEnumerable<EvaluationDto>> GetByProjectIdAsync(int projectId)
     {
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Evaluator)
-            .Include(e => e.EvaluatorCustomerPersonnel)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+        // Projection kullanarak N+1 problemini çöz
+        return await _context.Evaluations
             .Where(e => !e.IsDeleted && e.Assignment.ProjectId == projectId)
             .OrderByDescending(e => e.CreatedAt)
+            .Select(e => new EvaluationDto
+            {
+                Id = e.Id,
+                AssignmentId = e.AssignmentId,
+                AssignmentPeriodId = e.AssignmentPeriodId,
+                AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
+                EvaluatorId = e.EvaluatorId,
+                EvaluatorName = e.EvaluatorCustomerPersonnel != null
+                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                    : (e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null),
+                Status = EvaluationStatuses.GetById(e.StatusId) != null ? EvaluationStatuses.GetById(e.StatusId)!.SystemName : "",
+                TotalScore = e.TotalScore,
+                MaxScore = e.MaxScore,
+                ScorePercentage = e.ScorePercentage,
+                StartedAt = e.StartedAt,
+                CompletedAt = e.CompletedAt,
+                Notes = e.Notes,
+                EvaluationComment = e.EvaluationComment,
+                CallId = e.CallId,
+                CallDate = e.CallDate,
+                CallTime = e.CallTime,
+                Duration = e.Duration,
+                EvaluatedPersonnelId = e.EvaluatedCustomerPersonnelId,
+                EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel,
+                EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
+                    ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
+                YellowCardCount = e.YellowCardCount,
+                RedCardCount = e.RedCardCount,
+                FormOpenedAt = e.FormOpenedAt,
+                ControlDate = e.ControlDate,
+                ControlTime = e.ControlTime,
+                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+            })
             .ToListAsync();
-
-        var result = new List<EvaluationDto>();
-        foreach (var eval in evaluations)
-        {
-            result.Add(await MapToDtoAsync(eval));
-        }
-        return result;
     }
 
     public async Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId)

@@ -331,6 +331,42 @@
                 </table>
             </div>
 
+            <!-- Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((currentPage() - 1) * pageSize() + 1) + '-' + Math.min(currentPage() * pageSize(), totalCount()) + ' / ' + totalCount()"></span>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: firstPage"><i class="bi bi-chevron-double-left"></i></a>
+                        </li>
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: prevPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: pageNumbers -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                            <a class="page-link" href="#" data-bind="click: nextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                            <a class="page-link" href="#" data-bind="click: lastPage"><i class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <div>
+                    <select class="form-select form-select-sm" style="width: auto;" data-bind="value: pageSize">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Cards View -->
             <div class="row g-3 p-3" data-bind="visible: viewMode() === 'cards' && filteredProjects().length > 0, foreach: filteredProjects">
                 <div class="col-md-6 col-lg-4">
@@ -477,6 +513,44 @@
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">@Html.T("Project.EndDate", "Bitiş Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: endDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Survey Settings (OnlineSurvey için) -->
+                            <div class="card mb-3" data-bind="visible: projectType() === 'OnlineSurvey'">
+                                <div class="card-header py-2 bg-success text-white"><i class="bi bi-clipboard-data"></i> @Html.T("Project.SurveySettings", "Anket Ayarları")</div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.SurveyIdentityType", "Kimlik Tipi") <span class="text-danger">*</span></label>
+                                            <select class="form-select" data-bind="value: surveyIdentityType">
+                                                <option value="Anonymous">@Html.T("Project.SurveyIdentity.Anonymous", "Anonim (Kimlik Kapalı)")</option>
+                                                <option value="Identified">@Html.T("Project.SurveyIdentity.Identified", "Kimlik Açık")</option>
+                                            </select>
+                                            <small class="text-muted">@Html.T("Project.SurveyIdentityHint", "Anonim: Katılımcı kimliği gizli, Açık: Katılımcı bilgileri görünür")</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.EmailTemplate", "Davetiye Şablonu")</label>
+                                            <select class="form-select" data-bind="value: emailTemplateId, options: $parent.emailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.SelectTemplate", "Şablon Seçin...")'"></select>
+                                            <small class="text-muted">@Html.T("Project.EmailTemplateHint", "Anket davetiyeleri için kullanılacak şablon")</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="sendReminder" data-bind="checked: sendReminderEmails">
+                                                <label class="form-check-label" for="sendReminder">@Html.T("Project.SendReminderEmails", "Hatırlatma Maili Gönder")</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3" data-bind="visible: sendReminderEmails()">
+                                            <label class="form-label">@Html.T("Project.ReminderEmailTemplate", "Hatırlatma Şablonu")</label>
+                                            <select class="form-select" data-bind="value: reminderEmailTemplateId, options: $parent.emailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.SelectTemplate", "Şablon Seçin...")'"></select>
+                                        </div>
+                                        <div class="col-md-4 mb-3" data-bind="visible: sendReminderEmails()">
+                                            <label class="form-label">@Html.T("Project.ReminderDays", "Hatırlatma (Gün Önce)")</label>
+                                            <input type="number" class="form-control" data-bind="value: reminderDaysBeforeEnd" min="1" max="30" placeholder="3">
+                                            <small class="text-muted">@Html.T("Project.ReminderDaysHint", "Bitiş tarihinden kaç gün önce")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -734,6 +808,26 @@
                         </div>
                         <!-- Right Column -->
                         <div class="col-lg-4">
+                            <!-- Survey Actions (OnlineSurvey için) -->
+                            <div class="card mb-3 border-success" data-bind="visible: projectType === 'OnlineSurvey'">
+                                <div class="card-header py-2 bg-success text-white"><i class="bi bi-envelope-paper"></i> @Html.T("Project.SurveyActions", "Anket İşlemleri")</div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.openSurveyModal($data); }">
+                                            <i class="bi bi-send"></i> @Html.T("Project.SendInvitations", "Davetiye Gönder")
+                                        </button>
+                                    </div>
+                                    <!-- ko if: surveyIdentityType -->
+                                    <div class="mt-2 small text-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        Kimlik: <span data-bind="text: surveyIdentityType === 'Anonymous' ? 'Anonim' : 'Açık'"></span>
+                                        <!-- ko if: emailTemplateName -->
+                                        | Şablon: <span data-bind="text: emailTemplateName"></span>
+                                        <!-- /ko -->
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
                             <!-- Status Actions -->
                             <div class="card mb-3" data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
                                 <div class="card-header py-2"><i class="bi bi-toggles"></i> @Html.T("Project.StatusActions", "Durum İşlemleri")</div>
@@ -786,6 +880,98 @@
     <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
 
     <partial name="_DeleteConfirmationModal" />
+
+    <!-- ==================== SURVEY INVITATION MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isSurveyModalOpen }, style: { display: isSurveyModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-envelope-paper me-2"></i>@Html.T("Project.SendSurveyInvitations", "Anket Davetiyesi Gönder")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeSurveyModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Project Info -->
+                    <div class="alert alert-info mb-3" data-bind="with: surveyProject">
+                        <strong><i class="bi bi-clipboard-data"></i> <span data-bind="text: name"></span></strong><br>
+                        <small>
+                            <span data-bind="text: customerName || 'Müşteri belirtilmedi'"></span>
+                            <!-- ko if: organizationName --> | <span data-bind="text: organizationName"></span><!-- /ko -->
+                        </small>
+                    </div>
+
+                    <!-- Personnel Preview Loading -->
+                    <div data-bind="visible: isSurveyLoading()" class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <span class="ms-2">@Html.T("Project.LoadingPersonnel", "Personel listesi yükleniyor...")</span>
+                    </div>
+
+                    <!-- Personnel Stats -->
+                    <div data-bind="visible: !isSurveyLoading() && surveyPersonnelStats()" class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="card bg-primary text-white text-center py-2">
+                                <h4 class="mb-0" data-bind="text: surveyPersonnelStats() ? surveyPersonnelStats().totalCount : 0"></h4>
+                                <small>@Html.T("Project.TotalPersonnel", "Toplam Personel")</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white text-center py-2">
+                                <h4 class="mb-0" data-bind="text: surveyPersonnelStats() ? surveyPersonnelStats().withEmail : 0"></h4>
+                                <small>@Html.T("Project.WithEmail", "Email Var")</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-warning text-center py-2">
+                                <h4 class="mb-0" data-bind="text: surveyPersonnelStats() ? surveyPersonnelStats().withoutEmail : 0"></h4>
+                                <small>@Html.T("Project.WithoutEmail", "Email Yok")</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Survey URL -->
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Project.SurveyUrl", "Anket URL'i")</label>
+                        <input type="url" class="form-control" data-bind="value: surveyUrl" placeholder="https://survey.example.com/abc123">
+                        <small class="text-muted">@Html.T("Project.SurveyUrlHint", "Email şablonundaki {SurveyLink} bu URL ile değiştirilecek")</small>
+                    </div>
+
+                    <!-- Email Template Override -->
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Project.EmailTemplateOverride", "Email Şablonu (Opsiyonel)")</label>
+                        <select class="form-select" data-bind="value: surveyEmailTemplateId, options: emailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.UseProjectTemplate", "Proje şablonunu kullan...")'"></select>
+                        <small class="text-muted">@Html.T("Project.EmailTemplateOverrideHint", "Boş bırakırsanız projede tanımlı şablon kullanılır")</small>
+                    </div>
+
+                    <!-- Send Result -->
+                    <div data-bind="visible: surveyResult()" class="mt-3">
+                        <div class="alert" data-bind="css: surveyResult() && surveyResult().success ? 'alert-success' : 'alert-danger'">
+                            <strong data-bind="text: surveyResult() ? surveyResult().message : ''"></strong>
+                            <!-- ko if: surveyResult() && surveyResult().errors && surveyResult().errors.length > 0 -->
+                            <hr>
+                            <small>
+                                <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
+                                <ul class="mb-0" data-bind="foreach: surveyResult().errors">
+                                    <li data-bind="text: $data"></li>
+                                </ul>
+                            </small>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeSurveyModal">
+                        <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: sendSurveyInvitations, disable: isSurveySending() || (surveyPersonnelStats() && surveyPersonnelStats().withEmail === 0)">
+                        <span data-bind="visible: !isSurveySending()"><i class="bi bi-send me-2"></i>@Html.T("Project.SendInvitations", "Davetiye Gönder")</span>
+                        <span data-bind="visible: isSurveySending"><span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Project.Sending", "Gönderiliyor...")</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isSurveyModalOpen }, style: { display: isSurveyModalOpen() ? 'block' : 'none' }"></div>
 
 </div>
 

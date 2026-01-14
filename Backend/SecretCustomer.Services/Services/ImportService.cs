@@ -136,7 +136,7 @@ public class ImportService : IImportService
                                 // Zaten bu organizasyonda - uyarı ver ve atla
                                 result.PersonnelSkipped++;
                                 result.Warnings.Add($"Satır {rowNumber}: {importDto.Username} zaten {organization.Name} organizasyonunda mevcut");
-                                result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                                result.ImportedPersonnel.Add(new ImportedCustomerPersonnelInfo
                                 {
                                     Id = existingPersonnel.Id,
                                     FullName = importDto.FullName,
@@ -163,7 +163,7 @@ public class ImportService : IImportService
                                 await _personnelOrgRepository.AddAsync(assignment);
                                 result.PersonnelUpdated++;
 
-                                result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                                result.ImportedPersonnel.Add(new ImportedCustomerPersonnelInfo
                                 {
                                     Id = existingPersonnel.Id,
                                     FullName = importDto.FullName,
@@ -209,7 +209,7 @@ public class ImportService : IImportService
                             }
                             result.PersonnelUpdated++;
 
-                            result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                            result.ImportedPersonnel.Add(new ImportedCustomerPersonnelInfo
                             {
                                 Id = existingPersonnel.Id,
                                 FullName = importDto.FullName,
@@ -224,7 +224,7 @@ public class ImportService : IImportService
                             result.PersonnelSkipped++;
                             result.Warnings.Add($"Satır {rowNumber}: Kullanıcı adı zaten mevcut - {importDto.Username}");
 
-                            result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                            result.ImportedPersonnel.Add(new ImportedCustomerPersonnelInfo
                             {
                                 Id = existingPersonnel.Id,
                                 FullName = importDto.FullName,
@@ -296,7 +296,7 @@ public class ImportService : IImportService
                             currentSupervisorByCompany[supervisorKey] = null;
                         }
 
-                        result.ImportedPersonnel.Add(new ImportedPersonnelInfo
+                        result.ImportedPersonnel.Add(new ImportedCustomerPersonnelInfo
                         {
                             Id = created.Id,
                             FullName = importDto.FullName,
@@ -539,7 +539,7 @@ public class ImportService : IImportService
         return true;
     }
 
-    private static PersonnelImportDto MapToDto(string[] values, Dictionary<string, int> columnMap)
+    private static CustomerPersonnelImportDto MapToDto(string[] values, Dictionary<string, int> columnMap)
     {
         var username = GetValue(values, columnMap, "username");
         var email = GetValue(values, columnMap, "email");
@@ -548,7 +548,7 @@ public class ImportService : IImportService
         if (string.IsNullOrWhiteSpace(email))
             email = $"{username}@temp.com";
 
-        return new PersonnelImportDto
+        return new CustomerPersonnelImportDto
         {
             FullName = GetValue(values, columnMap, "fullname"),
             Username = username,

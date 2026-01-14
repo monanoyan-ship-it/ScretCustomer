@@ -144,8 +144,52 @@ function AssignmentsViewModel() {
     self.modalErrorMessage = ko.observable('');
     self.isEditing = ko.observable(false);
 
+    // ===== Pagination =====
+    self.currentPage = ko.observable(1);
+    self.pageSize = ko.observable(20);
+    self.allAssignments = ko.observableArray([]);
+
+    // Paginated assignments
+    self.assignments = ko.computed(function() {
+        var list = self.allAssignments();
+        var page = parseInt(self.currentPage(), 10);
+        var pageSize = parseInt(self.pageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    self.totalCount = ko.computed(function() {
+        return self.allAssignments().length;
+    });
+
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
+    });
+
+    // Sayfa değiştiğinde ilk sayfaya dön
+    self.pageSize.subscribe(function() {
+        self.currentPage(1);
+    });
+
+    self.goToPage = function(page) {
+        if (page >= 1 && page <= self.totalPages()) {
+            self.currentPage(page);
+        }
+    };
+
+    self.previousPage = function() {
+        if (self.currentPage() > 1) {
+            self.currentPage(self.currentPage() - 1);
+        }
+    };
+
+    self.nextPage = function() {
+        if (self.currentPage() < self.totalPages()) {
+            self.currentPage(self.currentPage() + 1);
+        }
+    };
+
     // ===== Data =====
-    self.assignments = ko.observableArray([]);
     self.availableProjects = ko.observableArray([]);
     self.availableEvaluators = ko.observableArray([]);
     self.availableFieldWorkers = ko.observableArray([]);
@@ -418,7 +462,8 @@ function AssignmentsViewModel() {
                 return res.json();
             })
             .then(function(data) {
-                self.assignments(data);
+                self.allAssignments(data);
+                self.currentPage(1);
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -560,7 +605,8 @@ function AssignmentsViewModel() {
                 return res.json();
             })
             .then(function(data) {
-                self.assignments(data);
+                self.allAssignments(data);
+                self.currentPage(1);
                 self.loadSummary(filter.projectId);
             })
             .catch(function(error) {

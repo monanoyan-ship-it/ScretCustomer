@@ -1,0 +1,359 @@
+@{
+    ViewData["Title"] = "Email Şablonu Düzenle";
+    var templateId = ViewBag.TemplateId;
+}
+
+<div id="email-template-editor">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-pencil-square"></i> Email Şablonu Düzenle</h2>
+        <div>
+            <a href="/EmailTemplates" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Geri
+            </a>
+            <button class="btn btn-outline-info me-2" data-bind="click: showPreview">
+                <i class="bi bi-eye"></i> Önizleme
+            </button>
+            <button class="btn btn-primary" data-bind="click: saveTemplate, disable: isSaving">
+                <span data-bind="visible: !isSaving()"><i class="bi bi-save"></i> Kaydet</span>
+                <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span> Kaydediliyor...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Şablon yükleniyor...</p>
+    </div>
+
+    <div data-bind="visible: !isLoading()" class="row">
+        <!-- Sol Panel: Form -->
+        <div class="col-md-8">
+            <!-- Temel Bilgiler -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Temel Bilgiler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Şablon Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: template.name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Şablon Tipi <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: template.templateTypeId, options: templateTypes, optionsValue: 'id', optionsText: 'displayName'"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Açıklama</label>
+                            <input type="text" class="form-control" data-bind="value: template.description">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isActive" data-bind="checked: template.isActive">
+                                <label class="form-check-label" for="isActive">Aktif</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isDefault" data-bind="checked: template.isDefault">
+                                <label class="form-check-label" for="isDefault">Varsayılan Şablon</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email İçeriği -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-envelope"></i> Email İçeriği</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Konu (Subject) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="subjectInput" data-bind="value: template.subject">
+                        <small class="text-muted">Placeholder kullanabilirsiniz: {ProjectName}, {CompanyName}, vb.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">İçerik (Body) <span class="text-danger">*</span></label>
+                        <div class="border rounded">
+                            <div class="bg-light p-2 border-bottom">
+                                <div class="btn-group btn-group-sm me-2">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('bold')"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('italic')"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('underline')"><i class="bi bi-type-underline"></i></button>
+                                </div>
+                                <div class="btn-group btn-group-sm me-2">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('h1')">H1</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('h2')">H2</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('h3')">H3</button>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('link')"><i class="bi bi-link-45deg"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('ul')"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="formatText('hr')"><i class="bi bi-hr"></i></button>
+                                </div>
+                            </div>
+                            <textarea id="bodyInput" class="form-control border-0" rows="15" style="font-family: monospace;"
+                                      data-bind="value: template.body"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Placeholder Seçici -->
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-braces"></i> Değişken Ekle</h6>
+                </div>
+                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                    <div class="accordion accordion-flush" id="placeholderAccordion" data-bind="foreach: placeholderCategories">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse"
+                                        data-bind="attr: { 'data-bs-target': '#cat-' + $index() }">
+                                    <i data-bind="class: icon + ' me-2'"></i>
+                                    <span data-bind="text: name"></span>
+                                </button>
+                            </h2>
+                            <div class="accordion-collapse collapse" data-bind="attr: { id: 'cat-' + $index() }">
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush" data-bind="foreach: placeholders">
+                                        <button type="button" class="list-group-item list-group-item-action py-2"
+                                                data-bind="click: $root.insertPlaceholder">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong class="text-primary" data-bind="text: code"></strong>
+                                                    <small class="d-block text-muted" data-bind="text: label"></small>
+                                                </div>
+                                                <i class="bi bi-plus-circle text-success"></i>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-lightbulb"></i> Bir değişkene tıklayarak içeriğe ekleyebilirsiniz.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> Email Önizleme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <strong>Konu:</strong> <span data-bind="text: previewSubject"></span>
+                    </div>
+                    <hr>
+                    <div data-bind="html: previewBody"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var templateId = @templateId;
+        var lastFocusedInput = null;
+
+        function EmailTemplateEditorViewModel() {
+            var self = this;
+
+            self.isLoading = ko.observable(true);
+            self.isSaving = ko.observable(false);
+            self.templateTypes = ko.observableArray([]);
+            self.placeholderCategories = ko.observableArray([]);
+            self.previewSubject = ko.observable('');
+            self.previewBody = ko.observable('');
+
+            self.template = {
+                name: ko.observable(''),
+                description: ko.observable(''),
+                subject: ko.observable(''),
+                body: ko.observable(''),
+                templateTypeId: ko.observable(1),
+                isActive: ko.observable(true),
+                isDefault: ko.observable(false),
+                customerId: ko.observable(null)
+            };
+
+            // Track last focused input
+            document.addEventListener('focusin', function(e) {
+                if (e.target.id === 'subjectInput' || e.target.id === 'bodyInput') {
+                    lastFocusedInput = e.target;
+                }
+            });
+
+            // Load template
+            self.loadTemplate = function() {
+                fetch('/api/email-templates/' + templateId, { credentials: 'include' })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        self.template.name(data.name);
+                        self.template.description(data.description);
+                        self.template.subject(data.subject);
+                        self.template.body(data.body);
+                        self.template.templateTypeId(data.templateTypeId);
+                        self.template.isActive(data.isActive);
+                        self.template.isDefault(data.isDefault);
+                        self.template.customerId(data.customerId);
+                    })
+                    .finally(function() {
+                        self.isLoading(false);
+                    });
+            };
+
+            // Insert placeholder at cursor
+            self.insertPlaceholder = function(placeholder) {
+                var input = lastFocusedInput || document.getElementById('bodyInput');
+                var code = placeholder.code;
+
+                if (input) {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    var text = input.value;
+                    var before = text.substring(0, start);
+                    var after = text.substring(end);
+
+                    input.value = before + code + after;
+                    input.focus();
+                    input.selectionStart = input.selectionEnd = start + code.length;
+
+                    if (input.id === 'subjectInput') {
+                        self.template.subject(input.value);
+                    } else {
+                        self.template.body(input.value);
+                    }
+                }
+
+                toastr.info(placeholder.label + ' eklendi');
+            };
+
+            // Show preview
+            self.showPreview = function() {
+                fetch('/api/email-templates/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject: self.template.subject(),
+                        body: self.template.body()
+                    }),
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    self.previewSubject(data.subject);
+                    self.previewBody(data.body);
+                    new bootstrap.Modal(document.getElementById('previewModal')).show();
+                });
+            };
+
+            // Save template
+            self.saveTemplate = function() {
+                if (!self.template.name()) {
+                    toastr.error('Şablon adı gerekli.');
+                    return;
+                }
+                if (!self.template.subject()) {
+                    toastr.error('Email konusu gerekli.');
+                    return;
+                }
+                if (!self.template.body()) {
+                    toastr.error('Email içeriği gerekli.');
+                    return;
+                }
+
+                self.isSaving(true);
+
+                fetch('/api/email-templates/' + templateId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: self.template.name(),
+                        description: self.template.description(),
+                        subject: self.template.subject(),
+                        body: self.template.body(),
+                        templateTypeId: parseInt(self.template.templateTypeId()),
+                        isActive: self.template.isActive(),
+                        isDefault: self.template.isDefault(),
+                        customerId: self.template.customerId()
+                    }),
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                })
+                .finally(function() {
+                    self.isSaving(false);
+                });
+            };
+
+            // Load types
+            fetch('/api/email-templates/types', { credentials: 'include' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) { self.templateTypes(data); });
+
+            // Load placeholders
+            fetch('/api/email-templates/placeholders', { credentials: 'include' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) { self.placeholderCategories(data); });
+
+            // Load template data
+            self.loadTemplate();
+        }
+
+        // Format text helper
+        function formatText(format) {
+            var input = document.getElementById('bodyInput');
+            var start = input.selectionStart;
+            var end = input.selectionEnd;
+            var text = input.value;
+            var selected = text.substring(start, end);
+            var replacement = '';
+
+            switch(format) {
+                case 'bold': replacement = '<strong>' + selected + '</strong>'; break;
+                case 'italic': replacement = '<em>' + selected + '</em>'; break;
+                case 'underline': replacement = '<u>' + selected + '</u>'; break;
+                case 'h1': replacement = '<h1>' + selected + '</h1>'; break;
+                case 'h2': replacement = '<h2>' + selected + '</h2>'; break;
+                case 'h3': replacement = '<h3>' + selected + '</h3>'; break;
+                case 'link': replacement = '<a href="URL">' + (selected || 'Link Metni') + '</a>'; break;
+                case 'ul': replacement = '<ul>\n  <li>' + selected + '</li>\n</ul>'; break;
+                case 'hr': replacement = '<hr>'; break;
+            }
+
+            input.value = text.substring(0, start) + replacement + text.substring(end);
+            input.focus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ko.applyBindings(new EmailTemplateEditorViewModel(), document.getElementById('email-template-editor'));
+        });
+    </script>
+}

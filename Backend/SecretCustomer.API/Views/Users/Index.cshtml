@@ -17,13 +17,13 @@
         <li class="nav-item">
             <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'users' }, click: function() { switchTab('users'); }">
                 <i class="bi bi-person-gear me-2"></i>@Html.T("User.SystemUsers", "Sistem Kullanıcıları")
-                <span class="badge bg-primary ms-2" data-bind="text: users().length"></span>
+                <span class="badge bg-primary ms-2" data-bind="text: allUsers().length"></span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'customerPersonnel' }, click: function() { switchTab('customerPersonnel'); }">
                 <i class="bi bi-people me-2"></i>@Html.T("CustomerPersonnel.Title", "Müşteri Personeli")
-                <span class="badge bg-info ms-2" data-bind="text: customerPersonnel().length"></span>
+                <span class="badge bg-info ms-2" data-bind="text: allCustomerPersonnel().length"></span>
             </a>
         </li>
     </ul>
@@ -35,16 +35,30 @@
 
     <!-- ==================== SISTEM KULLANICILARI TAB ==================== -->
     <div data-bind="visible: !isLoading() && activeTab() === 'users'">
+        <!-- Search Filter -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: usersSearchText, valueUpdate: 'afterkeydown'" autocomplete="off">
+                    </div>
+                    <div class="col-md-8 text-end">
+                        <span class="text-muted small" data-bind="text: usersTotalCount() + ' kayıt'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Empty State -->
-        <div data-bind="visible: users().length === 0">
+        <div data-bind="visible: usersTotalCount() === 0">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> @Html.T("User.NoUsers", "Henüz sistem kullanıcısı bulunmamaktadır.")
             </div>
         </div>
 
         <!-- Users Table -->
-        <div data-bind="visible: users().length > 0" class="card shadow">
-            <div class="card-body">
+        <div data-bind="visible: usersTotalCount() > 0" class="card shadow">
+            <div class="card-body p-0">
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -97,6 +111,34 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Users Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: usersTotalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((usersPage() - 1) * parseInt(usersPageSize(), 10) + 1) + '-' + Math.min(usersPage() * parseInt(usersPageSize(), 10), usersTotalCount()) + ' / ' + usersTotalCount()"></span>
+                    @Html.T("Common.Records", "kayıt")
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: usersPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: usersPreviousPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: ko.utils.range(1, usersTotalPages()) -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.usersPage() }, visible: $data === 1 || $data === $parent.usersTotalPages() || Math.abs($data - $parent.usersPage()) <= 2">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.usersGoToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: usersPage() === usersTotalPages() }">
+                            <a class="page-link" href="#" data-bind="click: usersNextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: usersPageSize">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -112,20 +154,23 @@
                     <div class="col-md-4">
                         <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
                     </div>
+                    <div class="col-md-4 text-end">
+                        <span class="text-muted small" data-bind="text: cpTotalCount() + ' kayıt'"></span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Empty State -->
-        <div data-bind="visible: filteredCustomerPersonnel().length === 0">
+        <div data-bind="visible: cpTotalCount() === 0">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> @Html.T("CustomerPersonnel.NoPersonnel", "Müşteri personeli bulunmamaktadır.")
             </div>
         </div>
 
         <!-- Customer Personnel Table -->
-        <div data-bind="visible: filteredCustomerPersonnel().length > 0" class="card shadow">
-            <div class="card-body">
+        <div data-bind="visible: cpTotalCount() > 0" class="card shadow">
+            <div class="card-body p-0">
                 <table class="table table-hover">
                     <thead class="table-dark">
                         <tr>
@@ -178,6 +223,34 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Customer Personnel Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: cpTotalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((cpPage() - 1) * parseInt(cpPageSize(), 10) + 1) + '-' + Math.min(cpPage() * parseInt(cpPageSize(), 10), cpTotalCount()) + ' / ' + cpTotalCount()"></span>
+                    @Html.T("Common.Records", "kayıt")
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: cpPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: cpPreviousPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: ko.utils.range(1, cpTotalPages()) -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.cpPage() }, visible: $data === 1 || $data === $parent.cpTotalPages() || Math.abs($data - $parent.cpPage()) <= 2">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.cpGoToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: cpPage() === cpTotalPages() }">
+                            <a class="page-link" href="#" data-bind="click: cpNextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: cpPageSize">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
             </div>
         </div>
     </div>

@@ -49,6 +49,42 @@ public class CustomerService : ICustomerService
         return customers.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<CustomerListDto>> GetListAsync(bool includeInactive = false)
+    {
+        var query = _context.Customers
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(c => c.IsActive);
+        }
+
+        // Projection - Include kullanmadan COUNT subqueries ile
+        return await query
+            .OrderBy(c => c.CompanyName)
+            .Select(c => new CustomerListDto
+            {
+                Id = c.Id,
+                Code = c.Code,
+                CompanyName = c.CompanyName,
+                TaxNumber = c.TaxNumber,
+                Phone = c.Phone,
+                Email = c.Email,
+                City = c.City,
+                IsActive = c.IsActive,
+                ContractStartDate = c.ContractStartDate,
+                ContractEndDate = c.ContractEndDate,
+                CreatedAt = c.CreatedAt,
+                // COUNT subqueries - çok daha hızlı
+                PersonnelCount = c.Personnel.Count(p => !p.IsDeleted),
+                OrganizationCount = c.Organizations.Count(o => !o.IsDeleted),
+                BranchCount = c.Organizations.Count(o => !o.IsDeleted),
+                ProjectCount = c.Projects.Count(p => !p.IsDeleted)
+            })
+            .ToListAsync();
+    }
+
     public async Task<CustomerDto?> GetByTaxNumberAsync(string taxNumber)
     {
         var customer = await _customerRepository.GetByTaxNumberAsync(taxNumber);

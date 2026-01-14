@@ -7,6 +7,18 @@ public interface IProjectService
     Task<ProjectDto?> GetByIdAsync(int id);
     Task<ProjectDetailDto?> GetDetailByIdAsync(int id);
     Task<IEnumerable<ProjectDto>> GetAllAsync(bool includeInactive = false);
+    /// <summary>
+    /// Liste görünümü için optimize edilmiş method (Assignments/TeamMembers yüklemez)
+    /// </summary>
+    Task<IEnumerable<ProjectListDto>> GetListAsync(
+        string? searchText = null,
+        int? customerId = null,
+        string? projectType = null,
+        string? status = null,
+        int? projectManagerId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        bool includeInactive = false);
     Task<IEnumerable<ProjectSummaryDto>> GetSummariesAsync();
     Task<ProjectDto> CreateAsync(CreateProjectDto dto);
     Task<ProjectDto> UpdateAsync(int id, CreateProjectDto dto);

@@ -42,8 +42,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProjectTeamMember> ProjectTeamMembers { get; set; }
     public DbSet<ProjectFile> ProjectFiles { get; set; }
 
-    // Personnel Management DbSets
-    public DbSet<Personnel> Personnel { get; set; }
+    // Email Templates
+    public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
     // Question Attachments
     public DbSet<QuestionAttachment> QuestionAttachments { get; set; }
@@ -133,9 +133,6 @@ public class ApplicationDbContext : DbContext
         // Project Management Entities
         modelBuilder.Entity<ProjectTeamMember>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ProjectFile>().HasQueryFilter(e => !e.IsDeleted);
-
-        // Personnel Management Entities
-        modelBuilder.Entity<Personnel>().HasQueryFilter(e => !e.IsDeleted);
 
         // Question Attachments
         modelBuilder.Entity<QuestionAttachment>().HasQueryFilter(e => !e.IsDeleted);

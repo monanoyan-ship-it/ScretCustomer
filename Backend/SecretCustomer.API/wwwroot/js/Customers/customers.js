@@ -3,15 +3,20 @@ function CustomersViewModel() {
     var self = this;
 
     // Observables
-    self.customers = ko.observableArray([]);
+    self.allCustomers = ko.observableArray([]);
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.successMessage = ko.observable('');
     self.showInactive = ko.observable(false);
+    self.searchText = ko.observable('');
 
     // Sorting
     self.sorting = TableSorting.createSortState('companyName', 'asc');
+
+    // Pagination
+    self.currentPage = ko.observable(1);
+    self.pageSize = ko.observable(20);
 
     // Modal
     self.isModalOpen = ko.observable(false);
@@ -54,22 +59,90 @@ function CustomersViewModel() {
         return !self.isLoadingPersonnel() && !self.showChangePasswordModal();
     });
 
-    // Computed
+    // Computed - Filtered by active status and search
     self.filteredCustomers = ko.computed(function() {
-        if (self.showInactive()) {
-            return self.customers();
+        var list = self.allCustomers();
+        var search = (self.searchText() || '').toLowerCase();
+
+        // Filter by active status
+        if (!self.showInactive()) {
+            list = list.filter(function(c) { return c.isActive; });
         }
-        return self.customers().filter(function(c) { return c.isActive; });
+
+        // Filter by search text
+        if (search) {
+            list = list.filter(function(c) {
+                return (c.companyName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (c.code || '').toLowerCase().indexOf(search) >= 0 ||
+                       (c.email || '').toLowerCase().indexOf(search) >= 0 ||
+                       (c.city || '').toLowerCase().indexOf(search) >= 0 ||
+                       (c.taxNumber || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        return list;
     });
 
-    // Sorted Customers
-    self.sortedCustomers = ko.computed(function() {
+    // All filtered and sorted (before pagination)
+    self.allSortedCustomers = ko.computed(function() {
         var items = self.filteredCustomers();
         var sortBy = self.sorting.sortBy();
         var sortDir = self.sorting.sortDirection();
         if (!sortBy || items.length === 0) return items;
         return TableSorting.clientSort(items, sortBy, sortDir);
     });
+
+    // Paginated customers
+    self.sortedCustomers = ko.computed(function() {
+        var list = self.allSortedCustomers();
+        var page = parseInt(self.currentPage(), 10);
+        var pageSize = parseInt(self.pageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Backwards compatibility
+    self.customers = self.allCustomers;
+
+    // Pagination computed
+    self.totalCount = ko.computed(function() {
+        return self.allSortedCustomers().length;
+    });
+
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
+    });
+
+    // Reset to page 1 when filters/search change
+    self.pageSize.subscribe(function() {
+        self.currentPage(1);
+    });
+
+    self.searchText.subscribe(function() {
+        self.currentPage(1);
+    });
+
+    self.showInactive.subscribe(function() {
+        self.currentPage(1);
+    });
+
+    self.goToPage = function(page) {
+        if (page >= 1 && page <= self.totalPages()) {
+            self.currentPage(page);
+        }
+    };
+
+    self.previousPage = function() {
+        if (self.currentPage() > 1) {
+            self.currentPage(self.currentPage() - 1);
+        }
+    };
+
+    self.nextPage = function() {
+        if (self.currentPage() < self.totalPages()) {
+            self.currentPage(self.currentPage() + 1);
+        }
+    };
 
     self.filteredPersonnel = ko.computed(function() {
         var search = self.personnelSearchText().toLowerCase();
@@ -107,7 +180,8 @@ function CustomersViewModel() {
 
         customerApiService.getAllCustomers(self.showInactive())
             .then(function(data) {
-                self.customers(data || []);
+                self.allCustomers(data || []);
+                self.currentPage(1);
             })
             .catch(function(error) {
                 console.error('Error loading customers:', error);
@@ -177,13 +251,13 @@ function CustomersViewModel() {
                 var isNew = !customer.id;
                 if (isNew) {
                     // Yeni kayıt: array'e ekle
-                    self.customers.push(savedCustomer);
+                    self.allCustomers.push(savedCustomer);
                 } else {
                     // Güncelleme: array'de bul ve güncelle
-                    var list = self.customers();
+                    var list = self.allCustomers();
                     for (var i = 0; i < list.length; i++) {
                         if (list[i].id === savedCustomer.id) {
-                            self.customers.splice(i, 1, savedCustomer);
+                            self.allCustomers.splice(i, 1, savedCustomer);
                             break;
                         }
                     }
@@ -213,7 +287,7 @@ function CustomersViewModel() {
                 customerApiService.deleteCustomer(customer.id)
                     .then(function() {
                         // Array'den sil
-                        self.customers.remove(function(c) { return c.id === customer.id; });
+                        self.allCustomers.remove(function(c) { return c.id === customer.id; });
                         toastr.success(T('Customer.DeleteSuccess', 'Müşteri başarıyla silindi.'));
                     })
                     .catch(function(error) {
@@ -508,7 +582,8 @@ function CustomersViewModel() {
     // Toggle inactive customers
     self.toggleShowInactive = function() {
         self.showInactive(!self.showInactive());
-        self.loadCustomers();
+        // No need to reload - client-side filtering handles it
+        // showInactive.subscribe already resets currentPage
     };
 
     // ========== ORGANIZATION MANAGEMENT ==========
@@ -752,11 +827,11 @@ function CustomersViewModel() {
         var customer = self.selectedCustomerForOrg();
         if (customer) {
             var orgCount = self.organizations().length;
-            var customers = self.customers();
+            var customers = self.allCustomers();
             for (var i = 0; i < customers.length; i++) {
                 if (customers[i].id === customer.id) {
                     customers[i].organizationCount = orgCount;
-                    self.customers.valueHasMutated();
+                    self.allCustomers.valueHasMutated();
                     break;
                 }
             }

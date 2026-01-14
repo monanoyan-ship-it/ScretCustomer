@@ -32,6 +32,7 @@ public class ChecklistsApiController : BaseApiController
 
     /// <summary>
     /// Get all checklists with optional filtering - Admin, TeamLeader, and Evaluator can access
+    /// Optimize edilmiş liste - Questions yüklemez
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,TeamLeader,Evaluator")]
@@ -43,15 +44,8 @@ public class ChecklistsApiController : BaseApiController
     {
         try
         {
-            // Eğer herhangi bir filtre varsa, filtrelenmiş sonuçları getir
-            if (!string.IsNullOrWhiteSpace(search) || customerId.HasValue || customerOrganizationId.HasValue)
-            {
-                var filteredChecklists = await _checklistService.GetFilteredAsync(search, customerId, customerOrganizationId, includeInactive);
-                return Ok(filteredChecklists);
-            }
-
-            // Filtre yoksa tüm listeyi getir
-            var checklists = await _checklistService.GetAllAsync(includeInactive);
+            // Optimize edilmiş liste methodu kullan (Questions yüklemez)
+            var checklists = await _checklistService.GetListAsync(search, customerId, customerOrganizationId, includeInactive);
             return Ok(checklists);
         }
         catch (Exception ex)

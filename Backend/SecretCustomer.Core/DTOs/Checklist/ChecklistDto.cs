@@ -1,5 +1,29 @@
 namespace SecretCustomer.Core.DTOs.Checklist;
 
+/// <summary>
+/// Liste görünümü için hafif DTO (Questions yok)
+/// </summary>
+public class ChecklistListDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsScored { get; set; }
+    public bool IsActive { get; set; }
+    public int Version { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string ChecklistType { get; set; } = "CallPerformance";
+    public string? Code { get; set; }
+    public decimal MaxTotalPoints { get; set; }
+    public DateTime? ValidFrom { get; set; }
+    public DateTime? ValidUntil { get; set; }
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public int? CustomerOrganizationId { get; set; }
+    public string? CustomerOrganizationName { get; set; }
+    public int QuestionCount { get; set; }
+}
+
 public class ChecklistDto
 {
     public int Id { get; set; }

@@ -456,10 +456,9 @@ public class ReportService : IReportService
 
     public async Task<SummaryReportDto> GetSummaryReportAsync(ReportFilterDto filter)
     {
+        // Base query - Include kullanmadan, sadece filtreleme için
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Evaluator)
+            .Where(e => !e.IsDeleted)
             .AsQueryable();
 
         // Apply filters
@@ -474,62 +473,88 @@ public class ReportService : IReportService
         }
 
         if (filter.StartDate.HasValue)
-            query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
 
         if (filter.EndDate.HasValue)
-            query = query.Where(e => e.CompletedAt <= filter.EndDate.Value || e.CreatedAt <= filter.EndDate.Value);
-
-        var evaluations = await query.ToListAsync();
-
-        var completedEvaluations = evaluations.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue).ToList();
-
-        var summary = new SummaryReportDto
         {
-            TotalEvaluations = evaluations.Count,
-            CompletedEvaluations = completedEvaluations.Count,
-            PendingEvaluations = evaluations.Count(e => e.StatusId == EvaluationStatuses.Ids.Draft || e.StatusId == EvaluationStatuses.Ids.InProgress || e.StatusId == EvaluationStatuses.Ids.Pending),
-            AverageScore = completedEvaluations.Any()
-                ? Math.Round(completedEvaluations.Average(e => e.ScorePercentage ?? 0), 2)
-                : 0,
-            MinScore = completedEvaluations.Any()
-                ? completedEvaluations.Min(e => e.ScorePercentage ?? 0)
-                : 0,
-            MaxScore = completedEvaluations.Any()
-                ? completedEvaluations.Max(e => e.ScorePercentage ?? 0)
-                : 0,
-            TotalYellowCards = evaluations.Sum(e => e.YellowCardCount),
-            TotalRedCards = evaluations.Sum(e => e.RedCardCount),
-            ProjectSummaries = evaluations
-                .Where(e => e.Assignment.Project != null)
-                .GroupBy(e => e.Assignment.Project!)
-                .Select(g => new ProjectSummaryReportDto
-                {
-                    ProjectId = g.Key.Id,
-                    ProjectName = g.Key.Name,
-                    EvaluationCount = g.Count(),
-                    AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
-                        ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
-                        : 0
-                })
-                .OrderByDescending(p => p.EvaluationCount)
-                .ToList(),
-            EvaluatorSummaries = evaluations
-                .Where(e => e.Evaluator != null)
-                .GroupBy(e => e.Evaluator!)
-                .Select(g => new EvaluatorSummaryReportDto
-                {
-                    EvaluatorId = g.Key.Id,
-                    EvaluatorName = $"{g.Key.FirstName} {g.Key.LastName}",
-                    EvaluationCount = g.Count(),
-                    AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
-                        ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
-                        : 0
-                })
-                .OrderByDescending(ev => ev.EvaluationCount)
-                .ToList()
-        };
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
 
-        return summary;
+        // Veritabanında aggregate - memory'ye çekmeden
+        var totalCount = await query.CountAsync();
+        var completedCount = await query.CountAsync(e => e.StatusId == EvaluationStatuses.Ids.Completed);
+        var pendingCount = await query.CountAsync(e =>
+            e.StatusId == EvaluationStatuses.Ids.Draft ||
+            e.StatusId == EvaluationStatuses.Ids.InProgress ||
+            e.StatusId == EvaluationStatuses.Ids.Pending);
+
+        // Completed evaluations için aggregate sorgular
+        var completedQuery = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue);
+
+        var avgScore = await completedQuery.AnyAsync()
+            ? Math.Round(await completedQuery.AverageAsync(e => e.ScorePercentage ?? 0), 2)
+            : 0;
+        var minScore = await completedQuery.AnyAsync()
+            ? await completedQuery.MinAsync(e => e.ScorePercentage ?? 0)
+            : 0;
+        var maxScore = await completedQuery.AnyAsync()
+            ? await completedQuery.MaxAsync(e => e.ScorePercentage ?? 0)
+            : 0;
+
+        var totalYellowCards = await query.SumAsync(e => e.YellowCardCount);
+        var totalRedCards = await query.SumAsync(e => e.RedCardCount);
+
+        // Project summaries - veritabanında group by
+        var projectSummaries = await query
+            .Where(e => e.Assignment.Project != null)
+            .GroupBy(e => new { e.Assignment.Project!.Id, e.Assignment.Project.Name })
+            .Select(g => new ProjectSummaryReportDto
+            {
+                ProjectId = g.Key.Id,
+                ProjectName = g.Key.Name,
+                EvaluationCount = g.Count(),
+                AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
+                    ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
+                    : 0
+            })
+            .OrderByDescending(p => p.EvaluationCount)
+            .Take(20) // En çok değerlendirilen 20 proje
+            .ToListAsync();
+
+        // Evaluator summaries - veritabanında group by
+        var evaluatorSummaries = await query
+            .Where(e => e.EvaluatorId != null)
+            .GroupBy(e => new { e.Evaluator!.Id, e.Evaluator.FirstName, e.Evaluator.LastName })
+            .Select(g => new EvaluatorSummaryReportDto
+            {
+                EvaluatorId = g.Key.Id,
+                EvaluatorName = g.Key.FirstName + " " + g.Key.LastName,
+                EvaluationCount = g.Count(),
+                AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
+                    ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
+                    : 0
+            })
+            .OrderByDescending(ev => ev.EvaluationCount)
+            .Take(20) // En çok değerlendirme yapan 20 kişi
+            .ToListAsync();
+
+        return new SummaryReportDto
+        {
+            TotalEvaluations = totalCount,
+            CompletedEvaluations = completedCount,
+            PendingEvaluations = pendingCount,
+            AverageScore = avgScore,
+            MinScore = minScore,
+            MaxScore = maxScore,
+            TotalYellowCards = totalYellowCards,
+            TotalRedCards = totalRedCards,
+            ProjectSummaries = projectSummaries,
+            EvaluatorSummaries = evaluatorSummaries
+        };
     }
 
     public async Task<ExcelExportDto> ExportEvaluationsToExcelAsync(ReportFilterDto filter)

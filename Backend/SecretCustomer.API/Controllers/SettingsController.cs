@@ -10,4 +10,9 @@ public class SettingsController : Controller
     {
         return View();
     }
+
+    public IActionResult Smtp()
+    {
+        return View();
+    }
 }

@@ -197,11 +197,9 @@ function DealersViewModel() {
 
     // Delete dealer
     self.deleteDealer = function(dealer) {
-        showDeleteConfirmation({
-            title: 'Bayi Sil',
-            message: '<strong>' + dealer.name + '</strong> bayisini silmek istediğinize emin misiniz?',
-            confirmText: 'Evet, Sil',
-            onConfirm: function() {
+        deleteConfirmation.show(
+            '<strong>' + dealer.name + '</strong> bayisini silmek istediğinize emin misiniz?',
+            function() {
                 ApiService.delete('/dealers/' + dealer.id)
                     .then(function() {
                         toastr.success('Bayi başarıyla silindi.');
@@ -212,7 +210,7 @@ function DealersViewModel() {
                         toastr.error(error.message || 'Bayi silinirken bir hata oluştu.');
                     });
             }
-        });
+        );
     };
 
     // Show modal

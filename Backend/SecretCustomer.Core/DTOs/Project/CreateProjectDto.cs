@@ -57,6 +57,34 @@ public class CreateProjectDto
     // Organizasyon/Sube (null ise tum firma)
     public int? OrganizationId { get; set; }
 
+    // ===== ANKET AYARLARI (Survey Settings) =====
+    // Sadece ProjectType = "OnlineSurvey" olduğunda kullanılır
+
+    /// <summary>
+    /// Anket kimlik tipi: "Anonymous" veya "Identified"
+    /// </summary>
+    public string? SurveyIdentityType { get; set; }
+
+    /// <summary>
+    /// Anket davetiye email şablonu ID
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Hatırlatma email şablonu ID
+    /// </summary>
+    public int? ReminderEmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Hatırlatma mail gönderilsin mi?
+    /// </summary>
+    public bool SendReminderEmails { get; set; } = false;
+
+    /// <summary>
+    /// Hatırlatma gün sayısı (bitiş tarihinden X gün önce)
+    /// </summary>
+    public int? ReminderDaysBeforeEnd { get; set; }
+
     // Hedef Subeler
     public List<CreateProjectBranchDto>? Branches { get; set; }
 

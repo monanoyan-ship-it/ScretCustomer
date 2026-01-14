@@ -17,16 +17,36 @@
 
     <!-- Customers Table -->
     <div data-bind="visible: !isLoading()">
+        <!-- Search Filter -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="showInactive" data-bind="checked: showInactive">
+                            <label class="form-check-label" for="showInactive">@Html.T("Common.ShowInactive", "Pasif müşterileri göster")</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="text-muted small" data-bind="text: totalCount() + ' kayıt'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Empty State -->
-        <div data-bind="visible: customers().length === 0">
+        <div data-bind="visible: totalCount() === 0">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> @Html.T("Customer.NoCustomers", "Henüz müşteri bulunmamaktadır.")
             </div>
         </div>
 
         <!-- Table -->
-        <div data-bind="visible: customers().length > 0" class="card shadow">
-            <div class="card-body">
+        <div data-bind="visible: totalCount() > 0" class="card shadow">
+            <div class="card-body p-0">
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -115,6 +135,34 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Pagination -->
+            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
+                <div class="text-muted small">
+                    <span data-bind="text: ((currentPage() - 1) * parseInt(pageSize(), 10) + 1) + '-' + Math.min(currentPage() * parseInt(pageSize(), 10), totalCount()) + ' / ' + totalCount()"></span>
+                    @Html.T("Common.Records", "kayıt")
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">
+                            <a class="page-link" href="#" data-bind="click: previousPage"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <!-- ko foreach: ko.utils.range(1, totalPages()) -->
+                        <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }, visible: $data === 1 || $data === $parent.totalPages() || Math.abs($data - $parent.currentPage()) <= 2">
+                            <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                        </li>
+                        <!-- /ko -->
+                        <li class="page-item" data-bind="css: { disabled: currentPage() === totalPages() }">
+                            <a class="page-link" href="#" data-bind="click: nextPage"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: pageSize">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
             </div>
         </div>
     </div>
