@@ -134,18 +134,46 @@
 
     <!-- Test Email Modal -->
     <div class="modal fade" id="testEmailModal" tabindex="-1">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-send me-2"></i>Test Email Gönder</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="small text-muted mb-2">Şablon: <strong data-bind="text: testTemplateName"></strong></p>
+                    <p class="small text-muted mb-3">Şablon: <strong data-bind="text: testTemplateName"></strong></p>
+
                     <div class="mb-3">
-                        <label class="form-label">Email Adresi <span class="text-danger">*</span></label>
+                        <label class="form-label">Gönderilecek Email Adresi <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" placeholder="test@example.com"
                                data-bind="value: testEmail" autocomplete="off">
+                        <small class="text-muted">Test emaili bu adrese gönderilecek</small>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="useRealData" data-bind="checked: useRealData">
+                        <label class="form-check-label" for="useRealData">
+                            <strong>Gerçek Proje/Personel Verisi Kullan</strong>
+                        </label>
+                        <div class="small text-muted">Gerçek anket linki ve QR kod oluşturulur</div>
+                    </div>
+
+                    <div data-bind="visible: useRealData">
+                        <div class="mb-3">
+                            <label class="form-label">Proje <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: selectedProjectId, options: testProjects, optionsText: function(p) { return p.name + (p.customerName ? ' (' + p.customerName + ')' : ''); }, optionsValue: 'id', optionsCaption: 'Proje seçin...'"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Personel <span class="text-danger">*</span></label>
+                            <select class="form-select" data-bind="value: selectedPersonnelId, options: testPersonnel, optionsText: function(p) { return p.fullName + ' (' + p.email + ')' + (p.organizationName ? ' - ' + p.organizationName : ''); }, optionsValue: 'id', optionsCaption: 'Personel seçin...', enable: selectedProjectId()"></select>
+                            <small class="text-muted" data-bind="visible: !selectedProjectId()">Önce proje seçin</small>
+                        </div>
+                        <div class="alert alert-info small mb-0" data-bind="visible: selectedPersonnelId">
+                            <i class="bi bi-info-circle"></i> Seçilen personel için gerçek anket linki ve QR kod oluşturulacak.
+                            Email yukarıda girdiğiniz adrese gönderilecek.
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

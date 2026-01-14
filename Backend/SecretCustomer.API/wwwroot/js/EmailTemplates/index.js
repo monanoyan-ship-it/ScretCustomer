@@ -15,6 +15,11 @@ function EmailTemplatesViewModel() {
     self.testEmail = ko.observable('');
     self.isSendingTest = ko.observable(false);
     self.testModal = null;
+    self.useRealData = ko.observable(false);
+    self.testProjects = ko.observableArray([]);
+    self.testPersonnel = ko.observableArray([]);
+    self.selectedProjectId = ko.observable('');
+    self.selectedPersonnelId = ko.observable('');
 
     // Preview state
     self.previewSubject = ko.observable('');
@@ -145,12 +150,52 @@ function EmailTemplatesViewModel() {
         self.testTemplateId(template.id);
         self.testTemplateName(template.name);
         self.testEmail('');
+        self.useRealData(false);
+        self.selectedProjectId('');
+        self.selectedPersonnelId('');
+        self.testPersonnel([]);
+
+        // Load projects if not loaded yet
+        if (self.testProjects().length === 0) {
+            self.loadTestProjects();
+        }
 
         if (!self.testModal) {
             self.testModal = new bootstrap.Modal(document.getElementById('testEmailModal'));
         }
         self.testModal.show();
     };
+
+    // Load test projects
+    self.loadTestProjects = function() {
+        fetch('/api/email-templates/test-projects', { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.testProjects(data);
+            });
+    };
+
+    // Load test personnel for selected project
+    self.loadTestPersonnel = function() {
+        var projectId = self.selectedProjectId();
+        if (!projectId) {
+            self.testPersonnel([]);
+            self.selectedPersonnelId('');
+            return;
+        }
+
+        fetch('/api/email-templates/test-personnel/' + projectId, { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.testPersonnel(data);
+                self.selectedPersonnelId('');
+            });
+    };
+
+    // Watch project selection
+    self.selectedProjectId.subscribe(function() {
+        self.loadTestPersonnel();
+    });
 
     // Send test email
     self.sendTestEmail = function() {
@@ -160,12 +205,29 @@ function EmailTemplatesViewModel() {
             return;
         }
 
+        var dto = { toEmail: email };
+
+        // Add real data if selected
+        if (self.useRealData()) {
+            var projectId = self.selectedProjectId();
+            var personnelId = self.selectedPersonnelId();
+
+            if (!projectId || !personnelId) {
+                toastr.warning('Gerçek veri kullanmak için proje ve personel seçin.');
+                return;
+            }
+
+            dto.projectId = parseInt(projectId);
+            dto.personnelId = parseInt(personnelId);
+            dto.baseUrl = window.location.origin;
+        }
+
         self.isSendingTest(true);
 
         fetch('/api/email-templates/' + self.testTemplateId() + '/send-test', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ toEmail: email }),
+            body: JSON.stringify(dto),
             credentials: 'include'
         })
         .then(function(r) { return r.json(); })

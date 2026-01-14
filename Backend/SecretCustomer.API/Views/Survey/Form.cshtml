@@ -89,7 +89,7 @@
                                 <!-- ko if: scoringType === 'Scored' -->
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="btn-group" role="group">
-                                        <!-- ko foreach: $parent.$parent.getScoreOptions(maxPoints) -->
+                                        <!-- ko foreach: $root.getScoreOptions(maxPoints) -->
                                         <input type="radio" class="btn-check"
                                                data-bind="attr: { id: 'q' + $parent.id + '_' + $data, name: 'score_' + $parent.id },
                                                           checked: $parent.answer().score,

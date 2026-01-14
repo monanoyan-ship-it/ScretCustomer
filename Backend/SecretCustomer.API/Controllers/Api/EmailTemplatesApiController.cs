@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Services.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -15,11 +16,13 @@ public class EmailTemplatesApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IQRCodeService _qrCodeService;
 
-    public EmailTemplatesApiController(ApplicationDbContext context, IEmailService emailService)
+    public EmailTemplatesApiController(ApplicationDbContext context, IEmailService emailService, IQRCodeService qrCodeService)
     {
         _context = context;
         _emailService = emailService;
+        _qrCodeService = qrCodeService;
     }
 
     /// <summary>
@@ -332,30 +335,97 @@ public class EmailTemplatesApiController : ControllerBase
             return NotFound(new { success = false, message = "Şablon bulunamadı." });
         }
 
-        // Placeholder'ları örnek verilerle doldur
-        var body = template.Body;
-        body = body.Replace(EmailPlaceholders.SurveyLink, "https://survey.example.com/test123");
-        body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
-        body = body.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
-        body = body.Replace(EmailPlaceholders.OrganizationName, "Test Şubesi");
-        body = body.Replace(EmailPlaceholders.BranchName, "Test Mağazası");
-        body = body.Replace(EmailPlaceholders.RecipientName, "Test Kullanıcı");
-        body = body.Replace(EmailPlaceholders.RecipientFirstName, "Test");
-        body = body.Replace(EmailPlaceholders.RecipientLastName, "Kullanıcı");
-        body = body.Replace(EmailPlaceholders.RecipientEmail, dto.ToEmail);
-        body = body.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
-        body = body.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
-        body = body.Replace(EmailPlaceholders.DueDate, DateTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.StartDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.EndDate, DateTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
-        body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+        string body;
+        string subject;
 
-        var subject = "[TEST] " + template.Subject;
-        subject = subject.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
-        subject = subject.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
-        subject = subject.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
+        // Gerçek proje ve personel seçilmişse gerçek verilerle doldur
+        if (dto.ProjectId.HasValue && dto.PersonnelId.HasValue)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Customer)
+                .Include(p => p.Organization)
+                .Include(p => p.Checklist)
+                .FirstOrDefaultAsync(p => p.Id == dto.ProjectId.Value && !p.IsDeleted);
+
+            if (project == null)
+            {
+                return BadRequest(new { success = false, message = "Proje bulunamadı." });
+            }
+
+            var personnel = await _context.CustomerPersonnel
+                .Include(cp => cp.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+                .FirstOrDefaultAsync(cp => cp.Id == dto.PersonnelId.Value && !cp.IsDeleted);
+
+            if (personnel == null)
+            {
+                return BadRequest(new { success = false, message = "Personel bulunamadı." });
+            }
+
+            // Gerçek token ve URL oluştur
+            var token = EncryptionHelper.CreateSurveyToken(project.Id, personnel.Id);
+            var baseUrl = dto.BaseUrl ?? $"{Request.Scheme}://{Request.Host}";
+            var surveyUrl = $"{baseUrl.TrimEnd('/')}/Survey/Form?token={token}";
+
+            // Gerçek QR kod oluştur
+            var qrBase64 = _qrCodeService.GenerateQRCodeBase64(surveyUrl);
+            var qrHtml = $"<img src='data:image/png;base64,{qrBase64}' alt='QR Code' style='width:150px;height:150px;' />";
+
+            // Personelin ilk organizasyonunu al
+            var personnelOrg = personnel.OrganizationAssignments?.FirstOrDefault()?.CustomerOrganization;
+
+            // Placeholder'ları gerçek verilerle doldur
+            body = template.Body;
+            body = body.Replace(EmailPlaceholders.SurveyLink, surveyUrl);
+            body = body.Replace(EmailPlaceholders.SurveyQRCode, qrHtml);
+            body = body.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
+            body = body.Replace(EmailPlaceholders.OrganizationName, project.Organization?.Name ?? personnelOrg?.Name ?? "");
+            body = body.Replace(EmailPlaceholders.BranchName, personnelOrg?.Name ?? "");
+            body = body.Replace(EmailPlaceholders.RecipientName, $"{personnel.FirstName} {personnel.LastName}".Trim());
+            body = body.Replace(EmailPlaceholders.RecipientFirstName, personnel.FirstName ?? "");
+            body = body.Replace(EmailPlaceholders.RecipientLastName, personnel.LastName ?? "");
+            body = body.Replace(EmailPlaceholders.RecipientEmail, dto.ToEmail);
+            body = body.Replace(EmailPlaceholders.ProjectName, project.Name);
+            body = body.Replace(EmailPlaceholders.SurveyName, project.Checklist?.Name ?? project.Name);
+            body = body.Replace(EmailPlaceholders.DueDate, project.EndDate.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.StartDate, project.StartDate.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.EndDate, project.EndDate.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+            body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+            subject = "[TEST] " + template.Subject;
+            subject = subject.Replace(EmailPlaceholders.ProjectName, project.Name);
+            subject = subject.Replace(EmailPlaceholders.SurveyName, project.Checklist?.Name ?? project.Name);
+            subject = subject.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
+        }
+        else
+        {
+            // Örnek verilerle doldur (eski davranış)
+            body = template.Body;
+            body = body.Replace(EmailPlaceholders.SurveyLink, "https://survey.example.com/test123");
+            body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
+            body = body.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
+            body = body.Replace(EmailPlaceholders.OrganizationName, "Test Şubesi");
+            body = body.Replace(EmailPlaceholders.BranchName, "Test Mağazası");
+            body = body.Replace(EmailPlaceholders.RecipientName, "Test Kullanıcı");
+            body = body.Replace(EmailPlaceholders.RecipientFirstName, "Test");
+            body = body.Replace(EmailPlaceholders.RecipientLastName, "Kullanıcı");
+            body = body.Replace(EmailPlaceholders.RecipientEmail, dto.ToEmail);
+            body = body.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
+            body = body.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
+            body = body.Replace(EmailPlaceholders.DueDate, DateTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.StartDate, DateTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.EndDate, DateTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+            body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+            subject = "[TEST] " + template.Subject;
+            subject = subject.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
+            subject = subject.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
+            subject = subject.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
+        }
 
         var result = await _emailService.SendEmailAsync(dto.ToEmail, subject, body, isHtml: true);
 
@@ -365,6 +435,75 @@ public class EmailTemplatesApiController : ControllerBase
         }
 
         return BadRequest(new { success = false, message = result.ErrorMessage });
+    }
+
+    /// <summary>
+    /// Test için proje listesi getir (OnlineSurvey projeleri)
+    /// </summary>
+    [HttpGet("test-projects")]
+    public async Task<IActionResult> GetTestProjects()
+    {
+        var projects = await _context.Projects
+            .Include(p => p.Customer)
+            .Where(p => !p.IsDeleted && p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                CustomerName = p.Customer != null ? p.Customer.CompanyName : null
+            })
+            .Take(50)
+            .ToListAsync();
+
+        return Ok(projects);
+    }
+
+    /// <summary>
+    /// Test için proje personel listesi getir
+    /// </summary>
+    [HttpGet("test-personnel/{projectId}")]
+    public async Task<IActionResult> GetTestPersonnel(int projectId)
+    {
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+
+        // Projenin müşterisine ait personelleri getir
+        var query = _context.CustomerPersonnel
+            .Include(cp => cp.OrganizationAssignments)
+                .ThenInclude(oa => oa.CustomerOrganization)
+            .Where(cp => !cp.IsDeleted && cp.Email != null && cp.Email != "");
+
+        if (project.CustomerId.HasValue)
+        {
+            query = query.Where(cp => cp.CustomerId == project.CustomerId.Value);
+        }
+
+        if (project.OrganizationId.HasValue)
+        {
+            query = query.Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == project.OrganizationId.Value));
+        }
+
+        var personnelList = await query
+            .OrderBy(cp => cp.FirstName)
+            .ThenBy(cp => cp.LastName)
+            .Take(100)
+            .ToListAsync();
+
+        var personnel = personnelList.Select(cp => new
+        {
+            cp.Id,
+            FullName = $"{cp.FirstName} {cp.LastName}".Trim(),
+            cp.Email,
+            OrganizationName = cp.OrganizationAssignments?.FirstOrDefault()?.CustomerOrganization?.Name
+        }).ToList();
+
+        return Ok(personnel);
     }
 }
 
@@ -411,4 +550,7 @@ public class PreviewEmailDto
 public class SendTestEmailDto
 {
     public string? ToEmail { get; set; }
+    public int? ProjectId { get; set; }
+    public int? PersonnelId { get; set; }
+    public string? BaseUrl { get; set; }
 }
