@@ -35,6 +35,33 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// Cezalı KL Raporu (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult Penalties()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Öneriler Raporu (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult Suggestions()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult PersonnelReportCard()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Proje bazlı sonuçlar (sadece CustomerManager)
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]

@@ -332,6 +332,7 @@ public class PenaltyMonthlyTrendDto
 public class PersonnelReportCardFilterDto
 {
     public int PersonnelId { get; set; }
+    public int? CustomerId { get; set; }
     public int? ProjectId { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
@@ -459,6 +460,7 @@ public class OrganizationListItemDto
 public class SuggestionsFilterDto
 {
     public int? ProjectId { get; set; }
+    public int? CustomerId { get; set; }
     public int? ChecklistId { get; set; }
     public int? EvaluatorId { get; set; }
     public int? PersonnelId { get; set; }
@@ -674,4 +676,173 @@ public class SurveyRespondentDto
     public string? OrganizationName { get; set; }
     public decimal? Score { get; set; }
     public DateTime? CompletedAt { get; set; }
+}
+
+// ===== PERFORMANS TAKİBİ RAPORU DTO'LARI =====
+
+/// <summary>
+/// Performans Takibi ana sonuç DTO
+/// </summary>
+public class PerformanceTrackingResultDto
+{
+    /// <summary>
+    /// Değerlendirici (dinleyici) performansları
+    /// </summary>
+    public List<EvaluatorPerformanceDto> EvaluatorPerformances { get; set; } = new();
+
+    /// <summary>
+    /// Firma kota durumları
+    /// </summary>
+    public List<CustomerQuotaStatusDto> CustomerQuotaStatuses { get; set; } = new();
+
+    /// <summary>
+    /// Genel özet
+    /// </summary>
+    public PerformanceSummaryDto Summary { get; set; } = new();
+}
+
+/// <summary>
+/// Değerlendirici (dinleyici) performans DTO
+/// </summary>
+public class EvaluatorPerformanceDto
+{
+    public int EvaluatorId { get; set; }
+    public string EvaluatorName { get; set; } = string.Empty;
+    public string? Department { get; set; }
+
+    /// <summary>
+    /// Bugün yapılan dinleme sayısı
+    /// </summary>
+    public int TodayCount { get; set; }
+
+    /// <summary>
+    /// Bu hafta yapılan dinleme sayısı
+    /// </summary>
+    public int WeekCount { get; set; }
+
+    /// <summary>
+    /// Bu ay yapılan dinleme sayısı
+    /// </summary>
+    public int MonthCount { get; set; }
+
+    /// <summary>
+    /// Bu yıl yapılan dinleme sayısı
+    /// </summary>
+    public int YearCount { get; set; }
+
+    /// <summary>
+    /// Toplam dinleme sayısı
+    /// </summary>
+    public int TotalCount { get; set; }
+
+    /// <summary>
+    /// Ortalama puan
+    /// </summary>
+    public decimal AverageScore { get; set; }
+}
+
+/// <summary>
+/// Firma kota durumu DTO
+/// </summary>
+public class CustomerQuotaStatusDto
+{
+    public int CustomerId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerCode { get; set; }
+
+    /// <summary>
+    /// Toplam hedef dinleme sayısı
+    /// </summary>
+    public int? TargetCount { get; set; }
+
+    /// <summary>
+    /// Günlük kota
+    /// </summary>
+    public int? DailyQuota { get; set; }
+
+    /// <summary>
+    /// Haftalık kota
+    /// </summary>
+    public int? WeeklyQuota { get; set; }
+
+    /// <summary>
+    /// Aylık kota
+    /// </summary>
+    public int? MonthlyQuota { get; set; }
+
+    /// <summary>
+    /// Bugün yapılan dinleme sayısı
+    /// </summary>
+    public int TodayCount { get; set; }
+
+    /// <summary>
+    /// Bu hafta yapılan dinleme sayısı
+    /// </summary>
+    public int WeekCount { get; set; }
+
+    /// <summary>
+    /// Bu ay yapılan dinleme sayısı
+    /// </summary>
+    public int MonthCount { get; set; }
+
+    /// <summary>
+    /// Toplam yapılan dinleme sayısı
+    /// </summary>
+    public int TotalCount { get; set; }
+
+    /// <summary>
+    /// Hedef tamamlanma yüzdesi
+    /// </summary>
+    public decimal? TargetCompletionPercentage { get; set; }
+
+    /// <summary>
+    /// Günlük kota kullanım yüzdesi
+    /// </summary>
+    public decimal? DailyQuotaUsagePercentage { get; set; }
+
+    /// <summary>
+    /// Haftalık kota kullanım yüzdesi
+    /// </summary>
+    public decimal? WeeklyQuotaUsagePercentage { get; set; }
+
+    /// <summary>
+    /// Aylık kota kullanım yüzdesi
+    /// </summary>
+    public decimal? MonthlyQuotaUsagePercentage { get; set; }
+}
+
+/// <summary>
+/// Performans özet DTO
+/// </summary>
+public class PerformanceSummaryDto
+{
+    /// <summary>
+    /// Toplam değerlendirici sayısı
+    /// </summary>
+    public int TotalEvaluators { get; set; }
+
+    /// <summary>
+    /// Aktif firma sayısı
+    /// </summary>
+    public int TotalActiveCustomers { get; set; }
+
+    /// <summary>
+    /// Bugün toplam dinleme
+    /// </summary>
+    public int TotalTodayEvaluations { get; set; }
+
+    /// <summary>
+    /// Bu hafta toplam dinleme
+    /// </summary>
+    public int TotalWeekEvaluations { get; set; }
+
+    /// <summary>
+    /// Bu ay toplam dinleme
+    /// </summary>
+    public int TotalMonthEvaluations { get; set; }
+
+    /// <summary>
+    /// Bu yıl toplam dinleme
+    /// </summary>
+    public int TotalYearEvaluations { get; set; }
 }

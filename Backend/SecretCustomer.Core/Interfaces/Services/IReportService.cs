@@ -27,7 +27,7 @@ public interface IReportService
     Task<PenaltyReportResultDto> GetPenaltiesReportAsync(PenaltyFilterDto filter);
 
     // Cezalı KL Excel export
-    Task<ExcelExportDto> ExportPenaltiesToExcelAsync(PenaltyFilterDto filter);
+    Task<ExcelExportDto> ExportPenaltiesToExcelAsync(PenaltyFilterDto filter, bool excludeEvaluator = false);
 
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
 
@@ -55,7 +55,7 @@ public interface IReportService
     Task<IEnumerable<QuestionSuggestionSummaryDto>> GetTopSuggestedQuestionsAsync(SuggestionsFilterDto filter, int top = 10);
 
     // Öneriler Excel export
-    Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter);
+    Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter, bool excludeEvaluator = false);
 
     // ===== ÇAĞRI DENETLEME RAPORU =====
 
@@ -89,4 +89,9 @@ public interface IReportService
 
     // Anket sonuçları Excel export
     Task<ExcelExportDto?> ExportSurveyResultsToExcelAsync(int projectId, DateTime? startDate, DateTime? endDate);
+
+    // ===== PERFORMANS TAKİBİ =====
+
+    // Performans Takibi raporu (Dinleyici performansı + Firma kotaları)
+    Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync();
 }

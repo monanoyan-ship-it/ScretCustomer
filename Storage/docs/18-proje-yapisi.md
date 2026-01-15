@@ -333,10 +333,9 @@ SecretCustomer.API/
 ### Musteri Portali Rolleri (CustomerPersonnel tablosu)
 | Rol | Aciklama | Veri Erisimi |
 |-----|----------|--------------|
-| CustomerManager | Musteri yoneticisi | Tum organizasyonlar |
-| CustomerSupervisor | Supervisor | Kendi takimi veya atandigi organizasyon |
-| CustomerOperator | Operator | Sadece kendisi |
-| CustomerViewer | Izleyici | Sadece kendisi (readonly) |
+| CustomerManager | Müşteri Yöneticisi | Tüm organizasyonlar |
+| CustomerSupervisor | Takım Lideri | Kendi takımı veya atandığı organizasyon |
+| CustomerOperator | Operatör | Sadece kendisi |
 
 ## Veritabani Iliskileri
 

@@ -308,7 +308,8 @@ public class CustomerPortalApiController : ControllerBase
             var monthEnd = monthStart.AddMonths(1);
 
             var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
-            var avgScore = monthEvals.Any() ? monthEvals.Average(e => e.TotalScore ?? 0) : 0;
+            var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
+            var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
 
             monthlyData.Add(new
             {
@@ -363,16 +364,14 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Müşterinin projeleri (Branch system removed)
+    /// Müşterinin projeleri
     /// </summary>
-    [HttpGet("branches")]
-    public async Task<IActionResult> GetBranches()
+    [HttpGet("projects")]
+    public async Task<IActionResult> GetProjects()
     {
         var customerId = GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
-
-        // Branch system removed - return projects instead
         var projects = await _context.Projects
             .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
             .Select(p => new
@@ -386,8 +385,8 @@ public class CustomerPortalApiController : ControllerBase
                 evaluationCount = _context.Evaluations
                     .Count(e => e.Assignment.ProjectId == p.Id),
                 averageScore = _context.Evaluations
-                    .Where(e => e.Assignment.ProjectId == p.Id && e.TotalScore.HasValue)
-                    .Average(e => (double?)e.TotalScore) ?? 0
+                    .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue)
+                    .Average(e => (double?)e.ScorePercentage) ?? 0
             })
             .OrderBy(p => p.Name)
             .ToListAsync();
@@ -445,7 +444,7 @@ public class CustomerPortalApiController : ControllerBase
         {
             e.Id,
             e.evaluationDate,
-            branchName = e.projectName,
+            e.projectName,
             e.checklistName,
             e.personnelName,
             e.score,
@@ -483,9 +482,9 @@ public class CustomerPortalApiController : ControllerBase
             {
                 e.Id,
                 evaluationDate = e.CreatedAt,
-                branchName = e.Assignment!.Project!.Name,
+                projectName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
-                score = e.TotalScore ?? 0,
+                score = e.ScorePercentage ?? 0,
                 statusId = e.StatusId
             })
             .ToListAsync();
@@ -494,7 +493,7 @@ public class CustomerPortalApiController : ControllerBase
         {
             e.Id,
             e.evaluationDate,
-            e.branchName,
+            e.projectName,
             e.checklistName,
             e.score,
             status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
@@ -525,10 +524,10 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Proje performans raporu (Branch system removed)
+    /// Proje performans raporu
     /// </summary>
-    [HttpGet("reports/branch-performance")]
-    public async Task<IActionResult> GetBranchPerformance([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    [HttpGet("reports/project-performance")]
+    public async Task<IActionResult> GetProjectPerformance([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -564,9 +563,9 @@ public class CustomerPortalApiController : ControllerBase
                 projectId = p.Id,
                 projectName = p.Name,
                 evaluationCount = projectEvals.Count,
-                averageScore = projectEvals.Any() ? Math.Round(projectEvals.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
-                minScore = projectEvals.Any() ? projectEvals.Min(e => e.TotalScore ?? 0) : 0,
-                maxScore = projectEvals.Any() ? projectEvals.Max(e => e.TotalScore ?? 0) : 0
+                averageScore = projectEvals.Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
+                minScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
+                maxScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0
             };
         })
         .OrderByDescending(p => p.averageScore)
@@ -610,14 +609,14 @@ public class CustomerPortalApiController : ControllerBase
             periodStart = start,
             periodEnd = end,
             totalEvaluations = evaluations.Count,
-            branchCount = projectCount, // Using project count instead
-            averageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)(e.TotalScore ?? 0)), 1) : 0,
-            minScore = evaluations.Any() ? evaluations.Min(e => e.TotalScore ?? 0) : 0,
-            maxScore = evaluations.Any() ? evaluations.Max(e => e.TotalScore ?? 0) : 0,
-            excellentCount = evaluations.Count(e => e.TotalScore >= 90),
-            goodCount = evaluations.Count(e => e.TotalScore >= 80 && e.TotalScore < 90),
-            averageCount = evaluations.Count(e => e.TotalScore >= 60 && e.TotalScore < 80),
-            poorCount = evaluations.Count(e => e.TotalScore < 60)
+            projectCount,
+            averageScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
+            minScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
+            maxScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0,
+            excellentCount = evaluations.Count(e => e.ScorePercentage >= 90),
+            goodCount = evaluations.Count(e => e.ScorePercentage >= 80 && e.ScorePercentage < 90),
+            averageCount = evaluations.Count(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80),
+            poorCount = evaluations.Count(e => e.ScorePercentage < 60)
         };
 
         return Ok(summary);
@@ -660,7 +659,7 @@ public class CustomerPortalApiController : ControllerBase
                 month = g.Key.Month,
                 monthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy", new System.Globalization.CultureInfo("tr-TR")),
                 count = g.Count(),
-                averageScore = Math.Round(g.Average(e => (double)(e.TotalScore ?? 0)), 1)
+                averageScore = g.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0
             })
             .ToList();
 
@@ -702,20 +701,20 @@ public class CustomerPortalApiController : ControllerBase
                 averageScore = _context.Evaluations
                     .Where(e => e.EvaluatedOrganizationId == o.Id &&
                                e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.TotalScore.HasValue)
-                    .Average(e => (double?)e.TotalScore) ?? 0
+                               e.ScorePercentage.HasValue)
+                    .Average(e => (double?)e.ScorePercentage) ?? 0
             })
             .ToListAsync();
 
-        // Group by parent (null parent = root level)
+        // Group by parent (null parent = independent/root level)
         var grouped = organizations
-            .GroupBy(o => o.parentName ?? "Genel")
+            .GroupBy(o => o.parentName ?? "Bağımsız")
             .Select(g => new
             {
                 groupName = g.Key,
                 organizations = g.ToList()
             })
-            .OrderBy(g => g.groupName == "Genel" ? "" : g.groupName)
+            .OrderBy(g => g.groupName == "Bağımsız" ? "" : g.groupName) // Bağımsız en başa
             .ToList();
 
         return Ok(grouped);
@@ -761,8 +760,8 @@ public class CustomerPortalApiController : ControllerBase
                 averageScore = _context.Evaluations
                     .Where(e => e.EvaluatorCustomerPersonnelId == cp.Id &&
                                e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.TotalScore.HasValue)
-                    .Average(e => (double?)e.TotalScore) ?? 0
+                               e.ScorePercentage.HasValue)
+                    .Average(e => (double?)e.ScorePercentage) ?? 0
             })
             .ToListAsync();
 
@@ -1112,6 +1111,40 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// Değerlendirme detayı Excel export (CustomerPortal)
+    /// </summary>
+    [HttpGet("evaluations/{evaluationId}/export")]
+    public async Task<IActionResult> ExportEvaluationDetail(int evaluationId)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi değerlendirmesini export edebilir
+            var evaluation = await _context.Evaluations
+                .Include(e => e.Assignment)
+                    .ThenInclude(a => a!.Project)
+                .FirstOrDefaultAsync(e => e.Id == evaluationId);
+
+            if (evaluation?.Assignment?.Project?.CustomerId != customerId)
+                return Forbid();
+
+            var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId);
+            if (result == null)
+                return NotFound(new { message = "Değerlendirme bulunamadı." });
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting evaluation detail {EvaluationId} for customer {CustomerId}", evaluationId, customerId);
+            return StatusCode(500, new { message = "Değerlendirme export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// Soru Grubu Ortalama Raporu - Excel export (CustomerPortal)
     /// </summary>
     [HttpPost("reports/export/question-group-average")]
@@ -1158,6 +1191,325 @@ public class CustomerPortalApiController : ControllerBase
         {
             _logger.LogError(ex, "[CustomerPortal] Error exporting customer evaluation report for customer {CustomerId}", customerId);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Cezalı KL Raporu (CustomerPortal) - EvaluatorName hariç
+    /// </summary>
+    [HttpGet("reports/penalties")]
+    public async Task<IActionResult> GetPenaltiesReport(
+        [FromQuery] int? projectId,
+        [FromQuery] int? organizationId,
+        [FromQuery] int? checklistId,
+        [FromQuery] string? penaltyType,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new PenaltyFilterDto
+            {
+                ProjectId = projectId,
+                CustomerId = customerId.Value, // Otomatik müşteri filtresi
+                OrganizationId = organizationId,
+                ChecklistId = checklistId,
+                EvaluatorId = null, // Müşteri değerlendirici filtreleyemez
+                PenaltyType = penaltyType,
+                StartDate = startDate,
+                EndDate = endDate,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            var result = await _reportService.GetPenaltiesReportAsync(filter);
+
+            // EvaluatorName alanlarını temizle (müşteri görmemeli)
+            foreach (var penalty in result.Penalties)
+            {
+                penalty.EvaluatorName = null;
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading penalties report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Cezalı KL raporu yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Cezalı KL Raporu Excel Export (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/penalties/export")]
+    public async Task<IActionResult> ExportPenaltiesToExcel(
+        [FromQuery] int? projectId,
+        [FromQuery] int? organizationId,
+        [FromQuery] int? checklistId,
+        [FromQuery] string? penaltyType,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new PenaltyFilterDto
+            {
+                ProjectId = projectId,
+                CustomerId = customerId.Value,
+                OrganizationId = organizationId,
+                ChecklistId = checklistId,
+                EvaluatorId = null,
+                PenaltyType = penaltyType,
+                StartDate = startDate,
+                EndDate = endDate,
+                Page = 1,
+                PageSize = int.MaxValue
+            };
+
+            var result = await _reportService.ExportPenaltiesToExcelAsync(filter, excludeEvaluator: true);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting penalties report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Cezalı KL raporu export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Öneriler Raporu (CustomerPortal) - EvaluatorName hariç
+    /// </summary>
+    [HttpGet("reports/suggestions")]
+    public async Task<IActionResult> GetSuggestionsReport(
+        [FromQuery] int? projectId,
+        [FromQuery] int? checklistId,
+        [FromQuery] string? searchText,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new SuggestionsFilterDto
+            {
+                ProjectId = projectId,
+                CustomerId = customerId.Value, // Otomatik müşteri filtresi
+                ChecklistId = checklistId,
+                EvaluatorId = null, // Müşteri değerlendirici filtreleyemez
+                SearchText = searchText,
+                StartDate = startDate,
+                EndDate = endDate,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            var result = await _reportService.GetSuggestionsReportAsync(filter);
+
+            // EvaluatorName alanlarını temizle (müşteri görmemeli)
+            foreach (var suggestion in result.Suggestions)
+            {
+                suggestion.EvaluatorName = null;
+            }
+
+            // Değerlendirici sayısını gizle
+            result.Summary.UniqueEvaluators = 0;
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading suggestions report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Öneriler raporu yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// En çok öneri yazılan sorular (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/suggestions/top-questions")]
+    public async Task<IActionResult> GetTopSuggestedQuestions(
+        [FromQuery] int? projectId,
+        [FromQuery] int? checklistId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int top = 10)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new SuggestionsFilterDto
+            {
+                ProjectId = projectId,
+                CustomerId = customerId.Value,
+                ChecklistId = checklistId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var result = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading top suggested questions for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "En çok öneri yazılan sorular yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Öneriler Raporu Excel Export (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/suggestions/export")]
+    public async Task<IActionResult> ExportSuggestionsToExcel(
+        [FromQuery] int? projectId,
+        [FromQuery] int? checklistId,
+        [FromQuery] string? searchText,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new SuggestionsFilterDto
+            {
+                ProjectId = projectId,
+                CustomerId = customerId.Value,
+                ChecklistId = checklistId,
+                EvaluatorId = null,
+                SearchText = searchText,
+                StartDate = startDate,
+                EndDate = endDate,
+                Page = 1,
+                PageSize = int.MaxValue
+            };
+
+            var result = await _reportService.ExportSuggestionsToExcelAsync(filter, excludeEvaluator: true);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting suggestions report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Öneriler raporu export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi - Personel Listesi (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/personnel-list")]
+    public async Task<IActionResult> GetPersonnelList([FromQuery] int? organizationId)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId.Value, organizationId);
+            return Ok(personnel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading personnel list for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Personel listesi yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi Raporu (CustomerPortal) - EvaluatorName hariç
+    /// </summary>
+    [HttpGet("reports/personnel-report-card/{personnelId}")]
+    public async Task<IActionResult> GetPersonnelReportCard(
+        int personnelId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                CustomerId = customerId.Value, // Otomatik müşteri filtresi
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var result = await _reportService.GetPersonnelReportCardAsync(filter);
+
+            if (result == null)
+                return NotFound(new { message = "Temsilci bulunamadı." });
+
+            // EvaluatorName alanlarını temizle (müşteri görmemeli)
+            foreach (var evaluation in result.RecentEvaluations)
+            {
+                evaluation.EvaluatorName = null;
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading personnel report card for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            return StatusCode(500, new { message = "Temsilci karnesi yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi Excel Export (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/personnel-report-card/{personnelId}/export")]
+    public async Task<IActionResult> ExportPersonnelReportCard(
+        int personnelId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                CustomerId = customerId.Value,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            return StatusCode(500, new { message = "Temsilci karnesi export edilirken hata oluştu." });
         }
     }
 

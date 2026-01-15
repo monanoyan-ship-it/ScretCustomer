@@ -125,7 +125,7 @@ Bu dokuman, SecretCustomer sistemindeki is kurallarini, tanimlari ve sayfa bazin
 - Ad, Soyad
 - Email, Telefon
 - Musteri (hangi sirket)
-- Rol (Manager/Supervisor/Operator/Viewer)
+- Rol (Manager/Supervisor/Operator)
 - Atandigi organizasyonlar
 - Her organizasyon icin supervisor
 
@@ -580,10 +580,9 @@ Checklist
 
 | Rol | Gorebilecegi Veriler |
 |-----|---------------------|
-| CustomerManager | Musteriye ait tum veriler |
-| CustomerSupervisor | Ozel kural (asagida) |
-| CustomerOperator | Sadece kendi degerlendirmeleri |
-| CustomerViewer | Sadece kendi degerlendirmeleri (readonly) |
+| CustomerManager | Müşteriye ait tüm veriler |
+| CustomerSupervisor | Özel kural (aşağıda) |
+| CustomerOperator | Sadece kendi değerlendirmeleri |
 
 #### CustomerSupervisor Ozel Kurali
 

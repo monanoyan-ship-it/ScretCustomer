@@ -24,9 +24,8 @@ FullName,Username,Email,Password,Role,RoleId,Company,Organization
 | RoleId | Role | Açıklama |
 |--------|------|----------|
 | 1 | CustomerManager | Müşteri Yöneticisi |
-| 2 | CustomerSupervisor | Takım Lideri / Süpervizör |
-| 3 | CustomerOperator | Operatör / Temsilci |
-| 4 | CustomerViewer | Görüntüleyici |
+| 2 | CustomerSupervisor | Takım Lideri |
+| 3 | CustomerOperator | Operatör |
 
 ## Username Oluşturma Kuralları
 

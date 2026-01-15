@@ -1,24 +1,96 @@
 @{
     Layout = "_LayoutPopup";
-    ViewData["Title"] = Html.T("Organization.Title", "Şube/Organizasyon Yönetimi");
+    ViewData["Title"] = Html.T("Organization.Title", "Organizasyon Yönetimi");
     var customerId = ViewBag.CustomerId;
     var customerName = ViewBag.CustomerName;
+    var customerPhone = ViewBag.CustomerPhone ?? "";
+    var customerEmail = ViewBag.CustomerEmail ?? "";
+    var customerCity = ViewBag.CustomerCity ?? "";
+    var customerTaxNumber = ViewBag.CustomerTaxNumber ?? "";
+    var customerIsActive = ViewBag.CustomerIsActive ?? true;
 }
 
+<style>
+    .org-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    }
+    .left-panel {
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        height: calc(100vh - 180px);
+        overflow-y: auto;
+    }
+    .right-panel {
+        height: calc(100vh - 180px);
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    .org-list-item {
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .org-list-item:hover {
+        background-color: #e9ecef;
+    }
+    .org-list-item.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    .org-list-item.active .text-muted {
+        color: rgba(255,255,255,0.7) !important;
+    }
+    .inline-form {
+        background: #fff;
+        border: 1px solid #0d6efd;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
 <div id="organizations-app">
-    <!-- Header -->
-    <div class="popup-header">
-        <h4>
-            <i class="bi bi-building me-2"></i>@Html.T("Organization.Title", "Şube/Organizasyon Yönetimi")
-            <small class="text-muted ms-2">- @customerName</small>
-        </h4>
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" data-bind="click: createOrganization">
-                <i class="bi bi-plus-circle me-1"></i>@Html.T("Organization.New", "Yeni Şube")
-            </button>
-            <button class="btn btn-secondary" onclick="window.close()">
-                <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
-            </button>
+    <!-- Customer Header -->
+    <div class="org-header">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                        <i class="bi bi-building fs-3"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">@customerName</h4>
+                        <span class="badge mt-1 @(customerIsActive ? "bg-success" : "bg-danger")">
+                            @(customerIsActive ? "Aktif Müşteri" : "Pasif")
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small opacity-75 mb-1">İletişim</div>
+                @if (!string.IsNullOrEmpty(customerPhone))
+                {
+                    <div class="mb-1"><i class="bi bi-telephone-fill me-2"></i>@customerPhone</div>
+                }
+                @if (!string.IsNullOrEmpty(customerEmail))
+                {
+                    <div><i class="bi bi-envelope-fill me-2"></i>@customerEmail</div>
+                }
+            </div>
+            <div class="col-md-3">
+                <div class="small opacity-75 mb-1">Adres</div>
+                @if (!string.IsNullOrEmpty(customerCity))
+                {
+                    <div><i class="bi bi-geo-alt-fill me-2"></i>@customerCity</div>
+                }
+            </div>
+            <div class="col-md-2 text-end">
+                <button class="btn btn-light btn-sm" onclick="window.close()">
+                    <i class="bi bi-x-lg me-1"></i>Kapat
+                </button>
+            </div>
         </div>
     </div>
 
@@ -27,137 +99,286 @@
         <div class="spinner-border text-primary"></div>
     </div>
 
-    <div data-bind="visible: !isLoading()" class="row">
-        <!-- Organizations List (Left) -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white py-2">
-                    <i class="bi bi-list me-2"></i>Şubeler
-                    <span class="badge bg-light text-dark ms-2" data-bind="text: organizations().length"></span>
+    <!-- Main Content -->
+    <div data-bind="visible: !isLoading()" class="row g-0" style="margin: 0 -1.5rem;">
+        <!-- Left Panel -->
+        <div class="col-3 left-panel p-3">
+            <!-- Firma Yöneticileri -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 text-danger"><i class="bi bi-person-badge me-1"></i>Firma Yöneticileri</h6>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" data-bind="click: toggleNewManagerForm" title="Yeni Yönetici">
+                        <i class="bi bi-plus"></i>
+                    </button>
                 </div>
-                <div class="list-group list-group-flush" style="max-height: 600px; overflow-y: auto;" data-bind="foreach: organizations">
-                    <a href="#" class="list-group-item list-group-item-action"
-                       data-bind="click: $parent.selectOrganization, css: { active: $parent.selectedOrganization() && $parent.selectedOrganization().id === id }">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-medium" data-bind="text: name"></div>
-                                <small class="text-muted" data-bind="text: code || '-'"></small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-info" data-bind="text: personnelCount + ' kişi'"></span>
-                            </div>
+
+                <!-- Inline New Manager Form -->
+                <div data-bind="visible: showNewManagerForm" class="inline-form border-danger">
+                    <div class="row g-1">
+                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Ad" data-bind="value: newManager.firstName"></div>
+                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Soyad" data-bind="value: newManager.lastName"></div>
+                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Kullanıcı Adı" data-bind="value: newManager.username"></div>
+                        <div class="col-6"><input type="email" class="form-control form-control-sm" placeholder="E-posta" data-bind="value: newManager.email"></div>
+                        <div class="col-8"><input type="password" class="form-control form-control-sm" placeholder="Şifre" data-bind="value: newManager.password"></div>
+                        <div class="col-4">
+                            <button class="btn btn-danger btn-sm w-100" data-bind="click: saveNewManager, disable: isSavingManager">
+                                <span data-bind="visible: !isSavingManager()"><i class="bi bi-check"></i></span>
+                                <span data-bind="visible: isSavingManager"><span class="spinner-border spinner-border-sm"></span></span>
+                            </button>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <!-- Empty -->
-                <div data-bind="visible: organizations().length === 0" class="p-3 text-center text-muted">
-                    <i class="bi bi-building"></i> Henüz şube yok
+
+                <!-- Manager List -->
+                <div data-bind="foreach: managers" class="list-group list-group-flush">
+                    <div class="list-group-item py-2 px-2 d-flex justify-content-between align-items-center bg-transparent border-0 border-bottom">
+                        <div>
+                            <i class="bi bi-person-badge text-danger me-1"></i>
+                            <span data-bind="text: fullName" class="small"></span>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm py-0 px-1" data-bind="click: $parent.removeManager" title="Sil">
+                            <i class="bi bi-x" style="font-size: 0.7rem;"></i>
+                        </button>
+                    </div>
                 </div>
+                <div data-bind="visible: managers().length === 0" class="text-muted small text-center py-2">
+                    <i class="bi bi-info-circle"></i> Henüz yönetici yok
+                </div>
+            </div>
+
+            <hr class="my-2">
+
+            <!-- Organizasyonlar -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0"><i class="bi bi-diagram-3 me-1"></i>Organizasyonlar</h6>
+                <button class="btn btn-sm btn-primary py-0 px-1" data-bind="click: createOrganization">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="mb-2">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control form-control-sm" placeholder="Ara..." data-bind="value: orgSearchText, valueUpdate: 'afterkeydown'">
+                    <button class="btn btn-outline-secondary" type="button" data-bind="visible: orgSearchText(), click: function() { orgSearchText(''); }">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Org List -->
+            <div data-bind="foreach: filteredOrganizations" class="list-group list-group-flush">
+                <div class="list-group-item org-list-item d-flex justify-content-between align-items-center"
+                     data-bind="click: $parent.selectOrganization, css: { active: $parent.selectedOrganization() && $parent.selectedOrganization().id === id }">
+                    <div>
+                        <div class="fw-semibold" data-bind="text: name"></div>
+                        <small class="text-muted" data-bind="text: personnelCount + ' personel'"></small>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-sm btn-outline-primary py-0 px-1" data-bind="click: function(data, event) { event.stopPropagation(); $parent.editOrganization(data); }" title="Düzenle">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1" data-bind="click: function(data, event) { event.stopPropagation(); $parent.deleteOrganization(data); }" title="Sil">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div data-bind="visible: filteredOrganizations().length === 0" class="text-muted small py-2 text-center">
+                <i class="bi bi-info-circle"></i> Organizasyon bulunamadı
             </div>
         </div>
 
-        <!-- Organization Detail (Right) -->
-        <div class="col-md-8">
+        <!-- Right Panel -->
+        <div class="col-9 right-panel">
             <!-- No selection -->
-            <div data-bind="visible: !selectedOrganization()" class="card shadow-sm">
-                <div class="card-body text-center text-muted py-5">
-                    <i class="bi bi-arrow-left-circle" style="font-size: 3rem;"></i>
-                    <p class="mt-3">Detayları görmek için sol listeden bir şube seçin.</p>
-                </div>
+            <div data-bind="visible: !selectedOrganization()" class="text-center text-muted py-5">
+                <i class="bi bi-arrow-left-circle display-4 mb-3 d-block"></i>
+                <p>Personelleri görmek için sol taraftan bir organizasyon seçin</p>
             </div>
 
-            <!-- Selected organization -->
-            <div data-bind="visible: selectedOrganization()">
-                <!-- Organization Info Card -->
-                <div class="card shadow-sm mb-3">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
-                        <span><i class="bi bi-building me-2"></i><span data-bind="text: selectedOrganization() ? selectedOrganization().name : ''"></span></span>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-light btn-sm" data-bind="click: editOrganization" title="Düzenle">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" data-bind="click: deleteOrganization" title="Sil">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+            <!-- Selected Organization -->
+            <div data-bind="visible: selectedOrganization">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>
+                        <span data-bind="text: selectedOrganization() ? selectedOrganization().name : ''"></span>
+                        <small class="text-muted">- Personel Yapısı</small>
+                    </h5>
                 </div>
 
-                <!-- Personnel in Organization -->
-                <div class="card shadow-sm">
-                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-people me-2"></i>Şube Personeli</span>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary btn-sm" data-bind="click: addSupervisor">
-                                <i class="bi bi-person-plus me-1"></i>Süpervizör Ekle
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" data-bind="click: addOperator">
-                                <i class="bi bi-person-plus me-1"></i>Operatör Ekle
-                            </button>
-                        </div>
+                <!-- Add Supervisor Section -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white py-2">
+                        <i class="bi bi-person-plus me-2"></i>Yönetici/Süpervizör Ekle
                     </div>
-                    <div class="card-body p-0">
-                        <!-- Loading personnel -->
-                        <div data-bind="visible: isLoadingPersonnel" class="text-center py-4">
-                            <div class="spinner-border spinner-border-sm text-primary"></div>
-                        </div>
-
-                        <!-- Personnel list -->
-                        <div data-bind="visible: !isLoadingPersonnel()">
-                            <!-- Supervisors -->
-                            <div data-bind="foreach: orgPersonnel().supervisors">
-                                <div class="border-bottom p-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="badge bg-warning text-dark me-2">Süpervizör</span>
-                                            <strong data-bind="text: fullName"></strong>
-                                            <small class="text-muted ms-2" data-bind="text: email"></small>
-                                        </div>
-                                        <button class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.removeFromOrg($data); }" title="Şubeden Çıkar">
-                                            <i class="bi bi-x"></i>
-                                        </button>
+                    <div class="card-body py-2">
+                        <div class="row g-2 align-items-end">
+                            <!-- Havuzdan Seç -->
+                            <div class="col-md-6" data-bind="visible: !showNewSupervisorForm()">
+                                <div class="d-flex gap-2 align-items-end">
+                                    <div class="flex-grow-1">
+                                        <label class="form-label small mb-1">Havuzdan Seç</label>
+                                        <select class="form-select form-select-sm" data-bind="options: personnelPoolForSupervisor, optionsText: function(item) { return item.fullName + ' (' + item.roleName + ')'; }, optionsValue: 'id', value: selectedPoolPersonnelId, optionsCaption: 'Seçiniz...'"></select>
                                     </div>
-                                    <!-- Team members -->
-                                    <!-- ko if: teamMembers && teamMembers.length > 0 -->
-                                    <div class="ms-4 mt-2">
-                                        <!-- ko foreach: teamMembers -->
-                                        <div class="d-flex justify-content-between align-items-center py-1">
-                                            <div>
-                                                <i class="bi bi-arrow-return-right text-muted me-2"></i>
-                                                <span data-bind="text: fullName"></span>
-                                                <small class="text-muted ms-2" data-bind="text: email"></small>
-                                            </div>
-                                            <button class="btn btn-outline-secondary btn-sm" data-bind="click: function() { $parents[1].removeFromOrg($data); }" title="Şubeden Çıkar">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </div>
-                                        <!-- /ko -->
-                                    </div>
-                                    <!-- /ko -->
-                                </div>
-                            </div>
-
-                            <!-- Independent Operators -->
-                            <!-- ko foreach: orgPersonnel().operators -->
-                            <div class="border-bottom p-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <span class="badge bg-info me-2">Operatör</span>
-                                        <span data-bind="text: fullName"></span>
-                                        <small class="text-muted ms-2" data-bind="text: email"></small>
-                                    </div>
-                                    <button class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.removeFromOrg($data); }" title="Şubeden Çıkar">
-                                        <i class="bi bi-x"></i>
+                                    <button class="btn btn-success btn-sm" data-bind="click: assignFromPool, enable: selectedPoolPersonnelId()">
+                                        <i class="bi bi-plus-circle"></i>
                                     </button>
                                 </div>
                             </div>
-                            <!-- /ko -->
-
-                            <!-- Empty state -->
-                            <div data-bind="visible: orgPersonnel().supervisors.length === 0 && orgPersonnel().operators.length === 0" class="text-center text-muted py-4">
-                                <i class="bi bi-people"></i> Bu şubede henüz personel yok
+                            <!-- Yeni Oluştur -->
+                            <div class="col-md-6">
+                                <div data-bind="visible: !showNewSupervisorForm()">
+                                    <label class="form-label small mb-1">veya Yeni Oluştur</label>
+                                    <button class="btn btn-outline-primary btn-sm w-100" data-bind="click: toggleNewSupervisorForm">
+                                        <i class="bi bi-person-plus me-1"></i>Yeni Süpervizör
+                                    </button>
+                                </div>
+                                <!-- Inline Form -->
+                                <div data-bind="visible: showNewSupervisorForm" class="inline-form">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-primary fw-bold"><i class="bi bi-person-plus me-1"></i>Yeni Süpervizör</small>
+                                        <button type="button" class="btn-close" style="font-size: 0.6rem;" data-bind="click: toggleNewSupervisorForm"></button>
+                                    </div>
+                                    <div class="row g-1">
+                                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Ad" data-bind="value: newSupervisor.firstName"></div>
+                                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Soyad" data-bind="value: newSupervisor.lastName"></div>
+                                        <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="Kullanıcı Adı" data-bind="value: newSupervisor.username"></div>
+                                        <div class="col-6"><input type="email" class="form-control form-control-sm" placeholder="E-posta" data-bind="value: newSupervisor.email"></div>
+                                        <div class="col-8"><input type="password" class="form-control form-control-sm" placeholder="Şifre" data-bind="value: newSupervisor.password"></div>
+                                        <div class="col-4">
+                                            <button class="btn btn-primary btn-sm w-100" data-bind="click: saveNewSupervisor, disable: isSavingSupervisor">
+                                                <span data-bind="visible: !isSavingSupervisor()"><i class="bi bi-check"></i></span>
+                                                <span data-bind="visible: isSavingSupervisor"><span class="spinner-border spinner-border-sm"></span></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Personnel Loading -->
+                <div data-bind="visible: isLoadingPersonnel" class="text-center py-3">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+
+                <!-- Personnel Structure -->
+                <div data-bind="visible: !isLoadingPersonnel()">
+                    <!-- Supervisors -->
+                    <div data-bind="foreach: orgPersonnel().supervisors">
+                        <div class="card mb-3 border-primary">
+                            <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-2">
+                                <div>
+                                    <i class="bi bi-person-badge me-2"></i>
+                                    <strong data-bind="text: fullName"></strong>
+                                    <!-- ko if: teamMembers.length === 0 -->
+                                    <span class="text-warning ms-1" title="Organizasyon Yöneticisi">*</span>
+                                    <!-- /ko -->
+                                    <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.removePersonnelFromOrg" title="Organizasyondan Çıkar">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body py-2">
+                                <!-- Team Members -->
+                                <div class="ms-4">
+                                    <div data-bind="foreach: teamMembers" class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                            <div>
+                                                <i class="bi bi-person me-2 text-muted"></i>
+                                                <span data-bind="text: fullName"></span>
+                                                <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-warning btn-sm" data-bind="click: $parents[1].makeIndependent" title="Bağımsız Yap">
+                                                    <i class="bi bi-unlock"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm" data-bind="click: $parents[1].removePersonnelFromOrg" title="Organizasyondan Çıkar">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Add Operator to Team -->
+                                    <div class="d-flex gap-2 align-items-center mt-2 flex-wrap">
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <select class="form-select form-select-sm" style="width: auto; min-width: 150px;"
+                                                    data-bind="options: $parent.unassignedOperators,
+                                                               optionsText: 'fullName',
+                                                               optionsValue: 'id',
+                                                               value: $parent.selectedPoolOperatorForSupervisorId,
+                                                               optionsCaption: '@Html.T("Common.SelectFromPool", "Havuzdan seç...")'"></select>
+                                            <button class="btn btn-success btn-sm" data-bind="click: function() { $parent.assignOperatorToSupervisor($data); }, enable: $parent.selectedPoolOperatorForSupervisorId()" title="@Html.T("Organization.AddToTeam", "Ekibe Ekle")">
+                                                <i class="bi bi-plus-circle"></i>
+                                            </button>
+                                        </div>
+                                        <span class="text-muted small">@Html.T("Common.Or", "veya")</span>
+                                        <button class="btn btn-outline-success btn-sm" data-bind="click: $parent.openAddOperatorModal">
+                                            <i class="bi bi-person-plus me-1"></i>@Html.T("Common.CreateNew", "Yeni Oluştur")
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Independent Operators -->
+                    <div class="card mb-3 border-secondary">
+                        <div class="card-header bg-secondary bg-opacity-10 py-2 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-people me-2"></i>Bağımsız Operatörler</span>
+                        </div>
+                        <div class="card-body py-2">
+                            <!-- Add Operator Section -->
+                            <div class="mb-3 border-bottom pb-3">
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <div class="d-flex gap-1 align-items-center" data-bind="visible: unassignedOperators().length > 0">
+                                        <select class="form-select form-select-sm" style="width: auto; min-width: 180px;"
+                                                data-bind="options: unassignedOperators,
+                                                           optionsText: 'fullName',
+                                                           optionsValue: 'id',
+                                                           value: selectedPoolOperatorId,
+                                                           optionsCaption: '@Html.T("Common.SelectFromPool", "Havuzdan seç...")'"></select>
+                                        <button class="btn btn-success btn-sm" data-bind="click: assignOperatorFromPool, enable: selectedPoolOperatorId()" title="@Html.T("Organization.AddAsIndependent", "Bağımsız Operatör Olarak Ekle")">
+                                            <i class="bi bi-plus-circle"></i>
+                                        </button>
+                                    </div>
+                                    <span class="text-muted small" data-bind="visible: unassignedOperators().length > 0">@Html.T("Common.Or", "veya")</span>
+                                    <button class="btn btn-outline-success btn-sm" data-bind="click: addIndependentOperator">
+                                        <i class="bi bi-person-plus me-1"></i>@Html.T("Common.CreateNew", "Yeni Oluştur")
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Operators -->
+                            <div data-bind="visible: orgPersonnel().operators && orgPersonnel().operators.length > 0">
+                                <div data-bind="foreach: orgPersonnel().operators">
+                                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                        <div>
+                                            <i class="bi bi-person me-2 text-muted"></i>
+                                            <span data-bind="text: fullName"></span>
+                                            <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
+                                        </div>
+                                        <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.removePersonnelFromOrg" title="Organizasyondan Çıkar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-bind="visible: !orgPersonnel().operators || orgPersonnel().operators.length === 0" class="text-muted small text-center py-2">
+                                <i class="bi bi-info-circle"></i> Bağımsız operatör yok
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div data-bind="visible: (!orgPersonnel().supervisors || orgPersonnel().supervisors.length === 0) && (!orgPersonnel().operators || orgPersonnel().operators.length === 0)" class="text-center text-muted py-4">
+                        <i class="bi bi-people display-4 mb-3 d-block"></i>
+                        <p>Bu organizasyonda henüz personel yok</p>
                     </div>
                 </div>
             </div>
@@ -171,21 +392,21 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <!-- ko if: id -->
-                        <i class="bi bi-pencil me-2"></i>Şube Düzenle
+                        <i class="bi bi-pencil me-2"></i>Organizasyon Düzenle
                         <!-- /ko -->
                         <!-- ko ifnot: id -->
-                        <i class="bi bi-plus-circle me-2"></i>Yeni Şube
+                        <i class="bi bi-plus-circle me-2"></i>Yeni Organizasyon
                         <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Şube Adı <span class="text-danger">*</span></label>
+                        <label class="form-label">Organizasyon Adı <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" data-bind="value: name">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Şube Kodu</label>
+                        <label class="form-label">Organizasyon Kodu</label>
                         <input type="text" class="form-control" data-bind="value: code">
                     </div>
                     <div class="mb-3">
@@ -201,56 +422,96 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.saveOrganization, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">Kaydet</span>
-                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span></span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Personnel Modal -->
-    <div class="modal fade" id="addPersonnelModal" tabindex="-1">
+    <!-- Add Operator Modal -->
+    <div class="modal fade" id="addOperatorModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i><span data-bind="text: addPersonnelTitle"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Operatör Ekle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Select from pool -->
-                    <div class="mb-3" data-bind="visible: personnelPool().length > 0">
-                        <label class="form-label">Mevcut Personelden Seç</label>
-                        <select class="form-select" data-bind="value: selectedPoolPersonnelId, options: personnelPool, optionsValue: 'id', optionsText: function(p) { return p.fullName + ' (' + p.email + ')'; }, optionsCaption: '-- Seçin --'"></select>
-                        <button class="btn btn-primary btn-sm mt-2" data-bind="click: assignFromPool, disable: !selectedPoolPersonnelId()">
-                            <i class="bi bi-plus-circle me-1"></i>Ekle
-                        </button>
+                    <!-- ko if: selectedSupervisorForOperator() -->
+                    <p class="text-muted mb-3">
+                        Süpervizör: <strong data-bind="text: selectedSupervisorForOperator().fullName"></strong>
+                    </p>
+                    <!-- /ko -->
+                    <!-- ko ifnot: selectedSupervisorForOperator() -->
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-info-circle me-1"></i>Bu operatör bağımsız olarak eklenecek
+                    </p>
+                    <!-- /ko -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: newOperator.firstName">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: newOperator.lastName">
+                        </div>
                     </div>
-                    <hr data-bind="visible: personnelPool().length > 0">
-                    <!-- Or create new -->
-                    <p class="text-muted small">veya yeni personel oluşturun:</p>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <input type="text" class="form-control form-control-sm" placeholder="Ad" data-bind="value: newPersonnel.firstName">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kullanıcı Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: newOperator.username" placeholder="ali.veli">
                         </div>
-                        <div class="col-6">
-                            <input type="text" class="form-control form-control-sm" placeholder="Soyad" data-bind="value: newPersonnel.lastName">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" data-bind="value: newOperator.email">
                         </div>
-                        <div class="col-6">
-                            <input type="text" class="form-control form-control-sm" placeholder="Kullanıcı Adı" data-bind="value: newPersonnel.username">
-                        </div>
-                        <div class="col-6">
-                            <input type="email" class="form-control form-control-sm" placeholder="E-posta" data-bind="value: newPersonnel.email">
-                        </div>
-                        <div class="col-12">
-                            <input type="password" class="form-control form-control-sm" placeholder="Şifre" data-bind="value: newPersonnel.password">
-                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Şifre <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" data-bind="value: newOperator.password" placeholder="En az 6 karakter">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-success btn-sm" data-bind="click: createAndAssign, disable: isSaving">
-                        <span data-bind="visible: !isSaving()">Oluştur ve Ekle</span>
-                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm me-1"></span></span>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveNewOperator, disable: isSavingOperator">
+                        <span data-bind="visible: !isSavingOperator()">Kaydet</span>
+                        <span data-bind="visible: isSavingOperator"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delegate Selection Modal -->
+    <div class="modal fade" id="delegateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Vekil Seç</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong data-bind="text: personnelToRemove() ? personnelToRemove().fullName : ''"></strong>
+                        personelinin altında ekip üyeleri var. Lütfen bu üyeleri devralacak bir vekil seçin.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Devredilecek Ekip Üyeleri</label>
+                        <div class="badge bg-info fs-6" data-bind="text: (personnelToRemove() && personnelToRemove().teamMembers ? personnelToRemove().teamMembers.length : 0) + ' kişi'"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Süpervizör Seçin <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="options: availableDelegates, optionsText: 'fullName', optionsValue: 'id', value: selectedDelegateId, optionsCaption: 'Seçiniz...'"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-warning" data-bind="click: confirmRemoveWithDelegate, enable: selectedDelegateId(), disable: isRemovingWithDelegate">
+                        <span data-bind="visible: !isRemovingWithDelegate()"><i class="bi bi-arrow-left-right me-2"></i>Devret ve Çıkar</span>
+                        <span data-bind="visible: isRemovingWithDelegate"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
             </div>

@@ -36,11 +36,11 @@ public class AssignmentsApiController : BaseApiController
     #region TEMEL CRUD
 
     /// <summary>
-    /// Get all assignments - Only Admin and TeamLeader can access
+    /// Get all assignments - Only Admin and QualitySpecialist can access
     /// Optimized with projection (no Include)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetAll(
         [FromQuery] int? projectId = null,
         [FromQuery] int? assignedUserId = null,
@@ -65,7 +65,7 @@ public class AssignmentsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get assignment by ID - Users can only access their own assignments (except Admin/TeamLeader)
+    /// Get assignment by ID - Users can only access their own assignments (except Admin/QualitySpecialist)
     /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
@@ -145,7 +145,7 @@ public class AssignmentsApiController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> Create([FromBody] CreateAssignmentDto dto)
     {
         try
@@ -186,7 +186,7 @@ public class AssignmentsApiController : BaseApiController
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateAssignmentDto dto)
     {
         try
@@ -230,7 +230,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get filtered assignments
     /// </summary>
     [HttpPost("filter")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetFiltered([FromBody] AssignmentFilterDto filter)
     {
         try
@@ -293,7 +293,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get assignments by project
     /// </summary>
     [HttpGet("by-project/{projectId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetByProject(int projectId)
     {
         try
@@ -312,7 +312,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get assignments by user
     /// </summary>
     [HttpGet("by-user/{userId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetByUser(int userId)
     {
         try
@@ -364,7 +364,7 @@ public class AssignmentsApiController : BaseApiController
     /// Cancel an assignment
     /// </summary>
     [HttpPost("{id}/cancel")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> Cancel(int id, [FromBody] CancelAssignmentDto dto)
     {
         try
@@ -383,7 +383,7 @@ public class AssignmentsApiController : BaseApiController
     /// Reopen a completed assignment
     /// </summary>
     [HttpPost("{id}/reopen")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> Reopen(int id)
     {
         try
@@ -410,7 +410,7 @@ public class AssignmentsApiController : BaseApiController
     /// Reassign an assignment to a different user
     /// </summary>
     [HttpPost("{id}/reassign")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> Reassign(int id, [FromBody] ReassignAssignmentDto dto)
     {
         try
@@ -429,7 +429,7 @@ public class AssignmentsApiController : BaseApiController
     /// Update due date of an assignment
     /// </summary>
     [HttpPost("{id}/update-due-date")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> UpdateDueDate(int id, [FromBody] UpdateDueDateDto dto)
     {
         try
@@ -484,7 +484,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get assignment summary statistics
     /// </summary>
     [HttpGet("summary")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetSummary([FromQuery] int? projectId = null)
     {
         try
@@ -503,7 +503,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get project assignment summaries
     /// </summary>
     [HttpGet("project-summaries")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetProjectSummaries()
     {
         try
@@ -526,7 +526,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get expired assignments
     /// </summary>
     [HttpGet("expired")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetExpired()
     {
         try
@@ -545,7 +545,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get upcoming due assignments
     /// </summary>
     [HttpGet("upcoming-due")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetUpcomingDue([FromQuery] int daysAhead = 3)
     {
         try
@@ -620,7 +620,7 @@ public class AssignmentsApiController : BaseApiController
     /// Get periods for an assignment
     /// </summary>
     [HttpGet("{id}/periods")]
-    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,QualitySpecialist")]
     public async Task<IActionResult> GetPeriods(int id)
     {
         try
@@ -643,7 +643,7 @@ public class AssignmentsApiController : BaseApiController
     /// Create a new period for an assignment
     /// </summary>
     [HttpPost("{id}/periods")]
-    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,QualitySpecialist")]
     public async Task<IActionResult> CreatePeriod(int id, [FromBody] Core.DTOs.AssignmentPeriod.CreateAssignmentPeriodDto dto)
     {
         try
@@ -671,7 +671,7 @@ public class AssignmentsApiController : BaseApiController
     /// Update a period
     /// </summary>
     [HttpPut("{id}/periods/{periodId}")]
-    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,QualitySpecialist")]
     public async Task<IActionResult> UpdatePeriod(int id, int periodId, [FromBody] Core.DTOs.AssignmentPeriod.UpdateAssignmentPeriodDto dto)
     {
         try
@@ -695,7 +695,7 @@ public class AssignmentsApiController : BaseApiController
     /// Close a period
     /// </summary>
     [HttpPost("{id}/periods/{periodId}/close")]
-    [Authorize(Roles = "Admin,TeamLeader,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,QualitySpecialist")]
     public async Task<IActionResult> ClosePeriod(int id, int periodId)
     {
         try
@@ -718,7 +718,7 @@ public class AssignmentsApiController : BaseApiController
     /// Reopen a closed period
     /// </summary>
     [HttpPost("{id}/periods/{periodId}/reopen")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> ReopenPeriod(int id, int periodId)
     {
         try
@@ -781,8 +781,8 @@ public class AssignmentsApiController : BaseApiController
             return Task.FromResult(false);
         }
 
-        // Admin ve TeamLeader her şeyi görebilir
-        if (userRole == "Admin" || userRole == "TeamLeader")
+        // Admin ve QualitySpecialist her şeyi görebilir
+        if (userRole == "Admin" || userRole == "QualitySpecialist")
         {
             return Task.FromResult(true);
         }

@@ -85,19 +85,8 @@ public class CreateProjectDto
     /// </summary>
     public int? ReminderDaysBeforeEnd { get; set; }
 
-    // Hedef Subeler
-    public List<CreateProjectBranchDto>? Branches { get; set; }
-
     // Takim Uyeleri
     public List<CreateProjectTeamMemberDto>? TeamMembers { get; set; }
-}
-
-public class CreateProjectBranchDto
-{
-    [Required]
-    public int BranchId { get; set; }
-    public int? TargetCount { get; set; }
-    public int Priority { get; set; } = 0;
 }
 
 public class CreateProjectTeamMemberDto
@@ -126,11 +115,3 @@ public class ManageProjectTeamDto
     public List<int> RemoveUserIds { get; set; } = new();
 }
 
-/// <summary>
-/// Projeye sube ekleme/cikarma
-/// </summary>
-public class ManageProjectBranchesDto
-{
-    public List<CreateProjectBranchDto> AddBranches { get; set; } = new();
-    public List<int> RemoveBranchIds { get; set; } = new();
-}

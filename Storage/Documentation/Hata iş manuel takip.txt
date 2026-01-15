@@ -1,0 +1,142 @@
+Altında personel bulunmayan supervisor organizasyonun yöneticisi demek. yapıldı.
+
+/Customers/Index göz işaretine basınca personle güncelleme formu dolmuyor. yapıldı
+
+Alt Kriterler/Öneriler bir seçilebilirlik içermeli ki puan kırma sebepleri ortaya çıkabilsin. yapıldı.
+
+Soru grubu özelliği eklenecek. yapıldı.
+
+
+dinlemeye çağrı saati eklenecek, açıklama eklenecek açıklama çoğaltılabilecek. yapıldı.
+
+"/Projects/Index" projelerde hedefler kotalar kaydolmuyor ya da kaydolan değerler gelmiyor. Takım Üyelerinin amacını anlamadık.  Hedef Şubelerin amacını da anlamadık.
+
+
+Yanlış tamamlanmış çağrı değerlemelerinin taslağa alınabilmesi için sistem yazılacak. Adminin menüsüne eklenecek. Sistem otomatik olursa daha iyi olur. Yani kullanıcı ay ben bunu yanlış yapmışım dediğinde yeniden taslağa almak için talep göndersin. Adminler talebi görünce yeniden taslağa çekebilsin gibi. 
+
+"/Checklists/Index" "/Projects/Index" "/Assignments/Index" son eklenen en üstte olacak.yapıldı
+
+
+/Customers/Index Sözleşme Başlangıç Tarihi Sözleşme Bitiş Tarihi güncellemeye gelmiyor. yapıldı
+
+
+puan sistemi tersine dönecek. hepsi seçili gelecek sonra düşecek. yapıldı
+UPDATE "Questions"
+  SET "WeightPoints" = 0
+  WHERE "ScoringType" = 2;
+
+
+personel çağrı tarihi saati süre falan zorunlu olacak.  yapıldı
+
+control listesinin ağırlık puanlarını soru tipine göre ayırmak gerekiyor. (özet tabında) yapıldı
+
+
+puanlamalar tabında cevap alanı düzeltilecek. yapıldı
+
+N/A kaldırılacak. yapıldı 
+
+
+/Users/Index da firma personelinde güncelleme yaparken hata veriyor. yapıldı.
+
+Bazı Firma Yöneticileri hem firma yöneticisi hem de süpervizör olabiliyor. Aynı zamanda bu sisteme ekleme yapmamız gerekiyor ekleme şu şekilde: Müşteri süpervizorlerine Checklist ataması yapılarak değerlendirme yapmaları sağlanmalı. 
+
+Bazı müşsteri temsilcileri birden fazla organizasyonda görevli olabiliyor. bunun için çalışma yapmam lazım. yapıldı.
+
+
+
+Projelere dosya ekleme alanı konulacak. Bu proje atamalardan atandığında atanan personel bu dosyayı indirip inceleyebilecek. yapıldı
+
+Listelerde sıralama. yapldı
+
+/Evaluations/Index dinleme yapacağı temsilci aoutocomplate olacak.yapıldı
+
+
+excel download planlanacak.
+Checklistlerin excelini oluşturma butonu. yapıldı
+
+/Projects/Index de seçili control listesi listeye gelecek yapıldı
+
+murat yeröz-hatice metin- filiz sürücü - büşra kerimoğlu. reno bunlar bağımsız diğerleri iki supervisor e dağıtılacak. yapıldı
+
+
+iç değerlendirmede hata veriyor atama yapılamıyor. yapıldı.
+
+
+/Projects/Index Firmaların Organizasyon/şubesi  seçilmeli (seçilmediyse yüm firma demek) atamalarda ve değerlendirmelerde bu seçime göre personel görülmeli. 
+
+ wwwroot/js/InternalAssignments/Index.js iki assigmente de olacak.
+
+
+Atamalarda proje adı - kodu gelecek.
+
+Firmalar için puanlı değerleme raporu(örnek excel gelecek)
+
+Değerlemelerin puanlarının karşılaştırılabileceği, puan kırılan alanların enler olduğunun bulunabileceği gruplu rapor. cheklist raporu. 
+
+
+> /Listenings/Index menüdeki adını dinlemeler yapmışsın Dinlemeler/Ziyaretler olacak.
+
+Adminler dinleme yapabilsin. yapıldı.
+
+Proje performans raporuna dinleme sayısı eklenecek. Yapıldı
+
+Soru grubu ortalaması raporunda dinleme sayısı eklenecek. Yapıldı 
+
+Puanlamalar yanlış. yapıldı
+
+Müşteri protalı Baranches gruplu gelsin. Bunlara excel yapılacak.  yapıldı
+
+atamaların tarih gibi gözden kaçabilir alanlarını güncelleyelim. yapıldı.
+
+Çağrı Denetleme Raporu => iç rapor
+
+çağrıların düzenleme tarihleri ve oluşturulma tarihleri.
+
+Mt Raporunda => Müşteri tarafına da yazılacak.
+MT Başarı sheetinde döneme ay da eklenecek 
+MT Gelişim Alanı Ortalama puan eklenecek.
+
+Soru Grubu Ortalama Raporu => Müşteri tarafına da yazılacak.
+
+
+Müşteri Değerlendirme Raporu => Müşteri tarafina da yazılacak.
+Açıklama alanına formda eklenerek çoğalan açıklamalar da gelecek.
+
+Proje Performans Raporu => Müşteri tarafına da yazılacak.
+
+
+
+field worker için çalışma. 
+Müşterilere bayii ekleyeceğiz. Fieldworkerlar bayi ekleme ve personnel ekleme talebi oluşturabilecekler. Bayi ziyareti formu dinleme formuna benzer özelliklerle hazırlanacak. Yapıldı test edilecek.
+
+
+
+Sorularda dosya yükleme yazmıştık kaldırılıp değerlemeye çoğul dosya eklenecek çalışma yapılacak.  Yapıldı formun sonunda yapıldı
+
+
+Cezalı KL Raporu ve Kırılım raporu için sayfa ve rapor çalışması. yapıldı
+
+
+tabda yuvarlama kaldırılsın. yapıldı
+
+ağırlık puanı oranları kaldırılacak net puan görünecek. yapıldı
+
+
+Bir email listesine açık davet gönderme çalışması. \test edilecek
+
+/Evaluations evulationların diğerlerinde de  da kayıtlı dinlemelerin callId si özet gelecek. aramaya temsilci adı eklenecek - test edilecek
+
+CustomarPortal listenings sayfalarındaki detay modalı eksik. \test edilecek
+
+listenings detay modal excele aktarda bizim personelimizin dinleme ve isim bilgileri görünmeyecek.  yapıldı
+
+
+Hedefler Projelerden kaldırılıp müşterilere geçirilecek. Müşteri hedefleri hesaplanacak. \test Edilecek
+
+%lik değerleme puanı 0 ın altına 100 ün üstüne çıkmasın. - yapıldı
+
+anket sayfası hata veriyor. \test edilecek
+
+Tüm kullanıcıların hata durumlarını anlatacağı bir system. \test edilecek
+
+Taslağa alma talebi hata veriyor.\anlık bir durumdu sanırım sorun olmadan taslağa aldı.

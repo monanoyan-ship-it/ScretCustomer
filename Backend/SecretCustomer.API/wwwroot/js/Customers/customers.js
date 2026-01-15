@@ -193,7 +193,7 @@ function CustomersViewModel() {
     };
 
     // Create new customer
-    self.createNew = function() {        self.editingCustomer({
+    self.createNew = function() {        self.editingCustomer({
             id: null,
             code: '',
             companyName: '',
@@ -205,13 +205,18 @@ function CustomersViewModel() {
             isActive: true,
             contractStartDate: null,
             contractEndDate: null,
-            notes: ''
+            notes: '',
+            targetCount: null,
+            dailyQuota: null,
+            weeklyQuota: null,
+            monthlyQuota: null
         });
         self.isModalOpen(true);
     };
 
     // Edit customer
-    self.editCustomer = function(customer) {        self.editingCustomer({
+    self.editCustomer = function(customer) {
+        self.editingCustomer({
             id: customer.id,
             code: customer.code || '',
             companyName: customer.companyName,
@@ -223,13 +228,17 @@ function CustomersViewModel() {
             isActive: customer.isActive,
             contractStartDate: self.formatDateForInput(customer.contractStartDate),
             contractEndDate: self.formatDateForInput(customer.contractEndDate),
-            notes: customer.notes || ''
+            notes: customer.notes || '',
+            targetCount: customer.targetCount || null,
+            dailyQuota: customer.dailyQuota || null,
+            weeklyQuota: customer.weeklyQuota || null,
+            monthlyQuota: customer.monthlyQuota || null
         });
         self.isModalOpen(true);
     };
 
     // Save customer
-    self.saveCustomer = function() {        self.successMessage('');
+    self.saveCustomer = function() {        self.successMessage('');
 
         var customer = self.editingCustomer();
         if (!customer) return;
@@ -277,7 +286,7 @@ function CustomersViewModel() {
     // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingCustomer(null);    };
+        self.editingCustomer(null);    };
 
     // Delete customer
     self.deleteCustomer = function(customer) {
@@ -695,7 +704,7 @@ function CustomersViewModel() {
     // Show organizations popup
     self.showOrganizations = function(customer) {
         var url = '/Customers/Organizations/' + customer.id;
-        var popup = window.open(url, 'organizations_' + customer.id, 'width=1200,height=750,scrollbars=yes,resizable=yes');
+        var popup = window.open(url, 'organizations_' + customer.id, 'width=1400,height=850,scrollbars=yes,resizable=yes');
         if (popup) popup.focus();
     };
 
@@ -756,7 +765,7 @@ function CustomersViewModel() {
             return;
         }
 
-        self.isSavingNewManager(true);        customerApiService.createPersonnel({
+        self.isSavingNewManager(true);        customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,
             lastName: lastName,
@@ -839,7 +848,7 @@ function CustomersViewModel() {
 
     // Load organizations for customer
     self.loadOrganizations = function(customerId) {
-        self.isLoadingOrganizations(true);        ApiService.get('/customer-organizations/by-customer/' + customerId)
+        self.isLoadingOrganizations(true);        ApiService.get('/customer-organizations/by-customer/' + customerId)
             .then(function(data) {
                 self.organizations(data || []);
             })
@@ -933,7 +942,7 @@ function CustomersViewModel() {
             return;
         }
 
-        self.isSavingOrg(true);        var data = {
+        self.isSavingOrg(true);        var data = {
             name: name,
             code: ko.unwrap(org.code),
             description: ko.unwrap(org.description),
@@ -1046,7 +1055,7 @@ function CustomersViewModel() {
     };
 
     // Edit organization personnel (opens form modal)
-    self.editOrgPersonnel = function(personnel) {        self.editingPersonnel({
+    self.editOrgPersonnel = function(personnel) {        self.editingPersonnel({
             id: ko.observable(personnel.id),
             customerId: ko.observable(self.selectedCustomerForOrg().id),
             username: ko.observable(personnel.username),
@@ -1246,7 +1255,7 @@ function CustomersViewModel() {
 
         if (!personnel || !delegateId || !org) return;
 
-        self.isRemovingWithDelegate(true);        // API call to transfer and remove
+        self.isRemovingWithDelegate(true);        // API call to transfer and remove
         ApiService.post('/customer-organizations/' + org.id + '/transfer-and-remove', {
             personnelIdToRemove: personnel.id,
             newSupervisorId: delegateId
@@ -1317,7 +1326,7 @@ function CustomersViewModel() {
             return;
         }
 
-        self.isSavingNewSupervisor(true);        // First create the personnel
+        self.isSavingNewSupervisor(true);        // First create the personnel
         customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,
@@ -1435,7 +1444,7 @@ function CustomersViewModel() {
             return;
         }
 
-        self.isSavingOperator(true);        // First create the personnel
+        self.isSavingOperator(true);        // First create the personnel
         customerApiService.createPersonnel({
             customerId: customer.id,
             firstName: firstName,

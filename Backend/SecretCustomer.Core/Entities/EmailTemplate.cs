@@ -61,7 +61,6 @@ public static class EmailPlaceholders
     // Firma/Organizasyon
     public const string CompanyName = "{CompanyName}";
     public const string OrganizationName = "{OrganizationName}";
-    public const string BranchName = "{BranchName}";
 
     // Alıcı Bilgileri
     public const string RecipientName = "{RecipientName}";
@@ -105,8 +104,7 @@ public static class EmailPlaceholders
                 Placeholders = new List<PlaceholderInfo>
                 {
                     new(CompanyName, "Firma Adı", "Müşteri firma adı"),
-                    new(OrganizationName, "Organizasyon/Şube", "Organizasyon veya şube adı"),
-                    new(BranchName, "Şube Adı", "Şube adı")
+                    new(OrganizationName, "Organizasyon/Şube", "Organizasyon veya şube adı")
                 }
             },
             new PlaceholderCategory

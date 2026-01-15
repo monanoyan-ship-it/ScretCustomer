@@ -40,6 +40,7 @@ function CustomerExternalEvaluationsViewModel() {
     self.isDetailsModalOpen = ko.observable(false);
     self.isDetailsLoading = ko.observable(false);
     self.detailsData = ko.observable(null);
+    self.isExportingDetail = ko.observable(false);
 
     // Attachments modal
     self.isAttachmentsModalOpen = ko.observable(false);
@@ -69,6 +70,13 @@ function CustomerExternalEvaluationsViewModel() {
         if (score >= 60) return 'text-warning';
         if (score > 0) return 'text-danger';
         return 'text-muted';
+    };
+
+    self.getProgressBarClass = function(score) {
+        if (score >= 80) return 'bg-success';
+        if (score >= 60) return 'bg-warning';
+        if (score > 0) return 'bg-danger';
+        return 'bg-secondary';
     };
 
     // Date range labels
@@ -249,7 +257,7 @@ function CustomerExternalEvaluationsViewModel() {
     // Load filter options
     self.loadFilterOptions = function() {
         // Load projects
-        customerApiFetch('/api/customer/portal/branches')
+        customerApiFetch('/api/customer/portal/projects')
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.projects(data || []);
@@ -414,6 +422,19 @@ function CustomerExternalEvaluationsViewModel() {
     self.closeDetailsModal = function() {
         self.isDetailsModalOpen(false);
         self.detailsData(null);
+    };
+
+    self.exportToExcel = function() {
+        var data = self.detailsData();
+        if (!data) return;
+
+        self.isExportingDetail(true);
+        var filename = 'Dinleme_Detay_' + (data.callId || data.id) + '_' + self.getTimestamp() + '.xlsx';
+
+        customerApiDownloadGet('/api/customer/portal/evaluations/' + data.id + '/export', filename)
+            .then(function() { toastr.success('Excel dosyası indirildi'); })
+            .catch(function(error) { console.error('Error exporting:', error); toastr.error('Excel oluşturulurken hata oluştu'); })
+            .finally(function() { self.isExportingDetail(false); });
     };
 
     // Attachments Modal Functions

@@ -27,12 +27,6 @@ function ProjectEditViewModel(data) {
     self.organizationId = ko.observable(data.organizationId || null);
     self.projectManagerId = ko.observable(data.projectManagerId || null);
 
-    // Targets
-    self.targetCount = ko.observable(data.targetCount || null);
-    self.dailyQuota = ko.observable(data.dailyQuota || null);
-    self.weeklyQuota = ko.observable(data.weeklyQuota || null);
-    self.monthlyQuota = ko.observable(data.monthlyQuota || null);
-
     // Budget
     self.estimatedBudget = ko.observable(data.estimatedBudget || null);
     self.costPerEvaluation = ko.observable(data.costPerEvaluation || null);
@@ -77,10 +71,6 @@ function ProjectEditViewModel(data) {
             customerId: self.customerId() || null,
             organizationId: self.organizationId() || null,
             projectManagerId: self.projectManagerId() || null,
-            targetCount: self.targetCount() || null,
-            dailyQuota: self.dailyQuota() || null,
-            weeklyQuota: self.weeklyQuota() || null,
-            monthlyQuota: self.monthlyQuota() || null,
             estimatedBudget: self.estimatedBudget() || null,
             costPerEvaluation: self.costPerEvaluation() || null,
             reportingFrequencyDays: self.reportingFrequencyDays() || null,
@@ -410,6 +400,16 @@ function ProjectsViewModel() {
     self.surveyResult = ko.observable(null);
     self.invitationStats = ko.observable(null);
     self.invitationList = ko.observableArray([]);
+    self.surveyTabMode = ko.observable('personnel'); // 'personnel' or 'external'
+
+    // External Survey
+    self.externalEmails = ko.observable('');
+    self.externalEmailTemplateId = ko.observable(null);
+    self.externalInvitationStats = ko.observable(null);
+    self.externalInvitations = ko.observableArray([]);
+    self.externalSendResult = ko.observable(null);
+    self.isExternalSending = ko.observable(false);
+    self.isExternalRetrying = ko.observable(false);
 
     // Check if user can manage files (Admin or TeamLeader)
     self.canManageFiles = ko.computed(function() {
@@ -1109,12 +1109,22 @@ function ProjectsViewModel() {
         self.surveyResult(null);
         self.invitationStats(null);
         self.invitationList([]);
+        self.surveyTabMode('personnel');
+        // External reset
+        self.externalEmails('');
+        self.externalEmailTemplateId(null);
+        self.externalInvitationStats(null);
+        self.externalInvitations([]);
+        self.externalSendResult(null);
+
         self.isSurveyModalOpen(true);
         document.body.classList.add('modal-open');
 
         // Load personnel preview and invitation stats
         self.loadSurveyPersonnelPreview(project.id);
         self.loadInvitationStats(project.id);
+        // Load external invitation stats
+        self.loadExternalInvitationStats(project.id);
     };
 
     // Close survey modal
@@ -1126,6 +1136,12 @@ function ProjectsViewModel() {
         self.surveyResult(null);
         self.invitationStats(null);
         self.invitationList([]);
+        // External reset
+        self.externalEmails('');
+        self.externalEmailTemplateId(null);
+        self.externalInvitationStats(null);
+        self.externalInvitations([]);
+        self.externalSendResult(null);
     };
 
     // Load invitation stats
@@ -1216,6 +1232,156 @@ function ProjectsViewModel() {
             .finally(function() {
                 self.isSurveyLoading(false);
             });
+    };
+
+    // ==================== EXTERNAL SURVEY FUNCTIONS ====================
+
+    // Load external invitation stats
+    self.loadExternalInvitationStats = function(projectId) {
+        fetch('/api/surveys/' + projectId + '/external-invitation-stats', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.externalInvitationStats(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading external invitation stats:', error);
+            });
+
+        // Also load the list
+        self.loadExternalInvitations(projectId);
+    };
+
+    // Load external invitations list
+    self.loadExternalInvitations = function(projectId) {
+        fetch('/api/surveys/' + projectId + '/external-invitations', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.externalInvitations(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading external invitations:', error);
+            });
+    };
+
+    // Send external invitations
+    self.sendExternalInvitations = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var emails = self.externalEmails();
+        if (!emails || emails.trim() === '') {
+            toastr.warning('Lütfen email adresi girin.');
+            return;
+        }
+
+        // Check if project has email template or one is selected
+        var templateId = self.externalEmailTemplateId();
+        if (!templateId && !project.emailTemplateId) {
+            toastr.error('Email şablonu seçilmemiş. Proje ayarlarından şablon seçin veya burada bir şablon seçin.');
+            return;
+        }
+
+        self.isExternalSending(true);
+        self.externalSendResult(null);
+
+        var baseUrl = window.location.origin + '/Survey/Form';
+        var dto = {
+            emails: emails,
+            emailTemplateId: templateId || null,
+            baseUrl: baseUrl
+        };
+
+        fetch('/api/surveys/' + project.id + '/send-external-invitations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            self.externalSendResult(result);
+            if (result.success) {
+                toastr.success(result.message);
+                self.externalEmails(''); // Clear input
+                // Refresh stats and list
+                self.loadExternalInvitationStats(project.id);
+            } else {
+                toastr.error(result.message || 'Gönderim sırasında hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error sending external invitations:', error);
+            toastr.error('Davetiye gönderilirken bir hata oluştu.');
+            self.externalSendResult({ success: false, message: 'Beklenmeyen bir hata oluştu.' });
+        })
+        .finally(function() {
+            self.isExternalSending(false);
+        });
+    };
+
+    // Retry failed external invitations
+    self.retryExternalFailed = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var stats = self.externalInvitationStats();
+        if (!stats || stats.failed === 0) {
+            toastr.info('Yeniden gönderilecek başarısız davetiye yok.');
+            return;
+        }
+
+        if (!confirm('Toplam ' + stats.failed + ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?')) {
+            return;
+        }
+
+        self.isExternalRetrying(true);
+
+        var baseUrl = window.location.origin + '/Survey/Form';
+        var dto = { baseUrl: baseUrl };
+
+        fetch('/api/surveys/' + project.id + '/retry-external-failed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(dto)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            if (result.success) {
+                toastr.success(result.message);
+                // Refresh stats and list
+                self.loadExternalInvitationStats(project.id);
+            } else {
+                toastr.error(result.message || 'Yeniden gönderim sırasında hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error retrying external invitations:', error);
+            toastr.error('Yeniden gönderim sırasında bir hata oluştu.');
+        })
+        .finally(function() {
+            self.isExternalRetrying(false);
+        });
+    };
+
+    // Get external invitation status text
+    self.getExternalStatusText = function(status) {
+        var map = {
+            'Pending': 'Bekliyor',
+            'Sent': 'Gönderildi',
+            'Failed': 'Başarısız'
+        };
+        return map[status] || status;
+    };
+
+    // Get external invitation status badge
+    self.getExternalStatusBadge = function(status) {
+        var map = {
+            'Pending': 'bg-warning text-dark',
+            'Sent': 'bg-success',
+            'Failed': 'bg-danger'
+        };
+        return map[status] || 'bg-secondary';
     };
 
     // Send survey invitations

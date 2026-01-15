@@ -1,9 +1,9 @@
-function CustomerBranchesViewModel() {
+function CustomerProjectsViewModel() {
     var self = this;
 
     // State
     self.isLoading = ko.observable(true);
-    self.branches = ko.observableArray([]);
+    self.projects = ko.observableArray([]);
 
     // Helper
     self.getScoreClass = function(score) {
@@ -13,32 +13,32 @@ function CustomerBranchesViewModel() {
         return 'text-muted';
     };
 
-    // Load branches
-    self.loadBranches = function() {
+    // Load projects
+    self.loadProjects = function() {
         self.isLoading(true);
 
-        customerApiFetch('/api/customer/portal/branches')
+        customerApiFetch('/api/customer/portal/projects')
             .then(function(response) {
                 if (!response.ok) {
-                    throw new Error('Şubeler yüklenemedi');
+                    throw new Error('Projeler yüklenemedi');
                 }
                 return response.json();
             })
             .then(function(data) {
-                self.branches(data || []);
+                self.projects(data || []);
                 self.isLoading(false);
             })
             .catch(function(error) {
-                console.error('Branches load error:', error);
+                console.error('Projects load error:', error);
                 self.isLoading(false);
             });
     };
 
     // Initialize
-    self.loadBranches();
+    self.loadProjects();
 }
 
 // Apply bindings when DOM is ready
 $(document).ready(function() {
-    ko.applyBindings(new CustomerBranchesViewModel(), document.getElementById('customer-branches-app'));
+    ko.applyBindings(new CustomerProjectsViewModel(), document.getElementById('customer-projects-app'));
 });

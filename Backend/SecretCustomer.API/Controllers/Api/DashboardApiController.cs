@@ -48,7 +48,7 @@ public class DashboardApiController : BaseApiController
     }
 
     [HttpGet("team-leader/{branchId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetTeamLeaderDashboard(
         int branchId,
         [FromQuery] DateTime? startDate = null,
@@ -251,7 +251,7 @@ public class DashboardApiController : BaseApiController
             }
             else
             {
-                // Operator/Viewer: Sadece kendi değerlendirmeleri
+                // Operator: Sadece kendi değerlendirmeleri
                 targetUserIds.Add(personnelId);
             }
 
@@ -290,7 +290,7 @@ public class DashboardApiController : BaseApiController
                 {
                     e.Id,
                     CallDate = e.CallDate ?? e.CreatedAt,
-                    Score = e.TotalScore ?? 0,
+                    Score = e.ScorePercentage ?? 0,
                     PersonnelName = e.Assignment!.AssignedCustomerPersonnel != null
                         ? e.Assignment.AssignedCustomerPersonnel.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.LastName
                         : "",

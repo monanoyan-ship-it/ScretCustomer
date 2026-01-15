@@ -27,6 +27,7 @@ function EvaluationsViewModel() {
     self.evalTempFilter = {
         status: ko.observable(''),
         searchTerm: ko.observable(''),
+        personnelName: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         selectedDateRangeType: ko.observable(null)
@@ -36,6 +37,7 @@ function EvaluationsViewModel() {
     self.evalFilterLabels = {
         status: 'Durum',
         search: 'Arama',
+        personnel: 'Temsilci',
         dateRange: 'Tarih'
     };
 
@@ -73,6 +75,7 @@ function EvaluationsViewModel() {
         switch (type) {
             case 'status': return self.evalTempFilter.status();
             case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
+            case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
             case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
             default: return false;
         }
@@ -183,6 +186,14 @@ function EvaluationsViewModel() {
                 self.evalTempFilter.searchTerm('');
                 break;
 
+            case 'personnel':
+                var personnelName = self.evalTempFilter.personnelName().trim();
+                if (!personnelName) return;
+                filter.value = personnelName;
+                filter.displayValue = '"' + personnelName + '"';
+                self.evalTempFilter.personnelName('');
+                break;
+
             case 'dateRange':
                 var startDate = self.evalTempFilter.startDate();
                 var endDate = self.evalTempFilter.endDate();
@@ -218,6 +229,7 @@ function EvaluationsViewModel() {
         self.evalSelectedFilterType('');
         self.evalTempFilter.status('');
         self.evalTempFilter.searchTerm('');
+        self.evalTempFilter.personnelName('');
         self.evalTempFilter.startDate('');
         self.evalTempFilter.endDate('');
         self.evalTempFilter.selectedDateRangeType(null);
@@ -413,10 +425,12 @@ function EvaluationsViewModel() {
         // Aktif filtreleri çıkar
         var searchFilter = filters.find(function(f) { return f.type === 'search'; });
         var statusFilter = filters.find(function(f) { return f.type === 'status'; });
+        var personnelFilter = filters.find(function(f) { return f.type === 'personnel'; });
         var dateFilter = filters.find(function(f) { return f.type === 'dateRange'; });
 
         var search = searchFilter ? searchFilter.value.toLowerCase() : '';
         var status = statusFilter ? statusFilter.value : '';
+        var personnelName = personnelFilter ? personnelFilter.value.toLowerCase() : '';
         var dateFrom = dateFilter && dateFilter.value.start ? dateFilter.value.start : '';
         var dateTo = dateFilter && dateFilter.value.end ? dateFilter.value.end : '';
 
@@ -429,6 +443,12 @@ function EvaluationsViewModel() {
                                    (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0 ||
                                    (e.callId || '').toLowerCase().indexOf(search) >= 0;
                 if (!matchesSearch) return false;
+            }
+            // Temsilci adı filtresi
+            if (personnelName) {
+                var matchesPersonnel = (e.evaluatedPersonnelName || '').toLowerCase().indexOf(personnelName) >= 0 ||
+                                       (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(personnelName) >= 0;
+                if (!matchesPersonnel) return false;
             }
             // Durum filtresi
             if (status && e.status !== status) return false;

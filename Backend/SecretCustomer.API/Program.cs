@@ -116,13 +116,13 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Admin"));
 
     options.AddPolicy("TeamManagement", policy =>
-        policy.RequireRole("Admin", "TeamLeader"));
+        policy.RequireRole("Admin", "QualitySpecialist"));
 
     options.AddPolicy("CanEvaluate", policy =>
-        policy.RequireRole("Admin", "TeamLeader", "Evaluator"));
+        policy.RequireRole("Admin", "QualitySpecialist", "Evaluator"));
 
     options.AddPolicy("FieldWorkerAccess", policy =>
-        policy.RequireRole("Admin", "TeamLeader", "FieldWorker"));
+        policy.RequireRole("Admin", "QualitySpecialist", "FieldWorker"));
 
     options.AddPolicy("Authenticated", policy =>
         policy.RequireAuthenticatedUser());
@@ -194,8 +194,10 @@ builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
+builder.Services.AddScoped<IPerformanceSettingsService, PerformanceSettingsService>();
 builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IPersonnelRequestService, PersonnelRequestService>();
+builder.Services.AddScoped<ISupportRequestService, SupportRequestService>();
 builder.Services.AddScoped<ISavedFilterService, SavedFilterService>();
 builder.Services.AddScoped<IDealerService, DealerService>();
 builder.Services.AddScoped<IDealerRequestService, DealerRequestService>();

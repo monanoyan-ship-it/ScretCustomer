@@ -1,0 +1,220 @@
+@* Support Request Widget - Floating Button + Modal *@
+
+<div id="support-request-widget">
+    <!-- Floating Support Button -->
+    <button type="button" class="btn btn-primary support-request-btn shadow-lg"
+            data-bind="click: openModal, attr: { title: T('SupportRequest.SendRequest') }">
+        <i class="bi bi-chat-left-dots fs-5"></i>
+        <!-- ko if: unreadCount() > 0 -->
+        <span class="support-badge" data-bind="text: unreadCount"></span>
+        <!-- /ko -->
+    </button>
+
+    <!-- Support Request Modal -->
+    <div class="modal fade" id="supportRequestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-chat-left-dots me-2"></i>
+                        <span data-bind="text: T('SupportRequest.Title')"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <button class="nav-link" data-bind="css: { active: activeTab() === 'new' }, click: function() { activeTab('new'); }">
+                                <i class="bi bi-plus-circle me-1"></i> <span data-bind="text: T('SupportRequest.New')"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bind="css: { active: activeTab() === 'my' }, click: function() { activeTab('my'); loadMyRequests(); }">
+                                <i class="bi bi-list-ul me-1"></i> <span data-bind="text: T('SupportRequest.MyRequests')"></span>
+                                <!-- ko if: unreadCount() > 0 -->
+                                <span class="badge bg-danger ms-1" data-bind="text: unreadCount"></span>
+                                <!-- /ko -->
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- New Request Tab -->
+                        <div data-bind="visible: activeTab() === 'new'">
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <span data-bind="text: T('SupportRequest.Info')"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <span data-bind="text: T('SupportRequest.YourMessage')"></span> <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" rows="5"
+                                          data-bind="value: newMessage, attr: { placeholder: T('SupportRequest.MessagePlaceholder') }"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">
+                                    <i class="bi bi-link-45deg me-1"></i> <span data-bind="text: T('SupportRequest.PageUrl')"></span>
+                                </label>
+                                <input type="text" class="form-control form-control-sm" readonly data-bind="value: pageUrl" />
+                            </div>
+                        </div>
+
+                        <!-- My Requests Tab -->
+                        <div data-bind="visible: activeTab() === 'my'">
+                            <!-- Loading -->
+                            <div data-bind="visible: isLoadingRequests" class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                            </div>
+
+                            <!-- Requests List -->
+                            <div data-bind="visible: !isLoadingRequests() && myRequests().length > 0, foreach: myRequests">
+                                <div class="request-item" data-bind="click: $parent.viewRequest, css: { 'unread': hasResponse && !isReadByUser }">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge" data-bind="text: statusText, css: statusCssClass"></span>
+                                        <small class="text-muted" data-bind="text: $parent.formatDate(createdAt)"></small>
+                                    </div>
+                                    <p class="mb-0 mt-1 small text-truncate" data-bind="text: message"></p>
+                                    <!-- ko if: hasResponse && !isReadByUser -->
+                                    <span class="badge bg-danger mt-1">
+                                        <i class="bi bi-envelope-fill me-1"></i><span data-bind="text: $parent.T('SupportRequest.NewResponse')"></span>
+                                    </span>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div data-bind="visible: !isLoadingRequests() && myRequests().length === 0" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2" data-bind="text: T('SupportRequest.NoRequestsYet')"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <span data-bind="text: T('Common.Close')"></span>
+                    </button>
+                    <!-- ko if: activeTab() === 'new' -->
+                    <button type="button" class="btn btn-primary" data-bind="click: sendRequest, disable: isSending() || !newMessage()">
+                        <!-- ko if: isSending -->
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        <!-- /ko -->
+                        <!-- ko ifnot: isSending -->
+                        <i class="bi bi-send me-1"></i>
+                        <!-- /ko -->
+                        <span data-bind="text: T('SupportRequest.Send')"></span>
+                    </button>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Detail Modal -->
+    <div class="modal fade" id="supportRequestDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-chat-left-dots me-2"></i>
+                        <span data-bind="text: T('SupportRequest.Detail')"></span> #<span data-bind="text: selectedRequest() ? selectedRequest().id : ''"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <!-- ko with: selectedRequest -->
+                <div class="modal-body">
+                    <!-- My Message -->
+                    <div class="card mb-3">
+                        <div class="card-header py-2 small">
+                            <i class="bi bi-chat-text me-1"></i> <span data-bind="text: $parent.T('SupportRequest.YourMessage')"></span>
+                            <span class="float-end text-muted" data-bind="text: $parent.formatDate(createdAt)"></span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0 white-space-pre-wrap" data-bind="text: message"></p>
+                        </div>
+                    </div>
+
+                    <!-- Response (if any) -->
+                    <!-- ko if: adminResponse -->
+                    <div class="card border-success">
+                        <div class="card-header py-2 small bg-success text-white">
+                            <i class="bi bi-reply me-1"></i> <span data-bind="text: $parent.T('SupportRequest.AdminResponse')"></span>
+                            <span class="float-end" data-bind="text: $parent.formatDate(respondedAt)"></span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0 white-space-pre-wrap" data-bind="text: adminResponse"></p>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Waiting Response -->
+                    <!-- ko ifnot: adminResponse -->
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-hourglass-split me-1"></i>
+                        <span data-bind="text: $parent.T('SupportRequest.WaitingResponse')"></span>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bind="text: T('Common.Close')"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.support-request-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+.support-request-btn:hover {
+    transform: scale(1.1);
+}
+.support-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.request-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.request-item:hover {
+    background-color: #f8f9fa;
+}
+.request-item:last-child {
+    border-bottom: none;
+}
+.request-item.unread {
+    background-color: #fff3cd;
+}
+.white-space-pre-wrap {
+    white-space: pre-wrap;
+}
+</style>
+
+<script src="~/js/Shared/supportRequestWidget.js"></script>

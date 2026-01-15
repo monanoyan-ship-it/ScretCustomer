@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecretCustomer.API.Controllers;
 
-[Authorize(Roles = "Admin,TeamLeader")]
+[Authorize(Roles = "Admin,QualitySpecialist")]
 public class ReportsController : Controller
 {
     public IActionResult Index()
@@ -37,6 +37,23 @@ public class ReportsController : Controller
     /// Anket Sonuçları - Online Survey Results
     /// </summary>
     public IActionResult SurveyResults()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Performans Takibi - Dinleyici performansları ve firma kota durumları (Admin Only)
+    /// </summary>
+    [Authorize(Roles = "Admin")]
+    public IActionResult PerformanceTracking()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Performansım - QualitySpecialist kendi performansını görür
+    /// </summary>
+    public IActionResult MyPerformance()
     {
         return View();
     }

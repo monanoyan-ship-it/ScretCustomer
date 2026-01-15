@@ -24,6 +24,12 @@ public class CustomerListDto
     public int OrganizationCount { get; set; }
     public int BranchCount { get; set; }
     public int ProjectCount { get; set; }
+
+    // Hedefler ve Kotalar
+    public int? TargetCount { get; set; }
+    public int? DailyQuota { get; set; }
+    public int? WeeklyQuota { get; set; }
+    public int? MonthlyQuota { get; set; }
 }
 
 public class CustomerDto
@@ -46,6 +52,12 @@ public class CustomerDto
     public int ProjectCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    // Hedefler ve Kotalar
+    public int? TargetCount { get; set; }
+    public int? DailyQuota { get; set; }
+    public int? WeeklyQuota { get; set; }
+    public int? MonthlyQuota { get; set; }
 }
 
 public class CreateCustomerDto
@@ -82,6 +94,12 @@ public class CreateCustomerDto
 
     [StringLength(2000)]
     public string? Notes { get; set; }
+
+    // Hedefler ve Kotalar
+    public int? TargetCount { get; set; }
+    public int? DailyQuota { get; set; }
+    public int? WeeklyQuota { get; set; }
+    public int? MonthlyQuota { get; set; }
 }
 
 public class UpdateCustomerDto
@@ -118,4 +136,10 @@ public class UpdateCustomerDto
 
     [StringLength(2000)]
     public string? Notes { get; set; }
+
+    // Hedefler ve Kotalar
+    public int? TargetCount { get; set; }
+    public int? DailyQuota { get; set; }
+    public int? WeeklyQuota { get; set; }
+    public int? MonthlyQuota { get; set; }
 }

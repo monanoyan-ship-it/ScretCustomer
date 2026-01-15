@@ -6,7 +6,7 @@ namespace SecretCustomer.API.Controllers;
 /// <summary>
 /// Eğitim yönetimi MVC controller
 /// </summary>
-[Authorize(Roles = "Admin,TeamLeader")]
+[Authorize(Roles = "Admin,QualitySpecialist")]
 public class TrainingsController : Controller
 {
     /// <summary>

@@ -161,6 +161,27 @@
                         @Html.T("CustomerPortal.Menu.Reports", "Raporlar")
                     </a>
                 </li>
+                @if (User.IsInRole("CustomerManager"))
+                {
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Penalties" ? "active" : "")" href="/CustomerPortal/Penalties">
+                        <i class="bi bi-card-checklist text-warning"></i>
+                        @Html.T("CustomerPortal.Menu.Penalties", "Cezali KL Raporu")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Suggestions" ? "active" : "")" href="/CustomerPortal/Suggestions">
+                        <i class="bi bi-chat-quote text-info"></i>
+                        @Html.T("CustomerPortal.Menu.Suggestions", "Oneriler Raporu")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PersonnelReportCard" ? "active" : "")" href="/CustomerPortal/PersonnelReportCard">
+                        <i class="bi bi-person-badge text-primary"></i>
+                        @Html.T("CustomerPortal.Menu.PersonnelReportCard", "Temsilci Karnesi")
+                    </a>
+                </li>
+                }
             </ul>
 
         </nav>
@@ -226,6 +247,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Support Request Widget -->
+    <partial name="_SupportRequestWidget" />
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -303,6 +327,32 @@
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                if (response.status === 401) {
+                    window.location.href = '/Account/Login';
+                    throw new Error('Unauthorized');
+                }
+                if (!response.ok) throw new Error('Download failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            });
+        }
+
+        // API helper for downloading files (GET request)
+        function customerApiDownloadGet(url, filename) {
+            return fetch(url, {
+                method: 'GET',
+                credentials: 'include'
             })
             .then(function(response) {
                 if (response.status === 401) {

@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Enums;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -12,7 +14,7 @@ public class SurveyInvitation : BaseEntity
     /// <summary>
     /// Gönderim durumu: Pending, Sent, Failed
     /// </summary>
-    public string Status { get; set; } = "Pending";
+    public int StatusId { get; set; } = SurveyInvitationStatuses.Ids.Pending;
 
     /// <summary>
     /// Hata mesajı (başarısız olursa)
@@ -57,36 +59,4 @@ public class SurveyInvitation : BaseEntity
     // Navigation
     public virtual Project? Project { get; set; }
     public virtual CustomerPersonnel? CustomerPersonnel { get; set; }
-}
-
-/// <summary>
-/// Davetiye durumları
-/// </summary>
-public static class SurveyInvitationStatus
-{
-    public const string Pending = "Pending";
-    public const string Sent = "Sent";
-    public const string Failed = "Failed";
-
-    /// <summary>
-    /// Türkçe durum adını döndürür
-    /// </summary>
-    public static string GetDisplayName(string status) => status switch
-    {
-        Pending => "Bekliyor",
-        Sent => "Gönderildi",
-        Failed => "Gönderilemedi",
-        _ => status
-    };
-
-    /// <summary>
-    /// CSS badge sınıfını döndürür
-    /// </summary>
-    public static string GetBadgeClass(string status) => status switch
-    {
-        Pending => "bg-warning text-dark",
-        Sent => "bg-success",
-        Failed => "bg-danger",
-        _ => "bg-secondary"
-    };
 }

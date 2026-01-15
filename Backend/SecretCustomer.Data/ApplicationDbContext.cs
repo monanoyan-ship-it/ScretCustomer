@@ -98,6 +98,13 @@ public class ApplicationDbContext : DbContext
 
     // Survey Invitations (Anket Davetiyeleri)
     public DbSet<SurveyInvitation> SurveyInvitations { get; set; }
+    public DbSet<SurveyExternalInvitation> SurveyExternalInvitations { get; set; }
+
+    // Performance Settings (Performans Ayarları)
+    public DbSet<PerformanceSettings> PerformanceSettings { get; set; }
+
+    // Support Requests (Destek Talepleri)
+    public DbSet<SupportRequest> SupportRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -169,6 +176,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Dealer>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<DealerRequest>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<EvaluationAttachment>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Performance Settings
+        modelBuilder.Entity<PerformanceSettings>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Support Requests
+        modelBuilder.Entity<SupportRequest>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== CustomerOrganization İlişkileri =====
 
@@ -361,7 +374,60 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SurveyInvitation>()
             .HasIndex(si => si.CustomerPersonnelId);
         modelBuilder.Entity<SurveyInvitation>()
-            .HasIndex(si => si.Status);
+            .HasIndex(si => si.StatusId);
+
+        // ===== SurveyExternalInvitation İlişkileri =====
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasOne(sei => sei.Project)
+            .WithMany()
+            .HasForeignKey(sei => sei.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasOne(sei => sei.Evaluation)
+            .WithMany()
+            .HasForeignKey(sei => sei.EvaluationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // SurveyExternalInvitation indexleri
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasIndex(sei => sei.ProjectId);
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasIndex(sei => sei.Token)
+            .IsUnique();
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasIndex(sei => sei.StatusId);
+        modelBuilder.Entity<SurveyExternalInvitation>()
+            .HasIndex(sei => sei.Email);
+
+        // ===== SupportRequest İlişkileri =====
+        modelBuilder.Entity<SupportRequest>()
+            .HasOne(sr => sr.User)
+            .WithMany()
+            .HasForeignKey(sr => sr.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SupportRequest>()
+            .HasOne(sr => sr.CustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(sr => sr.CustomerPersonnelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SupportRequest>()
+            .HasOne(sr => sr.RespondedByUser)
+            .WithMany()
+            .HasForeignKey(sr => sr.RespondedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // SupportRequest indexleri
+        modelBuilder.Entity<SupportRequest>()
+            .HasIndex(sr => sr.StatusId);
+        modelBuilder.Entity<SupportRequest>()
+            .HasIndex(sr => sr.UserId);
+        modelBuilder.Entity<SupportRequest>()
+            .HasIndex(sr => sr.CustomerPersonnelId);
+        modelBuilder.Entity<SupportRequest>()
+            .HasIndex(sr => sr.CreatedAt);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

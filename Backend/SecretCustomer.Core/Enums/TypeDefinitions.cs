@@ -70,7 +70,7 @@ public static class UserRoles
 public static class CustomerPersonnelRoles
 {
     public static readonly TypeItem Manager = new(1, "CustomerManager", "CustomerPersonnel.Role.Manager", "Musteri yoneticisi - tum raporlari gorebilir", "bi-person-fill-gear", "bg-info", 1, isDefault: true);
-    public static readonly TypeItem Supervisor = new(2, "CustomerSupervisor", "CustomerPersonnel.Role.Supervisor", "Musteri supervizoru - kendi takiminin raporlarini gorebilir", "bi-person-lines-fill", "bg-warning text-dark", 2);
+    public static readonly TypeItem Supervisor = new(2, "CustomerSupervisor", "CustomerPersonnel.Role.Supervisor", "Takim lideri - kendi takiminin raporlarini gorebilir", "bi-person-lines-fill", "bg-warning text-dark", 2);
     public static readonly TypeItem Operator = new(3, "CustomerOperator", "CustomerPersonnel.Role.Operator", "Musteri operatoru - sadece kendi raporlarini gorebilir", "bi-person", "bg-secondary", 3);
 
     public static IEnumerable<TypeItem> All => new[] { Manager, Supervisor, Operator };
@@ -1575,5 +1575,51 @@ public static class SelectionTypes
     {
         public const int Single = 1;
         public const int Multiple = 2;
+    }
+}
+
+// ============================================================
+// SURVEY INVITATION STATUSES (Anket Davetiyesi Durumları)
+// ============================================================
+public static class SurveyInvitationStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", "SurveyInvitationStatus.Pending", "Bekliyor", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Sent = new(2, "Sent", "SurveyInvitationStatus.Sent", "Gönderildi", "bi-check-circle", "bg-success", 2);
+    public static readonly TypeItem Failed = new(3, "Failed", "SurveyInvitationStatus.Failed", "Başarısız", "bi-x-circle", "bg-danger", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Pending, Sent, Failed };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int Sent = 2;
+        public const int Failed = 3;
+    }
+}
+
+// ============================================================
+// SUPPORT REQUEST STATUSES (Destek Talebi Durumları)
+// ============================================================
+public static class SupportRequestStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", "SupportRequestStatus.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem InProgress = new(2, "InProgress", "SupportRequestStatus.InProgress", "İnceleniyor", "bi-eye", "bg-info", 2);
+    public static readonly TypeItem Resolved = new(3, "Resolved", "SupportRequestStatus.Resolved", "Cevaplandı", "bi-check-circle", "bg-success", 3);
+    public static readonly TypeItem Closed = new(4, "Closed", "SupportRequestStatus.Closed", "Kapatıldı", "bi-x-circle", "bg-secondary", 4);
+
+    public static IEnumerable<TypeItem> All => new[] { Pending, InProgress, Resolved, Closed };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int InProgress = 2;
+        public const int Resolved = 3;
+        public const int Closed = 4;
     }
 }

@@ -15,4 +15,12 @@ public class SettingsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Performans Ayarları - Proje tipi bazlı performans hedefleri
+    /// </summary>
+    public IActionResult PerformanceSettings()
+    {
+        return View();
+    }
 }

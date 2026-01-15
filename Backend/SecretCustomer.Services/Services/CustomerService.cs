@@ -80,7 +80,12 @@ public class CustomerService : ICustomerService
                 PersonnelCount = c.Personnel.Count(p => !p.IsDeleted),
                 OrganizationCount = c.Organizations.Count(o => !o.IsDeleted),
                 BranchCount = c.Organizations.Count(o => !o.IsDeleted),
-                ProjectCount = c.Projects.Count(p => !p.IsDeleted)
+                ProjectCount = c.Projects.Count(p => !p.IsDeleted),
+                // Hedefler ve Kotalar
+                TargetCount = c.TargetCount,
+                DailyQuota = c.DailyQuota,
+                WeeklyQuota = c.WeeklyQuota,
+                MonthlyQuota = c.MonthlyQuota
             })
             .ToListAsync();
     }
@@ -119,6 +124,10 @@ public class CustomerService : ICustomerService
             ContractStartDate = ToUtc(createCustomerDto.ContractStartDate),
             ContractEndDate = ToUtc(createCustomerDto.ContractEndDate),
             Notes = createCustomerDto.Notes,
+            TargetCount = createCustomerDto.TargetCount,
+            DailyQuota = createCustomerDto.DailyQuota,
+            WeeklyQuota = createCustomerDto.WeeklyQuota,
+            MonthlyQuota = createCustomerDto.MonthlyQuota,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -160,6 +169,10 @@ public class CustomerService : ICustomerService
         customer.ContractStartDate = ToUtc(updateCustomerDto.ContractStartDate);
         customer.ContractEndDate = ToUtc(updateCustomerDto.ContractEndDate);
         customer.Notes = updateCustomerDto.Notes;
+        customer.TargetCount = updateCustomerDto.TargetCount;
+        customer.DailyQuota = updateCustomerDto.DailyQuota;
+        customer.WeeklyQuota = updateCustomerDto.WeeklyQuota;
+        customer.MonthlyQuota = updateCustomerDto.MonthlyQuota;
 
         var updatedCustomer = await _customerRepository.UpdateAsync(customer);
         return MapToDto(updatedCustomer);
@@ -197,7 +210,11 @@ public class CustomerService : ICustomerService
             BranchCount = customer.Organizations?.Count(o => !o.IsDeleted) ?? 0, // Now shows organization count
             ProjectCount = customer.Projects?.Count(p => !p.IsDeleted) ?? 0,
             CreatedAt = customer.CreatedAt,
-            UpdatedAt = customer.UpdatedAt
+            UpdatedAt = customer.UpdatedAt,
+            TargetCount = customer.TargetCount,
+            DailyQuota = customer.DailyQuota,
+            WeeklyQuota = customer.WeeklyQuota,
+            MonthlyQuota = customer.MonthlyQuota
         };
     }
 

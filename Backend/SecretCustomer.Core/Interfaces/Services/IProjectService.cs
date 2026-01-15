@@ -58,11 +58,6 @@ public interface IProjectService
     Task<ProjectDetailDto> ManageTeamAsync(int projectId, ManageProjectTeamDto dto);
 
     /// <summary>
-    /// Proje subelerini yonet
-    /// </summary>
-    Task<ProjectDetailDto> ManageBranchesAsync(int projectId, ManageProjectBranchesDto dto);
-
-    /// <summary>
     /// Proje istatistiklerini getir
     /// </summary>
     Task<ProjectDetailDto> GetStatisticsAsync(int projectId, DateTime? startDate = null, DateTime? endDate = null);

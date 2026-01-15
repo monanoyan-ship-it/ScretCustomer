@@ -6,7 +6,7 @@ namespace SecretCustomer.API.Controllers;
 /// <summary>
 /// Onay yönetimi MVC controller
 /// </summary>
-[Authorize(Roles = "Admin,TeamLeader")]
+[Authorize(Roles = "Admin,QualitySpecialist")]
 public class ApprovalsController : Controller
 {
     /// <summary>

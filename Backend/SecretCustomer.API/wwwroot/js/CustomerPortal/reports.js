@@ -4,7 +4,7 @@ function CustomerReportsViewModel() {
     // State
     self.isLoading = ko.observable(true);
     self.summary = ko.observable({});
-    self.branchPerformance = ko.observableArray([]);
+    self.projectPerformance = ko.observableArray([]);
     self.monthlyTrend = ko.observableArray([]);
     self.trendChart = null;
 
@@ -41,8 +41,8 @@ function CustomerReportsViewModel() {
                 if (!r.ok) throw new Error('Summary API error: ' + r.status);
                 return r.json();
             }),
-            customerApiFetch('/api/customer/portal/reports/branch-performance' + queryString).then(function(r) {
-                if (!r.ok) throw new Error('Branch performance API error: ' + r.status);
+            customerApiFetch('/api/customer/portal/reports/project-performance' + queryString).then(function(r) {
+                if (!r.ok) throw new Error('Project performance API error: ' + r.status);
                 return r.json();
             }),
             customerApiFetch('/api/customer/portal/reports/monthly-trend' + queryString).then(function(r) {
@@ -52,7 +52,7 @@ function CustomerReportsViewModel() {
         ])
         .then(function(results) {
             self.summary(results[0] || {});
-            self.branchPerformance(results[1] || []);
+            self.projectPerformance(results[1] || []);
             self.monthlyTrend(results[2] || []);
 
             self.isLoading(false);

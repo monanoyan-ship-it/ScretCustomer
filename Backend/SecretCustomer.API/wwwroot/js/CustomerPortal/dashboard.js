@@ -62,7 +62,7 @@ function CustomerDashboardViewModel() {
             self.stats({
                 totalEvaluations: stats.totalEvaluations || 0,
                 averageScore: stats.averageScore || 0,
-                branchCount: stats.branchCount || 0,
+                organizationCount: stats.organizationCount || 0,
                 thisMonthEvaluations: stats.thisMonthEvaluations || 0
             });
 

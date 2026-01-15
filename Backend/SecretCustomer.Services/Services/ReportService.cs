@@ -49,7 +49,7 @@ public class ReportService : IReportService
         }
 
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        // Her proje tipinin kendi rapor sayfası var
+        // /Listenings sayfası Çağrı Denetimi için
         if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
@@ -321,11 +321,6 @@ public class ReportService : IReportService
         worksheet.Cell(row, 3).Style.Font.Bold = true;
         worksheet.Cell(row, 3).Style.Fill.BackgroundColor = XLColor.LightGray;
         worksheet.Range(row, 3, row, 4).Merge();
-
-        worksheet.Cell(row, 5).Value = "Değerlendirme Bilgileri";
-        worksheet.Cell(row, 5).Style.Font.Bold = true;
-        worksheet.Cell(row, 5).Style.Fill.BackgroundColor = XLColor.LightGray;
-        worksheet.Range(row, 5, row, 6).Merge();
         row++;
 
         // Satır 1
@@ -333,8 +328,6 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.CustomerName ?? "-";
         worksheet.Cell(row, 3).Value = "Çağrı ID";
         worksheet.Cell(row, 4).Value = detail.CallId ?? "-";
-        worksheet.Cell(row, 5).Value = "Değerlendiren";
-        worksheet.Cell(row, 6).Value = detail.EvaluatorName ?? "-";
         row++;
 
         // Satır 2
@@ -342,8 +335,6 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.OrganizationName ?? "-";
         worksheet.Cell(row, 3).Value = "Çağrı Tarihi";
         worksheet.Cell(row, 4).Value = detail.CallDate?.ToString("dd.MM.yyyy") ?? "-";
-        worksheet.Cell(row, 5).Value = "Tamamlanma";
-        worksheet.Cell(row, 6).Value = detail.CompletedAt?.ToString("dd.MM.yyyy HH:mm:ss") ?? "-";
         row++;
 
         // Satır 3
@@ -351,8 +342,6 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.EvaluatedPersonnelName ?? "-";
         worksheet.Cell(row, 3).Value = "Süre";
         worksheet.Cell(row, 4).Value = detail.Duration ?? "-";
-        worksheet.Cell(row, 5).Value = "Durum";
-        worksheet.Cell(row, 6).Value = detail.Status ?? "-";
         row++;
 
         row++; // Boş satır
@@ -1025,7 +1014,7 @@ public class ReportService : IReportService
         };
     }
 
-    public async Task<ExcelExportDto> ExportPenaltiesToExcelAsync(PenaltyFilterDto filter)
+    public async Task<ExcelExportDto> ExportPenaltiesToExcelAsync(PenaltyFilterDto filter, bool excludeEvaluator = false)
     {
         var report = await GetPenaltiesReportAsync(filter);
 
@@ -1047,18 +1036,27 @@ public class ReportService : IReportService
 
         // Penalties detail sheet
         var penaltiesSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.PenaltyEvaluations", defaultValue: "Cezalı Değerlendirmeler"));
-        var headers = new[]
+
+        // Headers - Değerlendirici kolonu excludeEvaluator true ise eklenmez
+        var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
             await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
-            await _localizationService.GetResourceAsync("Report.PenaltyType", defaultValue: "Ceza Tipi"),
-            await _localizationService.GetResourceAsync("Report.Evaluator", defaultValue: "Değerlendirici"),
-            await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Denetlenen"),
-            await _localizationService.GetResourceAsync("Report.Note", defaultValue: "Not")
+            await _localizationService.GetResourceAsync("Report.PenaltyType", defaultValue: "Ceza Tipi")
         };
+
+        if (!excludeEvaluator)
+        {
+            headersList.Add(await _localizationService.GetResourceAsync("Report.Evaluator", defaultValue: "Değerlendirici"));
+        }
+
+        headersList.Add(await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Denetlenen"));
+        headersList.Add(await _localizationService.GetResourceAsync("Report.Note", defaultValue: "Not"));
+
+        var headers = headersList.ToArray();
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -1070,17 +1068,23 @@ public class ReportService : IReportService
         int row = 2;
         foreach (var penalty in report.Penalties)
         {
-            penaltiesSheet.Cell(row, 1).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
-            penaltiesSheet.Cell(row, 2).Value = penalty.ProjectName;
-            penaltiesSheet.Cell(row, 3).Value = penalty.ChecklistName ?? "";
-            penaltiesSheet.Cell(row, 4).Value = penalty.GroupName;
-            penaltiesSheet.Cell(row, 5).Value = penalty.QuestionText;
-            penaltiesSheet.Cell(row, 6).Value = penalty.PenaltyType == "YellowCard"
+            int col = 1;
+            penaltiesSheet.Cell(row, col++).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.ProjectName;
+            penaltiesSheet.Cell(row, col++).Value = penalty.ChecklistName ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.GroupName;
+            penaltiesSheet.Cell(row, col++).Value = penalty.QuestionText;
+            penaltiesSheet.Cell(row, col++).Value = penalty.PenaltyType == "YellowCard"
                 ? await _localizationService.GetResourceAsync("Report.YellowCard", defaultValue: "Sarı Kart")
                 : await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart");
-            penaltiesSheet.Cell(row, 7).Value = penalty.EvaluatorName ?? "";
-            penaltiesSheet.Cell(row, 8).Value = penalty.EvaluatedPersonnelName ?? "";
-            penaltiesSheet.Cell(row, 9).Value = penalty.Notes ?? "";
+
+            if (!excludeEvaluator)
+            {
+                penaltiesSheet.Cell(row, col++).Value = penalty.EvaluatorName ?? "";
+            }
+
+            penaltiesSheet.Cell(row, col++).Value = penalty.EvaluatedPersonnelName ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.Notes ?? "";
             row++;
         }
         penaltiesSheet.Columns().AdjustToContents();
@@ -1304,6 +1308,9 @@ public class ReportService : IReportService
         // Apply filters
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
 
         if (filter.StartDate.HasValue)
             query = query.Where(e => e.CompletedAt >= filter.StartDate.Value);
@@ -1614,6 +1621,9 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (filter.CustomerId.HasValue)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+
         if (filter.ChecklistId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ChecklistId == filter.ChecklistId.Value);
 
@@ -1727,6 +1737,9 @@ public class ReportService : IReportService
         if (filter.ProjectId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
 
+        if (filter.CustomerId.HasValue)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+
         if (filter.ChecklistId.HasValue)
             query = query.Where(a => a.Evaluation.Assignment.ChecklistId == filter.ChecklistId.Value);
 
@@ -1764,7 +1777,7 @@ public class ReportService : IReportService
             .ToList();
     }
 
-    public async Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter)
+    public async Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter, bool excludeEvaluator = false)
     {
         // Remove pagination for export
         filter.Page = 1;
@@ -1785,18 +1798,27 @@ public class ReportService : IReportService
         summarySheet.Cell(3, 2).Value = report.Summary.TotalSuggestions;
         summarySheet.Cell(4, 1).Value = await _localizationService.GetResourceAsync("Report.EvaluationsWithSuggestions", defaultValue: "Önerili Değerlendirme Sayısı:");
         summarySheet.Cell(4, 2).Value = report.Summary.TotalEvaluationsWithSuggestions;
-        summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.UniqueEvaluators", defaultValue: "Değerlendirici Sayısı:");
-        summarySheet.Cell(5, 2).Value = report.Summary.UniqueEvaluators;
-        summarySheet.Cell(6, 1).Value = await _localizationService.GetResourceAsync("Report.UniquePersonnel", defaultValue: "Personel Sayısı:");
-        summarySheet.Cell(6, 2).Value = report.Summary.UniquePersonnel;
-        summarySheet.Cell(7, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi:");
-        summarySheet.Cell(7, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+
+        int summaryRow = 5;
+        if (!excludeEvaluator)
+        {
+            summarySheet.Cell(summaryRow, 1).Value = await _localizationService.GetResourceAsync("Report.UniqueEvaluators", defaultValue: "Değerlendirici Sayısı:");
+            summarySheet.Cell(summaryRow, 2).Value = report.Summary.UniqueEvaluators;
+            summaryRow++;
+        }
+
+        summarySheet.Cell(summaryRow, 1).Value = await _localizationService.GetResourceAsync("Report.UniquePersonnel", defaultValue: "Personel Sayısı:");
+        summarySheet.Cell(summaryRow, 2).Value = report.Summary.UniquePersonnel;
+        summaryRow++;
+        summarySheet.Cell(summaryRow, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi:");
+        summarySheet.Cell(summaryRow, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         summarySheet.Columns().AdjustToContents();
 
-        // Details sheet
+        // Details sheet - Değerlendirici kolonu excludeEvaluator true ise eklenmez
         var detailsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.SuggestionsList", defaultValue: "Öneriler Listesi"));
-        var headers = new[]
+
+        var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
             await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
@@ -1807,12 +1829,19 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.Suggestion", defaultValue: "Öneri"),
             await _localizationService.GetResourceAsync("Report.GivenPoints", defaultValue: "Verilen Puan"),
             await _localizationService.GetResourceAsync("Report.MaxPoints", defaultValue: "Maks Puan"),
-            await _localizationService.GetResourceAsync("Report.Percentage", defaultValue: "Yüzde"),
-            await _localizationService.GetResourceAsync("Report.Evaluator", defaultValue: "Değerlendirici"),
-            await _localizationService.GetResourceAsync("Report.Personnel", defaultValue: "Personel"),
-            await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"),
-            await _localizationService.GetResourceAsync("Report.Penalty", defaultValue: "Ceza")
+            await _localizationService.GetResourceAsync("Report.Percentage", defaultValue: "Yüzde")
         };
+
+        if (!excludeEvaluator)
+        {
+            headersList.Add(await _localizationService.GetResourceAsync("Report.Evaluator", defaultValue: "Değerlendirici"));
+        }
+
+        headersList.Add(await _localizationService.GetResourceAsync("Report.Personnel", defaultValue: "Personel"));
+        headersList.Add(await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"));
+        headersList.Add(await _localizationService.GetResourceAsync("Report.Penalty", defaultValue: "Ceza"));
+
+        var headers = headersList.ToArray();
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -1824,20 +1853,26 @@ public class ReportService : IReportService
         int row = 2;
         foreach (var item in report.Suggestions)
         {
-            detailsSheet.Cell(row, 1).Value = item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
-            detailsSheet.Cell(row, 2).Value = item.ProjectName;
-            detailsSheet.Cell(row, 3).Value = item.ChecklistName;
-            detailsSheet.Cell(row, 4).Value = item.GroupName;
-            detailsSheet.Cell(row, 5).Value = item.QuestionText;
-            detailsSheet.Cell(row, 6).Value = item.Notes ?? "";
-            detailsSheet.Cell(row, 7).Value = item.RecommendationNotes ?? "";
-            detailsSheet.Cell(row, 8).Value = item.GivenPoints ?? 0;
-            detailsSheet.Cell(row, 9).Value = item.MaxPoints ?? 0;
-            detailsSheet.Cell(row, 10).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F1}%" : "";
-            detailsSheet.Cell(row, 11).Value = item.EvaluatorName ?? "";
-            detailsSheet.Cell(row, 12).Value = item.EvaluatedPersonnelName ?? "";
-            detailsSheet.Cell(row, 13).Value = item.CallId ?? "";
-            detailsSheet.Cell(row, 14).Value = item.PenaltyType ?? "";
+            int col = 1;
+            detailsSheet.Cell(row, col++).Value = item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            detailsSheet.Cell(row, col++).Value = item.ProjectName;
+            detailsSheet.Cell(row, col++).Value = item.ChecklistName;
+            detailsSheet.Cell(row, col++).Value = item.GroupName;
+            detailsSheet.Cell(row, col++).Value = item.QuestionText;
+            detailsSheet.Cell(row, col++).Value = item.Notes ?? "";
+            detailsSheet.Cell(row, col++).Value = item.RecommendationNotes ?? "";
+            detailsSheet.Cell(row, col++).Value = item.GivenPoints ?? 0;
+            detailsSheet.Cell(row, col++).Value = item.MaxPoints ?? 0;
+            detailsSheet.Cell(row, col++).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F1}%" : "";
+
+            if (!excludeEvaluator)
+            {
+                detailsSheet.Cell(row, col++).Value = item.EvaluatorName ?? "";
+            }
+
+            detailsSheet.Cell(row, col++).Value = item.EvaluatedPersonnelName ?? "";
+            detailsSheet.Cell(row, col++).Value = item.CallId ?? "";
+            detailsSheet.Cell(row, col++).Value = item.PenaltyType ?? "";
             row++;
         }
 
@@ -3031,7 +3066,7 @@ public class ReportService : IReportService
 
         // Davetiye sayısı
         var invitedCount = await _context.SurveyInvitations
-            .Where(si => si.ProjectId == projectId && si.Status == SurveyInvitationStatus.Sent)
+            .Where(si => si.ProjectId == projectId && si.StatusId == SurveyInvitationStatuses.Ids.Sent)
             .Select(si => si.CustomerPersonnelId)
             .Distinct()
             .CountAsync();
@@ -3272,5 +3307,126 @@ public class ReportService : IReportService
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
+    }
+
+    // ===== PERFORMANS TAKİBİ =====
+
+    public async Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync()
+    {
+        var now = DateTime.UtcNow;
+        var todayStart = now.Date;
+        var weekStart = todayStart.AddDays(-(int)todayStart.DayOfWeek + (int)DayOfWeek.Monday);
+        if (todayStart.DayOfWeek == DayOfWeek.Sunday) weekStart = weekStart.AddDays(-7);
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var yearStart = new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var result = new PerformanceTrackingResultDto();
+
+        // 1. Değerlendirici (Evaluator) Performansları
+        var evaluatorStats = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId != null)
+            .GroupBy(e => new { e.EvaluatorId, e.Evaluator!.FirstName, e.Evaluator.LastName })
+            .Select(g => new
+            {
+                EvaluatorId = g.Key.EvaluatorId!.Value,
+                FirstName = g.Key.FirstName,
+                LastName = g.Key.LastName,
+                TodayCount = g.Count(e => e.CompletedAt >= todayStart),
+                WeekCount = g.Count(e => e.CompletedAt >= weekStart),
+                MonthCount = g.Count(e => e.CompletedAt >= monthStart),
+                YearCount = g.Count(e => e.CompletedAt >= yearStart),
+                TotalCount = g.Count(),
+                TotalScore = g.Sum(e => e.ScorePercentage ?? 0),
+                ScoredCount = g.Count(e => e.ScorePercentage != null)
+            })
+            .OrderByDescending(e => e.MonthCount)
+            .ToListAsync();
+
+        result.EvaluatorPerformances = evaluatorStats.Select(e => new EvaluatorPerformanceDto
+        {
+            EvaluatorId = e.EvaluatorId,
+            EvaluatorName = $"{e.FirstName} {e.LastName}".Trim(),
+            TodayCount = e.TodayCount,
+            WeekCount = e.WeekCount,
+            MonthCount = e.MonthCount,
+            YearCount = e.YearCount,
+            TotalCount = e.TotalCount,
+            AverageScore = e.ScoredCount > 0 ? Math.Round(e.TotalScore / e.ScoredCount, 2) : 0
+        }).ToList();
+
+        // 2. Firma Kota Durumları
+        var customerStats = await _context.Customers
+            .Where(c => !c.IsDeleted && c.IsActive)
+            .Select(c => new
+            {
+                c.Id,
+                c.CompanyName,
+                c.Code,
+                c.TargetCount,
+                c.DailyQuota,
+                c.WeeklyQuota,
+                c.MonthlyQuota,
+                TodayCount = _context.Evaluations.Count(e =>
+                    !e.IsDeleted &&
+                    e.StatusId == EvaluationStatuses.Ids.Completed &&
+                    e.Assignment.Project.CustomerId == c.Id &&
+                    e.CompletedAt >= todayStart),
+                WeekCount = _context.Evaluations.Count(e =>
+                    !e.IsDeleted &&
+                    e.StatusId == EvaluationStatuses.Ids.Completed &&
+                    e.Assignment.Project.CustomerId == c.Id &&
+                    e.CompletedAt >= weekStart),
+                MonthCount = _context.Evaluations.Count(e =>
+                    !e.IsDeleted &&
+                    e.StatusId == EvaluationStatuses.Ids.Completed &&
+                    e.Assignment.Project.CustomerId == c.Id &&
+                    e.CompletedAt >= monthStart),
+                TotalCount = _context.Evaluations.Count(e =>
+                    !e.IsDeleted &&
+                    e.StatusId == EvaluationStatuses.Ids.Completed &&
+                    e.Assignment.Project.CustomerId == c.Id)
+            })
+            .OrderByDescending(c => c.MonthCount)
+            .ToListAsync();
+
+        result.CustomerQuotaStatuses = customerStats.Select(c => new CustomerQuotaStatusDto
+        {
+            CustomerId = c.Id,
+            CustomerName = c.CompanyName,
+            CustomerCode = c.Code,
+            TargetCount = c.TargetCount,
+            DailyQuota = c.DailyQuota,
+            WeeklyQuota = c.WeeklyQuota,
+            MonthlyQuota = c.MonthlyQuota,
+            TodayCount = c.TodayCount,
+            WeekCount = c.WeekCount,
+            MonthCount = c.MonthCount,
+            TotalCount = c.TotalCount,
+            TargetCompletionPercentage = c.TargetCount.HasValue && c.TargetCount > 0
+                ? Math.Round((decimal)c.TotalCount / c.TargetCount.Value * 100, 2)
+                : null,
+            DailyQuotaUsagePercentage = c.DailyQuota.HasValue && c.DailyQuota > 0
+                ? Math.Round((decimal)c.TodayCount / c.DailyQuota.Value * 100, 2)
+                : null,
+            WeeklyQuotaUsagePercentage = c.WeeklyQuota.HasValue && c.WeeklyQuota > 0
+                ? Math.Round((decimal)c.WeekCount / c.WeeklyQuota.Value * 100, 2)
+                : null,
+            MonthlyQuotaUsagePercentage = c.MonthlyQuota.HasValue && c.MonthlyQuota > 0
+                ? Math.Round((decimal)c.MonthCount / c.MonthlyQuota.Value * 100, 2)
+                : null
+        }).ToList();
+
+        // 3. Genel Özet
+        result.Summary = new PerformanceSummaryDto
+        {
+            TotalEvaluators = result.EvaluatorPerformances.Count,
+            TotalActiveCustomers = result.CustomerQuotaStatuses.Count,
+            TotalTodayEvaluations = result.EvaluatorPerformances.Sum(e => e.TodayCount),
+            TotalWeekEvaluations = result.EvaluatorPerformances.Sum(e => e.WeekCount),
+            TotalMonthEvaluations = result.EvaluatorPerformances.Sum(e => e.MonthCount),
+            TotalYearEvaluations = result.EvaluatorPerformances.Sum(e => e.YearCount)
+        };
+
+        return result;
     }
 }

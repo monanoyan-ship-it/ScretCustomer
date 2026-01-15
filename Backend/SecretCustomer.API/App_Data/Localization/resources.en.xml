@@ -1136,9 +1136,6 @@
   <LocaleResource Name="Customer.Role.Operator">
     <Value>Customer Operator</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.Role.Viewer">
-    <Value>Customer Viewer</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.Department">
     <Value>Department</Value>
   </LocaleResource>
@@ -1624,9 +1621,6 @@
   </LocaleResource>
   <LocaleResource Name="Branch.EditBranch">
     <Value>Edit Branch</Value>
-  </LocaleResource>
-  <LocaleResource Name="Branch.BranchName">
-    <Value>Branch Name</Value>
   </LocaleResource>
   <LocaleResource Name="Branch.BranchCode">
     <Value>Branch Code</Value>
@@ -2799,9 +2793,6 @@
   <LocaleResource Name="User.Evaluator">
     <Value>Evaluator</Value>
   </LocaleResource>
-  <LocaleResource Name="User.Viewer">
-    <Value>Viewer</Value>
-  </LocaleResource>
   <LocaleResource Name="User.NoUsers">
     <Value>No users found.</Value>
   </LocaleResource>
@@ -3833,9 +3824,6 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
     <Value>Customer Operator</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Role.Viewer">
-    <Value>Customer Viewer</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.DepartmentPlaceholder">
     <Value>Quality Control</Value>
@@ -7314,17 +7302,11 @@
   <LocaleResource Name="CustomerPersonnel.Edit">
     <Value>Edit</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Manager">
-    <Value>Customer Personnel  Manager</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.New">
     <Value>Customer Personnel  New</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NoPersonnel">
     <Value>Customer Personnel  No Personnel</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Operator">
-    <Value>Customer Personnel  Operator</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.SelectCustomer">
     <Value>Customer Personnel  Select Customer</Value>
@@ -7986,5 +7968,254 @@
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">
     <Value>A pending personnel request already exists for '{0}'. Please contact your administrator.</Value>
+  </LocaleResource>
+  <!-- Performance Settings -->
+  <LocaleResource Name="Menu.PerformanceSettings">
+    <Value>Performance Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.PerformanceTracking">
+    <Value>Performance Tracking</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.PerformanceSettings">
+    <Value>Performance Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.PerformanceSettingsInfo">
+    <Value>You can set daily, weekly, monthly, and yearly evaluation targets for each project type. These targets will be used in the Performance Tracking report.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.Targets">
+    <Value>Targets</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.DailyTarget">
+    <Value>Daily</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.WeeklyTarget">
+    <Value>Weekly</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.MonthlyTarget">
+    <Value>Monthly</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.YearlyTarget">
+    <Value>Yearly</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.ScoreThresholds">
+    <Value>Score Thresholds</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SuccessThreshold">
+    <Value>Success (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.WarningThreshold">
+    <Value>Warning (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.NoProjectTypes">
+    <Value>No project types found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SaveSuccess">
+    <Value>Performance settings saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SaveError">
+    <Value>Error saving settings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.LoadError">
+    <Value>Error loading settings.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SaveAll">
+    <Value>Save All</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PerformanceTracking">
+    <Value>Performance Tracking</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TodayEvaluations">
+    <Value>Today</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.WeekEvaluations">
+    <Value>This Week</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthEvaluations">
+    <Value>This Month</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.YearEvaluations">
+    <Value>This Year</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorPerformance">
+    <Value>Evaluator Performance</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluatorData">
+    <Value>No evaluation data available yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluator">
+    <Value>Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Today">
+    <Value>Today</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Week">
+    <Value>Week</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Month">
+    <Value>Month</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Year">
+    <Value>Year</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Total">
+    <Value>Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AvgScore">
+    <Value>Avg. Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorCount">
+    <Value>Total Evaluators</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CustomerQuotaStatus">
+    <Value>Customer Quota Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoCustomerData">
+    <Value>No customer data available yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Customer">
+    <Value>Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Target">
+    <Value>Target</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Done">
+    <Value>Done</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Completion">
+    <Value>Completion</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DailyQuota">
+    <Value>Daily</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyQuota">
+    <Value>Monthly</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ActiveCustomers">
+    <Value>Active Customers</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadError">
+    <Value>Error loading data.</Value>
+  </LocaleResource>
+
+  <!-- Support Request -->
+  <LocaleResource Name="Menu.SupportRequests">
+    <Value>Support Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Title">
+    <Value>Support Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendRequest">
+    <Value>Send Support Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.New">
+    <Value>New Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.MyRequests">
+    <Value>My Requests</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Info">
+    <Value>Describe your issue or request below. We will get back to you as soon as possible.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.YourMessage">
+    <Value>Your Message</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.MessagePlaceholder">
+    <Value>Please describe your issue or request in detail...</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.PageUrl">
+    <Value>Page URL</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Send">
+    <Value>Send</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NoRequestsYet">
+    <Value>You haven't submitted any support requests yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Detail">
+    <Value>Request Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.AdminResponse">
+    <Value>Admin Response</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.WaitingResponse">
+    <Value>Your request is being reviewed and will be answered as soon as possible.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Sender">
+    <Value>Sender</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Message">
+    <Value>Message</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Status">
+    <Value>Status</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NoRequests">
+    <Value>No support requests found.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SystemUser">
+    <Value>System User</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.CustomerPersonnel">
+    <Value>Customer Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.UserMessage">
+    <Value>User Message</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.WriteResponse">
+    <Value>Write Response</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponsePlaceholder">
+    <Value>Write your response...</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Close">
+    <Value>Close</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Reopen">
+    <Value>Reopen</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendResponse">
+    <Value>Send Response</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.LoadError">
+    <Value>Error loading support requests.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendSuccess">
+    <Value>Your support request has been sent successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendError">
+    <Value>Error sending support request.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NewResponse">
+    <Value>New Response</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponseSent">
+    <Value>Response sent successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponseError">
+    <Value>Error sending response.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.StatusUpdated">
+    <Value>Status updated.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.StatusError">
+    <Value>Error updating status.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.InProgress">
+    <Value>In Progress</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Resolved">
+    <Value>Resolved</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Closed">
+    <Value>Closed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllStatuses">
+    <Value>All Statuses</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllSenders">
+    <Value>All Senders</Value>
   </LocaleResource>
 </Language>

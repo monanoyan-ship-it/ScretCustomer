@@ -128,21 +128,8 @@ public class ProjectDto
 /// </summary>
 public class ProjectDetailDto : ProjectDto
 {
-    public List<ProjectBranchDto> Branches { get; set; } = new();
     public List<ProjectTeamMemberDto> TeamMembers { get; set; } = new();
     public List<ProjectStatisticDto> DailyStatistics { get; set; } = new();
-}
-
-public class ProjectBranchDto
-{
-    public int Id { get; set; }
-    public int BranchId { get; set; }
-    public string BranchName { get; set; } = string.Empty;
-    public string? BranchCode { get; set; }
-    public int? TargetCount { get; set; }
-    public int CompletedCount { get; set; }
-    public int Priority { get; set; }
-    public bool IsActive { get; set; }
 }
 
 public class ProjectTeamMemberDto

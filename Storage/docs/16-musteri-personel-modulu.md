@@ -17,7 +17,7 @@ Backend yapısı tamamen hazır durumda:
 - ✅ `CustomerPersonnelPermission` - Personel izinleri
 
 #### **Enum'lar**
-- ✅ `CustomerPersonnelRole` - Müşteri personel rolleri (Manager, Supervisor, Operator, Viewer)
+- ✅ `CustomerPersonnelRole` - Müşteri personel rolleri (Manager, Supervisor, Operator)
 - ✅ `CustomerPermissionType` - İzin tipleri
 - ✅ `CustomerTaskType` - Görev tipleri
 - ✅ `TaskAssignmentRole` - Görevdeki roller (Owner, Assistant, Observer, Approver)
@@ -143,9 +143,8 @@ Backend yapısı tamamen hazır durumda:
 
 ### Müşteri Personel Rolleri
 1. **Müşteri Yöneticisi (CustomerManager)** - Tüm yetkilere sahip
-2. **Müşteri Süpervizörü (CustomerSupervisor)** - Görev atama ve izleme
-3. **Müşteri Operatörü (CustomerOperator)** - Görev yapma
-4. **Müşteri Görüntüleyici (CustomerViewer)** - Sadece okuma
+2. **Takım Lideri (CustomerSupervisor)** - Görev atama ve izleme
+3. **Operatör (CustomerOperator)** - Görev yapma
 
 ### Görev Ataması Rolleri
 1. **Görev Sahibi (Owner)** - Görevi yürütür

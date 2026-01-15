@@ -44,6 +44,10 @@ public class CustomersController : Controller
 
         ViewBag.CustomerId = id;
         ViewBag.CustomerName = customer.CompanyName;
+        ViewBag.CustomerPhone = customer.Phone;
+        ViewBag.CustomerEmail = customer.Email;
+        ViewBag.CustomerCity = customer.City;
+        ViewBag.CustomerIsActive = customer.IsActive;
         return View();
     }
 }

@@ -132,6 +132,7 @@
                     <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalSelectedFilterType">
                         <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
                         <option value="search">@Html.T("Common.Search", "Arama")</option>
+                        <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
                         <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
                     </select>
@@ -157,6 +158,18 @@
                         <input type="text" class="form-control form-control-sm" style="width: 200px;"
                                data-bind="value: evalTempFilter.searchTerm, valueUpdate: 'afterkeydown'"
                                placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, personel, çağrı ID...")">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'personnel' -->
+                    <!-- Personnel Filter Input -->
+                    <div class="d-flex gap-1">
+                        <input type="text" class="form-control form-control-sm" style="width: 200px;" autocomplete="off"
+                               data-bind="value: evalTempFilter.personnelName, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Evaluation.PersonnelPlaceholder", "Temsilci adı...")">
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
                             <i class="bi bi-plus"></i>
                         </button>
@@ -253,7 +266,7 @@
                     <tbody data-bind="foreach: allEvaluationsList">
                         <tr>
                             <td>
-                                <strong data-bind="text: callId || '-'"></strong>
+                                <code data-bind="text: callId ? (callId.length > 12 ? callId.substring(0, 12) + '...' : callId) : '-', attr: { title: callId }" style="cursor: help;"></code>
                             </td>
                             <td>
                                 <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>

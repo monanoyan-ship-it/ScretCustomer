@@ -190,7 +190,7 @@
                     <tbody data-bind="foreach: allEvaluationsList">
                         <tr>
                             <td>
-                                <strong data-bind="text: callId || '-'"></strong>
+                                <code data-bind="text: callId ? (callId.length > 12 ? callId.substring(0, 12) + '...' : callId) : '-', attr: { title: callId }" style="cursor: help;"></code>
                             </td>
                             <td>
                                 <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>

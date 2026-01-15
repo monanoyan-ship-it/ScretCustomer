@@ -1,4 +1,4 @@
-// Organizations ViewModel - Şube/Organizasyon Popup
+// Organizations ViewModel - Organizasyon Yönetimi Popup
 function OrganizationsViewModel() {
     var self = this;
 
@@ -16,16 +16,51 @@ function OrganizationsViewModel() {
     self.orgPersonnel = ko.observable({ supervisors: [], operators: [] });
     self.personnelPool = ko.observableArray([]);
 
+    // Managers computed from personnelPool (role 1 = CustomerManager)
+    self.managers = ko.computed(function() {
+        return self.personnelPool().filter(function(p) {
+            return p.role === 1;
+        });
+    });
+
+    // Search
+    self.orgSearchText = ko.observable('');
+
+    // Filtered organizations
+    self.filteredOrganizations = ko.computed(function() {
+        var search = (self.orgSearchText() || '').toLowerCase().trim();
+        var orgs = self.organizations();
+        if (!search) return orgs;
+        return orgs.filter(function(o) {
+            return (o.name || '').toLowerCase().indexOf(search) >= 0 ||
+                   (o.code || '').toLowerCase().indexOf(search) >= 0;
+        });
+    });
+
+    // Personnel pool for supervisor (role 2 = Supervisor, unassigned)
+    self.personnelPoolForSupervisor = ko.computed(function() {
+        return self.personnelPool().filter(function(p) {
+            return p.role === 2 && (p.organizationCount === 0 || !p.organizationId);
+        });
+    });
+
+    // Unassigned operators (role 3 = Operator, not assigned to any org)
+    self.unassignedOperators = ko.computed(function() {
+        return self.personnelPool().filter(function(p) {
+            return p.role === 3 && (p.organizationCount === 0 || !p.organizationId);
+        });
+    });
+
     // Modals
     self.editingOrganization = ko.observable(null);
     self.orgModal = null;
-    self.addPersonnelModal = null;
+    self.addOperatorModal = null;
+    self.delegateModal = null;
 
-    // Add personnel
-    self.addPersonnelTitle = ko.observable('Personel Ekle');
-    self.addPersonnelRole = ko.observable('2'); // 2=Supervisor, 3=Operator
-    self.selectedPoolPersonnelId = ko.observable(null);
-    self.newPersonnel = {
+    // Manager form
+    self.showNewManagerForm = ko.observable(false);
+    self.isSavingManager = ko.observable(false);
+    self.newManager = {
         firstName: ko.observable(''),
         lastName: ko.observable(''),
         username: ko.observable(''),
@@ -33,7 +68,41 @@ function OrganizationsViewModel() {
         password: ko.observable('')
     };
 
-    // Load organizations
+    // Supervisor form
+    self.showNewSupervisorForm = ko.observable(false);
+    self.isSavingSupervisor = ko.observable(false);
+    self.newSupervisor = {
+        firstName: ko.observable(''),
+        lastName: ko.observable(''),
+        username: ko.observable(''),
+        email: ko.observable(''),
+        password: ko.observable('')
+    };
+
+    // Operator form
+    self.selectedSupervisorForOperator = ko.observable(null);
+    self.isSavingOperator = ko.observable(false);
+    self.newOperator = {
+        firstName: ko.observable(''),
+        lastName: ko.observable(''),
+        username: ko.observable(''),
+        email: ko.observable(''),
+        password: ko.observable('')
+    };
+
+    // Pool selection
+    self.selectedPoolPersonnelId = ko.observable(null);
+    self.selectedPoolOperatorId = ko.observable(null);
+    self.selectedPoolOperatorForSupervisorId = ko.observable(null);
+
+    // Delegate modal
+    self.personnelToRemove = ko.observable(null);
+    self.availableDelegates = ko.observableArray([]);
+    self.selectedDelegateId = ko.observable(null);
+    self.isRemovingWithDelegate = ko.observable(false);
+
+    // ==================== LOAD DATA ====================
+
     self.loadOrganizations = function() {
         if (!self.customerId) return;
 
@@ -45,14 +114,13 @@ function OrganizationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading organizations:', error);
-                toastr.error('Şubeler yüklenirken bir hata oluştu.');
+                toastr.error('Organizasyonlar yüklenirken hata oluştu.');
             })
             .finally(function() {
                 self.isLoading(false);
             });
     };
 
-    // Load personnel pool
     self.loadPersonnelPool = function() {
         if (!self.customerId) return;
 
@@ -65,13 +133,7 @@ function OrganizationsViewModel() {
             });
     };
 
-    // Select organization
-    self.selectOrganization = function(org) {
-        self.selectedOrganization(org);
-        self.loadOrgPersonnel(org.id);
-    };
 
-    // Load organization personnel
     self.loadOrgPersonnel = function(orgId) {
         self.isLoadingPersonnel(true);
 
@@ -81,14 +143,20 @@ function OrganizationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading org personnel:', error);
-                toastr.error('Personeller yüklenirken bir hata oluştu.');
+                toastr.error('Personeller yüklenirken hata oluştu.');
             })
             .finally(function() {
                 self.isLoadingPersonnel(false);
             });
     };
 
-    // Create organization
+    // ==================== ORGANIZATION CRUD ====================
+
+    self.selectOrganization = function(org) {
+        self.selectedOrganization(org);
+        self.loadOrgPersonnel(org.id);
+    };
+
     self.createOrganization = function() {
         self.editingOrganization({
             id: null,
@@ -100,11 +168,7 @@ function OrganizationsViewModel() {
         self.showOrgModal();
     };
 
-    // Edit organization
-    self.editOrganization = function() {
-        var org = self.selectedOrganization();
-        if (!org) return;
-
+    self.editOrganization = function(org) {
         self.editingOrganization({
             id: org.id,
             name: ko.observable(org.name),
@@ -115,14 +179,13 @@ function OrganizationsViewModel() {
         self.showOrgModal();
     };
 
-    // Save organization
     self.saveOrganization = function() {
         var org = self.editingOrganization();
         if (!org) return;
 
         var name = ko.unwrap(org.name);
         if (!name) {
-            toastr.warning('Şube adı zorunludur.');
+            toastr.warning('Organizasyon adı zorunludur.');
             return;
         }
 
@@ -157,110 +220,72 @@ function OrganizationsViewModel() {
                         }
                     }
                 }
-                toastr.success(isNew ? 'Şube oluşturuldu.' : 'Şube güncellendi.');
+                toastr.success(isNew ? 'Organizasyon oluşturuldu.' : 'Organizasyon güncellendi.');
                 self.hideOrgModal();
                 self.notifyParent();
             })
             .catch(function(error) {
                 console.error('Error saving organization:', error);
-                toastr.error('Şube kaydedilirken bir hata oluştu.');
+                toastr.error('Organizasyon kaydedilirken hata oluştu.');
             })
             .finally(function() {
                 self.isSaving(false);
             });
     };
 
-    // Delete organization
-    self.deleteOrganization = function() {
-        var org = self.selectedOrganization();
-        if (!org) return;
-
+    self.deleteOrganization = function(org) {
         deleteConfirmation.show(
-            '<strong>' + org.name + '</strong> şubesini silmek istediğinize emin misiniz?',
+            '<strong>' + org.name + '</strong> organizasyonunu silmek istediğinize emin misiniz?',
             function() {
                 ApiService.delete('/customer-organizations/' + org.id)
                     .then(function() {
                         self.organizations.remove(function(o) { return o.id === org.id; });
-                        self.selectedOrganization(null);
-                        self.orgPersonnel({ supervisors: [], operators: [] });
-                        toastr.success('Şube silindi.');
+                        if (self.selectedOrganization() && self.selectedOrganization().id === org.id) {
+                            self.selectedOrganization(null);
+                            self.orgPersonnel({ supervisors: [], operators: [] });
+                        }
+                        toastr.success('Organizasyon silindi.');
                         self.notifyParent();
                     })
                     .catch(function(error) {
                         console.error('Error deleting organization:', error);
-                        toastr.error('Şube silinirken bir hata oluştu.');
+                        toastr.error('Organizasyon silinirken hata oluştu.');
                     });
             }
         );
     };
 
-    // Add supervisor
-    self.addSupervisor = function() {
-        self.addPersonnelTitle('Süpervizör Ekle');
-        self.addPersonnelRole('2');
-        self.resetNewPersonnel();
-        self.showAddPersonnelModal();
+    // ==================== MANAGER CRUD ====================
+
+    self.toggleNewManagerForm = function() {
+        if (self.showNewManagerForm()) {
+            self.showNewManagerForm(false);
+        } else {
+            self.resetNewManager();
+            self.showNewManagerForm(true);
+        }
     };
 
-    // Add operator
-    self.addOperator = function() {
-        self.addPersonnelTitle('Operatör Ekle');
-        self.addPersonnelRole('3');
-        self.resetNewPersonnel();
-        self.showAddPersonnelModal();
+    self.resetNewManager = function() {
+        self.newManager.firstName('');
+        self.newManager.lastName('');
+        self.newManager.username('');
+        self.newManager.email('');
+        self.newManager.password('');
     };
 
-    // Reset new personnel form
-    self.resetNewPersonnel = function() {
-        self.selectedPoolPersonnelId(null);
-        self.newPersonnel.firstName('');
-        self.newPersonnel.lastName('');
-        self.newPersonnel.username('');
-        self.newPersonnel.email('');
-        self.newPersonnel.password('');
-    };
-
-    // Assign from pool
-    self.assignFromPool = function() {
-        var personnelId = self.selectedPoolPersonnelId();
-        var org = self.selectedOrganization();
-        if (!personnelId || !org) return;
-
-        ApiService.post('/customer-organizations/assign-personnel', {
-            personnelId: personnelId,
-            organizationId: org.id
-        })
-        .then(function() {
-            toastr.success('Personel şubeye eklendi.');
-            self.hideAddPersonnelModal();
-            self.loadOrgPersonnel(org.id);
-            self.loadOrganizations();
-            self.loadPersonnelPool();
-            self.notifyParent();
-        })
-        .catch(function(error) {
-            console.error('Error assigning personnel:', error);
-            toastr.error('Personel eklenirken bir hata oluştu.');
-        });
-    };
-
-    // Create and assign
-    self.createAndAssign = function() {
-        var org = self.selectedOrganization();
-        if (!org) return;
-
-        var firstName = self.newPersonnel.firstName();
-        var lastName = self.newPersonnel.lastName();
-        var username = self.newPersonnel.username();
-        var email = self.newPersonnel.email();
-        var password = self.newPersonnel.password();
+    self.saveNewManager = function() {
+        var firstName = self.newManager.firstName();
+        var lastName = self.newManager.lastName();
+        var username = self.newManager.username();
+        var email = self.newManager.email();
+        var password = self.newManager.password();
 
         if (!firstName || !lastName || !username || !email || !password) {
             toastr.warning('Tüm alanları doldurun.');
             return;
         }
 
-        // Username validation
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
         if (!usernameRegex.test(username)) {
             toastr.error('Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir.');
@@ -272,9 +297,8 @@ function OrganizationsViewModel() {
             return;
         }
 
-        self.isSaving(true);
+        self.isSavingManager(true);
 
-        // First create personnel
         ApiService.post('/customer-personnel', {
             customerId: self.customerId,
             firstName: firstName,
@@ -282,45 +306,328 @@ function OrganizationsViewModel() {
             username: username,
             email: email,
             password: password,
-            role: self.addPersonnelRole(),
+            role: 1, // CustomerManager
+            isActive: true
+        })
+        .then(function() {
+            toastr.success('Yönetici oluşturuldu.');
+            self.showNewManagerForm(false);
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error creating manager:', error);
+            toastr.error(error.message || 'Yönetici oluşturulurken hata oluştu.');
+        })
+        .finally(function() {
+            self.isSavingManager(false);
+        });
+    };
+
+    self.removeManager = function(manager) {
+        deleteConfirmation.show(
+            '<strong>' + manager.fullName + '</strong> yöneticisini silmek istediğinize emin misiniz?',
+            function() {
+                ApiService.delete('/customer-personnel/' + manager.id)
+                    .then(function() {
+                        toastr.success('Yönetici silindi.');
+                        self.loadPersonnelPool();
+                        self.notifyParent();
+                    })
+                    .catch(function(error) {
+                        console.error('Error deleting manager:', error);
+                        toastr.error('Yönetici silinirken hata oluştu.');
+                    });
+            }
+        );
+    };
+
+    // ==================== SUPERVISOR CRUD ====================
+
+    self.toggleNewSupervisorForm = function() {
+        if (self.showNewSupervisorForm()) {
+            self.showNewSupervisorForm(false);
+        } else {
+            self.resetNewSupervisor();
+            self.showNewSupervisorForm(true);
+        }
+    };
+
+    self.resetNewSupervisor = function() {
+        self.newSupervisor.firstName('');
+        self.newSupervisor.lastName('');
+        self.newSupervisor.username('');
+        self.newSupervisor.email('');
+        self.newSupervisor.password('');
+    };
+
+    self.saveNewSupervisor = function() {
+        var org = self.selectedOrganization();
+        if (!org) return;
+
+        var firstName = self.newSupervisor.firstName();
+        var lastName = self.newSupervisor.lastName();
+        var username = self.newSupervisor.username();
+        var email = self.newSupervisor.email();
+        var password = self.newSupervisor.password();
+
+        if (!firstName || !lastName || !username || !email || !password) {
+            toastr.warning('Tüm alanları doldurun.');
+            return;
+        }
+
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(username)) {
+            toastr.error('Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir.');
+            return;
+        }
+
+        if (password.length < 6) {
+            toastr.error('Şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+
+        self.isSavingSupervisor(true);
+
+        // Create personnel then assign to org
+        ApiService.post('/customer-personnel', {
+            customerId: self.customerId,
+            firstName: firstName,
+            lastName: lastName,
+            username: username,
+            email: email,
+            password: password,
+            role: 2, // CustomerSupervisor
             isActive: true
         })
         .then(function(newPersonnel) {
-            // Then assign to organization
             return ApiService.post('/customer-organizations/assign-personnel', {
                 personnelId: newPersonnel.id,
                 organizationId: org.id
             });
         })
         .then(function() {
-            toastr.success('Personel oluşturuldu ve şubeye eklendi.');
-            self.hideAddPersonnelModal();
+            toastr.success('Süpervizör oluşturuldu ve organizasyona eklendi.');
+            self.showNewSupervisorForm(false);
             self.loadOrgPersonnel(org.id);
             self.loadOrganizations();
             self.loadPersonnelPool();
             self.notifyParent();
         })
         .catch(function(error) {
-            console.error('Error creating personnel:', error);
-            var msg = error.message || 'Personel oluşturulurken bir hata oluştu.';
-            toastr.error(msg);
+            console.error('Error creating supervisor:', error);
+            toastr.error(error.message || 'Süpervizör oluşturulurken hata oluştu.');
         })
         .finally(function() {
-            self.isSaving(false);
+            self.isSavingSupervisor(false);
         });
     };
 
-    // Remove from organization
-    self.removeFromOrg = function(personnel) {
+    self.assignFromPool = function() {
+        var personnelId = self.selectedPoolPersonnelId();
+        var org = self.selectedOrganization();
+        if (!personnelId || !org) return;
+
+        ApiService.post('/customer-organizations/assign-personnel', {
+            personnelId: personnelId,
+            organizationId: org.id
+        })
+        .then(function() {
+            toastr.success('Personel organizasyona eklendi.');
+            self.selectedPoolPersonnelId(null);
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations();
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error assigning personnel:', error);
+            toastr.error('Personel eklenirken hata oluştu.');
+        });
+    };
+
+    // Havuzdan bağımsız operatör ata
+    self.assignOperatorFromPool = function() {
+        var personnelId = self.selectedPoolOperatorId();
+        var org = self.selectedOrganization();
+        if (!personnelId || !org) return;
+
+        ApiService.post('/customer-organizations/assign-personnel', {
+            personnelId: personnelId,
+            organizationId: org.id,
+            supervisorId: null
+        })
+        .then(function() {
+            toastr.success('Operatör organizasyona eklendi.');
+            self.selectedPoolOperatorId(null);
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations();
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error assigning operator:', error);
+            toastr.error('Operatör eklenirken hata oluştu.');
+        });
+    };
+
+    // Havuzdan süpervizör ekibine operatör ata
+    self.assignOperatorToSupervisor = function(supervisor) {
+        var personnelId = self.selectedPoolOperatorForSupervisorId();
+        var org = self.selectedOrganization();
+        if (!personnelId || !org || !supervisor) return;
+
+        ApiService.post('/customer-organizations/assign-personnel', {
+            personnelId: personnelId,
+            organizationId: org.id,
+            supervisorId: supervisor.id
+        })
+        .then(function() {
+            toastr.success('Operatör ekibe eklendi.');
+            self.selectedPoolOperatorForSupervisorId(null);
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations();
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error assigning operator to supervisor:', error);
+            toastr.error('Operatör eklenirken hata oluştu.');
+        });
+    };
+
+    // ==================== OPERATOR CRUD ====================
+
+    self.openAddOperatorModal = function(supervisor) {
+        self.selectedSupervisorForOperator(supervisor);
+        self.resetNewOperator();
+        self.showAddOperatorModal();
+    };
+
+    self.addIndependentOperator = function() {
+        self.selectedSupervisorForOperator(null);
+        self.resetNewOperator();
+        self.showAddOperatorModal();
+    };
+
+    self.resetNewOperator = function() {
+        self.newOperator.firstName('');
+        self.newOperator.lastName('');
+        self.newOperator.username('');
+        self.newOperator.email('');
+        self.newOperator.password('');
+    };
+
+    self.saveNewOperator = function() {
         var org = self.selectedOrganization();
         if (!org) return;
 
+        var firstName = self.newOperator.firstName();
+        var lastName = self.newOperator.lastName();
+        var username = self.newOperator.username();
+        var email = self.newOperator.email();
+        var password = self.newOperator.password();
+
+        if (!firstName || !lastName || !username || !email || !password) {
+            toastr.warning('Tüm alanları doldurun.');
+            return;
+        }
+
+        var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+        if (!usernameRegex.test(username)) {
+            toastr.error('Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir.');
+            return;
+        }
+
+        if (password.length < 6) {
+            toastr.error('Şifre en az 6 karakter olmalıdır.');
+            return;
+        }
+
+        self.isSavingOperator(true);
+
+        var supervisor = self.selectedSupervisorForOperator();
+
+        // Create personnel then assign to org
+        ApiService.post('/customer-personnel', {
+            customerId: self.customerId,
+            firstName: firstName,
+            lastName: lastName,
+            username: username,
+            email: email,
+            password: password,
+            role: 3, // CustomerOperator
+            isActive: true
+        })
+        .then(function(newPersonnel) {
+            return ApiService.post('/customer-organizations/assign-personnel', {
+                personnelId: newPersonnel.id,
+                organizationId: org.id,
+                supervisorId: supervisor ? supervisor.id : null
+            });
+        })
+        .then(function() {
+            toastr.success('Operatör oluşturuldu ve organizasyona eklendi.');
+            self.hideAddOperatorModal();
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations();
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error creating operator:', error);
+            toastr.error(error.message || 'Operatör oluşturulurken hata oluştu.');
+        })
+        .finally(function() {
+            self.isSavingOperator(false);
+        });
+    };
+
+    // ==================== PERSONNEL ACTIONS ====================
+
+    self.makeIndependent = function(personnel) {
+        var org = self.selectedOrganization();
+        if (!org) return;
+
+        ApiService.post('/customer-organizations/' + org.id + '/personnel/' + personnel.id + '/make-independent')
+            .then(function() {
+                toastr.success('Personel bağımsız yapıldı.');
+                self.loadOrgPersonnel(org.id);
+                self.loadOrganizations();
+                self.loadPersonnelPool();
+            })
+            .catch(function(error) {
+                console.error('Error making independent:', error);
+                toastr.error('İşlem sırasında hata oluştu.');
+            });
+    };
+
+    self.removePersonnelFromOrg = function(personnel) {
+        var org = self.selectedOrganization();
+        if (!org) return;
+
+        // Check if supervisor has team members
+        if (personnel.teamMembers && personnel.teamMembers.length > 0) {
+            // Show delegate modal
+            self.personnelToRemove(personnel);
+            self.selectedDelegateId(null);
+
+            // Get available delegates (other supervisors)
+            var delegates = self.orgPersonnel().supervisors.filter(function(s) {
+                return s.id !== personnel.id;
+            });
+            self.availableDelegates(delegates);
+
+            self.showDelegateModal();
+            return;
+        }
+
         deleteConfirmation.show(
-            '<strong>' + personnel.fullName + '</strong> personelini şubeden çıkarmak istediğinize emin misiniz?',
+            '<strong>' + personnel.fullName + '</strong> personelini organizasyondan çıkarmak istediğinize emin misiniz?',
             function() {
                 ApiService.delete('/customer-organizations/' + org.id + '/personnel/' + personnel.id)
                     .then(function() {
-                        toastr.success('Personel şubeden çıkarıldı.');
+                        toastr.success('Personel organizasyondan çıkarıldı.');
                         self.loadOrgPersonnel(org.id);
                         self.loadOrganizations();
                         self.loadPersonnelPool();
@@ -328,13 +635,43 @@ function OrganizationsViewModel() {
                     })
                     .catch(function(error) {
                         console.error('Error removing personnel:', error);
-                        toastr.error('Personel çıkarılırken bir hata oluştu.');
+                        toastr.error('İşlem sırasında hata oluştu.');
                     });
             }
         );
     };
 
-    // Modal helpers
+    self.confirmRemoveWithDelegate = function() {
+        var org = self.selectedOrganization();
+        var personnel = self.personnelToRemove();
+        var delegateId = self.selectedDelegateId();
+
+        if (!org || !personnel || !delegateId) return;
+
+        self.isRemovingWithDelegate(true);
+
+        ApiService.post('/customer-organizations/' + org.id + '/personnel/' + personnel.id + '/transfer-and-remove', {
+            newSupervisorId: delegateId
+        })
+        .then(function() {
+            toastr.success('Ekip devredildi ve personel çıkarıldı.');
+            self.hideDelegateModal();
+            self.loadOrgPersonnel(org.id);
+            self.loadOrganizations();
+            self.loadPersonnelPool();
+            self.notifyParent();
+        })
+        .catch(function(error) {
+            console.error('Error transferring:', error);
+            toastr.error('İşlem sırasında hata oluştu.');
+        })
+        .finally(function() {
+            self.isRemovingWithDelegate(false);
+        });
+    };
+
+    // ==================== MODAL HELPERS ====================
+
     self.showOrgModal = function() {
         if (!self.orgModal) {
             var el = document.getElementById('orgModal');
@@ -348,19 +685,34 @@ function OrganizationsViewModel() {
         self.editingOrganization(null);
     };
 
-    self.showAddPersonnelModal = function() {
-        if (!self.addPersonnelModal) {
-            var el = document.getElementById('addPersonnelModal');
-            if (el) self.addPersonnelModal = new bootstrap.Modal(el);
+    self.showAddOperatorModal = function() {
+        if (!self.addOperatorModal) {
+            var el = document.getElementById('addOperatorModal');
+            if (el) self.addOperatorModal = new bootstrap.Modal(el);
         }
-        if (self.addPersonnelModal) self.addPersonnelModal.show();
+        if (self.addOperatorModal) self.addOperatorModal.show();
     };
 
-    self.hideAddPersonnelModal = function() {
-        if (self.addPersonnelModal) self.addPersonnelModal.hide();
+    self.hideAddOperatorModal = function() {
+        if (self.addOperatorModal) self.addOperatorModal.hide();
     };
 
-    // Notify parent
+    self.showDelegateModal = function() {
+        if (!self.delegateModal) {
+            var el = document.getElementById('delegateModal');
+            if (el) self.delegateModal = new bootstrap.Modal(el);
+        }
+        if (self.delegateModal) self.delegateModal.show();
+    };
+
+    self.hideDelegateModal = function() {
+        if (self.delegateModal) self.delegateModal.hide();
+        self.personnelToRemove(null);
+        self.selectedDelegateId(null);
+    };
+
+    // ==================== NOTIFY PARENT ====================
+
     self.notifyParent = function() {
         if (window.opener && !window.opener.closed) {
             try {
@@ -373,7 +725,8 @@ function OrganizationsViewModel() {
         }
     };
 
-    // Initialize
+    // ==================== INIT ====================
+
     self.init = function() {
         self.loadOrganizations();
         self.loadPersonnelPool();
@@ -386,6 +739,7 @@ function OrganizationsViewModel() {
 $(document).ready(function() {
     var app = document.getElementById('organizations-app');
     if (app) {
-        ko.applyBindings(new OrganizationsViewModel(), app);
+        window.vm = new OrganizationsViewModel();
+        ko.applyBindings(window.vm, app);
     }
 });

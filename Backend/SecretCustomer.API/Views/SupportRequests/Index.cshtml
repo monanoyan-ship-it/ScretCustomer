@@ -1,0 +1,286 @@
+@{
+    ViewData["Title"] = @Html.T("SupportRequest.Title", "Destek Talepleri");
+}
+
+<div id="support-requests-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-chat-left-dots text-primary me-2"></i>
+            @Html.T("SupportRequest.Title", "Destek Talepleri")
+        </h4>
+        <button class="btn btn-outline-secondary" data-bind="click: refresh">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+
+    <!-- Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body py-2 text-center">
+                    <h3 class="mb-0" data-bind="text: statusCounts().pending || 0">0</h3>
+                    <small>@Html.T("SupportRequestStatus.Pending", "Beklemede")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body py-2 text-center">
+                    <h3 class="mb-0" data-bind="text: statusCounts().inProgress || 0">0</h3>
+                    <small>@Html.T("SupportRequestStatus.InProgress", "Inceleniyor")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body py-2 text-center">
+                    <h3 class="mb-0" data-bind="text: statusCounts().resolved || 0">0</h3>
+                    <small>@Html.T("SupportRequestStatus.Resolved", "Cevaplandi")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body py-2 text-center">
+                    <h3 class="mb-0" data-bind="text: statusCounts().closed || 0">0</h3>
+                    <small>@Html.T("SupportRequestStatus.Closed", "Kapatildi")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <select class="form-select form-select-sm" data-bind="value: filter.statusId">
+                        <option value="">@Html.T("Common.AllStatuses", "Tum Durumlar")</option>
+                        <option value="1">@Html.T("SupportRequestStatus.Pending", "Beklemede")</option>
+                        <option value="2">@Html.T("SupportRequestStatus.InProgress", "Inceleniyor")</option>
+                        <option value="3">@Html.T("SupportRequestStatus.Resolved", "Cevaplandi")</option>
+                        <option value="4">@Html.T("SupportRequestStatus.Closed", "Kapatildi")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select form-select-sm" data-bind="value: filter.senderType">
+                        <option value="">@Html.T("Common.AllSenders", "Tum Gondericiler")</option>
+                        <option value="User">@Html.T("SupportRequest.SystemUser", "Sistem Kullanicisi")</option>
+                        <option value="CustomerPersonnel">@Html.T("SupportRequest.CustomerPersonnel", "Musteri Personeli")</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control"
+                               data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Common.Search", "Ara...")">
+                    </div>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-sm btn-primary" data-bind="click: search">
+                        <i class="bi bi-funnel"></i> @Html.T("Common.Filter", "Filtrele")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
+    <!-- Requests Table -->
+    <div data-bind="visible: !isLoading()" class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px">#</th>
+                        <th>@Html.T("SupportRequest.Sender", "Gonderen")</th>
+                        <th>@Html.T("SupportRequest.Message", "Mesaj")</th>
+                        <th style="width: 120px">@Html.T("SupportRequest.Status", "Durum")</th>
+                        <th style="width: 140px">@Html.T("Common.Date", "Tarih")</th>
+                        <th style="width: 100px" class="text-center">@Html.T("Common.Actions", "Islemler")</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: requests">
+                    <tr data-bind="click: $parent.viewRequest, css: { 'table-warning': !hasResponse && statusId === 1 }">
+                        <td data-bind="text: id"></td>
+                        <td>
+                            <div>
+                                <strong data-bind="text: senderName"></strong>
+                                <span class="badge bg-secondary ms-1" data-bind="text: senderType === 'User' ? 'Sistem' : 'Musteri'"></span>
+                            </div>
+                            <!-- ko if: pageUrl -->
+                            <small class="text-muted text-truncate d-block" style="max-width: 200px;" data-bind="text: pageUrl, attr: { title: pageUrl }"></small>
+                            <!-- /ko -->
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 300px;" data-bind="text: message, attr: { title: message }"></div>
+                        </td>
+                        <td>
+                            <span class="badge" data-bind="text: statusName, css: statusCssClass"></span>
+                        </td>
+                        <td>
+                            <small data-bind="text: formatDate(createdAt)"></small>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary" data-bind="click: function() { $parent.viewRequest($data); }">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: requests().length === 0 && !isLoading()" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mt-2">@Html.T("SupportRequest.NoRequests", "Destek talebi bulunamadi.")</p>
+        </div>
+
+        <!-- Pagination -->
+        <div data-bind="visible: totalCount() > filter.pageSize()" class="card-footer">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    <li class="page-item" data-bind="css: { disabled: filter.page() <= 1 }">
+                        <a class="page-link" href="#" data-bind="click: prevPage">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link" data-bind="text: filter.page() + ' / ' + totalPages()"></span>
+                    </li>
+                    <li class="page-item" data-bind="css: { disabled: filter.page() >= totalPages() }">
+                        <a class="page-link" href="#" data-bind="click: nextPage">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="requestDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" data-bind="with: selectedRequest">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-chat-left-dots me-2"></i>
+                    @Html.T("SupportRequest.Detail", "Talep Detayi") #<span data-bind="text: id"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Sender Info -->
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <strong data-bind="text: senderName"></strong>
+                        <span class="badge bg-secondary ms-1" data-bind="text: senderType === 'User' ? 'Sistem Kullanicisi' : 'Musteri Personeli'"></span>
+                        <!-- ko if: senderEmail -->
+                        <br><small class="text-muted" data-bind="text: senderEmail"></small>
+                        <!-- /ko -->
+                    </div>
+                    <div class="text-end">
+                        <span class="badge" data-bind="text: statusName, css: statusCssClass"></span>
+                        <br><small class="text-muted" data-bind="text: $parent.formatDate(createdAt)"></small>
+                    </div>
+                </div>
+
+                <!-- Page URL -->
+                <!-- ko if: pageUrl -->
+                <div class="alert alert-light py-2 mb-3">
+                    <i class="bi bi-link-45deg me-1"></i>
+                    <a data-bind="attr: { href: pageUrl }, text: pageUrl" target="_blank" class="text-break"></a>
+                </div>
+                <!-- /ko -->
+
+                <!-- Message -->
+                <div class="card mb-3">
+                    <div class="card-header py-2">
+                        <i class="bi bi-chat-text me-1"></i> @Html.T("SupportRequest.UserMessage", "Kullanici Mesaji")
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0 white-space-pre-wrap" data-bind="text: message"></p>
+                    </div>
+                </div>
+
+                <!-- Admin Response (if exists) -->
+                <!-- ko if: adminResponse -->
+                <div class="card border-success mb-3">
+                    <div class="card-header py-2 bg-success text-white">
+                        <i class="bi bi-reply me-1"></i> @Html.T("SupportRequest.AdminResponse", "Admin Cevabi")
+                        <!-- ko if: respondedByUserName -->
+                        <small class="ms-2">(<span data-bind="text: respondedByUserName"></span>)</small>
+                        <!-- /ko -->
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0 white-space-pre-wrap" data-bind="text: adminResponse"></p>
+                        <!-- ko if: respondedAt -->
+                        <small class="text-muted d-block mt-2" data-bind="text: $parent.formatDate(respondedAt)"></small>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <!-- /ko -->
+
+                <!-- Response Form (if no response yet) -->
+                <!-- ko if: !adminResponse() -->
+                <div class="card border-primary">
+                    <div class="card-header py-2 bg-primary text-white">
+                        <i class="bi bi-reply me-1"></i> @Html.T("SupportRequest.WriteResponse", "Cevap Yaz")
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" rows="4"
+                                  data-bind="value: $parent.responseText"
+                                  placeholder="@Html.T("SupportRequest.ResponsePlaceholder", "Cevabinizi yazin...")"></textarea>
+                    </div>
+                </div>
+                <!-- /ko -->
+            </div>
+            <div class="modal-footer">
+                <!-- Status Buttons -->
+                <div class="btn-group me-auto">
+                    <!-- ko if: statusId() !== 4 -->
+                    <button class="btn btn-outline-secondary btn-sm" data-bind="click: function() { $parent.updateStatus(4); }">
+                        <i class="bi bi-x-circle me-1"></i> @Html.T("SupportRequest.Close", "Kapat")
+                    </button>
+                    <!-- /ko -->
+                    <!-- ko if: statusId() === 4 -->
+                    <button class="btn btn-outline-warning btn-sm" data-bind="click: function() { $parent.updateStatus(1); }">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> @Html.T("SupportRequest.Reopen", "Yeniden Ac")
+                    </button>
+                    <!-- /ko -->
+                </div>
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    @Html.T("Common.Close", "Kapat")
+                </button>
+                <!-- ko if: !adminResponse() -->
+                <button type="button" class="btn btn-primary"
+                        data-bind="click: $parent.sendResponse, disable: $parent.isSending() || !$parent.responseText()">
+                    <span data-bind="visible: $parent.isSending()" class="spinner-border spinner-border-sm me-1"></span>
+                    <i data-bind="visible: !$parent.isSending()" class="bi bi-send me-1"></i>
+                    @Html.T("SupportRequest.SendResponse", "Cevap Gonder")
+                </button>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .white-space-pre-wrap {
+        white-space: pre-wrap;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/SupportRequests/index.js"></script>
+}

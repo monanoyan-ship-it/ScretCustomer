@@ -1139,9 +1139,6 @@
   <LocaleResource Name="Customer.Role.Operator">
     <Value>Müşteri Operatörü</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.Role.Viewer">
-    <Value>Müşteri Görüntüleyici</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.Department">
     <Value>Departman</Value>
   </LocaleResource>
@@ -1627,9 +1624,6 @@
   </LocaleResource>
   <LocaleResource Name="Branch.EditBranch">
     <Value>Şube Düzenle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Branch.BranchName">
-    <Value>Şube Adı</Value>
   </LocaleResource>
   <LocaleResource Name="Branch.BranchCode">
     <Value>Şube Kodu</Value>
@@ -2801,9 +2795,6 @@
   </LocaleResource>
   <LocaleResource Name="User.Evaluator">
     <Value>Değerlendirici</Value>
-  </LocaleResource>
-  <LocaleResource Name="User.Viewer">
-    <Value>İzleyici</Value>
   </LocaleResource>
   <LocaleResource Name="User.NoUsers">
     <Value>Henüz kullanıcı bulunmamaktadır.</Value>
@@ -4100,10 +4091,7 @@
     <Value>Takım Lideri</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
-    <Value>Değerlendirme Uzmanı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Role.Viewer">
-    <Value>Rapor Görüntüleyici</Value>
+    <Value>Operatör</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.DepartmentPlaceholder">
     <Value>Kalite Kontrol</Value>
@@ -7312,17 +7300,11 @@
   <LocaleResource Name="CustomerPersonnel.Edit">
     <Value>Müşteri Personeli Düzenle</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Manager">
-    <Value>Müşteri Yöneticisi</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.New">
     <Value>Yeni Müşteri Personeli</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NoPersonnel">
     <Value>Müşteri personeli bulunmamaktadır.</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Operator">
-    <Value>Müşteri Operatörü</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.SelectCustomer">
     <Value>Müşteri Seçin...</Value>
@@ -7981,5 +7963,254 @@
   <!-- Personnel Request -->
   <LocaleResource Name="PersonnelRequest.AlreadyPending">
     <Value>'{0}' için zaten bekleyen bir personel talebi bulunmaktadır. Yöneticinizle iletişime geçin.</Value>
+  </LocaleResource>
+  <!-- Performance Settings -->
+  <LocaleResource Name="Menu.PerformanceSettings">
+    <Value>Performans Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.PerformanceTracking">
+    <Value>Performans Takibi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.PerformanceSettings">
+    <Value>Performans Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.PerformanceSettingsInfo">
+    <Value>Her proje tipi için günlük, haftalık, aylık ve yıllık değerlendirme hedefleri belirleyebilirsiniz. Bu hedefler Performans Takibi raporunda kullanılacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.Targets">
+    <Value>Hedefler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.DailyTarget">
+    <Value>Günlük</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.WeeklyTarget">
+    <Value>Haftalık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.MonthlyTarget">
+    <Value>Aylık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.YearlyTarget">
+    <Value>Yıllık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.ScoreThresholds">
+    <Value>Puan Eşikleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SuccessThreshold">
+    <Value>Başarılı (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.WarningThreshold">
+    <Value>Orta (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.NoProjectTypes">
+    <Value>Proje tipi bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SaveSuccess">
+    <Value>Performans ayarları başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.SaveError">
+    <Value>Ayarlar kaydedilirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Setting.LoadError">
+    <Value>Ayarlar yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SaveAll">
+    <Value>Tümünü Kaydet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PerformanceTracking">
+    <Value>Performans Takibi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TodayEvaluations">
+    <Value>Bugün</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.WeekEvaluations">
+    <Value>Bu Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthEvaluations">
+    <Value>Bu Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.YearEvaluations">
+    <Value>Bu Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorPerformance">
+    <Value>Dinleyici Performansı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluatorData">
+    <Value>Henüz dinleme verisi bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Evaluator">
+    <Value>Dinleyici</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Today">
+    <Value>Bugün</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Week">
+    <Value>Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Month">
+    <Value>Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Year">
+    <Value>Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Total">
+    <Value>Toplam</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AvgScore">
+    <Value>Ort. Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluatorCount">
+    <Value>Toplam Dinleyici</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CustomerQuotaStatus">
+    <Value>Firma Kota Durumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoCustomerData">
+    <Value>Henüz firma verisi bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Customer">
+    <Value>Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Target">
+    <Value>Hedef</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Done">
+    <Value>Yapılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Completion">
+    <Value>Tamamlanma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DailyQuota">
+    <Value>Günlük</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyQuota">
+    <Value>Aylık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ActiveCustomers">
+    <Value>Aktif Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LoadError">
+    <Value>Veriler yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+
+  <!-- Support Request / Destek Talepleri -->
+  <LocaleResource Name="Menu.SupportRequests">
+    <Value>Destek Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Title">
+    <Value>Destek Talepleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendRequest">
+    <Value>Destek Talebi Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.New">
+    <Value>Yeni Talep</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.MyRequests">
+    <Value>Taleplerim</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Info">
+    <Value>Karşılaştığınız sorunu veya talebinizi aşağıya yazın. En kısa sürede size geri dönüş yapılacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.YourMessage">
+    <Value>Mesajınız</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.MessagePlaceholder">
+    <Value>Sorununuzu veya talebinizi detaylı şekilde açıklayınız...</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.PageUrl">
+    <Value>Sayfa Adresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Send">
+    <Value>Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NoRequestsYet">
+    <Value>Henüz destek talebi göndermediniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Detail">
+    <Value>Talep Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.AdminResponse">
+    <Value>Admin Cevabı</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.WaitingResponse">
+    <Value>Talebiniz inceleniyor, en kısa sürede cevaplanacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Sender">
+    <Value>Gönderen</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Message">
+    <Value>Mesaj</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Status">
+    <Value>Durum</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NoRequests">
+    <Value>Destek talebi bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SystemUser">
+    <Value>Sistem Kullanıcısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.CustomerPersonnel">
+    <Value>Müşteri Personeli</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.UserMessage">
+    <Value>Kullanıcı Mesajı</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.WriteResponse">
+    <Value>Cevap Yaz</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponsePlaceholder">
+    <Value>Cevabınızı yazın...</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Close">
+    <Value>Kapat</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.Reopen">
+    <Value>Yeniden Aç</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendResponse">
+    <Value>Cevap Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.LoadError">
+    <Value>Destek talepleri yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendSuccess">
+    <Value>Destek talebiniz başarıyla gönderildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.SendError">
+    <Value>Destek talebi gönderilirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.NewResponse">
+    <Value>Yeni Cevap</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponseSent">
+    <Value>Cevap başarıyla gönderildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.ResponseError">
+    <Value>Cevap gönderilirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.StatusUpdated">
+    <Value>Durum güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequest.StatusError">
+    <Value>Durum güncellenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Pending">
+    <Value>Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.InProgress">
+    <Value>İnceleniyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Resolved">
+    <Value>Cevaplandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="SupportRequestStatus.Closed">
+    <Value>Kapatıldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllStatuses">
+    <Value>Tüm Durumlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllSenders">
+    <Value>Tüm Göndericiler</Value>
   </LocaleResource>
 </Language>

@@ -466,7 +466,6 @@ public class EvaluationService : IEvaluationService
             EvaluationId = null, // Yeni evaluation oluşturulacak
             Status = "New",
             ProjectName = assignment.Project?.Name ?? "",
-            BranchName = "",
             CustomerName = assignment.Project?.Customer?.CompanyName,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",

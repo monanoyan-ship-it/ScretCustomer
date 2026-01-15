@@ -156,32 +156,40 @@ function ListeningsViewModel() {
 
     // Init
     self.init = function() {
+        self.isLoading(true); // Sayfa açılır açılmaz loading göster
         self.loadLookups();
     };
 
     // Load lookup data
     self.loadLookups = function() {
-        ApiService.get('/reports/lookups')
-            .then(function(response) {
-                self.customers(response.customers || []);
-                self.allProjects(response.projects || []);
-                self.projectsForFilter(response.projects || []);
-                self.evaluators(response.evaluators || []);
-                self.dateRanges(response.dateRanges || []);
-                self.evaluationSources(response.evaluationSources || []);
+        // EnumsService ve lookups'ı paralel yükle
+        Promise.all([
+            EnumsService.load().catch(function(err) { console.warn('EnumsService load failed:', err); return null; }),
+            ApiService.get('/reports/lookups')
+        ])
+        .then(function(results) {
+            var enumsData = results[0];
+            var response = results[1];
 
-                // Proje tiplerini EnumsService'den al
-                if (EnumsService.cache && EnumsService.cache.projectTypes) {
-                    self.projectTypes(EnumsService.cache.projectTypes);
-                }
+            self.customers(response.customers || []);
+            self.allProjects(response.projects || []);
+            self.projectsForFilter(response.projects || []);
+            self.evaluators(response.evaluators || []);
+            self.dateRanges(response.dateRanges || []);
+            self.evaluationSources(response.evaluationSources || []);
 
-                // Lookups yüklendikten sonra varsayılan filtreyi kontrol et
-                self.loadDefaultFilterAndSearch();
-            })
-            .catch(function(error) {
-                console.error('Error loading lookups:', error);
-                self.search(); // Hata olsa bile arama yap
-            });
+            // Proje tiplerini EnumsService'den al
+            if (enumsData && enumsData.projectTypes) {
+                self.projectTypes(enumsData.projectTypes);
+            }
+
+            // Lookups yüklendikten sonra varsayılan filtreyi kontrol et
+            self.loadDefaultFilterAndSearch();
+        })
+        .catch(function(error) {
+            console.error('Error loading lookups:', error);
+            self.search(); // Hata olsa bile arama yap
+        });
     };
 
     // Load default filter (if any) and search

@@ -50,6 +50,34 @@ public class Customer : BaseEntity
         Description = "Müşteri hakkında notlar")]
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// Hedef değerlendirme sayısı
+    /// </summary>
+    [ExcelColumn("Hedef Sayı", 12, ColumnType = ExcelColumnTypes.Ids.Number,
+        Description = "Hedef değerlendirme sayısı", SampleValue = "100")]
+    public int? TargetCount { get; set; }
+
+    /// <summary>
+    /// Günlük kota
+    /// </summary>
+    [ExcelColumn("Günlük Kota", 13, ColumnType = ExcelColumnTypes.Ids.Number,
+        Description = "Günlük maksimum değerlendirme sayısı")]
+    public int? DailyQuota { get; set; }
+
+    /// <summary>
+    /// Haftalık kota
+    /// </summary>
+    [ExcelColumn("Haftalık Kota", 14, ColumnType = ExcelColumnTypes.Ids.Number,
+        Description = "Haftalık maksimum değerlendirme sayısı")]
+    public int? WeeklyQuota { get; set; }
+
+    /// <summary>
+    /// Aylık kota
+    /// </summary>
+    [ExcelColumn("Aylık Kota", 15, ColumnType = ExcelColumnTypes.Ids.Number,
+        Description = "Aylık maksimum değerlendirme sayısı")]
+    public int? MonthlyQuota { get; set; }
+
     // Navigation Properties
     public ICollection<CustomerPersonnel> Personnel { get; set; } = new List<CustomerPersonnel>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();

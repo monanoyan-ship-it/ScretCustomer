@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/reports")]
-[Authorize(Roles = "Admin,TeamLeader")]
+[Authorize(Roles = "Admin,QualitySpecialist")]
 public class ReportsApiController : BaseApiController
 {
     private readonly IReportService _reportService;
@@ -665,4 +665,24 @@ public class ReportsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SuggestionsExportError"), ex));
         }
     }
+
+    /// <summary>
+    /// Performans Takibi raporu - Dinleyici performansları ve firma kota durumları (Admin Only)
+    /// </summary>
+    [HttpGet("performance-tracking")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetPerformanceTracking()
+    {
+        try
+        {
+            var result = await _reportService.GetPerformanceTrackingAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting performance tracking report");
+            return StatusCode(500, CreateErrorResponse("Performans takibi raporu yüklenirken hata oluştu", ex));
+        }
+    }
+
 }

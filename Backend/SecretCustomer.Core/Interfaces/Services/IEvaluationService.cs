@@ -87,7 +87,6 @@ public class EvaluationFormDto
 
     // Proje/Atama bilgileri
     public string ProjectName { get; set; } = string.Empty;
-    public string BranchName { get; set; } = string.Empty;
     public string? CustomerName { get; set; }
 
     // Checklist bilgileri

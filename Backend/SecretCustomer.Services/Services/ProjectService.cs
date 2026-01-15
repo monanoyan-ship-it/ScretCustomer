@@ -518,12 +518,6 @@ public class ProjectService : IProjectService
         return await GetDetailByIdAsync(projectId) ?? throw new KeyNotFoundException("Project not found after update");
     }
 
-    public async Task<ProjectDetailDto> ManageBranchesAsync(int projectId, ManageProjectBranchesDto dto)
-    {
-        // Branch system removed - this method is deprecated
-        throw new NotSupportedException("Branch management is no longer supported.");
-    }
-
     public async Task<ProjectDetailDto> GetStatisticsAsync(int projectId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var detail = await GetDetailByIdAsync(projectId);
@@ -771,9 +765,6 @@ public class ProjectService : IProjectService
             TeamMemberCount = dto.TeamMemberCount,
             TargetBranchCount = dto.TargetBranchCount
         };
-
-        // Branch system removed - return empty list
-        detailDto.Branches = new List<ProjectBranchDto>();
 
         // Map team members
         detailDto.TeamMembers = project.TeamMembers?

@@ -31,7 +31,7 @@ public class ProjectsApiController : BaseApiController
     /// Tüm projeleri getir - Optimize edilmiş liste
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? search = null,
         [FromQuery] int? customerId = null,
@@ -60,7 +60,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje özetlerini getir (Dashboard için)
     /// </summary>
     [HttpGet("summaries")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetSummaries()
     {
         try
@@ -79,7 +79,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje ID ile getir
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -102,7 +102,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje detaylarını getir (Şubeler ve Takım üyeleri dahil)
     /// </summary>
     [HttpGet("{id}/detail")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetDetail(int id)
     {
         try
@@ -397,45 +397,13 @@ public class ProjectsApiController : BaseApiController
 
     #endregion
 
-    #region Branch Management
-
-    /// <summary>
-    /// Proje şubelerini yönet (ekle/çıkar)
-    /// </summary>
-    [HttpPost("{id}/branches")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ManageBranches(int id, [FromBody] ManageProjectBranchesDto dto)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        try
-        {
-            var project = await _projectService.ManageBranchesAsync(id, dto);
-            return Ok(project);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error managing project branches {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.BranchesUpdateError"), ex));
-        }
-    }
-
-    #endregion
-
     #region Statistics & Queries
 
     /// <summary>
     /// Proje istatistiklerini getir
     /// </summary>
     [HttpGet("{id}/statistics")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetStatistics(int id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         try
@@ -458,7 +426,7 @@ public class ProjectsApiController : BaseApiController
     /// Müşteri bazlı projeleri getir
     /// </summary>
     [HttpGet("by-customer/{customerId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetByCustomer(int customerId)
     {
         try
@@ -477,7 +445,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje yöneticisi bazlı projeleri getir
     /// </summary>
     [HttpGet("by-manager/{managerId}")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetByManager(int managerId)
     {
         try
@@ -496,7 +464,7 @@ public class ProjectsApiController : BaseApiController
     /// Aktif projeleri getir
     /// </summary>
     [HttpGet("active")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetActiveProjects()
     {
         try
@@ -515,7 +483,7 @@ public class ProjectsApiController : BaseApiController
     /// Yaklaşan bitiş tarihli projeleri getir
     /// </summary>
     [HttpGet("upcoming-deadlines")]
-    [Authorize(Roles = "Admin,TeamLeader")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
     public async Task<IActionResult> GetUpcomingDeadlines([FromQuery] int daysAhead = 7)
     {
         try

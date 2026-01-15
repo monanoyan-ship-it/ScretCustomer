@@ -296,7 +296,6 @@ public class EmailTemplatesApiController : ControllerBase
         body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
         body = body.Replace(EmailPlaceholders.CompanyName, "ABC Şirketi");
         body = body.Replace(EmailPlaceholders.OrganizationName, "İstanbul Şubesi");
-        body = body.Replace(EmailPlaceholders.BranchName, "Kadıköy Mağazası");
         body = body.Replace(EmailPlaceholders.RecipientName, "Ahmet Yılmaz");
         body = body.Replace(EmailPlaceholders.RecipientFirstName, "Ahmet");
         body = body.Replace(EmailPlaceholders.RecipientLastName, "Yılmaz");
@@ -380,7 +379,6 @@ public class EmailTemplatesApiController : ControllerBase
             body = body.Replace(EmailPlaceholders.SurveyQRCode, qrHtml);
             body = body.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
             body = body.Replace(EmailPlaceholders.OrganizationName, project.Organization?.Name ?? personnelOrg?.Name ?? "");
-            body = body.Replace(EmailPlaceholders.BranchName, personnelOrg?.Name ?? "");
             body = body.Replace(EmailPlaceholders.RecipientName, $"{personnel.FirstName} {personnel.LastName}".Trim());
             body = body.Replace(EmailPlaceholders.RecipientFirstName, personnel.FirstName ?? "");
             body = body.Replace(EmailPlaceholders.RecipientLastName, personnel.LastName ?? "");
@@ -407,7 +405,6 @@ public class EmailTemplatesApiController : ControllerBase
             body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
             body = body.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
             body = body.Replace(EmailPlaceholders.OrganizationName, "Test Şubesi");
-            body = body.Replace(EmailPlaceholders.BranchName, "Test Mağazası");
             body = body.Replace(EmailPlaceholders.RecipientName, "Test Kullanıcı");
             body = body.Replace(EmailPlaceholders.RecipientFirstName, "Test");
             body = body.Replace(EmailPlaceholders.RecipientLastName, "Kullanıcı");
