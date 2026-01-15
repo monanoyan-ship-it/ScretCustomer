@@ -93,6 +93,7 @@ Backend/
 **NOT:** Dokümantasyon dosyaları `Storage/` klasöründe (gitignore - müşteriye gitmez)
 
 - `Storage/Documentation/KALDIGIMIZ_YER.md` - **"Nerede kaldık?" diye sorulursa bu dosyayı oku!**
+- `Storage/Documentation/AIReports.md` - **"AI ile ilgili ne yapacaktık?" diye sorulursa bu dosyayı oku!**
 - `Storage/Documentation/mp4analizi.xml` - Müşteri geribidirim analizi ve özellik takibi
 - `Storage/Documentation/DEVELOPMENT_PATTERNS.md` - Kod standartları ve pattern'ler
 - `Storage/docs/` - Teknik dokümantasyon (proje kurulumu, mimari vb.)
