@@ -1,4 +1,131 @@
-# Kaldığımız Yer - 15 Ocak 2026 (Son Güncelleme)
+# Kaldığımız Yer - 16 Ocak 2026 (Son Güncelleme)
+
+---
+
+## ✅ TAMAMLANAN İŞLER (16 Ocak 2026)
+
+### Dış Katılımcı Davetiye Sistemi (SurveyExternalInvitation)
+
+Email listesine açık anket davetiyesi gönderme özelliği eklendi. Artık CustomerPersonnel dışındaki kişilere de anket gönderilebilir.
+
+**Yeni Entity: `SurveyExternalInvitation`**
+```csharp
+public class SurveyExternalInvitation : BaseEntity
+{
+    public int ProjectId { get; set; }
+    public string Email { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string Token { get; set; }  // GUID
+    public int StatusId { get; set; }  // SurveyInvitationStatuses
+    // ... IsOpened, IsCompleted, EvaluationId vb.
+}
+```
+
+**İki Farklı Davet Sistemi:**
+| | **SurveyInvitation** | **SurveyExternalInvitation** |
+|---|---|---|
+| **Hedef** | Müşteri personelleri (CustomerPersonnel) | Dış email listesi |
+| **Token** | Encrypted (projectId:personnelId:timestamp) | GUID (32 karakter) |
+| **Personel** | Zorunlu (CustomerPersonnelId) | Yok (sadece email + opsiyonel ad-soyad) |
+| **UI Tab** | "Personel Davetiyeleri" | "Dış Katılımcılar" |
+
+**Yeni API Endpoint'leri:**
+- `POST /api/surveys/{projectId}/send-external-invitations` - Email listesine gönder
+- `GET /api/surveys/{projectId}/external-invitations` - Davetiye listesi
+- `GET /api/surveys/{projectId}/external-invitation-stats` - İstatistikler
+- `POST /api/surveys/{projectId}/retry-external-failed` - Başarısızları tekrar gönder
+
+**Email Giriş Formatı:**
+```
+email1@example.com
+email2@example.com; Ahmet Yılmaz
+email3@example.com, email4@example.com
+```
+- Virgül, boşluk veya satır sonu ile ayırma
+- Opsiyonel ad-soyad: `email@x.com; Ad Soyad`
+
+**UI Değişiklikleri:**
+- Proje modal'a tab sistemi eklendi (Personel Davetiyeleri / Dış Katılımcılar)
+- `Views/Projects/Index.cshtml` güncellendi
+- `wwwroot/js/Projects/Index.js` güncellendi
+
+---
+
+### SurveyInvitationStatuses TypeItem'a Taşındı
+
+`SurveyInvitationStatus` string const class'ı `SurveyInvitationStatuses` TypeItem'a dönüştürüldü.
+
+**Önceki (string):**
+```csharp
+public string Status { get; set; } = SurveyInvitationStatus.Pending; // "Pending"
+```
+
+**Sonraki (int):**
+```csharp
+public int StatusId { get; set; } = SurveyInvitationStatuses.Ids.Pending; // 1
+```
+
+**TypeDefinitions.cs'e eklenen:**
+```csharp
+public static class SurveyInvitationStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", ...);
+    public static readonly TypeItem Sent = new(2, "Sent", ...);
+    public static readonly TypeItem Failed = new(3, "Failed", ...);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int Sent = 2;
+        public const int Failed = 3;
+    }
+}
+```
+
+**Migration:** `ChangeStatusToStatusId` - Veri dönüşümü SQL'leri ile
+
+---
+
+### Survey Token Validation Hataya Toleranslı
+
+Test email'lerinden gelen linkler çalışmıyordu çünkü SurveyInvitations tablosu yoktu veya kayıt bulunamıyordu.
+
+**Düzeltme:**
+- ValidateToken ve SubmitSurvey'deki SurveyInvitation sorguları try-catch içine alındı
+- Tablo/kayıt yoksa sessizce geçiyor, anket yine de çalışıyor
+- Hata sadece loglanıyor
+
+---
+
+### CustomerPortal branch → project Terminolojisi
+
+Tüm "branch" referansları "project" olarak güncellendi:
+- `branches.js` → `projects.js` (rename)
+- API endpoint'leri: `/api/customer/portal/branches` → `/api/customer/portal/projects`
+- DTO'lar: `branchCount` → `projectCount`
+- View binding'ler güncellendi
+
+---
+
+### Yeni Modüller (Önceki oturumdan)
+
+**PerformanceSettings:**
+- Proje tipi bazlı hedef ve eşik değer ayarları
+- `/Settings/PerformanceSettings` sayfası
+- `/api/performance-settings` API
+
+**SupportRequest:**
+- Kullanıcı destek talep/hata bildirim modülü
+- `/SupportRequests/Index` sayfası
+- Widget: `_SupportRequestWidget.cshtml`
+
+---
+
+## 📝 YAPILACAKLAR (Backlog)
+
+- [ ] CSV/Excel dosya yükleme ile external email listesi (hazırlık yapıldı, endpoint eklenmedi)
+- [ ] SurveyInvitations tablosu için migration uygulama kontrolü
 
 ---
 
@@ -65,75 +192,6 @@ Müşteri portalına yeni rapor sayfaları eklendi. Bu raporlar admin versiyonla
 
 ---
 
-## 📝 YAPILACAKLAR (Backlog)
-
-- [x] ~~Her rapora müşteri raporları kısmını da ekle~~ (TAMAMLANDI - 15 Ocak 2026)
-  - Cezalı KL, Öneriler, Temsilci Karnesi raporları CustomerPortal'a eklendi
-
----
-
-## ✅ TAMAMLANAN İŞLER (9 Ocak 2026)
-
-### Excel → CSV Dönüşümleri
-
-**Personel Import:**
-| Excel Dosyası | CSV Çıktısı | İçerik |
-|---------------|-------------|--------|
-| `Bosch Home Come.xlsx` | `Bosch_Home_Come_personnel.csv` | 4 Manager, 38 Operator (42 kişi) |
-
-**Checklist Import:**
-| Excel Dosyası | CSV Çıktısı | İçerik |
-|---------------|-------------|--------|
-| `Bosch cozumleme.xlsx` | `Bosch_checklist_import.csv` | 23 soru (SubCriteria dahil) |
-| `Boyner ınbound.xlsx` | `Boyner_inbound_checklist.csv` | 49 soru (26 Scored, 11 YellowCard, 11 RedCard, 1 Unscored) |
-
-### Checklist Import Güncellemesi
-- Import artık **yeni checklist oluşturuyor** (mevcut güncelleme yerine)
-- Parametreler: `checklistName`, `customerId` (opsiyonel), `description` (opsiyonel)
-- API: `POST /api/import/checklist?checklistName=...&customerId=...&description=...`
-
-### Checklist Soru Layout Düzenlemesi
-- Soru kartı layout değişti:
-  - Satır 1: Soru Grubu (tam genişlik)
-  - Satır 2: Soru Metni (tam genişlik)
-  - Satır 3: Puanlama - Ağırlık Puanı - Maks Puan - Ceza Tipi - Sıra - Zorunlu
-- `Question.GroupName` MaxLength(200) limiti kaldırıldı (artık sınırsız)
-- Migration: `RemoveGroupNameMaxLength`
-
-### Checklist CSV Import Özelliği
-- `/Import/Index` sayfasına yeni "Checklist İçe Aktarma" tabı eklendi
-- API: `POST /api/import/checklist?checklistId={id}&clearExisting=false`
-- Şablon: `GET /api/import/checklist/template`
-
-**CSV Formatı:**
-```csv
-GroupName,QuestionText,WeightPoints,MaxPoints,ScoringType,PenaltyType,SubCriteria,Order,IsRequired,HelpText
-İletişim,Müşterinin sözü kesildi,3,3,Scored,None,"Alt kriter 1|Alt kriter 2",1,false,
-Kritik,Kabul Edilemez Eylemler,100,1,Penalty,RedCard,"KVKK ihlali|Polemik",2,true,Kırmızı kart
-```
-
-**Kolonlar:**
-| Kolon | Açıklama | Zorunlu | Varsayılan |
-|-------|----------|---------|------------|
-| GroupName | Soru grubu adı | Hayır | - |
-| QuestionText | Soru metni | EVET | - |
-| WeightPoints | Ağırlık puanı | Hayır | 1 |
-| MaxPoints | Maks puan (1-10) | Hayır | 5 |
-| ScoringType | Scored/Unscored/Penalty | Hayır | Scored |
-| PenaltyType | None/YellowCard/RedCard | Hayır | None |
-| SubCriteria | Alt kriterler (pipe ile ayrılmış) | Hayır | - |
-| Order | Sıra numarası | Hayır | Otomatik |
-| IsRequired | Zorunlu mu | Hayır | false |
-| HelpText | Yardımcı metin | Hayır | - |
-
-### Form.cshtml Pattern İhlali Düzeltildi
-- `Views/Evaluations/Form.cshtml` silindi (ayrı sayfa YASAK)
-- `wwwroot/js/Evaluations/Form.js` silindi
-- `EvaluationsController.Form()` action kaldırıldı
-- Pattern'e göre: Değerlendirmeler sadece Index.cshtml'deki modal ile yapılır
-
----
-
 ## 📋 IMPORT ŞABLONLARI (Boş Kalıp)
 
 ### Personel Import CSV
@@ -154,125 +212,14 @@ Grup Adı,Soru metni,3,5,Scored,None,"Alt kriter 1|Alt kriter 2"
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (1 Ocak 2026)
+## Teknik Notlar
 
-### Faz 1: Değerlendirme Akışı Güncellemesi
+### Database
+- Migration'lar güncel
+- Son migration: `ChangeStatusToStatusId`
 
-**Cascade Dropdown (Önce Organizasyon, Sonra Personel):**
-- `EvaluationFormDto`'ya `AvailableOrganizations` eklendi
-- Yeni endpoint: `GET /api/evaluations/personnel-by-org/{organizationId}`
-- `SubmitEvaluationDto`'ya `EvaluatedOrganizationId` eklendi
-- Frontend: Organizasyon seçimi ZORUNLU yapıldı
-- Organizasyon seçilmeden personel listesi gösterilmiyor
-
-### Faz 2: Dashboard Metrikleri
-
-**Yeni Entity: SystemSetting**
-- Sistem ayarları için key-value tablosu
-- `DailyEvaluationTarget = 55` varsayılan değer
-- SystemSettingService ve API controller oluşturuldu
-
-**Yeni Dashboard Widget'ları:**
-- Günlük dinleme metrikleri (Bugün, Bu Hafta, Bu Ay)
-- Günlük hedef progress bar
-- Son 7 günün trend grafiği
-- En çok dinleyen kullanıcılar (bugün ve bu ay)
-- Dönem hedef takibi
-
-**Yeni API Endpoint'leri:**
-- `GET /api/dashboard/daily-metrics`
-- `GET /api/dashboard/user-performance`
-- `GET /api/dashboard/target-progress`
-
-### Faz 3: Hiyerarşi Görünümü (Tree View)
-
-**Tree View Özellikleri:**
-- Organizasyonlar ağaç yapısında gösteriliyor
-- Expand/collapse toggle
-- Drag & drop ile parent değiştirme
-- Alt organizasyon ekleme butonu
-- Düzenle ve sil butonları her node'da
-
-**Backend:**
-- `MoveOrganizationAsync` metodu eklendi (ICustomerOrganizationService)
-- `PUT /api/customer-organizations/{id}/move` endpoint'i eklendi
-- Döngüsel referans kontrolü mevcut
-
-**Frontend:**
-- KnockoutJS template kullanımı (recursive tree)
-- Native HTML5 drag & drop API
-- CSS stilleri eklendi
-
----
-
-## ✅ TAMAMLANAN İŞLER (31 Aralık 2025 - Önceki)
-
-### Modül Temizliği ve FieldWorker Kaldırma
-
-**Kaldırılan Modüller:**
-- FieldWorker entity ve ilgili tüm dosyalar (Controller, Service, Repository, DTO, View, JS)
-- Organization modülü (OrganizationUnit, Delegation)
-- Visit modülü (VisitDetails, CustomerVisit, VisitSector, VisitFieldDefinition)
-- Calls modülü
-
-**Assignment Yapısı Güncellendi:**
-- Assignment artık doğrudan User'a bağlı (`AssignedUserId`)
-- `AssignedFieldWorkerId` kaldırıldı
-- `GetByFieldWorkerIdAsync` metodu `GetByUserIdAsync` olarak değiştirildi
-
-**Sidebar Sadeleştirildi:**
-- "İşlemler" menüsü kaldırıldı
-- "Görevlerim" ve "Değerlendirmeler" üst seviye menü öğeleri olarak taşındı
-- "Saha Çalışanları" menü öğesi kaldırıldı
-
-**Yeni Eklenenler:**
-- CustomerOrganizations controller/view eklendi (Müşteri Organizasyonları yönetimi)
-
-**Migration:**
-- `RemoveVisitAndCallModules`
-- `RemoveOrganizationUnitAndDelegation`
-- `RemoveFieldWorkerEntity`
-
-**Commit:** `845b0b7` - FieldWorker entity kaldırıldı, modül temizliği yapıldı
-
----
-
-## ✅ TAMAMLANAN İŞLER (8 Ocak 2026)
-
-### Section Yapısı Temizliği
-
-**Section Kullanımı Kaldırıldı:**
-- `EvaluationService.cs`: `Sections.SelectMany` → `Questions.Where`
-- `EvaluationService.cs`: `ThenInclude(c => c.Sections)` → `ThenInclude(c => c.Questions)`
-- `AssignmentRepository.cs`: Aynı düzeltme
-- `ProcessEvaluationAsync`: Questions direkt Checklist'e bağlı
-
-**PenaltyType'a Göre Gruplama:**
-- Sorular (penaltyType = None) → Mavi başlık
-- Sarı Kartlar (penaltyType = YellowCard) → Sarı başlık
-- Kırmızı Kartlar (penaltyType = RedCard) → Kırmızı başlık
-
-**UI Düzeltmeleri:**
-- Her soruda ağırlık/max badge gösterimi
-- Puan barındaki ağırlık grupları kaldırıldı (grup başlıklarına taşındı)
-- Dönem uyarısı kaldırıldı
-- Detay modalı: `with` binding düzeltmesi (boş modal sorunu)
-
-**Commit:** `6873a9e` - Section yapısı kaldırıldı, PenaltyType gruplama eklendi
-
----
-
-## 📝 NOTLAR
-
-### Entity Durumu
-- **Section entity hala projede VAR** ama kullanılmıyor
-- Questions artık direkt Checklist'e bağlı (`SectionId` nullable)
-- İleride Section entity tamamen silinebilir
-
-### GroupName Hakkında
-- Question entity'sinde `GroupName` alanı var
-- Bu alan sadece **RAPORLAMA** için kullanılacak
-- UI'da gruplama yapılmıyor, sadece PenaltyType'a göre sıralama var
+### Build Durumu
+- Son build: 0 Error, 12 Warning (nullable reference uyarıları)
 
 ---
 
@@ -334,17 +281,6 @@ Firma: Ford
          ↓
 6. Hata varsa → ID ver → Yönetici taslağa alır → Tekrar değerlendir
 ```
-
----
-
-## Teknik Notlar
-
-### Database
-- Database tazelenebilir (yeni migration ile)
-- Tüm eski veriler silinecek
-
-### Build Durumu
-- Son build: 0 Error, 0 Warning
 
 ---
 
