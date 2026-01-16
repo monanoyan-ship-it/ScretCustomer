@@ -76,8 +76,6 @@
                             <div class="mt-2">
                                 <!-- Score Input (if showScoreInput is true) -->
                                 <!-- ko if: showScoreInput -->
-                                <!-- Scored Question -->
-                                <!-- ko if: scoringType === 'Scored' -->
                                 <div class="btn-group" role="group">
                                     <!-- ko foreach: $root.getScoreOptions(maxPoints) -->
                                     <input type="radio" class="btn-check"
@@ -87,25 +85,6 @@
                                     <label class="btn btn-outline-primary btn-sm" data-bind="attr: { for: 'q' + $parent.id + '_' + $data }, text: $data"></label>
                                     <!-- /ko -->
                                 </div>
-                                <!-- /ko -->
-
-                                <!-- YesNo Question -->
-                                <!-- ko if: scoringType === 'YesNo' -->
-                                <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check"
-                                           data-bind="attr: { id: 'q' + id + '_yes', name: 'yesno_' + id },
-                                                      checked: answer().score, checkedValue: maxPoints">
-                                    <label class="btn btn-outline-success btn-sm" data-bind="attr: { for: 'q' + id + '_yes' }">
-                                        <i class="bi bi-check-lg"></i> Evet
-                                    </label>
-                                    <input type="radio" class="btn-check"
-                                           data-bind="attr: { id: 'q' + id + '_no', name: 'yesno_' + id },
-                                                      checked: answer().score, checkedValue: 0">
-                                    <label class="btn btn-outline-danger btn-sm" data-bind="attr: { for: 'q' + id + '_no' }">
-                                        <i class="bi bi-x-lg"></i> Hayır
-                                    </label>
-                                </div>
-                                <!-- /ko -->
                                 <!-- /ko -->
 
                                 <!-- SubCriteria Selection (if available) - Puanın altında -->
@@ -141,15 +120,8 @@
                                 </div>
                                 <!-- /ko -->
 
-                                <!-- Descriptive Question -->
-                                <!-- ko if: scoringType === 'Descriptive' -->
-                                <textarea class="form-control form-control-sm" rows="2"
-                                          placeholder="Cevabınızı yazın..."
-                                          data-bind="value: answer().comment"></textarea>
-                                <!-- /ko -->
-
-                                <!-- Comment for scored questions (only if allowComment is true) - En sonda -->
-                                <!-- ko if: scoringType !== 'Descriptive' && allowComment -->
+                                <!-- Comment (if allowComment is true) - En sonda -->
+                                <!-- ko if: allowComment -->
                                 <div class="mt-2">
                                     <input type="text" class="form-control form-control-sm"
                                            placeholder="Yorum (opsiyonel)"
