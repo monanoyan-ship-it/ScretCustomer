@@ -358,7 +358,7 @@ public class ApplicationDbContext : DbContext
         // ===== SurveyInvitation İlişkileri =====
         modelBuilder.Entity<SurveyInvitation>()
             .HasOne(si => si.Project)
-            .WithMany()
+            .WithMany(p => p.SurveyInvitations)
             .HasForeignKey(si => si.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -379,7 +379,7 @@ public class ApplicationDbContext : DbContext
         // ===== SurveyExternalInvitation İlişkileri =====
         modelBuilder.Entity<SurveyExternalInvitation>()
             .HasOne(sei => sei.Project)
-            .WithMany()
+            .WithMany(p => p.SurveyExternalInvitations)
             .HasForeignKey(sei => sei.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 

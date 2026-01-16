@@ -685,6 +685,14 @@ public class SurveyApiController : ControllerBase
     /// <summary>
     /// Cevapları kaydet ve toplam puanı hesapla (ortak method)
     /// Returns: (TotalScore, MaxScore, ScorePercentage)
+    ///
+    /// Puan hesaplama mantığı:
+    /// 1. ShowScoreInput = true: Manuel puan girişi ile hesaplama (Score / MaxPoints * WeightPoints)
+    /// 2. ShowScoreInput = false: SubCriteria seçimine göre hesaplama
+    ///    - Tekli seçim: Seçilen SubCriteria.WeightPoints (max: Question.WeightPoints)
+    ///    - Çoklu seçim: (Seçilen ağırlık toplamı / Tüm ağırlık toplamı) * Question.WeightPoints
+    /// 3. Zorunlu değilse ve cevaplanmamışsa: Max puana dahil edilmez
+    /// 4. Penalty sorular: Puan kesmek için kullanılır (kazanılan puandan düşer)
     /// </summary>
     private async Task<(decimal? TotalScore, decimal? MaxScore, decimal? ScorePercentage)> SaveAnswersAndCalculateScore(int evaluationId, int? checklistId, List<SurveyAnswerDto> answers)
     {
@@ -692,10 +700,21 @@ public class SurveyApiController : ControllerBase
 
         decimal totalEarned = 0;
         decimal totalMax = 0;
+        decimal penaltyDeduction = 0;
+        int yellowCardCount = 0;
+        int redCardCount = 0;
 
+        // Soruları SubCriteria ile birlikte yükle
         var questions = await _context.Questions
+            .Include(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .Where(q => q.ChecklistId == checklistId && !q.IsDeleted)
             .ToListAsync();
+
+        // Cevaplanan soru ID'lerini takip et
+        var answeredQuestionIds = answers
+            .Where(a => a.Score.HasValue || (a.SelectedSubCriteriaIds != null && a.SelectedSubCriteriaIds.Any()))
+            .Select(a => a.QuestionId)
+            .ToHashSet();
 
         foreach (var answerDto in answers)
         {
@@ -729,15 +748,111 @@ public class SurveyApiController : ControllerBase
                 }
             }
 
-            // Puan hesapla
-            if (answerDto.Score.HasValue && question.ScoringTypeId == ScoringTypes.Ids.Scored)
+            // Unscored sorular puana dahil edilmez
+            if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
             {
+                continue;
+            }
+
+            // Soru cevaplanmış mı kontrol et
+            bool isAnswered = answerDto.Score.HasValue ||
+                             (answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any());
+
+            // Zorunlu değilse ve cevaplanmamışsa, max puana dahil etme
+            if (!question.IsRequired && !isAnswered)
+            {
+                continue;
+            }
+
+            // Penalty sorular - puan kesmek için
+            if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
+            {
+                // Penalty sorusu seçildiyse (cevaplandıysa) cezayı uygula
+                if (isAnswered)
+                {
+                    if (question.PenaltyTypeId == PenaltyTypes.Ids.YellowCard)
+                    {
+                        yellowCardCount++;
+                        // Sarı kart: Sorunun ağırlık puanı kadar düş
+                        penaltyDeduction += question.WeightPoints;
+                    }
+                    else if (question.PenaltyTypeId == PenaltyTypes.Ids.RedCard)
+                    {
+                        redCardCount++;
+                        // Kırmızı kart: Sorunun ağırlık puanı kadar düş (veya daha fazla)
+                        penaltyDeduction += question.WeightPoints;
+                    }
+                }
+                continue; // Penalty sorular max puana dahil edilmez
+            }
+
+            // Scored sorular - puan hesaplama
+            if (question.ScoringTypeId == ScoringTypes.Ids.Scored)
+            {
+                // Max puana ekle (zorunlu veya cevaplanmış)
                 totalMax += question.WeightPoints;
-                totalEarned += (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
+
+                decimal earnedPoints = 0;
+
+                // ShowScoreInput = true: Manuel puan girişi
+                if (question.ShowScoreInput && answerDto.Score.HasValue)
+                {
+                    earnedPoints = (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
+                }
+                // ShowScoreInput = false: SubCriteria bazlı hesaplama
+                else if (!question.ShowScoreInput && answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any())
+                {
+                    var allSubCriteria = question.SubCriteria.ToList();
+
+                    if (allSubCriteria.Any())
+                    {
+                        // Seçilen SubCriteria'ların ağırlık toplamı
+                        var selectedWeight = allSubCriteria
+                            .Where(sc => answerDto.SelectedSubCriteriaIds.Contains(sc.Id))
+                            .Sum(sc => sc.WeightPoints);
+
+                        // Tekli seçim (SelectionTypeId = 1)
+                        if (question.SelectionTypeId == SelectionTypes.Ids.Single)
+                        {
+                            // Seçilen SubCriteria.WeightPoints (max: Question.WeightPoints)
+                            earnedPoints = Math.Min(selectedWeight, question.WeightPoints);
+                        }
+                        // Çoklu seçim (SelectionTypeId = 2)
+                        else
+                        {
+                            // Tüm SubCriteria'ların ağırlık toplamı
+                            var totalSubCriteriaWeight = allSubCriteria.Sum(sc => sc.WeightPoints);
+
+                            if (totalSubCriteriaWeight > 0)
+                            {
+                                // (Seçilen / Toplam) * Question.WeightPoints
+                                earnedPoints = (selectedWeight / totalSubCriteriaWeight) * question.WeightPoints;
+                                // Max: Question.WeightPoints
+                                earnedPoints = Math.Min(earnedPoints, question.WeightPoints);
+                            }
+                        }
+                    }
+                }
+
+                // EarnedPoints'i Answer'a kaydet (raporlama için)
+                answer.EarnedPoints = Math.Round(earnedPoints, 2);
+
+                totalEarned += earnedPoints;
             }
         }
 
         await _context.SaveChangesAsync();
+
+        // Penalty kesintisini uygula
+        totalEarned = Math.Max(0, totalEarned - penaltyDeduction);
+
+        // Evaluation'a kart sayılarını kaydet
+        var evaluation = await _context.Evaluations.FindAsync(evaluationId);
+        if (evaluation != null)
+        {
+            evaluation.YellowCardCount = yellowCardCount;
+            evaluation.RedCardCount = redCardCount;
+        }
 
         // Toplam puanı hesapla
         if (totalMax > 0)

@@ -391,6 +391,8 @@ public class ReportService : IReportService
                 }).ToList(),
 
             // Düz liste halinde tüm soru-cevaplar (Online Anket detayı için)
+            // Score: Her zaman hesaplanmış ağırlıklı puan (EarnedPoints)
+            // MaxPoints: Sorunun ağırlık puanı (WeightPoints)
             QuestionAnswers = evaluation.Answers
                 .Where(a => a.Question != null)
                 .OrderBy(a => a.Question!.GroupName ?? "")
@@ -400,8 +402,8 @@ public class ReportService : IReportService
                     QuestionText = a.Question!.Text,
                     GroupName = a.Question.GroupName,
                     Order = a.Question.Order,
-                    Score = a.AnswerNumeric ?? a.EarnedPoints,
-                    MaxPoints = a.Question.WeightPoints,
+                    Score = a.Question.ShowScoreInput ? a.AnswerNumeric : a.EarnedPoints,
+                    MaxPoints = a.Question.ShowScoreInput ? a.Question.MaxPoints : a.Question.WeightPoints,
                     SelectedSubCriteria = a.SubCriteriaSelections
                         .Select(s => s.SubCriteria.Description)
                         .ToList(),
