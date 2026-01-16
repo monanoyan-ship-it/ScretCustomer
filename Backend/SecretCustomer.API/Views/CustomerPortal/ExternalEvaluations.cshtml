@@ -118,7 +118,7 @@
                                 <i class="bi bi-bar-chart me-2"></i>@Html.T("Report.QuestionGroupAverage", "Soru Grubu Ortalama")
                             </a></li>
                             <li><a class="dropdown-item" href="#" data-bind="click: exportCustomerEvaluationReport">
-                                <i class="bi bi-people me-2"></i>@Html.T("Report.CustomerEvaluation", "Müşteri Değerlendirme")
+                                <i class="bi bi-people me-2"></i>@Html.T("Report.CustomerEvaluation", "Genel Değerlendirme")
                             </a></li>
                             <li><a class="dropdown-item" href="#" data-bind="click: exportProjectPerformanceReport">
                                 <i class="bi bi-graph-up me-2"></i>@Html.T("Report.ProjectPerformance", "Proje Performans")
@@ -224,10 +224,10 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" data-bind="click: $parent.showDetails" title="@Html.T("Common.Details", "Detay")">
+                                        <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.showDetails" title="@Html.T("Common.Details", "Detay")">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button class="btn btn-outline-secondary" data-bind="click: $parent.showAttachments" title="@Html.T("Evaluation.Attachments", "Dosyalar")">
+                                        <button type="button" class="btn btn-outline-secondary" data-bind="click: $parent.showAttachments" title="@Html.T("Evaluation.Attachments", "Dosyalar")">
                                             <i class="bi bi-paperclip"></i>
                                         </button>
                                     </div>

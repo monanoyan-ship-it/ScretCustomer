@@ -1154,6 +1154,7 @@ public class ReportService : IReportService
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
             await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Report.Organization", defaultValue: "Organizasyon"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
@@ -1183,6 +1184,7 @@ public class ReportService : IReportService
             int col = 1;
             penaltiesSheet.Cell(row, col++).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             penaltiesSheet.Cell(row, col++).Value = penalty.ProjectName;
+            penaltiesSheet.Cell(row, col++).Value = penalty.OrganizationName ?? "";
             penaltiesSheet.Cell(row, col++).Value = penalty.ChecklistName ?? "";
             penaltiesSheet.Cell(row, col++).Value = penalty.GroupName;
             penaltiesSheet.Cell(row, col++).Value = penalty.QuestionText;
@@ -1879,6 +1881,7 @@ public class ReportService : IReportService
                 GroupName = g.Key.GroupName,
                 ChecklistName = g.Key.ChecklistName,
                 SuggestionCount = g.Count(),
+                EvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count(),
                 AverageScore = g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0).Any()
                     ? Math.Round(g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0)
                         .Average(a => (a.EarnedPoints!.Value / a.Question!.WeightPoints) * 100), 1)
@@ -4110,7 +4113,68 @@ public class ReportService : IReportService
                 : null
         }).ToList();
 
-        // 3. Genel Özet
+        // 3. Proje Tipi Bazlı Performans Karşılaştırması
+        var performanceSettings = await _context.Set<PerformanceSettings>()
+            .Where(ps => !ps.IsDeleted && ps.IsActive)
+            .ToListAsync();
+
+        var projectTypeStats = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .GroupBy(e => e.Assignment.Project.ProjectTypeId)
+            .Select(g => new
+            {
+                ProjectTypeId = g.Key,
+                TodayCount = g.Count(e => e.CompletedAt >= todayStart),
+                WeekCount = g.Count(e => e.CompletedAt >= weekStart),
+                MonthCount = g.Count(e => e.CompletedAt >= monthStart),
+                YearCount = g.Count(e => e.CompletedAt >= yearStart),
+                TotalScore = g.Sum(e => e.ScorePercentage ?? 0),
+                ScoredCount = g.Count(e => e.ScorePercentage != null)
+            })
+            .ToListAsync();
+
+        result.ProjectTypePerformances = ProjectTypes.All
+            .Select(pt =>
+            {
+                var settings = performanceSettings.FirstOrDefault(ps => ps.ProjectTypeId == pt.Id);
+                var stats = projectTypeStats.FirstOrDefault(s => s.ProjectTypeId == pt.Id);
+
+                var dto = new ProjectTypePerformanceDto
+                {
+                    ProjectTypeId = pt.Id,
+                    ProjectTypeName = pt.NameResourceKey,
+                    DailyTarget = settings?.DailyTarget,
+                    WeeklyTarget = settings?.WeeklyTarget,
+                    MonthlyTarget = settings?.MonthlyTarget,
+                    YearlyTarget = settings?.YearlyTarget,
+                    SuccessThreshold = settings?.SuccessThreshold,
+                    WarningThreshold = settings?.WarningThreshold,
+                    TodayCount = stats?.TodayCount ?? 0,
+                    WeekCount = stats?.WeekCount ?? 0,
+                    MonthCount = stats?.MonthCount ?? 0,
+                    YearCount = stats?.YearCount ?? 0,
+                    AverageScore = stats != null && stats.ScoredCount > 0
+                        ? Math.Round(stats.TotalScore / stats.ScoredCount, 2)
+                        : 0
+                };
+
+                // Hedef yüzdeleri hesapla
+                if (dto.DailyTarget.HasValue && dto.DailyTarget > 0)
+                    dto.DailyPercentage = Math.Round((decimal)dto.TodayCount / dto.DailyTarget.Value * 100, 1);
+                if (dto.WeeklyTarget.HasValue && dto.WeeklyTarget > 0)
+                    dto.WeeklyPercentage = Math.Round((decimal)dto.WeekCount / dto.WeeklyTarget.Value * 100, 1);
+                if (dto.MonthlyTarget.HasValue && dto.MonthlyTarget > 0)
+                    dto.MonthlyPercentage = Math.Round((decimal)dto.MonthCount / dto.MonthlyTarget.Value * 100, 1);
+                if (dto.YearlyTarget.HasValue && dto.YearlyTarget > 0)
+                    dto.YearlyPercentage = Math.Round((decimal)dto.YearCount / dto.YearlyTarget.Value * 100, 1);
+
+                return dto;
+            })
+            .Where(dto => dto.DailyTarget.HasValue || dto.WeeklyTarget.HasValue || dto.MonthlyTarget.HasValue || dto.YearlyTarget.HasValue ||
+                          dto.TodayCount > 0 || dto.WeekCount > 0 || dto.MonthCount > 0 || dto.YearCount > 0)
+            .ToList();
+
+        // 4. Genel Özet
         result.Summary = new PerformanceSummaryDto
         {
             TotalEvaluators = result.EvaluatorPerformances.Count,
@@ -4122,5 +4186,254 @@ public class ReportService : IReportService
         };
 
         return result;
+    }
+
+    // ===== GENEL SORU PUAN DAĞILIMI =====
+
+    /// <summary>
+    /// Online anket projelerindeki soruların genel puan dağılımını getirir
+    /// </summary>
+    public async Task<SurveyQuestionScoreDistributionResultDto> GetSurveyQuestionScoreDistributionAsync(
+        int? projectId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null)
+    {
+        // Default: Son 7 gün
+        var effectiveEndDate = endDate ?? DateTime.UtcNow;
+        var effectiveStartDate = startDate ?? effectiveEndDate.AddDays(-7);
+
+        // UTC'ye çevir
+        if (effectiveStartDate.Kind != DateTimeKind.Utc)
+            effectiveStartDate = DateTime.SpecifyKind(effectiveStartDate, DateTimeKind.Utc);
+        if (effectiveEndDate.Kind != DateTimeKind.Utc)
+            effectiveEndDate = DateTime.SpecifyKind(effectiveEndDate.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+
+        // Online anket projelerindeki tamamlanmış değerlendirmeler
+        var evalQuery = _context.Evaluations
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                        e.CompletedAt >= effectiveStartDate &&
+                        e.CompletedAt <= effectiveEndDate);
+
+        if (projectId.HasValue)
+        {
+            evalQuery = evalQuery.Where(e => e.Assignment.ProjectId == projectId.Value);
+        }
+
+        var evaluationIds = await evalQuery.Select(e => e.Id).ToListAsync();
+
+        if (!evaluationIds.Any())
+        {
+            return new SurveyQuestionScoreDistributionResultDto
+            {
+                Questions = new List<SurveyQuestionScoreDistributionDto>(),
+                TotalResponses = 0,
+                OverallAverageScore = 0
+            };
+        }
+
+        // Cevapları ve soruları getir
+        var answers = await _context.Answers
+            .Include(a => a.Question)
+            .Where(a => evaluationIds.Contains(a.EvaluationId) && !a.Question.IsDeleted)
+            .ToListAsync();
+
+        // Soru bazlı gruplama
+        var questionStats = answers
+            .GroupBy(a => new
+            {
+                a.QuestionId,
+                a.Question.Text,
+                a.Question.GroupName,
+                a.Question.Order,
+                a.Question.MaxPoints
+            })
+            .Select(g => new SurveyQuestionScoreDistributionDto
+            {
+                QuestionId = g.Key.QuestionId,
+                QuestionText = g.Key.Text,
+                GroupName = g.Key.GroupName,
+                Order = g.Key.Order,
+                MaxPoints = g.Key.MaxPoints,
+                ResponseCount = g.Count(),
+                AverageRawScore = g.Where(a => a.AnswerNumeric.HasValue).Any()
+                    ? (decimal?)Math.Round(g.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value), 2)
+                    : null,
+                AverageScore = g.Where(a => a.AnswerNumeric.HasValue).Any() && g.Key.MaxPoints > 0
+                    ? (decimal?)Math.Round(g.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value) / g.Key.MaxPoints * 100, 1)
+                    : null
+            })
+            .OrderBy(q => q.GroupName)
+            .ThenBy(q => q.Order)
+            .ToList();
+
+        // Genel ortalama hesapla
+        var overallAverage = questionStats.Where(q => q.AverageScore.HasValue).Any()
+            ? Math.Round(questionStats.Where(q => q.AverageScore.HasValue).Average(q => q.AverageScore!.Value), 1)
+            : 0;
+
+        return new SurveyQuestionScoreDistributionResultDto
+        {
+            Questions = questionStats,
+            TotalResponses = evaluationIds.Count,
+            OverallAverageScore = overallAverage
+        };
+    }
+
+    // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU =====
+
+    /// <summary>
+    /// Personel Soru Bazlı Performans Raporu - Excel Export
+    /// Proje + Personel + GroupName + Periyot bazında ortalama puan ve hata sayısı
+    /// </summary>
+    public async Task<ExcelExportDto> ExportPersonnelQuestionPerformanceReportAsync(PersonnelQuestionPerformanceFilterDto filter)
+    {
+        // Temel sorgu - tamamlanmış değerlendirmeler
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.EvaluatedCustomerPersonnelId != null);
+
+        // Filtreler
+        if (filter.CustomerId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
+        }
+
+        if (filter.ProjectId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        }
+
+        if (filter.OrganizationId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedOrganizationId == filter.OrganizationId.Value);
+        }
+
+        if (filter.PersonnelId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId.Value);
+        }
+
+        if (filter.PeriodId.HasValue)
+        {
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+        }
+
+        // Verileri çek
+        var evaluations = await query.ToListAsync();
+
+        // Gruplama için veri hazırla
+        var reportData = new List<PersonnelQuestionPerformanceDto>();
+
+        // Her değerlendirme için cevapları grupla
+        var groupedData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => !a.Question.IsDeleted && !string.IsNullOrEmpty(a.Question.GroupName))
+                .Select(a => new
+                {
+                    ProjectName = e.Assignment?.Project?.Name ?? "",
+                    PersonnelId = e.EvaluatedCustomerPersonnelId!.Value,
+                    PersonnelName = e.EvaluatedCustomerPersonnel != null
+                        ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim()
+                        : "",
+                    Department = e.EvaluatedCustomerPersonnel?.Department,
+                    GroupName = a.Question.GroupName ?? "",
+                    EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                    Score = a.AnswerNumeric,
+                    MaxPoints = a.Question.MaxPoints,
+                    IsError = a.AnswerNumeric.HasValue && a.Question.MaxPoints > 0 && a.AnswerNumeric.Value < a.Question.MaxPoints
+                }))
+            .GroupBy(x => new
+            {
+                x.ProjectName,
+                x.PersonnelId,
+                x.PersonnelName,
+                x.Department,
+                x.GroupName,
+                Year = x.EvalDate.Year,
+                Month = x.EvalDate.Month
+            })
+            .Select(g => new PersonnelQuestionPerformanceDto
+            {
+                ProjectName = g.Key.ProjectName,
+                PersonnelId = g.Key.PersonnelId,
+                PersonnelName = g.Key.PersonnelName,
+                Department = g.Key.Department,
+                GroupName = g.Key.GroupName,
+                Year = g.Key.Year,
+                PeriodMonth = $"{g.Key.Year}{g.Key.Month:D2}",
+                AverageScore = g.Where(x => x.Score.HasValue && x.MaxPoints > 0).Any()
+                    ? Math.Round((decimal)g.Where(x => x.Score.HasValue && x.MaxPoints > 0)
+                        .Average(x => (double)(x.Score!.Value / x.MaxPoints * 100)), 2)
+                    : 0,
+                ErrorCount = g.Count(x => x.IsError),
+                EvaluationCount = g.Select(x => x.EvalDate).Distinct().Count()
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.PersonnelName)
+            .ThenBy(x => x.GroupName)
+            .ThenBy(x => x.PeriodMonth)
+            .ToList();
+
+        // Excel oluştur
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Personel Soru Performansı");
+
+        // Başlıklar
+        var headers = new[] { "Proje", "Müşteri Temsilcisi", "Departman", "Kontrol Sorusu", "Periyot", "Periyot (Ay)", "Ortalama Puan", "Hata Sayısı", "Değerlendirme Sayısı" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            sheet.Cell(1, i + 1).Value = headers[i];
+        }
+        sheet.Range(1, 1, 1, headers.Length).Style.Font.Bold = true;
+        sheet.Range(1, 1, 1, headers.Length).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+
+        // Veriler
+        var row = 2;
+        foreach (var item in groupedData)
+        {
+            sheet.Cell(row, 1).Value = item.ProjectName;
+            sheet.Cell(row, 2).Value = item.PersonnelName;
+            sheet.Cell(row, 3).Value = item.Department ?? "";
+            sheet.Cell(row, 4).Value = item.GroupName;
+            sheet.Cell(row, 5).Value = item.Year;
+            sheet.Cell(row, 6).Value = item.PeriodMonth;
+            sheet.Cell(row, 7).Value = item.AverageScore;
+            sheet.Cell(row, 8).Value = item.ErrorCount;
+            sheet.Cell(row, 9).Value = item.EvaluationCount;
+            row++;
+        }
+
+        // Kolon genişlikleri
+        sheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Personel_Soru_Performans_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
     }
 }

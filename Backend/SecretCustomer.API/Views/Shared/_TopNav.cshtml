@@ -1,5 +1,59 @@
 <!-- TopNav Component -->
 <nav id="topnav-component" class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+
+    <!-- Customer Portal Selection Modal (Admin Only) -->
+    <!-- ko if: isAdmin -->
+    <div class="modal fade" data-bind="css: { show: showCustomerModal }, style: { display: showCustomerModal() ? 'block' : 'none' }" tabindex="-1" style="z-index: 1060;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-building me-2"></i>@Html.T("Layout.SelectCustomer", "Müşteri Portalına Git")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeCustomerModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="@Html.T("Layout.SearchCustomer", "Müşteri ara (ad veya kod)...")" data-bind="value: customerSearchText, valueUpdate: 'afterkeydown'" autofocus>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div data-bind="visible: isLoadingCustomers" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Customer List -->
+                    <div data-bind="visible: !isLoadingCustomers()" style="max-height: 400px; overflow-y: auto;">
+                        <div data-bind="visible: filteredCustomers().length === 0" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> @Html.T("Layout.NoCustomersFound", "Müşteri bulunamadı.")
+                        </div>
+                        <div class="list-group" data-bind="foreach: filteredCustomers">
+                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-bind="click: $parent.selectCustomer">
+                                <div>
+                                    <strong data-bind="text: companyName"></strong>
+                                    <!-- ko if: code -->
+                                    <span class="badge bg-secondary ms-2" data-bind="text: code"></span>
+                                    <!-- /ko -->
+                                </div>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeCustomerModal">
+                        <i class="bi bi-x-circle me-1"></i>@Html.T("Common.Cancel", "İptal")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: showCustomerModal }, style: { display: showCustomerModal() ? 'block' : 'none' }" style="z-index: 1055;"></div>
+    <!-- /ko -->
     <div class="container-fluid">
         <!-- Hamburger Menu Button -->
         <button class="btn btn-outline-secondary d-lg-none me-2" type="button" onclick="window.toggleSidebar()">
@@ -45,6 +99,15 @@
                             </h6>
                         </li>
                         <li><hr class="dropdown-divider"></li>
+                        <!-- ko if: isAdmin -->
+                        <li>
+                            <a class="dropdown-item" href="#" data-bind="click: openCustomerPortalModal">
+                                <i class="bi bi-building me-2"></i>
+                                @Html.T("Layout.CustomerPortal", "Müşteri Portalı")
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <!-- /ko -->
                         <li>
                             <form method="post" action="/Account/Logout">
                                 @Html.AntiForgeryToken()
@@ -68,9 +131,26 @@
 
         self.userName = ko.observable('...');
         self.userRole = ko.observable('...');
+        self.isAdmin = ko.observable(false);
         self.languages = ko.observableArray([]);
         self.currentLanguageId = ko.observable(null);
         self.currentLanguageName = ko.observable('TR');
+
+        // Customer Portal Modal
+        self.showCustomerModal = ko.observable(false);
+        self.customerSearchText = ko.observable('');
+        self.allCustomers = ko.observableArray([]);
+        self.isLoadingCustomers = ko.observable(false);
+
+        self.filteredCustomers = ko.computed(function() {
+            var search = (self.customerSearchText() || '').toLowerCase();
+            var list = self.allCustomers();
+            if (!search) return list;
+            return list.filter(function(c) {
+                return (c.companyName || '').toLowerCase().indexOf(search) >= 0 ||
+                       (c.code || '').toLowerCase().indexOf(search) >= 0;
+            });
+        });
 
         // Load current user info
         fetch('/api/auth/me', {
@@ -80,10 +160,58 @@
         .then(data => {
             self.userName(data.username || 'Kullanıcı');
             self.userRole(data.role || 'User');
+            self.isAdmin(data.role === 'Admin');
         })
         .catch(error => {
             console.error('Error loading user info:', error);
         });
+
+        // Open Customer Portal Modal
+        self.openCustomerPortalModal = function() {
+            self.showCustomerModal(true);
+            self.customerSearchText('');
+            self.loadCustomers();
+        };
+
+        // Close modal
+        self.closeCustomerModal = function() {
+            self.showCustomerModal(false);
+        };
+
+        // Load customers for selection
+        self.loadCustomers = function() {
+            self.isLoadingCustomers(true);
+            fetch('/api/customer/portal/admin/customers?includeInactive=true', {
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(data => {
+                self.allCustomers(data || []);
+            })
+            .catch(error => {
+                console.error('Error loading customers:', error);
+            })
+            .finally(function() {
+                self.isLoadingCustomers(false);
+            });
+        };
+
+        // Select customer and go to portal
+        self.selectCustomer = function(customer) {
+            fetch('/api/customer/portal/admin/view-as-customer/' + customer.id, {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/CustomerPortal/Dashboard';
+                }
+            })
+            .catch(error => {
+                console.error('Error selecting customer:', error);
+            });
+        };
 
         // Load languages
         fetch('/api/localization/languages?onlyActive=true')

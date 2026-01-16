@@ -762,6 +762,22 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Durum ID'sinden Türkçe durum adını döndürür
+    /// </summary>
+    private static string GetStatusDisplayName(int statusId)
+    {
+        return statusId switch
+        {
+            EvaluationStatuses.Ids.Pending => "Beklemede",
+            EvaluationStatuses.Ids.InProgress => "Devam Ediyor",
+            EvaluationStatuses.Ids.Completed => "Tamamlandı",
+            EvaluationStatuses.Ids.Draft => "Taslak",
+            EvaluationStatuses.Ids.Cancelled => "İptal Edildi",
+            _ => "-"
+        };
+    }
+
+    /// <summary>
     /// Değerlendirilen personel bilgisi var mı kontrol eder
     /// EvaluatedPersonnelId, EvaluatedCustomerPersonnelId, EvaluatedUnknownPersonnel veya NewPersonnel'den biri dolu olmalı
     /// </summary>
@@ -824,6 +840,162 @@ public class EvaluationsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error recalculating scores");
             return StatusCode(500, CreateErrorResponse("Puanlar yeniden hesaplanırken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Değerlendirmeleri Excel'e aktarır
+    /// </summary>
+    [HttpGet("export")]
+    [Authorize]
+    public async Task<IActionResult> ExportToExcel(
+        [FromQuery] string? status = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? personnel = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] DateTime? controlStartDate = null,
+        [FromQuery] DateTime? controlEndDate = null)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+            }
+
+            // Kullanıcının erişebildiği değerlendirmeleri getir
+            IQueryable<Evaluation> query;
+            if (userType == "CustomerPersonnel")
+            {
+                query = _context.Evaluations
+                    .Include(e => e.Assignment).ThenInclude(a => a.Project)
+                    .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                    .Include(e => e.EvaluatedPersonnel)
+                    .Where(e => !e.IsDeleted && e.EvaluatorCustomerPersonnelId == userId);
+            }
+            else
+            {
+                query = _context.Evaluations
+                    .Include(e => e.Assignment).ThenInclude(a => a.Project)
+                    .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                    .Include(e => e.EvaluatedPersonnel)
+                    .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
+            }
+
+            // Filtreleri uygula
+            if (!string.IsNullOrEmpty(status))
+            {
+                var statusType = EvaluationStatuses.GetBySystemName(status);
+                if (statusType != null)
+                {
+                    query = query.Where(e => e.StatusId == statusType.Id);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var searchLower = search.ToLower();
+                query = query.Where(e =>
+                    (e.Assignment.Project != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
+                    (e.Assignment.Checklist != null && e.Assignment.Checklist.Name.ToLower().Contains(searchLower)) ||
+                    (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(searchLower)) ||
+                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
+                    (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
+            }
+
+            if (!string.IsNullOrEmpty(personnel))
+            {
+                var personnelLower = personnel.ToLower();
+                query = query.Where(e =>
+                    (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(personnelLower)) ||
+                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(personnelLower)));
+            }
+
+            // Tarih aralığı filtresi (callDate, completedAt veya createdAt)
+            if (startDate.HasValue)
+            {
+                var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+            }
+            if (endDate.HasValue)
+            {
+                var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+            }
+
+            // Kontrol tarihi filtresi (sadece createdAt)
+            if (controlStartDate.HasValue)
+            {
+                var cStart = DateTime.SpecifyKind(controlStartDate.Value.Date, DateTimeKind.Utc);
+                query = query.Where(e => e.CreatedAt >= cStart);
+            }
+            if (controlEndDate.HasValue)
+            {
+                var cEnd = DateTime.SpecifyKind(controlEndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                query = query.Where(e => e.CreatedAt <= cEnd);
+            }
+
+            var evaluations = await query
+                .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
+                .ToListAsync();
+
+            // Excel oluştur
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Dinlemeler");
+
+            // Başlık satırı
+            var headers = new[] { "Çağrı ID", "Çağrı Tarihi", "Çağrı Saati", "Süre", "Personel", "Proje", "Kontrol Listesi", "Puan (%)", "Sarı Kart", "Kırmızı Kart", "Durum", "Kontrol Tarihi" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            // Başlık stili
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+
+            // Veri satırları
+            for (int row = 0; row < evaluations.Count; row++)
+            {
+                var e = evaluations[row];
+                var currentRow = row + 2;
+
+                worksheet.Cell(currentRow, 1).Value = e.CallId ?? "-";
+                worksheet.Cell(currentRow, 2).Value = e.CallDate?.ToString("dd.MM.yyyy") ?? "-";
+                worksheet.Cell(currentRow, 3).Value = e.CallTime ?? "-";
+                worksheet.Cell(currentRow, 4).Value = e.Duration ?? "-";
+                worksheet.Cell(currentRow, 5).Value = e.EvaluatedPersonnel != null
+                    ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
+                    : (e.EvaluatedUnknownPersonnel ?? "-");
+                worksheet.Cell(currentRow, 6).Value = e.Assignment?.Project?.Name ?? "-";
+                worksheet.Cell(currentRow, 7).Value = e.Assignment?.Checklist?.Name ?? "-";
+                worksheet.Cell(currentRow, 8).Value = e.ScorePercentage?.ToString("F2") ?? "0";
+                worksheet.Cell(currentRow, 9).Value = e.YellowCardCount;
+                worksheet.Cell(currentRow, 10).Value = e.RedCardCount;
+                worksheet.Cell(currentRow, 11).Value = GetStatusDisplayName(e.StatusId);
+                worksheet.Cell(currentRow, 12).Value = e.CreatedAt.ToString("dd.MM.yyyy HH:mm");
+            }
+
+            // Sütun genişliklerini ayarla
+            worksheet.Columns().AdjustToContents();
+
+            // Dosyayı memory stream'e yaz
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"Dinlemeler_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting evaluations to Excel");
+            return StatusCode(500, CreateErrorResponse("Excel dışa aktarma hatası", ex));
         }
     }
 }

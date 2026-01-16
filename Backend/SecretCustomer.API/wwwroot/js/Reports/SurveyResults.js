@@ -6,6 +6,7 @@ function SurveyResultsViewModel() {
     self.isLoading = ko.observable(true);
     self.isLoadingPopup = ko.observable(false);
     self.isLoadingResponseDetail = ko.observable(false);
+    self.isLoadingDistribution = ko.observable(false);
 
     // Data
     self.recentResponses = ko.observableArray([]);
@@ -13,12 +14,32 @@ function SurveyResultsViewModel() {
     self.allResponses = ko.observableArray([]);
     self.projectDetail = ko.observable(null);
     self.responseDetail = ko.observable(null);
+    self.questionDistribution = ko.observable(null);
 
     // Popup Filters
     self.popupFilter = {
         projectId: ko.observable(null),
         startDate: ko.observable(''),
         endDate: ko.observable('')
+    };
+
+    // Helper: Get default start date (7 days ago)
+    function getDefaultStartDate() {
+        var date = new Date();
+        date.setDate(date.getDate() - 7);
+        return date.toISOString().split('T')[0];
+    }
+
+    // Helper: Get default end date (today)
+    function getDefaultEndDate() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    // Question Distribution Filters (default: last 7 days)
+    self.distributionFilter = {
+        projectId: ko.observable(null),
+        startDate: ko.observable(getDefaultStartDate()),
+        endDate: ko.observable(getDefaultEndDate())
     };
 
     // Modals
@@ -186,10 +207,59 @@ function SurveyResultsViewModel() {
         window.location.href = '/api/reports/survey-results/' + projectId + '/export/full-detail';
     };
 
+    // Export Project Report (direct from table row)
+    self.exportProjectReport = function(projectId, reportType) {
+        var urlMap = {
+            'group': '/api/reports/survey-results/' + projectId + '/export/group-scores',
+            'question': '/api/reports/survey-results/' + projectId + '/export/question-stats',
+            'detail': '/api/reports/survey-results/' + projectId + '/export/detail',
+            'full': '/api/reports/survey-results/' + projectId + '/export/full-detail'
+        };
+        var url = urlMap[reportType];
+        if (url) {
+            window.location.href = url;
+        }
+    };
+
+    // Load Question Score Distribution
+    self.loadQuestionDistribution = function() {
+        self.isLoadingDistribution(true);
+        self.questionDistribution(null);
+
+        var params = [];
+        if (self.distributionFilter.projectId()) {
+            params.push('projectId=' + self.distributionFilter.projectId());
+        }
+        if (self.distributionFilter.startDate()) {
+            params.push('startDate=' + self.distributionFilter.startDate());
+        }
+        if (self.distributionFilter.endDate()) {
+            params.push('endDate=' + self.distributionFilter.endDate());
+        }
+
+        var url = '/reports/survey-question-distribution';
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        apiService.get(url)
+            .then(function(data) {
+                self.questionDistribution(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading question distribution:', error);
+                toastr.error('Soru puan dağılımı yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoadingDistribution(false);
+            });
+    };
+
     // Initialize
     self.init = function() {
         self.initModals();
         self.loadData();
+        self.loadQuestionDistribution();
     };
 
     self.init();

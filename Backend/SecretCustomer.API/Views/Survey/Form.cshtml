@@ -102,9 +102,9 @@
                                         <!-- Single Selection (Radio) -->
                                         <!-- ko if: $parent.selectionTypeId === 1 -->
                                         <label class="list-group-item list-group-item-action py-2 px-3"
-                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
-                                            <input type="radio" class="form-check-input me-2"
-                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id }, checked: isSelected">
+                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); return true; }">
+                                            <input type="radio" class="form-check-input me-2" style="pointer-events: none;"
+                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id, checked: isSelected() ? 'checked' : null }">
                                             <span data-bind="text: description"></span>
                                         </label>
                                         <!-- /ko -->

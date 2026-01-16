@@ -122,7 +122,7 @@
                         @Html.T("CustomerPortal.Menu.Evaluations", "Değerlendirmeler")
                     </a>
                 </li>
-                @if (User.IsInRole("CustomerManager"))
+                @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
                 {
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Branches" ? "active" : "")" href="/CustomerPortal/Branches">
@@ -161,7 +161,7 @@
                         @Html.T("CustomerPortal.Menu.Reports", "Raporlar")
                     </a>
                 </li>
-                @if (User.IsInRole("CustomerManager"))
+                @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
                 {
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Penalties" ? "active" : "")" href="/CustomerPortal/Penalties">
@@ -181,6 +181,12 @@
                         @Html.T("CustomerPortal.Menu.PersonnelReportCard", "Temsilci Karnesi")
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PerformanceByPeriod" ? "active" : "")" href="/CustomerPortal/PerformanceByPeriod">
+                        <i class="bi bi-calendar3 text-success"></i>
+                        @Html.T("CustomerPortal.Menu.PerformanceByPeriod", "Donem Bazli Basari")
+                    </a>
+                </li>
                 }
             </ul>
 
@@ -188,6 +194,36 @@
 
         <!-- Main Content -->
         <div class="customer-main flex-grow-1">
+            <!-- Admin Banner -->
+            @if (User.IsInRole("Admin"))
+            {
+            <div id="admin-customer-banner" class="bg-warning text-dark py-2 px-3 d-flex justify-content-between align-items-center" style="display: none !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-eye-fill"></i>
+                    <span>@Html.T("CustomerPortal.AdminViewing", "Admin olarak görüntülüyorsunuz:")
+                        <strong id="admin-viewing-customer-name"></strong>
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Customer Selector Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" id="admin-customer-dropdown-btn">
+                            <i class="bi bi-arrow-repeat"></i> @Html.T("CustomerPortal.ChangeCustomer", "Müşteri Değiştir")
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-2" style="width: 350px; max-height: 400px;">
+                            <input type="text" class="form-control form-control-sm mb-2" id="admin-customer-search" placeholder="@Html.T("Layout.SearchCustomer", "Müşteri ara...")">
+                            <div id="admin-customer-list" style="max-height: 300px; overflow-y: auto;">
+                                <div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/" class="btn btn-sm btn-dark">
+                        <i class="bi bi-arrow-left"></i> @Html.T("CustomerPortal.BackToAdmin", "Admin Paneli")
+                    </a>
+                </div>
+            </div>
+            }
+
             <!-- Top Bar -->
             <div class="customer-topbar" id="customer-topbar">
                 <h4 class="mb-0">@ViewData["Title"]</h4>
@@ -281,6 +317,9 @@
     <!-- Customer Portal Auth Check - Uses main JWT auth -->
     <script>
         (function() {
+            var isAdminUser = false;
+            var allCustomers = [];
+
             // Load user info from main auth API
             fetch('/api/auth/me', { credentials: 'include' })
                 .then(function(res) {
@@ -294,6 +333,12 @@
                     document.getElementById('customer-user-name').textContent = user.fullName || user.username;
                     document.getElementById('customer-user-role').textContent = getRoleName(user.role);
                     document.getElementById('customer-company-name').textContent = user.customerName || '';
+
+                    // Admin ise banner'ı kontrol et
+                    isAdminUser = user.role === 'Admin';
+                    if (isAdminUser) {
+                        checkAdminCustomerSelection();
+                    }
                 })
                 .catch(function(e) {
                     console.error('Auth check failed:', e);
@@ -303,9 +348,109 @@
                 var roles = {
                     'CustomerManager': '@Html.T("CustomerPersonnel.Role.Manager", "Müşteri Yöneticisi")',
                     'CustomerSupervisor': '@Html.T("CustomerPersonnel.Role.Supervisor", "Müşteri Süpervizörü")',
-                    'CustomerOperator': '@Html.T("CustomerPersonnel.Role.Operator", "Müşteri Operatörü")'
+                    'CustomerOperator': '@Html.T("CustomerPersonnel.Role.Operator", "Müşteri Operatörü")',
+                    'Admin': '@Html.T("Role.Admin", "Admin")'
                 };
                 return roles[role] || role;
+            }
+
+            // Admin: Seçili müşteri kontrolü
+            function checkAdminCustomerSelection() {
+                fetch('/api/customer/portal/admin/current-customer', { credentials: 'include' })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        var banner = document.getElementById('admin-customer-banner');
+                        if (banner) {
+                            if (data.hasSelection) {
+                                document.getElementById('admin-viewing-customer-name').textContent = data.customerName;
+                                document.getElementById('customer-company-name').textContent = data.customerName;
+                                banner.style.cssText = 'display: flex !important;';
+                                loadAdminCustomerList();
+                            } else {
+                                // Müşteri seçilmemiş, seç diye modal aç
+                                banner.style.cssText = 'display: flex !important;';
+                                document.getElementById('admin-viewing-customer-name').textContent = '@Html.T("CustomerPortal.NoCustomerSelected", "Seçilmedi")';
+                                loadAdminCustomerList();
+                            }
+                        }
+                    })
+                    .catch(function(e) {
+                        console.error('Admin customer check failed:', e);
+                    });
+            }
+
+            // Admin: Müşteri listesini yükle
+            function loadAdminCustomerList() {
+                fetch('/api/customer/portal/admin/customers?includeInactive=true', { credentials: 'include' })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        allCustomers = data || [];
+                        renderAdminCustomerList(allCustomers);
+                    })
+                    .catch(function(e) {
+                        console.error('Failed to load customers:', e);
+                    });
+            }
+
+            // Admin: Müşteri listesini render et
+            function renderAdminCustomerList(customers) {
+                var listContainer = document.getElementById('admin-customer-list');
+                if (!listContainer) return;
+
+                if (customers.length === 0) {
+                    listContainer.innerHTML = '<div class="text-muted text-center py-2">@Html.T("Layout.NoCustomersFound", "Müşteri bulunamadı")</div>';
+                    return;
+                }
+
+                var html = '<div class="list-group list-group-flush">';
+                customers.forEach(function(c) {
+                    var statusBadge = c.isActive
+                        ? '<span class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>'
+                        : '<span class="badge bg-secondary">@Html.T("Common.Inactive", "Pasif")</span>';
+                    html += '<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" onclick="selectAdminCustomer(' + c.id + '); return false;">';
+                    html += '<div><strong>' + escapeHtml(c.companyName) + '</strong>';
+                    if (c.code) html += ' <small class="text-muted">(' + escapeHtml(c.code) + ')</small>';
+                    html += '</div>' + statusBadge + '</a>';
+                });
+                html += '</div>';
+                listContainer.innerHTML = html;
+            }
+
+            // Admin: Müşteri ara
+            var searchInput = document.getElementById('admin-customer-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    var search = this.value.toLowerCase();
+                    var filtered = allCustomers.filter(function(c) {
+                        return (c.companyName || '').toLowerCase().indexOf(search) >= 0 ||
+                               (c.code || '').toLowerCase().indexOf(search) >= 0;
+                    });
+                    renderAdminCustomerList(filtered);
+                });
+            }
+
+            // Admin: Müşteri seç (global fonksiyon)
+            window.selectAdminCustomer = function(customerId) {
+                fetch('/api/customer/portal/admin/view-as-customer/' + customerId, {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.location.reload();
+                    }
+                })
+                .catch(function(e) {
+                    console.error('Failed to select customer:', e);
+                });
+            };
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                var div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
         })();
 

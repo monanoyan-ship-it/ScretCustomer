@@ -75,6 +75,16 @@ public static class EmailPlaceholders
     public const string StartDate = "{StartDate}";
     public const string EndDate = "{EndDate}";
 
+    // Değerlendirme Bilgileri
+    public const string EvaluationScore = "{EvaluationScore}";
+    public const string EvaluationScorePercentage = "{EvaluationScorePercentage}";
+    public const string EvaluatedPersonnel = "{EvaluatedPersonnel}";
+    public const string EvaluationDate = "{EvaluationDate}";
+    public const string EvaluationCount = "{EvaluationCount}";
+    public const string EvaluationSummaryTable = "{EvaluationSummaryTable}";
+    public const string PeriodStartDate = "{PeriodStartDate}";
+    public const string PeriodEndDate = "{PeriodEndDate}";
+
     // Sistem
     public const string CurrentDate = "{CurrentDate}";
     public const string CurrentYear = "{CurrentYear}";
@@ -130,6 +140,22 @@ public static class EmailPlaceholders
                     new(DueDate, "Son Tarih", "Anketin bitiş tarihi"),
                     new(StartDate, "Başlangıç", "Projenin başlangıç tarihi"),
                     new(EndDate, "Bitiş", "Projenin bitiş tarihi")
+                }
+            },
+            new PlaceholderCategory
+            {
+                Name = "Değerlendirme",
+                Icon = "bi-clipboard-check",
+                Placeholders = new List<PlaceholderInfo>
+                {
+                    new(EvaluationScore, "Puan", "Değerlendirme puanı"),
+                    new(EvaluationScorePercentage, "Puan (%)", "Değerlendirme yüzdesi"),
+                    new(EvaluatedPersonnel, "Değerlendirilen", "Değerlendirilen personel adı"),
+                    new(EvaluationDate, "Değerlendirme Tarihi", "Değerlendirmenin yapıldığı tarih"),
+                    new(EvaluationCount, "Değerlendirme Sayısı", "Dönem içi toplam değerlendirme sayısı"),
+                    new(EvaluationSummaryTable, "Özet Tablo", "Dönem değerlendirme özet tablosu (HTML)"),
+                    new(PeriodStartDate, "Dönem Başlangıç", "Bildirim dönemi başlangıç tarihi"),
+                    new(PeriodEndDate, "Dönem Bitiş", "Bildirim dönemi bitiş tarihi")
                 }
             },
             new PlaceholderCategory

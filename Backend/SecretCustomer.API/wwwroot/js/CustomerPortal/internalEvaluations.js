@@ -410,7 +410,7 @@ function CustomerInternalEvaluationsViewModel() {
         self.isDetailsLoading(true);
         self.detailsData(null);
 
-        customerApiFetch('/api/evaluations/' + evaluation.id)
+        customerApiFetch('/api/customer/portal/evaluations/' + evaluation.id)
             .then(function(response) {
                 if (!response.ok) throw new Error('Detay yuklenemedi');
                 return response.json();
@@ -451,7 +451,7 @@ function CustomerInternalEvaluationsViewModel() {
         self.isAttachmentsLoading(true);
         self.attachments([]);
 
-        customerApiFetch('/api/evaluations/' + evaluation.id + '/attachments')
+        customerApiFetch('/api/customer/portal/evaluations/' + evaluation.id + '/attachments')
             .then(function(response) {
                 if (!response.ok) throw new Error('Dosyalar yuklenemedi');
                 return response.json();

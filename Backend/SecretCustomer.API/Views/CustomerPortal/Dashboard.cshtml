@@ -92,10 +92,75 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h5>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h5>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#scoreDistributionFilter">
+                                <i class="bi bi-funnel"></i>
+                            </button>
+                        </div>
+                        <div class="collapse mt-2" id="scoreDistributionFilter">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistStartDate" placeholder="Başlangıç">
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistEndDate" placeholder="Bitiş">
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-sm btn-primary w-100" data-bind="click: loadScoreDistribution">
+                                        <i class="bi bi-filter me-1"></i>@Html.T("Common.Filter", "Filtrele")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <canvas id="scoreDistributionChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Trends Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>@Html.T("CustomerPortal.Dashboard.QuestionTrend", "Soru Bazlı Başarı Trendi")</h5>
+                            <div class="d-flex gap-2 align-items-center">
+                                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
+                                <ul class="nav nav-pills nav-pills-sm">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="#" data-bind="css: { active: questionTrendTab() === 'groups' }, click: function() { questionTrendTab('groups'); loadQuestionGroupTrend(); }">
+                                            @Html.T("CustomerPortal.Dashboard.QuestionGroups", "Soru Grupları")
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="#" data-bind="css: { active: questionTrendTab() === 'questions' }, click: function() { questionTrendTab('questions'); loadQuestionTrend(); }">
+                                            @Html.T("CustomerPortal.Dashboard.Questions", "Sorular")
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Loading -->
+                        <div data-bind="visible: isQuestionTrendLoading" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+                            </div>
+                        </div>
+                        <!-- No Data -->
+                        <div data-bind="visible: !isQuestionTrendLoading() && questionTrendData().length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-bar-chart fs-1"></i>
+                            <p class="mt-2">@Html.T("CustomerPortal.Dashboard.NoQuestionData", "Soru bazlı veri bulunamadı.")</p>
+                        </div>
+                        <!-- Chart -->
+                        <div data-bind="visible: !isQuestionTrendLoading() && questionTrendData().length > 0">
+                            <canvas id="questionTrendChart" height="350"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -141,6 +206,103 @@
             </div>
         </div>
     </div>
+
+    <!-- Score Distribution Evaluations Modal -->
+    <div class="modal fade" data-bind="css: { show: isScoreModalOpen }, style: { display: isScoreModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" data-bind="css: selectedCategoryHeaderClass">
+                    <h5 class="modal-title text-white">
+                        <i class="bi bi-list-ul me-2"></i>
+                        <span data-bind="text: selectedCategoryLabel"></span>
+                        <span class="badge bg-light text-dark ms-2" data-bind="text: scoreModalTotal"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeScoreModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isScoreModalLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+                        </div>
+                    </div>
+
+                    <!-- Evaluations Table -->
+                    <div data-bind="visible: !isScoreModalLoading()">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Common.Date", "Tarih")</th>
+                                        <th>@Html.T("Common.Project", "Proje")</th>
+                                        <th>@Html.T("Common.Personnel", "Personel")</th>
+                                        <th>@Html.T("Common.Organization", "Organizasyon")</th>
+                                        <th class="text-center">@Html.T("Common.Score", "Puan")</th>
+                                        <th class="text-center">@Html.T("Common.Cards", "Kartlar")</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: scoreModalEvaluations">
+                                    <tr>
+                                        <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                        <td data-bind="text: projectName"></td>
+                                        <td data-bind="text: personnelName"></td>
+                                        <td data-bind="text: organizationName"></td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score)"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <!-- ko if: yellowCardCount > 0 -->
+                                            <span class="badge bg-warning text-dark me-1" data-bind="text: yellowCardCount"></span>
+                                            <!-- /ko -->
+                                            <!-- ko if: redCardCount > 0 -->
+                                            <span class="badge bg-danger" data-bind="text: redCardCount"></span>
+                                            <!-- /ko -->
+                                            <!-- ko if: !yellowCardCount && !redCardCount -->
+                                            <span class="text-muted">-</span>
+                                            <!-- /ko -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div data-bind="visible: scoreModalTotalPages() > 1" class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted">
+                                @Html.T("Common.ShowingXofY", "Gösterilen"): <span data-bind="text: scoreModalEvaluations().length"></span> / <span data-bind="text: scoreModalTotal"></span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" data-bind="css: { disabled: scoreModalPage() <= 1 }">
+                                        <a class="page-link" href="#" data-bind="click: function() { loadScoreModalEvaluations(scoreModalPage() - 1); }">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" data-bind="text: scoreModalPage() + ' / ' + scoreModalTotalPages()"></span>
+                                    </li>
+                                    <li class="page-item" data-bind="css: { disabled: scoreModalPage() >= scoreModalTotalPages() }">
+                                        <a class="page-link" href="#" data-bind="click: function() { loadScoreModalEvaluations(scoreModalPage() + 1); }">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bind="click: exportScoreDistribution">
+                        <i class="bi bi-file-earmark-excel me-1"></i>@Html.T("Common.ExportExcel", "Excel'e Aktar")
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeScoreModal">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isScoreModalOpen }, style: { display: isScoreModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

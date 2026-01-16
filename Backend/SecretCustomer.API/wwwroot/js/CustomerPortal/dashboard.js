@@ -30,6 +30,45 @@ function CustomerDashboardViewModel() {
     self.monthlyTrendData = null;
     self.scoreDistributionData = null;
 
+    // Score distribution filters
+    self.scoreDistStartDate = ko.observable('');
+    self.scoreDistEndDate = ko.observable('');
+
+    // Score distribution modal state
+    self.isScoreModalOpen = ko.observable(false);
+    self.isScoreModalLoading = ko.observable(false);
+    self.selectedCategory = ko.observable('');
+    self.scoreModalEvaluations = ko.observableArray([]);
+    self.scoreModalTotal = ko.observable(0);
+    self.scoreModalPage = ko.observable(1);
+    self.scoreModalPageSize = 20;
+
+    // Category labels and colors
+    self.categoryLabels = {
+        'excellent': 'Mükemmel (90+)',
+        'good': 'İyi (80-89)',
+        'average': 'Orta (60-79)',
+        'poor': 'Düşük (<60)'
+    };
+    self.categoryColors = {
+        'excellent': 'bg-success',
+        'good': 'bg-primary',
+        'average': 'bg-warning',
+        'poor': 'bg-danger'
+    };
+
+    self.selectedCategoryLabel = ko.computed(function() {
+        return self.categoryLabels[self.selectedCategory()] || '';
+    });
+
+    self.selectedCategoryHeaderClass = ko.computed(function() {
+        return self.categoryColors[self.selectedCategory()] || 'bg-primary';
+    });
+
+    self.scoreModalTotalPages = ko.computed(function() {
+        return Math.ceil(self.scoreModalTotal() / self.scoreModalPageSize);
+    });
+
     // Load dashboard data
     self.loadDashboard = function() {
         self.isLoading(true);
@@ -87,12 +126,16 @@ function CustomerDashboardViewModel() {
         var monthLabels = [];
         var scoreData = [];
         var countData = [];
+        var yellowCardData = [];
+        var redCardData = [];
 
         if (self.monthlyTrendData && self.monthlyTrendData.length > 0) {
             self.monthlyTrendData.forEach(function(item) {
                 monthLabels.push(item.month);
                 scoreData.push(item.averageScore);
                 countData.push(item.count);
+                yellowCardData.push(item.yellowCardCount || 0);
+                redCardData.push(item.redCardCount || 0);
             });
         }
 
@@ -116,6 +159,22 @@ function CustomerDashboardViewModel() {
                         borderColor: '#0d6efd',
                         backgroundColor: 'transparent',
                         borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }, {
+                        label: 'Sarı Kart',
+                        data: yellowCardData,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }, {
+                        label: 'Kırmızı Kart',
+                        data: redCardData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
                         tension: 0.4,
                         yAxisID: 'y1'
                     }]
@@ -154,44 +213,321 @@ function CustomerDashboardViewModel() {
             });
         }
 
-        // Score distribution chart - only if we have data
+        // Score distribution chart
+        self.initScoreDistributionChart();
+    };
+
+    // Initialize score distribution chart
+    self.initScoreDistributionChart = function() {
         var scoreCtx = document.getElementById('scoreDistributionChart');
         var dist = self.scoreDistributionData;
-        if (scoreCtx && dist) {
-            var chartData = [dist.excellent || 0, dist.good || 0, dist.average || 0, dist.poor || 0];
-            var total = chartData.reduce(function(a, b) { return a + b; }, 0);
+        if (!scoreCtx || !dist) return;
 
-            if (total > 0) {
-                self.scoreDistributionChart = new Chart(scoreCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Mükemmel (90+)', 'İyi (80-89)', 'Orta (60-79)', 'Düşük (<60)'],
-                        datasets: [{
-                            data: chartData,
-                            backgroundColor: [
-                                '#198754',
-                                '#0d6efd',
-                                '#ffc107',
-                                '#dc3545'
-                            ]
-                        }]
+        var chartData = [dist.excellent || 0, dist.good || 0, dist.average || 0, dist.poor || 0];
+        var categories = ['excellent', 'good', 'average', 'poor'];
+        var total = chartData.reduce(function(a, b) { return a + b; }, 0);
+
+        // Destroy existing chart if any
+        if (self.scoreDistributionChart) {
+            self.scoreDistributionChart.destroy();
+            self.scoreDistributionChart = null;
+        }
+
+        if (total > 0) {
+            self.scoreDistributionChart = new Chart(scoreCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mükemmel (90+)', 'İyi (80-89)', 'Orta (60-79)', 'Düşük (<60)'],
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: [
+                            '#198754',
+                            '#0d6efd',
+                            '#ffc107',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            var index = elements[0].index;
+                            var category = categories[index];
+                            self.openScoreModal(category);
                         }
                     }
-                });
-            }
+                }
+            });
         }
+    };
+
+    // Open score modal
+    self.openScoreModal = function(category) {
+        self.selectedCategory(category);
+        self.scoreModalPage(1);
+        self.isScoreModalOpen(true);
+        self.loadScoreModalEvaluations(1);
+    };
+
+    // Load score modal evaluations
+    self.loadScoreModalEvaluations = function(page) {
+        self.isScoreModalLoading(true);
+        self.scoreModalPage(page);
+
+        var url = '/api/customer/portal/dashboard/score-distribution/evaluations?category=' + self.selectedCategory();
+        url += '&page=' + page + '&pageSize=' + self.scoreModalPageSize;
+
+        if (self.scoreDistStartDate()) {
+            url += '&startDate=' + self.scoreDistStartDate();
+        }
+        if (self.scoreDistEndDate()) {
+            url += '&endDate=' + self.scoreDistEndDate();
+        }
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Evaluations API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.scoreModalEvaluations(data.items || []);
+                self.scoreModalTotal(data.total || 0);
+                self.isScoreModalLoading(false);
+            })
+            .catch(function(error) {
+                console.error('Score modal evaluations load error:', error);
+                self.isScoreModalLoading(false);
+            });
+    };
+
+    // Close score modal
+    self.closeScoreModal = function() {
+        self.isScoreModalOpen(false);
+        self.selectedCategory('');
+        self.scoreModalEvaluations([]);
+        self.scoreModalTotal(0);
+    };
+
+    // Export score distribution to Excel
+    self.exportScoreDistribution = function() {
+        var url = '/api/customer/portal/dashboard/score-distribution/export?category=' + self.selectedCategory();
+
+        if (self.scoreDistStartDate()) {
+            url += '&startDate=' + self.scoreDistStartDate();
+        }
+        if (self.scoreDistEndDate()) {
+            url += '&endDate=' + self.scoreDistEndDate();
+        }
+
+        // Token ile download
+        var token = localStorage.getItem('customerPortalToken');
+        fetch(url, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Export failed');
+            return response.blob();
+        })
+        .then(function(blob) {
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'PuanDagilimi_' + self.selectedCategory() + '_' + new Date().toISOString().slice(0,10) + '.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(function(error) {
+            console.error('Export error:', error);
+            alert('Export sırasında hata oluştu');
+        });
+    };
+
+    // Question trend state
+    self.questionTrendTab = ko.observable('groups');
+    self.questionTrendProjectId = ko.observable(null);
+    self.questionTrendProjects = ko.observableArray([]);
+    self.questionTrendData = ko.observableArray([]);
+    self.questionTrendLabels = ko.observableArray([]);
+    self.isQuestionTrendLoading = ko.observable(false);
+    self.questionTrendChart = null;
+
+    // Watch for project change
+    self.questionTrendProjectId.subscribe(function() {
+        if (self.questionTrendTab() === 'groups') {
+            self.loadQuestionGroupTrend();
+        } else {
+            self.loadQuestionTrend();
+        }
+    });
+
+    // Load question group trend
+    self.loadQuestionGroupTrend = function() {
+        self.isQuestionTrendLoading(true);
+
+        var url = '/api/customer/portal/dashboard/question-group-trend';
+        if (self.questionTrendProjectId()) {
+            url += '?projectId=' + self.questionTrendProjectId();
+        }
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Question group trend API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.questionTrendProjects(data.projects || []);
+                self.questionTrendLabels(data.monthLabels || []);
+                self.questionTrendData(data.groupTrends || []);
+                self.isQuestionTrendLoading(false);
+                setTimeout(function() {
+                    self.initQuestionTrendChart();
+                }, 100);
+            })
+            .catch(function(error) {
+                console.error('Question group trend load error:', error);
+                self.isQuestionTrendLoading(false);
+            });
+    };
+
+    // Load question trend
+    self.loadQuestionTrend = function() {
+        self.isQuestionTrendLoading(true);
+
+        var url = '/api/customer/portal/dashboard/question-trend';
+        var params = [];
+        if (self.questionTrendProjectId()) {
+            params.push('projectId=' + self.questionTrendProjectId());
+        }
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Question trend API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.questionTrendLabels(data.monthLabels || []);
+                self.questionTrendData(data.questionTrends || []);
+                self.isQuestionTrendLoading(false);
+                setTimeout(function() {
+                    self.initQuestionTrendChart();
+                }, 100);
+            })
+            .catch(function(error) {
+                console.error('Question trend load error:', error);
+                self.isQuestionTrendLoading(false);
+            });
+    };
+
+    // Initialize question trend chart
+    self.initQuestionTrendChart = function() {
+        var ctx = document.getElementById('questionTrendChart');
+        if (!ctx) return;
+
+        var data = self.questionTrendData();
+        var labels = self.questionTrendLabels();
+        if (!data || data.length === 0 || !labels || labels.length === 0) return;
+
+        // Destroy existing chart
+        if (self.questionTrendChart) {
+            self.questionTrendChart.destroy();
+            self.questionTrendChart = null;
+        }
+
+        // Generate colors
+        var colors = [
+            '#198754', '#0d6efd', '#dc3545', '#ffc107', '#6f42c1',
+            '#20c997', '#fd7e14', '#0dcaf0', '#d63384', '#6c757d'
+        ];
+
+        var datasets = data.map(function(item, index) {
+            var color = colors[index % colors.length];
+            return {
+                label: item.groupName || item.questionText || ('Seri ' + (index + 1)),
+                data: item.scores,
+                borderColor: color,
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                tension: 0.4
+            };
+        });
+
+        self.questionTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Puan (%)'
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    // Load score distribution with filters
+    self.loadScoreDistribution = function() {
+        var url = '/api/customer/portal/dashboard/score-distribution';
+        var params = [];
+
+        if (self.scoreDistStartDate()) {
+            params.push('startDate=' + self.scoreDistStartDate());
+        }
+        if (self.scoreDistEndDate()) {
+            params.push('endDate=' + self.scoreDistEndDate());
+        }
+
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Score distribution API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.scoreDistributionData = data;
+                self.initScoreDistributionChart();
+            })
+            .catch(function(error) {
+                console.error('Score distribution load error:', error);
+            });
     };
 
     // Initialize
     self.loadDashboard();
+    self.loadQuestionGroupTrend();
 }
 
 // Apply bindings when DOM is ready

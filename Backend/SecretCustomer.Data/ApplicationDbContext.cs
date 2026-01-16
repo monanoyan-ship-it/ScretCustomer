@@ -183,6 +183,22 @@ public class ApplicationDbContext : DbContext
         // Support Requests
         modelBuilder.Entity<SupportRequest>().HasQueryFilter(e => !e.IsDeleted);
 
+        // ===== Customer - EmailTemplate İlişkileri =====
+
+        // EmailTemplate'in CustomerId'si -> Şablonun hangi müşteriye özel olduğu
+        modelBuilder.Entity<EmailTemplate>()
+            .HasOne(et => et.Customer)
+            .WithMany()
+            .HasForeignKey(et => et.CustomerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Customer'ın EvaluationNotificationTemplateId'si -> Müşterinin bildirim şablonu
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.EvaluationNotificationTemplate)
+            .WithMany()
+            .HasForeignKey(c => c.EvaluationNotificationTemplateId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         // ===== CustomerOrganization İlişkileri =====
 
         // CustomerOrganization self-referencing (Parent-Children)

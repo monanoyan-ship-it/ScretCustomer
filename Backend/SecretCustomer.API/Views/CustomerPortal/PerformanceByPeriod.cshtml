@@ -1,0 +1,149 @@
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = @Html.T("Report.PerformanceByPeriod", "Donem Bazli Basari Tablosu");
+}
+
+<div id="performance-by-period-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar3 text-primary"></i> @Html.T("Report.PerformanceByPeriod", "Donem Bazli Basari Tablosu")</h2>
+        <div class="btn-group" data-bind="visible: hasData()">
+            <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
+                <span data-bind="visible: !isExporting()">
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
+                </span>
+                <span data-bind="visible: isExporting">
+                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> @Html.T("Common.Filters", "Filtreler")</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
+                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tum Projeler")'"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Report.Organization", "Organizasyon")</label>
+                    <select class="form-select" data-bind="value: filter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllOrganizations", "Tum Organizasyonlar")'"></select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary" data-bind="click: loadReport">
+                        <i class="bi bi-search"></i> @Html.T("Common.Search", "Ara")
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yukleniyor...")</span>
+        </div>
+        <p class="mt-2 text-muted">@Html.T("Report.LoadingReport", "Rapor yukleniyor...")</p>
+    </div>
+
+    <!-- No Data -->
+    <div data-bind="visible: !isLoading() && !hasData()" class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+            <p class="mt-3 text-muted">@Html.T("Report.NoPeriodData", "Donem bazli veri bulunmuyor. Lutfen filtreleri kontrol edin.")</p>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div data-bind="visible: !isLoading() && hasData()" class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table"></i> @Html.T("Report.PerformanceTable", "Basari Tablosu")</h5>
+            <span class="badge bg-primary" data-bind="text: reportData().length + ' Personel'"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th class="sticky-col bg-dark" style="min-width: 200px; left: 0; z-index: 10;">@Html.T("Report.Personnel", "Personel")</th>
+                            <th style="min-width: 150px;">@Html.T("Report.Organization", "Organizasyon")</th>
+                            <!-- ko foreach: periods -->
+                            <th class="text-center" style="min-width: 100px;" data-bind="text: name, attr: { title: projectName }"></th>
+                            <!-- /ko -->
+                            <th class="text-center bg-secondary text-white" style="min-width: 100px;">@Html.T("Report.OverallAverage", "Genel Ort.")</th>
+                            <th class="text-center" style="min-width: 80px;">@Html.T("Report.EvaluationCount", "Deg. Say.")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: reportData">
+                        <tr>
+                            <td class="sticky-col bg-white fw-bold" style="left: 0;" data-bind="text: personnelName"></td>
+                            <td>
+                                <small class="text-muted" data-bind="text: organizationName"></small>
+                            </td>
+                            <!-- ko foreach: periodScores -->
+                            <td class="text-center" data-bind="css: $parent.getScoreCellClass(averageScore)">
+                                <!-- ko if: averageScore !== null -->
+                                <span data-bind="text: averageScore.toFixed(1) + '%'"></span>
+                                <small class="d-block text-muted" data-bind="text: '(' + evaluationCount + ')'"></small>
+                                <!-- ko if: yellowCardCount > 0 || redCardCount > 0 -->
+                                <div>
+                                    <span class="badge bg-warning text-dark badge-sm" data-bind="visible: yellowCardCount > 0, text: yellowCardCount"></span>
+                                    <span class="badge bg-danger badge-sm" data-bind="visible: redCardCount > 0, text: redCardCount"></span>
+                                </div>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                                <!-- ko if: averageScore === null -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <!-- /ko -->
+                            <td class="text-center fw-bold" data-bind="css: $root.getScoreCellClass(overallAverage)">
+                                <span data-bind="text: overallAverage.toFixed(1) + '%'"></span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary" data-bind="text: totalEvaluations"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Legend -->
+        <div class="card-footer bg-white">
+            <small class="text-muted">
+                <span class="badge bg-success me-2">&nbsp;</span> 80%+ |
+                <span class="badge bg-warning text-dark me-2">&nbsp;</span> 60-79% |
+                <span class="badge bg-danger me-2">&nbsp;</span> &lt;60% |
+                <span class="badge bg-warning text-dark badge-sm me-1">2</span> @Html.T("Report.YellowCard", "Sari Kart") |
+                <span class="badge bg-danger badge-sm me-1">1</span> @Html.T("Report.RedCard", "Kirmizi Kart")
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+    }
+    .badge-sm {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.35rem;
+    }
+    .table-success-light { background-color: rgba(25, 135, 84, 0.15) !important; }
+    .table-warning-light { background-color: rgba(255, 193, 7, 0.15) !important; }
+    .table-danger-light { background-color: rgba(220, 53, 69, 0.15) !important; }
+</style>
+
+@section Scripts {
+    <script src="~/js/CustomerPortal/performanceByPeriod.js"></script>
+}

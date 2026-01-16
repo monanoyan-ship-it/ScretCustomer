@@ -43,6 +43,7 @@
                                     <th class="text-center">@Html.T("CustomerPortal.Supervisors.PersonnelCount", "Personel")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.Supervisors.EvaluationCount", "Dinleme")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.Supervisors.AverageScore", "Ort. Puan")</th>
+                                    <th class="text-center" style="width: 80px;">@Html.T("Common.Actions", "İşlem")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: supervisors">
@@ -70,6 +71,13 @@
                                     <td class="text-center">
                                         <span class="fw-bold" data-bind="text: averageScore.toFixed(1), css: $root.getScoreClass(averageScore)"></span>
                                     </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                data-bind="click: $root.showMonthlyTrend"
+                                                title="@Html.T("CustomerPortal.Supervisors.MonthlyTrend", "Aylık Gelişim")">
+                                            <i class="bi bi-graph-up"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -79,6 +87,74 @@
             <!-- /ko -->
         </div>
     </div>
+
+    <!-- Monthly Trend Modal -->
+    <div class="modal fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-graph-up me-2"></i>
+                        @Html.T("CustomerPortal.Supervisors.MonthlyTrend", "Aylık Gelişim") -
+                        <span data-bind="text: selectedSupervisorName"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isChartLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Content -->
+                    <div data-bind="visible: !isChartLoading()">
+                        <!-- Summary Cards -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-primary bg-opacity-10 border-0">
+                                    <div class="card-body text-center py-3">
+                                        <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Supervisors.TeamSize", "Ekip Büyüklüğü")</h6>
+                                        <h3 class="mb-0 text-primary" data-bind="text: chartData().teamMemberCount || 0"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success bg-opacity-10 border-0">
+                                    <div class="card-body text-center py-3">
+                                        <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Supervisors.TotalEvaluations", "Toplam Dinleme")</h6>
+                                        <h3 class="mb-0 text-success" data-bind="text: totalEvaluationCount"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info bg-opacity-10 border-0">
+                                    <div class="card-body text-center py-3">
+                                        <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Supervisors.OverallAverage", "Genel Ortalama")</h6>
+                                        <h3 class="mb-0 text-info" data-bind="text: overallAverageScore"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <canvas id="supervisorMonthlyChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeModal">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isModalOpen }, style: { display: isModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

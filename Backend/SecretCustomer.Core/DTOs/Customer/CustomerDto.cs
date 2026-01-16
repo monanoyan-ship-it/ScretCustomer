@@ -58,6 +58,13 @@ public class CustomerDto
     public int? DailyQuota { get; set; }
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
+
+    // Değerlendirme Bildirimi
+    public int EvaluationNotificationFrequencyId { get; set; }
+    public int? EvaluationNotificationTemplateId { get; set; }
+    public string? EvaluationNotificationTemplateName { get; set; }
+    public string? NotificationEmails { get; set; }
+    public DateTime? LastNotificationSentAt { get; set; }
 }
 
 public class CreateCustomerDto
@@ -100,6 +107,11 @@ public class CreateCustomerDto
     public int? DailyQuota { get; set; }
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
+
+    // Değerlendirme Bildirimi
+    public int EvaluationNotificationFrequencyId { get; set; }
+    public int? EvaluationNotificationTemplateId { get; set; }
+    public string? NotificationEmails { get; set; }
 }
 
 public class UpdateCustomerDto
@@ -142,4 +154,9 @@ public class UpdateCustomerDto
     public int? DailyQuota { get; set; }
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
+
+    // Değerlendirme Bildirimi
+    public int EvaluationNotificationFrequencyId { get; set; }
+    public int? EvaluationNotificationTemplateId { get; set; }
+    public string? NotificationEmails { get; set; }
 }

@@ -6,6 +6,7 @@ function PerformanceTrackingViewModel() {
     self.isLoading = ko.observable(false);
     self.evaluatorPerformances = ko.observableArray([]);
     self.customerQuotaStatuses = ko.observableArray([]);
+    self.projectTypePerformances = ko.observableArray([]);
     self.summary = ko.observable({
         totalEvaluators: 0,
         totalActiveCustomers: 0,
@@ -23,6 +24,7 @@ function PerformanceTrackingViewModel() {
             .then(function(data) {
                 self.evaluatorPerformances(data.evaluatorPerformances || []);
                 self.customerQuotaStatuses(data.customerQuotaStatuses || []);
+                self.projectTypePerformances(data.projectTypePerformances || []);
                 self.summary(data.summary || {
                     totalEvaluators: 0,
                     totalActiveCustomers: 0,

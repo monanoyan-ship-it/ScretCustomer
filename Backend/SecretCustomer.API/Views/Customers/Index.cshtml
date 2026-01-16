@@ -256,6 +256,28 @@
                         </div>
                     </div>
 
+                    <!-- Değerlendirme Bildirimi -->
+                    <div class="card mb-3">
+                        <div class="card-header py-2"><i class="bi bi-bell"></i> @Html.T("Customer.EvaluationNotification", "Değerlendirme Bildirimi")</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">@Html.T("Customer.NotificationFrequency", "Bildirim Sıklığı")</label>
+                                    <select class="form-select" data-bind="value: evaluationNotificationFrequencyId, options: $parent.notificationFrequencies, optionsText: 'description', optionsValue: 'id'"></select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">@Html.T("Customer.NotificationTemplate", "E-posta Şablonu")</label>
+                                    <select class="form-select" data-bind="value: evaluationNotificationTemplateId, options: $parent.notificationTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectDefault", "-- Varsayılan --")'"></select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">@Html.T("Customer.NotificationEmails", "Bildirim E-postaları")</label>
+                                    <input type="text" class="form-control" data-bind="value: notificationEmails" placeholder="email1@firma.com, email2@firma.com">
+                                    <small class="text-muted">@Html.T("Customer.NotificationEmailsHelp", "Virgülle ayırarak birden fazla e-posta ekleyebilirsiniz")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Customer.Notes", "Notlar")</label>
                         <textarea class="form-control" data-bind="value: notes" rows="4" placeholder="@Html.T("Customer.NotesPlaceholder", "Müşteri hakkında notlar...")"></textarea>

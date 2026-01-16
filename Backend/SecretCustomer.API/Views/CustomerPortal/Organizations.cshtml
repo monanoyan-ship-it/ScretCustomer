@@ -13,6 +13,66 @@
 
     <!-- Content -->
     <div data-bind="visible: !isLoading()">
+        <!-- Gelişim Grafiği -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Organizations.MonthlyTrend", "Gelişim Trendi")
+                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-success" data-bind="text: periodTypeText"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Tarih Filtresi -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">@Html.T("Common.StartDate", "Başlangıç")</label>
+                        <input type="date" class="form-control form-control-sm"
+                               data-bind="value: chartStartDate" autocomplete="off" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">@Html.T("Common.EndDate", "Bitiş")</label>
+                        <input type="date" class="form-control form-control-sm"
+                               data-bind="value: chartEndDate" autocomplete="off" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success" data-bind="click: applyChartFilter">
+                            <i class="bi bi-funnel"></i> @Html.T("Common.Apply", "Uygula")
+                        </button>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('week'); }, css: { active: quickRange() === 'week' }">
+                                @Html.T("Common.ThisWeek", "Bu Hafta")
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('month'); }, css: { active: quickRange() === 'month' }">
+                                @Html.T("Common.ThisMonth", "Bu Ay")
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('quarter'); }, css: { active: quickRange() === 'quarter' }">
+                                @Html.T("Common.Last3Months", "3 Ay")
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('year'); }, css: { active: quickRange() === 'year' }">
+                                @Html.T("Common.ThisYear", "Bu Yıl")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Loading -->
+                <div data-bind="visible: isChartLoading" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                    <span class="ms-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</span>
+                </div>
+                <!-- No Data -->
+                <div data-bind="visible: !isChartLoading() && !hasChartData()" class="text-center py-4">
+                    <i class="bi bi-bar-chart text-muted fs-1"></i>
+                    <p class="text-muted mt-2">@Html.T("CustomerPortal.Organizations.NoChartData", "Seçilen tarih aralığında veri bulunmuyor.")</p>
+                </div>
+                <!-- Chart -->
+                <div data-bind="visible: !isChartLoading() && hasChartData()" style="height: 350px;">
+                    <canvas id="organizationsMonthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
         <!-- Empty State -->
         <div data-bind="visible: groups().length === 0" class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">

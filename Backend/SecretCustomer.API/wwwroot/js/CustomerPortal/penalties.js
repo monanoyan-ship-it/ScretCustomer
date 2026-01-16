@@ -7,6 +7,12 @@ function CustomerPenaltiesViewModel() {
     self.isExporting = ko.observable(false);
     self.errorMessage = ko.observable('');
 
+    // Details Modal State
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
+    self.isExportingDetail = ko.observable(false);
+
     // Filter options (müşteriye özel)
     self.projects = ko.observableArray([]);
     self.organizations = ko.observableArray([]);
@@ -246,6 +252,72 @@ function CustomerPenaltiesViewModel() {
             .finally(function() {
                 self.isExporting(false);
             });
+    };
+
+    // Details Modal Functions
+    self.showDetails = function(penalty) {
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        customerApiFetch('/api/customer/portal/evaluations/' + penalty.evaluationId)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Detay yuklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                toastr.error('Değerlendirme detayı yüklenemedi.');
+                self.closeDetailsModal();
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
+    };
+
+    self.exportDetailToExcel = function() {
+        var data = self.detailsData();
+        if (!data) return;
+
+        self.isExportingDetail(true);
+
+        customerApiFetch('/api/customer/portal/evaluations/' + data.id + '/export')
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export başarısız');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'Degerlendirme_' + data.id + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Excel export başarısız.');
+            })
+            .finally(function() {
+                self.isExportingDetail(false);
+            });
+    };
+
+    // Score class helper
+    self.getScoreClass = function(score) {
+        if (score >= 80) return 'text-success';
+        if (score >= 60) return 'text-warning';
+        return 'text-danger';
     };
 
     // Initialize

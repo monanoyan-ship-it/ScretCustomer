@@ -30,7 +30,11 @@ function EvaluationsViewModel() {
         personnelName: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        selectedDateRangeType: ko.observable(null)
+        selectedDateRangeType: ko.observable(null),
+        // Kontrol Tarihi (CreatedAt) filter
+        controlStartDate: ko.observable(''),
+        controlEndDate: ko.observable(''),
+        selectedControlDateRangeType: ko.observable(null)
     };
 
     // Filter labels
@@ -38,7 +42,8 @@ function EvaluationsViewModel() {
         status: 'Durum',
         search: 'Arama',
         personnel: 'Temsilci',
-        dateRange: 'Tarih'
+        dateRange: 'Tarih',
+        controlDate: 'Kontrol Tarihi'
     };
 
     self.evalStatusLabels = {
@@ -77,6 +82,7 @@ function EvaluationsViewModel() {
             case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
             case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
             case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
+            case 'controlDate': return self.evalTempFilter.controlStartDate() || self.evalTempFilter.controlEndDate();
             default: return false;
         }
     });
@@ -154,6 +160,80 @@ function EvaluationsViewModel() {
         self._evalManualDateChange = true;
     };
 
+    // Control Date quick select tracking
+    self._evalManualControlDateChange = true;
+    self.evalTempFilter.controlStartDate.subscribe(function() {
+        if (self._evalManualControlDateChange) self.evalTempFilter.selectedControlDateRangeType(null);
+    });
+    self.evalTempFilter.controlEndDate.subscribe(function() {
+        if (self._evalManualControlDateChange) self.evalTempFilter.selectedControlDateRangeType(null);
+    });
+
+    // Set temp control date range (quick select)
+    self.evalSetTempControlDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = new Date(today.getTime());
+                endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday;
+                endDate = new Date(yesterday.getTime());
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        self._evalManualControlDateChange = false;
+        if (startDate) self.evalTempFilter.controlStartDate(self._evalFormatDate(startDate));
+        if (endDate) self.evalTempFilter.controlEndDate(self._evalFormatDate(endDate));
+        self.evalTempFilter.selectedControlDateRangeType(range);
+        self._evalManualControlDateChange = true;
+    };
+
     // Add filter
     self.evalAddFilter = function() {
         var type = self.evalSelectedFilterType();
@@ -210,6 +290,23 @@ function EvaluationsViewModel() {
                 self.evalTempFilter.endDate('');
                 self.evalTempFilter.selectedDateRangeType(null);
                 break;
+
+            case 'controlDate':
+                var controlStartDate = self.evalTempFilter.controlStartDate();
+                var controlEndDate = self.evalTempFilter.controlEndDate();
+                if (!controlStartDate && !controlEndDate) return;
+                filter.value = { start: controlStartDate, end: controlEndDate };
+                if (controlStartDate && controlEndDate) {
+                    filter.displayValue = controlStartDate + ' - ' + controlEndDate;
+                } else if (controlStartDate) {
+                    filter.displayValue = controlStartDate + ' →';
+                } else {
+                    filter.displayValue = '→ ' + controlEndDate;
+                }
+                self.evalTempFilter.controlStartDate('');
+                self.evalTempFilter.controlEndDate('');
+                self.evalTempFilter.selectedControlDateRangeType(null);
+                break;
         }
 
         self.evalActiveFilters.push(filter);
@@ -233,6 +330,9 @@ function EvaluationsViewModel() {
         self.evalTempFilter.startDate('');
         self.evalTempFilter.endDate('');
         self.evalTempFilter.selectedDateRangeType(null);
+        self.evalTempFilter.controlStartDate('');
+        self.evalTempFilter.controlEndDate('');
+        self.evalTempFilter.selectedControlDateRangeType(null);
         self.evaluationsPage(1);
     };
 
@@ -427,12 +527,15 @@ function EvaluationsViewModel() {
         var statusFilter = filters.find(function(f) { return f.type === 'status'; });
         var personnelFilter = filters.find(function(f) { return f.type === 'personnel'; });
         var dateFilter = filters.find(function(f) { return f.type === 'dateRange'; });
+        var controlDateFilter = filters.find(function(f) { return f.type === 'controlDate'; });
 
         var search = searchFilter ? searchFilter.value.toLowerCase() : '';
         var status = statusFilter ? statusFilter.value : '';
         var personnelName = personnelFilter ? personnelFilter.value.toLowerCase() : '';
         var dateFrom = dateFilter && dateFilter.value.start ? dateFilter.value.start : '';
         var dateTo = dateFilter && dateFilter.value.end ? dateFilter.value.end : '';
+        var controlFrom = controlDateFilter && controlDateFilter.value.start ? controlDateFilter.value.start : '';
+        var controlTo = controlDateFilter && controlDateFilter.value.end ? controlDateFilter.value.end : '';
 
         var filtered = self.allEvaluations().filter(function(e) {
             // Text arama
@@ -470,6 +573,26 @@ function EvaluationsViewModel() {
                     var toDate = new Date(dateTo);
                     toDate.setHours(23, 59, 59, 999);
                     if (evalDate > toDate) return false;
+                }
+            }
+
+            // Kontrol Tarihi filtresi (sadece createdAt kullan)
+            if (controlFrom || controlTo) {
+                var controlDateStr = e.createdAt;
+                if (!controlDateStr) return false;
+
+                var controlDate = new Date(controlDateStr);
+                controlDate.setHours(0, 0, 0, 0);
+
+                if (controlFrom) {
+                    var cFromDate = new Date(controlFrom);
+                    cFromDate.setHours(0, 0, 0, 0);
+                    if (controlDate < cFromDate) return false;
+                }
+                if (controlTo) {
+                    var cToDate = new Date(controlTo);
+                    cToDate.setHours(23, 59, 59, 999);
+                    if (controlDate > cToDate) return false;
                 }
             }
             return true;
@@ -1666,6 +1789,54 @@ function EvaluationsViewModel() {
         .finally(function() {
             self.isSavingForm(false);
         });
+    };
+
+    // ========================
+    // EXCEL EXPORT
+    // ========================
+    self.isExportingEvaluations = ko.observable(false);
+
+    self.exportEvaluationsToExcel = function() {
+        self.isExportingEvaluations(true);
+
+        // Aktif filtreleri URL parametrelerine dönüştür
+        var filters = self.evalActiveFilters();
+        var params = [];
+
+        filters.forEach(function(f) {
+            switch (f.type) {
+                case 'status':
+                    params.push('status=' + encodeURIComponent(f.value));
+                    break;
+                case 'search':
+                    params.push('search=' + encodeURIComponent(f.value));
+                    break;
+                case 'personnel':
+                    params.push('personnel=' + encodeURIComponent(f.value));
+                    break;
+                case 'dateRange':
+                    if (f.value.start) params.push('startDate=' + encodeURIComponent(f.value.start));
+                    if (f.value.end) params.push('endDate=' + encodeURIComponent(f.value.end));
+                    break;
+                case 'controlDate':
+                    if (f.value.start) params.push('controlStartDate=' + encodeURIComponent(f.value.start));
+                    if (f.value.end) params.push('controlEndDate=' + encodeURIComponent(f.value.end));
+                    break;
+            }
+        });
+
+        var url = '/api/evaluations/export';
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        // Dosyayı indir
+        window.location.href = url;
+
+        // Export durumunu birkaç saniye sonra sıfırla
+        setTimeout(function() {
+            self.isExportingEvaluations(false);
+        }, 2000);
     };
 
     // ========================

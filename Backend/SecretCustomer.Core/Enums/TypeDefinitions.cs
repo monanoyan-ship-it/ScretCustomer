@@ -1520,8 +1520,9 @@ public static class EmailTemplateTypes
     public static readonly TypeItem PasswordReset = new(5, "PasswordReset", "EmailTemplateType.PasswordReset", "Şifre Sıfırlama", "bi-key", "bg-danger", 5);
     public static readonly TypeItem WelcomeEmail = new(6, "WelcomeEmail", "EmailTemplateType.WelcomeEmail", "Hoş Geldiniz", "bi-hand-wave", "bg-secondary", 6);
     public static readonly TypeItem Custom = new(7, "Custom", "EmailTemplateType.Custom", "Özel Şablon", "bi-palette", "bg-dark", 7);
+    public static readonly TypeItem EvaluationNotification = new(8, "EvaluationNotification", "EmailTemplateType.EvaluationNotification", "Değerlendirme Bildirimi", "bi-clipboard-check", "bg-purple", 8);
 
-    public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom };
+    public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom, EvaluationNotification };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -1535,6 +1536,33 @@ public static class EmailTemplateTypes
         public const int PasswordReset = 5;
         public const int WelcomeEmail = 6;
         public const int Custom = 7;
+        public const int EvaluationNotification = 8;
+    }
+}
+
+// ============================================================
+// EVALUATION NOTIFICATION FREQUENCIES (Değerlendirme Bildirim Sıklığı)
+// ============================================================
+public static class EvaluationNotificationFrequencies
+{
+    public static readonly TypeItem None = new(0, "None", "EvaluationNotificationFrequency.None", "Bildirim Yok", "bi-bell-slash", "bg-secondary", 0, isDefault: true);
+    public static readonly TypeItem PerEvaluation = new(1, "PerEvaluation", "EvaluationNotificationFrequency.PerEvaluation", "Her Kayıtta", "bi-lightning", "bg-danger", 1);
+    public static readonly TypeItem Daily = new(2, "Daily", "EvaluationNotificationFrequency.Daily", "Her Gün", "bi-calendar-day", "bg-info", 2);
+    public static readonly TypeItem Weekly = new(3, "Weekly", "EvaluationNotificationFrequency.Weekly", "Her Hafta (Cuma)", "bi-calendar-week", "bg-primary", 3);
+    public static readonly TypeItem Monthly = new(4, "Monthly", "EvaluationNotificationFrequency.Monthly", "Her Ay (Son Gün)", "bi-calendar-month", "bg-success", 4);
+
+    public static IEnumerable<TypeItem> All => new[] { None, PerEvaluation, Daily, Weekly, Monthly };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int None = 0;
+        public const int PerEvaluation = 1;
+        public const int Daily = 2;
+        public const int Weekly = 3;
+        public const int Monthly = 4;
     }
 }
 

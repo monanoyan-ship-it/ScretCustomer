@@ -115,4 +115,14 @@ public interface IReportService
 
     // Performans Takibi raporu (Dinleyici performansı + Firma kotaları)
     Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync();
+
+    // ===== GENEL SORU PUAN DAĞILIMI =====
+
+    // Online anket projelerindeki soruların genel puan dağılımı
+    Task<SurveyQuestionScoreDistributionResultDto> GetSurveyQuestionScoreDistributionAsync(int? projectId = null, DateTime? startDate = null, DateTime? endDate = null);
+
+    // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU =====
+
+    // Personel Soru Bazlı Performans Raporu Excel export
+    Task<ExcelExportDto> ExportPersonnelQuestionPerformanceReportAsync(PersonnelQuestionPerformanceFilterDto filter);
 }

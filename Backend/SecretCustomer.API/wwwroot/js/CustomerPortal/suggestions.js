@@ -5,6 +5,7 @@ function CustomerSuggestionsViewModel() {
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
+    self.isExportingTopQuestions = ko.observable(false);
     self.errorMessage = ko.observable('');
 
     // Filter options (müşteriye özel)
@@ -51,6 +52,11 @@ function CustomerSuggestionsViewModel() {
     // Data
     self.suggestions = ko.observableArray([]);
     self.topSuggestedQuestions = ko.observableArray([]);
+
+    // Details Modal State
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
 
     // Load filter options
     self.loadFilterOptions = function() {
@@ -185,6 +191,66 @@ function CustomerSuggestionsViewModel() {
             .finally(function() {
                 self.isExporting(false);
             });
+    };
+
+    // Export Top Questions to Excel
+    self.exportTopQuestionsToExcel = function() {
+        self.isExportingTopQuestions(true);
+
+        var url = '/api/customer/portal/reports/suggestions/top-questions/export' + self.buildQueryParams(false);
+
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export başarısız');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'EnCokOnerilenSorular_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Excel export başarısız: ' + error.message);
+            })
+            .finally(function() {
+                self.isExportingTopQuestions(false);
+            });
+    };
+
+    // Show Evaluation Details Modal
+    self.showEvaluationDetails = function(suggestion) {
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        customerApiFetch('/api/customer/portal/evaluations/' + suggestion.evaluationId)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Detay yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                toastr.error('Değerlendirme detayı yüklenemedi.');
+                self.closeDetailsModal();
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    // Close Details Modal
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
     };
 
     // Initialize

@@ -57,4 +57,12 @@ public class ReportsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Personel Soru Bazlı Performans Raporu
+    /// </summary>
+    public IActionResult PersonnelQuestionPerformance()
+    {
+        return View();
+    }
 }

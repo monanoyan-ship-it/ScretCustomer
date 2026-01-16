@@ -44,6 +44,10 @@ function CustomersViewModel() {
     self.confirmPassword = ko.observable('');
     self.passwordModalErrorMessage = ko.observable('');
 
+    // Notification Settings (dropdown options)
+    self.notificationFrequencies = ko.observableArray([]);
+    self.notificationTemplates = ko.observableArray([]);
+
     // Show personnel actions (hide when password reset is open)
     self.showPersonnelActions = ko.computed(function() {
         return !self.showChangePasswordModal();
@@ -209,7 +213,10 @@ function CustomersViewModel() {
             targetCount: null,
             dailyQuota: null,
             weeklyQuota: null,
-            monthlyQuota: null
+            monthlyQuota: null,
+            evaluationNotificationFrequencyId: 0,
+            evaluationNotificationTemplateId: null,
+            notificationEmails: ''
         });
         self.isModalOpen(true);
     };
@@ -232,7 +239,10 @@ function CustomersViewModel() {
             targetCount: customer.targetCount || null,
             dailyQuota: customer.dailyQuota || null,
             weeklyQuota: customer.weeklyQuota || null,
-            monthlyQuota: customer.monthlyQuota || null
+            monthlyQuota: customer.monthlyQuota || null,
+            evaluationNotificationFrequencyId: customer.evaluationNotificationFrequencyId || 0,
+            evaluationNotificationTemplateId: customer.evaluationNotificationTemplateId || null,
+            notificationEmails: customer.notificationEmails || ''
         });
         self.isModalOpen(true);
     };
@@ -1525,10 +1535,42 @@ function CustomersViewModel() {
     // Add ESC key listener
     document.addEventListener('keydown', self.handleEscapeKey);
 
+    // Load notification frequencies from EnumsService
+    self.loadNotificationFrequencies = function() {
+        var frequencies = EnumsService.getByType('evaluationNotificationFrequency');
+        if (frequencies && frequencies.length > 0) {
+            self.notificationFrequencies(frequencies);
+        } else {
+            // Fallback: hardcoded values
+            self.notificationFrequencies([
+                { id: 0, description: 'Bildirim Yok' },
+                { id: 1, description: 'Her Kayıtta' },
+                { id: 2, description: 'Her Gün' },
+                { id: 3, description: 'Her Hafta (Cuma)' },
+                { id: 4, description: 'Her Ay (Son Gün)' }
+            ]);
+        }
+    };
+
+    // Load notification templates
+    self.loadNotificationTemplates = function() {
+        // templateTypeId=8 is EvaluationNotification
+        ApiService.get('/email-templates?templateTypeId=8')
+            .then(function(data) {
+                self.notificationTemplates(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading notification templates:', error);
+                self.notificationTemplates([]);
+            });
+    };
+
     // Initialize
     self.init = function() {
         // Önce EnumsService'i yükle, sonra diğer verileri çek
         EnumsService.load().then(function() {
+            self.loadNotificationFrequencies();
+            self.loadNotificationTemplates();
             self.loadCustomers();
         });
     };

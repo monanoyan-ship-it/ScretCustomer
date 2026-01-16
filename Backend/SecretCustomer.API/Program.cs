@@ -203,6 +203,10 @@ builder.Services.AddScoped<IDealerService, DealerService>();
 builder.Services.AddScoped<IDealerRequestService, DealerRequestService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
+
+// Background Services
+builder.Services.AddHostedService<SecretCustomer.API.BackgroundServices.EvaluationNotificationJob>();
 
 // Localization Service
 builder.Services.AddMemoryCache();

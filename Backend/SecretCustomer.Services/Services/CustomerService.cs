@@ -128,6 +128,9 @@ public class CustomerService : ICustomerService
             DailyQuota = createCustomerDto.DailyQuota,
             WeeklyQuota = createCustomerDto.WeeklyQuota,
             MonthlyQuota = createCustomerDto.MonthlyQuota,
+            EvaluationNotificationFrequencyId = createCustomerDto.EvaluationNotificationFrequencyId,
+            EvaluationNotificationTemplateId = createCustomerDto.EvaluationNotificationTemplateId,
+            NotificationEmails = createCustomerDto.NotificationEmails,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -173,6 +176,9 @@ public class CustomerService : ICustomerService
         customer.DailyQuota = updateCustomerDto.DailyQuota;
         customer.WeeklyQuota = updateCustomerDto.WeeklyQuota;
         customer.MonthlyQuota = updateCustomerDto.MonthlyQuota;
+        customer.EvaluationNotificationFrequencyId = updateCustomerDto.EvaluationNotificationFrequencyId;
+        customer.EvaluationNotificationTemplateId = updateCustomerDto.EvaluationNotificationTemplateId;
+        customer.NotificationEmails = updateCustomerDto.NotificationEmails;
 
         var updatedCustomer = await _customerRepository.UpdateAsync(customer);
         return MapToDto(updatedCustomer);
@@ -214,7 +220,12 @@ public class CustomerService : ICustomerService
             TargetCount = customer.TargetCount,
             DailyQuota = customer.DailyQuota,
             WeeklyQuota = customer.WeeklyQuota,
-            MonthlyQuota = customer.MonthlyQuota
+            MonthlyQuota = customer.MonthlyQuota,
+            EvaluationNotificationFrequencyId = customer.EvaluationNotificationFrequencyId,
+            EvaluationNotificationTemplateId = customer.EvaluationNotificationTemplateId,
+            EvaluationNotificationTemplateName = customer.EvaluationNotificationTemplate?.Name,
+            NotificationEmails = customer.NotificationEmails,
+            LastNotificationSentAt = customer.LastNotificationSentAt
         };
     }
 

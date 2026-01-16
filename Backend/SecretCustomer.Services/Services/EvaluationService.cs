@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SecretCustomer.Core.DTOs.Evaluation;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -15,17 +16,20 @@ public class EvaluationService : IEvaluationService
     private readonly IAssignmentRepository _assignmentRepository;
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
+    private readonly IServiceProvider _serviceProvider;
 
     public EvaluationService(
         IEvaluationRepository evaluationRepository,
         IAssignmentRepository assignmentRepository,
         ApplicationDbContext context,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IServiceProvider serviceProvider)
     {
         _evaluationRepository = evaluationRepository;
         _assignmentRepository = assignmentRepository;
         _context = context;
         _localizationService = localizationService;
+        _serviceProvider = serviceProvider;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -733,6 +737,35 @@ public class EvaluationService : IEvaluationService
         }
 
         await _context.SaveChangesAsync();
+
+        // "Her Kayıtta" bildirim gönder (tamamlandıysa)
+        if (targetStatusId == EvaluationStatuses.Ids.Completed)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var notificationService = scope.ServiceProvider.GetService<IEvaluationNotificationService>();
+                    if (notificationService != null)
+                    {
+                        // Evaluation'ı yeniden yükle (ilişkili verilerle)
+                        var evalForNotification = await _context.Evaluations
+                            .Include(e => e.Assignment)
+                                .ThenInclude(a => a!.Project)
+                            .Include(e => e.EvaluatedCustomerPersonnel)
+                            .Include(e => e.EvaluatedOrganization)
+                            .FirstOrDefaultAsync(e => e.Id == evaluation.Id);
+
+                        if (evalForNotification != null)
+                        {
+                            await notificationService.SendSingleEvaluationNotificationAsync(evalForNotification);
+                        }
+                    }
+                }
+                catch { /* Bildirim hatası ana işlemi etkilemesin */ }
+            });
+        }
 
         // Yeni personel talebi oluştur (Listede Yok seçilmişse - taslak dahil her durumda)
         string? personnelRequestWarning = null;

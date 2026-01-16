@@ -568,6 +568,7 @@ public class QuestionSuggestionSummaryDto
     public string GroupName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
     public int SuggestionCount { get; set; }
+    public int EvaluationCount { get; set; }
     public decimal AverageScore { get; set; }
 }
 
@@ -786,9 +787,44 @@ public class PerformanceTrackingResultDto
     public List<CustomerQuotaStatusDto> CustomerQuotaStatuses { get; set; } = new();
 
     /// <summary>
+    /// Proje tipi bazlı hedef karşılaştırmaları
+    /// </summary>
+    public List<ProjectTypePerformanceDto> ProjectTypePerformances { get; set; } = new();
+
+    /// <summary>
     /// Genel özet
     /// </summary>
     public PerformanceSummaryDto Summary { get; set; } = new();
+}
+
+/// <summary>
+/// Proje tipi bazlı performans karşılaştırma DTO
+/// </summary>
+public class ProjectTypePerformanceDto
+{
+    public int ProjectTypeId { get; set; }
+    public string ProjectTypeName { get; set; } = string.Empty;
+
+    // Hedefler (PerformanceSettings'den)
+    public int? DailyTarget { get; set; }
+    public int? WeeklyTarget { get; set; }
+    public int? MonthlyTarget { get; set; }
+    public int? YearlyTarget { get; set; }
+    public decimal? SuccessThreshold { get; set; }
+    public decimal? WarningThreshold { get; set; }
+
+    // Gerçekleşen değerler
+    public int TodayCount { get; set; }
+    public int WeekCount { get; set; }
+    public int MonthCount { get; set; }
+    public int YearCount { get; set; }
+    public decimal AverageScore { get; set; }
+
+    // Hedef yüzdeleri
+    public decimal? DailyPercentage { get; set; }
+    public decimal? WeeklyPercentage { get; set; }
+    public decimal? MonthlyPercentage { get; set; }
+    public decimal? YearlyPercentage { get; set; }
 }
 
 /// <summary>
@@ -935,4 +971,119 @@ public class PerformanceSummaryDto
     /// Bu yıl toplam dinleme
     /// </summary>
     public int TotalYearEvaluations { get; set; }
+}
+
+// ===== GENEL SORU PUAN DAĞILIMI DTO'LARI =====
+
+/// <summary>
+/// Genel soru puan dağılımı sonuç DTO
+/// </summary>
+public class SurveyQuestionScoreDistributionResultDto
+{
+    public List<SurveyQuestionScoreDistributionDto> Questions { get; set; } = new();
+    public int TotalResponses { get; set; }
+    public decimal OverallAverageScore { get; set; }
+}
+
+/// <summary>
+/// Soru bazlı puan dağılımı DTO
+/// </summary>
+public class SurveyQuestionScoreDistributionDto
+{
+    public int QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string? GroupName { get; set; }
+    public int Order { get; set; }
+
+    /// <summary>
+    /// Bu soruya verilen toplam yanıt sayısı
+    /// </summary>
+    public int ResponseCount { get; set; }
+
+    /// <summary>
+    /// Ortalama puan (yüzde olarak)
+    /// </summary>
+    public decimal? AverageScore { get; set; }
+
+    /// <summary>
+    /// Maksimum alınabilecek puan
+    /// </summary>
+    public int MaxPoints { get; set; }
+
+    /// <summary>
+    /// Ortalama ham puan
+    /// </summary>
+    public decimal? AverageRawScore { get; set; }
+}
+
+// ===== PERSONEL SORU BAZLI PERFORMANS RAPORU DTO'LARI =====
+
+/// <summary>
+/// Personel Soru Bazlı Performans Raporu filtre DTO
+/// </summary>
+public class PersonnelQuestionPerformanceFilterDto
+{
+    public int? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+    public int? OrganizationId { get; set; }
+    public int? PersonnelId { get; set; }
+    public int? PeriodId { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+
+/// <summary>
+/// Personel Soru Bazlı Performans Raporu satır DTO
+/// </summary>
+public class PersonnelQuestionPerformanceDto
+{
+    /// <summary>
+    /// Proje adı
+    /// </summary>
+    public string ProjectName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Müşteri Temsilcisi (personel adı)
+    /// </summary>
+    public string PersonnelName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Personel ID
+    /// </summary>
+    public int PersonnelId { get; set; }
+
+    /// <summary>
+    /// Departman
+    /// </summary>
+    public string? Department { get; set; }
+
+    /// <summary>
+    /// Kontrol Sorusu (GroupName)
+    /// </summary>
+    public string GroupName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Periyot (Yıl)
+    /// </summary>
+    public int Year { get; set; }
+
+    /// <summary>
+    /// Periyot (Ay) - YYYYMM formatında
+    /// </summary>
+    public string PeriodMonth { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Ortalama Puan (yüzde)
+    /// </summary>
+    public decimal AverageScore { get; set; }
+
+    /// <summary>
+    /// Hata Sayısı (tam puan almayan cevap sayısı)
+    /// </summary>
+    public int ErrorCount { get; set; }
+
+    /// <summary>
+    /// Toplam değerlendirme sayısı
+    /// </summary>
+    public int EvaluationCount { get; set; }
 }

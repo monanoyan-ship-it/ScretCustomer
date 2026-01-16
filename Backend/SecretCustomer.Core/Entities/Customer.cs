@@ -78,6 +78,27 @@ public class Customer : BaseEntity
         Description = "Aylık maksimum değerlendirme sayısı")]
     public int? MonthlyQuota { get; set; }
 
+    /// <summary>
+    /// Değerlendirme bildirim sıklığı (0=Yok, 1=Her Kayıtta, 2=Günlük, 3=Haftalık, 4=Aylık)
+    /// </summary>
+    public int EvaluationNotificationFrequencyId { get; set; } = EvaluationNotificationFrequencies.Ids.None;
+
+    /// <summary>
+    /// Değerlendirme bildirimi için kullanılacak email şablonu
+    /// </summary>
+    public int? EvaluationNotificationTemplateId { get; set; }
+    public EmailTemplate? EvaluationNotificationTemplate { get; set; }
+
+    /// <summary>
+    /// Bildirimlerin gönderileceği email adresleri (virgülle ayrılmış)
+    /// </summary>
+    public string? NotificationEmails { get; set; }
+
+    /// <summary>
+    /// Son bildirim gönderim tarihi (günlük/haftalık/aylık için)
+    /// </summary>
+    public DateTime? LastNotificationSentAt { get; set; }
+
     // Navigation Properties
     public ICollection<CustomerPersonnel> Personnel { get; set; } = new List<CustomerPersonnel>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();

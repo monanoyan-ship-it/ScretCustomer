@@ -687,6 +687,27 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Genel Soru Puan Dağılımı (tüm online anket projeleri için)
+    /// </summary>
+    [HttpGet("survey-question-distribution")]
+    public async Task<IActionResult> GetSurveyQuestionScoreDistribution(
+        [FromQuery] int? projectId = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var result = await _reportService.GetSurveyQuestionScoreDistributionAsync(projectId, startDate, endDate);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading survey question score distribution");
+            return StatusCode(500, CreateErrorResponse("Soru puan dağılımı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Anket Sonuçları Excel Export
     /// </summary>
     [HttpGet("survey-results/{projectId}/export")]
@@ -845,6 +866,42 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error getting performance tracking report");
             return StatusCode(500, CreateErrorResponse("Performans takibi raporu yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Personel Soru Bazlı Performans Raporu Excel Export
+    /// </summary>
+    [HttpGet("personnel-question-performance/export")]
+    public async Task<IActionResult> ExportPersonnelQuestionPerformanceReport(
+        [FromQuery] int? customerId,
+        [FromQuery] int? projectId,
+        [FromQuery] int? organizationId,
+        [FromQuery] int? personnelId,
+        [FromQuery] int? periodId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        try
+        {
+            var filter = new PersonnelQuestionPerformanceFilterDto
+            {
+                CustomerId = customerId,
+                ProjectId = projectId,
+                OrganizationId = organizationId,
+                PersonnelId = personnelId,
+                PeriodId = periodId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            var result = await _reportService.ExportPersonnelQuestionPerformanceReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting personnel question performance report");
+            return StatusCode(500, CreateErrorResponse("Personel soru performans raporu export edilirken hata oluştu.", ex));
         }
     }
 

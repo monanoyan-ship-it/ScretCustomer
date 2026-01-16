@@ -7,7 +7,7 @@ namespace SecretCustomer.API.Controllers;
 /// Müşteri Portalı - MVC Controller
 /// Müşteri personelinin giriş yapıp değerlendirme sonuçlarını görüntüleyeceği portal
 /// </summary>
-[Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator")]
+[Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
 public class CustomerPortalController : Controller
 {
     /// <summary>
@@ -57,6 +57,15 @@ public class CustomerPortalController : Controller
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
     public IActionResult PersonnelReportCard()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Dönemlere Göre Personel Başarı Tablosu (sadece CustomerManager)
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    public IActionResult PerformanceByPeriod()
     {
         return View();
     }
