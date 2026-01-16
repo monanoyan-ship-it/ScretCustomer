@@ -50,6 +50,8 @@ public class ProjectService : IProjectService
             .Include(p => p.TeamMembers)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
+            .Include(p => p.SurveyInvitations)
+            .Include(p => p.SurveyExternalInvitations)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         return project == null ? null : MapToDto(project);
@@ -68,6 +70,8 @@ public class ProjectService : IProjectService
                 .ThenInclude(tm => tm.User)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
+            .Include(p => p.SurveyInvitations)
+            .Include(p => p.SurveyExternalInvitations)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         if (project == null)
@@ -88,6 +92,8 @@ public class ProjectService : IProjectService
             .Include(p => p.TeamMembers)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
+            .Include(p => p.SurveyInvitations)
+            .Include(p => p.SurveyExternalInvitations)
             .Where(p => !p.IsDeleted);
 
         if (!includeInactive)
@@ -101,15 +107,26 @@ public class ProjectService : IProjectService
     {
         var projects = await _context.Projects
             .Include(p => p.Assignments)
+            .Include(p => p.SurveyInvitations)
+            .Include(p => p.SurveyExternalInvitations)
             .Where(p => !p.IsDeleted && p.IsActive)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
         return projects.Select(p =>
         {
-            var total = p.Assignments?.Count ?? 0;
-            var completed = p.Assignments?.Count(a => a.IsCompleted) ?? 0;
             var daysRemaining = (p.EndDate - DateTime.UtcNow).Days;
+
+            // İlerleme: Sadece OnlineSurvey için hesaplanır
+            decimal completionPercentage = -1;
+            if (p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey)
+            {
+                var totalSent = (p.SurveyInvitations?.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0) +
+                               (p.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0);
+                var totalCompleted = (p.SurveyInvitations?.Count(si => !si.IsDeleted && si.IsCompleted) ?? 0) +
+                                    (p.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.IsCompleted) ?? 0);
+                completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 1) : -1;
+            }
 
             return new ProjectSummaryDto
             {
@@ -117,7 +134,7 @@ public class ProjectService : IProjectService
                 Name = p.Name,
                 Status = ProjectStatuses.GetById(p.StatusId)?.SystemName ?? "",
                 ProjectType = ProjectTypes.GetById(p.ProjectTypeId)?.SystemName ?? "",
-                CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
+                CompletionPercentage = completionPercentage,
                 AverageScore = 0, // Will calculate if needed
                 DaysRemaining = Math.Max(0, daysRemaining),
                 IsOverdue = daysRemaining < 0
@@ -206,9 +223,20 @@ public class ProjectService : IProjectService
                 CreatedAt = p.CreatedAt,
                 TotalAssignments = p.Assignments.Count(a => !a.IsDeleted),
                 CompletedAssignments = p.Assignments.Count(a => !a.IsDeleted && a.IsCompleted),
-                CompletionPercentage = p.Assignments.Count(a => !a.IsDeleted) > 0
-                    ? Math.Round((decimal)p.Assignments.Count(a => !a.IsDeleted && a.IsCompleted) / p.Assignments.Count(a => !a.IsDeleted) * 100, 1)
-                    : 0,
+                // İlerleme: Sadece OnlineSurvey için hesaplanır (firma personeli + dış katılımcı davetiyeleri)
+                CompletionPercentage = p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey
+                    ? (
+                        // Toplam gönderilen davet sayısı
+                        (p.SurveyInvitations.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) +
+                         p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent)) > 0
+                        ? Math.Round(
+                            (decimal)(p.SurveyInvitations.Count(si => !si.IsDeleted && si.IsCompleted) +
+                                     p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.IsCompleted)) /
+                            (p.SurveyInvitations.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) +
+                             p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent)) * 100, 1)
+                        : -1 // Henüz davetiye gönderilmemiş
+                      )
+                    : -1, // OnlineSurvey değilse ilerleme gösterilmez
                 CustomerId = p.CustomerId,
                 CustomerName = p.Customer != null ? p.Customer.CompanyName : null,
                 CustomerCode = p.Customer != null ? p.Customer.Code : null,
@@ -628,7 +656,17 @@ public class ProjectService : IProjectService
     {
         var totalAssignments = project.Assignments?.Count ?? 0;
         var completedAssignments = project.Assignments?.Count(a => a.IsCompleted) ?? 0;
-        var completionPercentage = totalAssignments > 0 ? Math.Round((decimal)completedAssignments / totalAssignments * 100, 1) : 0;
+
+        // İlerleme: Sadece OnlineSurvey için hesaplanır
+        decimal completionPercentage = -1;
+        if (project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey)
+        {
+            var totalSent = (project.SurveyInvitations?.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0) +
+                           (project.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0);
+            var totalCompleted = (project.SurveyInvitations?.Count(si => !si.IsDeleted && si.IsCompleted) ?? 0) +
+                                (project.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.IsCompleted) ?? 0);
+            completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 1) : -1;
+        }
 
         // Calculate average score - use first evaluation from each assignment
         var evaluations = project.Assignments?

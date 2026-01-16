@@ -55,16 +55,16 @@
             <!-- Question Groups -->
             <div data-bind="foreach: questionGroups">
                 <div class="card shadow-sm mb-3">
-                    <div class="card-header bg-dark text-white py-2">
+                    <div class="card-header bg-primary text-white py-2">
                         <i class="bi bi-list-check me-2"></i>
                         <span data-bind="text: name"></span>
                         <span class="badge bg-light text-dark ms-2" data-bind="text: questions.length + ' soru'"></span>
                     </div>
                     <div class="list-group list-group-flush" data-bind="foreach: questions">
-                        <div class="list-group-item">
+                        <div class="list-group-item" data-bind="css: { 'bg-light': $index() % 2 === 1 }, attr: { 'data-question-id': id }">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="flex-grow-1">
-                                    <span class="badge bg-secondary me-2" data-bind="text: '#' + order"></span>
+                                    <!-- ko if: isRequired --><span class="text-danger fw-bold me-1">*</span><!-- /ko -->
                                     <strong data-bind="text: text"></strong>
                                     <!-- ko if: description -->
                                     <br><small class="text-muted" data-bind="text: description"></small>

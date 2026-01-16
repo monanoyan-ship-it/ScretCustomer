@@ -129,6 +129,25 @@ public class PagedReportResult<T>
 public class EvaluationDetailReportDto : EvaluationReportDto
 {
     public List<QuestionGroupReportDto> Groups { get; set; } = new();
+
+    /// <summary>
+    /// Düz liste halinde tüm soru-cevaplar (Online Anket detayı için)
+    /// </summary>
+    public List<FlatQuestionAnswerDto> QuestionAnswers { get; set; } = new();
+}
+
+/// <summary>
+/// Düz soru-cevap DTO (grup bilgisiyle birlikte, online anket detayı için)
+/// </summary>
+public class FlatQuestionAnswerDto
+{
+    public string QuestionText { get; set; } = string.Empty;
+    public string? GroupName { get; set; }
+    public int Order { get; set; }
+    public decimal? Score { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public List<string> SelectedSubCriteria { get; set; } = new();
+    public string? Comment { get; set; }
 }
 
 /// <summary>
@@ -681,6 +700,72 @@ public class SurveyRespondentDto
     public string? OrganizationName { get; set; }
     public decimal? Score { get; set; }
     public DateTime? CompletedAt { get; set; }
+}
+
+/// <summary>
+/// Online Anket Proje Listesi için DTO (dashboard panel)
+/// </summary>
+public class SurveyProjectListItemDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? ProjectCode { get; set; }
+    public int TotalInvitations { get; set; }
+    public int TotalResponses { get; set; }
+    public decimal ResponseRate { get; set; }
+    public decimal? AverageScore { get; set; }
+    public DateTime? LastResponseAt { get; set; }
+    public bool IsActive { get; set; }
+}
+
+/// <summary>
+/// Son Anket Yanıtları için DTO (dashboard sol panel)
+/// </summary>
+public class RecentSurveyResponseDto
+{
+    public int EvaluationId { get; set; }
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? RespondentName { get; set; }
+    public string? RespondentEmail { get; set; }
+    public decimal? Score { get; set; }
+    public DateTime? CompletedAt { get; set; }
+}
+
+/// <summary>
+/// Anket Proje Detay DTO (modal için)
+/// </summary>
+public class SurveyProjectDetailDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? OrganizationName { get; set; }
+
+    // Genel istatistikler
+    public int TotalInvitations { get; set; }
+    public int TotalResponses { get; set; }
+    public decimal ResponseRate { get; set; }
+    public decimal? AverageScore { get; set; }
+    public int TotalQuestions { get; set; }
+
+    // Grup bazlı puan hesaplaması
+    public List<SurveyGroupScoreDto> GroupScores { get; set; } = new();
+
+    // Son yanıtlar
+    public List<SurveyRespondentDto> RecentRespondents { get; set; } = new();
+}
+
+/// <summary>
+/// Anket Grup Bazlı Puan DTO
+/// </summary>
+public class SurveyGroupScoreDto
+{
+    public string GroupName { get; set; } = string.Empty;
+    public int QuestionCount { get; set; }
+    public int TotalResponses { get; set; }
+    public decimal? AverageScore { get; set; }
 }
 
 // ===== PERFORMANS TAKİBİ RAPORU DTO'LARI =====

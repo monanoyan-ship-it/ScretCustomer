@@ -109,6 +109,24 @@ public class ChecklistService : IChecklistService
 
     public async Task<ChecklistDto> CreateAsync(CreateChecklistDto dto)
     {
+        // Soru validasyonu: ShowScoreInput kapalıysa, ya SubCriteria olmalı ya da AllowComment açık olmalı
+        for (int i = 0; i < dto.Questions.Count; i++)
+        {
+            var q = dto.Questions[i];
+            if (!q.ShowScoreInput)
+            {
+                var hasSubCriteria = q.SubCriteria != null && q.SubCriteria.Count > 0;
+                if (!hasSubCriteria && !q.AllowComment)
+                {
+                    var errorMsg = await _localizationService.GetResourceAsync(
+                        "Checklist.Question.ShowScoreInputValidation",
+                        (int?)null,
+                        "Soru {0}: 'Puan girişini göster' kapalıyken en az bir alt kriter eklenmeli veya 'Yorum Yapılabilir' işaretlenmelidir.");
+                    throw new InvalidOperationException(string.Format(errorMsg, i + 1));
+                }
+            }
+        }
+
         var checklist = new Checklist
         {
             Name = dto.Name,
@@ -140,6 +158,9 @@ public class ChecklistService : IChecklistService
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
                 GroupName = q.GroupName,
+                SelectionTypeId = q.SelectionTypeId,
+                ShowScoreInput = q.ShowScoreInput,
+                AllowComment = q.AllowComment,
                 // Alt Kriterler
                 SubCriteria = q.SubCriteria?.Select(sc => new QuestionSubCriteria
                 {
@@ -157,6 +178,24 @@ public class ChecklistService : IChecklistService
 
     public async Task<ChecklistDto> UpdateAsync(UpdateChecklistDto dto)
     {
+        // Soru validasyonu: ShowScoreInput kapalıysa, ya SubCriteria olmalı ya da AllowComment açık olmalı
+        for (int i = 0; i < dto.Questions.Count; i++)
+        {
+            var q = dto.Questions[i];
+            if (!q.ShowScoreInput)
+            {
+                var hasSubCriteria = q.SubCriteria != null && q.SubCriteria.Count > 0;
+                if (!hasSubCriteria && !q.AllowComment)
+                {
+                    var errorMsg = await _localizationService.GetResourceAsync(
+                        "Checklist.Question.ShowScoreInputValidation",
+                        (int?)null,
+                        "Soru {0}: 'Puan girişini göster' kapalıyken en az bir alt kriter eklenmeli veya 'Yorum Yapılabilir' işaretlenmelidir.");
+                    throw new InvalidOperationException(string.Format(errorMsg, i + 1));
+                }
+            }
+        }
+
         var existing = await _checklistRepository.GetByIdAsync(dto.Id, includeDetails: true);
         if (existing == null)
             throw new KeyNotFoundException($"Checklist with ID {dto.Id} not found");

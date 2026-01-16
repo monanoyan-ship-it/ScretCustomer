@@ -95,6 +95,21 @@ public class CreateQuestionDto
     public string? GroupName { get; set; }
 
     /// <summary>
+    /// Alt Kriter seçim tipi: 1=Tekli, 2=Çoklu (varsayılan)
+    /// </summary>
+    public int SelectionTypeId { get; set; } = 2;
+
+    /// <summary>
+    /// Puan girişi gösterilsin mi? (Online anketler için false yapılabilir)
+    /// </summary>
+    public bool ShowScoreInput { get; set; } = true;
+
+    /// <summary>
+    /// Yorum yapılabilir mi? (Online anketler için false yapılabilir)
+    /// </summary>
+    public bool AllowComment { get; set; } = true;
+
+    /// <summary>
     /// Alt Kriterler/Öneriler - "İlgili davranılmadı", "İsim ile hitap etmedi" gibi
     /// </summary>
     public List<CreateSubCriteriaDto>? SubCriteria { get; set; }

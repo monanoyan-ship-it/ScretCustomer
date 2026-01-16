@@ -3,93 +3,193 @@ function SurveyResultsViewModel() {
     var self = this;
 
     // State
-    self.isLoading = ko.observable(false);
-    self.isExporting = ko.observable(false);
+    self.isLoading = ko.observable(true);
+    self.isLoadingPopup = ko.observable(false);
+    self.isLoadingResponseDetail = ko.observable(false);
 
-    // Filters
+    // Data
+    self.recentResponses = ko.observableArray([]);
     self.surveyProjects = ko.observableArray([]);
-    self.selectedProjectId = ko.observable(null);
-    self.startDate = ko.observable('');
-    self.endDate = ko.observable('');
+    self.allResponses = ko.observableArray([]);
+    self.projectDetail = ko.observable(null);
+    self.responseDetail = ko.observable(null);
 
-    // Results
-    self.results = ko.observable(null);
-
-    // Load survey projects (OnlineSurvey type only)
-    self.loadProjects = function() {
-        apiService.get('/projects?projectTypeId=3') // OnlineSurvey = 3
-            .then(function(projects) {
-                self.surveyProjects(projects || []);
-            })
-            .catch(function(error) {
-                console.error('Error loading projects:', error);
-                toastr.error('Projeler yüklenirken hata oluştu.');
-            });
+    // Popup Filters
+    self.popupFilter = {
+        projectId: ko.observable(null),
+        startDate: ko.observable(''),
+        endDate: ko.observable('')
     };
 
-    // Load results for selected project
-    self.loadResults = function() {
-        var projectId = self.selectedProjectId();
-        if (!projectId) {
-            toastr.warning('Lütfen bir proje seçin.');
-            return;
+    // Modals
+    self.allResponsesModal = null;
+    self.projectDetailModal = null;
+    self.responseDetailModal = null;
+
+    // Initialize modals
+    self.initModals = function() {
+        self.allResponsesModal = new bootstrap.Modal(document.getElementById('allResponsesModal'));
+        self.projectDetailModal = new bootstrap.Modal(document.getElementById('projectDetailModal'));
+        self.responseDetailModal = new bootstrap.Modal(document.getElementById('responseDetailModal'));
+    };
+
+    // Load initial data
+    self.loadData = function() {
+        self.isLoading(true);
+
+        // Load both recent responses and projects in parallel
+        Promise.all([
+            apiService.get('/reports/survey-responses/recent?count=10'),
+            apiService.get('/reports/survey-projects')
+        ])
+        .then(function(results) {
+            self.recentResponses(results[0] || []);
+            self.surveyProjects(results[1] || []);
+        })
+        .catch(function(error) {
+            console.error('Error loading survey data:', error);
+            toastr.error('Veriler yüklenirken hata oluştu.');
+        })
+        .finally(function() {
+            self.isLoading(false);
+        });
+    };
+
+    // Show All Responses Popup
+    self.showAllResponsesPopup = function() {
+        self.popupFilter.projectId(null);
+        self.popupFilter.startDate('');
+        self.popupFilter.endDate('');
+        self.loadAllResponses();
+        self.allResponsesModal.show();
+    };
+
+    // Load All Responses (with filter)
+    self.loadAllResponses = function() {
+        self.isLoadingPopup(true);
+        self.allResponses([]);
+
+        var params = ['count=100']; // Max 100 for popup
+        if (self.popupFilter.projectId()) {
+            params.push('projectId=' + self.popupFilter.projectId());
+        }
+        if (self.popupFilter.startDate()) {
+            params.push('startDate=' + self.popupFilter.startDate());
+        }
+        if (self.popupFilter.endDate()) {
+            params.push('endDate=' + self.popupFilter.endDate());
         }
 
-        self.isLoading(true);
-        self.results(null);
-
-        var params = [];
-        if (self.startDate()) params.push('startDate=' + self.startDate());
-        if (self.endDate()) params.push('endDate=' + self.endDate());
-        var queryString = params.length > 0 ? '?' + params.join('&') : '';
-
-        apiService.get('/reports/survey-results/' + projectId + queryString)
+        apiService.get('/reports/survey-responses/recent?' + params.join('&'))
             .then(function(data) {
-                self.results(data);
+                self.allResponses(data || []);
             })
             .catch(function(error) {
-                console.error('Error loading results:', error);
-                toastr.error('Sonuçlar yüklenirken hata oluştu.');
+                console.error('Error loading all responses:', error);
+                toastr.error('Yanıtlar yüklenirken hata oluştu.');
             })
             .finally(function() {
-                self.isLoading(false);
+                self.isLoadingPopup(false);
             });
     };
 
-    // Clear filters
-    self.clearFilters = function() {
-        self.selectedProjectId(null);
-        self.startDate('');
-        self.endDate('');
-        self.results(null);
+    // Show Project Detail Modal
+    self.showProjectDetail = function(project) {
+        self.projectDetail(null);
+        self.projectDetailModal.show();
+
+        apiService.get('/reports/survey-projects/' + project.projectId + '/detail')
+            .then(function(data) {
+                self.projectDetail(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading project detail:', error);
+                toastr.error('Proje detayı yüklenirken hata oluştu.');
+            });
     };
 
-    // Export to Excel
-    self.exportToExcel = function() {
-        var projectId = self.selectedProjectId();
-        if (!projectId) {
-            toastr.warning('Lütfen bir proje seçin.');
-            return;
-        }
+    // Show Response Detail Modal
+    self.showResponseDetail = function(response) {
+        self.responseDetail(null);
+        self.isLoadingResponseDetail(true);
+        self.responseDetailModal.show();
 
-        self.isExporting(true);
+        apiService.get('/reports/evaluations/' + response.evaluationId)
+            .then(function(data) {
+                // Transform data for display
+                var detail = {
+                    respondentName: response.respondentName,
+                    respondentEmail: response.respondentEmail,
+                    projectName: response.projectName,
+                    score: response.score,
+                    completedAt: response.completedAt,
+                    answers: (data.questionAnswers || []).map(function(qa) {
+                        return {
+                            questionText: qa.questionText,
+                            groupName: qa.groupName,
+                            score: qa.score,
+                            maxPoints: qa.maxPoints,
+                            selectedSubCriteria: qa.selectedSubCriteria || [],
+                            comment: qa.comment
+                        };
+                    })
+                };
+                self.responseDetail(detail);
+            })
+            .catch(function(error) {
+                console.error('Error loading response detail:', error);
+                toastr.error('Yanıt detayı yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoadingResponseDetail(false);
+            });
+    };
 
-        var params = [];
-        if (self.startDate()) params.push('startDate=' + self.startDate());
-        if (self.endDate()) params.push('endDate=' + self.endDate());
-        var queryString = params.length > 0 ? '?' + params.join('&') : '';
+    // Show Response Detail from Project Modal
+    self.showResponseDetailFromProject = function(respondent) {
+        var response = {
+            evaluationId: respondent.evaluationId,
+            respondentName: respondent.fullName,
+            respondentEmail: respondent.email,
+            projectName: self.projectDetail() ? self.projectDetail().projectName : '',
+            score: respondent.score,
+            completedAt: respondent.completedAt
+        };
+        self.showResponseDetail(response);
+    };
 
-        // Download file
-        window.location.href = '/api/reports/survey-results/' + projectId + '/export' + queryString;
+    // Export Group Scores Report
+    self.exportGroupScores = function() {
+        if (!self.projectDetail()) return;
+        var projectId = self.projectDetail().projectId;
+        window.location.href = '/api/reports/survey-results/' + projectId + '/export/group-scores';
+    };
 
-        setTimeout(function() {
-            self.isExporting(false);
-        }, 2000);
+    // Export Question Statistics Report
+    self.exportQuestionStats = function() {
+        if (!self.projectDetail()) return;
+        var projectId = self.projectDetail().projectId;
+        window.location.href = '/api/reports/survey-results/' + projectId + '/export/question-stats';
+    };
+
+    // Export Detail Report (scores + selections)
+    self.exportDetailReport = function() {
+        if (!self.projectDetail()) return;
+        var projectId = self.projectDetail().projectId;
+        window.location.href = '/api/reports/survey-results/' + projectId + '/export/detail';
+    };
+
+    // Export Full Detail Report (scores + selections + comments)
+    self.exportFullDetailReport = function() {
+        if (!self.projectDetail()) return;
+        var projectId = self.projectDetail().projectId;
+        window.location.href = '/api/reports/survey-results/' + projectId + '/export/full-detail';
     };
 
     // Initialize
     self.init = function() {
-        self.loadProjects();
+        self.initModals();
+        self.loadData();
     };
 
     self.init();

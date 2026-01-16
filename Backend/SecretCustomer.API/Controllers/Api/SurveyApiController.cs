@@ -18,15 +18,18 @@ public class SurveyApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<SurveyApiController> _logger;
 
     public SurveyApiController(
         ApplicationDbContext context,
         IEmailService emailService,
+        IQRCodeService qrCodeService,
         ILogger<SurveyApiController> logger)
     {
         _context = context;
         _emailService = emailService;
+        _qrCodeService = qrCodeService;
         _logger = logger;
     }
 
@@ -537,8 +540,10 @@ public class SurveyApiController : ControllerBase
             await _context.SaveChangesAsync();
 
             // Cevapları kaydet ve puanı hesapla
-            var totalScore = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
-            evaluation.TotalScore = totalScore;
+            var scoreResult = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
+            evaluation.TotalScore = scoreResult.TotalScore;
+            evaluation.MaxScore = scoreResult.MaxScore;
+            evaluation.ScorePercentage = scoreResult.ScorePercentage;
 
             // Assignment'ı tamamlandı olarak işaretle
             assignment.IsCompleted = true;
@@ -646,8 +651,10 @@ public class SurveyApiController : ControllerBase
             await _context.SaveChangesAsync();
 
             // Cevapları kaydet ve puanı hesapla
-            var totalScore = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
-            evaluation.TotalScore = totalScore;
+            var scoreResult = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
+            evaluation.TotalScore = scoreResult.TotalScore;
+            evaluation.MaxScore = scoreResult.MaxScore;
+            evaluation.ScorePercentage = scoreResult.ScorePercentage;
 
             // External invitation'ı tamamlandı olarak işaretle
             invitation.IsCompleted = true;
@@ -677,13 +684,14 @@ public class SurveyApiController : ControllerBase
 
     /// <summary>
     /// Cevapları kaydet ve toplam puanı hesapla (ortak method)
+    /// Returns: (TotalScore, MaxScore, ScorePercentage)
     /// </summary>
-    private async Task<decimal?> SaveAnswersAndCalculateScore(int evaluationId, int? checklistId, List<SurveyAnswerDto> answers)
+    private async Task<(decimal? TotalScore, decimal? MaxScore, decimal? ScorePercentage)> SaveAnswersAndCalculateScore(int evaluationId, int? checklistId, List<SurveyAnswerDto> answers)
     {
-        if (!checklistId.HasValue) return null;
+        if (!checklistId.HasValue) return (null, null, null);
 
-        decimal totalScore = 0;
-        decimal totalWeight = 0;
+        decimal totalEarned = 0;
+        decimal totalMax = 0;
 
         var questions = await _context.Questions
             .Where(q => q.ChecklistId == checklistId && !q.IsDeleted)
@@ -724,20 +732,21 @@ public class SurveyApiController : ControllerBase
             // Puan hesapla
             if (answerDto.Score.HasValue && question.ScoringTypeId == ScoringTypes.Ids.Scored)
             {
-                totalWeight += question.WeightPoints;
-                totalScore += (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
+                totalMax += question.WeightPoints;
+                totalEarned += (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
             }
         }
 
         await _context.SaveChangesAsync();
 
         // Toplam puanı hesapla
-        if (totalWeight > 0)
+        if (totalMax > 0)
         {
-            return Math.Round((totalScore / totalWeight) * 100, 2);
+            var percentage = Math.Round((totalEarned / totalMax) * 100, 2);
+            return (Math.Round(totalEarned, 2), Math.Round(totalMax, 2), percentage);
         }
 
-        return null;
+        return (null, null, null);
     }
 
     /// <summary>
@@ -1097,11 +1106,22 @@ public class SurveyApiController : ControllerBase
 
     /// <summary>
     /// QR kod HTML'i oluştur (placeholder için)
+    /// Base64 embedded image kullanır - email istemcileri için daha güvenilir
     /// </summary>
     private string GenerateQRCodeHtml(string url)
     {
-        var qrUrl = $"https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={Uri.EscapeDataString(url)}&choe=UTF-8";
-        return $"<img src='{qrUrl}' alt='QR Code' style='width:150px;height:150px;' />";
+        try
+        {
+            var qrBytes = _qrCodeService.GenerateQRCode(url, pixelPerModule: 5);
+            var base64 = Convert.ToBase64String(qrBytes);
+            return $"<img src='data:image/png;base64,{base64}' alt='QR Code' style='width:150px;height:150px;' />";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "QR kod oluşturulamadı: {Url}", url);
+            // Fallback: link olarak göster
+            return $"<a href='{url}'>Ankete Git</a>";
+        }
     }
 
     #region External Invitations (Email Listesi)
@@ -1449,6 +1469,139 @@ public class SurveyApiController : ControllerBase
     }
 
     /// <summary>
+    /// Dış katılımcılara hatırlatma gönder
+    /// filter: "all" = Tümü, "completed" = Tamamlananlar, "notCompleted" = Tamamlanmayanlar (varsayılan)
+    /// </summary>
+    [HttpPost("{projectId}/send-external-reminders")]
+    public async Task<IActionResult> SendExternalReminders(int projectId, [FromBody] SendExternalRemindersDto dto)
+    {
+        var project = await _context.Projects
+            .Include(p => p.Customer)
+            .Include(p => p.Organization)
+            .Include(p => p.Checklist)
+            .Include(p => p.EmailTemplate)
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+
+        // Email şablonu kontrolü
+        var emailTemplate = project.EmailTemplate;
+        if (dto.EmailTemplateId.HasValue)
+        {
+            emailTemplate = await _context.EmailTemplates
+                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+        }
+
+        if (emailTemplate == null)
+        {
+            return BadRequest(new { message = "Email şablonu bulunamadı." });
+        }
+
+        // SMTP yapılandırması kontrolü
+        if (!await _emailService.IsConfiguredAsync())
+        {
+            return BadRequest(new { message = "SMTP ayarları yapılandırılmamış." });
+        }
+
+        // Base URL kontrolü
+        if (string.IsNullOrWhiteSpace(dto.BaseUrl))
+        {
+            return BadRequest(new { message = "Base URL belirtilmemiş." });
+        }
+
+        // Davetiyeleri filtrele
+        var query = _context.SurveyExternalInvitations
+            .Where(si => si.ProjectId == projectId &&
+                         si.StatusId == SurveyInvitationStatuses.Ids.Sent &&
+                         !si.IsDeleted);
+
+        // Filtre uygula
+        switch (dto.Filter?.ToLower())
+        {
+            case "completed":
+                query = query.Where(si => si.IsCompleted);
+                break;
+            case "notcompleted":
+                query = query.Where(si => !si.IsCompleted);
+                break;
+            case "all":
+            default:
+                // Tümü - filtre yok
+                break;
+        }
+
+        var invitations = await query.ToListAsync();
+
+        if (!invitations.Any())
+        {
+            return Ok(new { success = true, message = "Hatırlatma gönderilecek davetiye bulunamadı." });
+        }
+
+        var successCount = 0;
+        var failCount = 0;
+        var errors = new List<string>();
+
+        foreach (var invitation in invitations)
+        {
+            try
+            {
+                // Kişiye özel anket URL'i oluştur
+                var surveyUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={invitation.Token}";
+
+                var recipient = new ExternalRecipient
+                {
+                    Email = invitation.Email,
+                    FirstName = invitation.FirstName,
+                    LastName = invitation.LastName
+                };
+
+                // Placeholder değişimleri
+                var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+
+                var result = await _emailService.SendEmailAsync(invitation.Email, subject, body, true);
+
+                if (result.Success)
+                {
+                    invitation.AttemptCount++;
+                    invitation.SentAt = DateTime.UtcNow;
+                    successCount++;
+                    _logger.LogInformation("Reminder sent to external {Email} for project {ProjectId}",
+                        invitation.Email, projectId);
+                }
+                else
+                {
+                    failCount++;
+                    errors.Add($"{invitation.Email}: {result.ErrorMessage}");
+                    _logger.LogWarning("Reminder failed for external {Email}: {Error}",
+                        invitation.Email, result.ErrorMessage);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                failCount++;
+                errors.Add($"{invitation.Email}: {ex.Message}");
+                _logger.LogError(ex, "Error sending reminder to external {Email}", invitation.Email);
+            }
+        }
+
+        return Ok(new
+        {
+            success = true,
+            totalSent = invitations.Count,
+            successCount,
+            failCount,
+            errors = errors.Take(10).ToList(),
+            message = $"{successCount} hatırlatma başarıyla gönderildi." +
+                      (failCount > 0 ? $" {failCount} başarısız." : "")
+        });
+    }
+
+    /// <summary>
     /// CSV/Excel dosyasından email listesi yükle ve davetiye gönder
     /// </summary>
     [HttpPost("{projectId}/upload-external-emails")]
@@ -1568,7 +1721,7 @@ public class SurveyApiController : ControllerBase
                     FirstName = recipient.FirstName,
                     LastName = recipient.LastName,
                     Token = token,
-                    StatusId = sendImmediately ? SurveyInvitationStatuses.Ids.Pending : SurveyInvitationStatuses.Ids.Pending,
+                    StatusId = SurveyInvitationStatuses.Ids.Pending,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.SurveyExternalInvitations.Add(invitation);
@@ -2149,6 +2302,27 @@ public class ExternalRecipient
     public string Email { get; set; } = string.Empty;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+}
+
+/// <summary>
+/// Dış katılımcılara hatırlatma gönderme DTO
+/// </summary>
+public class SendExternalRemindersDto
+{
+    /// <summary>
+    /// Anket form base URL'i (örn: https://example.com/Anket/Form)
+    /// </summary>
+    public string BaseUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Kullanılacak email şablonu ID (null ise proje şablonu)
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Filtre: "all" = Tümü, "completed" = Tamamlananlar, "notCompleted" = Tamamlanmayanlar (varsayılan)
+    /// </summary>
+    public string? Filter { get; set; } = "notCompleted";
 }
 
 #endregion

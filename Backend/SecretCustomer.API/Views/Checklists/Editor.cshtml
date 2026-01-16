@@ -316,6 +316,13 @@
                                                 </div>
                                             </div>
 
+                                            <!-- Alt Kriterler Başlık -->
+                                            <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
+                                                <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
+                                                <div class="col-md-2">@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")</div>
+                                                <div class="col-md-2">@Html.T("Checklist.Order", "Sıra")</div>
+                                                <div class="col-md-2"></div>
+                                            </div>
                                             <!-- Mevcut Alt Kriterler -->
                                             <div data-bind="foreach: subCriteria">
                                                 <div class="row mb-1 align-items-center">
@@ -323,7 +330,7 @@
                                                         <input type="text" class="form-control form-control-sm" data-bind="value: description" placeholder="@Html.T("Checklist.SubCriteriaDescription", "Alt kriter açıklaması")" />
                                                     </div>
                                                     <div class="col-md-2">
-                                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPoints", "Ağırlık Puanı")" />
+                                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")" />
                                                     </div>
                                                     <div class="col-md-2">
                                                         <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" title="@Html.T("Checklist.Order", "Sıra")" />

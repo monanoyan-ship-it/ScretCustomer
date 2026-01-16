@@ -626,6 +626,67 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Online Anket Projeleri Listesi (Dashboard için)
+    /// </summary>
+    [HttpGet("survey-projects")]
+    public async Task<IActionResult> GetSurveyProjects()
+    {
+        try
+        {
+            var result = await _reportService.GetSurveyProjectsAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading survey projects");
+            return StatusCode(500, CreateErrorResponse("Anket projeleri yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Son Anket Yanıtları (Dashboard sol panel için)
+    /// </summary>
+    [HttpGet("survey-responses/recent")]
+    public async Task<IActionResult> GetRecentSurveyResponses(
+        [FromQuery] int count = 10,
+        [FromQuery] int? projectId = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var result = await _reportService.GetRecentSurveyResponsesAsync(count, projectId, startDate, endDate);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading recent survey responses");
+            return StatusCode(500, CreateErrorResponse("Son anket yanıtları yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Anket Proje Detayı (Modal için - Grup bazlı puanlarla)
+    /// </summary>
+    [HttpGet("survey-projects/{projectId}/detail")]
+    public async Task<IActionResult> GetSurveyProjectDetail(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.GetSurveyProjectDetailAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading survey project detail for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Proje detayı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Anket Sonuçları Excel Export
     /// </summary>
     [HttpGet("survey-results/{projectId}/export")]
@@ -646,6 +707,90 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error exporting survey results for project {ProjectId}", projectId);
             return StatusCode(500, CreateErrorResponse("Anket sonuçları export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Grup Bazlı Puan Raporu Excel Export
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export/group-scores")]
+    public async Task<IActionResult> ExportSurveyGroupScores(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyGroupScoresToExcelAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting group scores for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Grup puanları export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Soru İstatistik Raporu Excel Export (alt seçenek kaç kere seçilmiş)
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export/question-stats")]
+    public async Task<IActionResult> ExportSurveyQuestionStats(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyQuestionStatsToExcelAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting question stats for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Soru istatistikleri export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Detay Raporu Excel Export (puan + seçenekler)
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export/detail")]
+    public async Task<IActionResult> ExportSurveyDetailReport(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: false);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting detail report for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Detay raporu export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Tam Detay Raporu Excel Export (puan + seçenekler + yorumlar)
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export/full-detail")]
+    public async Task<IActionResult> ExportSurveyFullDetailReport(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: true);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya online anket projesi değil."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting full detail report for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Tam detay raporu export edilirken hata oluştu.", ex));
         }
     }
 

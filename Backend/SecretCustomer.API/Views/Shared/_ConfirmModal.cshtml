@@ -1,0 +1,26 @@
+@* Shared Confirmation Modal *@
+<div class="modal fade" id="sharedConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" id="confirmModalHeader">
+                <h5 class="modal-title text-white">
+                    <i class="bi" id="confirmModalIcon"></i>
+                    <span id="confirmModalTitle">@Html.T("Common.Confirmation", "Onay")</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage">@Html.T("Common.ConfirmMessage", "Bu işlemi onaylıyor musunuz?")</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> @Html.T("Common.Cancel", "İptal")
+                </button>
+                <button type="button" class="btn" id="confirmModalBtn">
+                    <i class="bi" id="confirmModalBtnIcon"></i>
+                    <span id="confirmModalBtnText">@Html.T("Common.Confirm", "Onayla")</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

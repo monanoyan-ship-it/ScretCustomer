@@ -1,3 +1,15 @@
+// Translation Keys
+var TRANSLATION_KEYS = [
+    'Survey.AnswerAtLeastOne',
+    'Survey.RequiredUnanswered',
+    'Survey.ConfirmSubmit',
+    'Survey.ConfirmSubmitMessage',
+    'Survey.SubmitSuccess',
+    'Survey.SubmitFailed',
+    'Survey.SubmitError',
+    'Common.Confirm'
+];
+
 // Survey Form ViewModel
 function SurveyFormViewModel() {
     var self = this;
@@ -170,17 +182,28 @@ function SurveyFormViewModel() {
     // Submit survey
     self.submitSurvey = function() {
         if (self.answeredCount() === 0) {
-            toastr.warning('Lütfen en az bir soruyu cevaplayın.');
+            toastr.warning(T('Survey.AnswerAtLeastOne', 'Lütfen en az bir soruyu cevaplayın.'));
             return;
         }
+
+        // Önce tüm vurgulamaları kaldır
+        $('[data-question-id]').removeClass('border-danger border-2');
 
         // Zorunlu soru kontrolü
         var unansweredRequired = self.questions().filter(function(q) {
             return q.isRequired && !self.isQuestionAnswered(q);
         });
         if (unansweredRequired.length > 0) {
-            var questionNumbers = unansweredRequired.map(function(q) { return '#' + q.order; }).join(', ');
-            toastr.error('Zorunlu sorular cevaplanmalıdır: ' + questionNumbers);
+            // Cevaplanmamış soruları vurgula
+            unansweredRequired.forEach(function(q) {
+                $('[data-question-id="' + q.id + '"]').addClass('border-danger border-2');
+            });
+            // İlk cevaplanmamış soruya scroll
+            var firstUnanswered = $('[data-question-id="' + unansweredRequired[0].id + '"]');
+            if (firstUnanswered.length) {
+                $('html, body').animate({ scrollTop: firstUnanswered.offset().top - 100 }, 300);
+            }
+            toastr.error(T('Survey.RequiredUnanswered', '{0} zorunlu soru cevaplanmadı.').replace('{0}', unansweredRequired.length));
             return;
         }
 
@@ -213,15 +236,25 @@ function SurveyFormViewModel() {
         });
 
         if (answers.length === 0) {
-            toastr.warning('Lütfen en az bir soruyu cevaplayın.');
+            toastr.warning(T('Survey.AnswerAtLeastOne', 'Lütfen en az bir soruyu cevaplayın.'));
             return;
         }
 
-        // Confirm
-        if (!confirm('Anketi göndermek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
-            return;
-        }
+        // Confirm with modal
+        showConfirmModal({
+            title: T('Survey.ConfirmSubmit', 'Anket Gönderimi'),
+            message: T('Survey.ConfirmSubmitMessage', 'Anketi göndermek istediğinize emin misiniz?'),
+            type: 'primary',
+            confirmText: T('Common.Confirm', 'Gönder'),
+            confirmIcon: 'bi-send',
+            onConfirm: function() {
+                self.doSubmit(answers);
+            }
+        });
+    };
 
+    // Actual submit
+    self.doSubmit = function(answers) {
         self.isSubmitting(true);
 
         fetch('/api/surveys/submit/' + encodeURIComponent(self.token), {
@@ -239,18 +272,18 @@ function SurveyFormViewModel() {
         })
         .then(function(result) {
             if (result.success) {
-                toastr.success('Anket başarıyla gönderildi!');
+                toastr.success(T('Survey.SubmitSuccess', 'Anket başarıyla gönderildi!'));
                 // Redirect to completed page
                 setTimeout(function() {
                     window.location.href = '/Survey/Completed';
                 }, 1500);
             } else {
-                toastr.error(result.message || 'Anket gönderilemedi.');
+                toastr.error(result.message || T('Survey.SubmitFailed', 'Anket gönderilemedi.'));
             }
         })
         .catch(function(error) {
             console.error('Error submitting survey:', error);
-            toastr.error(error.message || 'Anket gönderilirken bir hata oluştu.');
+            toastr.error(error.message || T('Survey.SubmitError', 'Anket gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSubmitting(false);
@@ -265,10 +298,12 @@ function SurveyFormViewModel() {
     self.init();
 }
 
-// Apply bindings
+// Apply bindings with localization
 $(document).ready(function() {
-    var app = document.getElementById('survey-app');
-    if (app) {
-        ko.applyBindings(new SurveyFormViewModel(), app);
-    }
+    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+        var app = document.getElementById('survey-app');
+        if (app) {
+            ko.applyBindings(new SurveyFormViewModel(), app);
+        }
+    });
 });

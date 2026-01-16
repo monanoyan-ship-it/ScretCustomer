@@ -326,6 +326,22 @@ function ChecklistEditorViewModel() {
             return;
         }
 
+        // Soru validasyonu: showScoreInput kapalıysa, ya subCriteria olmalı ya da allowComment açık olmalı
+        var questions = checklist.questions();
+        for (var i = 0; i < questions.length; i++) {
+            var q = questions[i];
+            if (!q.showScoreInput()) {
+                var hasSubCriteria = q.subCriteria().length > 0;
+                var canComment = q.allowComment();
+
+                if (!hasSubCriteria && !canComment) {
+                    toastr.error('Soru ' + (i + 1) + ': "Puan girişini göster" kapalıyken en az bir alt kriter eklenmeli veya "Yorum Yapılabilir" işaretlenmelidir.');
+                    self.wizardStep(2); // Sorular adımına git
+                    return;
+                }
+            }
+        }
+
         var data = ko.toJS(checklist);
 
         // _ ile baslayan internal alanlari temizle

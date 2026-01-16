@@ -206,6 +206,16 @@ public class Project : BaseEntity
     /// Proje dosyalari
     /// </summary>
     public ICollection<ProjectFile> Files { get; set; } = new List<ProjectFile>();
+
+    /// <summary>
+    /// Firma personeli davetiyeleri (Online Anket için)
+    /// </summary>
+    public ICollection<SurveyInvitation> SurveyInvitations { get; set; } = new List<SurveyInvitation>();
+
+    /// <summary>
+    /// Dış katılımcı davetiyeleri (Online Anket için)
+    /// </summary>
+    public ICollection<SurveyExternalInvitation> SurveyExternalInvitations { get; set; } = new List<SurveyExternalInvitation>();
 }
 
 /// <summary>

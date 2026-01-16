@@ -52,6 +52,9 @@
         @RenderBody()
     </div>
 
+    <!-- Shared Confirm Modal -->
+    <partial name="_ConfirmModal" />
+
     <!-- Bootstrap JS -->
     <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
 
@@ -68,6 +71,9 @@
 
     <!-- Localization -->
     <script src="~/js/Shared/localization.js"></script>
+
+    <!-- Confirm Modal -->
+    <script src="~/js/Shared/confirm-modal.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

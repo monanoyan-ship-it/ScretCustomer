@@ -93,6 +93,24 @@ public interface IReportService
     // Anket sonuçları Excel export
     Task<ExcelExportDto?> ExportSurveyResultsToExcelAsync(int projectId, DateTime? startDate, DateTime? endDate);
 
+    // Online anket projeleri listesi (dashboard için)
+    Task<List<SurveyProjectListItemDto>> GetSurveyProjectsAsync();
+
+    // Son anket yanıtları (dashboard sol panel için)
+    Task<List<RecentSurveyResponseDto>> GetRecentSurveyResponsesAsync(int count = 20, int? projectId = null, DateTime? startDate = null, DateTime? endDate = null);
+
+    // Anket proje detayı (modal için - grup bazlı puanlarla)
+    Task<SurveyProjectDetailDto?> GetSurveyProjectDetailAsync(int projectId);
+
+    // Grup bazlı puan raporu Excel export
+    Task<ExcelExportDto?> ExportSurveyGroupScoresToExcelAsync(int projectId);
+
+    // Soru istatistik raporu Excel export (alt seçenek kaç kere seçilmiş)
+    Task<ExcelExportDto?> ExportSurveyQuestionStatsToExcelAsync(int projectId);
+
+    // Detay raporu Excel export (puan + seçenekler + opsiyonel yorumlar)
+    Task<ExcelExportDto?> ExportSurveyDetailReportToExcelAsync(int projectId, bool includeComments);
+
     // ===== PERFORMANS TAKİBİ =====
 
     // Performans Takibi raporu (Dinleyici performansı + Firma kotaları)

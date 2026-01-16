@@ -287,13 +287,17 @@
                             <td><small data-bind="text: checklistName || '-'"></small></td>
                             <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadge(status)"></span></td>
                             <td style="min-width: 150px;">
+                                <!-- ko if: completionPercentage >= 0 -->
                                 <div class="d-flex align-items-center">
                                     <div class="progress flex-grow-1 me-2" style="height: 6px;">
                                         <div class="progress-bar" data-bind="style: { width: completionPercentage + '%' }, css: completionPercentage >= 100 ? 'bg-success' : ''"></div>
                                     </div>
                                     <small data-bind="text: completionPercentage.toFixed(0) + '%'"></small>
                                 </div>
-                                <small class="text-muted"><span data-bind="text: completedAssignments"></span> / <span data-bind="text: totalAssignments"></span> görev</small>
+                                <!-- /ko -->
+                                <!-- ko if: completionPercentage < 0 -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
                             </td>
                             <td>
                                 <small>
@@ -381,6 +385,7 @@
                             </h5>
                             <p class="card-text text-muted small" data-bind="text: description || '@Html.T("Project.NoDescription", "Açıklama yok")'"></p>
                             <div class="mb-3">
+                                <!-- ko if: completionPercentage >= 0 -->
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <small class="text-muted">@Html.T("Project.Progress", "İlerleme")</small>
                                     <small class="fw-bold" data-bind="text: completionPercentage.toFixed(0) + '%'"></small>
@@ -388,8 +393,14 @@
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar" data-bind="style: { width: completionPercentage + '%' }, css: completionPercentage >= 100 ? 'bg-success' : ''"></div>
                                 </div>
+                                <!-- /ko -->
+                                <!-- ko if: completionPercentage < 0 -->
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted">@Html.T("Project.Progress", "İlerleme")</small>
+                                    <small class="text-muted">-</small>
+                                </div>
+                                <!-- /ko -->
                                 <div class="d-flex justify-content-between">
-                                    <small class="text-muted"><span data-bind="text: completedAssignments"></span> / <span data-bind="text: totalAssignments"></span> @Html.T("Project.Task", "görev")</small>
                                     <small class="text-muted" data-bind="visible: averageScore > 0"><i class="bi bi-star-fill text-warning"></i> <span data-bind="text: averageScore.toFixed(1)"></span></small>
                                 </div>
                             </div>
@@ -658,13 +669,19 @@
                         <div class="col-md-3">
                             <div class="card bg-primary text-white">
                                 <div class="card-body py-2 text-center">
+                                    <!-- ko if: completionPercentage >= 0 -->
                                     <h4 class="mb-0" data-bind="text: completionPercentage.toFixed(0) + '%'"></h4>
                                     <small>@Html.T("Project.Progress", "İlerleme")</small>
                                     <div class="progress mt-1" style="height: 4px;"><div class="progress-bar bg-light" data-bind="style: { width: completionPercentage + '%' }"></div></div>
+                                    <!-- /ko -->
+                                    <!-- ko if: completionPercentage < 0 -->
+                                    <h4 class="mb-0">-</h4>
+                                    <small>@Html.T("Project.Progress", "İlerleme")</small>
+                                    <!-- /ko -->
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" data-bind="visible: completionPercentage >= 0">
                             <div class="card bg-success text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0"><span data-bind="text: completedAssignments"></span>/<span data-bind="text: totalAssignments"></span></h4>
@@ -1050,6 +1067,35 @@
                                     <span data-bind="visible: !isExternalRetrying()"><i class="bi bi-arrow-repeat"></i> @Html.T("Project.RetryFailed", "Başarısızları Tekrar Gönder")</span>
                                     <span data-bind="visible: isExternalRetrying"><span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Project.Retrying", "Gönderiliyor...")</span>
                                 </button>
+                            </div>
+                            <!-- Send Reminder Section -->
+                            <div class="mt-3 p-3 border rounded bg-light" data-bind="visible: externalInvitationStats() && externalInvitationStats().sent > 0">
+                                <h6 class="text-muted mb-2"><i class="bi bi-bell"></i> @Html.T("Project.SendReminder", "Hatırlatma Gönder")</h6>
+                                <div class="row align-items-end">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">@Html.T("Project.ReminderFilter", "Filtre")</label>
+                                        <select class="form-select form-select-sm" data-bind="value: externalReminderFilter">
+                                            <option value="notCompleted">@Html.T("Project.NotCompleted", "Tamamlanmayanlar")</option>
+                                            <option value="completed">@Html.T("Project.Completed", "Tamamlananlar")</option>
+                                            <option value="all">@Html.T("Common.All", "Tümü")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <button type="button" class="btn btn-info btn-sm" data-bind="click: sendExternalReminders, disable: isExternalSendingReminder">
+                                            <span data-bind="visible: !isExternalSendingReminder()"><i class="bi bi-bell me-1"></i> @Html.T("Project.SendReminderBtn", "Hatırlatma Gönder")</span>
+                                            <span data-bind="visible: isExternalSendingReminder"><span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Project.SendingReminder", "Gönderiliyor...")</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-2 d-block" data-bind="visible: externalReminderFilter() === 'notCompleted'">
+                                    <i class="bi bi-info-circle"></i> @Html.T("Project.ReminderNotCompletedInfo", "Henüz anketi tamamlamamış kişilere hatırlatma gönderilecek.")
+                                </small>
+                                <small class="text-muted mt-2 d-block" data-bind="visible: externalReminderFilter() === 'completed'">
+                                    <i class="bi bi-info-circle"></i> @Html.T("Project.ReminderCompletedInfo", "Anketi tamamlamış kişilere hatırlatma gönderilecek.")
+                                </small>
+                                <small class="text-muted mt-2 d-block" data-bind="visible: externalReminderFilter() === 'all'">
+                                    <i class="bi bi-info-circle"></i> @Html.T("Project.ReminderAllInfo", "Tüm davetiye gönderilmiş kişilere hatırlatma gönderilecek.")
+                                </small>
                             </div>
                         </div>
 

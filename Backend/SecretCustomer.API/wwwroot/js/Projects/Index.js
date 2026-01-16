@@ -412,6 +412,8 @@ function ProjectsViewModel() {
     self.isExternalRetrying = ko.observable(false);
     self.isExternalUploading = ko.observable(false);
     self.externalUploadResult = ko.observable(null);
+    self.externalReminderFilter = ko.observable('notCompleted');
+    self.isExternalSendingReminder = ko.observable(false);
 
     // Check if user can manage files (Admin or TeamLeader)
     self.canManageFiles = ko.computed(function() {
@@ -1118,6 +1120,7 @@ function ProjectsViewModel() {
         self.externalInvitationStats(null);
         self.externalInvitations([]);
         self.externalSendResult(null);
+        self.externalReminderFilter('notCompleted');
 
         self.isSurveyModalOpen(true);
         document.body.classList.add('modal-open');
@@ -1144,6 +1147,7 @@ function ProjectsViewModel() {
         self.externalInvitationStats(null);
         self.externalInvitations([]);
         self.externalSendResult(null);
+        self.externalReminderFilter('notCompleted');
     };
 
     // Load invitation stats
@@ -1362,6 +1366,65 @@ function ProjectsViewModel() {
         })
         .finally(function() {
             self.isExternalRetrying(false);
+        });
+    };
+
+    // Send external reminders
+    self.sendExternalReminders = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var stats = self.externalInvitationStats();
+        if (!stats || stats.sent === 0) {
+            toastr.info('Hatırlatma gönderilecek davetiye bulunamadı.');
+            return;
+        }
+
+        // Check if project has email template
+        if (!project.emailTemplateId) {
+            toastr.error('Email şablonu seçilmemiş. Proje ayarlarından şablon seçin.');
+            return;
+        }
+
+        var filter = self.externalReminderFilter();
+        var filterText = filter === 'all' ? 'tümüne' :
+                         filter === 'completed' ? 'tamamlamış olanlara' :
+                         'tamamlamamış olanlara';
+
+        if (!confirm('Seçilen filtreye göre (' + filterText + ') hatırlatma göndermek istediğinize emin misiniz?')) {
+            return;
+        }
+
+        self.isExternalSendingReminder(true);
+
+        var baseUrl = window.location.origin + '/Anket/Form';
+
+        fetch('/api/surveys/' + project.id + '/send-external-reminders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                baseUrl: baseUrl,
+                emailTemplateId: null, // Proje şablonunu kullan
+                filter: filter
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            if (result.success) {
+                toastr.success(result.message);
+                // Refresh stats and list
+                self.loadExternalInvitationStats(project.id);
+            } else {
+                toastr.error(result.message || 'Hatırlatma gönderilirken hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error sending external reminders:', error);
+            toastr.error('Hatırlatma gönderilirken bir hata oluştu.');
+        })
+        .finally(function() {
+            self.isExternalSendingReminder(false);
         });
     };
 
