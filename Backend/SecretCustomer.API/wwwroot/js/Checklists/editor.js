@@ -14,7 +14,7 @@ var SubCriteriaModel = function (data) {
 };
 
 // Question Model - Direkt Checklist'e bağlı
-var QuestionModel = function (data, loadAttachmentsFn, autoSaveFn) {
+var QuestionModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
 
@@ -38,13 +38,6 @@ var QuestionModel = function (data, loadAttachmentsFn, autoSaveFn) {
     base.selectionTypeId = ko.observable(data.selectionTypeId || 2);
     base.showScoreInput = ko.observable(data.showScoreInput !== false);
     base.allowComment = ko.observable(data.allowComment !== false);
-
-    // Auto-save: Online Anket Ayarları değiştiğinde otomatik kaydet
-    if (autoSaveFn && data.id) {
-        base.selectionTypeId.subscribe(function() { autoSaveFn(); });
-        base.showScoreInput.subscribe(function() { autoSaveFn(); });
-        base.allowComment.subscribe(function() { autoSaveFn(); });
-    }
 
     // scoringType değiştiğinde weightPoints'i otomatik ayarla
     base.scoringType.subscribe(function(newValue) {
@@ -86,7 +79,7 @@ var QuestionModel = function (data, loadAttachmentsFn, autoSaveFn) {
 };
 
 // Checklist Model - Sorular direkt checklist'e bağlı
-var ChecklistModel = function (data, loadAttachmentsFn, autoSaveFn) {
+var ChecklistModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
 
@@ -108,7 +101,7 @@ var ChecklistModel = function (data, loadAttachmentsFn, autoSaveFn) {
 
     // Questions
     let questions = (data.questions || []).map(function (q) {
-        return new QuestionModel(q, loadAttachmentsFn, autoSaveFn);
+        return new QuestionModel(q, loadAttachmentsFn);
     });
     base.questions = ko.observableArray(questions);
 
@@ -265,78 +258,6 @@ function ChecklistEditorViewModel() {
             });
     };
 
-    // Auto-save: Debounced save function (500ms bekleme)
-    self._autoSaveTimeout = null;
-    self.autoSave = function () {
-        if (self._autoSaveTimeout) {
-            clearTimeout(self._autoSaveTimeout);
-        }
-        self._autoSaveTimeout = setTimeout(function () {
-            self.saveChecklistSilent();
-        }, 500);
-    };
-
-    // Silent save (popup kapatmadan kaydet)
-    self.saveChecklistSilent = function () {
-        if (!self.checklist() || self.isSaving()) return;
-
-        var checklist = self.checklist();
-        var name = checklist.name();
-        if (!name) return; // İsim yoksa kaydetme
-
-        var data = ko.toJS(checklist);
-
-        // _ ile baslayan internal alanlari temizle
-        data.questions.forEach(function (q) {
-            delete q._attachments;
-            delete q._isUploadingFile;
-            delete q._showSubCriteria;
-            delete q.addSubCriteria;
-            delete q.removeSubCriteria;
-            if (q.subCriteria && q.subCriteria.length === 0) {
-                q.subCriteria = null;
-            }
-        });
-        delete data.addQuestion;
-        delete data.removeQuestion;
-
-        // Boş string date alanlarını null'a çevir
-        if (!data.validFrom || data.validFrom === '' || data.validFrom === 'null') {
-            data.validFrom = null;
-        }
-        if (!data.validUntil || data.validUntil === '' || data.validUntil === 'null') {
-            data.validUntil = null;
-        }
-
-        self.isSaving(true);
-
-        fetch('/api/checklists/' + config.checklistId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include'
-        })
-        .then(function (r) {
-            if (!r.ok) {
-                return r.json().then(function(err) { throw err; });
-            }
-            return r.json();
-        })
-        .then(function (result) {
-            toastr.success('Kaydedildi', '', { timeOut: 1000 });
-            // Opener'ı güncelle
-            if (window.opener && window.opener.updateOrAddChecklist) {
-                window.opener.updateOrAddChecklist(result, false);
-            }
-        })
-        .catch(function (error) {
-            console.error('Auto-save error:', error);
-        })
-        .finally(function () {
-            self.isSaving(false);
-        });
-    };
-
     // Load checklist
     self.loadChecklist = function () {
         if (config.isNew) {
@@ -365,9 +286,9 @@ function ChecklistEditorViewModel() {
                             sc.id = null;
                         });
                     });
-                    self.checklist(new ChecklistModel(data)); // Clone'da attachment ve auto-save yok
+                    self.checklist(new ChecklistModel(data)); // Clone'da attachment yükleme yapma
                 } else {
-                    self.checklist(new ChecklistModel(data, self.loadQuestionAttachments, self.autoSave));
+                    self.checklist(new ChecklistModel(data, self.loadQuestionAttachments));
                 }
             })
             .catch(function (error) {
