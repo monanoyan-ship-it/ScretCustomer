@@ -349,6 +349,13 @@
                     <div data-bind="visible: questions().length === 0" class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle"></i> @Html.T("Checklist.NoQuestionsWarning", "Henüz soru eklenmemiş. Lütfen en az bir soru ekleyin.")
                     </div>
+
+                    <!-- Alt Soru Ekle Butonu -->
+                    <div class="text-center mt-3" data-bind="visible: questions().length > 0">
+                        <button type="button" class="btn btn-outline-primary" data-bind="click: addQuestion">
+                            <i class="bi bi-plus-circle"></i> @Html.T("Checklist.AddQuestion", "Soru Ekle")
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -74,39 +74,6 @@
 
                             <!-- Answer Input -->
                             <div class="mt-2">
-                                <!-- SubCriteria Selection (if available) -->
-                                <!-- ko if: hasSubCriteria -->
-                                <div class="mb-2">
-                                    <small class="text-muted d-block mb-1">
-                                        <!-- ko if: selectionTypeId === 1 -->
-                                        <i class="bi bi-ui-radios"></i> Birini seçin:
-                                        <!-- /ko -->
-                                        <!-- ko if: selectionTypeId !== 1 -->
-                                        <i class="bi bi-ui-checks"></i> Seçin (birden fazla seçilebilir):
-                                        <!-- /ko -->
-                                    </small>
-                                    <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
-                                        <!-- Single Selection (Radio) -->
-                                        <!-- ko if: $parent.selectionTypeId === 1 -->
-                                        <label class="list-group-item list-group-item-action py-2 px-3"
-                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
-                                            <input type="radio" class="form-check-input me-2"
-                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id }, checked: isSelected">
-                                            <span data-bind="text: description"></span>
-                                        </label>
-                                        <!-- /ko -->
-                                        <!-- Multiple Selection (Checkbox) -->
-                                        <!-- ko if: $parent.selectionTypeId !== 1 -->
-                                        <label class="list-group-item list-group-item-action py-2 px-3"
-                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
-                                            <input type="checkbox" class="form-check-input me-2" data-bind="checked: isSelected">
-                                            <span data-bind="text: description"></span>
-                                        </label>
-                                        <!-- /ko -->
-                                    </div>
-                                </div>
-                                <!-- /ko -->
-
                                 <!-- Score Input (if showScoreInput is true) -->
                                 <!-- ko if: showScoreInput -->
                                 <!-- Scored Question -->
@@ -141,6 +108,39 @@
                                 <!-- /ko -->
                                 <!-- /ko -->
 
+                                <!-- SubCriteria Selection (if available) - Puanın altında -->
+                                <!-- ko if: hasSubCriteria -->
+                                <div class="mt-2">
+                                    <small class="text-muted d-block mb-1">
+                                        <!-- ko if: selectionTypeId === 1 -->
+                                        <i class="bi bi-ui-radios"></i> Birini seçin:
+                                        <!-- /ko -->
+                                        <!-- ko if: selectionTypeId !== 1 -->
+                                        <i class="bi bi-ui-checks"></i> Seçin (birden fazla seçilebilir):
+                                        <!-- /ko -->
+                                    </small>
+                                    <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
+                                        <!-- Single Selection (Radio) -->
+                                        <!-- ko if: $parent.selectionTypeId === 1 -->
+                                        <label class="list-group-item list-group-item-action py-2 px-3"
+                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
+                                            <input type="radio" class="form-check-input me-2"
+                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id }, checked: isSelected">
+                                            <span data-bind="text: description"></span>
+                                        </label>
+                                        <!-- /ko -->
+                                        <!-- Multiple Selection (Checkbox) -->
+                                        <!-- ko if: $parent.selectionTypeId !== 1 -->
+                                        <label class="list-group-item list-group-item-action py-2 px-3"
+                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
+                                            <input type="checkbox" class="form-check-input me-2" data-bind="checked: isSelected">
+                                            <span data-bind="text: description"></span>
+                                        </label>
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+
                                 <!-- Descriptive Question -->
                                 <!-- ko if: scoringType === 'Descriptive' -->
                                 <textarea class="form-control form-control-sm" rows="2"
@@ -148,7 +148,7 @@
                                           data-bind="value: answer().comment"></textarea>
                                 <!-- /ko -->
 
-                                <!-- Comment for scored questions (only if allowComment is true) -->
+                                <!-- Comment for scored questions (only if allowComment is true) - En sonda -->
                                 <!-- ko if: scoringType !== 'Descriptive' && allowComment -->
                                 <div class="mt-2">
                                     <input type="text" class="form-control form-control-sm"
