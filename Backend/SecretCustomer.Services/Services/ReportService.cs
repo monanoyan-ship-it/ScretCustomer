@@ -22,6 +22,8 @@ public class ReportService : IReportService
 
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
     {
+        // Liste görünümü için Answers dahil EDİLMEZ - sadece detay sayfasında lazım
+        // Bu Include optimizasyonu performansı önemli ölçüde artırır
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
@@ -34,7 +36,7 @@ public class ReportService : IReportService
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.Supervisor)
             .Include(e => e.AssignmentPeriod)
-            .Include(e => e.Answers)
+            // .Include(e => e.Answers) - KALDIRILDI: Liste için gereksiz, detay sayfasında ayrı yükleniyor
             .AsQueryable();
 
         // Apply filters
@@ -141,13 +143,17 @@ public class ReportService : IReportService
         if (!string.IsNullOrEmpty(filter.CallId))
             query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
 
-        // Get total count
-        var totalCount = await query.CountAsync();
+        // Get total count (skip if requested for faster initial load)
+        var totalCount = filter.SkipCount ? -1 : await query.CountAsync();
 
         // Apply sorting
         var isAsc = filter.SortDirection?.ToLower() == "asc";
         query = filter.SortField?.ToLower() switch
         {
+            // ID = Primary Key, en hızlı sıralama (varsayılan)
+            "id" => isAsc
+                ? query.OrderBy(e => e.Id)
+                : query.OrderByDescending(e => e.Id),
             "projectname" => isAsc
                 ? query.OrderBy(e => e.Assignment.Project!.Name)
                 : query.OrderByDescending(e => e.Assignment.Project!.Name),
@@ -157,8 +163,8 @@ public class ReportService : IReportService
             "evaluatedpersonnelname" => isAsc
                 ? query.OrderBy(e => e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName : e.EvaluatedUnknownPersonnel)
                 : query.OrderByDescending(e => e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName : e.EvaluatedUnknownPersonnel),
-            // supervisorname sorting is complex, fallback to callDate
-            "supervisorname" => query.OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
+            // supervisorname sorting is complex, fallback to id
+            "supervisorname" => query.OrderByDescending(e => e.Id),
             "callid" => isAsc
                 ? query.OrderBy(e => e.CallId)
                 : query.OrderByDescending(e => e.CallId),
@@ -177,7 +183,8 @@ public class ReportService : IReportService
             "status" => isAsc
                 ? query.OrderBy(e => e.StatusId)
                 : query.OrderByDescending(e => e.StatusId),
-            _ => query.OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            // Varsayılan: ID DESC (Primary Key, en hızlı)
+            _ => query.OrderByDescending(e => e.Id)
         };
 
         // Apply pagination
@@ -196,6 +203,95 @@ public class ReportService : IReportService
             Page = filter.Page,
             PageSize = filter.PageSize
         };
+    }
+
+    public async Task<int> GetEvaluationsCountAsync(ReportFilterDto filter)
+    {
+        // Count için Include'lar gereksiz - sadece filtreleme yeterli
+        var query = _context.Evaluations.AsQueryable();
+
+        // Apply filters (aynı filtreler)
+        if (filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+
+        if (!string.IsNullOrEmpty(filter.ProjectType))
+        {
+            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
+            if (projectTypeItem != null)
+                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+        }
+
+        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+
+        if (filter.EvaluatorId.HasValue)
+            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+
+        if (filter.ChecklistId.HasValue)
+            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
+            if (statusItem != null)
+                query = query.Where(e => e.StatusId == statusItem.Id);
+        }
+
+        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        {
+            if (filter.EvaluationSource == "internal")
+                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+            else if (filter.EvaluationSource == "ours")
+                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+        }
+
+        if (filter.CustomerId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+
+        if (filter.ProjectCustomerId.HasValue)
+            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
+
+        if (filter.OrganizationId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+
+        if (filter.PeriodId.HasValue)
+            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+
+        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        {
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
+                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
+                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+        }
+
+        if (!string.IsNullOrEmpty(filter.SupervisorName))
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    oa.Supervisor != null &&
+                    (EF.Functions.ILike(oa.Supervisor.FirstName, $"%{filter.SupervisorName}%") ||
+                     EF.Functions.ILike(oa.Supervisor.LastName, $"%{filter.SupervisorName}%"))));
+        }
+
+        if (!string.IsNullOrEmpty(filter.CallId))
+            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
+
+        return await query.CountAsync();
     }
 
     public async Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId)
@@ -284,7 +380,6 @@ public class ReportService : IReportService
                         Order = a.Question.Order,
                         AnswerText = a.AnswerText,
                         AnswerNumeric = a.AnswerNumeric,
-                        IsNA = a.IsNA,
                         GivenPoints = a.EarnedPoints,
                         MaxPoints = a.Question.WeightPoints,
                         PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
@@ -391,9 +486,7 @@ public class ReportService : IReportService
             var maxPts = question.MaxPoints ?? 0;
             var earnedPts = question.GivenPoints ?? 0;
             string answerDisplay;
-            if (question.IsNA)
-                answerDisplay = "N/A";
-            else if (maxPts > 0)
+            if (maxPts > 0)
                 answerDisplay = $"{earnedPts:F0}/{maxPts:F0}";
             else
                 answerDisplay = "-";
@@ -698,7 +791,7 @@ public class ReportService : IReportService
         var detailHeaders = new[]
         {
             "Değerlendirme ID", "Proje", "Şube", "Bölüm", "Soru No", "Soru",
-            "Cevap", "Sayısal Cevap", "N/A", "Verilen Puan", "Maks Puan",
+            "Cevap", "Sayısal Cevap", "Verilen Puan", "Maks Puan",
             "Ceza Tipi", "Not"
         };
 
@@ -724,11 +817,10 @@ public class ReportService : IReportService
                 detailSheet.Cell(detailRow, 6).Value = answer.Question.Text;
                 detailSheet.Cell(detailRow, 7).Value = answer.AnswerText ?? "";
                 detailSheet.Cell(detailRow, 8).Value = answer.AnswerNumeric ?? 0;
-                detailSheet.Cell(detailRow, 9).Value = answer.IsNA ? "Evet" : "Hayır";
-                detailSheet.Cell(detailRow, 10).Value = answer.EarnedPoints ?? 0;
-                detailSheet.Cell(detailRow, 11).Value = answer.Question.WeightPoints;
-                detailSheet.Cell(detailRow, 12).Value = PenaltyTypes.GetById(answer.AppliedPenaltyTypeId)?.SystemName ?? "None";
-                detailSheet.Cell(detailRow, 13).Value = answer.Notes ?? "";
+                detailSheet.Cell(detailRow, 9).Value = answer.EarnedPoints ?? 0;
+                detailSheet.Cell(detailRow, 10).Value = answer.Question.WeightPoints;
+                detailSheet.Cell(detailRow, 11).Value = PenaltyTypes.GetById(answer.AppliedPenaltyTypeId)?.SystemName ?? "None";
+                detailSheet.Cell(detailRow, 12).Value = answer.Notes ?? "";
                 detailRow++;
             }
         }
@@ -1392,7 +1484,7 @@ public class ReportService : IReportService
 
         // Güçlü ve zayıf yönler (soru bazlı analiz)
         var questionPerformance = allAnswers
-            .Where(a => !a.IsNA && a.Question != null)
+            .Where(a => a.Question != null)
             .GroupBy(a => new { a.Question!.Id, a.Question.Text, GroupName = a.Question.GroupName ?? "" })
             .Select(g => new PersonnelStrengthWeaknessDto
             {
@@ -2080,7 +2172,7 @@ public class ReportService : IReportService
         // Flatten to answer level and calculate group averages
         var groupData = evaluations
             .SelectMany(e => e.Answers
-                .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName) && !a.IsNA)
+                .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName))
                 .Select(a => new
                 {
                     ProjectName = e.Assignment.Project?.Name ?? "",
@@ -2870,7 +2962,7 @@ public class ReportService : IReportService
         // Flatten to answer level and group by Project, Personnel, Question
         var processData = evaluations
             .SelectMany(e => e.Answers
-                .Where(a => a.Question != null && a.Question.MaxPoints > 0 && !a.IsNA)
+                .Where(a => a.Question != null && a.Question.MaxPoints > 0)
                 .Select(a => new
                 {
                     ProjectName = e.Assignment.Project?.Name ?? "",
@@ -3086,9 +3178,9 @@ public class ReportService : IReportService
             List<SurveyCommentDto>? comments = null;
 
             // Puan istatistikleri (showScoreInput true ise)
-            if (question.ShowScoreInput && answers.Any(a => a.AnswerNumeric.HasValue && !a.IsNA))
+            if (question.ShowScoreInput && answers.Any(a => a.AnswerNumeric.HasValue))
             {
-                var scoredAnswers = answers.Where(a => a.AnswerNumeric.HasValue && !a.IsNA).ToList();
+                var scoredAnswers = answers.Where(a => a.AnswerNumeric.HasValue).ToList();
                 if (scoredAnswers.Any())
                 {
                     avgScore = Math.Round((decimal)scoredAnswers.Average(a => (a.AnswerNumeric!.Value / (decimal)question.MaxPoints) * 100), 1);

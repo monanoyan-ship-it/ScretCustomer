@@ -123,8 +123,8 @@ public class ChecklistsApiController : BaseApiController
             _logger.LogInformation("UPDATE Checklist {Id} - Questions: {QuestionCount}", id, dto.Questions?.Count ?? 0);
             foreach (var q in dto.Questions ?? new List<UpdateQuestionDto>())
             {
-                _logger.LogInformation("  Question: Id={QuestionId}, Text={Text}, SubCriteria={SubCriteriaCount}",
-                    q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)), q.SubCriteria?.Count ?? 0);
+                _logger.LogInformation("  Question: Id={QuestionId}, Text={Text}, ShowScoreInput={ShowScoreInput}, SelectionTypeId={SelectionTypeId}",
+                    q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)), q.ShowScoreInput, q.SelectionTypeId);
             }
 
             dto.Id = id;

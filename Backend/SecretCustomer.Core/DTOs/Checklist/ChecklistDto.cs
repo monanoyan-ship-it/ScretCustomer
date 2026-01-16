@@ -91,7 +91,6 @@ public class QuestionDto
     public string PenaltyType { get; set; } = "None";
     public string PenaltyTypeName { get; set; } = "Yok";
 
-    public bool AllowNA { get; set; }
     public bool IsRequired { get; set; }
     public string? RecommendedNote { get; set; }
     public string? HelpText { get; set; }
@@ -100,6 +99,16 @@ public class QuestionDto
     /// Soru grubu (raporlama için)
     /// </summary>
     public string? GroupName { get; set; }
+
+    /// <summary>
+    /// Alt Kriter seçim tipi: 1=Tekli, 2=Çoklu
+    /// </summary>
+    public int SelectionTypeId { get; set; } = 2;
+
+    /// <summary>
+    /// Puan girişi gösterilsin mi?
+    /// </summary>
+    public bool ShowScoreInput { get; set; } = true;
 
     /// <summary>
     /// Alt Kriterler/Öneriler

@@ -136,7 +136,6 @@ public class ChecklistService : IChecklistService
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
                 PenaltyTypeId = PenaltyTypes.GetBySystemName(q.PenaltyType)?.Id ?? PenaltyTypes.Ids.None,
-                AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
@@ -224,7 +223,6 @@ public class ChecklistService : IChecklistService
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
                 PenaltyTypeId = q.PenaltyTypeId,
-                AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
@@ -271,11 +269,13 @@ public class ChecklistService : IChecklistService
                     question.WeightPoints = questionDto.WeightPoints;
                     question.MaxPoints = questionDto.MaxPoints;
                     question.PenaltyTypeId = PenaltyTypes.GetBySystemName(questionDto.PenaltyType)?.Id ?? PenaltyTypes.Ids.None;
-                    question.AllowNA = questionDto.AllowNA;
                     question.IsRequired = questionDto.IsRequired;
                     question.RecommendedNote = questionDto.RecommendedNote;
                     question.HelpText = questionDto.HelpText;
                     question.GroupName = questionDto.GroupName;
+                    // Online anket ayarları
+                    question.SelectionTypeId = questionDto.SelectionTypeId;
+                    question.ShowScoreInput = questionDto.ShowScoreInput;
 
                     // Alt Kriterleri güncelle
                     UpdateSubCriteria(question, questionDto.SubCriteria);
@@ -294,11 +294,13 @@ public class ChecklistService : IChecklistService
                     WeightPoints = questionDto.WeightPoints,
                     MaxPoints = questionDto.MaxPoints,
                     PenaltyTypeId = PenaltyTypes.GetBySystemName(questionDto.PenaltyType)?.Id ?? PenaltyTypes.Ids.None,
-                    AllowNA = questionDto.AllowNA,
                     IsRequired = questionDto.IsRequired,
                     RecommendedNote = questionDto.RecommendedNote,
                     HelpText = questionDto.HelpText,
                     GroupName = questionDto.GroupName,
+                    // Online anket ayarları
+                    SelectionTypeId = questionDto.SelectionTypeId,
+                    ShowScoreInput = questionDto.ShowScoreInput,
                     // Alt Kriterler
                     SubCriteria = questionDto.SubCriteria?.Select(sc => new QuestionSubCriteria
                     {
@@ -374,11 +376,12 @@ public class ChecklistService : IChecklistService
                 MaxPoints = q.MaxPoints,
                 PenaltyType = PenaltyTypes.GetById(q.PenaltyTypeId)?.SystemName ?? "None",
                 PenaltyTypeName = await GetPenaltyTypeNameAsync(q.PenaltyTypeId),
-                AllowNA = q.AllowNA,
                 IsRequired = q.IsRequired,
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
                 GroupName = q.GroupName,
+                SelectionTypeId = q.SelectionTypeId,
+                ShowScoreInput = q.ShowScoreInput,
                 SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
                 {
                     Id = sc.Id,

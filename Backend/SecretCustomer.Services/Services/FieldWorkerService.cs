@@ -339,8 +339,7 @@ public class FieldWorkerService : IFieldWorkerService
                     QuestionId = answerDto.QuestionId,
                     AnswerText = answerDto.TextAnswer,
                     AnswerNumeric = answerDto.NumericAnswer.HasValue ? (int?)answerDto.NumericAnswer.Value : null,
-                    Notes = answerDto.Notes,
-                    IsNA = false
+                    Notes = answerDto.Notes
                 };
 
                 _context.Answers.Add(answer);
@@ -385,8 +384,7 @@ public class FieldWorkerService : IFieldWorkerService
                 QuestionId = answerDto.QuestionId,
                 AnswerText = answerDto.TextAnswer,
                 AnswerNumeric = answerDto.NumericAnswer.HasValue ? (int?)answerDto.NumericAnswer.Value : null,
-                Notes = answerDto.Notes,
-                IsNA = false
+                Notes = answerDto.Notes
             };
 
             _context.Answers.Add(answer);

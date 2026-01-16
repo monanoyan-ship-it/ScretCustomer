@@ -22,7 +22,6 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     base.text = ko.observable(data.text || '');
     base.order = ko.observable(data.order || 0);
     base.isRequired = ko.observable(data.isRequired !== false);
-    base.allowNA = ko.observable(data.allowNA || false);
 
     // Puanlama alanları
     base.scoringType = ko.observable(data.scoringType || 'Scored');
@@ -361,12 +360,13 @@ function ChecklistViewModel() {
     };
 
     self.createNew = function () {
-        self.wizardStep(1);
-        self.selectedCustomerId(null);
-        self.organizations([]);
-        self.questionGroups([]); // Yeni checklist için grupları temizle
-        self.editingChecklist(new ChecklistModel());
-        self.isModalOpen(true);
+        // Popup olarak aç
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open('/Checklists/Editor', 'ChecklistEditor',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 
     self.viewChecklist = function (checklist) {
@@ -375,112 +375,23 @@ function ChecklistViewModel() {
     };
 
     self.editChecklist = function (checklist) {
-        self.wizardStep(1);
-        self.isEditLoading(true);
-        self._isLoadingChecklist = true; // Subscriber'ın org sıfırlamasını engelle
-        self.isModalOpen(true); // Modal'ı hemen aç, içinde loading göster
-
-        // Soru gruplarını yükle
-        self.loadQuestionGroups(checklist.id);
-
-        // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
-        apiService.get('/checklists/' + checklist.id)
-            .then(function (fullChecklist) {
-                if (fullChecklist.customerId) {
-                    // Organizasyonları yükle ve sonra checklist'i oluştur
-                    apiService.get('/customer-organizations/by-customer/' + fullChecklist.customerId)
-                        .then(function (orgs) {
-                            self.organizations(orgs);
-                            self.selectedCustomerId(fullChecklist.customerId);
-                            self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                            self.isEditLoading(false);
-                            self._isLoadingChecklist = false;
-                        })
-                        .catch(function () {
-                            self.organizations([]);
-                            self.selectedCustomerId(fullChecklist.customerId);
-                            self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                            self.isEditLoading(false);
-                            self._isLoadingChecklist = false;
-                        });
-                } else {
-                    self.selectedCustomerId(null);
-                    self.organizations([]);
-                    self.editingChecklist(new ChecklistModel(fullChecklist, self.loadQuestionAttachments));
-                    self.isEditLoading(false);
-                    self._isLoadingChecklist = false;
-                }
-            })
-            .catch(function (error) {
-                console.error('Load checklist error:', error);
-                toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
-                self.isEditLoading(false);
-                self.isModalOpen(false);
-                self._isLoadingChecklist = false;
-            });
+        // Popup olarak aç
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open('/Checklists/Editor?id=' + checklist.id, 'ChecklistEditor',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 
     self.cloneChecklist = function (checklist) {
-        self.wizardStep(1);
-        self.isEditLoading(true);
-        self._isLoadingChecklist = true;
-        self.isModalOpen(true); // Modal'ı hemen aç, içinde loading göster
-
-        // Klonlama için grupları yükle (orijinal checklist'ten)
-        self.loadQuestionGroups(checklist.id);
-
-        // DETAY API'SINI CAGIR - Listeden gelen veri eksik olabilir
-        apiService.get('/checklists/' + checklist.id)
-            .then(function (fullChecklist) {
-                // Clone: ID'leri sil, ismi degistir
-                var cloneData = JSON.parse(JSON.stringify(fullChecklist));
-                cloneData.id = null;
-                cloneData.name = fullChecklist.name + ' (Kopya)';
-                cloneData.code = '';
-                cloneData.validFrom = '';
-                cloneData.validUntil = '';
-                cloneData.version = 1;
-                // Question ve SubCriteria ID'lerini temizle
-                (cloneData.questions || []).forEach(function (q) {
-                    q.id = null;
-                    // SubCriteria ID'lerini de temizle
-                    (q.subCriteria || []).forEach(function (sc) {
-                        sc.id = null;
-                    });
-                });
-
-                // Firma ve organizasyon seçimini ayarla (klonlama sırasında korunur)
-                if (fullChecklist.customerId) {
-                    apiService.get('/customer-organizations/by-customer/' + fullChecklist.customerId)
-                        .then(function (orgs) {
-                            self.organizations(orgs);
-                            self.selectedCustomerId(fullChecklist.customerId);
-                            self.editingChecklist(new ChecklistModel(cloneData));
-                            self.isEditLoading(false);
-                            self._isLoadingChecklist = false;
-                        })
-                        .catch(function () {
-                            self.organizations([]);
-                            self.selectedCustomerId(fullChecklist.customerId);
-                            self.editingChecklist(new ChecklistModel(cloneData));
-                            self.isEditLoading(false);
-                            self._isLoadingChecklist = false;
-                        });
-                } else {
-                    self.selectedCustomerId(null);
-                    self.organizations([]);
-                    self.editingChecklist(new ChecklistModel(cloneData));
-                    self.isEditLoading(false);
-                    self._isLoadingChecklist = false;
-                }
-            })
-            .catch(function (error) {
-                console.error('Load checklist error:', error);
-                toastr.error('Kontrol listesi yuklenirken bir hata olustu.');
-                self.isEditLoading(false);
-                self.isModalOpen(false);
-                self._isLoadingChecklist = false;
-            });
+        // Popup olarak aç - clone parametresi ile
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open('/Checklists/Editor?clone=' + checklist.id, 'ChecklistEditor',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 
     self.addQuestion = function () {
@@ -730,6 +641,25 @@ function ChecklistViewModel() {
             self.loadChecklists();
             self.loadCustomers();
         });
+
+        // Popup'tan çağrılacak global fonksiyon - liste yenilemesi olmadan güncelleme
+        window.updateOrAddChecklist = function(checklist, isNew) {
+            if (isNew) {
+                // Yeni kayıt: array'in başına ekle
+                self._checklists.unshift(checklist);
+                toastr.info('Yeni kontrol listesi eklendi.');
+            } else {
+                // Güncelleme: array'de bul ve güncelle
+                var list = self._checklists();
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].id === checklist.id) {
+                        self._checklists.splice(i, 1, checklist);
+                        toastr.info('Kontrol listesi güncellendi.');
+                        break;
+                    }
+                }
+            }
+        };
     };
 
     self.init();

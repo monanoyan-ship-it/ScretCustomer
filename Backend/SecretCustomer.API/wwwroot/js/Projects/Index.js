@@ -410,6 +410,8 @@ function ProjectsViewModel() {
     self.externalSendResult = ko.observable(null);
     self.isExternalSending = ko.observable(false);
     self.isExternalRetrying = ko.observable(false);
+    self.isExternalUploading = ko.observable(false);
+    self.externalUploadResult = ko.observable(null);
 
     // Check if user can manage files (Admin or TeamLeader)
     self.canManageFiles = ko.computed(function() {
@@ -1274,10 +1276,9 @@ function ProjectsViewModel() {
             return;
         }
 
-        // Check if project has email template or one is selected
-        var templateId = self.externalEmailTemplateId();
-        if (!templateId && !project.emailTemplateId) {
-            toastr.error('Email şablonu seçilmemiş. Proje ayarlarından şablon seçin veya burada bir şablon seçin.');
+        // Check if project has email template
+        if (!project.emailTemplateId) {
+            toastr.error('Email şablonu seçilmemiş. Proje ayarlarından şablon seçin.');
             return;
         }
 
@@ -1287,7 +1288,7 @@ function ProjectsViewModel() {
         var baseUrl = window.location.origin + '/Survey/Form';
         var dto = {
             emails: emails,
-            emailTemplateId: templateId || null,
+            emailTemplateId: null, // Proje şablonu kullanılacak
             baseUrl: baseUrl
         };
 
@@ -1362,6 +1363,71 @@ function ProjectsViewModel() {
         .finally(function() {
             self.isExternalRetrying(false);
         });
+    };
+
+    // Upload external emails from CSV/Excel file
+    self.uploadExternalEmails = function() {
+        var project = self.surveyProject();
+        if (!project) return;
+
+        var fileInput = document.getElementById('externalEmailFile');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            toastr.warning('Lütfen bir dosya seçin (CSV veya Excel).');
+            return;
+        }
+
+        var file = fileInput.files[0];
+        var extension = file.name.split('.').pop().toLowerCase();
+        if (extension !== 'csv' && extension !== 'xlsx' && extension !== 'xls') {
+            toastr.error('Sadece CSV ve Excel (.xlsx, .xls) dosyaları desteklenir.');
+            return;
+        }
+
+        // Check if project has email template
+        if (!project.emailTemplateId) {
+            toastr.error('Email şablonu seçilmemiş. Proje ayarlarından şablon seçin.');
+            return;
+        }
+
+        self.isExternalUploading(true);
+        self.externalUploadResult(null);
+
+        var formData = new FormData();
+        formData.append('file', file);
+        // emailTemplateId gönderilmiyor - proje şablonu kullanılacak
+        formData.append('sendImmediately', 'true');
+
+        fetch('/api/surveys/' + project.id + '/upload-external-emails', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+            self.externalUploadResult(result);
+            if (result.success) {
+                toastr.success(result.message);
+                fileInput.value = ''; // Clear file input
+                // Refresh stats and list
+                self.loadExternalInvitationStats(project.id);
+            } else {
+                toastr.error(result.message || 'Dosya yükleme sırasında hata oluştu.');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error uploading external emails:', error);
+            toastr.error('Dosya yüklenirken bir hata oluştu.');
+            self.externalUploadResult({ success: false, message: 'Beklenmeyen bir hata oluştu.' });
+        })
+        .finally(function() {
+            self.isExternalUploading(false);
+        });
+    };
+
+    // Download external email template
+    self.downloadExternalEmailTemplate = function(format) {
+        format = format || 'csv';
+        window.location.href = '/api/surveys/external-email-template?format=' + format;
     };
 
     // Get external invitation status text

@@ -43,6 +43,12 @@ public class ReportFilterDto
     public int PageSize { get; set; } = 50;
 
     /// <summary>
+    /// true ise COUNT sorgusu atlanır (hızlı ilk yükleme için).
+    /// Frontend ayrı bir istekle count alabilir.
+    /// </summary>
+    public bool SkipCount { get; set; } = false;
+
+    /// <summary>
     /// Export için kullanılıyor mu? true ise sadece Completed değerlendirmeler dahil edilir.
     /// PRENSIP: Raporlara (Excel export) taslak değerlendirmeler hiçbir zaman dahil edilmez.
     /// </summary>
@@ -146,7 +152,6 @@ public class QuestionAnswerReportDto
     public int Order { get; set; }
     public string? AnswerText { get; set; }
     public decimal? AnswerNumeric { get; set; }
-    public bool IsNA { get; set; }
     public decimal? GivenPoints { get; set; }
     public decimal? MaxPoints { get; set; }
     public string? PenaltyType { get; set; }

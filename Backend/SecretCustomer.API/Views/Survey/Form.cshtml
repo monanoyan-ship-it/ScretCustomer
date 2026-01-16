@@ -70,17 +70,6 @@
                                     <br><small class="text-muted" data-bind="text: description"></small>
                                     <!-- /ko -->
                                 </div>
-                                <div class="text-end small text-muted">
-                                    <!-- ko if: scoringType === 'Scored' -->
-                                    <span>Puan: 0-<span data-bind="text: maxPoints"></span></span>
-                                    <!-- /ko -->
-                                    <!-- ko if: scoringType === 'YesNo' -->
-                                    <span>Evet/Hayır</span>
-                                    <!-- /ko -->
-                                    <!-- ko if: scoringType === 'Descriptive' -->
-                                    <span>Açıklama</span>
-                                    <!-- /ko -->
-                                </div>
                             </div>
 
                             <!-- Answer Input -->
@@ -99,20 +88,18 @@
                                     <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
                                         <!-- Single Selection (Radio) -->
                                         <!-- ko if: $parent.selectionTypeId === 1 -->
-                                        <label class="list-group-item list-group-item-action py-2 px-3" data-bind="css: { 'active': isSelected() }">
+                                        <label class="list-group-item list-group-item-action py-2 px-3"
+                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
                                             <input type="radio" class="form-check-input me-2"
-                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id },
-                                                              checked: isSelected,
-                                                              click: function() { $root.selectSubCriteria($parent, $data); return true; }">
+                                                   data-bind="attr: { name: 'subcriteria_' + $parent.id }, checked: isSelected">
                                             <span data-bind="text: description"></span>
                                         </label>
                                         <!-- /ko -->
                                         <!-- Multiple Selection (Checkbox) -->
                                         <!-- ko if: $parent.selectionTypeId !== 1 -->
-                                        <label class="list-group-item list-group-item-action py-2 px-3" data-bind="css: { 'active': isSelected() }">
-                                            <input type="checkbox" class="form-check-input me-2"
-                                                   data-bind="checked: isSelected,
-                                                              click: function() { $root.selectSubCriteria($parent, $data); return true; }">
+                                        <label class="list-group-item list-group-item-action py-2 px-3"
+                                               data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
+                                            <input type="checkbox" class="form-check-input me-2" data-bind="checked: isSelected">
                                             <span data-bind="text: description"></span>
                                         </label>
                                         <!-- /ko -->
@@ -124,22 +111,14 @@
                                 <!-- ko if: showScoreInput -->
                                 <!-- Scored Question -->
                                 <!-- ko if: scoringType === 'Scored' -->
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="btn-group" role="group">
-                                        <!-- ko foreach: $root.getScoreOptions(maxPoints) -->
-                                        <input type="radio" class="btn-check"
-                                               data-bind="attr: { id: 'q' + $parent.id + '_' + $data, name: 'score_' + $parent.id },
-                                                          checked: $parent.answer().score,
-                                                          checkedValue: $data,
-                                                          disable: $parent.answer().isNA">
-                                        <label class="btn btn-outline-primary btn-sm" data-bind="attr: { for: 'q' + $parent.id + '_' + $data }, text: $data"></label>
-                                        <!-- /ko -->
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input"
-                                               data-bind="attr: { id: 'na_' + id }, checked: answer().isNA">
-                                        <label class="form-check-label" data-bind="attr: { for: 'na_' + id }">N/A</label>
-                                    </div>
+                                <div class="btn-group" role="group">
+                                    <!-- ko foreach: $root.getScoreOptions(maxPoints) -->
+                                    <input type="radio" class="btn-check"
+                                           data-bind="attr: { id: 'q' + $parent.id + '_' + $data, name: 'score_' + $parent.id },
+                                                      checked: $parent.answer().score,
+                                                      checkedValue: $data">
+                                    <label class="btn btn-outline-primary btn-sm" data-bind="attr: { for: 'q' + $parent.id + '_' + $data }, text: $data"></label>
+                                    <!-- /ko -->
                                 </div>
                                 <!-- /ko -->
 

@@ -1,8 +1,42 @@
-# Kaldığımız Yer - 16 Ocak 2026 (Son Güncelleme)
+# Kaldığımız Yer - 16 Ocak 2026 (Son Güncelleme - 2)
 
 ---
 
-## ✅ TAMAMLANAN İŞLER (16 Ocak 2026)
+## ✅ TAMAMLANAN İŞLER (16 Ocak 2026 - Oturum 2)
+
+### CSV/Excel ile Dış Katılımcı Email Listesi Yükleme
+
+Dış katılımcılar için dosyadan email listesi yükleme özelliği eklendi.
+
+**Yeni Endpoint'ler:**
+- `POST /api/surveys/{projectId}/upload-external-emails` - CSV/Excel dosyası yükle ve davetiye gönder
+- `GET /api/surveys/external-email-template?format=csv|xlsx` - Şablon dosyası indir
+
+**Desteklenen Dosya Formatları:**
+- CSV (virgül, noktalı virgül veya tab ile ayrılmış)
+- Excel (.xlsx, .xls)
+
+**Kolon Eşleştirme (Esnek):**
+| Kolon | Alternatif İsimler |
+|-------|-------------------|
+| Email | email, e-mail, mail, eposta, e-posta |
+| Ad | firstname, ad, first_name, isim |
+| Soyad | lastname, soyad, last_name, soyisim |
+| Ad Soyad | fullname, adsoyad, ad soyad, name |
+
+**UI Değişiklikleri:**
+- Projects modal "Dış Katılımcılar" tabına dosya yükleme bölümü eklendi
+- Şablon indirme linkleri (CSV ve Excel)
+- Yükleme sonucu özeti (toplam, eklenen, gönderilen, mükerrer)
+
+**Dosyalar:**
+- `SurveyApiController.cs` - Upload endpoint, ParseCsvFileAsync, ParseExcelFile metodları
+- `wwwroot/js/Projects/Index.js` - uploadExternalEmails, downloadExternalEmailTemplate fonksiyonları
+- `Views/Projects/Index.cshtml` - Dosya yükleme UI
+
+---
+
+## ✅ TAMAMLANAN İŞLER (16 Ocak 2026 - Oturum 1)
 
 ### Dış Katılımcı Davetiye Sistemi (SurveyExternalInvitation)
 
@@ -124,7 +158,7 @@ Tüm "branch" referansları "project" olarak güncellendi:
 
 ## 📝 YAPILACAKLAR (Backlog)
 
-- [ ] CSV/Excel dosya yükleme ile external email listesi (hazırlık yapıldı, endpoint eklenmedi)
+- [ ] PDF çıktısı için microservice altyapısı (Docker container, LibreOffice/wkhtmltopdf)
 - [ ] SurveyInvitations tablosu için migration uygulama kontrolü
 
 ---

@@ -130,8 +130,6 @@ public class SubmitAnswerDto
 
     public int? AnswerNumeric { get; set; }
 
-    public bool IsNA { get; set; } = false;
-
     // ===== YENİ ALANLAR =====
 
     /// <summary>

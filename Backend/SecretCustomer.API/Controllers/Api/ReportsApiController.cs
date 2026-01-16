@@ -122,6 +122,24 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Değerlendirme sayısı (ayrı endpoint - hızlı ilk yükleme için)
+    /// </summary>
+    [HttpPost("evaluations/count")]
+    public async Task<IActionResult> GetEvaluationsCount([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var count = await _reportService.GetEvaluationsCountAsync(filter);
+            return Ok(new { totalCount = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting evaluations count");
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
+        }
+    }
+
+    /// <summary>
     /// Değerlendirme detayı
     /// </summary>
     [HttpGet("evaluations/{evaluationId}")]

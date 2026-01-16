@@ -75,8 +75,6 @@ public class UpdateQuestionDto
     /// </summary>
     public string PenaltyType { get; set; } = "None";
 
-    public bool AllowNA { get; set; }
-
     public bool IsRequired { get; set; }
 
     [MaxLength(2000)]
@@ -89,6 +87,16 @@ public class UpdateQuestionDto
     /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
     /// </summary>
     public string? GroupName { get; set; }
+
+    /// <summary>
+    /// Alt Kriter seçim tipi: 1=Tekli, 2=Çoklu (varsayılan)
+    /// </summary>
+    public int SelectionTypeId { get; set; } = 2;
+
+    /// <summary>
+    /// Puan girişi gösterilsin mi? (Online anketler için false yapılabilir)
+    /// </summary>
+    public bool ShowScoreInput { get; set; } = true;
 
     /// <summary>
     /// Alt Kriterler/Öneriler

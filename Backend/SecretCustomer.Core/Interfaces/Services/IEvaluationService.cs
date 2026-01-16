@@ -171,7 +171,6 @@ public class EvaluationQuestionDto
     public string Text { get; set; } = string.Empty;
     public int Order { get; set; }
     public bool IsRequired { get; set; }
-    public bool AllowNA { get; set; }
 
     /// <summary>
     /// Puanlama tipi: Scored, Unscored, Penalty
@@ -235,11 +234,6 @@ public class ScoreAnswerDto
     /// false ise bu soru hesaplamaya katılmaz
     /// </summary>
     public bool IsIncluded { get; set; } = true;
-
-    /// <summary>
-    /// N/A işaretli mi?
-    /// </summary>
-    public bool IsNA { get; set; }
 
     /// <summary>
     /// Verilen puan (0-MaxPoints arası)

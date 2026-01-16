@@ -767,7 +767,6 @@ public class EvaluationService : IEvaluationService
         var scoreAnswers = answers.Select(a => new ScoreAnswerDto
         {
             QuestionId = a.QuestionId,
-            IsNA = a.IsNA,
             GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
             ApplyPenalty = a.ApplyPenalty,
             SelectedPenaltyType = a.SelectedPenaltyType
@@ -825,10 +824,6 @@ public class EvaluationService : IEvaluationService
             }
 
             // 3. Normal puanlı sorular (Scored)
-            // N/A işaretli mi?
-            if (answer != null && answer.IsNA)
-                continue;
-
             // Cevap verilmiş mi?
             bool hasAnswer = answer != null && answer.GivenPoints.HasValue;
 
@@ -869,9 +864,6 @@ public class EvaluationService : IEvaluationService
 
     private decimal? CalculateEarnedPoints(Question question, SubmitAnswerDto answer)
     {
-        if (answer.IsNA)
-            return null;
-
         // Eğer doğrudan puan verilmişse onu kullan
         if (answer.GivenPoints.HasValue)
             return answer.GivenPoints.Value;
@@ -912,7 +904,6 @@ public class EvaluationService : IEvaluationService
             QuestionId = dto.QuestionId,
             AnswerText = dto.AnswerText,
             AnswerNumeric = dto.AnswerNumeric,
-            IsNA = dto.IsNA,
             GivenPoints = dto.GivenPoints,
             Notes = dto.Notes,
             RecommendationNotes = dto.RecommendationNotes,
@@ -926,7 +917,6 @@ public class EvaluationService : IEvaluationService
     {
         answer.AnswerText = dto.AnswerText;
         answer.AnswerNumeric = dto.AnswerNumeric;
-        answer.IsNA = dto.IsNA;
         answer.GivenPoints = dto.GivenPoints;
         answer.Notes = dto.Notes;
         answer.RecommendationNotes = dto.RecommendationNotes;
@@ -986,7 +976,6 @@ public class EvaluationService : IEvaluationService
                 Text = q.Text,
                 Order = q.Order,
                 IsRequired = q.IsRequired,
-                AllowNA = q.AllowNA,
                 ScoringType = ScoringTypes.GetById(q.ScoringTypeId)?.SystemName ?? "Scored",
                 WeightPoints = q.WeightPoints,
                 MaxPoints = q.MaxPoints,
@@ -1019,7 +1008,6 @@ public class EvaluationService : IEvaluationService
             QuestionType = a.Question != null ? ScoringTypes.GetById(a.Question.ScoringTypeId)?.SystemName : null,
             AnswerText = a.AnswerText,
             AnswerNumeric = a.AnswerNumeric,
-            IsNA = a.IsNA,
             EarnedPoints = a.EarnedPoints,
             GivenPoints = a.GivenPoints,
             Notes = a.Notes,
@@ -1384,7 +1372,6 @@ public class EvaluationService : IEvaluationService
         var scoreAnswers = evaluation.Answers.Select(a => new ScoreAnswerDto
         {
             QuestionId = a.QuestionId,
-            IsNA = a.IsNA,
             // GivenPoints yoksa AnswerNumeric'i kullan
             GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
             ApplyPenalty = a.AppliedPenaltyTypeId > 0,

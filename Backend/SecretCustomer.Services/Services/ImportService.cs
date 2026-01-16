@@ -663,7 +663,6 @@ public class ImportService : IImportService
                         PenaltyTypeId = ParsePenaltyType(importDto.PenaltyType),
                         IsRequired = importDto.IsRequired,
                         HelpText = string.IsNullOrWhiteSpace(importDto.HelpText) ? null : importDto.HelpText,
-                        AllowNA = true,
                         CreatedAt = DateTime.UtcNow
                     };
 

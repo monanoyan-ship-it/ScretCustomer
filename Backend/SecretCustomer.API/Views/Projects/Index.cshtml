@@ -1008,11 +1008,11 @@
                             </small>
                         </div>
 
-                        <!-- Email Template Selection -->
+                        <!-- Email Template (from project settings - read only) -->
                         <div class="mb-3">
                             <label class="form-label">@Html.T("Project.EmailTemplate", "Email Şablonu")</label>
-                            <select class="form-select" data-bind="value: externalEmailTemplateId, options: emailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.UseProjectTemplate", "Proje şablonunu kullan...")'"></select>
-                            <small class="text-muted">@Html.T("Project.ExternalTemplateHelp", "Boş bırakılırsa proje ayarlarındaki şablon kullanılır")</small>
+                            <div class="form-control bg-light" data-bind="text: surveyProject() && surveyProject().emailTemplateName ? surveyProject().emailTemplateName : '@Html.T("Project.NoTemplateSelected", "Şablon seçilmemiş")'"></div>
+                            <small class="text-muted">@Html.T("Project.TemplateFromSettings", "Proje ayarlarından gelen şablon kullanılır")</small>
                         </div>
 
                         <!-- External Invitation Stats -->
@@ -1108,6 +1108,59 @@
                                 <small>
                                     <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
                                     <ul class="mb-0" data-bind="foreach: externalSendResult().errors">
+                                        <li data-bind="text: $data"></li>
+                                    </ul>
+                                </small>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+
+                        <!-- File Upload Section -->
+                        <hr class="my-3">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> @Html.T("Project.UploadEmailList", "Dosyadan Email Listesi Yükle")
+                            </label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="externalEmailFile" accept=".csv,.xlsx,.xls">
+                                <button type="button" class="btn btn-primary" data-bind="click: uploadExternalEmails, disable: isExternalUploading">
+                                    <span data-bind="visible: !isExternalUploading()"><i class="bi bi-upload"></i> @Html.T("Project.Upload", "Yükle")</span>
+                                    <span data-bind="visible: isExternalUploading"><span class="spinner-border spinner-border-sm"></span></span>
+                                </button>
+                            </div>
+                            <small class="text-muted">
+                                @Html.T("Project.UploadEmailHelp", "CSV veya Excel dosyası yükleyin. Kolonlar: Email (zorunlu), Ad, Soyad")
+                                <br>
+                                <a href="#" data-bind="click: function() { downloadExternalEmailTemplate('csv'); }">
+                                    <i class="bi bi-download"></i> @Html.T("Project.DownloadCsvTemplate", "CSV Şablon")
+                                </a>
+                                &nbsp;|&nbsp;
+                                <a href="#" data-bind="click: function() { downloadExternalEmailTemplate('xlsx'); }">
+                                    <i class="bi bi-download"></i> @Html.T("Project.DownloadExcelTemplate", "Excel Şablon")
+                                </a>
+                            </small>
+                        </div>
+
+                        <!-- Upload Result -->
+                        <div data-bind="visible: externalUploadResult()" class="mb-3">
+                            <div class="alert" data-bind="css: externalUploadResult() && externalUploadResult().success ? 'alert-success' : 'alert-danger'">
+                                <strong data-bind="text: externalUploadResult() ? externalUploadResult().message : ''"></strong>
+                                <!-- ko if: externalUploadResult() && externalUploadResult().success -->
+                                <div class="mt-2">
+                                    <small>
+                                        <i class="bi bi-info-circle"></i>
+                                        @Html.T("Project.UploadSummary", "Toplam"): <span data-bind="text: externalUploadResult().totalEmails"></span>,
+                                        @Html.T("Project.Added", "Eklenen"): <span data-bind="text: externalUploadResult().addedCount"></span>,
+                                        @Html.T("Project.Sent", "Gönderilen"): <span data-bind="text: externalUploadResult().successCount"></span>,
+                                        @Html.T("Project.Duplicate", "Mükerrer"): <span data-bind="text: externalUploadResult().duplicateCount"></span>
+                                    </small>
+                                </div>
+                                <!-- /ko -->
+                                <!-- ko if: externalUploadResult() && externalUploadResult().errors && externalUploadResult().errors.length > 0 -->
+                                <hr>
+                                <small>
+                                    <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
+                                    <ul class="mb-0" data-bind="foreach: externalUploadResult().errors">
                                         <li data-bind="text: $data"></li>
                                     </ul>
                                 </small>

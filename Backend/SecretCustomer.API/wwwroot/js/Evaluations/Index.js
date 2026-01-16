@@ -848,7 +848,6 @@ function EvaluationsViewModel() {
                 answerId: ko.observable(null),
                 answerText: ko.observable(''),
                 answerNumeric: ko.observable(null),
-                isNA: ko.observable(false),
                 givenPoints: ko.observable(null),
                 notes: ko.observable(''),
                 recommendationNotes: ko.observable(''),
@@ -868,7 +867,6 @@ function EvaluationsViewModel() {
                 self.calculateScores();
             });
             self.answers[questionId].answerText.subscribe(function() { self.calculateScores(); });
-            self.answers[questionId].isNA.subscribe(function() { self.calculateScores(); });
             self.answers[questionId].givenPoints.subscribe(function(newValue) {
                 // Puan girildiğinde otomatik "Dahil" yap
                 if (newValue !== null && newValue !== '') {
@@ -1119,7 +1117,6 @@ function EvaluationsViewModel() {
                             if (existingAnswer.answerNumeric !== null && existingAnswer.answerNumeric !== undefined) {
                                 answer.answerNumeric(existingAnswer.answerNumeric);
                             }
-                            answer.isNA(existingAnswer.isNA || false);
                             if (existingAnswer.givenPoints) answer.givenPoints(existingAnswer.givenPoints);
                             if (existingAnswer.notes) answer.notes(existingAnswer.notes);
                             if (existingAnswer.recommendationNotes) answer.recommendationNotes(existingAnswer.recommendationNotes);
@@ -1196,9 +1193,6 @@ function EvaluationsViewModel() {
                 }
 
                 if (!answer) return;
-
-                // Skip N/A questions
-                if (answer.isNA()) return;
 
                 // Zorunlu olmayan soru ve dahil edilmemiş → atla
                 if (!q.isRequired && !answer.isIncluded()) return;
@@ -1297,7 +1291,6 @@ function EvaluationsViewModel() {
                 questionId: questionId,
                 answerText: a.answerText() || null,
                 answerNumeric: answerNumericVal,
-                isNA: a.isNA(),
                 givenPoints: givenPointsVal,
                 notes: a.notes() || null,
                 recommendationNotes: a.recommendationNotes() || null,

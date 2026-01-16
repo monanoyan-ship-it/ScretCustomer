@@ -57,7 +57,7 @@ function ListeningsViewModel() {
     self.projectTypes = ko.observableArray([]);
 
     // Sorting
-    self.sortField = ko.observable('createdAt');
+    self.sortField = ko.observable('id'); // ID = Primary Key, en hızlı sıralama
     self.sortDirection = ko.observable('desc');
 
     // Filter system
@@ -208,13 +208,40 @@ function ListeningsViewModel() {
                 if (defaultFilter) {
                     self.applySavedFilter(defaultFilter);
                 } else {
+                    // Varsayılan filtre yoksa otomatik "Son 30 Gün" filtresi uygula (performans için)
+                    self.applyDefaultDateFilter();
                     self.search();
                 }
             })
             .catch(function(error) {
                 console.error('Error loading saved filters:', error);
+                self.applyDefaultDateFilter();
                 self.search();
             });
+    };
+
+    // Varsayılan tarih filtresi uygula (performans için)
+    self.applyDefaultDateFilter = function() {
+        var today = new Date();
+        var thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+        var formatDate = function(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        };
+
+        self.activeFilters.push({
+            type: 'dateRange',
+            label: self.filterLabels.dateRange,
+            value: {
+                startDate: formatDate(thirtyDaysAgo),
+                endDate: formatDate(today),
+                dateRangeType: 'last30Days'
+            },
+            displayValue: 'Son 30 Gün'
+        });
     };
 
     // Load organizations for filter dropdown and filter projects by customer
@@ -555,16 +582,23 @@ function ListeningsViewModel() {
         self.loadEvaluations();
     };
 
-    // Load evaluations
+    // Load evaluations (iki aşamalı: önce veri, sonra count)
     self.loadEvaluations = function() {
         self.isLoading(true);
 
         var params = self.buildFilterParams();
+        params.skipCount = true; // İlk istekte count atla - hızlı yükleme
 
         ApiService.post('/reports/evaluations', params)
             .then(function(response) {
                 self.evaluations(response.items || []);
-                self.totalCount(response.totalCount || 0);
+                // totalCount -1 ise henüz bilinmiyor
+                if (response.totalCount >= 0) {
+                    self.totalCount(response.totalCount);
+                } else {
+                    // Background'da count'u al
+                    self.loadEvaluationsCount();
+                }
             })
             .catch(function(error) {
                 console.error('Error loading evaluations:', error);
@@ -572,6 +606,27 @@ function ListeningsViewModel() {
             })
             .finally(function() {
                 self.isLoading(false);
+            });
+    };
+
+    // Background'da toplam sayıyı al
+    self.loadEvaluationsCount = function() {
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+        delete params.sortField;
+        delete params.sortDirection;
+
+        ApiService.post('/reports/evaluations/count', params)
+            .then(function(response) {
+                if (response && response.totalCount !== undefined) {
+                    self.totalCount(response.totalCount);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading count:', error);
+                // Count alınamazsa varsayılan değer
+                self.totalCount(self.evaluations().length);
             });
     };
 

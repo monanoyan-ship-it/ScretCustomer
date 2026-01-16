@@ -39,13 +39,21 @@ function SurveyFormViewModel() {
             .sort(function(a, b) { return a.order - b.order; });
     });
 
+    // Soru cevaplanmış mı kontrolü
+    self.isQuestionAnswered = function(q) {
+        var answer = q.answer();
+        var hasSubCriteriaSelection = answer.selectedSubCriteriaIds && answer.selectedSubCriteriaIds().length > 0;
+        if (q.scoringType === 'Descriptive') {
+            return answer.comment() && answer.comment().trim() !== '';
+        }
+        return answer.score() !== null || hasSubCriteriaSelection;
+    };
+
     // Computed: Answered count
     self.answeredCount = ko.computed(function() {
         var count = 0;
         self.questions().forEach(function(q) {
-            var answer = q.answer();
-            var hasSubCriteriaSelection = answer.selectedSubCriteriaIds && answer.selectedSubCriteriaIds().length > 0;
-            if (answer.isNA() || answer.score() !== null || hasSubCriteriaSelection || (q.scoringType === 'Descriptive' && answer.comment())) {
+            if (self.isQuestionAnswered(q)) {
                 count++;
             }
         });
@@ -120,14 +128,14 @@ function SurveyFormViewModel() {
                 maxPoints: q.maxPoints || 10,
                 weightPoints: q.weightPoints || 1,
                 // SubCriteria settings
-                selectionTypeId: q.selectionTypeId || 2, // 1=Single, 2=Multiple
+                selectionTypeId: parseInt(q.selectionTypeId) || 2, // 1=Single, 2=Multiple
                 showScoreInput: q.showScoreInput !== false, // Default true
+                isRequired: q.isRequired === true, // Zorunlu mu?
                 subCriteria: subCriteriaList,
                 hasSubCriteria: subCriteriaList.length > 0,
                 // Answer model
                 answer: ko.observable({
                     score: ko.observable(null),
-                    isNA: ko.observable(false),
                     comment: ko.observable(''),
                     selectedSubCriteriaIds: ko.observableArray([])
                 })
@@ -165,31 +173,38 @@ function SurveyFormViewModel() {
             return;
         }
 
+        // Zorunlu soru kontrolü
+        var unansweredRequired = self.questions().filter(function(q) {
+            return q.isRequired && !self.isQuestionAnswered(q);
+        });
+        if (unansweredRequired.length > 0) {
+            var questionNumbers = unansweredRequired.map(function(q) { return '#' + q.order; }).join(', ');
+            toastr.error('Zorunlu sorular cevaplanmalıdır: ' + questionNumbers);
+            return;
+        }
+
         // Prepare answers
         var answers = [];
         self.questions().forEach(function(q) {
             var answer = q.answer();
             var score = answer.score();
-            var isNA = answer.isNA();
             var comment = answer.comment();
             var selectedSubCriteriaIds = answer.selectedSubCriteriaIds ? answer.selectedSubCriteriaIds() : [];
 
             // Skip unanswered questions (except descriptive which only need comment)
             if (q.scoringType === 'Descriptive') {
-                if (comment) {
+                if (comment && comment.trim()) {
                     answers.push({
                         questionId: q.id,
                         score: null,
-                        isNA: false,
                         comment: comment,
                         selectedSubCriteriaIds: selectedSubCriteriaIds
                     });
                 }
-            } else if (isNA || score !== null || selectedSubCriteriaIds.length > 0) {
+            } else if (score !== null || selectedSubCriteriaIds.length > 0) {
                 answers.push({
                     questionId: q.id,
-                    score: isNA ? null : score,
-                    isNA: isNA,
+                    score: score,
                     comment: comment || null,
                     selectedSubCriteriaIds: selectedSubCriteriaIds
                 });

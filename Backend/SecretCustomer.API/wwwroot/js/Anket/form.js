@@ -114,7 +114,6 @@ function SurveyFormViewModel() {
                         groupName: q.groupName || null,
                         helpText: q.helpText || null,
                         isRequired: q.isRequired,
-                        allowNA: q.allowNA !== false,
                         maxPoints: maxPoints,
                         weightPoints: q.weightPoints || 1,
                         scoringType: q.scoringType || 'Scored',
@@ -173,8 +172,7 @@ function SurveyFormViewModel() {
             var score = q.selectedScore();
             return {
                 questionId: q.id,
-                score: score === -1 ? null : score, // -1 = N/A
-                isNA: score === -1,
+                score: score,
                 comment: q.comment() || null
             };
         });

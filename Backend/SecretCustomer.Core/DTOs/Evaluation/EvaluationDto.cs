@@ -124,7 +124,6 @@ public class AnswerDto
     public string? QuestionType { get; set; }
     public string? AnswerText { get; set; }
     public int? AnswerNumeric { get; set; }
-    public bool IsNA { get; set; }
     public decimal? EarnedPoints { get; set; }
 
     // ===== YENİ ALANLAR =====

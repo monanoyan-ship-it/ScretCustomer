@@ -10,4 +10,14 @@ public class ChecklistsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Checklist Editor - Popup olarak açılır
+    /// </summary>
+    public IActionResult Editor(int? id, int? clone)
+    {
+        ViewBag.ChecklistId = id;
+        ViewBag.CloneId = clone;
+        return View();
+    }
 }

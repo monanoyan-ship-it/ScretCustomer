@@ -73,11 +73,6 @@ public class CreateQuestionDto
     public string PenaltyType { get; set; } = "None";
 
     /// <summary>
-    /// N/A (Uygulanamaz) seçeneği izni
-    /// </summary>
-    public bool AllowNA { get; set; } = false;
-
-    /// <summary>
     /// Zorunlu mu?
     /// </summary>
     public bool IsRequired { get; set; } = true;

@@ -1,3 +1,5 @@
+using System.Text;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -415,7 +417,7 @@ public class SurveyApiController : ControllerBase
                 ScoringType = ScoringTypes.GetById(q.ScoringTypeId).SystemName,
                 q.MaxPoints,
                 q.WeightPoints,
-                q.AllowNA,
+                q.IsRequired,
                 q.SelectionTypeId,
                 q.ShowScoreInput,
                 SubCriteria = q.SubCriteria
@@ -695,8 +697,7 @@ public class SurveyApiController : ControllerBase
             {
                 EvaluationId = evaluationId,
                 QuestionId = answerDto.QuestionId,
-                AnswerNumeric = answerDto.IsNA ? null : answerDto.Score,
-                IsNA = answerDto.IsNA,
+                AnswerNumeric = answerDto.Score,
                 Notes = answerDto.Comment,
                 CreatedAt = DateTime.UtcNow
             };
@@ -720,7 +721,7 @@ public class SurveyApiController : ControllerBase
             }
 
             // Puan hesapla
-            if (!answerDto.IsNA && answerDto.Score.HasValue && question.ScoringTypeId == ScoringTypes.Ids.Scored)
+            if (answerDto.Score.HasValue && question.ScoringTypeId == ScoringTypes.Ids.Scored)
             {
                 totalWeight += question.WeightPoints;
                 totalScore += (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
@@ -1447,50 +1448,557 @@ public class SurveyApiController : ControllerBase
     }
 
     /// <summary>
-    /// Email girdisini parse et (virgül, boşluk veya satır ile ayrılmış)
+    /// CSV/Excel dosyasından email listesi yükle ve davetiye gönder
+    /// </summary>
+    [HttpPost("{projectId}/upload-external-emails")]
+    public async Task<IActionResult> UploadExternalEmails(int projectId, IFormFile file, [FromForm] int? emailTemplateId = null, [FromForm] bool sendImmediately = true)
+    {
+        // Projeyi kontrol et
+        var project = await _context.Projects
+            .Include(p => p.Customer)
+            .Include(p => p.Organization)
+            .Include(p => p.Checklist)
+            .Include(p => p.EmailTemplate)
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+        {
+            return NotFound(new { message = "Proje bulunamadı." });
+        }
+
+        // Proje tipini kontrol et
+        if (project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey)
+        {
+            return BadRequest(new { message = "Bu proje bir online anket projesi değil." });
+        }
+
+        // Dosya kontrolü
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "Dosya seçilmedi." });
+        }
+
+        // Dosya uzantısı kontrolü
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".csv" && extension != ".xlsx" && extension != ".xls")
+        {
+            return BadRequest(new { message = "Sadece CSV ve Excel (.xlsx, .xls) dosyaları desteklenir." });
+        }
+
+        // Email şablonu kontrolü (gönderim yapılacaksa)
+        EmailTemplate? emailTemplate = null;
+        if (sendImmediately)
+        {
+            emailTemplate = project.EmailTemplate;
+            if (emailTemplateId.HasValue)
+            {
+                emailTemplate = await _context.EmailTemplates
+                    .FirstOrDefaultAsync(e => e.Id == emailTemplateId.Value && !e.IsDeleted);
+            }
+
+            if (emailTemplate == null)
+            {
+                return BadRequest(new { message = "Email şablonu seçilmemiş." });
+            }
+
+            // SMTP yapılandırması kontrolü
+            if (!await _emailService.IsConfiguredAsync())
+            {
+                return BadRequest(new { message = "SMTP ayarları yapılandırılmamış." });
+            }
+        }
+
+        // Dosyayı parse et
+        List<ExternalRecipient> recipients;
+        try
+        {
+            if (extension == ".csv")
+            {
+                recipients = await ParseCsvFileAsync(file);
+            }
+            else
+            {
+                recipients = ParseExcelFile(file);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error parsing file {FileName}", file.FileName);
+            return BadRequest(new { message = $"Dosya okunamadı: {ex.Message}" });
+        }
+
+        if (!recipients.Any())
+        {
+            return BadRequest(new { message = "Dosyada geçerli email adresi bulunamadı." });
+        }
+
+        // Gönderim sonuçları
+        var successCount = 0;
+        var failCount = 0;
+        var duplicateCount = 0;
+        var addedCount = 0;
+        var errors = new List<string>();
+        var baseUrl = $"{Request.Scheme}://{Request.Host}/Survey/Form";
+
+        foreach (var recipient in recipients)
+        {
+            try
+            {
+                // Aynı projeye daha önce davetiye gönderilmiş mi?
+                var existingInvitation = await _context.SurveyExternalInvitations
+                    .FirstOrDefaultAsync(i => i.ProjectId == projectId &&
+                                              i.Email == recipient.Email &&
+                                              !i.IsDeleted);
+
+                if (existingInvitation != null)
+                {
+                    duplicateCount++;
+                    continue;
+                }
+
+                // Benzersiz token oluştur
+                var token = Guid.NewGuid().ToString("N");
+
+                // SurveyExternalInvitation kaydı oluştur
+                var invitation = new SurveyExternalInvitation
+                {
+                    ProjectId = projectId,
+                    Email = recipient.Email,
+                    FirstName = recipient.FirstName,
+                    LastName = recipient.LastName,
+                    Token = token,
+                    StatusId = sendImmediately ? SurveyInvitationStatuses.Ids.Pending : SurveyInvitationStatuses.Ids.Pending,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.SurveyExternalInvitations.Add(invitation);
+                await _context.SaveChangesAsync();
+                addedCount++;
+
+                // Hemen gönder
+                if (sendImmediately && emailTemplate != null)
+                {
+                    var surveyUrl = $"{baseUrl}?token={token}";
+
+                    var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                    var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+
+                    var result = await _emailService.SendEmailAsync(recipient.Email, subject, body, true);
+
+                    if (result.Success)
+                    {
+                        invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
+                        invitation.SentAt = DateTime.UtcNow;
+                        successCount++;
+                        _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId} (file upload)",
+                            recipient.Email, projectId);
+                    }
+                    else
+                    {
+                        invitation.StatusId = SurveyInvitationStatuses.Ids.Failed;
+                        invitation.ErrorMessage = result.ErrorMessage;
+                        failCount++;
+                        errors.Add($"{recipient.Email}: {result.ErrorMessage}");
+                        _logger.LogWarning("Failed to send external survey invitation to {Email}: {Error}",
+                            recipient.Email, result.ErrorMessage);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                failCount++;
+                errors.Add($"{recipient.Email}: {ex.Message}");
+                _logger.LogError(ex, "Error processing external invitation for {Email}", recipient.Email);
+            }
+        }
+
+        var message = sendImmediately
+            ? $"{successCount} kişiye davetiye gönderildi." +
+              (failCount > 0 ? $" {failCount} başarısız." : "") +
+              (duplicateCount > 0 ? $" {duplicateCount} zaten mevcut." : "")
+            : $"{addedCount} email adresi listeye eklendi." +
+              (duplicateCount > 0 ? $" {duplicateCount} zaten mevcut." : "");
+
+        return Ok(new
+        {
+            success = true,
+            totalEmails = recipients.Count,
+            addedCount,
+            successCount = sendImmediately ? successCount : 0,
+            failCount = sendImmediately ? failCount : 0,
+            duplicateCount,
+            errors = errors.Take(10).ToList(),
+            message
+        });
+    }
+
+    /// <summary>
+    /// CSV dosyasını parse et
+    /// </summary>
+    private async Task<List<ExternalRecipient>> ParseCsvFileAsync(IFormFile file)
+    {
+        var recipients = new List<ExternalRecipient>();
+
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+        var lines = new List<string>();
+        while (!reader.EndOfStream)
+        {
+            var line = await reader.ReadLineAsync();
+            if (!string.IsNullOrWhiteSpace(line))
+                lines.Add(line);
+        }
+
+        if (lines.Count < 1)
+            return recipients;
+
+        // Header var mı kontrol et
+        var firstLine = lines[0].ToLowerInvariant();
+        var hasHeader = firstLine.Contains("email") || firstLine.Contains("mail") ||
+                        firstLine.Contains("firstname") || firstLine.Contains("ad");
+
+        var startIndex = hasHeader ? 1 : 0;
+
+        // Header'dan kolon indekslerini al
+        var emailIndex = 0;
+        var firstNameIndex = -1;
+        var lastNameIndex = -1;
+
+        if (hasHeader)
+        {
+            var header = ParseCsvLine(lines[0]);
+            for (int i = 0; i < header.Length; i++)
+            {
+                var col = header[i].ToLowerInvariant().Trim();
+                if (col == "email" || col == "e-mail" || col == "mail" || col == "eposta" || col == "e-posta")
+                    emailIndex = i;
+                else if (col == "firstname" || col == "ad" || col == "first_name" || col == "isim")
+                    firstNameIndex = i;
+                else if (col == "lastname" || col == "soyad" || col == "last_name" || col == "soyisim")
+                    lastNameIndex = i;
+                else if (col == "fullname" || col == "adsoyad" || col == "ad soyad" || col == "name" || col == "isim")
+                {
+                    // FullName varsa, firstName olarak al, sonra parse edilecek
+                    if (firstNameIndex == -1) firstNameIndex = i;
+                }
+            }
+        }
+
+        // Satırları işle
+        for (int i = startIndex; i < lines.Count; i++)
+        {
+            var values = ParseCsvLine(lines[i]);
+            if (values.Length == 0) continue;
+
+            var email = emailIndex < values.Length ? values[emailIndex].Trim().ToLower() : "";
+            if (!IsValidEmail(email)) continue;
+
+            string? firstName = null;
+            string? lastName = null;
+
+            if (firstNameIndex >= 0 && firstNameIndex < values.Length)
+            {
+                var nameValue = values[firstNameIndex].Trim();
+
+                // Eğer lastName kolonu yoksa, firstName'i parse et
+                if (lastNameIndex < 0 && !string.IsNullOrEmpty(nameValue))
+                {
+                    var parts = nameValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 1) firstName = parts[0];
+                    if (parts.Length >= 2) lastName = string.Join(" ", parts.Skip(1));
+                }
+                else
+                {
+                    firstName = nameValue;
+                }
+            }
+
+            if (lastNameIndex >= 0 && lastNameIndex < values.Length)
+            {
+                lastName = values[lastNameIndex].Trim();
+            }
+
+            recipients.Add(new ExternalRecipient
+            {
+                Email = email,
+                FirstName = string.IsNullOrWhiteSpace(firstName) ? null : firstName,
+                LastName = string.IsNullOrWhiteSpace(lastName) ? null : lastName
+            });
+        }
+
+        // Duplicate'leri kaldır
+        return recipients.GroupBy(r => r.Email).Select(g => g.First()).ToList();
+    }
+
+    /// <summary>
+    /// CSV satırını parse et
+    /// </summary>
+    private static string[] ParseCsvLine(string line)
+    {
+        var result = new List<string>();
+        var current = new StringBuilder();
+        var inQuotes = false;
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    current.Append('"');
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if ((c == ',' || c == ';' || c == '\t') && !inQuotes)
+            {
+                result.Add(current.ToString().Trim());
+                current.Clear();
+            }
+            else
+            {
+                current.Append(c);
+            }
+        }
+
+        result.Add(current.ToString().Trim());
+        return result.ToArray();
+    }
+
+    /// <summary>
+    /// Excel dosyasını parse et
+    /// </summary>
+    private List<ExternalRecipient> ParseExcelFile(IFormFile file)
+    {
+        var recipients = new List<ExternalRecipient>();
+
+        using var stream = file.OpenReadStream();
+        using var workbook = new XLWorkbook(stream);
+        var worksheet = workbook.Worksheets.FirstOrDefault();
+
+        if (worksheet == null)
+            return recipients;
+
+        var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+        if (rowCount < 1)
+            return recipients;
+
+        // Header'dan kolon indekslerini al
+        var emailCol = 1;
+        var firstNameCol = -1;
+        var lastNameCol = -1;
+        var fullNameCol = -1;
+        var hasHeader = false;
+
+        // İlk satırı kontrol et
+        var firstCell = worksheet.Cell(1, 1).GetString().ToLowerInvariant();
+        if (firstCell.Contains("email") || firstCell.Contains("mail") ||
+            firstCell.Contains("ad") || firstCell.Contains("name"))
+        {
+            hasHeader = true;
+            var colCount = worksheet.LastColumnUsed()?.ColumnNumber() ?? 1;
+
+            for (int col = 1; col <= colCount; col++)
+            {
+                var header = worksheet.Cell(1, col).GetString().ToLowerInvariant().Trim();
+                if (header == "email" || header == "e-mail" || header == "mail" || header == "eposta" || header == "e-posta")
+                    emailCol = col;
+                else if (header == "firstname" || header == "ad" || header == "first_name" || header == "isim")
+                    firstNameCol = col;
+                else if (header == "lastname" || header == "soyad" || header == "last_name" || header == "soyisim")
+                    lastNameCol = col;
+                else if (header == "fullname" || header == "adsoyad" || header == "ad soyad" || header == "name")
+                    fullNameCol = col;
+            }
+        }
+
+        var startRow = hasHeader ? 2 : 1;
+
+        for (int row = startRow; row <= rowCount; row++)
+        {
+            var email = worksheet.Cell(row, emailCol).GetString().Trim().ToLower();
+            if (!IsValidEmail(email)) continue;
+
+            string? firstName = null;
+            string? lastName = null;
+
+            if (fullNameCol > 0)
+            {
+                var fullName = worksheet.Cell(row, fullNameCol).GetString().Trim();
+                if (!string.IsNullOrEmpty(fullName))
+                {
+                    var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length >= 1) firstName = parts[0];
+                    if (parts.Length >= 2) lastName = string.Join(" ", parts.Skip(1));
+                }
+            }
+
+            if (firstNameCol > 0)
+            {
+                var fn = worksheet.Cell(row, firstNameCol).GetString().Trim();
+                if (!string.IsNullOrEmpty(fn))
+                {
+                    // Eğer lastName kolonu yoksa, firstName'i parse et
+                    if (lastNameCol <= 0)
+                    {
+                        var parts = fn.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length >= 1) firstName = parts[0];
+                        if (parts.Length >= 2) lastName = string.Join(" ", parts.Skip(1));
+                    }
+                    else
+                    {
+                        firstName = fn;
+                    }
+                }
+            }
+
+            if (lastNameCol > 0)
+            {
+                var ln = worksheet.Cell(row, lastNameCol).GetString().Trim();
+                if (!string.IsNullOrEmpty(ln)) lastName = ln;
+            }
+
+            recipients.Add(new ExternalRecipient
+            {
+                Email = email,
+                FirstName = string.IsNullOrWhiteSpace(firstName) ? null : firstName,
+                LastName = string.IsNullOrWhiteSpace(lastName) ? null : lastName
+            });
+        }
+
+        // Duplicate'leri kaldır
+        return recipients.GroupBy(r => r.Email).Select(g => g.First()).ToList();
+    }
+
+    /// <summary>
+    /// Email şablonu indir (CSV/Excel için örnek)
+    /// </summary>
+    [HttpGet("external-email-template")]
+    public IActionResult GetExternalEmailTemplate([FromQuery] string format = "csv")
+    {
+        if (format.ToLowerInvariant() == "xlsx" || format.ToLowerInvariant() == "excel")
+        {
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Email Listesi");
+
+            // Header
+            worksheet.Cell(1, 1).Value = "Email";
+            worksheet.Cell(1, 2).Value = "Ad";
+            worksheet.Cell(1, 3).Value = "Soyad";
+
+            // Örnek satır
+            worksheet.Cell(2, 1).Value = "ornek@email.com";
+            worksheet.Cell(2, 2).Value = "Ahmet";
+            worksheet.Cell(2, 3).Value = "Yılmaz";
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "email_listesi_sablonu.xlsx");
+        }
+        else
+        {
+            var csv = "Email,Ad,Soyad\nornek@email.com,Ahmet,Yılmaz";
+            var bytes = Encoding.UTF8.GetBytes(csv);
+            return File(bytes, "text/csv", "email_listesi_sablonu.csv");
+        }
+    }
+
+    /// <summary>
+    /// Email girdisini parse et (virgül, noktalı virgül veya satır ile ayrılmış)
+    /// Formatlar:
+    /// - email@x.com
+    /// - email1@x.com, email2@x.com
+    /// - email1@x.com; email2@x.com
+    /// - email@x.com Ahmet Yılmaz (email sonrası isim)
     /// </summary>
     private List<ExternalRecipient> ParseEmailInput(string input)
     {
         var results = new List<ExternalRecipient>();
         if (string.IsNullOrWhiteSpace(input)) return results;
 
-        var lines = input.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        // Tüm ayırıcıları normalize et: virgül, noktalı virgül, yeni satır → yeni satır
+        var normalized = input
+            .Replace(",", "\n")
+            .Replace(";", "\n");
+
+        var lines = normalized.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var line in lines)
         {
-            // Satırı ; ile ayır → email kısmı, isim kısmı
-            var parts = line.Split(';');
-            var emailPart = parts[0].Trim();
-            var namePart = parts.Length > 1 ? parts[1].Trim() : null;
+            var trimmed = line.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed)) continue;
 
-            // Email kısmını virgül veya boşluk ile ayır
-            var emails = System.Text.RegularExpressions.Regex.Split(emailPart, @"[,\s]+")
-                .Where(e => !string.IsNullOrWhiteSpace(e) && IsValidEmail(e.Trim()))
-                .Select(e => e.Trim().ToLower());
+            // Satırı boşluk ile tokenize et
+            var tokens = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var email in emails)
+            string? email = null;
+            var nameTokens = new List<string>();
+
+            foreach (var token in tokens)
             {
-                string? firstName = null;
-                string? lastName = null;
-
-                if (!string.IsNullOrWhiteSpace(namePart))
+                if (email == null && IsValidEmail(token))
                 {
-                    var nameParts = namePart.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (nameParts.Length >= 1) firstName = nameParts[0];
-                    if (nameParts.Length >= 2) lastName = string.Join(" ", nameParts.Skip(1));
+                    // İlk geçerli email
+                    email = token.ToLower();
                 }
-
-                results.Add(new ExternalRecipient
+                else if (email != null && IsValidEmail(token))
                 {
-                    Email = email,
-                    FirstName = firstName,
-                    LastName = lastName
-                });
+                    // Yeni bir email bulundu - öncekini kaydet ve yenisine geç
+                    results.Add(CreateRecipient(email, nameTokens));
+                    email = token.ToLower();
+                    nameTokens.Clear();
+                }
+                else if (email != null)
+                {
+                    // Email sonrası isim token'ı
+                    nameTokens.Add(token);
+                }
+                // email null ve token email değilse → atla
+            }
+
+            // Son email'i kaydet
+            if (email != null)
+            {
+                results.Add(CreateRecipient(email, nameTokens));
             }
         }
 
         // Duplicate'leri kaldır
         return results.GroupBy(r => r.Email).Select(g => g.First()).ToList();
+    }
+
+    private static ExternalRecipient CreateRecipient(string email, List<string> nameTokens)
+    {
+        string? firstName = null;
+        string? lastName = null;
+
+        if (nameTokens.Count >= 1)
+        {
+            firstName = nameTokens[0];
+        }
+        if (nameTokens.Count >= 2)
+        {
+            lastName = string.Join(" ", nameTokens.Skip(1));
+        }
+
+        return new ExternalRecipient
+        {
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName
+        };
     }
 
     /// <summary>
@@ -1594,14 +2102,9 @@ public class SurveyAnswerDto
     public int QuestionId { get; set; }
 
     /// <summary>
-    /// Verilen puan (N/A ise null)
+    /// Verilen puan
     /// </summary>
     public int? Score { get; set; }
-
-    /// <summary>
-    /// N/A olarak mı işaretlendi
-    /// </summary>
-    public bool IsNA { get; set; }
 
     /// <summary>
     /// Yorum (opsiyonel)

@@ -8,6 +8,9 @@ public interface IReportService
     // Değerlendirme listesi (sayfalı)
     Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter);
 
+    // Değerlendirme sayısı (ayrı endpoint - hızlı ilk yükleme için)
+    Task<int> GetEvaluationsCountAsync(ReportFilterDto filter);
+
     // Değerlendirme detayı
     Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId);
 
