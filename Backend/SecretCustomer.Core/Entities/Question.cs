@@ -98,6 +98,12 @@ public class Question : BaseEntity
     /// </summary>
     public bool ShowScoreInput { get; set; } = true;
 
+    /// <summary>
+    /// Yorum yapılabilir mi?
+    /// false ise yorum alanı gösterilmez (anketler için)
+    /// </summary>
+    public bool AllowComment { get; set; } = true;
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<QuestionAttachment> Attachments { get; set; } = new List<QuestionAttachment>();

@@ -99,6 +99,11 @@ public class UpdateQuestionDto
     public bool ShowScoreInput { get; set; } = true;
 
     /// <summary>
+    /// Yorum yapılabilir mi? (Online anketler için false yapılabilir)
+    /// </summary>
+    public bool AllowComment { get; set; } = true;
+
+    /// <summary>
     /// Alt Kriterler/Öneriler
     /// </summary>
     public List<UpdateSubCriteriaDto>? SubCriteria { get; set; }

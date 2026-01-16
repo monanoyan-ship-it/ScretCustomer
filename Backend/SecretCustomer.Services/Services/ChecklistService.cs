@@ -276,6 +276,7 @@ public class ChecklistService : IChecklistService
                     // Online anket ayarları
                     question.SelectionTypeId = questionDto.SelectionTypeId;
                     question.ShowScoreInput = questionDto.ShowScoreInput;
+                    question.AllowComment = questionDto.AllowComment;
 
                     // Alt Kriterleri güncelle
                     UpdateSubCriteria(question, questionDto.SubCriteria);
@@ -301,6 +302,7 @@ public class ChecklistService : IChecklistService
                     // Online anket ayarları
                     SelectionTypeId = questionDto.SelectionTypeId,
                     ShowScoreInput = questionDto.ShowScoreInput,
+                    AllowComment = questionDto.AllowComment,
                     // Alt Kriterler
                     SubCriteria = questionDto.SubCriteria?.Select(sc => new QuestionSubCriteria
                     {
@@ -382,6 +384,7 @@ public class ChecklistService : IChecklistService
                 GroupName = q.GroupName,
                 SelectionTypeId = q.SelectionTypeId,
                 ShowScoreInput = q.ShowScoreInput,
+                AllowComment = q.AllowComment,
                 SubCriteria = q.SubCriteria?.OrderBy(sc => sc.Order).Select(sc => new SubCriteriaDto
                 {
                     Id = sc.Id,

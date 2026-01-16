@@ -148,8 +148,8 @@
                                           data-bind="value: answer().comment"></textarea>
                                 <!-- /ko -->
 
-                                <!-- Comment for scored questions -->
-                                <!-- ko if: scoringType !== 'Descriptive' -->
+                                <!-- Comment for scored questions (only if allowComment is true) -->
+                                <!-- ko if: scoringType !== 'Descriptive' && allowComment -->
                                 <div class="mt-2">
                                     <input type="text" class="form-control form-control-sm"
                                            placeholder="Yorum (opsiyonel)"

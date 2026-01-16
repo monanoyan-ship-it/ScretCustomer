@@ -130,6 +130,7 @@ function SurveyFormViewModel() {
                 // SubCriteria settings
                 selectionTypeId: parseInt(q.selectionTypeId) || 2, // 1=Single, 2=Multiple
                 showScoreInput: q.showScoreInput !== false, // Default true
+                allowComment: q.allowComment !== false, // Default true - Yorum yapılabilir mi?
                 isRequired: q.isRequired === true, // Zorunlu mu?
                 subCriteria: subCriteriaList,
                 hasSubCriteria: subCriteriaList.length > 0,

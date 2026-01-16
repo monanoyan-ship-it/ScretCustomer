@@ -420,6 +420,7 @@ public class SurveyApiController : ControllerBase
                 q.IsRequired,
                 q.SelectionTypeId,
                 q.ShowScoreInput,
+                q.AllowComment,
                 SubCriteria = q.SubCriteria
                     .Where(sc => sc.IsActive && !sc.IsDeleted)
                     .OrderBy(sc => sc.Order)

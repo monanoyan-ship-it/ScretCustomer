@@ -38,6 +38,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     // SubCriteria ayarları (Online Anket için)
     base.selectionTypeId = ko.observable(data.selectionTypeId || 2); // Varsayılan: Multiple (2)
     base.showScoreInput = ko.observable(data.showScoreInput !== false); // Varsayılan: true
+    base.allowComment = ko.observable(data.allowComment !== false); // Varsayılan: true
 
     // scoringType değiştiğinde weightPoints'i otomatik ayarla
     base.scoringType.subscribe(function(newValue) {

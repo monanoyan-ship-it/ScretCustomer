@@ -111,6 +111,11 @@ public class QuestionDto
     public bool ShowScoreInput { get; set; } = true;
 
     /// <summary>
+    /// Yorum yapılabilir mi?
+    /// </summary>
+    public bool AllowComment { get; set; } = true;
+
+    /// <summary>
     /// Alt Kriterler/Öneriler
     /// </summary>
     public List<SubCriteriaDto>? SubCriteria { get; set; }
