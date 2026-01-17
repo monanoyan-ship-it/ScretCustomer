@@ -107,6 +107,61 @@ public class ChecklistService : IChecklistService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Liste görünümü için - Filter DTO ile (çoklu filtre destekli)
+    /// </summary>
+    public async Task<IEnumerable<ChecklistListDto>> GetListAsync(ChecklistFilterDto filter)
+    {
+        var query = _context.Checklists
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
+
+        if (!filter.IncludeInactive)
+            query = query.Where(c => c.IsActive);
+
+        // Arama
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            var search = filter.SearchText.ToLower();
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(search) ||
+                (c.Description != null && c.Description.ToLower().Contains(search)) ||
+                (c.Code != null && c.Code.ToLower().Contains(search)));
+        }
+
+        // Çoklu CustomerIds filtresi
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(c => c.CustomerId.HasValue && filter.CustomerIds.Contains(c.CustomerId.Value));
+
+        // Çoklu CustomerOrganizationIds filtresi
+        if (filter.CustomerOrganizationIds?.Any() == true)
+            query = query.Where(c => c.CustomerOrganizationId.HasValue && filter.CustomerOrganizationIds.Contains(c.CustomerOrganizationId.Value));
+
+        return await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new ChecklistListDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                IsScored = c.IsScored,
+                IsActive = c.IsActive,
+                Version = c.Version,
+                CreatedAt = c.CreatedAt,
+                ChecklistType = ChecklistTypes.GetById(c.ChecklistTypeId) != null ? ChecklistTypes.GetById(c.ChecklistTypeId)!.SystemName : "CallPerformance",
+                Code = c.Code,
+                MaxTotalPoints = c.MaxTotalPoints,
+                ValidFrom = c.ValidFrom,
+                ValidUntil = c.ValidUntil,
+                CustomerId = c.CustomerId,
+                CustomerName = c.Customer != null ? c.Customer.CompanyName : null,
+                CustomerOrganizationId = c.CustomerOrganizationId,
+                CustomerOrganizationName = c.CustomerOrganization != null ? c.CustomerOrganization.Name : null,
+                QuestionCount = c.Questions.Count(q => !q.IsDeleted)
+            })
+            .ToListAsync();
+    }
+
     public async Task<ChecklistDto> CreateAsync(CreateChecklistDto dto)
     {
         // Soru validasyonu: ShowScoreInput kapalıysa, ya SubCriteria olmalı ya da AllowComment açık olmalı

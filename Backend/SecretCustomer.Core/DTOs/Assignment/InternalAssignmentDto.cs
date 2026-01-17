@@ -70,22 +70,20 @@ public class InternalAssignmentItemResult
 }
 
 /// <summary>
-/// İç değerlendirme atamaları filtreleme
+/// İç değerlendirme atamaları filtreleme - Sadece çoklu filtreler (OR mantığı)
+/// Tek değer için [5] şeklinde array gönder
 /// </summary>
 public class InternalAssignmentFilterDto
 {
-    public int? CustomerId { get; set; }
-    public int? ProjectId { get; set; }
-    public int? OrganizationId { get; set; }
-    public int? RoleId { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? RoleIds { get; set; }
+    public List<int>? AssignedCustomerPersonnelIds { get; set; }
+
     public bool? IsCompleted { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
-
-    /// <summary>
-    /// Belirli bir personele atanmış olanları filtrele
-    /// </summary>
-    public int? AssignedCustomerPersonnelId { get; set; }
 }
 
 /// <summary>

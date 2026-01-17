@@ -341,11 +341,7 @@ function AssignmentsViewModel() {
                 return;
         }
 
-        // Remove existing filter of same type (except search which can have multiple)
-        if (type !== 'search') {
-            self.activeFilters.remove(function(f) { return f.type === type; });
-        }
-
+        // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push(filter);
         self.selectedFilterType('');
         self.applyFilters();
@@ -553,41 +549,53 @@ function AssignmentsViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
-        // Build filter from activeFilters
+        // Build filter from activeFilters (çoklu değer desteği)
         var filter = {
-            projectId: null,
-            status: null,
-            assignedUserId: null,
-            dueDateFrom: null,
-            dueDateTo: null,
-            searchTerm: null,
             sortBy: self.sorting.sortBy() || null,
             sortDirection: self.sorting.sortDirection() || 'desc'
         };
 
-        // Collect search terms
+        // Çoklu değer için array'ler
+        var projectIds = [];
+        var statuses = [];
+        var assignedUserIds = [];
         var searchTerms = [];
+        var dueDateFrom = null;
+        var dueDateTo = null;
 
         self.activeFilters().forEach(function(f) {
             switch (f.type) {
                 case 'project':
-                    filter.projectId = f.value;
+                    projectIds.push(f.value);
                     break;
                 case 'status':
-                    filter.status = f.value;
+                    statuses.push(f.value);
                     break;
                 case 'assignedUser':
-                    filter.assignedUserId = f.value;
+                    assignedUserIds.push(f.value);
                     break;
                 case 'dateRange':
-                    filter.dueDateFrom = f.value.start || null;
-                    filter.dueDateTo = f.value.end || null;
+                    dueDateFrom = f.value.start || null;
+                    dueDateTo = f.value.end || null;
                     break;
                 case 'search':
                     searchTerms.push(f.value);
                     break;
             }
         });
+
+        // Array'leri filter'a ekle (geriye uyumluluk için tekil değer de desteklenir)
+        if (projectIds.length === 1) filter.projectId = projectIds[0];
+        else if (projectIds.length > 1) filter.projectIds = projectIds;
+
+        if (statuses.length === 1) filter.status = statuses[0];
+        else if (statuses.length > 1) filter.statuses = statuses;
+
+        if (assignedUserIds.length === 1) filter.assignedUserId = assignedUserIds[0];
+        else if (assignedUserIds.length > 1) filter.assignedUserIds = assignedUserIds;
+
+        if (dueDateFrom) filter.dueDateFrom = dueDateFrom;
+        if (dueDateTo) filter.dueDateTo = dueDateTo;
 
         // Combine search terms
         if (searchTerms.length > 0) {

@@ -2,48 +2,96 @@
 function PenaltiesViewModel() {
     var self = this;
 
+    // Page name for saved filters
+    self.pageName = '/Reports/Penalties';
+
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
     self.errorMessage = ko.observable('');
 
-    // Filter options
+    // Lookup data
     self.customers = ko.observableArray([]);
     self.projects = ko.observableArray([]);
     self.organizations = ko.observableArray([]);
     self.checklists = ko.observableArray([]);
     self.evaluators = ko.observableArray([]);
+    self.dateRanges = ko.observableArray([
+        { systemName: 'today', name: 'Bugun' },
+        { systemName: 'yesterday', name: 'Dun' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'lastWeek', name: 'Gecen Hafta' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'lastMonth', name: 'Gecen Ay' },
+        { systemName: 'last7Days', name: 'Son 7 Gun' },
+        { systemName: 'last30Days', name: 'Son 30 Gun' }
+    ]);
 
-    // Filters
-    self.filter = {
-        customerId: ko.observable(''),
-        projectId: ko.observable(''),
-        organizationId: ko.observable(''),
-        checklistId: ko.observable(''),
-        evaluatorId: ko.observable(''),
+    // Filter system
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        customerIdForFilter: ko.observable(null),
+        projectId: ko.observable(null),
+        organizationId: ko.observable(null),
+        checklistId: ko.observable(null),
+        evaluatorId: ko.observable(null),
         penaltyType: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        page: ko.observable(1),
-        pageSize: ko.observable(50)
+        selectedDateRangeType: ko.observable(null)
     };
 
-    // Filtered options based on customer selection
-    self.filteredProjects = ko.computed(function() {
-        var customerId = self.filter.customerId();
+    // Tarih manuel degistirildiginde dateRangeType'i temizle
+    self.tempFilter.startDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self.tempFilter.endDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self._manualDateChange = true;
+
+    // Filtered options based on customer selection (for temp filter)
+    self.filteredProjectsForFilter = ko.computed(function() {
+        var customerId = self.tempFilter.customerIdForFilter();
         if (!customerId) return self.projects();
         return self.projects().filter(function(p) {
             return p.customerId == customerId;
         });
     });
 
-    self.filteredOrganizations = ko.computed(function() {
-        var customerId = self.filter.customerId();
+    self.filteredOrganizationsForFilter = ko.computed(function() {
+        var customerId = self.tempFilter.customerIdForFilter();
         if (!customerId) return self.organizations();
         return self.organizations().filter(function(o) {
             return o.customerId == customerId;
         });
     });
+
+    // Pagination
+    self.page = ko.observable(1);
+    self.pageSize = ko.observable(50);
+
+    // Filter labels
+    self.filterLabels = {
+        customerOrganization: 'Musteri/Org.',
+        project: 'Proje',
+        checklist: 'Kontrol Listesi',
+        evaluator: 'Degerlendirici',
+        penaltyType: 'Ceza Tipi',
+        dateRange: 'Tarih'
+    };
+
+    self.penaltyTypeLabels = {
+        'YellowCard': 'Sari Kart',
+        'RedCard': 'Kirmizi Kart'
+    };
 
     // Summary
     self.summary = ko.observable({
@@ -67,10 +115,282 @@ function PenaltiesViewModel() {
     // Chart instance
     var penaltyTrendChart = null;
 
-    // Customer change handler
-    self.onCustomerChange = function() {
-        self.filter.projectId('');
-        self.filter.organizationId('');
+    // Customer change handler for temp filter
+    self.onCustomerChangeForFilter = function() {
+        self.tempFilter.projectId(null);
+        self.tempFilter.organizationId(null);
+    };
+
+    // Can add filter computed
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customerOrganization': return self.tempFilter.customerIdForFilter();
+            case 'project': return self.tempFilter.projectId();
+            case 'checklist': return self.tempFilter.checklistId();
+            case 'evaluator': return self.tempFilter.evaluatorId();
+            case 'penaltyType': return self.tempFilter.penaltyType() !== '';
+            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customerOrganization':
+                var customerId = self.tempFilter.customerIdForFilter();
+                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                if (!customer) return;
+
+                var orgId = self.tempFilter.organizationId();
+                var org = orgId ? self.organizations().find(function(o) { return o.id === orgId; }) : null;
+
+                filter.value = { customerId: customerId, organizationId: orgId };
+                filter.displayValue = org ? customer.name + ' / ' + org.name : customer.name;
+
+                self.tempFilter.customerIdForFilter(null);
+                self.tempFilter.organizationId(null);
+                break;
+
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                var project = self.projects().find(function(p) { return p.id === projectId; });
+                if (!project) return;
+                filter.value = projectId;
+                filter.displayValue = project.name;
+                self.tempFilter.projectId(null);
+                break;
+
+            case 'checklist':
+                var checklistId = self.tempFilter.checklistId();
+                var checklist = self.checklists().find(function(c) { return c.id === checklistId; });
+                if (!checklist) return;
+                filter.value = checklistId;
+                filter.displayValue = checklist.name;
+                self.tempFilter.checklistId(null);
+                break;
+
+            case 'evaluator':
+                var evaluatorId = self.tempFilter.evaluatorId();
+                var evaluator = self.evaluators().find(function(e) { return e.id === evaluatorId; });
+                if (!evaluator) return;
+                filter.value = evaluatorId;
+                filter.displayValue = evaluator.fullName;
+                self.tempFilter.evaluatorId(null);
+                break;
+
+            case 'penaltyType':
+                var penaltyType = self.tempFilter.penaltyType();
+                if (!penaltyType) return;
+                filter.value = penaltyType;
+                filter.displayValue = self.penaltyTypeLabels[penaltyType] || penaltyType;
+                self.tempFilter.penaltyType('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.startDate();
+                var endDate = self.tempFilter.endDate();
+                var dateRangeType = self.tempFilter.selectedDateRangeType();
+                if (!startDate && !endDate) return;
+
+                filter.value = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    dateRangeType: dateRangeType
+                };
+
+                if (dateRangeType) {
+                    var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
+                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
+                } else {
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                }
+
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.selectedDateRangeType(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldirilinca otomatik ara
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.search();
+    };
+
+    // Set temp date range (quick select buttons)
+    self.setTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var formatDate = function(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        };
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = new Date(today.getTime());
+                endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday;
+                endDate = new Date(yesterday.getTime());
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        self._manualDateChange = false;
+        if (startDate) self.tempFilter.startDate(formatDate(startDate));
+        if (endDate) self.tempFilter.endDate(formatDate(endDate));
+        self.tempFilter.selectedDateRangeType(range);
+        self._manualDateChange = true;
+    };
+
+    // Build query params from active filters
+    self.buildQueryParams = function() {
+        var params = [];
+
+        // Coklu deger icin array'ler
+        var customerIds = [];
+        var organizationIds = [];
+        var projectIds = [];
+        var checklistIds = [];
+        var evaluatorIds = [];
+        var penaltyTypes = [];
+        var dateRanges = [];
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customerOrganization':
+                    if (filter.value.customerId) customerIds.push(filter.value.customerId);
+                    if (filter.value.organizationId) organizationIds.push(filter.value.organizationId);
+                    break;
+                case 'project':
+                    projectIds.push(filter.value);
+                    break;
+                case 'checklist':
+                    checklistIds.push(filter.value);
+                    break;
+                case 'evaluator':
+                    evaluatorIds.push(filter.value);
+                    break;
+                case 'penaltyType':
+                    penaltyTypes.push(filter.value);
+                    break;
+                case 'dateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate
+                    });
+                    break;
+            }
+        });
+
+        // Query string olustur (çoklu değer desteği)
+        if (customerIds.length === 1) params.push('customerId=' + customerIds[0]);
+        else if (customerIds.length > 1) customerIds.forEach(function(id) { params.push('customerIds=' + id); });
+
+        if (organizationIds.length === 1) params.push('organizationId=' + organizationIds[0]);
+        else if (organizationIds.length > 1) organizationIds.forEach(function(id) { params.push('organizationIds=' + id); });
+
+        if (projectIds.length === 1) params.push('projectId=' + projectIds[0]);
+        else if (projectIds.length > 1) projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+
+        if (checklistIds.length === 1) params.push('checklistId=' + checklistIds[0]);
+        else if (checklistIds.length > 1) checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
+
+        if (evaluatorIds.length === 1) params.push('evaluatorId=' + evaluatorIds[0]);
+        else if (evaluatorIds.length > 1) evaluatorIds.forEach(function(id) { params.push('evaluatorIds=' + id); });
+
+        if (penaltyTypes.length === 1) params.push('penaltyType=' + penaltyTypes[0]);
+        else if (penaltyTypes.length > 1) penaltyTypes.forEach(function(t) { params.push('penaltyTypes=' + t); });
+
+        if (dateRanges.length > 0) {
+            if (dateRanges[0].startDate) params.push('startDate=' + dateRanges[0].startDate);
+            if (dateRanges[0].endDate) params.push('endDate=' + dateRanges[0].endDate);
+        }
+
+        params.push('page=' + self.page());
+        params.push('pageSize=' + self.pageSize());
+
+        return params;
+    };
+
+    // Search
+    self.search = function() {
+        self.page(1);
+        self.loadReport();
     };
 
     // Load filter options
@@ -130,22 +450,6 @@ function PenaltiesViewModel() {
             .catch(function(error) {
                 console.error('Error loading evaluators:', error);
             });
-    };
-
-    // Build query params
-    self.buildQueryParams = function() {
-        var params = [];
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.customerId()) params.push('customerId=' + self.filter.customerId());
-        if (self.filter.organizationId()) params.push('organizationId=' + self.filter.organizationId());
-        if (self.filter.checklistId()) params.push('checklistId=' + self.filter.checklistId());
-        if (self.filter.evaluatorId()) params.push('evaluatorId=' + self.filter.evaluatorId());
-        if (self.filter.penaltyType()) params.push('penaltyType=' + self.filter.penaltyType());
-        if (self.filter.startDate()) params.push('startDate=' + self.filter.startDate());
-        if (self.filter.endDate()) params.push('endDate=' + self.filter.endDate());
-        params.push('page=' + self.filter.page());
-        params.push('pageSize=' + self.filter.pageSize());
-        return params;
     };
 
     // Load penalty report
@@ -240,37 +544,17 @@ function PenaltiesViewModel() {
         });
     };
 
-    // Apply filters
-    self.applyFilters = function() {
-        self.filter.page(1); // Reset to first page
-        self.loadReport();
-    };
-
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.customerId('');
-        self.filter.projectId('');
-        self.filter.organizationId('');
-        self.filter.checklistId('');
-        self.filter.evaluatorId('');
-        self.filter.penaltyType('');
-        self.filter.startDate('');
-        self.filter.endDate('');
-        self.filter.page(1);
-        self.loadReport();
-    };
-
     // Pagination
     self.previousPage = function() {
-        if (self.filter.page() > 1) {
-            self.filter.page(self.filter.page() - 1);
+        if (self.page() > 1) {
+            self.page(self.page() - 1);
             self.loadReport();
         }
     };
 
     self.nextPage = function() {
-        if (self.filter.page() < self.totalPages()) {
-            self.filter.page(self.filter.page() + 1);
+        if (self.page() < self.totalPages()) {
+            self.page(self.page() + 1);
             self.loadReport();
         }
     };
@@ -279,15 +563,11 @@ function PenaltiesViewModel() {
     self.exportToExcel = function() {
         self.isExporting(true);
 
-        var params = [];
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.customerId()) params.push('customerId=' + self.filter.customerId());
-        if (self.filter.organizationId()) params.push('organizationId=' + self.filter.organizationId());
-        if (self.filter.checklistId()) params.push('checklistId=' + self.filter.checklistId());
-        if (self.filter.evaluatorId()) params.push('evaluatorId=' + self.filter.evaluatorId());
-        if (self.filter.penaltyType()) params.push('penaltyType=' + self.filter.penaltyType());
-        if (self.filter.startDate()) params.push('startDate=' + self.filter.startDate());
-        if (self.filter.endDate()) params.push('endDate=' + self.filter.endDate());
+        var params = self.buildQueryParams();
+        // Pagination parametrelerini kaldir
+        params = params.filter(function(p) {
+            return !p.startsWith('page=') && !p.startsWith('pageSize=');
+        });
 
         var url = '/api/reports/penalties/export' + (params.length > 0 ? '?' + params.join('&') : '');
 

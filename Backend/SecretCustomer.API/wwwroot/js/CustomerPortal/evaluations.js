@@ -246,6 +246,52 @@ function EvaluationsViewModel() {
         self.evaluationsDateTo('');
     };
 
+    // Date range helper
+    self.calculateDateRange = function(rangeType) {
+        var today = new Date();
+        var start, end;
+
+        if (rangeType === 'today') {
+            start = end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'yesterday') {
+            var yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = yesterday.toISOString().split('T')[0];
+        } else if (rangeType === 'thisWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var weekStart = new Date(today);
+            weekStart.setDate(diff);
+            start = weekStart.toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var thisWeekStart = new Date(today);
+            thisWeekStart.setDate(diff);
+            var lastWeekStart = new Date(thisWeekStart);
+            lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+            var lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+            start = lastWeekStart.toISOString().split('T')[0];
+            end = lastWeekEnd.toISOString().split('T')[0];
+        } else if (rangeType === 'thisMonth') {
+            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastMonth') {
+            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
+            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+        }
+
+        return { start: start, end: end };
+    };
+
+    self.setEvaluationsDateRange = function(rangeType) {
+        var range = self.calculateDateRange(rangeType);
+        self.evaluationsDateFrom(range.start);
+        self.evaluationsDateTo(range.end);
+    };
+
     // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
     self.expiredAssignments = ko.computed(function() {
         var assignments = self.allAssignments();
@@ -745,7 +791,7 @@ function EvaluationsViewModel() {
                     });
                 }
 
-                data.groups.forEach(function(section) {
+                data.penaltyGroups.forEach(function(section) {
                     section.questions.forEach(function(q) {
                         // isRequired bilgisini geç - zorunlu sorular varsayılan dahil, opsiyonel sorular varsayılan hariç
                         var answer = self.getAnswer(q.id, q.isRequired);
@@ -815,7 +861,7 @@ function EvaluationsViewModel() {
         var yellowCardWeight = 0;
         var redCardWeight = 0;
 
-        self.formData().groups.forEach(function(section) {
+        self.formData().penaltyGroups.forEach(function(section) {
             section.questions.forEach(function(q) {
                 var weight = q.weightPoints || q.points || 0;
 
@@ -904,7 +950,7 @@ function EvaluationsViewModel() {
         // Soruları map'e al (penaltyType için)
         var questionMap = {};
         if (self.formData()) {
-            self.formData().groups.forEach(function(section) {
+            self.formData().penaltyGroups.forEach(function(section) {
                 section.questions.forEach(function(q) {
                     questionMap[q.id] = q;
                 });
@@ -1120,7 +1166,7 @@ function EvaluationsViewModel() {
             // Cevapları hazırla (sorular + verilen cevaplar)
         var answersForSummary = [];
         if (self.formData()) {
-            self.formData().groups.forEach(function(section) {
+            self.formData().penaltyGroups.forEach(function(section) {
                 section.questions.forEach(function(q) {
                     var answer = self.answers[q.id];
                     if (!answer) return;

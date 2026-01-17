@@ -27,11 +27,11 @@ public class UsersApiController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] UserFilterDto filter)
     {
         try
         {
-            var users = await _userService.GetAllAsync();
+            var users = await _userService.GetListAsync(filter);
             return Ok(users);
         }
         catch (Exception ex)

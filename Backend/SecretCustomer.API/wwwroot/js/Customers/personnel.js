@@ -11,6 +11,130 @@ function PersonnelViewModel() {
     self.allPersonnel = ko.observableArray([]);
     self.searchText = ko.observable('');
 
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        fullName: ko.observable(''),
+        username: ko.observable(''),
+        email: ko.observable(''),
+        role: ko.observable(null),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        fullName: 'Ad Soyad',
+        username: 'Kullanıcı Adı',
+        email: 'E-posta',
+        role: 'Rol',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    self.roles = [
+        { id: '1', name: 'Yönetici' },
+        { id: '2', name: 'Süpervizör' },
+        { id: '3', name: 'Operatör' }
+    ];
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'fullName': return self.tempFilter.fullName().trim() !== '';
+            case 'username': return self.tempFilter.username().trim() !== '';
+            case 'email': return self.tempFilter.email().trim() !== '';
+            case 'role': return self.tempFilter.role() !== null;
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'fullName':
+                var fullName = self.tempFilter.fullName().trim();
+                if (!fullName) return;
+                filter.value = fullName;
+                filter.displayValue = fullName;
+                self.tempFilter.fullName('');
+                break;
+
+            case 'username':
+                var username = self.tempFilter.username().trim();
+                if (!username) return;
+                filter.value = username;
+                filter.displayValue = username;
+                self.tempFilter.username('');
+                break;
+
+            case 'email':
+                var email = self.tempFilter.email().trim();
+                if (!email) return;
+                filter.value = email;
+                filter.displayValue = email;
+                self.tempFilter.email('');
+                break;
+
+            case 'role':
+                var roleId = self.tempFilter.role();
+                if (!roleId) return;
+                var role = self.roles.find(function(r) { return r.id === roleId; });
+                filter.value = roleId;
+                filter.displayValue = role ? role.name : roleId;
+                self.tempFilter.role(null);
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.currentPage(1);
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.currentPage(1);
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.searchText('');
+        self.currentPage(1);
+    };
+
     // Pagination
     self.currentPage = ko.observable(1);
     self.pageSize = ko.observable(20);
@@ -31,7 +155,9 @@ function PersonnelViewModel() {
     self.filteredPersonnel = ko.computed(function() {
         var list = self.allPersonnel();
         var search = (self.searchText() || '').toLowerCase();
+        var filters = self.activeFilters();
 
+        // Global search filter
         if (search) {
             list = list.filter(function(p) {
                 return (p.firstName || '').toLowerCase().indexOf(search) >= 0 ||
@@ -39,6 +165,38 @@ function PersonnelViewModel() {
                        (p.fullName || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.username || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.email || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                list = list.filter(function(p) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'fullName':
+                                var fullName = (p.fullName || (p.firstName + ' ' + p.lastName) || '').toLowerCase();
+                                return fullName.indexOf(f.value.toLowerCase()) >= 0;
+                            case 'username':
+                                return (p.username || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'email':
+                                return (p.email || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'role':
+                                return String(p.role) === f.value;
+                            case 'isActive':
+                                return p.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
             });
         }
 

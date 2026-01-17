@@ -36,17 +36,23 @@ public class DealerService : IDealerService
                 (d.Phone != null && d.Phone.Contains(term)));
         }
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(d => d.CustomerId == filter.CustomerId.Value);
+        // Çoklu müşteri filtresi (OR mantığı)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(d => filter.CustomerIds.Contains(d.CustomerId));
 
         if (filter.IsActive.HasValue)
             query = query.Where(d => d.IsActive == filter.IsActive.Value);
 
-        if (filter.DealerTypeId.HasValue)
-            query = query.Where(d => d.DealerTypeId == filter.DealerTypeId.Value);
+        // Çoklu bayi tipi filtresi (OR mantığı)
+        if (filter.DealerTypeIds?.Any() == true)
+            query = query.Where(d => filter.DealerTypeIds.Contains(d.DealerTypeId));
 
-        if (!string.IsNullOrEmpty(filter.City))
-            query = query.Where(d => d.City == filter.City);
+        // Çoklu şehir filtresi (OR mantığı, partial match, case-insensitive)
+        if (filter.Cities?.Any() == true)
+        {
+            var citiesLower = filter.Cities.Select(c => c.ToLower()).ToList();
+            query = query.Where(d => d.City != null && citiesLower.Any(city => d.City.ToLower().Contains(city)));
+        }
 
         // Get total count
         var totalCount = await query.CountAsync();

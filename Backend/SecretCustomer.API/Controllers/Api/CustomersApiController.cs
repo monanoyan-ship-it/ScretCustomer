@@ -26,15 +26,15 @@ public class CustomersApiController : BaseApiController
     }
 
     /// <summary>
-    /// Get all customers - optimized with projection (no Include)
+    /// Get customers with server-side filtering, pagination and sorting
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetAll([FromQuery] CustomerFilterDto filter)
     {
         try
         {
-            var customers = await _customerService.GetListAsync(includeInactive);
-            return Ok(customers);
+            var result = await _customerService.GetFilteredListAsync(filter);
+            return Ok(result);
         }
         catch (Exception ex)
         {

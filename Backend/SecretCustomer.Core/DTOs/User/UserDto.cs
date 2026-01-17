@@ -75,3 +75,16 @@ public class UpdateUserDto
 
     public bool IsActive { get; set; }
 }
+
+/// <summary>
+/// Kullanıcı filtreleme
+/// </summary>
+public class UserFilterDto
+{
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? RoleIds { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
+    public bool? IsActive { get; set; }
+    public string? SearchTerm { get; set; }
+}

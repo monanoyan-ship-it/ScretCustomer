@@ -4,6 +4,68 @@
 }
 
 <div id="customer-supervisors-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people text-primary"></i> @Html.T("CustomerPortal.Supervisors.Title", "Supervizorler")</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> @Html.T("Common.Filters", "Filtreler")</h5>
+        </div>
+        <div class="card-body">
+            <!-- Active Filters (Chips) -->
+            <div class="mb-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9rem;">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $root.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+                    <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Filter -->
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.FilterType", "Filtre Tipi")</label>
+                    <select class="form-select" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.SelectFilterType", "Filtre tipi seçin...")</option>
+                        <option value="organization">@Html.T("Report.Organization", "Organizasyon")</option>
+                        <option value="searchText">@Html.T("Common.Search", "Arama")</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Filter Value -->
+                <!-- ko if: selectedFilterType() === 'organization' -->
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Report.Organization", "Organizasyon")</label>
+                    <select class="form-select" data-bind="value: tempFilter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectOrganization", "Organizasyon Seçin")'"></select>
+                </div>
+                <!-- /ko -->
+
+                <!-- ko if: selectedFilterType() === 'searchText' -->
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Common.SearchText", "Arama Metni")</label>
+                    <input type="text" class="form-control" data-bind="value: tempFilter.searchText, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Common.SearchPlaceholder", "Ad veya unvan ara...")">
+                </div>
+                <!-- /ko -->
+
+                <div class="col-md-2" data-bind="visible: selectedFilterType()">
+                    <button class="btn btn-primary w-100" data-bind="click: addFilter, enable: canAddFilter">
+                        <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-success" role="status">

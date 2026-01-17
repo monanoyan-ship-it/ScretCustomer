@@ -86,8 +86,9 @@ public class InternalAssignmentsApiController : ControllerBase
     {
         try
         {
-            // CustomerPersonnel güvenlik kontrolü
-            if (!ValidateCustomerAccess(filter.CustomerId))
+            // CustomerPersonnel güvenlik kontrolü - CustomerIds listesinin ilk elemanını kontrol et
+            var requestedCustomerId = filter.CustomerIds?.FirstOrDefault();
+            if (!ValidateCustomerAccess(requestedCustomerId))
             {
                 return Forbid();
             }

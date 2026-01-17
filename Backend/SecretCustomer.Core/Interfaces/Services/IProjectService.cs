@@ -19,6 +19,11 @@ public interface IProjectService
         DateTime? startDate = null,
         DateTime? endDate = null,
         bool includeInactive = false);
+
+    /// <summary>
+    /// Liste görünümü için optimize edilmiş method - Filter DTO ile (çoklu filtre destekli)
+    /// </summary>
+    Task<IEnumerable<ProjectListDto>> GetListAsync(ProjectFilterDto filter);
     Task<IEnumerable<ProjectSummaryDto>> GetSummariesAsync();
     Task<ProjectDto> CreateAsync(CreateProjectDto dto);
     Task<ProjectDto> UpdateAsync(int id, CreateProjectDto dto);

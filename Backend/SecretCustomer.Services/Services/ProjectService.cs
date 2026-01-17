@@ -268,6 +268,134 @@ public class ProjectService : IProjectService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Liste görünümü için optimize edilmiş method - Filter DTO ile (çoklu filtre destekli)
+    /// </summary>
+    public async Task<IEnumerable<ProjectListDto>> GetListAsync(ProjectFilterDto filter)
+    {
+        var query = _context.Projects
+            .Where(p => !p.IsDeleted)
+            .AsQueryable();
+
+        if (!filter.IncludeInactive)
+            query = query.Where(p => p.IsActive);
+
+        // Arama
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            var search = filter.SearchText.ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(search) ||
+                (p.Code != null && p.Code.ToLower().Contains(search)) ||
+                (p.Description != null && p.Description.ToLower().Contains(search)));
+        }
+
+        // Çoklu CustomerIds filtresi
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(p => p.CustomerId.HasValue && filter.CustomerIds.Contains(p.CustomerId.Value));
+
+        // Çoklu ProjectTypes filtresi
+        if (filter.ProjectTypes?.Any() == true)
+        {
+            var typeIds = filter.ProjectTypes
+                .Select(t => ProjectTypes.GetBySystemName(t)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (typeIds.Any())
+                query = query.Where(p => typeIds.Contains(p.ProjectTypeId));
+        }
+
+        // Çoklu Statuses filtresi
+        if (filter.Statuses?.Any() == true)
+        {
+            var statusIds = filter.Statuses
+                .Select(s => ProjectStatuses.GetBySystemName(s)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(p => statusIds.Contains(p.StatusId));
+        }
+
+        // Çoklu ProjectManagerIds filtresi
+        if (filter.ProjectManagerIds?.Any() == true)
+            query = query.Where(p => p.ProjectManagerId.HasValue && filter.ProjectManagerIds.Contains(p.ProjectManagerId.Value));
+
+        // Tarih filtreleri
+        if (filter.StartDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(p => p.StartDate >= start || p.EndDate >= start);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(p => p.StartDate <= end || p.EndDate <= end);
+        }
+
+        return await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new ProjectListDto
+            {
+                Id = p.Id,
+                Code = p.Code,
+                Name = p.Name,
+                Description = p.Description,
+                ChecklistId = p.ChecklistId,
+                ChecklistName = p.Checklist != null ? p.Checklist.Name : null,
+                ProjectType = ProjectTypes.GetById(p.ProjectTypeId) != null ? ProjectTypes.GetById(p.ProjectTypeId)!.SystemName : "",
+                Status = ProjectStatuses.GetById(p.StatusId) != null ? ProjectStatuses.GetById(p.StatusId)!.SystemName : "",
+                AssignmentType = AssignmentTypes.GetById(p.AssignmentTypeId) != null ? AssignmentTypes.GetById(p.AssignmentTypeId)!.SystemName : "",
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                IsActive = p.IsActive,
+                CreatedAt = p.CreatedAt,
+                TotalAssignments = p.Assignments.Count(a => !a.IsDeleted),
+                CompletedAssignments = p.Assignments.Count(a => !a.IsDeleted && a.IsCompleted),
+                CompletionPercentage = p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey
+                    ? (
+                        (p.SurveyInvitations.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) +
+                         p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent)) > 0
+                        ? Math.Round(
+                            (decimal)(p.SurveyInvitations.Count(si => !si.IsDeleted && si.IsCompleted) +
+                                     p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.IsCompleted)) /
+                            (p.SurveyInvitations.Count(si => !si.IsDeleted && si.StatusId == SurveyInvitationStatuses.Ids.Sent) +
+                             p.SurveyExternalInvitations.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent)) * 100, 1)
+                        : -1
+                      )
+                    : -1,
+                CustomerId = p.CustomerId,
+                CustomerName = p.Customer != null ? p.Customer.CompanyName : null,
+                CustomerCode = p.Customer != null ? p.Customer.Code : null,
+                OrganizationId = p.OrganizationId,
+                OrganizationName = p.Organization != null ? p.Organization.Name : null,
+                ProjectManagerId = p.ProjectManagerId,
+                ProjectManagerName = p.ProjectManager != null ? p.ProjectManager.FirstName + " " + p.ProjectManager.LastName : null,
+                TargetCount = p.TargetCount,
+                AverageScore = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                    .Any()
+                    ? Math.Round(p.Assignments
+                        .Where(a => !a.IsDeleted)
+                        .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                        .Average(e => e.ScorePercentage!.Value), 1)
+                    : 0,
+                TotalYellowCards = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                    .Sum(e => e.YellowCardCount),
+                TotalRedCards = p.Assignments
+                    .Where(a => !a.IsDeleted)
+                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                    .Sum(e => e.RedCardCount),
+                TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
+            })
+            .ToListAsync();
+    }
+
     public async Task<ProjectDto> CreateAsync(CreateProjectDto dto)
     {
         // Validate checklist exists

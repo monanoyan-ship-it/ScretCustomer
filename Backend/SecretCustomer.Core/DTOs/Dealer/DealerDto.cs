@@ -129,10 +129,13 @@ public class UpdateDealerDto
 public class DealerFilterDto
 {
     public string? SearchTerm { get; set; }
-    public int? CustomerId { get; set; }
     public bool? IsActive { get; set; }
-    public int? DealerTypeId { get; set; }
-    public string? City { get; set; }
+
+    // Çoklu parametreler
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? DealerTypeIds { get; set; }
+    public List<string>? Cities { get; set; }
+
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
 }

@@ -52,34 +52,52 @@ public class TrainingsApiController : BaseApiController
             .Include(t => t.Participants)
             .AsQueryable();
 
-        if (filter.ProjectId.HasValue)
-            query = query.Where(t => t.ProjectId == filter.ProjectId.Value);
+        // Çoklu ProjectIds filtresi
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(t => t.ProjectId.HasValue && filter.ProjectIds.Contains(t.ProjectId.Value));
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(t => t.CustomerId == filter.CustomerId.Value);
+        // Çoklu CustomerIds filtresi
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(t => t.CustomerId.HasValue && filter.CustomerIds.Contains(t.CustomerId.Value));
 
-        if (filter.TrainerId.HasValue)
-            query = query.Where(t => t.TrainerId == filter.TrainerId.Value);
+        // Çoklu TrainerIds filtresi
+        if (filter.TrainerIds?.Any() == true)
+            query = query.Where(t => t.TrainerId.HasValue && filter.TrainerIds.Contains(t.TrainerId.Value));
 
-        if (!string.IsNullOrEmpty(filter.TrainingType))
+        // Çoklu TrainingTypes filtresi
+        if (filter.TrainingTypes?.Any() == true)
         {
-            var trainingTypeItem = TrainingTypes.GetBySystemName(filter.TrainingType);
-            if (trainingTypeItem != null)
-                query = query.Where(t => t.TrainingTypeId == trainingTypeItem.Id);
+            var typeIds = filter.TrainingTypes
+                .Select(t => TrainingTypes.GetBySystemName(t)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (typeIds.Any())
+                query = query.Where(t => typeIds.Contains(t.TrainingTypeId));
         }
 
-        if (!string.IsNullOrEmpty(filter.Status))
+        // Çoklu Statuses filtresi
+        if (filter.Statuses?.Any() == true)
         {
-            var statusItem = TrainingStatuses.GetBySystemName(filter.Status);
-            if (statusItem != null)
-                query = query.Where(t => t.StatusId == statusItem.Id);
+            var statusIds = filter.Statuses
+                .Select(s => TrainingStatuses.GetBySystemName(s)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(t => statusIds.Contains(t.StatusId));
         }
 
-        if (!string.IsNullOrEmpty(filter.Category))
+        // Çoklu Categories filtresi
+        if (filter.Categories?.Any() == true)
         {
-            var categoryItem = TrainingCategories.GetBySystemName(filter.Category);
-            if (categoryItem != null)
-                query = query.Where(t => t.CategoryId == categoryItem.Id);
+            var categoryIds = filter.Categories
+                .Select(c => TrainingCategories.GetBySystemName(c)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (categoryIds.Any())
+                query = query.Where(t => categoryIds.Contains(t.CategoryId));
         }
 
         if (filter.StartDate.HasValue)

@@ -5,6 +5,82 @@ function CustomerSupervisorsViewModel() {
     self.isLoading = ko.observable(true);
     self.groups = ko.observableArray([]);
 
+    // Filter options
+    self.organizations = ko.observableArray([]);
+
+    // Filter UI - Chip-based filtre sistemi
+    self.selectedFilterType = ko.observable('');
+    self.tempFilter = {
+        organizationId: ko.observable(''),
+        searchText: ko.observable('')
+    };
+
+    // Active filters (chip-based)
+    self.activeFilters = ko.observableArray([]);
+
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        if (type === 'organization') return self.tempFilter.organizationId();
+        if (type === 'searchText') return self.tempFilter.searchText();
+        return false;
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+        var label = '';
+        var displayValue = '';
+
+        if (type === 'organization') {
+            filter.value = self.tempFilter.organizationId();
+            var org = self.organizations().find(function(o) { return o.id == filter.value; });
+            label = 'Organizasyon';
+            displayValue = org ? org.name : filter.value;
+        } else if (type === 'searchText') {
+            filter.value = self.tempFilter.searchText();
+            label = 'Arama';
+            displayValue = filter.value;
+        }
+
+        // Tüm filtre tipleri çoklu değer destekler
+        self.activeFilters.push({
+            type: type,
+            value: filter.value,
+            label: label,
+            displayValue: displayValue
+        });
+
+        // Reset temp
+        self.resetTempFilter();
+        self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
+    };
+
+    self.resetTempFilter = function() {
+        self.tempFilter.organizationId('');
+        self.tempFilter.searchText('');
+    };
+
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
+    };
+
+    self.clearFilters = function() {
+        self.activeFilters.removeAll();
+        self.search(); // Tüm filtreler temizlenince otomatik ara
+    };
+
+    // Search
+    self.search = function() {
+        self.loadSupervisors();
+    };
+
     // Modal state
     self.isModalOpen = ko.observable(false);
     self.isChartLoading = ko.observable(false);
@@ -44,10 +120,55 @@ function CustomerSupervisorsViewModel() {
         return 'text-muted';
     };
 
+    // Load filter options
+    self.loadFilterOptions = function() {
+        customerApiFetch('/api/customer/portal/organizations')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var orgs = [];
+                (data || []).forEach(function(group) {
+                    (group.organizations || []).forEach(function(org) {
+                        orgs.push(org);
+                    });
+                });
+                self.organizations(orgs);
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+            });
+    };
+
+    // Build query params from active filters
+    self.buildQueryParams = function() {
+        var params = [];
+
+        // Çoklu değer desteği için array'ler
+        var organizationIds = [];
+        var searchTexts = [];
+
+        self.activeFilters().forEach(function(f) {
+            if (f.type === 'organization') {
+                organizationIds.push(f.value);
+            } else if (f.type === 'searchText') {
+                searchTexts.push(f.value);
+            }
+        });
+
+        // Çoklu değerleri query string'e ekle
+        organizationIds.forEach(function(id) { params.push('organizationId=' + id); });
+        if (searchTexts.length > 0) {
+            params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
+        }
+
+        return params.length > 0 ? '?' + params.join('&') : '';
+    };
+
     self.loadSupervisors = function() {
         self.isLoading(true);
 
-        customerApiFetch('/api/customer/portal/supervisors')
+        var url = '/api/customer/portal/supervisors' + self.buildQueryParams();
+
+        customerApiFetch(url)
             .then(function(response) {
                 if (!response.ok) throw new Error('Supervizorler yuklenemedi');
                 return response.json();
@@ -186,6 +307,7 @@ function CustomerSupervisorsViewModel() {
     };
 
     // Initialize
+    self.loadFilterOptions();
     self.loadSupervisors();
 }
 

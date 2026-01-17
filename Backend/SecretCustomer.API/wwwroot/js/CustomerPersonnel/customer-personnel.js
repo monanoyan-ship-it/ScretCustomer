@@ -14,6 +14,166 @@ function CustomerPersonnelViewModel(customerId) {
     self.modalErrorMessage = ko.observable('');
     self.showInactive = ko.observable(false);
 
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        fullName: ko.observable(''),
+        email: ko.observable(''),
+        role: ko.observable(null),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        fullName: 'Ad Soyad',
+        email: 'E-posta',
+        role: 'Rol',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'fullName': return self.tempFilter.fullName().trim() !== '';
+            case 'email': return self.tempFilter.email().trim() !== '';
+            case 'role': return self.tempFilter.role() !== null;
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'fullName':
+                var fullName = self.tempFilter.fullName().trim();
+                if (!fullName) return;
+                filter.value = fullName;
+                filter.displayValue = fullName;
+                self.tempFilter.fullName('');
+                break;
+
+            case 'email':
+                var email = self.tempFilter.email().trim();
+                if (!email) return;
+                filter.value = email;
+                filter.displayValue = email;
+                self.tempFilter.email('');
+                break;
+
+            case 'role':
+                var roleId = self.tempFilter.role();
+                if (!roleId) return;
+                var role = self.personnelRoles().find(function(r) { return r.id == roleId; });
+                filter.value = roleId;
+                filter.displayValue = role ? role.name : roleId;
+                self.tempFilter.role(null);
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.loadPersonnel();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.loadPersonnel();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.showInactive(false);
+        self.loadPersonnel();
+    };
+
+    // Build filter params for API (çoklu değer desteği)
+    self.buildFilterParams = function() {
+        var fullNames = [];
+        var emails = [];
+        var roleIds = [];
+        var isActiveFilter = null;
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'fullName':
+                    fullNames.push(filter.value);
+                    break;
+                case 'email':
+                    emails.push(filter.value);
+                    break;
+                case 'role':
+                    roleIds.push(filter.value);
+                    break;
+                case 'isActive':
+                    isActiveFilter = filter.value;
+                    break;
+            }
+        });
+
+        var params = new URLSearchParams();
+
+        // Customer ID (array olarak gönderilir)
+        if (customerId) {
+            params.append('customerIds', customerId);
+        }
+
+        // Çoklu değerler (array olarak gönderilir)
+        fullNames.forEach(function(name) {
+            params.append('fullNames', name);
+        });
+        emails.forEach(function(email) {
+            params.append('emails', email);
+        });
+        roleIds.forEach(function(roleId) {
+            params.append('roleIds', roleId);
+        });
+
+        // Durum filtresi (tekil)
+        if (isActiveFilter !== null) {
+            params.append('isActive', isActiveFilter);
+        }
+
+        // Include inactive toggle
+        params.append('includeInactive', self.showInactive());
+
+        return params.toString();
+    };
+
     // Modal
     self.isModalOpen = ko.observable(false);
     self.editingPersonnel = ko.observable(null);
@@ -28,13 +188,14 @@ function CustomerPersonnelViewModel(customerId) {
     // Personnel roles (loaded from EnumsService)
     self.personnelRoles = ko.observableArray([]);
 
-    // Computed
+    // Server-side filtered personnel (artık filtreleme server'da yapılıyor)
+    // personnel zaten server'dan filtrelenmiş veri geliyor
     self.filteredPersonnel = ko.computed(function() {
-        if (self.showInactive()) {
-            return self.personnel();
-        }
-        return self.personnel().filter(function(p) { return p.isActive; });
+        return self.personnel();
     });
+
+    // Total count from server
+    self.totalCount = ko.observable(0);
 
     self.getRoleName = function(role) {
         var roleObj = self.personnelRoles().find(function(r) { return r.id === role; });
@@ -66,18 +227,18 @@ function CustomerPersonnelViewModel(customerId) {
             });
     };
 
-    // Load personnel
+    // Load personnel (server-side filtering)
     self.loadPersonnel = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        var promise = customerId 
-            ? customerApiService.getPersonnelByCustomerId(customerId, self.showInactive())
-            : customerApiService.getAllPersonnel(self.showInactive());
+        var queryString = self.buildFilterParams();
 
-        promise
-            .then(function(data) {
-                self.personnel(data || []);
+        ApiService.get('/customer-personnel?' + queryString)
+            .then(function(result) {
+                // Server'dan PagedPersonnelResult formatında veri geliyor
+                self.personnel(result.items || []);
+                self.totalCount(result.totalCount || 0);
             })
             .catch(function(error) {
                 console.error('Error loading personnel:', error);

@@ -19,38 +19,100 @@
         </div>
     </div>
 
-    <!-- Filters -->
+    <!-- Chip-based Filters -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-info text-white">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-funnel"></i> @Html.T("Common.Filters", "Filtreler")</h5>
+            <button class="btn btn-sm btn-outline-light" data-bind="click: clearFilters, visible: activeFilters().length > 0">
+                <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
+            </button>
         </div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tum Projeler")'"></select>
+            <!-- Active Filters (Chips) -->
+            <div class="mb-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-info text-white d-flex align-items-center gap-1 py-2 px-3" style="font-size: 0.9rem;">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.TextSearch", "Metin Arama")</label>
-                    <input type="text" class="form-control" placeholder="@Html.T("Report.SearchInSuggestion", "Oneri metninde ara...")" data-bind="value: filter.searchText, valueUpdate: 'afterkeydown'">
-                </div>
+            </div>
+
+            <!-- Filter Builder -->
+            <div class="row g-2 align-items-end">
+                <!-- Filter Type Selector -->
                 <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.StartDate", "Baslangic")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.startDate">
+                    <label class="form-label mb-1">@Html.T("Common.FilterType", "Filtre Tipi")</label>
+                    <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.SelectFilter", "Filtre Seç...")</option>
+                        <option value="project">@Html.T("Report.Project", "Proje")</option>
+                        <option value="searchText">@Html.T("Report.TextSearch", "Metin Arama")</option>
+                        <option value="dateRange">@Html.T("Report.DateRange", "Tarih Aralığı")</option>
+                    </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.EndDate", "Bitis")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.endDate">
+
+                <!-- Dynamic Filter Value Input -->
+                <!-- Project -->
+                <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
+                    <label class="form-label mb-1">@Html.T("Report.Project", "Proje")</label>
+                    <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                 </div>
-                <div class="col-md-2 d-flex justify-content-end align-items-end">
-                    <div class="btn-group">
-                        <button class="btn btn-primary" data-bind="click: applyFilters">
-                            <i class="bi bi-search"></i> @Html.T("Common.Search", "Ara")
-                        </button>
-                        <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
-                            <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
-                        </button>
+
+                <!-- Search Text -->
+                <div class="col-md-3" data-bind="visible: selectedFilterType() === 'searchText'">
+                    <label class="form-label mb-1">@Html.T("Report.TextSearch", "Metin Arama")</label>
+                    <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Report.SearchInSuggestion", "Öneri metninde ara...")" data-bind="value: tempFilter.searchText">
+                </div>
+
+                <!-- Date Range -->
+                <div class="col-md-5" data-bind="visible: selectedFilterType() === 'dateRange'">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <label class="form-label mb-1">@Html.T("Report.StartDate", "Başlangıç")</label>
+                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label mb-1">@Html.T("Report.EndDate", "Bitiş")</label>
+                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-calendar3"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('today'); }">@Html.T("Common.Today", "Bugün")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</a></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Add Filter Button -->
+                <div class="col-md-2" data-bind="visible: selectedFilterType()">
+                    <button class="btn btn-sm btn-info w-100" data-bind="click: addFilter, enable: canAddFilter">
+                        <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Date Filters -->
+            <div class="mt-3 pt-2 border-top">
+                <small class="text-muted me-2">@Html.T("Common.QuickFilters", "Hızlı Filtreler"):</small>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('today'); }">@Html.T("Common.Today", "Bugün")</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setQuickDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
                 </div>
             </div>
         </div>
@@ -332,7 +394,7 @@
                                             <th>@Html.T("Report.Suggestion", "Öneri")</th>
                                         </tr>
                                     </thead>
-                                    <tbody data-bind="foreach: detailsData().answers">
+                                    <tbody data-bind="foreach: detailsData() ? detailsData().answers : []">
                                         <tr data-bind="css: { 'table-warning': isPenaltyApplied }">
                                             <td>
                                                 <span data-bind="text: questionText"></span>
@@ -364,7 +426,7 @@
             </div>
         </div>
     </div>
-    <div class="modal-backdrop fade" data-bind="css: { show: isDetailsModalOpen }, style: { display: isDetailsModalOpen() ? 'block' : 'none' }"></div>
+    <div class="modal-backdrop fade" style="display: none;" data-bind="css: { show: isDetailsModalOpen }, style: { display: isDetailsModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

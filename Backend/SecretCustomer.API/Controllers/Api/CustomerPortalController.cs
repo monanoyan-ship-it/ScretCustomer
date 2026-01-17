@@ -471,7 +471,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Soru grupları bazlı aylık trend (son 12 ay)
     /// </summary>
     [HttpGet("dashboard/question-group-trend")]
-    public async Task<IActionResult> GetQuestionGroupTrend([FromQuery] int? projectId = null)
+    public async Task<IActionResult> GetQuestionGroupTrend([FromQuery] List<int>? projectIds = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -504,9 +504,9 @@ public class CustomerPortalApiController : ControllerBase
                         a.EarnedPoints.HasValue &&
                         a.Question.WeightPoints > 0);
 
-        if (projectId.HasValue)
+        if (projectIds?.Any() == true)
         {
-            answersQuery = answersQuery.Where(a => a.Evaluation.Assignment!.ProjectId == projectId.Value);
+            answersQuery = answersQuery.Where(a => projectIds.Contains(a.Evaluation.Assignment!.ProjectId));
         }
 
         if (allowedPersonnelIds != null)
@@ -572,7 +572,7 @@ public class CustomerPortalApiController : ControllerBase
         return Ok(new
         {
             projects,
-            selectedProjectId = projectId,
+            selectedProjectIds = projectIds,
             monthLabels,
             groupTrends
         });
@@ -583,7 +583,7 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("dashboard/question-trend")]
     public async Task<IActionResult> GetQuestionTrend(
-        [FromQuery] int? projectId = null,
+        [FromQuery] List<int>? projectIds = null,
         [FromQuery] string? groupName = null)
     {
         var customerId = GetCustomerId();
@@ -609,9 +609,9 @@ public class CustomerPortalApiController : ControllerBase
                         a.Question.WeightPoints > 0 &&
                         a.Question.ScoringTypeId == ScoringTypes.Ids.Scored); // Sadece puanlı sorular
 
-        if (projectId.HasValue)
+        if (projectIds?.Any() == true)
         {
-            answersQuery = answersQuery.Where(a => a.Evaluation.Assignment!.ProjectId == projectId.Value);
+            answersQuery = answersQuery.Where(a => projectIds.Contains(a.Evaluation.Assignment!.ProjectId));
         }
 
         if (!string.IsNullOrEmpty(groupName))
@@ -1347,7 +1347,7 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("organizations/monthly-trend")]
     public async Task<IActionResult> GetOrganizationsMonthlyTrend(
-        [FromQuery] int? organizationId = null,
+        [FromQuery] List<int>? organizationIds = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
@@ -1380,9 +1380,9 @@ public class CustomerPortalApiController : ControllerBase
         var organizationsQuery = _context.CustomerOrganizations
             .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted);
 
-        if (organizationId.HasValue)
+        if (organizationIds?.Any() == true)
         {
-            organizationsQuery = organizationsQuery.Where(o => o.Id == organizationId.Value);
+            organizationsQuery = organizationsQuery.Where(o => organizationIds.Contains(o.Id));
         }
 
         var organizations = await organizationsQuery
@@ -1401,9 +1401,9 @@ public class CustomerPortalApiController : ControllerBase
                         e.CreatedAt >= start &&
                         e.CreatedAt <= end);
 
-        if (organizationId.HasValue)
+        if (organizationIds?.Any() == true)
         {
-            evaluationsQuery = evaluationsQuery.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+            evaluationsQuery = evaluationsQuery.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
         }
 
         var evaluations = await evaluationsQuery.ToListAsync();
@@ -1518,16 +1518,27 @@ public class CustomerPortalApiController : ControllerBase
     /// Değerlendirme sayısı ve ortalaması: Süpervizörün takımındaki personelin ALDIĞI değerlendirmeler
     /// </summary>
     [HttpGet("supervisors")]
-    public async Task<IActionResult> GetSupervisors()
+    public async Task<IActionResult> GetSupervisors(
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] string? searchText = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
         // Süpervizör olan personelleri bul (CustomerPersonnelOrganization'da SupervisorId olarak geçenler)
-        var supervisorIds = await _context.CustomerPersonnelOrganizations
+        var supervisorIdsQuery = _context.CustomerPersonnelOrganizations
             .Where(cpo => cpo.SupervisorId.HasValue &&
-                          cpo.CustomerOrganization.CustomerId == customerId)
+                          cpo.CustomerOrganization.CustomerId == customerId);
+
+        // Organizasyon filtresi
+        if (organizationIds?.Any() == true)
+        {
+            supervisorIdsQuery = supervisorIdsQuery.Where(cpo =>
+                organizationIds.Contains(cpo.CustomerOrganizationId));
+        }
+
+        var supervisorIds = await supervisorIdsQuery
             .Select(cpo => cpo.SupervisorId!.Value)
             .Distinct()
             .ToListAsync();
@@ -1545,8 +1556,19 @@ public class CustomerPortalApiController : ControllerBase
 
         var supervisorTeamDict = supervisorTeams.ToDictionary(x => x.SupervisorId, x => x.TeamMemberIds);
 
-        var supervisors = await _context.CustomerPersonnel
-            .Where(cp => supervisorIds.Contains(cp.Id) && cp.IsActive && !cp.IsDeleted)
+        var supervisorsQuery = _context.CustomerPersonnel
+            .Where(cp => supervisorIds.Contains(cp.Id) && cp.IsActive && !cp.IsDeleted);
+
+        // Metin arama filtresi
+        if (!string.IsNullOrEmpty(searchText))
+        {
+            var searchLower = searchText.ToLower();
+            supervisorsQuery = supervisorsQuery.Where(cp =>
+                (cp.FirstName + " " + cp.LastName).ToLower().Contains(searchLower) ||
+                (cp.Title != null && cp.Title.ToLower().Contains(searchLower)));
+        }
+
+        var supervisors = await supervisorsQuery
             .OrderBy(cp => cp.FirstName).ThenBy(cp => cp.LastName)
             .Select(cp => new
             {
@@ -1682,11 +1704,11 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
-        [FromQuery] int? projectId = null,
-        [FromQuery] string? evaluatorName = null,
-        [FromQuery] string? personnelName = null,
-        [FromQuery] int? organizationId = null,
-        [FromQuery] string? callId = null)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<string>? evaluatorNames = null,
+        [FromQuery] List<string>? personnelNames = null,
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] List<string>? callIds = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1715,39 +1737,40 @@ public class CustomerPortalApiController : ControllerBase
         }
 
         // Project filter
-        if (projectId.HasValue)
+        if (projectIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
         }
 
         // Evaluator name filter
-        if (!string.IsNullOrWhiteSpace(evaluatorName))
+        if (evaluatorNames?.Any() == true)
         {
-            var evalLower = evaluatorName.ToLower();
+            var lowerNames = evaluatorNames.Select(n => n.ToLower()).ToList();
             query = query.Where(e => e.EvaluatorCustomerPersonnel != null &&
-                (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(evalLower));
+                lowerNames.Any(n => (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(n)));
         }
 
         // Personnel name filter
-        if (!string.IsNullOrWhiteSpace(personnelName))
+        if (personnelNames?.Any() == true)
         {
-            var persLower = personnelName.ToLower();
+            var lowerNames = personnelNames.Select(n => n.ToLower()).ToList();
             query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(persLower)) ||
-                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(persLower)));
+                lowerNames.Any(n =>
+                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(n)) ||
+                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(n))));
         }
 
         // Organization filter
-        if (organizationId.HasValue)
+        if (organizationIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
         }
 
         // CallId filter
-        if (!string.IsNullOrWhiteSpace(callId))
+        if (callIds?.Any() == true)
         {
-            var callIdLower = callId.ToLower();
-            query = query.Where(e => e.CallId != null && e.CallId.ToLower().Contains(callIdLower));
+            var lowerCallIds = callIds.Select(c => c.ToLower()).ToList();
+            query = query.Where(e => e.CallId != null && lowerCallIds.Any(c => e.CallId.ToLower().Contains(c)));
         }
 
         // General search filter (legacy support)
@@ -1904,10 +1927,12 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
-        [FromQuery] int? projectId = null,
-        [FromQuery] string? personnelName = null,
-        [FromQuery] int? organizationId = null,
-        [FromQuery] string? callId = null)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<string>? personnelNames = null,
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] List<string>? callIds = null,
+        [FromQuery] decimal? minScore = null,
+        [FromQuery] decimal? maxScore = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1936,31 +1961,42 @@ public class CustomerPortalApiController : ControllerBase
         }
 
         // Project filter
-        if (projectId.HasValue)
+        if (projectIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
         }
 
         // Personnel name filter
-        if (!string.IsNullOrWhiteSpace(personnelName))
+        if (personnelNames?.Any() == true)
         {
-            var persLower = personnelName.ToLower();
+            var lowerNames = personnelNames.Select(n => n.ToLower()).ToList();
             query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(persLower)) ||
-                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(persLower)));
+                lowerNames.Any(n =>
+                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(n)) ||
+                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(n))));
         }
 
         // Organization filter
-        if (organizationId.HasValue)
+        if (organizationIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedOrganizationId == organizationId.Value);
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
         }
 
         // CallId filter
-        if (!string.IsNullOrWhiteSpace(callId))
+        if (callIds?.Any() == true)
         {
-            var callIdLower = callId.ToLower();
-            query = query.Where(e => e.CallId != null && e.CallId.ToLower().Contains(callIdLower));
+            var lowerCallIds = callIds.Select(c => c.ToLower()).ToList();
+            query = query.Where(e => e.CallId != null && lowerCallIds.Any(c => e.CallId.ToLower().Contains(c)));
+        }
+
+        // Score range filter
+        if (minScore.HasValue)
+        {
+            query = query.Where(e => e.ScorePercentage.HasValue && e.ScorePercentage.Value >= minScore.Value);
+        }
+        if (maxScore.HasValue)
+        {
+            query = query.Where(e => e.ScorePercentage.HasValue && e.ScorePercentage.Value <= maxScore.Value);
         }
 
         // General search filter (legacy support)
@@ -2124,7 +2160,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Müşteri sadece kendi projesinin raporunu görebilir
-            filter.ProjectCustomerId = customerId.Value;
+            filter.ProjectCustomerIds = new List<int> { customerId.Value };
 
             var result = await _reportService.ExportQuestionGroupAverageReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2149,7 +2185,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Müşteri sadece kendi projesinin raporunu görebilir
-            filter.ProjectCustomerId = customerId.Value;
+            filter.ProjectCustomerIds = new List<int> { customerId.Value };
 
             var result = await _reportService.ExportCustomerEvaluationReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2166,10 +2202,10 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/penalties")]
     public async Task<IActionResult> GetPenaltiesReport(
-        [FromQuery] int? projectId,
-        [FromQuery] int? organizationId,
-        [FromQuery] int? checklistId,
-        [FromQuery] string? penaltyType,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<string>? penaltyTypes,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int page = 1,
@@ -2183,12 +2219,11 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new PenaltyFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value, // Otomatik müşteri filtresi
-                OrganizationId = organizationId,
-                ChecklistId = checklistId,
-                EvaluatorId = null, // Müşteri değerlendirici filtreleyemez
-                PenaltyType = penaltyType,
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value }, // Otomatik müşteri filtresi
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                PenaltyTypes = penaltyTypes,
                 StartDate = startDate,
                 EndDate = endDate,
                 Page = page,
@@ -2217,10 +2252,10 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/penalties/export")]
     public async Task<IActionResult> ExportPenaltiesToExcel(
-        [FromQuery] int? projectId,
-        [FromQuery] int? organizationId,
-        [FromQuery] int? checklistId,
-        [FromQuery] string? penaltyType,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<string>? penaltyTypes,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -2232,12 +2267,11 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new PenaltyFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value,
-                OrganizationId = organizationId,
-                ChecklistId = checklistId,
-                EvaluatorId = null,
-                PenaltyType = penaltyType,
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value },
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                PenaltyTypes = penaltyTypes,
                 StartDate = startDate,
                 EndDate = endDate,
                 Page = 1,
@@ -2259,8 +2293,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/suggestions")]
     public async Task<IActionResult> GetSuggestionsReport(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? checklistIds,
         [FromQuery] string? searchText,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
@@ -2275,10 +2309,9 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value, // Otomatik müşteri filtresi
-                ChecklistId = checklistId,
-                EvaluatorId = null, // Müşteri değerlendirici filtreleyemez
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value }, // Otomatik müşteri filtresi
+                ChecklistIds = checklistIds,
                 SearchText = searchText,
                 StartDate = startDate,
                 EndDate = endDate,
@@ -2311,8 +2344,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/suggestions/top-questions")]
     public async Task<IActionResult> GetTopSuggestedQuestions(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? checklistIds,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 10)
@@ -2325,9 +2358,9 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value,
-                ChecklistId = checklistId,
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value },
+                ChecklistIds = checklistIds,
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -2347,8 +2380,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/suggestions/top-questions/export")]
     public async Task<IActionResult> ExportTopSuggestedQuestionsToExcel(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? checklistIds,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 100)
@@ -2361,9 +2394,9 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value,
-                ChecklistId = checklistId,
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value },
+                ChecklistIds = checklistIds,
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -2420,8 +2453,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/suggestions/export")]
     public async Task<IActionResult> ExportSuggestionsToExcel(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? checklistIds,
         [FromQuery] string? searchText,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
@@ -2434,10 +2467,9 @@ public class CustomerPortalApiController : ControllerBase
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId.Value,
-                ChecklistId = checklistId,
-                EvaluatorId = null,
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value },
+                ChecklistIds = checklistIds,
                 SearchText = searchText,
                 StartDate = startDate,
                 EndDate = endDate,
@@ -2459,7 +2491,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Temsilci Karnesi - Personel Listesi (CustomerPortal)
     /// </summary>
     [HttpGet("reports/personnel-list")]
-    public async Task<IActionResult> GetPersonnelList([FromQuery] int? organizationId)
+    public async Task<IActionResult> GetPersonnelList([FromQuery] List<int>? organizationIds = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2467,6 +2499,8 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Geriye uyumluluk: tekil organizationId parametresi için array'in ilk elemanını kullan
+            var organizationId = organizationIds?.FirstOrDefault();
             var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId.Value, organizationId);
             return Ok(personnel);
         }
@@ -2496,8 +2530,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 CustomerId = customerId.Value, // Otomatik müşteri filtresi
-                StartDate = startDate,
-                EndDate = endDate
+                StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
+                EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
             };
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
@@ -2516,7 +2550,7 @@ public class CustomerPortalApiController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "[CustomerPortal] Error loading personnel report card for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
-            return StatusCode(500, new { message = "Temsilci karnesi yüklenirken hata oluştu." });
+            return StatusCode(500, new { message = "Temsilci karnesi yüklenirken hata oluştu.", error = ex.Message, stackTrace = ex.StackTrace });
         }
     }
 
@@ -2539,8 +2573,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 CustomerId = customerId.Value,
-                StartDate = startDate,
-                EndDate = endDate
+                StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
+                EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
             };
 
             var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
@@ -2566,7 +2600,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Müşteri sadece kendi projesinin raporunu görebilir
-            filter.ProjectCustomerId = customerId.Value;
+            filter.ProjectCustomerIds = new List<int> { customerId.Value };
 
             var result = await _reportService.ExportProjectPerformanceReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2583,8 +2617,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/performance-by-period")]
     public async Task<IActionResult> GetPerformanceByPeriod(
-        [FromQuery] int? projectId = null,
-        [FromQuery] int? organizationId = null)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<int>? organizationIds = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2596,14 +2630,14 @@ public class CustomerPortalApiController : ControllerBase
             var projectsQuery = _context.Projects
                 .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
 
-            if (projectId.HasValue)
+            if (projectIds?.Any() == true)
             {
-                projectsQuery = projectsQuery.Where(p => p.Id == projectId.Value);
+                projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
             }
 
-            var projectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
+            var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
 
-            if (!projectIds.Any())
+            if (!filteredProjectIds.Any())
             {
                 return Ok(new { periods = new List<object>(), personnel = new List<object>(), data = new List<object>() });
             }
@@ -2612,7 +2646,7 @@ public class CustomerPortalApiController : ControllerBase
             var periodsQuery = _context.AssignmentPeriods
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
-                .Where(ap => projectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
                 .OrderByDescending(ap => ap.StartDate);
 
             var periods = await periodsQuery
@@ -2641,10 +2675,10 @@ public class CustomerPortalApiController : ControllerBase
                     .ThenInclude(cpo => cpo.CustomerOrganization)
                 .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
 
-            if (organizationId.HasValue)
+            if (organizationIds?.Any() == true)
             {
                 personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => cpo.CustomerOrganizationId == organizationId.Value));
+                    cp.OrganizationAssignments.Any(cpo => organizationIds.Contains(cpo.CustomerOrganizationId)));
             }
 
             var personnel = await personnelQuery
@@ -2731,8 +2765,8 @@ public class CustomerPortalApiController : ControllerBase
     /// </summary>
     [HttpGet("reports/performance-by-period/export")]
     public async Task<IActionResult> ExportPerformanceByPeriod(
-        [FromQuery] int? projectId = null,
-        [FromQuery] int? organizationId = null)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<int>? organizationIds = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2744,17 +2778,17 @@ public class CustomerPortalApiController : ControllerBase
             var projectsQuery = _context.Projects
                 .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
 
-            if (projectId.HasValue)
+            if (projectIds?.Any() == true)
             {
-                projectsQuery = projectsQuery.Where(p => p.Id == projectId.Value);
+                projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
             }
 
-            var projectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
+            var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
 
             var periodsQuery = _context.AssignmentPeriods
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
-                .Where(ap => projectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
                 .OrderByDescending(ap => ap.StartDate);
 
             var periods = await periodsQuery
@@ -2768,10 +2802,10 @@ public class CustomerPortalApiController : ControllerBase
                     .ThenInclude(cpo => cpo.CustomerOrganization)
                 .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
 
-            if (organizationId.HasValue)
+            if (organizationIds?.Any() == true)
             {
                 personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => cpo.CustomerOrganizationId == organizationId.Value));
+                    cp.OrganizationAssignments.Any(cpo => organizationIds.Contains(cpo.CustomerOrganizationId)));
             }
 
             var personnel = await personnelQuery

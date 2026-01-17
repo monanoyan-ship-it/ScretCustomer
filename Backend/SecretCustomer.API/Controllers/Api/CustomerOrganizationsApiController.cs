@@ -26,19 +26,19 @@ public class CustomerOrganizationsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Tüm organizasyonları getir (filtreler için)
+    /// Tüm organizasyonları getir (filtreli ve sayfalı)
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] OrganizationFilterDto filter)
     {
         try
         {
-            var organizations = await _organizationService.GetAllAsync();
-            return Ok(organizations);
+            var result = await _organizationService.GetFilteredListAsync(filter);
+            return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading all organizations");
+            _logger.LogError(ex, "Error loading organizations with filters");
             return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken bir hata oluştu", ex));
         }
     }

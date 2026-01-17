@@ -53,28 +53,40 @@ public class MeetingsApiController : BaseApiController
             .Include(m => m.Participants)
             .AsQueryable();
 
-        // Filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(m => m.ProjectId == filter.ProjectId.Value);
+        // Çoklu ProjectIds filtresi
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(m => m.ProjectId.HasValue && filter.ProjectIds.Contains(m.ProjectId.Value));
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(m => m.CustomerId == filter.CustomerId.Value);
+        // Çoklu CustomerIds filtresi
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(m => m.CustomerId.HasValue && filter.CustomerIds.Contains(m.CustomerId.Value));
 
-        if (filter.OrganizerId.HasValue)
-            query = query.Where(m => m.OrganizerId == filter.OrganizerId.Value);
+        // Çoklu OrganizerIds filtresi
+        if (filter.OrganizerIds?.Any() == true)
+            query = query.Where(m => filter.OrganizerIds.Contains(m.OrganizerId));
 
-        if (!string.IsNullOrEmpty(filter.MeetingType))
+        // Çoklu MeetingTypes filtresi
+        if (filter.MeetingTypes?.Any() == true)
         {
-            var meetingTypeItem = MeetingTypes.GetBySystemName(filter.MeetingType);
-            if (meetingTypeItem != null)
-                query = query.Where(m => m.MeetingTypeId == meetingTypeItem.Id);
+            var typeIds = filter.MeetingTypes
+                .Select(t => MeetingTypes.GetBySystemName(t)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (typeIds.Any())
+                query = query.Where(m => typeIds.Contains(m.MeetingTypeId));
         }
 
-        if (!string.IsNullOrEmpty(filter.Status))
+        // Çoklu Statuses filtresi
+        if (filter.Statuses?.Any() == true)
         {
-            var statusItem = MeetingStatuses.GetBySystemName(filter.Status);
-            if (statusItem != null)
-                query = query.Where(m => m.StatusId == statusItem.Id);
+            var statusIds = filter.Statuses
+                .Select(s => MeetingStatuses.GetBySystemName(s)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(m => statusIds.Contains(m.StatusId));
         }
 
         if (filter.StartDate.HasValue)

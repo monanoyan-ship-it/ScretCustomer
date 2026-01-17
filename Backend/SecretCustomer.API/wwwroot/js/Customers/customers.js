@@ -11,6 +11,213 @@ function CustomersViewModel() {
     self.showInactive = ko.observable(false);
     self.searchText = ko.observable('');
 
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        companyName: ko.observable(''),
+        code: ko.observable(''),
+        email: ko.observable(''),
+        city: ko.observable(''),
+        taxNumber: ko.observable(''),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels (for display)
+    self.filterLabels = {
+        companyName: 'Firma Adı',
+        code: 'Kod',
+        email: 'E-posta',
+        city: 'Şehir',
+        taxNumber: 'Vergi No',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'companyName': return self.tempFilter.companyName().trim() !== '';
+            case 'code': return self.tempFilter.code().trim() !== '';
+            case 'email': return self.tempFilter.email().trim() !== '';
+            case 'city': return self.tempFilter.city().trim() !== '';
+            case 'taxNumber': return self.tempFilter.taxNumber().trim() !== '';
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'companyName':
+                var companyName = self.tempFilter.companyName().trim();
+                if (!companyName) return;
+                filter.value = companyName;
+                filter.displayValue = companyName;
+                self.tempFilter.companyName('');
+                break;
+
+            case 'code':
+                var code = self.tempFilter.code().trim();
+                if (!code) return;
+                filter.value = code;
+                filter.displayValue = code;
+                self.tempFilter.code('');
+                break;
+
+            case 'email':
+                var email = self.tempFilter.email().trim();
+                if (!email) return;
+                filter.value = email;
+                filter.displayValue = email;
+                self.tempFilter.email('');
+                break;
+
+            case 'city':
+                var city = self.tempFilter.city().trim();
+                if (!city) return;
+                filter.value = city;
+                filter.displayValue = city;
+                self.tempFilter.city('');
+                break;
+
+            case 'taxNumber':
+                var taxNumber = self.tempFilter.taxNumber().trim();
+                if (!taxNumber) return;
+                filter.value = taxNumber;
+                filter.displayValue = taxNumber;
+                self.tempFilter.taxNumber('');
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.currentPage(1);
+        self.loadCustomers();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.currentPage(1);
+        self.loadCustomers();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.searchText('');
+        self.currentPage(1);
+        self.loadCustomers();
+    };
+
+    // Build filter params for API (çoklu değer desteği)
+    self.buildFilterParams = function() {
+        var companyNames = [];
+        var codes = [];
+        var emails = [];
+        var cities = [];
+        var taxNumbers = [];
+        var isActiveFilter = null;
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'companyName':
+                    companyNames.push(filter.value);
+                    break;
+                case 'code':
+                    codes.push(filter.value);
+                    break;
+                case 'email':
+                    emails.push(filter.value);
+                    break;
+                case 'city':
+                    cities.push(filter.value);
+                    break;
+                case 'taxNumber':
+                    taxNumbers.push(filter.value);
+                    break;
+                case 'isActive':
+                    isActiveFilter = filter.value;
+                    break;
+            }
+        });
+
+        var params = new URLSearchParams();
+
+        // Çoklu değerler (array olarak gönderilir)
+        companyNames.forEach(function(name) {
+            params.append('companyNames', name);
+        });
+        codes.forEach(function(code) {
+            params.append('codes', code);
+        });
+        emails.forEach(function(email) {
+            params.append('emails', email);
+        });
+        cities.forEach(function(city) {
+            params.append('cities', city);
+        });
+        taxNumbers.forEach(function(taxNumber) {
+            params.append('taxNumbers', taxNumber);
+        });
+
+        // Durum filtresi (tekil)
+        if (isActiveFilter !== null) {
+            params.append('isActive', isActiveFilter);
+        }
+
+        // Global arama
+        var searchText = self.searchText();
+        if (searchText) {
+            params.append('searchTerm', searchText);
+        }
+
+        // Include inactive toggle
+        params.append('includeInactive', self.showInactive());
+
+        // Pagination
+        params.append('page', self.currentPage());
+        params.append('pageSize', self.pageSize());
+
+        // Sorting
+        params.append('sortBy', self.sorting.sortBy() || 'companyName');
+        params.append('sortDirection', self.sorting.sortDirection() || 'asc');
+
+        return params.toString();
+    };
+
     // Sorting
     self.sorting = TableSorting.createSortState('companyName', 'asc');
 
@@ -63,88 +270,72 @@ function CustomersViewModel() {
         return !self.isLoadingPersonnel() && !self.showChangePasswordModal();
     });
 
-    // Computed - Filtered by active status and search
-    self.filteredCustomers = ko.computed(function() {
-        var list = self.allCustomers();
-        var search = (self.searchText() || '').toLowerCase();
+    // Server-side filtered customers (artık filtreleme server'da yapılıyor)
+    // allCustomers zaten server'dan filtrelenmiş veri geliyor
 
-        // Filter by active status
-        if (!self.showInactive()) {
-            list = list.filter(function(c) { return c.isActive; });
-        }
-
-        // Filter by search text
-        if (search) {
-            list = list.filter(function(c) {
-                return (c.companyName || '').toLowerCase().indexOf(search) >= 0 ||
-                       (c.code || '').toLowerCase().indexOf(search) >= 0 ||
-                       (c.email || '').toLowerCase().indexOf(search) >= 0 ||
-                       (c.city || '').toLowerCase().indexOf(search) >= 0 ||
-                       (c.taxNumber || '').toLowerCase().indexOf(search) >= 0;
-            });
-        }
-
-        return list;
-    });
-
-    // All filtered and sorted (before pagination)
-    self.allSortedCustomers = ko.computed(function() {
-        var items = self.filteredCustomers();
-        var sortBy = self.sorting.sortBy();
-        var sortDir = self.sorting.sortDirection();
-        if (!sortBy || items.length === 0) return items;
-        return TableSorting.clientSort(items, sortBy, sortDir);
-    });
-
-    // Paginated customers
+    // Backwards compatibility - sortedCustomers direkt allCustomers'ı kullanır
     self.sortedCustomers = ko.computed(function() {
-        var list = self.allSortedCustomers();
-        var page = parseInt(self.currentPage(), 10);
-        var pageSize = parseInt(self.pageSize(), 10);
-        var start = (page - 1) * pageSize;
-        return list.slice(start, start + pageSize);
+        return self.allCustomers();
     });
 
     // Backwards compatibility
     self.customers = self.allCustomers;
 
-    // Pagination computed
-    self.totalCount = ko.computed(function() {
-        return self.allSortedCustomers().length;
-    });
+    // Pagination - server'dan gelen değerler
+    self.totalCount = ko.observable(0);
 
     self.totalPages = ko.computed(function() {
         return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
     });
 
-    // Reset to page 1 when filters/search change
+    // Reset to page 1 and reload when pageSize changes
     self.pageSize.subscribe(function() {
         self.currentPage(1);
+        self.loadCustomers();
     });
 
+    // Search with debounce
+    var searchTimeout = null;
     self.searchText.subscribe(function() {
-        self.currentPage(1);
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            self.currentPage(1);
+            self.loadCustomers();
+        }, 300);
     });
 
+    // Reload when showInactive changes
     self.showInactive.subscribe(function() {
         self.currentPage(1);
+        self.loadCustomers();
+    });
+
+    // Reload when sorting changes
+    self.sorting.sortBy.subscribe(function() {
+        self.loadCustomers();
+    });
+    self.sorting.sortDirection.subscribe(function() {
+        self.loadCustomers();
     });
 
     self.goToPage = function(page) {
         if (page >= 1 && page <= self.totalPages()) {
             self.currentPage(page);
+            self.loadCustomers();
         }
     };
 
     self.previousPage = function() {
         if (self.currentPage() > 1) {
             self.currentPage(self.currentPage() - 1);
+            self.loadCustomers();
         }
     };
 
     self.nextPage = function() {
         if (self.currentPage() < self.totalPages()) {
             self.currentPage(self.currentPage() + 1);
+            self.loadCustomers();
         }
     };
 
@@ -177,15 +368,18 @@ function CustomersViewModel() {
         return year + '-' + month + '-' + day;
     };
 
-    // Load customers
+    // Load customers (server-side filtering)
     self.loadCustomers = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        customerApiService.getAllCustomers(self.showInactive())
-            .then(function(data) {
-                self.allCustomers(data || []);
-                self.currentPage(1);
+        var queryString = self.buildFilterParams();
+
+        ApiService.get('/customers?' + queryString)
+            .then(function(result) {
+                // Server'dan PagedCustomerResult formatında veri geliyor
+                self.allCustomers(result.items || []);
+                self.totalCount(result.totalCount || 0);
             })
             .catch(function(error) {
                 console.error('Error loading customers:', error);

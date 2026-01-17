@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
 
 namespace SecretCustomer.Services.Services;
 
@@ -12,17 +14,20 @@ public class CustomerPersonnelService : ICustomerPersonnelService
     private readonly ICustomerRepository _customerRepository;
     private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
     private readonly ILocalizationService _localizationService;
+    private readonly ApplicationDbContext _context;
 
     public CustomerPersonnelService(
         ICustomerPersonnelRepository personnelRepository,
         ICustomerRepository customerRepository,
         ICustomerPersonnelOrganizationRepository personnelOrgRepository,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        ApplicationDbContext context)
     {
         _personnelRepository = personnelRepository;
         _customerRepository = customerRepository;
         _personnelOrgRepository = personnelOrgRepository;
         _localizationService = localizationService;
+        _context = context;
     }
 
     private async Task<string> GetRoleNameAsync(int roleId)
@@ -69,6 +74,90 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             result.Add(await MapToDtoAsync(p));
         }
         return result;
+    }
+
+    public async Task<PagedPersonnelResult> GetFilteredListAsync(PersonnelFilterDto filter)
+    {
+        var query = _context.CustomerPersonnel
+            .Include(p => p.Customer)
+            .Include(p => p.OrganizationAssignments.Where(oa => !oa.IsDeleted))
+                .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(p => p.OrganizationAssignments.Where(oa => !oa.IsDeleted))
+                .ThenInclude(oa => oa.Supervisor)
+            .Where(p => !p.IsDeleted)
+            .AsQueryable();
+
+        // Çoklu müşteri filtresi (OR mantığı)
+        if (filter.CustomerIds?.Any() == true)
+        {
+            query = query.Where(p => filter.CustomerIds.Contains(p.CustomerId));
+        }
+
+        // Active status filter
+        if (!filter.IncludeInactive)
+        {
+            if (filter.IsActive.HasValue)
+                query = query.Where(p => p.IsActive == filter.IsActive.Value);
+            else
+                query = query.Where(p => p.IsActive);
+        }
+
+        // Search term (global search)
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(p =>
+                (p.FirstName + " " + p.LastName).ToLower().Contains(term) ||
+                p.Email.ToLower().Contains(term) ||
+                p.Username.ToLower().Contains(term));
+        }
+
+        // Çoklu fullName filtresi (OR mantığı)
+        if (filter.FullNames?.Any() == true)
+        {
+            var names = filter.FullNames.Select(n => n.ToLower()).ToList();
+            query = query.Where(p => names.Any(n => (p.FirstName + " " + p.LastName).ToLower().Contains(n)));
+        }
+
+        // Çoklu email filtresi (OR mantığı)
+        if (filter.Emails?.Any() == true)
+        {
+            var emails = filter.Emails.Select(e => e.ToLower()).ToList();
+            query = query.Where(p => emails.Any(email => p.Email.ToLower().Contains(email)));
+        }
+
+        // Çoklu rol filtresi (OR mantığı)
+        if (filter.RoleIds?.Any() == true)
+        {
+            query = query.Where(p => filter.RoleIds.Contains(p.RoleId));
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync();
+
+        // Sorting by FullName
+        query = query.OrderBy(p => p.FirstName).ThenBy(p => p.LastName);
+
+        // Get entities
+        var entities = await query
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        // Map to DTOs
+        var items = new List<CustomerPersonnelDto>();
+        foreach (var p in entities)
+        {
+            items.Add(await MapToDtoAsync(p));
+        }
+
+        return new PagedPersonnelResult
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = filter.Page,
+            PageSize = filter.PageSize
+        };
     }
 
     public async Task ChangeOrganizationAsync(int personnelId, int newOrganizationId)

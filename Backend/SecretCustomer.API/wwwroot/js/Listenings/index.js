@@ -208,40 +208,14 @@ function ListeningsViewModel() {
                 if (defaultFilter) {
                     self.applySavedFilter(defaultFilter);
                 } else {
-                    // Varsayılan filtre yoksa otomatik "Son 30 Gün" filtresi uygula (performans için)
-                    self.applyDefaultDateFilter();
+                    // Varsayılan filtre yoksa direkt arama yap (filtre olmadan)
                     self.search();
                 }
             })
             .catch(function(error) {
                 console.error('Error loading saved filters:', error);
-                self.applyDefaultDateFilter();
                 self.search();
             });
-    };
-
-    // Varsayılan tarih filtresi uygula (performans için)
-    self.applyDefaultDateFilter = function() {
-        var today = new Date();
-        var thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-        var formatDate = function(date) {
-            var year = date.getFullYear();
-            var month = String(date.getMonth() + 1).padStart(2, '0');
-            var day = String(date.getDate()).padStart(2, '0');
-            return year + '-' + month + '-' + day;
-        };
-
-        self.activeFilters.push({
-            type: 'dateRange',
-            label: self.filterLabels.dateRange,
-            value: {
-                startDate: formatDate(thirtyDaysAgo),
-                endDate: formatDate(today),
-                dateRangeType: 'last30Days'
-            },
-            displayValue: 'Son 30 Gün'
-        });
     };
 
     // Load organizations for filter dropdown and filter projects by customer
@@ -421,18 +395,16 @@ function ListeningsViewModel() {
                 return;
         }
 
-        // Remove existing filter of same type (except text filters which can have multiple)
-        if (type !== 'personnel' && type !== 'supervisor' && type !== 'callId') {
-            self.activeFilters.remove(function(f) { return f.type === type; });
-        }
-
+        // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push(filter);
         self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
     };
 
     // Remove filter
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
     };
 
     // Clear all filters
@@ -525,7 +497,7 @@ function ListeningsViewModel() {
         self._manualDateChange = true;
     };
 
-    // Build params from active filters
+    // Build params from active filters (çoklu değer desteği)
     self.buildFilterParams = function() {
         var params = {
             page: self.page(),
@@ -534,44 +506,70 @@ function ListeningsViewModel() {
             sortDirection: self.sortDirection()
         };
 
+        // Çoklu değer için array'ler
+        var customerIds = [];
+        var organizationIds = [];
+        var projectIds = [];
+        var projectTypes = [];
+        var evaluatorIds = [];
+        var personnelNames = [];
+        var supervisorNames = [];
+        var callIds = [];
+        var statuses = [];
+        var evaluationSources = [];
+        var dateRanges = [];
+
         self.activeFilters().forEach(function(filter) {
             switch (filter.type) {
                 case 'customerOrganization':
-                    params.customerId = filter.value.customerId;
-                    if (filter.value.organizationId) {
-                        params.organizationId = filter.value.organizationId;
-                    }
+                    if (filter.value.customerId) customerIds.push(filter.value.customerId);
+                    if (filter.value.organizationId) organizationIds.push(filter.value.organizationId);
                     break;
                 case 'project':
-                    params.projectId = filter.value;
+                    projectIds.push(filter.value);
                     break;
                 case 'projectType':
-                    params.projectType = filter.value;
+                    projectTypes.push(filter.value);
                     break;
                 case 'evaluator':
-                    params.evaluatorId = filter.value;
+                    evaluatorIds.push(filter.value);
                     break;
                 case 'personnel':
-                    params.evaluatedPersonnelName = filter.value;
+                    personnelNames.push(filter.value);
                     break;
                 case 'supervisor':
-                    params.supervisorName = filter.value;
+                    supervisorNames.push(filter.value);
                     break;
                 case 'callId':
-                    params.callId = filter.value;
+                    callIds.push(filter.value);
                     break;
                 case 'status':
-                    params.status = filter.value;
+                    statuses.push(filter.value);
                     break;
                 case 'evaluationSource':
-                    params.evaluationSource = filter.value;
+                    evaluationSources.push(filter.value);
                     break;
                 case 'dateRange':
-                    if (filter.value.startDate) params.startDate = filter.value.startDate;
-                    if (filter.value.endDate) params.endDate = filter.value.endDate;
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate
+                    });
                     break;
             }
         });
+
+        // Array'leri params'a ekle (boş olmayanları)
+        if (customerIds.length > 0) params.customerIds = customerIds;
+        if (organizationIds.length > 0) params.organizationIds = organizationIds;
+        if (projectIds.length > 0) params.projectIds = projectIds;
+        if (projectTypes.length > 0) params.projectTypes = projectTypes;
+        if (evaluatorIds.length > 0) params.evaluatorIds = evaluatorIds;
+        if (personnelNames.length > 0) params.personnelNames = personnelNames;
+        if (supervisorNames.length > 0) params.supervisorNames = supervisorNames;
+        if (callIds.length > 0) params.callIds = callIds;
+        if (statuses.length > 0) params.statuses = statuses;
+        if (evaluationSources.length > 0) params.evaluationSources = evaluationSources;
+        if (dateRanges.length > 0) params.dateRanges = dateRanges;
 
         return params;
     };

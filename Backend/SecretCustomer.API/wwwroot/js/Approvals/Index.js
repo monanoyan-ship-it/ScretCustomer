@@ -22,12 +22,154 @@ function ApprovalsViewModel() {
         todayApprovals: ko.observable(0)
     };
 
-    // Filters
-    self.filter = {
-        approvalType: ko.observable(''),
-        status: ko.observable(''),
-        priority: ko.observable(''),
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        approvalType: ko.observable(null),
+        status: ko.observable(null),
+        priority: ko.observable(null),
         searchTerm: ko.observable('')
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        approvalType: 'Onay Tipi',
+        status: 'Durum',
+        priority: 'Öncelik',
+        searchTerm: 'Arama'
+    };
+
+    self.approvalTypes = [
+        { id: 'Evaluation', name: 'Değerlendirme' },
+        { id: 'Assignment', name: 'Atama' },
+        { id: 'Project', name: 'Proje' },
+        { id: 'Meeting', name: 'Toplantı' },
+        { id: 'Training', name: 'Eğitim' },
+        { id: 'Delegation', name: 'Vekalet' },
+        { id: 'General', name: 'Genel' }
+    ];
+
+    self.statusOptions = [
+        { id: 'Pending', name: 'Bekliyor' },
+        { id: 'Approved', name: 'Onaylandı' },
+        { id: 'Rejected', name: 'Reddedildi' },
+        { id: 'Cancelled', name: 'İptal Edildi' }
+    ];
+
+    self.priorityOptions = [
+        { id: 'Low', name: 'Düşük' },
+        { id: 'Normal', name: 'Normal' },
+        { id: 'High', name: 'Yüksek' },
+        { id: 'Urgent', name: 'Acil' }
+    ];
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'approvalType': return self.tempFilter.approvalType() !== null;
+            case 'status': return self.tempFilter.status() !== null;
+            case 'priority': return self.tempFilter.priority() !== null;
+            case 'searchTerm': return self.tempFilter.searchTerm().trim() !== '';
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'approvalType':
+                var approvalTypeId = self.tempFilter.approvalType();
+                if (!approvalTypeId) return;
+                var approvalType = self.approvalTypes.find(function(t) { return t.id === approvalTypeId; });
+                filter.value = approvalTypeId;
+                filter.displayValue = approvalType ? approvalType.name : approvalTypeId;
+                self.tempFilter.approvalType(null);
+                break;
+
+            case 'status':
+                var statusId = self.tempFilter.status();
+                if (!statusId) return;
+                var status = self.statusOptions.find(function(s) { return s.id === statusId; });
+                filter.value = statusId;
+                filter.displayValue = status ? status.name : statusId;
+                self.tempFilter.status(null);
+                break;
+
+            case 'priority':
+                var priorityId = self.tempFilter.priority();
+                if (!priorityId) return;
+                var priority = self.priorityOptions.find(function(p) { return p.id === priorityId; });
+                filter.value = priorityId;
+                filter.displayValue = priority ? priority.name : priorityId;
+                self.tempFilter.priority(null);
+                break;
+
+            case 'searchTerm':
+                var searchTerm = self.tempFilter.searchTerm().trim();
+                if (!searchTerm) return;
+                filter.value = searchTerm;
+                filter.displayValue = searchTerm;
+                self.tempFilter.searchTerm('');
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.currentPage(1);
+        self.loadApprovals();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.currentPage(1);
+        self.loadApprovals();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.currentPage(1);
+        self.loadApprovals();
+    };
+
+    // Build filter params
+    self.buildFilterParams = function(params) {
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'approvalType':
+                    params.append('approvalType', filter.value);
+                    break;
+                case 'status':
+                    params.append('status', filter.value);
+                    break;
+                case 'priority':
+                    params.append('priority', filter.value);
+                    break;
+                case 'searchTerm':
+                    params.append('search', filter.value);
+                    break;
+            }
+        });
     };
 
     // Sorting
@@ -59,17 +201,6 @@ function ApprovalsViewModel() {
         return pages;
     });
 
-    // Filter subscriptions
-    self.filter.approvalType.subscribe(function() { self.loadApprovals(); });
-    self.filter.status.subscribe(function() { self.loadApprovals(); });
-    self.filter.priority.subscribe(function() { self.loadApprovals(); });
-    self.filter.searchTerm.subscribe(function() {
-        clearTimeout(self.searchTimeout);
-        self.searchTimeout = setTimeout(function() {
-            self.loadApprovals();
-        }, 300);
-    });
-
     // Sorting subscriptions
     self.sorting.sortBy.subscribe(function() {
         self.currentPage(1);
@@ -87,10 +218,10 @@ function ApprovalsViewModel() {
             page: self.currentPage(),
             pageSize: self.pageSize()
         });
-        if (self.filter.approvalType()) params.append('approvalType', self.filter.approvalType());
-        if (self.filter.status()) params.append('status', self.filter.status());
-        if (self.filter.priority()) params.append('priority', self.filter.priority());
-        if (self.filter.searchTerm()) params.append('search', self.filter.searchTerm());
+
+        // Add chip-based filters
+        self.buildFilterParams(params);
+
         if (self.sorting.sortBy()) params.append('sortBy', self.sorting.sortBy());
         if (self.sorting.sortDirection()) params.append('sortDirection', self.sorting.sortDirection());
 
@@ -132,14 +263,6 @@ function ApprovalsViewModel() {
             .fail(function() {
                 console.error('Summary could not be loaded');
             });
-    };
-
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.approvalType('');
-        self.filter.status('');
-        self.filter.priority('');
-        self.filter.searchTerm('');
     };
 
     // Pagination

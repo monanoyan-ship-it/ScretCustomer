@@ -53,12 +53,144 @@ function InternalAssignmentsViewModel() {
         overdueAssignments: 0
     });
 
-    // ===== Filters =====
-    self.filter = {
+    // ===== CHIP-BASED FILTER SYSTEM =====
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
         customerId: ko.observable(null),
         projectId: ko.observable(null),
-        isCompleted: ko.observable(''),
-        dueDateTo: ko.observable(null)
+        status: ko.observable(null),
+        dueDateFrom: ko.observable(''),
+        dueDateTo: ko.observable('')
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        customer: 'Müşteri',
+        project: 'Proje',
+        status: 'Durum',
+        dateRange: 'Tarih Aralığı'
+    };
+
+    self.statusOptions = [
+        { id: 'NotStarted', name: 'Başlamadı' },
+        { id: 'InProgress', name: 'Devam Ediyor' },
+        { id: 'Completed', name: 'Tamamlandı' },
+        { id: 'Expired', name: 'Süresi Doldu' },
+        { id: 'Cancelled', name: 'İptal Edildi' }
+    ];
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customer': return self.tempFilter.customerId() !== null;
+            case 'project': return self.tempFilter.projectId() !== null;
+            case 'status': return self.tempFilter.status() !== null;
+            case 'dateRange': return self.tempFilter.dueDateFrom() || self.tempFilter.dueDateTo();
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customer':
+                var customerId = self.tempFilter.customerId();
+                if (!customerId) return;
+                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                filter.value = customerId;
+                filter.displayValue = customer ? customer.companyName : customerId;
+                self.tempFilter.customerId(null);
+                break;
+
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                if (!projectId) return;
+                var project = self.projects().find(function(p) { return p.id === projectId; });
+                filter.value = projectId;
+                filter.displayValue = project ? project.name : projectId;
+                self.tempFilter.projectId(null);
+                break;
+
+            case 'status':
+                var statusId = self.tempFilter.status();
+                if (!statusId) return;
+                var status = self.statusOptions.find(function(s) { return s.id === statusId; });
+                filter.value = statusId;
+                filter.displayValue = status ? status.name : statusId;
+                self.tempFilter.status(null);
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.dueDateFrom();
+                var endDate = self.tempFilter.dueDateTo();
+                if (!startDate && !endDate) return;
+                filter.value = { startDate: startDate, endDate: endDate };
+                filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                self.tempFilter.dueDateFrom('');
+                self.tempFilter.dueDateTo('');
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.loadAssignments();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.loadAssignments();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.loadAssignments();
+        self.loadSummary();
+    };
+
+    // Build filter params
+    self.buildFilterParams = function() {
+        var params = [];
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customer':
+                    params.push('customerId=' + filter.value);
+                    break;
+                case 'project':
+                    params.push('projectId=' + filter.value);
+                    break;
+                case 'status':
+                    params.push('status=' + filter.value);
+                    break;
+                case 'dateRange':
+                    if (filter.value.startDate) params.push('dueDateFrom=' + filter.value.startDate);
+                    if (filter.value.endDate) params.push('dueDateTo=' + filter.value.endDate);
+                    break;
+            }
+        });
+
+        return params;
     };
 
     // ===== Create Modal State =====
@@ -108,12 +240,7 @@ function InternalAssignmentsViewModel() {
     self.loadAssignments = function() {
         self.isLoading(true);
 
-        var params = [];
-        if (self.filter.customerId()) params.push('customerId=' + self.filter.customerId());
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.isCompleted() !== '') params.push('isCompleted=' + self.filter.isCompleted());
-        if (self.filter.dueDateTo()) params.push('dueDateTo=' + self.filter.dueDateTo());
-
+        var params = self.buildFilterParams();
         var url = '/api/internal-assignments' + (params.length > 0 ? '?' + params.join('&') : '');
 
         fetch(url, { credentials: 'include' })
@@ -203,20 +330,6 @@ function InternalAssignmentsViewModel() {
             .finally(function() {
                 self.isLoadingPersonnel(false);
             });
-    };
-
-    // ===== Filter Methods =====
-    self.applyFilter = function() {
-        self.loadAssignments();
-    };
-
-    self.clearFilters = function() {
-        self.filter.customerId(null);
-        self.filter.projectId(null);
-        self.filter.isCompleted('');
-        self.filter.dueDateTo(null);
-        self.loadAssignments();
-        self.loadSummary();
     };
 
     // ===== Create Modal =====

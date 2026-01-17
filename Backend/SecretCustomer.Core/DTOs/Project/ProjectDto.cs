@@ -168,3 +168,21 @@ public class ProjectSummaryDto
     public int DaysRemaining { get; set; }
     public bool IsOverdue { get; set; }
 }
+
+/// <summary>
+/// Proje filtreleme
+/// </summary>
+public class ProjectFilterDto
+{
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? CustomerIds { get; set; }
+    public List<string>? ProjectTypes { get; set; }
+    public List<string>? Statuses { get; set; }
+    public List<int>? ProjectManagerIds { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
+    public string? SearchText { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public bool IncludeInactive { get; set; }
+}

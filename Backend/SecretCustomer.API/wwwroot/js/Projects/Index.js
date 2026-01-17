@@ -359,11 +359,7 @@ function ProjectsViewModel() {
                 return;
         }
 
-        // Remove existing filter of same type (except search which can have multiple)
-        if (type !== 'search') {
-            self.activeFilters.remove(function(f) { return f.type === type; });
-        }
-
+        // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push(filter);
         self.selectedFilterType('');
     };

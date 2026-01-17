@@ -32,21 +32,11 @@ public class ProjectsApiController : BaseApiController
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,QualitySpecialist")]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] string? search = null,
-        [FromQuery] int? customerId = null,
-        [FromQuery] string? projectType = null,
-        [FromQuery] string? status = null,
-        [FromQuery] int? projectManagerId = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null,
-        [FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetAll([FromQuery] ProjectFilterDto filter)
     {
         try
         {
-            // Optimize edilmiş liste methodu kullan
-            var projects = await _projectService.GetListAsync(
-                search, customerId, projectType, status, projectManagerId, startDate, endDate, includeInactive);
+            var projects = await _projectService.GetListAsync(filter);
             return Ok(projects);
         }
         catch (Exception ex)

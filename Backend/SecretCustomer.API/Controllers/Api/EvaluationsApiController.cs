@@ -36,16 +36,98 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Tum degerlendirmeleri getirir (yonetici)
+    /// Tum degerlendirmeleri getirir (yonetici) - Çoklu filtre desteği
     /// </summary>
     [HttpGet]
     [Authorize(Policy = "CanEvaluate")]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<string>? statuses,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         try
         {
-            var evaluations = await _evaluationService.GetAllAsync(page, pageSize);
-            return Ok(evaluations);
+            var query = _context.Evaluations
+                .Include(e => e.Assignment).ThenInclude(a => a.Project)
+                .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                .Include(e => e.EvaluatedCustomerPersonnel)
+                .Include(e => e.Evaluator)
+                .Where(e => !e.IsDeleted);
+
+            // Çoklu filtreler
+            if (projectIds?.Any() == true)
+                query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+            if (customerIds?.Any() == true)
+                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                    customerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
+
+            if (organizationIds?.Any() == true)
+                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                    e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                        organizationIds.Contains(oa.CustomerOrganizationId)));
+
+            if (evaluatorIds?.Any() == true)
+                query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
+
+            if (checklistIds?.Any() == true)
+                query = query.Where(e => checklistIds.Contains(e.Assignment.ChecklistId));
+
+            if (statuses?.Any() == true)
+            {
+                var statusIds = statuses
+                    .Select(s => EvaluationStatuses.GetBySystemName(s))
+                    .Where(s => s != null)
+                    .Select(s => s!.Id)
+                    .ToList();
+                if (statusIds.Any())
+                    query = query.Where(e => statusIds.Contains(e.StatusId));
+            }
+
+            if (startDate.HasValue)
+            {
+                var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+                query = query.Where(e => (e.CompletedAt ?? e.CreatedAt) >= start);
+            }
+
+            if (endDate.HasValue)
+            {
+                var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                query = query.Where(e => (e.CompletedAt ?? e.CreatedAt) <= end);
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(e => new
+                {
+                    e.Id,
+                    e.StatusId,
+                    Status = EvaluationStatuses.GetById(e.StatusId)!.SystemName,
+                    ProjectName = e.Assignment.Project.Name,
+                    ChecklistName = e.Assignment.Checklist.Name,
+                    EvaluatorName = e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null,
+                    PersonnelName = e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                        : e.EvaluatedUnknownPersonnel,
+                    e.TotalScore,
+                    e.MaxScore,
+                    e.ScorePercentage,
+                    e.CompletedAt,
+                    e.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new { items, totalCount, page, pageSize });
         }
         catch (Exception ex)
         {
@@ -844,11 +926,17 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Değerlendirmeleri Excel'e aktarır
+    /// Değerlendirmeleri Excel'e aktarır - Çoklu filtre desteği
     /// </summary>
     [HttpGet("export")]
     [Authorize]
     public async Task<IActionResult> ExportToExcel(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<string>? statuses,
         [FromQuery] string? status = null,
         [FromQuery] string? search = null,
         [FromQuery] string? personnel = null,
@@ -886,8 +974,38 @@ public class EvaluationsApiController : BaseApiController
                     .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
             }
 
-            // Filtreleri uygula
-            if (!string.IsNullOrEmpty(status))
+            // Çoklu filtreler (OR mantığı)
+            if (projectIds?.Any() == true)
+                query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+            if (customerIds?.Any() == true)
+                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                    customerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
+
+            if (organizationIds?.Any() == true)
+                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                    e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                        organizationIds.Contains(oa.CustomerOrganizationId)));
+
+            if (evaluatorIds?.Any() == true)
+                query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
+
+            if (checklistIds?.Any() == true)
+                query = query.Where(e => checklistIds.Contains(e.Assignment.ChecklistId));
+
+            // Çoklu status filtresi
+            if (statuses?.Any() == true)
+            {
+                var statusIds = statuses
+                    .Select(s => EvaluationStatuses.GetBySystemName(s))
+                    .Where(s => s != null)
+                    .Select(s => s!.Id)
+                    .ToList();
+                if (statusIds.Any())
+                    query = query.Where(e => statusIds.Contains(e.StatusId));
+            }
+            // Tekil status filtresi (geriye uyumluluk)
+            else if (!string.IsNullOrEmpty(status))
             {
                 var statusType = EvaluationStatuses.GetBySystemName(status);
                 if (statusType != null)

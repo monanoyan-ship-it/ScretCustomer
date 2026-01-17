@@ -74,7 +74,7 @@ public class CustomerPortalController : Controller
     /// Proje bazlı sonuçlar (sadece CustomerManager)
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
-    public IActionResult Branches()
+    public IActionResult Projects()
     {
         return View();
     }

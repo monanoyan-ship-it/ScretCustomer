@@ -126,3 +126,34 @@ public class ChangeOrganizationDto
     [Required(ErrorMessage = "Yeni organizasyon seçimi zorunludur")]
     public int NewOrganizationId { get; set; }
 }
+
+/// <summary>
+/// Müşteri personel filtre DTO - server-side filtering için
+/// </summary>
+public class PersonnelFilterDto
+{
+    public string? SearchTerm { get; set; }
+    public bool? IsActive { get; set; }
+
+    // Çoklu parametreler
+    public List<int>? CustomerIds { get; set; }
+    public List<string>? FullNames { get; set; }
+    public List<string>? Emails { get; set; }
+    public List<int>? RoleIds { get; set; }
+
+    public bool IncludeInactive { get; set; } = false;
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Sayfalı personel sonucu
+/// </summary>
+public class PagedPersonnelResult
+{
+    public List<CustomerPersonnelDto> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+}

@@ -23,10 +23,10 @@ Ben konuştuğum konuyu unutan bir yapay zekayım. Bunu farkeden kullanıcım pr
 
 ## ZORUNLU: Her İşe Başlamadan Önce
 
-**YENİ BİR ÖZELLİK VEYA MODÜL EKLEMEDEN ÖNCE MUTLAKA `DEVELOPMENT_PATTERNS.md` DOSYASINI OKU!**
+**YENİ BİR ÖZELLİK VEYA MODÜL EKLEMEDEN ÖNCE MUTLAKA `KURALLAR.md` DOSYASINI OKU!**
 
 ```
-Read: DEVELOPMENT_PATTERNS.md
+Read: KURALLAR.md
 ```
 
 Bu dosya projenin standart pattern'lerini içerir:
@@ -95,7 +95,7 @@ Backend/
 - `Storage/Documentation/KALDIGIMIZ_YER.md` - **"Nerede kaldık?" diye sorulursa bu dosyayı oku!**
 - `Storage/Documentation/AIReports.md` - **"AI ile ilgili ne yapacaktık?" diye sorulursa bu dosyayı oku!**
 - `Storage/Documentation/mp4analizi.xml` - Müşteri geribidirim analizi ve özellik takibi
-- `Storage/Documentation/DEVELOPMENT_PATTERNS.md` - Kod standartları ve pattern'ler
+- `Storage/Documentation/KURALLAR.md` - Kod standartları ve pattern'ler
 - `Storage/docs/` - Teknik dokümantasyon (proje kurulumu, mimari vb.)
 - `Storage/ScreenShots/` - Test dosyaları, Excel/CSV import örnekleri
 

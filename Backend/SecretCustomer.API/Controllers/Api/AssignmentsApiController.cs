@@ -41,20 +41,11 @@ public class AssignmentsApiController : BaseApiController
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,QualitySpecialist")]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] int? projectId = null,
-        [FromQuery] int? assignedUserId = null,
-        [FromQuery] string? status = null,
-        [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> GetAll([FromQuery] AssignmentFilterDto filter)
     {
         try
         {
-            var assignments = await _assignmentService.GetListAsync(
-                projectId: projectId != 0 ? projectId : null,
-                assignedUserId: assignedUserId,
-                status: status,
-                searchTerm: searchTerm);
-
+            var assignments = await _assignmentService.GetFilteredAsync(filter);
             return Ok(assignments);
         }
         catch (Exception ex)

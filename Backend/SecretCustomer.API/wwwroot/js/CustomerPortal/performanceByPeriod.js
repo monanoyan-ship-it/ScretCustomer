@@ -10,10 +10,78 @@ function PerformanceByPeriodViewModel() {
     self.projects = ko.observableArray([]);
     self.organizations = ko.observableArray([]);
 
-    // Filters
-    self.filter = {
+    // Filter UI - Chip-based filtre sistemi
+    self.selectedFilterType = ko.observable('');
+    self.tempFilter = {
         projectId: ko.observable(''),
         organizationId: ko.observable('')
+    };
+
+    // Active filters (chip-based)
+    self.activeFilters = ko.observableArray([]);
+
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        if (type === 'project') return self.tempFilter.projectId();
+        if (type === 'organization') return self.tempFilter.organizationId();
+        return false;
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+        var label = '';
+        var displayValue = '';
+
+        if (type === 'project') {
+            filter.value = self.tempFilter.projectId();
+            var project = self.projects().find(function(p) { return p.id == filter.value; });
+            label = 'Proje';
+            displayValue = project ? project.name : filter.value;
+        } else if (type === 'organization') {
+            filter.value = self.tempFilter.organizationId();
+            var org = self.organizations().find(function(o) { return o.id == filter.value; });
+            label = 'Organizasyon';
+            displayValue = org ? org.name : filter.value;
+        }
+
+        // Tüm filtre tipleri çoklu değer destekler
+        self.activeFilters.push({
+            type: type,
+            value: filter.value,
+            label: label,
+            displayValue: displayValue
+        });
+
+        // Reset temp
+        self.resetTempFilter();
+        self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
+    };
+
+    self.resetTempFilter = function() {
+        self.tempFilter.projectId('');
+        self.tempFilter.organizationId('');
+    };
+
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
+    };
+
+    self.clearFilters = function() {
+        self.activeFilters.removeAll();
+        self.search(); // Tüm filtreler temizlenince otomatik ara
+    };
+
+    // Search
+    self.search = function() {
+        self.loadReport();
     };
 
     // Report data
@@ -54,20 +122,34 @@ function PerformanceByPeriodViewModel() {
             });
     };
 
-    // Build query params
+    // Build query params from active filters
     self.buildQueryParams = function() {
         var params = [];
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.organizationId()) params.push('organizationId=' + self.filter.organizationId());
-        return params;
+
+        // Çoklu değer desteği için array'ler
+        var projectIds = [];
+        var organizationIds = [];
+
+        self.activeFilters().forEach(function(f) {
+            if (f.type === 'project') {
+                projectIds.push(f.value);
+            } else if (f.type === 'organization') {
+                organizationIds.push(f.value);
+            }
+        });
+
+        // Çoklu değerleri query string'e ekle
+        projectIds.forEach(function(id) { params.push('projectId=' + id); });
+        organizationIds.forEach(function(id) { params.push('organizationId=' + id); });
+
+        return params.length > 0 ? '?' + params.join('&') : '';
     };
 
     // Load report
     self.loadReport = function() {
         self.isLoading(true);
 
-        var params = self.buildQueryParams();
-        var url = '/api/customer/portal/reports/performance-by-period' + (params.length > 0 ? '?' + params.join('&') : '');
+        var url = '/api/customer/portal/reports/performance-by-period' + self.buildQueryParams();
 
         customerApiFetch(url)
             .then(function(response) {
@@ -87,19 +169,11 @@ function PerformanceByPeriodViewModel() {
             });
     };
 
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.projectId('');
-        self.filter.organizationId('');
-        self.loadReport();
-    };
-
     // Export to Excel
     self.exportToExcel = function() {
         self.isExporting(true);
 
-        var params = self.buildQueryParams();
-        var url = '/api/customer/portal/reports/performance-by-period/export' + (params.length > 0 ? '?' + params.join('&') : '');
+        var url = '/api/customer/portal/reports/performance-by-period/export' + self.buildQueryParams();
 
         customerApiFetch(url)
             .then(function(response) {

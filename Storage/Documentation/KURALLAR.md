@@ -838,6 +838,187 @@ $(document).ready(function() {
    - Search/filter input: `autocomplete="off"`
    - Username input: `autocomplete="username"`
    - **NEDEN:** Tarayıcı autocomplete'i yanlış input'lara değer yazabilir ve KnockoutJS observable'ları bozabilir!
+10. **Detay/Modal açma işlemlerinde LİSTE YENİLENMEZ:**
+    - Detay görüntüleme sadece modal açar, liste değişmez
+    - Delete sonrası: `self.items.remove(item)` kullan, `loadItems()` çağırma
+    - Update sonrası: API'den dönen veriyle listedeki öğeyi güncelle
+    - **NEDEN:** Gereksiz API çağrısı, kullanıcı deneyimini bozar, scroll pozisyonu kaybolur
+11. **Tarih filtreleri için KISAYOL BUTONLARI kullan:**
+    - Bugün, Bu Hafta, Bu Ay, Geçen Ay butonları ekle
+    - `calculateDateRange(rangeType)` helper fonksiyonu kullan
+    - Kullanıcı deneyimini iyileştirir, manuel tarih girişi azaltır
+
+---
+
+## 19. Tarih Filtresi Kısayol Pattern'i
+
+Tarih aralığı filtresi olan sayfalarda kısayol butonları ekle.
+
+### İki Kullanım Şekli
+
+| Pattern | Kullanım Yeri | Davranış |
+|---------|---------------|----------|
+| `setDateRange()` | Dropdown içi | Sadece değer atar, aramayı tetiklemez |
+| `setQuickDateRange()` | Dropdown dışı butonlar | Değer atar VE aramayı tetikler |
+
+### JavaScript Helper Fonksiyonları
+
+```javascript
+// Tarih etiketleri
+self.dateRangeLabels = {
+    'today': 'Bugün',
+    'yesterday': 'Dün',
+    'thisWeek': 'Bu Hafta',
+    'lastWeek': 'Geçen Hafta',
+    'thisMonth': 'Bu Ay',
+    'lastMonth': 'Geçen Ay'
+};
+
+// Calculate date range from type
+self.calculateDateRange = function(rangeType) {
+    var today = new Date();
+    var start, end;
+
+    if (rangeType === 'today') {
+        start = end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'yesterday') {
+        var yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        start = end = yesterday.toISOString().split('T')[0];
+    } else if (rangeType === 'thisWeek') {
+        var dayOfWeek = today.getDay();
+        var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        var weekStart = new Date(today);
+        weekStart.setDate(diff);
+        start = weekStart.toISOString().split('T')[0];
+        end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'lastWeek') {
+        var dayOfWeek = today.getDay();
+        var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        var lastWeekEnd = new Date(today);
+        lastWeekEnd.setDate(diff - 1);
+        var lastWeekStart = new Date(lastWeekEnd);
+        lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
+        start = lastWeekStart.toISOString().split('T')[0];
+        end = lastWeekEnd.toISOString().split('T')[0];
+    } else if (rangeType === 'thisMonth') {
+        start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'lastMonth') {
+        start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
+        end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+    }
+
+    return { start: start, end: end };
+};
+
+// Dropdown içi - sadece değer atar
+self.setDateRange = function(rangeType) {
+    var range = self.calculateDateRange(rangeType);
+    self.tempFilter.startDate(range.start);
+    self.tempFilter.endDate(range.end);
+    self.tempFilter.dateRangeType(rangeType);
+};
+
+// Hızlı erişim butonları - değer atar VE aramayı tetikler
+self.setQuickDateRange = function(rangeType) {
+    // Mevcut tarih filtresini kaldır
+    self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
+
+    var range = self.calculateDateRange(rangeType);
+    var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
+
+    self.activeFilters.push({
+        type: 'dateRange',
+        value: null,
+        startDate: range.start,
+        endDate: range.end,
+        dateRangeType: rangeType,
+        label: 'Tarih',
+        displayValue: displayValue
+    });
+
+    self.search();  // Otomatik ara
+};
+```
+
+### HTML - Hızlı Erişim Butonları (Dropdown Dışı)
+
+```html
+<!-- Quick Access Row - Filtre kartının içinde, en altta -->
+<div class="border-top pt-2 mt-2">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Quick CallId Search (opsiyonel) -->
+        <div class="input-group input-group-sm" style="max-width: 200px;">
+            <input type="text" class="form-control" data-bind="value: quickCallId, valueUpdate: 'afterkeydown'" placeholder="Çağrı ID...">
+            <button class="btn btn-outline-success" type="button" data-bind="click: searchByCallId">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+        <span class="text-muted">|</span>
+        <!-- Quick Date Range Buttons -->
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('today'); }">Bugün</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('yesterday'); }">Dün</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisWeek'); }">Bu Hafta</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastWeek'); }">Geçen Hafta</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisMonth'); }">Bu Ay</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastMonth'); }">Geçen Ay</button>
+    </div>
+</div>
+```
+
+### HTML - Dropdown İçi Butonlar
+
+```html
+<!-- Date Range seçeneği içinde -->
+<div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+    <div class="d-flex gap-1 mb-1">
+        <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+        <span class="align-self-center">-</span>
+        <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+    </div>
+    <div class="d-flex flex-wrap gap-1">
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-success' : 'btn-outline-secondary'">Bugün</button>
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-success' : 'btn-outline-secondary'">Dün</button>
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-success' : 'btn-outline-secondary'">Bu Hafta</button>
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-success' : 'btn-outline-secondary'">Geçen Hafta</button>
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-success' : 'btn-outline-secondary'">Bu Ay</button>
+        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-success' : 'btn-outline-secondary'">Geçen Ay</button>
+    </div>
+</div>
+```
+
+### Hızlı CallId Arama (Opsiyonel)
+
+```javascript
+// Quick CallId search
+self.quickCallId = ko.observable('');
+self.searchByCallId = function() {
+    var callId = self.quickCallId().trim();
+    if (!callId) return;
+
+    // Mevcut callId filtresini kaldır
+    self.activeFilters.remove(function(f) { return f.type === 'callId'; });
+
+    self.activeFilters.push({
+        type: 'callId',
+        value: callId,
+        label: 'Çağrı ID',
+        displayValue: callId
+    });
+
+    self.quickCallId('');
+    self.search();
+};
+```
+
+### Kullanan Sayfalar
+
+- `/CustomerPortal/Evaluations` - İkinci sekme (Dinlemeler/Ziyaretler)
+- `/CustomerPortal/ExternalEvaluations`
+- `/CustomerPortal/InternalEvaluations`
+- `/CustomerPortal/Penalties`
+- `/CustomerPortal/Organizations`
 
 ---
 
@@ -1171,3 +1352,116 @@ if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
 // YANLIŞ - Negatif filtreleme (kullanılmamalı)
 query = query.Where(e => e.Assignment.Project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey);
 ```
+
+---
+
+## 20. Filter Standardization Pattern (ZORUNLU!)
+
+### ⛔ SADECE ÇOĞUL PARAMETRELER KULLANILIR!
+
+Tüm filter DTO'larında parametreler **ÇOĞUL (List<>)** olmalıdır. Tekil parametreler YASAKTIR.
+
+### DOĞRU - FilterDto Yapısı
+
+```csharp
+public class ReportFilterDto
+{
+    // ✅ DOĞRU - Hepsi çoğul (List<>)
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? EvaluatorIds { get; set; }
+    public List<string>? ProjectTypes { get; set; }
+
+    // Pagination ve sorting - tekil kalabilir
+    public string? SortField { get; set; }
+    public string? SortDirection { get; set; } = "desc";
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+```
+
+### YANLIŞ - Tekil Parametreler (KULLANMA!)
+
+```csharp
+public class ReportFilterDto
+{
+    // ❌ YANLIŞ - Tekil parametreler
+    public int? CustomerId { get; set; }
+    public int? ProjectId { get; set; }
+
+    // ❌ YANLIŞ - İkisi birden (normalization gerektirir)
+    public int? CustomerId { get; set; }
+    public List<int>? CustomerIds { get; set; }
+}
+```
+
+### Entity Query Pattern
+
+```csharp
+// ✅ DOĞRU - Contains() ve Any() kullan
+if (filter.ProjectIds?.Any() == true)
+    query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
+
+if (filter.CustomerIds?.Any() == true)
+    query = query.Where(e => filter.CustomerIds.Contains(e.CustomerId));
+
+// Nullable int için
+if (filter.EvaluatorIds?.Any() == true)
+    query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
+
+// String arama için (case-insensitive)
+if (filter.CustomerIds?.Any() == true)
+    query = query.Where(e => e.CustomerName != null &&
+        filter.CustomerIds.Any(c => e.CustomerName.ToLower().Contains(c.ToString().ToLower())));
+```
+
+### YANLIŞ - Eski Pattern (KULLANMA!)
+
+```csharp
+// ❌ YANLIŞ - Tekil parametre kontrolü
+if (filter.ProjectId.HasValue)
+    query = query.Where(e => e.ProjectId == filter.ProjectId.Value);
+
+// ❌ YANLIŞ - NormalizeFilters() metodu (artık gerekli değil!)
+private void NormalizeFilters(FilterDto filter)
+{
+    if (filter.CustomerId.HasValue && (filter.CustomerIds == null || !filter.CustomerIds.Any()))
+        filter.CustomerIds = new List<int> { filter.CustomerId.Value };
+}
+```
+
+### Controller Pattern
+
+```csharp
+// ✅ DOĞRU - FilterDto parametre olarak
+[HttpGet]
+public async Task<IActionResult> GetAll([FromQuery] ReportFilterDto filter)
+{
+    var result = await _service.GetAllAsync(filter);
+    return Ok(result);
+}
+
+// ❌ YANLIŞ - Ayrı ayrı tekil parametreler
+[HttpGet]
+public async Task<IActionResult> GetAll(
+    [FromQuery] int? customerId,
+    [FromQuery] int? projectId)
+```
+
+### Checklist: Yeni Filter Eklerken
+
+1. [ ] DTO'da sadece çoğul parametreler (`List<>`) tanımla
+2. [ ] Entity sorgularında `.Any()` ve `.Contains()` kullan
+3. [ ] String aramalarda `.ToLower()` ile case-insensitive yap
+4. [ ] Controller'da `[FromQuery] FilterDto filter` kullan
+5. [ ] NormalizeFilters() metodu YAZMA - gerekli değil!
+6. [ ] Nullable int için `.HasValue` kontrolü ekle
+
+### Avantajları
+
+- ✅ NormalizeFilters() metoduna gerek yok
+- ✅ Aynı tip filtreden birden fazla eklenebilir (OR mantığı)
+- ✅ Chip-based filter UI ile uyumlu
+- ✅ Kod tekrarı azalır
+- ✅ Frontend'de addFilter/removeFilter kolaylaşır

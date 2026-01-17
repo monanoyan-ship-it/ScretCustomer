@@ -84,7 +84,9 @@ function CustomerInternalEvaluationsViewModel() {
     // Date range labels
     self.dateRangeLabels = {
         'today': 'Bugün',
+        'yesterday': 'Dün',
         'thisWeek': 'Bu Hafta',
+        'lastWeek': 'Geçen Hafta',
         'thisMonth': 'Bu Ay',
         'lastMonth': 'Geçen Ay'
     };
@@ -96,16 +98,29 @@ function CustomerInternalEvaluationsViewModel() {
 
         if (rangeType === 'today') {
             start = end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'yesterday') {
+            var yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = yesterday.toISOString().split('T')[0];
         } else if (rangeType === 'thisWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
             var weekStart = new Date(today);
             weekStart.setDate(diff);
             start = weekStart.toISOString().split('T')[0];
-            end = new Date().toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var lastWeekEnd = new Date(today);
+            lastWeekEnd.setDate(diff - 1);
+            var lastWeekStart = new Date(lastWeekEnd);
+            lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
+            start = lastWeekStart.toISOString().split('T')[0];
+            end = lastWeekEnd.toISOString().split('T')[0];
         } else if (rangeType === 'thisMonth') {
             start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = new Date().toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
         } else if (rangeType === 'lastMonth') {
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
             end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
@@ -114,12 +129,53 @@ function CustomerInternalEvaluationsViewModel() {
         return { start: start, end: end };
     };
 
-    // Date range helper for UI
+    // Date range helper for UI (dropdown içi)
     self.setDateRange = function(rangeType) {
         var range = self.calculateDateRange(rangeType);
         self.tempFilter.startDate(range.start);
         self.tempFilter.endDate(range.end);
         self.tempFilter.dateRangeType(rangeType);
+    };
+
+    // Quick date range filter - direkt uygula ve ara (hızlı erişim butonları için)
+    self.setQuickDateRange = function(rangeType) {
+        // Mevcut tarih filtresini kaldır
+        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
+
+        var range = self.calculateDateRange(rangeType);
+        var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
+
+        self.activeFilters.push({
+            type: 'dateRange',
+            value: null,
+            startDate: range.start,
+            endDate: range.end,
+            dateRangeType: rangeType,
+            label: 'Tarih',
+            displayValue: displayValue
+        });
+
+        self.search();
+    };
+
+    // Quick CallId search
+    self.quickCallId = ko.observable('');
+    self.searchByCallId = function() {
+        var callId = self.quickCallId().trim();
+        if (!callId) return;
+
+        // Mevcut callId filtresini kaldır
+        self.activeFilters.remove(function(f) { return f.type === 'callId'; });
+
+        self.activeFilters.push({
+            type: 'callId',
+            value: callId,
+            label: 'Çağrı ID',
+            displayValue: callId
+        });
+
+        self.quickCallId('');
+        self.search();
     };
 
     // Add filter
@@ -166,9 +222,7 @@ function CustomerInternalEvaluationsViewModel() {
             }
         }
 
-        // Remove existing filter of same type
-        self.activeFilters.remove(function(f) { return f.type === type; });
-
+        // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push({
             type: type,
             value: filter.value,
@@ -182,6 +236,7 @@ function CustomerInternalEvaluationsViewModel() {
         // Reset temp
         self.resetTempFilter();
         self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
     };
 
     self.resetTempFilter = function() {
@@ -197,10 +252,12 @@ function CustomerInternalEvaluationsViewModel() {
 
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
     };
 
     self.clearFilters = function() {
         self.activeFilters.removeAll();
+        self.search(); // Tüm filtreler temizlenince otomatik ara
     };
 
     // Search
@@ -208,27 +265,69 @@ function CustomerInternalEvaluationsViewModel() {
         self.loadEvaluations(1);
     };
 
-    // Build query params from active filters
+    // Build query params from active filters (çoklu değer desteği)
     self.buildQueryParams = function() {
         var params = {};
+
+        // Çoklu değer için array'ler
+        var projectIds = [];
+        var evaluatorNames = [];
+        var personnelNames = [];
+        var organizationIds = [];
+        var callIds = [];
+        var startDate = null;
+        var endDate = null;
+
         self.activeFilters().forEach(function(f) {
-            if (f.type === 'project') params.projectId = f.value;
-            if (f.type === 'evaluator') params.evaluatorName = f.value;
-            if (f.type === 'personnel') params.personnelName = f.value;
-            if (f.type === 'organization') params.organizationId = f.value;
-            if (f.type === 'callId') params.callId = f.value;
-            if (f.type === 'dateRange') {
-                // If it's a named range type, recalculate dates dynamically
-                if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
-                    var range = self.calculateDateRange(f.dateRangeType);
-                    params.startDate = range.start;
-                    params.endDate = range.end;
-                } else {
-                    if (f.startDate) params.startDate = f.startDate;
-                    if (f.endDate) params.endDate = f.endDate;
-                }
+            switch (f.type) {
+                case 'project':
+                    projectIds.push(f.value);
+                    break;
+                case 'evaluator':
+                    evaluatorNames.push(f.value);
+                    break;
+                case 'personnel':
+                    personnelNames.push(f.value);
+                    break;
+                case 'organization':
+                    organizationIds.push(f.value);
+                    break;
+                case 'callId':
+                    callIds.push(f.value);
+                    break;
+                case 'dateRange':
+                    // If it's a named range type, recalculate dates dynamically
+                    if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                        var range = self.calculateDateRange(f.dateRangeType);
+                        startDate = range.start;
+                        endDate = range.end;
+                    } else {
+                        if (f.startDate) startDate = f.startDate;
+                        if (f.endDate) endDate = f.endDate;
+                    }
+                    break;
             }
         });
+
+        // Array'leri params'a ekle (boş olmayanları)
+        if (projectIds.length === 1) params.projectId = projectIds[0];
+        else if (projectIds.length > 1) params.projectIds = projectIds;
+
+        if (evaluatorNames.length === 1) params.evaluatorName = evaluatorNames[0];
+        else if (evaluatorNames.length > 1) params.evaluatorNames = evaluatorNames;
+
+        if (personnelNames.length === 1) params.personnelName = personnelNames[0];
+        else if (personnelNames.length > 1) params.personnelNames = personnelNames;
+
+        if (organizationIds.length === 1) params.organizationId = organizationIds[0];
+        else if (organizationIds.length > 1) params.organizationIds = organizationIds;
+
+        if (callIds.length === 1) params.callId = callIds[0];
+        else if (callIds.length > 1) params.callIds = callIds;
+
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+
         return params;
     };
 

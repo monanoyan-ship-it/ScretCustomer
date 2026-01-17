@@ -490,7 +490,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = null,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            Groups = BuildGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
         };
     }
@@ -585,7 +585,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = evaluation.AssignmentPeriodId,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            Groups = BuildGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = evaluation.Answers
                 .Select(a => MapAnswerToDto(a))
                 .ToList()
@@ -962,45 +962,46 @@ public class EvaluationService : IEvaluationService
     /// <summary>
     /// Soruları PenaltyType'a göre grupla: Sorular, Sarı Kartlar, Kırmızı Kartlar
     /// </summary>
-    private List<EvaluationGroupDto> BuildGroupsFromQuestions(List<Question>? questions)
+    private List<PenaltyGroupDto> BuildPenaltyGroupsFromQuestions(List<Question>? questions)
     {
         if (questions == null || !questions.Any())
-            return new List<EvaluationGroupDto>();
+            return new List<PenaltyGroupDto>();
 
-        var result = new List<EvaluationGroupDto>();
+        var result = new List<PenaltyGroupDto>();
         var order = 1;
 
         // 1. Normal Sorular (PenaltyType = None)
         var normalQuestions = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.None).OrderBy(q => q.Order).ToList();
         if (normalQuestions.Any())
         {
-            result.Add(CreateQuestionGroup(normalQuestions, "Sorular", order++));
+            result.Add(CreatePenaltyGroup(normalQuestions, "Sorular", "None", order++));
         }
 
         // 2. Sarı Kartlar
         var yellowCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.YellowCard).OrderBy(q => q.Order).ToList();
         if (yellowCards.Any())
         {
-            result.Add(CreateQuestionGroup(yellowCards, "Sarı Kartlar", order++));
+            result.Add(CreatePenaltyGroup(yellowCards, "Sarı Kartlar", "YellowCard", order++));
         }
 
         // 3. Kırmızı Kartlar
         var redCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.RedCard).OrderBy(q => q.Order).ToList();
         if (redCards.Any())
         {
-            result.Add(CreateQuestionGroup(redCards, "Kırmızı Kartlar", order++));
+            result.Add(CreatePenaltyGroup(redCards, "Kırmızı Kartlar", "RedCard", order++));
         }
 
         return result;
     }
 
-    private EvaluationGroupDto CreateQuestionGroup(List<Question> questions, string name, int order)
+    private PenaltyGroupDto CreatePenaltyGroup(List<Question> questions, string name, string penaltyType, int order)
     {
-        return new EvaluationGroupDto
+        return new PenaltyGroupDto
         {
             Id = order,
             Name = name,
             Order = order,
+            PenaltyType = penaltyType,
             WeightPoints = questions.Sum(q => q.WeightPoints),
             MaxPoints = questions.Sum(q => q.MaxPoints),
             Questions = questions.Select(q => new EvaluationQuestionDto

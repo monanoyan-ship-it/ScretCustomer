@@ -36,16 +36,11 @@ public class ChecklistsApiController : BaseApiController
     /// </summary>
     [HttpGet]
     [Authorize(Roles = "Admin,QualitySpecialist,Evaluator")]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] string? search = null,
-        [FromQuery] int? customerId = null,
-        [FromQuery] int? customerOrganizationId = null,
-        [FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetAll([FromQuery] ChecklistFilterDto filter)
     {
         try
         {
-            // Optimize edilmiş liste methodu kullan (Questions yüklemez)
-            var checklists = await _checklistService.GetListAsync(search, customerId, customerOrganizationId, includeInactive);
+            var checklists = await _checklistService.GetListAsync(filter);
             return Ok(checklists);
         }
         catch (Exception ex)

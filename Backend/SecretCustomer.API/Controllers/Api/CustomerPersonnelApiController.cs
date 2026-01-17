@@ -25,13 +25,16 @@ public class CustomerPersonnelApiController : BaseApiController
         _localizationService = localizationService;
     }
 
+    /// <summary>
+    /// Get customer personnel with server-side filtering, pagination
+    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
+    public async Task<IActionResult> GetAll([FromQuery] PersonnelFilterDto filter)
     {
         try
         {
-            var personnel = await _personnelService.GetAllAsync(includeInactive);
-            return Ok(personnel);
+            var result = await _personnelService.GetFilteredListAsync(filter);
+            return Ok(result);
         }
         catch (Exception ex)
         {

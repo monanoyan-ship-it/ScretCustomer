@@ -196,3 +196,66 @@ public class UpdatePersonnelOrganizationAssignmentDto
     [StringLength(500)]
     public string? Notes { get; set; }
 }
+
+/// <summary>
+/// Organizasyon filtre DTO (çoklu değer desteği)
+/// </summary>
+public class OrganizationFilterDto
+{
+    /// <summary>
+    /// Genel arama terimi (ad, kod, açıklama)
+    /// </summary>
+    public string? SearchTerm { get; set; }
+
+    /// <summary>
+    /// Müşteri ID'leri (OR mantığı)
+    /// </summary>
+    public List<int>? CustomerIds { get; set; }
+
+    /// <summary>
+    /// Organizasyon adları (OR mantığı, partial match, case-insensitive)
+    /// </summary>
+    public List<string>? Names { get; set; }
+
+    /// <summary>
+    /// Organizasyon kodları (OR mantığı, partial match, case-insensitive)
+    /// </summary>
+    public List<string>? Codes { get; set; }
+
+    /// <summary>
+    /// Seviye filtresi (OR mantığı)
+    /// </summary>
+    public List<int>? Levels { get; set; }
+
+    /// <summary>
+    /// Durum filtresi
+    /// </summary>
+    public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// Pasif organizasyonları dahil et
+    /// </summary>
+    public bool IncludeInactive { get; set; } = false;
+
+    /// <summary>
+    /// Sayfa numarası (1'den başlar)
+    /// </summary>
+    public int Page { get; set; } = 1;
+
+    /// <summary>
+    /// Sayfa boyutu
+    /// </summary>
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Sayfalanmış organizasyon sonucu
+/// </summary>
+public class PagedOrganizationResult
+{
+    public List<CustomerOrganizationDto> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+}

@@ -119,8 +119,8 @@ public class EvaluationFormDto
     public int? SelectedPeriodId { get; set; }
     public List<PeriodOptionDto> AvailablePeriods { get; set; } = new();
 
-    // Soru grupları
-    public List<EvaluationGroupDto> Groups { get; set; } = new();
+    // Ceza tipine göre soru grupları (Sorular, Sarı Kartlar, Kırmızı Kartlar)
+    public List<PenaltyGroupDto> PenaltyGroups { get; set; } = new();
 
     // Mevcut cevaplar (düzenleme için)
     public List<AnswerDto> ExistingAnswers { get; set; } = new();
@@ -154,12 +154,12 @@ public class PeriodOptionDto
     public int CompletedCount { get; set; }
 }
 
-public class EvaluationGroupDto
+public class PenaltyGroupDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Order { get; set; }
-    public string? GroupType { get; set; }
+    public string? PenaltyType { get; set; }
     public decimal WeightPoints { get; set; }
     public decimal MaxPoints { get; set; }
     public List<EvaluationQuestionDto> Questions { get; set; } = new();

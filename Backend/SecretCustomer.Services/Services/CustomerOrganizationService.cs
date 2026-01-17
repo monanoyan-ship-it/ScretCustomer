@@ -105,6 +105,82 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         return orgs.Select(MapToDto);
     }
 
+    public async Task<PagedOrganizationResult> GetFilteredListAsync(OrganizationFilterDto filter)
+    {
+        var query = _context.CustomerOrganizations
+            .Include(o => o.Customer)
+            .Include(o => o.Parent)
+            .Include(o => o.PersonnelAssignments)
+            .Include(o => o.Children)
+            .Where(o => !o.IsDeleted)
+            .AsQueryable();
+
+        // Active status filter
+        if (!filter.IncludeInactive)
+        {
+            if (filter.IsActive.HasValue)
+                query = query.Where(o => o.IsActive == filter.IsActive.Value);
+            else
+                query = query.Where(o => o.IsActive);
+        }
+
+        // Çoklu müşteri filtresi (OR mantığı)
+        if (filter.CustomerIds?.Any() == true)
+        {
+            query = query.Where(o => filter.CustomerIds.Contains(o.CustomerId));
+        }
+
+        // Genel arama terimi
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(o =>
+                o.Name.ToLower().Contains(term) ||
+                (o.Code != null && o.Code.ToLower().Contains(term)) ||
+                (o.Description != null && o.Description.ToLower().Contains(term)));
+        }
+
+        // Çoklu ad filtresi (OR mantığı, partial match, case-insensitive)
+        if (filter.Names?.Any() == true)
+        {
+            var names = filter.Names.Select(n => n.ToLower()).ToList();
+            query = query.Where(o => names.Any(n => o.Name.ToLower().Contains(n)));
+        }
+
+        // Çoklu kod filtresi (OR mantığı, partial match, case-insensitive)
+        if (filter.Codes?.Any() == true)
+        {
+            var codes = filter.Codes.Select(c => c.ToLower()).ToList();
+            query = query.Where(o => o.Code != null && codes.Any(c => o.Code.ToLower().Contains(c)));
+        }
+
+        // Çoklu seviye filtresi (OR mantığı)
+        if (filter.Levels?.Any() == true)
+        {
+            query = query.Where(o => filter.Levels.Contains(o.Level));
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync();
+
+        // Sorting
+        query = query.OrderBy(o => o.Customer!.CompanyName).ThenBy(o => o.Name);
+
+        // Get entities
+        var entities = await query
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        return new PagedOrganizationResult
+        {
+            Items = entities.Select(MapToDto).ToList(),
+            TotalCount = totalCount,
+            Page = filter.Page,
+            PageSize = filter.PageSize
+        };
+    }
+
     public async Task<IEnumerable<CustomerOrganizationDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false)
     {
         var query = _context.CustomerOrganizations

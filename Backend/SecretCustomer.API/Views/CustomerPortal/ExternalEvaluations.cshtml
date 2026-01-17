@@ -32,6 +32,7 @@
                                     <option value="organization">@Html.T("CustomerPortal.Evaluations.Organization", "Organizasyon")</option>
                                     <option value="callId">@Html.T("Common.Id", "Çağrı ID")</option>
                                     <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                    <option value="scoreRange">@Html.T("Common.ScoreRange", "Puan Aralığı")</option>
                                 </select>
                             </div>
                             <!-- Dynamic Filter Input -->
@@ -60,9 +61,19 @@
                                 </div>
                                 <div class="d-flex flex-wrap gap-1">
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Today", "Bugün")</button>
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Yesterday", "Dün")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisMonth", "Bu Ay")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastMonth", "Geçen Ay")</button>
+                                </div>
+                            </div>
+                            <!-- Score Range -->
+                            <div data-bind="visible: selectedFilterType() === 'scoreRange'" class="mb-2">
+                                <div class="d-flex gap-1">
+                                    <input type="number" class="form-control form-control-sm" data-bind="value: tempFilter.minScore" placeholder="Min" min="0" max="100">
+                                    <span class="align-self-center">-</span>
+                                    <input type="number" class="form-control form-control-sm" data-bind="value: tempFilter.maxScore" placeholder="Max" min="0" max="100">
                                 </div>
                             </div>
                             <!-- Add Button -->
@@ -124,6 +135,26 @@
                                 <i class="bi bi-graph-up me-2"></i>@Html.T("Report.ProjectPerformance", "Proje Performans")
                             </a></li>
                         </ul>
+                    </div>
+                </div>
+                <!-- Quick Access Row -->
+                <div class="border-top pt-2 mt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Quick CallId Search -->
+                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                            <input type="text" class="form-control" data-bind="value: quickCallId, valueUpdate: 'afterkeydown', event: { keypress: function(d, e) { if (e.keyCode === 13) { searchByCallId(); return false; } return true; } }" placeholder="@Html.T("Common.CallId", "Çağrı ID...")">
+                            <button class="btn btn-outline-success" type="button" data-bind="click: searchByCallId">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <span class="text-muted">|</span>
+                        <!-- Quick Date Range Buttons -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('today'); }">@Html.T("Common.Today", "Bugün")</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
                     </div>
                 </div>
             </div>
@@ -449,12 +480,12 @@
                         </div>
 
                         <!-- Evaluation Comment -->
-                        <div class="card mb-4" data-bind="visible: comment">
+                        <div class="card mb-4" data-bind="visible: evaluationComment">
                             <div class="card-header bg-info text-white">
                                 <h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h6>
                             </div>
                             <div class="card-body">
-                                <p class="mb-0" data-bind="text: comment"></p>
+                                <p class="mb-0" data-bind="text: evaluationComment"></p>
                             </div>
                         </div>
 
@@ -476,16 +507,11 @@
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                        <!-- ko foreach: groups || [] -->
-                                            <!-- ko foreach: questions -->
-                                            <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
-                                                <td class="text-wrap" data-bind="text: $parent.groupName"></td>
+                                        <tbody data-bind="foreach: answers || []">
+                                            <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
+                                                <td class="text-wrap" data-bind="text: groupName || '-'"></td>
                                                 <td class="text-wrap">
                                                     <span data-bind="text: questionText"></span>
-                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
-                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
-                                                    <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
                                                     <!-- ko if: givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
@@ -515,8 +541,6 @@
                                                     <span data-bind="text: notes || '-'"></span>
                                                 </td>
                                             </tr>
-                                            <!-- /ko -->
-                                        <!-- /ko -->
                                         </tbody>
                                     </table>
                                 </div>

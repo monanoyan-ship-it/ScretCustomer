@@ -109,7 +109,14 @@
 <!-- View Modal -->
 <div class="modal fade" data-bind="css: { show: isViewModalOpen }, style: { display: isViewModalOpen() ? 'block' : 'none' }" tabindex="-1">
     <div class="modal-dialog modal-xl">
-        <div class="modal-content" data-bind="with: viewingChecklist">
+        <div class="modal-content">
+            <!-- Loading State -->
+            <div data-bind="visible: isEditLoading" class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</p>
+            </div>
+            <!-- Content (with viewingChecklist) -->
+            <!-- ko with: viewingChecklist -->
             <div class="modal-header">
                 <h5 class="modal-title" data-bind="text: name"></h5>
                 <button type="button" class="btn-close" data-bind="click: $parent.closeViewModal"></button>
@@ -174,6 +181,7 @@
                     <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Close", "Kapat")
                 </button>
             </div>
+            <!-- /ko -->
         </div>
     </div>
 </div>

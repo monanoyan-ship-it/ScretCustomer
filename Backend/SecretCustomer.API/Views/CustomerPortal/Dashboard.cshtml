@@ -14,62 +14,62 @@
     <!-- Dashboard Content -->
     <div data-bind="visible: !isLoading()">
         <!-- Summary Cards -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.TotalEvaluations", "Toplam Değerlendirme")</h6>
-                                <h2 class="mb-0" data-bind="text: stats().totalEvaluations || 0"></h2>
+                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.TotalEvaluations", "Toplam Değerlendirme")</small>
+                                <h3 class="mb-0 mt-1" data-bind="text: stats().totalEvaluations || 0"></h3>
                             </div>
-                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
-                                <i class="bi bi-clipboard-check text-success fs-4"></i>
+                            <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-clipboard-check text-success fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</h6>
-                                <h2 class="mb-0" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h2>
+                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</small>
+                                <h3 class="mb-0 mt-1" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h3>
                             </div>
-                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
-                                <i class="bi bi-star-fill text-primary fs-4"></i>
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-star-fill text-primary fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.OrganizationCount", "Organizasyon")</h6>
-                                <h2 class="mb-0" data-bind="text: stats().organizationCount || 0"></h2>
+                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.OrganizationCount", "Organizasyon")</small>
+                                <h3 class="mb-0 mt-1" data-bind="text: stats().organizationCount || 0"></h3>
                             </div>
-                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
-                                <i class="bi bi-building text-info fs-4"></i>
+                            <div class="bg-info bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-building text-info fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.Dashboard.ThisMonth", "Bu Ay")</h6>
-                                <h2 class="mb-0" data-bind="text: stats().thisMonthEvaluations || 0"></h2>
+                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.ThisMonth", "Bu Ay")</small>
+                                <h3 class="mb-0 mt-1" data-bind="text: stats().thisMonthEvaluations || 0"></h3>
                             </div>
-                            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
-                                <i class="bi bi-calendar-check text-warning fs-4"></i>
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-calendar-check text-warning fs-5"></i>
                             </div>
                         </div>
                     </div>
@@ -78,23 +78,25 @@
         </div>
 
         <!-- Charts Row -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
-                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-xl-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-2">
+                        <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</h6>
                     </div>
                     <div class="card-body">
-                        <canvas id="monthlyChart" height="300"></canvas>
+                        <div style="position: relative; height: 280px;">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
+            <div class="col-12 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-2">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h5>
-                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#scoreDistributionFilter">
+                            <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h6>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-1" type="button" data-bs-toggle="collapse" data-bs-target="#scoreDistributionFilter">
                                 <i class="bi bi-funnel"></i>
                             </button>
                         </div>
@@ -115,29 +117,31 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="scoreDistributionChart" height="300"></canvas>
+                        <div style="position: relative; height: 280px;">
+                            <canvas id="scoreDistributionChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Question Trends Section -->
-        <div class="row g-4 mb-4">
+        <div class="row g-3 mb-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0">
+                    <div class="card-header bg-white border-0 py-2">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>@Html.T("CustomerPortal.Dashboard.QuestionTrend", "Soru Bazlı Başarı Trendi")</h5>
-                            <div class="d-flex gap-2 align-items-center">
-                                <select class="form-select form-select-sm" style="width: auto;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
-                                <ul class="nav nav-pills nav-pills-sm">
+                            <h6 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>@Html.T("CustomerPortal.Dashboard.QuestionTrend", "Soru Bazlı Başarı Trendi")</h6>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                <select class="form-select form-select-sm" style="width: auto; min-width: 150px;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
+                                <ul class="nav nav-pills nav-pills-sm mb-0">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="#" data-bind="css: { active: questionTrendTab() === 'groups' }, click: function() { questionTrendTab('groups'); loadQuestionGroupTrend(); }">
+                                        <a class="nav-link py-1 px-2" href="#" data-bind="css: { active: questionTrendTab() === 'groups' }, click: function() { questionTrendTab('groups'); loadQuestionGroupTrend(); }">
                                             @Html.T("CustomerPortal.Dashboard.QuestionGroups", "Soru Grupları")
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="#" data-bind="css: { active: questionTrendTab() === 'questions' }, click: function() { questionTrendTab('questions'); loadQuestionTrend(); }">
+                                        <a class="nav-link py-1 px-2" href="#" data-bind="css: { active: questionTrendTab() === 'questions' }, click: function() { questionTrendTab('questions'); loadQuestionTrend(); }">
                                             @Html.T("CustomerPortal.Dashboard.Questions", "Sorular")
                                         </a>
                                     </li>
@@ -159,7 +163,9 @@
                         </div>
                         <!-- Chart -->
                         <div data-bind="visible: !isQuestionTrendLoading() && questionTrendData().length > 0">
-                            <canvas id="questionTrendChart" height="350"></canvas>
+                            <div style="position: relative; height: 320px;">
+                                <canvas id="questionTrendChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,9 +174,9 @@
 
         <!-- Recent Evaluations -->
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("CustomerPortal.Dashboard.RecentEvaluations", "Son Değerlendirmeler")</h5>
-                <a href="/CustomerPortal/Evaluations" class="btn btn-sm btn-outline-success">
+            <div class="card-header bg-white border-0 py-2 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("CustomerPortal.Dashboard.RecentEvaluations", "Son Değerlendirmeler")</h6>
+                <a href="/CustomerPortal/ExternalEvaluations" class="btn btn-sm btn-outline-success py-1">
                     @Html.T("Common.ViewAll", "Tümünü Gör") <i class="bi bi-arrow-right"></i>
                 </a>
             </div>

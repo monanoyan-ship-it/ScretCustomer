@@ -431,12 +431,12 @@
                         </div>
 
                         <!-- Evaluation Comment -->
-                        <div class="card mb-4" data-bind="visible: comment">
+                        <div class="card mb-4" data-bind="visible: evaluationComment">
                             <div class="card-header bg-info text-white">
                                 <h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h6>
                             </div>
                             <div class="card-body">
-                                <p class="mb-0" data-bind="text: comment"></p>
+                                <p class="mb-0" data-bind="text: evaluationComment"></p>
                             </div>
                         </div>
 
@@ -458,16 +458,11 @@
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                        <!-- ko foreach: $data.groups || [] -->
-                                            <!-- ko foreach: questions -->
-                                            <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
-                                                <td class="text-wrap" data-bind="text: $parent.groupName"></td>
+                                        <tbody data-bind="foreach: answers || []">
+                                            <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
+                                                <td class="text-wrap" data-bind="text: groupName || '-'"></td>
                                                 <td class="text-wrap">
                                                     <span data-bind="text: questionText"></span>
-                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
-                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
-                                                    <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
                                                     <!-- ko if: givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
@@ -497,8 +492,6 @@
                                                     <span data-bind="text: notes || '-'"></span>
                                                 </td>
                                             </tr>
-                                            <!-- /ko -->
-                                        <!-- /ko -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -506,16 +499,14 @@
                         </div>
 
                         <!-- Notlar -->
-                        <!-- ko if: comment -->
-                        <div class="card mt-3">
+                        <div class="card mt-3" data-bind="visible: notes">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0"><i class="bi bi-chat-square-text"></i> @Html.T("Evaluation.Notes", "Notlar")</h6>
                             </div>
                             <div class="card-body">
-                                <p class="mb-0" data-bind="text: comment"></p>
+                                <p class="mb-0" data-bind="text: notes"></p>
                             </div>
                         </div>
-                        <!-- /ko -->
                     </div>
                 </div>
                 <div class="modal-footer">

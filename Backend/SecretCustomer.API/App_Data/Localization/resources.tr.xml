@@ -4151,7 +4151,7 @@
     <Value>Projeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Organizations">
-    <Value>Şubeler</Value>
+    <Value>Organizasyonlar</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Supervisors">
     <Value>Süpervizörler</Value>

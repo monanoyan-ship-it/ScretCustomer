@@ -11,13 +11,177 @@ function CustomerSuggestionsViewModel() {
     // Filter options (müşteriye özel)
     self.projects = ko.observableArray([]);
 
-    // Filters (Değerlendirici filtresi YOK - müşteriler görmeyecek)
-    self.filter = {
+    // Filter UI - Chip-based filtre sistemi
+    self.selectedFilterType = ko.observable('');
+    self.tempFilter = {
         projectId: ko.observable(''),
-        checklistId: ko.observable(''),
         searchText: ko.observable(''),
         startDate: ko.observable(''),
-        endDate: ko.observable('')
+        endDate: ko.observable(''),
+        dateRangeType: ko.observable('')
+    };
+
+    // Active filters (chip-based)
+    self.activeFilters = ko.observableArray([]);
+
+    // Date range labels
+    self.dateRangeLabels = {
+        'today': 'Bugün',
+        'yesterday': 'Dün',
+        'thisWeek': 'Bu Hafta',
+        'lastWeek': 'Geçen Hafta',
+        'thisMonth': 'Bu Ay',
+        'lastMonth': 'Geçen Ay'
+    };
+
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        if (type === 'project') return self.tempFilter.projectId();
+        if (type === 'searchText') return self.tempFilter.searchText();
+        if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
+        return false;
+    });
+
+    // Date range helper
+    self.calculateDateRange = function(rangeType) {
+        var today = new Date();
+        var start, end;
+
+        if (rangeType === 'today') {
+            start = end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'yesterday') {
+            var yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = yesterday.toISOString().split('T')[0];
+        } else if (rangeType === 'thisWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var weekStart = new Date(today);
+            weekStart.setDate(diff);
+            start = weekStart.toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var thisWeekStart = new Date(today);
+            thisWeekStart.setDate(diff);
+            var lastWeekStart = new Date(thisWeekStart);
+            lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+            var lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+            start = lastWeekStart.toISOString().split('T')[0];
+            end = lastWeekEnd.toISOString().split('T')[0];
+        } else if (rangeType === 'thisMonth') {
+            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastMonth') {
+            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
+            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+        }
+
+        return { start: start, end: end };
+    };
+
+    // Date range helper for UI (dropdown içi)
+    self.setDateRange = function(rangeType) {
+        var range = self.calculateDateRange(rangeType);
+        self.tempFilter.startDate(range.start);
+        self.tempFilter.endDate(range.end);
+        self.tempFilter.dateRangeType(rangeType);
+    };
+
+    // Quick date range filter - direkt uygula ve ara
+    self.setQuickDateRange = function(rangeType) {
+        // Mevcut tarih filtresini kaldır
+        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
+
+        var range = self.calculateDateRange(rangeType);
+        var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
+
+        self.activeFilters.push({
+            type: 'dateRange',
+            value: null,
+            startDate: range.start,
+            endDate: range.end,
+            dateRangeType: rangeType,
+            label: 'Tarih',
+            displayValue: displayValue
+        });
+
+        self.search();
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+        var label = '';
+        var displayValue = '';
+
+        if (type === 'project') {
+            filter.value = self.tempFilter.projectId();
+            var project = self.projects().find(function(p) { return p.id == filter.value; });
+            label = 'Proje';
+            displayValue = project ? project.name : filter.value;
+        } else if (type === 'searchText') {
+            filter.value = self.tempFilter.searchText();
+            label = 'Metin';
+            displayValue = filter.value;
+        } else if (type === 'dateRange') {
+            filter.dateRangeType = self.tempFilter.dateRangeType();
+            filter.startDate = self.tempFilter.startDate();
+            filter.endDate = self.tempFilter.endDate();
+            label = 'Tarih';
+            if (filter.dateRangeType && self.dateRangeLabels[filter.dateRangeType]) {
+                displayValue = self.dateRangeLabels[filter.dateRangeType];
+            } else {
+                displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
+            }
+        }
+
+        // Tüm filtre tipleri çoklu değer destekler
+        self.activeFilters.push({
+            type: type,
+            value: filter.value,
+            startDate: filter.startDate,
+            endDate: filter.endDate,
+            dateRangeType: filter.dateRangeType,
+            label: label,
+            displayValue: displayValue
+        });
+
+        // Reset temp
+        self.resetTempFilter();
+        self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
+    };
+
+    self.resetTempFilter = function() {
+        self.tempFilter.projectId('');
+        self.tempFilter.searchText('');
+        self.tempFilter.startDate('');
+        self.tempFilter.endDate('');
+        self.tempFilter.dateRangeType('');
+    };
+
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
+    };
+
+    self.clearFilters = function() {
+        self.activeFilters.removeAll();
+        self.search(); // Tüm filtreler temizlenince otomatik ara
+    };
+
+    // Search
+    self.search = function() {
+        self.currentPage(1);
+        self.loadReport();
     };
 
     // Summary
@@ -71,14 +235,38 @@ function CustomerSuggestionsViewModel() {
             });
     };
 
-    // Build query params
+    // Build query params from active filters
     self.buildQueryParams = function(includePagination) {
         var params = [];
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.checklistId()) params.push('checklistId=' + self.filter.checklistId());
-        if (self.filter.searchText()) params.push('searchText=' + encodeURIComponent(self.filter.searchText()));
-        if (self.filter.startDate()) params.push('startDate=' + self.filter.startDate());
-        if (self.filter.endDate()) params.push('endDate=' + self.filter.endDate());
+
+        // Çoklu değer desteği için array'ler
+        var projectIds = [];
+        var searchTexts = [];
+
+        self.activeFilters().forEach(function(f) {
+            if (f.type === 'project') {
+                projectIds.push(f.value);
+            } else if (f.type === 'searchText') {
+                searchTexts.push(f.value);
+            } else if (f.type === 'dateRange') {
+                if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                    var range = self.calculateDateRange(f.dateRangeType);
+                    params.push('startDate=' + range.start);
+                    params.push('endDate=' + range.end);
+                } else {
+                    if (f.startDate) params.push('startDate=' + f.startDate);
+                    if (f.endDate) params.push('endDate=' + f.endDate);
+                }
+            }
+        });
+
+        // Çoklu değerleri query string'e ekle
+        projectIds.forEach(function(id) { params.push('projectId=' + id); });
+        // SearchText için birleştir (veya her birini ayrı gönder)
+        if (searchTexts.length > 0) {
+            params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
+        }
+
         if (includePagination) {
             params.push('page=' + self.currentPage());
             params.push('pageSize=' + self.pageSize());
@@ -124,23 +312,6 @@ function CustomerSuggestionsViewModel() {
         .finally(function() {
             self.isLoading(false);
         });
-    };
-
-    // Apply filters
-    self.applyFilters = function() {
-        self.currentPage(1);
-        self.loadReport();
-    };
-
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.projectId('');
-        self.filter.checklistId('');
-        self.filter.searchText('');
-        self.filter.startDate('');
-        self.filter.endDate('');
-        self.currentPage(1);
-        self.loadReport();
     };
 
     // Pagination

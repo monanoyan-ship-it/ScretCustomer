@@ -9,72 +9,110 @@
         <div class="btn-group">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
-                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "İndiriliyor...")
+                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
                 </span>
             </button>
             <button class="btn btn-outline-success" data-bind="click: exportDetailedToExcel, disable: isExporting">
-                <i class="bi bi-file-earmark-spreadsheet"></i> @Html.T("Report.DetailedExcel", "Detaylı Excel")
+                <i class="bi bi-file-earmark-spreadsheet"></i> @Html.T("Report.DetailedExcel", "Detayli Excel")
             </button>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-funnel"></i> @Html.T("Common.Filters", "Filtreler")</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tüm Projeler")'"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Branch", "Şube")</label>
-                    <select class="form-select" data-bind="value: filter.branchId, options: branches, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllBranches", "Tüm Şubeler")'"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Evaluator", "Değerlendirici")</label>
-                    <select class="form-select" data-bind="value: filter.evaluatorId, options: evaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Report.AllEvaluators", "Tüm Değerlendiriciler")'"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Report.Checklist", "Kontrol Listesi")</label>
-                    <select class="form-select" data-bind="value: filter.checklistId, options: checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllChecklists", "Tüm Listeler")'"></select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.Region", "Bölge")</label>
-                    <select class="form-select" data-bind="value: filter.region, options: regions, optionsCaption: '@Html.T("Report.AllRegions", "Tüm Bölgeler")'"></select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
-                    <select class="form-select" data-bind="value: filter.status">
-                        <option value="">@Html.T("Report.AllStatuses", "Tüm Durumlar")</option>
-                        <option value="Completed">@Html.T("Report.Status.Completed", "Tamamlandı")</option>
-                        <option value="Draft">@Html.T("Report.Status.Draft", "Taslak")</option>
-                        <option value="InProgress">@Html.T("Report.Status.InProgress", "Devam Eden")</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.StartDate", "Başlangıç Tarihi")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.startDate">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Report.EndDate", "Bitiş Tarihi")</label>
-                    <input type="date" class="form-control" data-bind="value: filter.endDate">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="btn-group w-100">
-                        <button class="btn btn-primary" data-bind="click: applyFilters">
-                            <i class="bi bi-search"></i> @Html.T("Common.Search", "Ara")
-                        </button>
-                        <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
-                            <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+    <div class="card mb-4">
+        <div class="card-body py-2">
+            <!-- Filter Selector & Active Filters -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Add Filter Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
+                    </button>
+                    <div class="dropdown-menu p-3" style="min-width: 320px;">
+                        <!-- Filter Type Selector -->
+                        <div class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                                <option value="">@Html.T("Common.SelectFilter", "Filtre Secin...")</option>
+                                <option value="project">@Html.T("Report.Project", "Proje")</option>
+                                <option value="branch">@Html.T("Report.Branch", "Sube/Organizasyon")</option>
+                                <option value="evaluator">@Html.T("Report.Evaluator", "Degerlendirici")</option>
+                                <option value="checklist">@Html.T("Report.Checklist", "Kontrol Listesi")</option>
+                                <option value="status">@Html.T("Common.Status", "Durum")</option>
+                                <option value="dateRange">@Html.T("Common.DateRange", "Tarih Araligi")</option>
+                            </select>
+                        </div>
+                        <!-- Dynamic Filter Input -->
+                        <!-- Project -->
+                        <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
+                        </div>
+                        <!-- Branch/Organization -->
+                        <div data-bind="visible: selectedFilterType() === 'branch'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: branches, optionsText: 'name', optionsValue: 'id', value: tempFilter.branchId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
+                        </div>
+                        <!-- Evaluator -->
+                        <div data-bind="visible: selectedFilterType() === 'evaluator'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: evaluators, optionsText: 'fullName', optionsValue: 'id', value: tempFilter.evaluatorId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
+                        </div>
+                        <!-- Checklist -->
+                        <div data-bind="visible: selectedFilterType() === 'checklist'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: checklists, optionsText: 'name', optionsValue: 'id', value: tempFilter.checklistId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
+                        </div>
+                        <!-- Status -->
+                        <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
+                                <option value="">@Html.T("Common.Select", "Secin...")</option>
+                                <option value="Completed">@Html.T("Report.Status.Completed", "Tamamlandi")</option>
+                                <option value="Draft">@Html.T("Report.Status.Draft", "Taslak")</option>
+                                <option value="InProgress">@Html.T("Report.Status.InProgress", "Devam Eden")</option>
+                            </select>
+                        </div>
+                        <!-- Date Range -->
+                        <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                            <div class="d-flex gap-1 mb-1">
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                                <span class="align-self-center">-</span>
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <!-- ko foreach: dateRanges -->
+                                <button type="button" class="btn btn-sm"
+                                    data-bind="click: function() { $parent.setTempDateRange(systemName); },
+                                               text: name,
+                                               css: $parent.tempFilter.selectedDateRangeType() === systemName ? 'btn-primary' : 'btn-outline-secondary'"></button>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <!-- Add Button -->
+                        <button type="button" class="btn btn-primary btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
                         </button>
                     </div>
                 </div>
+
+                <!-- Active Filters (Chips) -->
+                <!-- ko foreach: activeFilters -->
+                <span class="badge bg-primary d-flex align-items-center gap-1 py-2 px-2">
+                    <span data-bind="text: label"></span>: <strong data-bind="text: displayValue"></strong>
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
+                </span>
+                <!-- /ko -->
+
+                <!-- Clear All -->
+                <button class="btn btn-outline-danger btn-sm" data-bind="visible: activeFilters().length > 0, click: clearFilters">
+                    <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
+                </button>
+
+                <!-- Spacer -->
+                <div class="flex-grow-1"></div>
+
+                <!-- Search Button -->
+                <button class="btn btn-primary btn-sm" data-bind="click: search">
+                    <i class="bi bi-search me-1"></i>@Html.T("Common.Search", "Ara")
+                </button>
             </div>
         </div>
     </div>
@@ -116,7 +154,7 @@
         <div class="col-md-2">
             <div class="card bg-secondary text-white h-100">
                 <div class="card-body py-2">
-                    <h6 class="text-white-50 mb-0">@Html.T("Report.YellowCard", "Sarı Kart")</h6>
+                    <h6 class="text-white-50 mb-0">@Html.T("Report.YellowCard", "Sari Kart")</h6>
                     <h3 class="mb-0" data-bind="text: totalYellowCards"></h3>
                 </div>
             </div>
@@ -124,7 +162,7 @@
         <div class="col-md-2">
             <div class="card bg-danger text-white h-100">
                 <div class="card-body py-2">
-                    <h6 class="text-white-50 mb-0">@Html.T("Report.RedCard", "Kırmızı Kart")</h6>
+                    <h6 class="text-white-50 mb-0">@Html.T("Report.RedCard", "Kirmizi Kart")</h6>
                     <h3 class="mb-0" data-bind="text: totalRedCards"></h3>
                 </div>
             </div>
@@ -134,16 +172,16 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yukleniyor...")</p>
     </div>
 
     <!-- Results Table -->
     <div data-bind="visible: !isLoading()" class="card shadow">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <span>
-                <strong data-bind="text: paginationInfo().totalCount"></strong> @Html.T("Report.ResultsFound", "sonuç bulundu")
+                <strong data-bind="text: paginationInfo().totalCount"></strong> @Html.T("Report.ResultsFound", "sonuc bulundu")
                 <span class="text-muted" data-bind="visible: paginationInfo().totalPages > 1">
-                    (@Html.T("Report.Page", "Sayfa") <span data-bind="text: filter.page"></span> / <span data-bind="text: paginationInfo().totalPages"></span>)
+                    (@Html.T("Report.Page", "Sayfa") <span data-bind="text: page"></span> / <span data-bind="text: paginationInfo().totalPages"></span>)
                 </span>
             </span>
             <div class="btn-group btn-group-sm">
@@ -159,7 +197,7 @@
             <!-- Empty State -->
             <div data-bind="visible: evaluations().length === 0" class="text-center text-muted py-5">
                 <i class="bi bi-inbox fs-1"></i>
-                <p class="mt-2">@Html.T("Report.NoResults", "Sonuç bulunamadı.")</p>
+                <p class="mt-2">@Html.T("Report.NoResults", "Sonuc bulunamadi.")</p>
             </div>
 
             <!-- Table -->
@@ -168,13 +206,13 @@
                     <thead class="table-dark">
                         <tr>
                             <th>@Html.T("Report.Project", "Proje")</th>
-                            <th>@Html.T("Report.Branch", "Şube")</th>
-                            <th>@Html.T("Report.Evaluator", "Değerlendirici")</th>
+                            <th>@Html.T("Report.Branch", "Sube")</th>
+                            <th>@Html.T("Report.Evaluator", "Degerlendirici")</th>
                             <th>@Html.T("Report.Date", "Tarih")</th>
                             <th>@Html.T("Report.Score", "Puan")</th>
                             <th>@Html.T("Report.Cards", "Kartlar")</th>
                             <th>@Html.T("Common.Status", "Durum")</th>
-                            <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
+                            <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: evaluations">
@@ -232,10 +270,10 @@
             <nav>
                 <ul class="pagination justify-content-center mb-0">
                     <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasPreviousPage }">
-                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Önceki")</a>
+                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Onceki")</a>
                     </li>
                     <!-- ko foreach: pageNumbers -->
-                    <li class="page-item" data-bind="css: { active: $data === $parent.filter.page() }">
+                    <li class="page-item" data-bind="css: { active: $data === $parent.page() }">
                         <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
                     </li>
                     <!-- /ko -->
@@ -252,7 +290,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> @Html.T("Report.EvaluationDetail", "Değerlendirme Detayı")</h5>
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> @Html.T("Report.EvaluationDetail", "Degerlendirme Detayi")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" data-bind="with: selectedDetail">
@@ -265,7 +303,7 @@
                                 <dd class="col-sm-8" data-bind="text: projectName"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Checklist", "Kontrol Listesi"):</dt>
                                 <dd class="col-sm-8" data-bind="text: checklistName"></dd>
-                                <dt class="col-sm-4">@Html.T("Report.Evaluator", "Değerlendirici"):</dt>
+                                <dt class="col-sm-4">@Html.T("Report.Evaluator", "Degerlendirici"):</dt>
                                 <dd class="col-sm-8" data-bind="text: evaluatorName || '-'"></dd>
                             </dl>
                         </div>
@@ -278,11 +316,11 @@
                                 </div>
                                 <div class="col">
                                     <h2 class="mb-0 text-warning" data-bind="text: yellowCardCount"></h2>
-                                    <small class="text-muted">@Html.T("Report.YellowCard", "Sarı Kart")</small>
+                                    <small class="text-muted">@Html.T("Report.YellowCard", "Sari Kart")</small>
                                 </div>
                                 <div class="col">
                                     <h2 class="mb-0 text-danger" data-bind="text: redCardCount"></h2>
-                                    <small class="text-muted">@Html.T("Report.RedCard", "Kırmızı Kart")</small>
+                                    <small class="text-muted">@Html.T("Report.RedCard", "Kirmizi Kart")</small>
                                 </div>
                             </div>
                         </div>
@@ -322,8 +360,8 @@
                                                 <span data-bind="text: (givenPoints || 0).toFixed(1) + '/' + (maxPoints || 0).toFixed(1)"></span>
                                             </td>
                                             <td>
-                                                <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">@Html.T("Report.YellowCard", "Sarı Kart")</span>
-                                                <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">@Html.T("Report.RedCard", "Kırmızı Kart")</span>
+                                                <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">@Html.T("Report.YellowCard", "Sari Kart")</span>
+                                                <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">@Html.T("Report.RedCard", "Kirmizi Kart")</span>
                                                 <small data-bind="text: notes" class="d-block text-muted"></small>
                                             </td>
                                         </tr>

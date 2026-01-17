@@ -30,28 +30,221 @@
             return Math.ceil(self.totalCount() / self.pageSize());
         });
 
-        // Filters
-        self.filter = {
-            projectId: ko.observable(''),
-            trainingType: ko.observable(''),
-            status: ko.observable(''),
-            category: ko.observable(''),
-            startDate: ko.observable(''),
-            endDate: ko.observable(''),
-            isMandatory: ko.observable(false),
+        // ========== CHIP-BASED FILTER SYSTEM ==========
+        self.selectedFilterType = ko.observable('');
+        self.activeFilters = ko.observableArray([]);
+
+        // Temp filter values
+        self.tempFilter = {
+            projectId: ko.observable(null),
+            trainingType: ko.observable(null),
+            status: ko.observable(null),
+            category: ko.observable(null),
+            dateRange: { startDate: ko.observable(''), endDate: ko.observable('') },
+            isMandatory: ko.observable(null),
             searchTerm: ko.observable('')
+        };
+
+        // Filter labels
+        self.filterLabels = {
+            project: 'Proje',
+            trainingType: 'Eğitim Tipi',
+            status: 'Durum',
+            category: 'Kategori',
+            dateRange: 'Tarih Aralığı',
+            isMandatory: 'Zorunlu',
+            searchTerm: 'Arama'
+        };
+
+        self.trainingTypeOptions = [
+            { id: 'InPerson', name: 'Yüz Yüze' },
+            { id: 'Online', name: 'Online' },
+            { id: 'Hybrid', name: 'Hibrit' },
+            { id: 'SelfPaced', name: 'Kendi Kendine' },
+            { id: 'OnTheJob', name: 'İş Başı' },
+            { id: 'Workshop', name: 'Workshop' },
+            { id: 'Seminar', name: 'Seminer' },
+            { id: 'Certification', name: 'Sertifika' }
+        ];
+
+        self.statusOptions = [
+            { id: 'Draft', name: 'Taslak' },
+            { id: 'Planned', name: 'Planlandı' },
+            { id: 'PendingApproval', name: 'Onay Bekliyor' },
+            { id: 'Approved', name: 'Onaylandı' },
+            { id: 'InProgress', name: 'Devam Ediyor' },
+            { id: 'Completed', name: 'Tamamlandı' },
+            { id: 'Cancelled', name: 'İptal' },
+            { id: 'Postponed', name: 'Ertelendi' }
+        ];
+
+        self.categoryOptions = [
+            { id: 'General', name: 'Genel' },
+            { id: 'Technical', name: 'Teknik' },
+            { id: 'Sales', name: 'Satış' },
+            { id: 'CustomerService', name: 'Müşteri Hizmetleri' },
+            { id: 'Management', name: 'Yönetim' },
+            { id: 'Communication', name: 'İletişim' },
+            { id: 'Product', name: 'Ürün' },
+            { id: 'Process', name: 'Süreç' },
+            { id: 'Safety', name: 'Güvenlik' },
+            { id: 'Compliance', name: 'Uyum' }
+        ];
+
+        self.mandatoryOptions = [
+            { id: true, name: 'Evet' },
+            { id: false, name: 'Hayır' }
+        ];
+
+        // Can add filter
+        self.canAddFilter = ko.computed(function() {
+            var type = self.selectedFilterType();
+            if (!type) return false;
+
+            switch (type) {
+                case 'project': return self.tempFilter.projectId() !== null;
+                case 'trainingType': return self.tempFilter.trainingType() !== null;
+                case 'status': return self.tempFilter.status() !== null;
+                case 'category': return self.tempFilter.category() !== null;
+                case 'dateRange': return self.tempFilter.dateRange.startDate() || self.tempFilter.dateRange.endDate();
+                case 'isMandatory': return self.tempFilter.isMandatory() !== null;
+                case 'searchTerm': return self.tempFilter.searchTerm().trim() !== '';
+                default: return false;
+            }
+        });
+
+        // Add filter
+        self.addFilter = function() {
+            var type = self.selectedFilterType();
+            if (!type) return;
+
+            var filter = {
+                type: type,
+                label: self.filterLabels[type],
+                value: null,
+                displayValue: ''
+            };
+
+            switch (type) {
+                case 'project':
+                    var projectId = self.tempFilter.projectId();
+                    if (!projectId) return;
+                    var project = self.projects().find(function(p) { return p.id === projectId; });
+                    filter.value = projectId;
+                    filter.displayValue = project ? project.name : projectId;
+                    self.tempFilter.projectId(null);
+                    break;
+
+                case 'trainingType':
+                    var trainingTypeId = self.tempFilter.trainingType();
+                    if (!trainingTypeId) return;
+                    var trainingType = self.trainingTypeOptions.find(function(t) { return t.id === trainingTypeId; });
+                    filter.value = trainingTypeId;
+                    filter.displayValue = trainingType ? trainingType.name : trainingTypeId;
+                    self.tempFilter.trainingType(null);
+                    break;
+
+                case 'status':
+                    var statusId = self.tempFilter.status();
+                    if (!statusId) return;
+                    var status = self.statusOptions.find(function(s) { return s.id === statusId; });
+                    filter.value = statusId;
+                    filter.displayValue = status ? status.name : statusId;
+                    self.tempFilter.status(null);
+                    break;
+
+                case 'category':
+                    var categoryId = self.tempFilter.category();
+                    if (!categoryId) return;
+                    var category = self.categoryOptions.find(function(c) { return c.id === categoryId; });
+                    filter.value = categoryId;
+                    filter.displayValue = category ? category.name : categoryId;
+                    self.tempFilter.category(null);
+                    break;
+
+                case 'dateRange':
+                    var startDate = self.tempFilter.dateRange.startDate();
+                    var endDate = self.tempFilter.dateRange.endDate();
+                    if (!startDate && !endDate) return;
+                    filter.value = { startDate: startDate, endDate: endDate };
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                    self.tempFilter.dateRange.startDate('');
+                    self.tempFilter.dateRange.endDate('');
+                    break;
+
+                case 'isMandatory':
+                    var isMandatory = self.tempFilter.isMandatory();
+                    if (isMandatory === null) return;
+                    filter.value = isMandatory;
+                    filter.displayValue = isMandatory ? 'Evet' : 'Hayır';
+                    self.tempFilter.isMandatory(null);
+                    break;
+
+                case 'searchTerm':
+                    var searchTerm = self.tempFilter.searchTerm().trim();
+                    if (!searchTerm) return;
+                    filter.value = searchTerm;
+                    filter.displayValue = searchTerm;
+                    self.tempFilter.searchTerm('');
+                    break;
+
+                default:
+                    return;
+            }
+
+            self.activeFilters.push(filter);
+            self.selectedFilterType('');
+            self.currentPage(1);
+            self.loadTrainings();
+        };
+
+        // Remove filter
+        self.removeFilter = function(filter) {
+            self.activeFilters.remove(filter);
+            self.currentPage(1);
+            self.loadTrainings();
+        };
+
+        // Clear all filters
+        self.clearFilters = function() {
+            self.activeFilters([]);
+            self.sorting.reset();
+            self.currentPage(1);
+            self.loadTrainings();
+        };
+
+        // Build filter params
+        self.buildFilterParams = function(params) {
+            self.activeFilters().forEach(function(filter) {
+                switch (filter.type) {
+                    case 'project':
+                        params.append('projectId', filter.value);
+                        break;
+                    case 'trainingType':
+                        params.append('trainingType', filter.value);
+                        break;
+                    case 'status':
+                        params.append('status', filter.value);
+                        break;
+                    case 'category':
+                        params.append('category', filter.value);
+                        break;
+                    case 'dateRange':
+                        if (filter.value.startDate) params.append('startDate', filter.value.startDate);
+                        if (filter.value.endDate) params.append('endDate', filter.value.endDate);
+                        break;
+                    case 'isMandatory':
+                        params.append('isMandatory', filter.value);
+                        break;
+                    case 'searchTerm':
+                        params.append('searchTerm', filter.value);
+                        break;
+                }
+            });
         };
 
         // Sorting
         self.sorting = TableSorting.createSortState('startDate', 'desc');
-
-        // Subscribe to filter changes
-        Object.keys(self.filter).forEach(function(key) {
-            self.filter[key].subscribe(function() {
-                self.currentPage(1);
-                self.loadTrainings();
-            });
-        });
 
         // Subscribe to sorting changes
         self.sorting.sortBy.subscribe(function() {
@@ -187,14 +380,8 @@
                 pageSize: self.pageSize()
             });
 
-            if (self.filter.projectId()) params.append('projectId', self.filter.projectId());
-            if (self.filter.trainingType()) params.append('trainingType', self.filter.trainingType());
-            if (self.filter.status()) params.append('status', self.filter.status());
-            if (self.filter.category()) params.append('category', self.filter.category());
-            if (self.filter.startDate()) params.append('startDate', self.filter.startDate());
-            if (self.filter.endDate()) params.append('endDate', self.filter.endDate());
-            if (self.filter.isMandatory()) params.append('isMandatory', 'true');
-            if (self.filter.searchTerm()) params.append('searchTerm', self.filter.searchTerm());
+            // Add chip-based filters
+            self.buildFilterParams(params);
 
             // Sorting params
             if (self.sorting.sortBy()) {
@@ -678,18 +865,6 @@
         self.goToPage = function(page) {
             self.currentPage(page);
             self.loadTrainings();
-        };
-
-        self.clearFilters = function() {
-            self.filter.projectId('');
-            self.filter.trainingType('');
-            self.filter.status('');
-            self.filter.category('');
-            self.filter.startDate('');
-            self.filter.endDate('');
-            self.filter.isMandatory(false);
-            self.filter.searchTerm('');
-            self.sorting.reset();
         };
 
         // ========== INITIALIZE ==========

@@ -1,38 +1,25 @@
 namespace SecretCustomer.Core.DTOs.Report;
 
 /// <summary>
-/// Rapor filtre DTO
+/// Rapor filtre DTO - Sadece çoklu filtreler (OR mantığı)
+/// Tek değer için [5] şeklinde array gönder
 /// </summary>
 public class ReportFilterDto
 {
-    // Dropdown filters
-    public int? CustomerId { get; set; }
-
-    /// <summary>
-    /// Projenin müşterisine göre filtrele (CustomerPortal için)
-    /// </summary>
-    public int? ProjectCustomerId { get; set; }
-    public int? OrganizationId { get; set; }
-    public int? ProjectId { get; set; }
-    public string? ProjectType { get; set; }
-    public int? EvaluatorId { get; set; }
-    public int? ChecklistId { get; set; }
-    public int? PeriodId { get; set; }
-
-    // Text search filters
-    public string? EvaluatedPersonnelName { get; set; }
-    public string? SupervisorName { get; set; }
-    public string? CallId { get; set; }
-
-    // Date filters
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
-
-    // Status filter
-    public string? Status { get; set; }
-
-    // Evaluation source filter (ours/internal)
-    public string? EvaluationSource { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? ProjectCustomerIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<string>? ProjectTypes { get; set; }
+    public List<int>? EvaluatorIds { get; set; }
+    public List<int>? ChecklistIds { get; set; }
+    public List<int>? PeriodIds { get; set; }
+    public List<string>? PersonnelNames { get; set; }
+    public List<string>? SupervisorNames { get; set; }
+    public List<string>? CallIds { get; set; }
+    public List<string>? Statuses { get; set; }
+    public List<string>? EvaluationSources { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
 
     // Sorting
     public string? SortField { get; set; }
@@ -42,17 +29,17 @@ public class ReportFilterDto
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
 
-    /// <summary>
-    /// true ise COUNT sorgusu atlanır (hızlı ilk yükleme için).
-    /// Frontend ayrı bir istekle count alabilir.
-    /// </summary>
     public bool SkipCount { get; set; } = false;
-
-    /// <summary>
-    /// Export için kullanılıyor mu? true ise sadece Completed değerlendirmeler dahil edilir.
-    /// PRENSIP: Raporlara (Excel export) taslak değerlendirmeler hiçbir zaman dahil edilmez.
-    /// </summary>
     public bool ForExport { get; set; } = false;
+}
+
+/// <summary>
+/// Tarih aralığı filtresi
+/// </summary>
+public class DateRangeFilter
+{
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
 
 /// <summary>
@@ -225,20 +212,32 @@ public class ExcelExportDto
 // ===== CEZALI KL RAPORU DTO'LARI =====
 
 /// <summary>
-/// Cezalı KL raporu filtre DTO
+/// Cezalı KL raporu filtre DTO - Çoklu filtreler (OR mantığı)
+/// Tekil property'ler geriye uyumluluk için - setter değeri array'e ekler
 /// </summary>
 public class PenaltyFilterDto
 {
-    public int? ProjectId { get; set; }
-    public int? CustomerId { get; set; }
-    public int? OrganizationId { get; set; }
-    public int? ChecklistId { get; set; }
-    public int? EvaluatorId { get; set; }
-    public string? PenaltyType { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? ChecklistIds { get; set; }
+    public List<int>? EvaluatorIds { get; set; }
+    public List<string>? PenaltyTypes { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
 
-    // Pagination
+    // Tekil property'ler (geriye uyumluluk - setter array'e ekler)
+    public DateTime? StartDate
+    {
+        get => DateRanges?.FirstOrDefault()?.StartDate;
+        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].StartDate = value; } }
+    }
+    public DateTime? EndDate
+    {
+        get => DateRanges?.FirstOrDefault()?.EndDate;
+        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].EndDate = value; } }
+    }
+
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
 }
@@ -281,6 +280,9 @@ public class PenaltyDetailDto
     public int EvaluationId { get; set; }
     public int AnswerId { get; set; }
     public int QuestionId { get; set; }
+    public string? CallId { get; set; }
+    public string? CallTime { get; set; }
+    public string? Duration { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string GroupName { get; set; } = string.Empty;
     public string PenaltyType { get; set; } = string.Empty;
@@ -435,6 +437,9 @@ public class PersonnelEvaluationSummaryDto
     public int YellowCards { get; set; }
     public int RedCards { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string? CallId { get; set; }
+    public string? CallTime { get; set; }
+    public string? Duration { get; set; }
 }
 
 /// <summary>
@@ -479,18 +484,33 @@ public class OrganizationListItemDto
 // ===== ÖNERİLER RAPORU DTO'LARI (Video 5-6) =====
 
 /// <summary>
-/// Öneriler Raporu filtre DTO
+/// Öneriler Raporu filtre DTO - Çoklu filtreler (OR mantığı)
+/// Tekil property'ler geriye uyumluluk için - setter değeri array'e ekler
 /// </summary>
 public class SuggestionsFilterDto
 {
-    public int? ProjectId { get; set; }
-    public int? CustomerId { get; set; }
-    public int? ChecklistId { get; set; }
-    public int? EvaluatorId { get; set; }
-    public int? PersonnelId { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? ChecklistIds { get; set; }
+    public List<int>? EvaluatorIds { get; set; }
+    public List<int>? PersonnelIds { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public string? SearchText { get; set; }
+
+    // Tekil property'ler (geriye uyumluluk - setter array'e ekler)
+    public DateTime? StartDate
+    {
+        get => DateRanges?.FirstOrDefault()?.StartDate;
+        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].StartDate = value; } }
+    }
+    public DateTime? EndDate
+    {
+        get => DateRanges?.FirstOrDefault()?.EndDate;
+        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].EndDate = value; } }
+    }
+
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
 }

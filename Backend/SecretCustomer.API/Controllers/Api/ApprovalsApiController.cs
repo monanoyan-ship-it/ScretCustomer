@@ -54,32 +54,49 @@ public class ApprovalsApiController : BaseApiController
             .Include(a => a.ApprovedByUser)
             .AsQueryable();
 
-        if (!string.IsNullOrEmpty(filter.ApprovalType))
+        // Çoklu ApprovalTypes filtresi
+        if (filter.ApprovalTypes?.Any() == true)
         {
-            var approvalTypeId = ApprovalTypes.GetBySystemName(filter.ApprovalType)?.Id;
-            if (approvalTypeId.HasValue)
-                query = query.Where(a => a.ApprovalTypeId == approvalTypeId.Value);
+            var typeIds = filter.ApprovalTypes
+                .Select(t => ApprovalTypes.GetBySystemName(t)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (typeIds.Any())
+                query = query.Where(a => typeIds.Contains(a.ApprovalTypeId));
         }
 
-        if (!string.IsNullOrEmpty(filter.Status))
+        // Çoklu Statuses filtresi
+        if (filter.Statuses?.Any() == true)
         {
-            var statusId = ApprovalStatuses.GetBySystemName(filter.Status)?.Id;
-            if (statusId.HasValue)
-                query = query.Where(a => a.StatusId == statusId.Value);
+            var statusIds = filter.Statuses
+                .Select(s => ApprovalStatuses.GetBySystemName(s)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(a => statusIds.Contains(a.StatusId));
         }
 
-        if (!string.IsNullOrEmpty(filter.Priority))
+        // Çoklu Priorities filtresi
+        if (filter.Priorities?.Any() == true)
         {
-            var priorityId = NotificationPriorities.GetBySystemName(filter.Priority)?.Id;
-            if (priorityId.HasValue)
-                query = query.Where(a => a.PriorityId == priorityId.Value);
+            var priorityIds = filter.Priorities
+                .Select(p => NotificationPriorities.GetBySystemName(p)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (priorityIds.Any())
+                query = query.Where(a => priorityIds.Contains(a.PriorityId));
         }
 
-        if (filter.RequestedByUserId.HasValue)
-            query = query.Where(a => a.RequestedByUserId == filter.RequestedByUserId.Value);
+        // Çoklu RequestedByUserIds filtresi
+        if (filter.RequestedByUserIds?.Any() == true)
+            query = query.Where(a => filter.RequestedByUserIds.Contains(a.RequestedByUserId));
 
-        if (filter.ApproverUserId.HasValue)
-            query = query.Where(a => a.ApproverUserId == filter.ApproverUserId.Value);
+        // Çoklu ApproverUserIds filtresi
+        if (filter.ApproverUserIds?.Any() == true)
+            query = query.Where(a => a.ApproverUserId.HasValue && filter.ApproverUserIds.Contains(a.ApproverUserId.Value));
 
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.RequestedAt >= filter.StartDate.Value);

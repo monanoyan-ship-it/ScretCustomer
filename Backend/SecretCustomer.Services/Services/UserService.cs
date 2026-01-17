@@ -62,6 +62,56 @@ public class UserService : IUserService
         return users.Select(u => MapToDto(u)).ToList();
     }
 
+    /// <summary>
+    /// Liste görünümü için - Filter DTO ile (çoklu filtre destekli)
+    /// </summary>
+    public async Task<IEnumerable<UserDto>> GetListAsync(UserFilterDto filter)
+    {
+        var query = _context.Users
+            .Where(u => !u.IsDeleted)
+            .AsQueryable();
+
+        // Çoklu RoleIds filtresi
+        if (filter.RoleIds?.Any() == true)
+            query = query.Where(u => filter.RoleIds.Contains(u.RoleId));
+
+        // IsActive filtresi
+        if (filter.IsActive.HasValue)
+            query = query.Where(u => u.IsActive == filter.IsActive.Value);
+
+        // Arama
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(u =>
+                u.Username.ToLower().Contains(term) ||
+                u.Email.ToLower().Contains(term) ||
+                u.FirstName.ToLower().Contains(term) ||
+                u.LastName.ToLower().Contains(term) ||
+                (u.FirstName + " " + u.LastName).ToLower().Contains(term));
+        }
+
+        var users = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
+        var userIds = users.Select(u => u.Id).ToList();
+
+        // İstatistikleri çek
+        var assignmentStats = await _context.Assignments
+            .Where(a => a.AssignedUserId.HasValue && userIds.Contains(a.AssignedUserId.Value))
+            .GroupBy(a => a.AssignedUserId!.Value)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        var evaluationStats = await _context.Evaluations
+            .Where(e => e.EvaluatorId.HasValue && userIds.Contains(e.EvaluatorId.Value))
+            .GroupBy(e => e.EvaluatorId!.Value)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+        return users.Select(u => MapToDto(u,
+            assignmentStats.GetValueOrDefault(u.Id, 0),
+            evaluationStats.GetValueOrDefault(u.Id, 0))).ToList();
+    }
+
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
     {
         // Check if username already exists

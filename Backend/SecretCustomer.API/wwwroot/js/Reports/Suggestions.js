@@ -2,24 +2,72 @@
 function SuggestionsViewModel() {
     var self = this;
 
+    // Page name for saved filters
+    self.pageName = '/Reports/Suggestions';
+
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
     self.errorMessage = ko.observable('');
 
-    // Filter options
+    // Lookup data
     self.projects = ko.observableArray([]);
     self.branches = ko.observableArray([]);
     self.checklists = ko.observableArray([]);
+    self.dateRanges = ko.observableArray([
+        { systemName: 'today', name: 'Bugün' },
+        { systemName: 'yesterday', name: 'Dün' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'lastWeek', name: 'Geçen Hafta' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'lastMonth', name: 'Geçen Ay' },
+        { systemName: 'last7Days', name: 'Son 7 Gün' },
+        { systemName: 'last30Days', name: 'Son 30 Gün' }
+    ]);
 
-    // Filters
-    self.filter = {
-        projectId: ko.observable(''),
-        branchId: ko.observable(''),
-        checklistId: ko.observable(''),
+    // ===== Chip-based Filter System =====
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        projectId: ko.observable(null),
+        branchId: ko.observable(null),
+        checklistId: ko.observable(null),
         searchText: ko.observable(''),
         startDate: ko.observable(''),
-        endDate: ko.observable('')
+        endDate: ko.observable(''),
+        selectedDateRangeType: ko.observable(null)
+    };
+
+    // Tarih manuel degistirildiginde dateRangeType'i temizle
+    self.tempFilter.startDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self.tempFilter.endDate.subscribe(function(newVal) {
+        if (self._manualDateChange) {
+            self.tempFilter.selectedDateRangeType(null);
+        }
+    });
+    self._manualDateChange = true;
+
+    // Pagination
+    self.currentPage = ko.observable(1);
+    self.pageSize = ko.observable(50);
+    self.totalCount = ko.observable(0);
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / self.pageSize()) || 1;
+    });
+
+    // Filter labels
+    self.filterLabels = {
+        project: 'Proje',
+        branch: 'Şube/Org.',
+        checklist: 'Kontrol Listesi',
+        search: 'Arama',
+        dateRange: 'Tarih'
     };
 
     // Summary
@@ -30,13 +78,9 @@ function SuggestionsViewModel() {
         uniquePersonnel: 0
     });
 
-    // Pagination
-    self.currentPage = ko.observable(1);
-    self.pageSize = ko.observable(50);
-    self.totalCount = ko.observable(0);
-    self.totalPages = ko.computed(function() {
-        return Math.ceil(self.totalCount() / self.pageSize()) || 1;
-    });
+    // Data
+    self.suggestions = ko.observableArray([]);
+    self.topSuggestedQuestions = ko.observableArray([]);
 
     // Visible pages for pagination
     self.visiblePages = ko.computed(function() {
@@ -52,9 +96,184 @@ function SuggestionsViewModel() {
         return pages;
     });
 
-    // Data
-    self.suggestions = ko.observableArray([]);
-    self.topSuggestedQuestions = ko.observableArray([]);
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'project': return !!self.tempFilter.projectId();
+            case 'branch': return !!self.tempFilter.branchId();
+            case 'checklist': return !!self.tempFilter.checklistId();
+            case 'search': return !!self.tempFilter.searchText();
+            case 'dateRange': return !!self.tempFilter.startDate() || !!self.tempFilter.endDate();
+            default: return false;
+        }
+    });
+
+    // Set temp date range
+    self.setTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var formatDate = function(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        };
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = endDate = new Date(today.getTime());
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today.getTime());
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = endDate = yesterday;
+                break;
+            case 'thisWeek':
+                startDate = getMonday(today);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart.getTime());
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = lastWeekStart;
+                endDate = lastWeekEnd;
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getTime());
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last7Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(today.getTime());
+                break;
+            case 'last30Days':
+                startDate = new Date(today.getTime());
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(today.getTime());
+                break;
+        }
+
+        self._manualDateChange = false;
+        if (startDate) self.tempFilter.startDate(formatDate(startDate));
+        if (endDate) self.tempFilter.endDate(formatDate(endDate));
+        self.tempFilter.selectedDateRangeType(range);
+        self._manualDateChange = true;
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                var project = self.projects().find(function(p) { return p.id === projectId; });
+                if (!project) return;
+                filter.value = projectId;
+                filter.displayValue = project.name;
+                self.tempFilter.projectId(null);
+                break;
+
+            case 'branch':
+                var branchId = self.tempFilter.branchId();
+                var branch = self.branches().find(function(b) { return b.id === branchId; });
+                if (!branch) return;
+                filter.value = branchId;
+                filter.displayValue = branch.name;
+                self.tempFilter.branchId(null);
+                break;
+
+            case 'checklist':
+                var checklistId = self.tempFilter.checklistId();
+                var checklist = self.checklists().find(function(c) { return c.id === checklistId; });
+                if (!checklist) return;
+                filter.value = checklistId;
+                filter.displayValue = checklist.name;
+                self.tempFilter.checklistId(null);
+                break;
+
+            case 'search':
+                var searchText = self.tempFilter.searchText();
+                if (!searchText) return;
+                filter.value = searchText;
+                filter.displayValue = '"' + searchText + '"';
+                self.tempFilter.searchText('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.startDate();
+                var endDate = self.tempFilter.endDate();
+                var dateRangeType = self.tempFilter.selectedDateRangeType();
+                if (!startDate && !endDate) return;
+
+                filter.value = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    dateRangeType: dateRangeType
+                };
+
+                if (dateRangeType) {
+                    var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
+                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
+                } else {
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                }
+
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.selectedDateRangeType(null);
+                break;
+
+            default:
+                return;
+        }
+
+        // Tüm filtre tipleri çoklu değer destekler
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.search();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.search();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters.removeAll();
+        self.search();
+    };
 
     // Load filter options
     self.loadFilterOptions = function() {
@@ -90,20 +309,68 @@ function SuggestionsViewModel() {
             });
     };
 
-    // Build query params
+    // Build query params from active filters (çoklu değer desteği)
     self.buildQueryParams = function(includePagination) {
         var params = [];
-        if (self.filter.projectId()) params.push('projectId=' + self.filter.projectId());
-        if (self.filter.branchId()) params.push('branchId=' + self.filter.branchId());
-        if (self.filter.checklistId()) params.push('checklistId=' + self.filter.checklistId());
-        if (self.filter.searchText()) params.push('searchText=' + encodeURIComponent(self.filter.searchText()));
-        if (self.filter.startDate()) params.push('startDate=' + self.filter.startDate());
-        if (self.filter.endDate()) params.push('endDate=' + self.filter.endDate());
+
+        var projectIds = [];
+        var branchIds = [];
+        var checklistIds = [];
+        var searchTexts = [];
+        var dateRanges = [];
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'project':
+                    projectIds.push(filter.value);
+                    break;
+                case 'branch':
+                    branchIds.push(filter.value);
+                    break;
+                case 'checklist':
+                    checklistIds.push(filter.value);
+                    break;
+                case 'search':
+                    searchTexts.push(filter.value);
+                    break;
+                case 'dateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate
+                    });
+                    break;
+            }
+        });
+
+        // Query string oluştur (çoklu değer desteği)
+        if (projectIds.length === 1) params.push('projectId=' + projectIds[0]);
+        else if (projectIds.length > 1) projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+
+        if (branchIds.length === 1) params.push('branchId=' + branchIds[0]);
+        else if (branchIds.length > 1) branchIds.forEach(function(id) { params.push('branchIds=' + id); });
+
+        if (checklistIds.length === 1) params.push('checklistId=' + checklistIds[0]);
+        else if (checklistIds.length > 1) checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
+
+        if (searchTexts.length > 0) params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
+
+        if (dateRanges.length > 0) {
+            if (dateRanges[0].startDate) params.push('startDate=' + dateRanges[0].startDate);
+            if (dateRanges[0].endDate) params.push('endDate=' + dateRanges[0].endDate);
+        }
+
         if (includePagination) {
             params.push('page=' + self.currentPage());
             params.push('pageSize=' + self.pageSize());
         }
+
         return params.length > 0 ? '?' + params.join('&') : '';
+    };
+
+    // Search
+    self.search = function() {
+        self.currentPage(1);
+        self.loadReport();
     };
 
     // Load suggestions report
@@ -139,24 +406,6 @@ function SuggestionsViewModel() {
         .finally(function() {
             self.isLoading(false);
         });
-    };
-
-    // Apply filters
-    self.applyFilters = function() {
-        self.currentPage(1);
-        self.loadReport();
-    };
-
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.projectId('');
-        self.filter.branchId('');
-        self.filter.checklistId('');
-        self.filter.searchText('');
-        self.filter.startDate('');
-        self.filter.endDate('');
-        self.currentPage(1);
-        self.loadReport();
     };
 
     // Pagination

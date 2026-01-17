@@ -131,12 +131,21 @@
                         <label class="form-label small mb-1">@Html.T("Evaluation.DateTo", "Bitiş")</label>
                         <input type="date" class="form-control form-control-sm" data-bind="value: evaluationsDateTo">
                     </div>
-                    <div class="col-md-3 text-end">
-                        <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearEvaluationsFilters">
-                            <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Filtreleri Temizle")
+                    <div class="col-md-3 d-flex align-items-end justify-content-end gap-1">
+                        <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearEvaluationsFilters" title="@Html.T("Common.ClearFilters", "Filtreleri Temizle")">
+                            <i class="bi bi-x-circle"></i>
                         </button>
-                        <span class="ms-2 text-muted small" data-bind="text: allEvaluationsList().length + ' kayıt'"></span>
+                        <span class="text-muted small" data-bind="text: allEvaluationsList().length + ' kayıt'"></span>
                     </div>
+                </div>
+                <!-- Date Range Shortcuts -->
+                <div class="d-flex flex-wrap gap-1 mt-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('today'); }">@Html.T("Common.Today", "Bugün")</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
                 </div>
             </div>
         </div>
@@ -1000,7 +1009,7 @@
 
                             <!-- Soru Grupları: Sorular, Sarı Kartlar, Kırmızı Kartlar -->
                             <!-- ko if: formData() -->
-                            <div data-bind="foreach: formData().groups">
+                            <div data-bind="foreach: formData().penaltyGroups">
                                 <div class="card shadow-sm mb-4">
                                     <div class="card-header" data-bind="css: name === 'Kırmızı Kartlar' ? 'bg-danger text-white' : (name === 'Sarı Kartlar' ? 'bg-warning text-dark' : 'bg-success text-white')">
                                         <div class="d-flex justify-content-between align-items-center">

@@ -190,11 +190,14 @@ public class MeetingAttachmentDto
 /// </summary>
 public class MeetingFilterDto
 {
-    public int? ProjectId { get; set; }
-    public int? CustomerId { get; set; }
-    public int? OrganizerId { get; set; }
-    public string? MeetingType { get; set; }
-    public string? Status { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? OrganizerIds { get; set; }
+    public List<string>? MeetingTypes { get; set; }
+    public List<string>? Statuses { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? IsOnline { get; set; }

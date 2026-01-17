@@ -78,11 +78,14 @@ public class ApprovalResponseDto
 /// </summary>
 public class ApprovalFilterDto
 {
-    public string? ApprovalType { get; set; }
-    public string? Status { get; set; }
-    public string? Priority { get; set; }
-    public int? RequestedByUserId { get; set; }
-    public int? ApproverUserId { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<string>? ApprovalTypes { get; set; }
+    public List<string>? Statuses { get; set; }
+    public List<string>? Priorities { get; set; }
+    public List<int>? RequestedByUserIds { get; set; }
+    public List<int>? ApproverUserIds { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? IsOverdue { get; set; }

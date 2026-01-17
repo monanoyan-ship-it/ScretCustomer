@@ -1221,7 +1221,7 @@ function EvaluationsViewModel() {
                     });
                 }
 
-                data.groups.forEach(function(section) {
+                data.penaltyGroups.forEach(function(section) {
                     section.questions.forEach(function(q) {
                         // isRequired bilgisini geç - zorunlu sorular varsayılan dahil, opsiyonel sorular varsayılan hariç
                         var answer = self.getAnswer(q.id, q.isRequired);
@@ -1291,7 +1291,7 @@ function EvaluationsViewModel() {
         var yellowCardWeight = 0;
         var redCardWeight = 0;
 
-        self.formData().groups.forEach(function(section) {
+        self.formData().penaltyGroups.forEach(function(section) {
             section.questions.forEach(function(q) {
                 var weight = q.weightPoints || q.points || 0;
                 var answer = self.answers[q.id];
@@ -1383,7 +1383,7 @@ function EvaluationsViewModel() {
         // Soruları map'e al (penaltyType için)
         var questionMap = {};
         if (self.formData()) {
-            self.formData().groups.forEach(function(section) {
+            self.formData().penaltyGroups.forEach(function(section) {
                 section.questions.forEach(function(q) {
                     questionMap[q.id] = q;
                 });
@@ -1632,7 +1632,7 @@ function EvaluationsViewModel() {
             // Cevapları hazırla (sorular + verilen cevaplar)
         var answersForSummary = [];
         if (self.formData()) {
-            self.formData().groups.forEach(function(section) {
+            self.formData().penaltyGroups.forEach(function(section) {
                 section.questions.forEach(function(q) {
                     var answer = self.answers[q.id];
                     if (!answer) return;

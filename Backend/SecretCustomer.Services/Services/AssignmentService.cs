@@ -372,24 +372,55 @@ public class AssignmentService : IAssignmentService
             .Where(a => !a.IsDeleted)
             .AsQueryable();
 
-        if (filter.ProjectId.HasValue)
-            query = query.Where(a => a.ProjectId == filter.ProjectId.Value);
+        // Çoklu ProjectIds filtresi
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(a => filter.ProjectIds.Contains(a.ProjectId));
 
-        if (filter.AssignedUserId.HasValue)
-            query = query.Where(a => a.AssignedUserId == filter.AssignedUserId.Value);
+        // Çoklu AssignedUserIds filtresi
+        if (filter.AssignedUserIds?.Any() == true)
+            query = query.Where(a => a.AssignedUserId.HasValue && filter.AssignedUserIds.Contains(a.AssignedUserId.Value));
 
-        // Status filtrelemesi
-        if (!string.IsNullOrEmpty(filter.Status))
+        // Çoklu ChecklistIds filtresi
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(a => filter.ChecklistIds.Contains(a.ChecklistId));
+
+        // Çoklu Status filtrelemesi (OR mantığı)
+        if (filter.Statuses?.Any() == true)
         {
             var now = DateTime.UtcNow;
-            query = filter.Status switch
+            var statusPredicates = new List<System.Linq.Expressions.Expression<Func<Assignment, bool>>>();
+
+            foreach (var status in filter.Statuses)
             {
-                "Pending" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
-                "InProgress" => query.Where(a => !a.IsCompleted && a.DueDate >= now),
-                "Completed" => query.Where(a => a.IsCompleted),
-                "Expired" => query.Where(a => !a.IsCompleted && a.DueDate < now),
-                _ => query
-            };
+                switch (status)
+                {
+                    case "Pending":
+                        statusPredicates.Add(a => !a.IsCompleted && a.DueDate >= now);
+                        break;
+                    case "InProgress":
+                        statusPredicates.Add(a => !a.IsCompleted && a.DueDate >= now);
+                        break;
+                    case "Completed":
+                        statusPredicates.Add(a => a.IsCompleted);
+                        break;
+                    case "Expired":
+                        statusPredicates.Add(a => !a.IsCompleted && a.DueDate < now);
+                        break;
+                }
+            }
+
+            if (statusPredicates.Any())
+            {
+                var combined = statusPredicates.Aggregate((current, next) =>
+                {
+                    var param = System.Linq.Expressions.Expression.Parameter(typeof(Assignment), "a");
+                    var body = System.Linq.Expressions.Expression.OrElse(
+                        System.Linq.Expressions.Expression.Invoke(current, param),
+                        System.Linq.Expressions.Expression.Invoke(next, param));
+                    return System.Linq.Expressions.Expression.Lambda<Func<Assignment, bool>>(body, param);
+                });
+                query = query.Where(combined);
+            }
         }
 
         if (filter.IsCompleted.HasValue)
@@ -946,19 +977,22 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.AssignedCustomerPersonnel)
             .Where(a => !a.IsDeleted && a.AssignedCustomerPersonnelId != null);
 
-        if (filter.CustomerId.HasValue)
+        // Çoklu CustomerIds filtresi
+        if (filter.CustomerIds?.Any() == true)
         {
-            query = query.Where(a => a.Project != null && a.Project.CustomerId == filter.CustomerId);
+            query = query.Where(a => a.Project != null && a.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Project.CustomerId.Value));
         }
 
-        if (filter.ProjectId.HasValue)
+        // Çoklu ProjectIds filtresi
+        if (filter.ProjectIds?.Any() == true)
         {
-            query = query.Where(a => a.ProjectId == filter.ProjectId);
+            query = query.Where(a => filter.ProjectIds.Contains(a.ProjectId));
         }
 
-        if (filter.AssignedCustomerPersonnelId.HasValue)
+        // Çoklu AssignedCustomerPersonnelIds filtresi
+        if (filter.AssignedCustomerPersonnelIds?.Any() == true)
         {
-            query = query.Where(a => a.AssignedCustomerPersonnelId == filter.AssignedCustomerPersonnelId);
+            query = query.Where(a => a.AssignedCustomerPersonnelId.HasValue && filter.AssignedCustomerPersonnelIds.Contains(a.AssignedCustomerPersonnelId.Value));
         }
 
         if (filter.IsCompleted.HasValue)

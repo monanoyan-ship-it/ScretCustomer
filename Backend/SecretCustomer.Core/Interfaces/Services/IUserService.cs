@@ -8,6 +8,10 @@ public interface IUserService
     Task<IEnumerable<UserDto>> GetAllAsync();
     Task<IEnumerable<UserDto>> GetByRoleIdAsync(int roleId);
     Task<IEnumerable<UserDto>> GetActiveUsersAsync();
+    /// <summary>
+    /// Liste görünümü için - Filter DTO ile (çoklu filtre destekli)
+    /// </summary>
+    Task<IEnumerable<UserDto>> GetListAsync(UserFilterDto filter);
     Task<UserDto> CreateAsync(CreateUserDto createUserDto);
     Task<UserDto> UpdateAsync(int id, UpdateUserDto updateUserDto);
     Task DeleteAsync(int id);

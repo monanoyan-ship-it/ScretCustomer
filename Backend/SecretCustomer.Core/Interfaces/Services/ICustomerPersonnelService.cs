@@ -8,6 +8,11 @@ public interface ICustomerPersonnelService
     Task<CustomerPersonnelDto?> GetByIdAsync(int id);
     Task<IEnumerable<CustomerPersonnelDto>> GetAllAsync(bool includeInactive = false);
     Task<IEnumerable<CustomerPersonnelDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false);
+
+    /// <summary>
+    /// Server-side filtreleme ile personel listesi - sayfalama ve çoklu filtre desteği
+    /// </summary>
+    Task<PagedPersonnelResult> GetFilteredListAsync(PersonnelFilterDto filter);
     Task<IEnumerable<CustomerPersonnelDto>> GetByOrganizationIdAsync(int organizationId, bool includeInactive = false);
     Task ChangeOrganizationAsync(int personnelId, int newOrganizationId);
     Task<CustomerPersonnelDto?> GetByUsernameAsync(string username);

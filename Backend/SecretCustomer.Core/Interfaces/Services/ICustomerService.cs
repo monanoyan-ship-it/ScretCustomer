@@ -13,6 +13,11 @@ public interface ICustomerService
     /// Performans için optimize edilmiş liste metodu - projection kullanır, Include kullanmaz
     /// </summary>
     Task<IEnumerable<CustomerListDto>> GetListAsync(bool includeInactive = false);
+
+    /// <summary>
+    /// Server-side filtreleme ile müşteri listesi - sayfalama ve çoklu filtre desteği
+    /// </summary>
+    Task<PagedCustomerResult> GetFilteredListAsync(CustomerFilterDto filter);
     Task<CustomerDto?> GetByTaxNumberAsync(string taxNumber);
     Task<CustomerDto> CreateAsync(CreateCustomerDto createCustomerDto);
     Task<CustomerDto> UpdateAsync(int id, UpdateCustomerDto updateCustomerDto);

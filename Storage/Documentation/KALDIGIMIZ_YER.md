@@ -206,7 +206,7 @@ Müşteri portalına yeni rapor sayfaları eklendi. Bu raporlar admin versiyonla
 - Her rapor kendi proje tipini pozitif filtreleme ile seçmeli: `== ProjectTypes.Ids.CallAuditing`
 - Yanlış: `!= ProjectTypes.Ids.OnlineSurvey` (negatif filtreleme)
 - Doğru: `== ProjectTypes.Ids.CallAuditing` (pozitif filtreleme)
-- DEVELOPMENT_PATTERNS.md'ye "14. Proje Tipi Bazlı Raporlama Pattern'i" bölümü eklendi
+- KURALLAR.md'ye "14. Proje Tipi Bazlı Raporlama Pattern'i" bölümü eklendi
 
 ### scorePercentage Gösterimi Standardizasyonu
 - Tüm `scorePercentage` değerleri artık `.toFixed(2)` ile gösteriliyor

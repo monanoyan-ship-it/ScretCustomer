@@ -132,3 +132,17 @@ public class SubCriteriaDto
     public decimal WeightPoints { get; set; } = 1;
     public bool IsActive { get; set; } = true;
 }
+
+/// <summary>
+/// Kontrol listesi filtreleme
+/// </summary>
+public class ChecklistFilterDto
+{
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? CustomerOrganizationIds { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
+    public string? SearchText { get; set; }
+    public bool IncludeInactive { get; set; }
+}

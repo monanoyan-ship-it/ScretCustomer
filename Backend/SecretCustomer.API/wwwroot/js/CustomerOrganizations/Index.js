@@ -12,6 +12,87 @@ function CustomerOrganizationsViewModel() {
     self.customerSearchText = ko.observable('');
     self.selectedCustomer = ko.observable(null);
 
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        companyName: ko.observable(''),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        companyName: 'Firma Adı',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'companyName': return self.tempFilter.companyName().trim() !== '';
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'companyName':
+                var companyName = self.tempFilter.companyName().trim();
+                if (!companyName) return;
+                filter.value = companyName;
+                filter.displayValue = companyName;
+                self.tempFilter.companyName('');
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.customerSearchText('');
+    };
+
     // Organizations (flat list)
     self.organizations = ko.observableArray([]);
     self.isLoadingOrganizations = ko.observable(false);
@@ -58,11 +139,43 @@ function CustomerOrganizationsViewModel() {
 
     // Filtered customers
     self.filteredCustomers = ko.computed(function() {
+        var list = self.customers();
         var search = self.customerSearchText().toLowerCase();
-        if (!search) return self.customers();
-        return self.customers().filter(function(c) {
-            return c.companyName.toLowerCase().indexOf(search) > -1;
-        });
+        var filters = self.activeFilters();
+
+        // Legacy search
+        if (search) {
+            list = list.filter(function(c) {
+                return c.companyName.toLowerCase().indexOf(search) > -1;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                list = list.filter(function(c) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'companyName':
+                                return (c.companyName || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'isActive':
+                                return c.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
+            });
+        }
+
+        return list;
     });
 
     // Load customers

@@ -572,7 +572,7 @@ docs/
 
 Documentation/
 ├── CLAUDE.md                          # Claude Code kurallari
-├── DEVELOPMENT_PATTERNS.md            # Gelistirme kaliplari
+├── KURALLAR.md                        # Gelistirme kaliplari
 ├── KALDIGIMIZ_YER.md                  # Proje durumu
 ├── CSV_IMPORT_STANDARTLARI.md
 ├── is_kapsam_analizi.md

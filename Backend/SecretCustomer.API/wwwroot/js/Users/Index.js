@@ -101,6 +101,243 @@ function UsersViewModel() {
     self.searchText = ko.observable('');
     self.usersSearchText = ko.observable('');
 
+    // ========== USERS TAB CHIP-BASED FILTER SYSTEM ==========
+    self.usersSelectedFilterType = ko.observable('');
+    self.usersActiveFilters = ko.observableArray([]);
+
+    self.usersTempFilter = {
+        username: ko.observable(''),
+        fullName: ko.observable(''),
+        email: ko.observable(''),
+        role: ko.observable(null),
+        isActive: ko.observable(null)
+    };
+
+    self.usersFilterLabels = {
+        username: 'Kullanıcı Adı',
+        fullName: 'Ad Soyad',
+        email: 'E-posta',
+        role: 'Rol',
+        isActive: 'Durum'
+    };
+
+    self.usersStatusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    self.usersCanAddFilter = ko.computed(function() {
+        var type = self.usersSelectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'username': return self.usersTempFilter.username().trim() !== '';
+            case 'fullName': return self.usersTempFilter.fullName().trim() !== '';
+            case 'email': return self.usersTempFilter.email().trim() !== '';
+            case 'role': return self.usersTempFilter.role() !== null;
+            case 'isActive': return self.usersTempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    self.usersAddFilter = function() {
+        var type = self.usersSelectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.usersFilterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'username':
+                var username = self.usersTempFilter.username().trim();
+                if (!username) return;
+                filter.value = username;
+                filter.displayValue = username;
+                self.usersTempFilter.username('');
+                break;
+
+            case 'fullName':
+                var fullName = self.usersTempFilter.fullName().trim();
+                if (!fullName) return;
+                filter.value = fullName;
+                filter.displayValue = fullName;
+                self.usersTempFilter.fullName('');
+                break;
+
+            case 'email':
+                var email = self.usersTempFilter.email().trim();
+                if (!email) return;
+                filter.value = email;
+                filter.displayValue = email;
+                self.usersTempFilter.email('');
+                break;
+
+            case 'role':
+                var roleId = self.usersTempFilter.role();
+                if (!roleId) return;
+                var role = self.userRoles().find(function(r) { return r.id === roleId; });
+                filter.value = roleId;
+                filter.displayValue = role ? role.name : roleId;
+                self.usersTempFilter.role(null);
+                break;
+
+            case 'isActive':
+                var isActive = self.usersTempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.usersStatusLabels[String(isActive)];
+                self.usersTempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.usersActiveFilters.push(filter);
+        self.usersSelectedFilterType('');
+        self.usersPage(1);
+    };
+
+    self.usersRemoveFilter = function(filter) {
+        self.usersActiveFilters.remove(filter);
+        self.usersPage(1);
+    };
+
+    self.usersClearFilters = function() {
+        self.usersActiveFilters([]);
+        self.usersSearchText('');
+        self.usersPage(1);
+    };
+
+    // ========== CUSTOMER PERSONNEL TAB CHIP-BASED FILTER SYSTEM ==========
+    self.cpSelectedFilterType = ko.observable('');
+    self.cpActiveFilters = ko.observableArray([]);
+
+    self.cpTempFilter = {
+        customerId: ko.observable(null),
+        username: ko.observable(''),
+        fullName: ko.observable(''),
+        email: ko.observable(''),
+        role: ko.observable(null),
+        isActive: ko.observable(null)
+    };
+
+    self.cpFilterLabels = {
+        customer: 'Müşteri',
+        username: 'Kullanıcı Adı',
+        fullName: 'Ad Soyad',
+        email: 'E-posta',
+        role: 'Rol',
+        isActive: 'Durum'
+    };
+
+    self.cpStatusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    self.cpCanAddFilter = ko.computed(function() {
+        var type = self.cpSelectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customer': return self.cpTempFilter.customerId() !== null;
+            case 'username': return self.cpTempFilter.username().trim() !== '';
+            case 'fullName': return self.cpTempFilter.fullName().trim() !== '';
+            case 'email': return self.cpTempFilter.email().trim() !== '';
+            case 'role': return self.cpTempFilter.role() !== null;
+            case 'isActive': return self.cpTempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    self.cpAddFilter = function() {
+        var type = self.cpSelectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.cpFilterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customer':
+                var customerId = self.cpTempFilter.customerId();
+                if (!customerId) return;
+                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                filter.value = customerId;
+                filter.displayValue = customer ? customer.companyName : customerId;
+                self.cpTempFilter.customerId(null);
+                break;
+
+            case 'username':
+                var username = self.cpTempFilter.username().trim();
+                if (!username) return;
+                filter.value = username;
+                filter.displayValue = username;
+                self.cpTempFilter.username('');
+                break;
+
+            case 'fullName':
+                var fullName = self.cpTempFilter.fullName().trim();
+                if (!fullName) return;
+                filter.value = fullName;
+                filter.displayValue = fullName;
+                self.cpTempFilter.fullName('');
+                break;
+
+            case 'email':
+                var email = self.cpTempFilter.email().trim();
+                if (!email) return;
+                filter.value = email;
+                filter.displayValue = email;
+                self.cpTempFilter.email('');
+                break;
+
+            case 'role':
+                var roleId = self.cpTempFilter.role();
+                if (!roleId) return;
+                var role = self.customerPersonnelRoles().find(function(r) { return r.id === roleId; });
+                filter.value = roleId;
+                filter.displayValue = role ? role.name : roleId;
+                self.cpTempFilter.role(null);
+                break;
+
+            case 'isActive':
+                var isActive = self.cpTempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.cpStatusLabels[String(isActive)];
+                self.cpTempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.cpActiveFilters.push(filter);
+        self.cpSelectedFilterType('');
+        self.cpPage(1);
+    };
+
+    self.cpRemoveFilter = function(filter) {
+        self.cpActiveFilters.remove(filter);
+        self.cpPage(1);
+    };
+
+    self.cpClearFilters = function() {
+        self.cpActiveFilters([]);
+        self.searchText('');
+        self.selectedCustomerId('');
+        self.cpPage(1);
+    };
+
     // ===== Sorting =====
     self.sorting = TableSorting.createSortState('username', 'asc');
     self.cpSorting = TableSorting.createSortState('username', 'asc');
@@ -113,13 +350,47 @@ function UsersViewModel() {
     self.filteredAndSortedUsers = ko.computed(function() {
         var items = self.allUsers();
         var search = (self.usersSearchText() || '').toLowerCase();
+        var filters = self.usersActiveFilters();
 
+        // Global search
         if (search) {
             items = items.filter(function(u) {
                 return (u.username || '').toLowerCase().indexOf(search) >= 0 ||
                        (u.firstName || '').toLowerCase().indexOf(search) >= 0 ||
                        (u.lastName || '').toLowerCase().indexOf(search) >= 0 ||
                        (u.email || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                items = items.filter(function(u) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'username':
+                                return (u.username || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'fullName':
+                                var fullName = ((u.firstName || '') + ' ' + (u.lastName || '')).toLowerCase();
+                                return fullName.indexOf(f.value.toLowerCase()) >= 0;
+                            case 'email':
+                                return (u.email || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'role':
+                                return String(u.roleId) === f.value;
+                            case 'isActive':
+                                return u.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
             });
         }
 
@@ -196,19 +467,56 @@ function UsersViewModel() {
         var list = self.allCustomerPersonnel();
         var customerId = self.selectedCustomerId();
         var search = (self.searchText() || '').toLowerCase();
+        var filters = self.cpActiveFilters();
 
+        // Legacy filter (dropdown)
         if (customerId) {
             list = list.filter(function(p) {
                 return p.customerId == customerId;
             });
         }
 
+        // Global search
         if (search) {
             list = list.filter(function(p) {
                 return (p.username || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.firstName || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.lastName || '').toLowerCase().indexOf(search) >= 0 ||
                        (p.email || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                list = list.filter(function(p) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'customer':
+                                return p.customerId == f.value;
+                            case 'username':
+                                return (p.username || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'fullName':
+                                var fullName = ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase();
+                                return fullName.indexOf(f.value.toLowerCase()) >= 0;
+                            case 'email':
+                                return (p.email || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'role':
+                                return p.role === f.value;
+                            case 'isActive':
+                                return p.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
             });
         }
 

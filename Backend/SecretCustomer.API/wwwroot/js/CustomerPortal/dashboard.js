@@ -326,29 +326,23 @@ function CustomerDashboardViewModel() {
             url += '&endDate=' + self.scoreDistEndDate();
         }
 
-        // Token ile download
-        var token = localStorage.getItem('customerPortalToken');
-        fetch(url, {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Export failed');
-            return response.blob();
-        })
-        .then(function(blob) {
-            var link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = 'PuanDagilimi_' + self.selectedCategory() + '_' + new Date().toISOString().slice(0,10) + '.xlsx';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        })
-        .catch(function(error) {
-            console.error('Export error:', error);
-            alert('Export sırasında hata oluştu');
-        });
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'PuanDagilimi_' + self.selectedCategory() + '_' + new Date().toISOString().slice(0,10) + '.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Export sırasında hata oluştu');
+            });
     };
 
     // Question trend state

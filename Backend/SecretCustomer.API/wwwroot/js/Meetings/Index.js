@@ -27,25 +27,162 @@
             return Math.ceil(self.totalCount() / self.pageSize());
         });
 
-        // Filters
-        self.filter = {
-            meetingType: ko.observable(''),
-            status: ko.observable(''),
-            startDate: ko.observable(''),
-            endDate: ko.observable(''),
-            isOnline: ko.observable('')
+        // ========== CHIP-BASED FILTER SYSTEM ==========
+        self.selectedFilterType = ko.observable('');
+        self.activeFilters = ko.observableArray([]);
+
+        // Temp filter values
+        self.tempFilter = {
+            meetingType: ko.observable(null),
+            status: ko.observable(null),
+            dateRange: { startDate: ko.observable(''), endDate: ko.observable('') },
+            isOnline: ko.observable(null)
+        };
+
+        // Filter labels
+        self.filterLabels = {
+            meetingType: 'Toplantı Tipi',
+            status: 'Durum',
+            dateRange: 'Tarih Aralığı',
+            isOnline: 'Online'
+        };
+
+        self.meetingTypeOptions = [
+            { id: 'General', name: 'Genel' },
+            { id: 'Project', name: 'Proje' },
+            { id: 'Evaluation', name: 'Değerlendirme' },
+            { id: 'Training', name: 'Eğitim' },
+            { id: 'Customer', name: 'Müşteri' },
+            { id: 'KickOff', name: 'Kick-off' },
+            { id: 'Closing', name: 'Kapanış' }
+        ];
+
+        self.statusOptions = [
+            { id: 'Planned', name: 'Planlandı' },
+            { id: 'PendingApproval', name: 'Onay Bekliyor' },
+            { id: 'Approved', name: 'Onaylandı' },
+            { id: 'InProgress', name: 'Devam Ediyor' },
+            { id: 'Completed', name: 'Tamamlandı' },
+            { id: 'Cancelled', name: 'İptal' },
+            { id: 'Postponed', name: 'Ertelendi' }
+        ];
+
+        self.onlineOptions = [
+            { id: true, name: 'Evet' },
+            { id: false, name: 'Hayır' }
+        ];
+
+        // Can add filter
+        self.canAddFilter = ko.computed(function() {
+            var type = self.selectedFilterType();
+            if (!type) return false;
+
+            switch (type) {
+                case 'meetingType': return self.tempFilter.meetingType() !== null;
+                case 'status': return self.tempFilter.status() !== null;
+                case 'dateRange': return self.tempFilter.dateRange.startDate() || self.tempFilter.dateRange.endDate();
+                case 'isOnline': return self.tempFilter.isOnline() !== null;
+                default: return false;
+            }
+        });
+
+        // Add filter
+        self.addFilter = function() {
+            var type = self.selectedFilterType();
+            if (!type) return;
+
+            var filter = {
+                type: type,
+                label: self.filterLabels[type],
+                value: null,
+                displayValue: ''
+            };
+
+            switch (type) {
+                case 'meetingType':
+                    var meetingTypeId = self.tempFilter.meetingType();
+                    if (!meetingTypeId) return;
+                    var meetingType = self.meetingTypeOptions.find(function(t) { return t.id === meetingTypeId; });
+                    filter.value = meetingTypeId;
+                    filter.displayValue = meetingType ? meetingType.name : meetingTypeId;
+                    self.tempFilter.meetingType(null);
+                    break;
+
+                case 'status':
+                    var statusId = self.tempFilter.status();
+                    if (!statusId) return;
+                    var status = self.statusOptions.find(function(s) { return s.id === statusId; });
+                    filter.value = statusId;
+                    filter.displayValue = status ? status.name : statusId;
+                    self.tempFilter.status(null);
+                    break;
+
+                case 'dateRange':
+                    var startDate = self.tempFilter.dateRange.startDate();
+                    var endDate = self.tempFilter.dateRange.endDate();
+                    if (!startDate && !endDate) return;
+                    filter.value = { startDate: startDate, endDate: endDate };
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                    self.tempFilter.dateRange.startDate('');
+                    self.tempFilter.dateRange.endDate('');
+                    break;
+
+                case 'isOnline':
+                    var isOnline = self.tempFilter.isOnline();
+                    if (isOnline === null) return;
+                    filter.value = isOnline;
+                    filter.displayValue = isOnline ? 'Evet' : 'Hayır';
+                    self.tempFilter.isOnline(null);
+                    break;
+
+                default:
+                    return;
+            }
+
+            self.activeFilters.push(filter);
+            self.selectedFilterType('');
+            self.currentPage(1);
+            self.loadMeetings();
+        };
+
+        // Remove filter
+        self.removeFilter = function(filter) {
+            self.activeFilters.remove(filter);
+            self.currentPage(1);
+            self.loadMeetings();
+        };
+
+        // Clear all filters
+        self.clearFilters = function() {
+            self.activeFilters([]);
+            self.sorting.reset();
+            self.currentPage(1);
+            self.loadMeetings();
+        };
+
+        // Build filter params
+        self.buildFilterParams = function(params) {
+            self.activeFilters().forEach(function(filter) {
+                switch (filter.type) {
+                    case 'meetingType':
+                        params.append('meetingType', filter.value);
+                        break;
+                    case 'status':
+                        params.append('status', filter.value);
+                        break;
+                    case 'dateRange':
+                        if (filter.value.startDate) params.append('startDate', filter.value.startDate);
+                        if (filter.value.endDate) params.append('endDate', filter.value.endDate);
+                        break;
+                    case 'isOnline':
+                        params.append('isOnline', filter.value);
+                        break;
+                }
+            });
         };
 
         // Sorting
         self.sorting = TableSorting.createSortState('plannedDate', 'desc');
-
-        // Subscribe to filter changes
-        Object.keys(self.filter).forEach(function(key) {
-            self.filter[key].subscribe(function() {
-                self.currentPage(1);
-                self.loadMeetings();
-            });
-        });
 
         // Subscribe to sorting changes
         self.sorting.sortBy.subscribe(function() {
@@ -152,11 +289,8 @@
                 pageSize: self.pageSize()
             });
 
-            if (self.filter.meetingType()) params.append('meetingType', self.filter.meetingType());
-            if (self.filter.status()) params.append('status', self.filter.status());
-            if (self.filter.startDate()) params.append('startDate', self.filter.startDate());
-            if (self.filter.endDate()) params.append('endDate', self.filter.endDate());
-            if (self.filter.isOnline()) params.append('isOnline', self.filter.isOnline());
+            // Add chip-based filters
+            self.buildFilterParams(params);
 
             // Sorting params
             if (self.sorting.sortBy()) {
@@ -620,15 +754,6 @@
         self.goToPage = function(page) {
             self.currentPage(page);
             self.loadMeetings();
-        };
-
-        self.clearFilters = function() {
-            self.filter.meetingType('');
-            self.filter.status('');
-            self.filter.startDate('');
-            self.filter.endDate('');
-            self.filter.isOnline('');
-            self.sorting.reset();
         };
 
         // ========== INITIALIZE ==========

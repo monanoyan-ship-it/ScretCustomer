@@ -221,12 +221,15 @@ public class AddTrainingMaterialDto
 /// </summary>
 public class TrainingFilterDto
 {
-    public int? ProjectId { get; set; }
-    public int? CustomerId { get; set; }
-    public int? TrainerId { get; set; }
-    public string? TrainingType { get; set; }
-    public string? Status { get; set; }
-    public string? Category { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? TrainerIds { get; set; }
+    public List<string>? TrainingTypes { get; set; }
+    public List<string>? Statuses { get; set; }
+    public List<string>? Categories { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? IsMandatory { get; set; }

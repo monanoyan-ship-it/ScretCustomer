@@ -42,7 +42,7 @@ public class ReportsApiController : BaseApiController
     /// Filtreler için lookup verileri (müşteri, organizasyon, proje, değerlendirici)
     /// </summary>
     [HttpGet("lookups")]
-    public async Task<IActionResult> GetLookups([FromQuery] int? customerId = null)
+    public async Task<IActionResult> GetLookups([FromQuery] List<int>? customerIds = null)
     {
         try
         {
@@ -332,12 +332,12 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("penalties")]
     public async Task<IActionResult> GetPenaltiesReport(
-        [FromQuery] int? projectId,
-        [FromQuery] int? customerId,
-        [FromQuery] int? organizationId,
-        [FromQuery] int? checklistId,
-        [FromQuery] int? evaluatorId,
-        [FromQuery] string? penaltyType,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<string>? penaltyTypes,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int page = 1,
@@ -347,12 +347,12 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new PenaltyFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId,
-                OrganizationId = organizationId,
-                ChecklistId = checklistId,
-                EvaluatorId = evaluatorId,
-                PenaltyType = penaltyType,
+                ProjectIds = projectIds,
+                CustomerIds = customerIds,
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                EvaluatorIds = evaluatorIds,
+                PenaltyTypes = penaltyTypes,
                 StartDate = startDate,
                 EndDate = endDate,
                 Page = page,
@@ -373,12 +373,12 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("penalties/export")]
     public async Task<IActionResult> ExportPenaltiesToExcel(
-        [FromQuery] int? projectId,
-        [FromQuery] int? customerId,
-        [FromQuery] int? organizationId,
-        [FromQuery] int? checklistId,
-        [FromQuery] int? evaluatorId,
-        [FromQuery] string? penaltyType,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<string>? penaltyTypes,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -386,12 +386,12 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new PenaltyFilterDto
             {
-                ProjectId = projectId,
-                CustomerId = customerId,
-                OrganizationId = organizationId,
-                ChecklistId = checklistId,
-                EvaluatorId = evaluatorId,
-                PenaltyType = penaltyType,
+                ProjectIds = projectIds,
+                CustomerIds = customerIds,
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                EvaluatorIds = evaluatorIds,
+                PenaltyTypes = penaltyTypes,
                 StartDate = startDate,
                 EndDate = endDate,
                 Page = 1,
@@ -431,10 +431,11 @@ public class ReportsApiController : BaseApiController
     /// Değerlendirmesi olan organizasyon listesini getirir (müşteriye göre filtrelenir)
     /// </summary>
     [HttpGet("report-card/organizations")]
-    public async Task<IActionResult> GetReportCardOrganizations([FromQuery] int? customerId)
+    public async Task<IActionResult> GetReportCardOrganizations([FromQuery] List<int>? customerIds = null)
     {
         try
         {
+            var customerId = customerIds?.FirstOrDefault();
             var organizations = await _reportService.GetOrganizationsWithEvaluationsAsync(customerId);
             return Ok(organizations);
         }
@@ -450,11 +451,13 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("personnel-list")]
     public async Task<IActionResult> GetPersonnelList(
-        [FromQuery] int? customerId,
-        [FromQuery] int? organizationId)
+        [FromQuery] List<int>? customerIds = null,
+        [FromQuery] List<int>? organizationIds = null)
     {
         try
         {
+            var customerId = customerIds?.FirstOrDefault();
+            var organizationId = organizationIds?.FirstOrDefault();
             var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId, organizationId);
             return Ok(personnel);
         }
@@ -471,16 +474,16 @@ public class ReportsApiController : BaseApiController
     [HttpGet("personnel-report-card/{personnelId:int}")]
     public async Task<IActionResult> GetPersonnelReportCard(
         int personnelId,
-        [FromQuery] int? projectId,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         try
         {
             var filter = new PersonnelReportCardFilterDto
             {
                 PersonnelId = personnelId,
-                ProjectId = projectId,
+                ProjectId = projectIds?.FirstOrDefault(),
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -504,16 +507,16 @@ public class ReportsApiController : BaseApiController
     [HttpGet("personnel-report-card/{personnelId:int}/export")]
     public async Task<IActionResult> ExportPersonnelReportCard(
         int personnelId,
-        [FromQuery] int? projectId,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         try
         {
             var filter = new PersonnelReportCardFilterDto
             {
                 PersonnelId = personnelId,
-                ProjectId = projectId,
+                ProjectId = projectIds?.FirstOrDefault(),
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -535,10 +538,12 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions")]
     public async Task<IActionResult> GetSuggestionsReport(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
-        [FromQuery] int? evaluatorId,
-        [FromQuery] int? personnelId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<int>? personnelIds,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] string? searchText,
@@ -549,10 +554,12 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                ChecklistId = checklistId,
-                EvaluatorId = evaluatorId,
-                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                CustomerIds = customerIds,
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                EvaluatorIds = evaluatorIds,
+                PersonnelIds = personnelIds,
                 StartDate = startDate,
                 EndDate = endDate,
                 SearchText = searchText,
@@ -574,8 +581,9 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions/top-questions")]
     public async Task<IActionResult> GetTopSuggestedQuestions(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? checklistIds,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 10)
@@ -584,8 +592,9 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                ChecklistId = checklistId,
+                ProjectIds = projectIds,
+                CustomerIds = customerIds,
+                ChecklistIds = checklistIds,
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -649,12 +658,13 @@ public class ReportsApiController : BaseApiController
     [HttpGet("survey-responses/recent")]
     public async Task<IActionResult> GetRecentSurveyResponses(
         [FromQuery] int count = 10,
-        [FromQuery] int? projectId = null,
+        [FromQuery] List<int>? projectIds = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
         try
         {
+            var projectId = projectIds?.FirstOrDefault();
             var result = await _reportService.GetRecentSurveyResponsesAsync(count, projectId, startDate, endDate);
             return Ok(result);
         }
@@ -691,12 +701,13 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("survey-question-distribution")]
     public async Task<IActionResult> GetSurveyQuestionScoreDistribution(
-        [FromQuery] int? projectId = null,
+        [FromQuery] List<int>? projectIds = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
         try
         {
+            var projectId = projectIds?.FirstOrDefault();
             var result = await _reportService.GetSurveyQuestionScoreDistributionAsync(projectId, startDate, endDate);
             return Ok(result);
         }
@@ -820,10 +831,12 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("suggestions/export")]
     public async Task<IActionResult> ExportSuggestionsToExcel(
-        [FromQuery] int? projectId,
-        [FromQuery] int? checklistId,
-        [FromQuery] int? evaluatorId,
-        [FromQuery] int? personnelId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? customerIds,
+        [FromQuery] List<int>? organizationIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] List<int>? evaluatorIds,
+        [FromQuery] List<int>? personnelIds,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] string? searchText)
@@ -832,10 +845,12 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new SuggestionsFilterDto
             {
-                ProjectId = projectId,
-                ChecklistId = checklistId,
-                EvaluatorId = evaluatorId,
-                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                CustomerIds = customerIds,
+                OrganizationIds = organizationIds,
+                ChecklistIds = checklistIds,
+                EvaluatorIds = evaluatorIds,
+                PersonnelIds = personnelIds,
                 StartDate = startDate,
                 EndDate = endDate,
                 SearchText = searchText
@@ -874,23 +889,23 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("personnel-question-performance/export")]
     public async Task<IActionResult> ExportPersonnelQuestionPerformanceReport(
-        [FromQuery] int? customerId,
-        [FromQuery] int? projectId,
-        [FromQuery] int? organizationId,
-        [FromQuery] int? personnelId,
-        [FromQuery] int? periodId,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<int>? customerIds = null,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] List<int>? personnelIds = null,
+        [FromQuery] List<int>? periodIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         try
         {
             var filter = new PersonnelQuestionPerformanceFilterDto
             {
-                CustomerId = customerId,
-                ProjectId = projectId,
-                OrganizationId = organizationId,
-                PersonnelId = personnelId,
-                PeriodId = periodId,
+                CustomerId = customerIds?.FirstOrDefault(),
+                ProjectId = projectIds?.FirstOrDefault(),
+                OrganizationId = organizationIds?.FirstOrDefault(),
+                PersonnelId = personnelIds?.FirstOrDefault(),
+                PeriodId = periodIds?.FirstOrDefault(),
                 StartDate = startDate,
                 EndDate = endDate
             };
@@ -904,5 +919,4 @@ public class ReportsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Personel soru performans raporu export edilirken hata oluştu.", ex));
         }
     }
-
 }

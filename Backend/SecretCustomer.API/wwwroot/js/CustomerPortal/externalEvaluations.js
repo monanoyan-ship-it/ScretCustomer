@@ -22,7 +22,9 @@ function CustomerExternalEvaluationsViewModel() {
         callId: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        dateRangeType: ko.observable('')
+        dateRangeType: ko.observable(''),
+        minScore: ko.observable(''),
+        maxScore: ko.observable('')
     };
 
     // Active filters
@@ -62,6 +64,7 @@ function CustomerExternalEvaluationsViewModel() {
         if (type === 'organization') return self.tempFilter.organizationId();
         if (type === 'callId') return self.tempFilter.callId();
         if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
+        if (type === 'scoreRange') return self.tempFilter.minScore() !== '' || self.tempFilter.maxScore() !== '';
         return false;
     });
 
@@ -82,7 +85,9 @@ function CustomerExternalEvaluationsViewModel() {
     // Date range labels
     self.dateRangeLabels = {
         'today': 'Bugün',
+        'yesterday': 'Dün',
         'thisWeek': 'Bu Hafta',
+        'lastWeek': 'Geçen Hafta',
         'thisMonth': 'Bu Ay',
         'lastMonth': 'Geçen Ay'
     };
@@ -94,6 +99,10 @@ function CustomerExternalEvaluationsViewModel() {
 
         if (rangeType === 'today') {
             start = end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'yesterday') {
+            var yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            start = end = yesterday.toISOString().split('T')[0];
         } else if (rangeType === 'thisWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -101,6 +110,15 @@ function CustomerExternalEvaluationsViewModel() {
             weekStart.setDate(diff);
             start = weekStart.toISOString().split('T')[0];
             end = new Date().toISOString().split('T')[0];
+        } else if (rangeType === 'lastWeek') {
+            var dayOfWeek = today.getDay();
+            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            var lastWeekEnd = new Date(today);
+            lastWeekEnd.setDate(diff - 1);
+            var lastWeekStart = new Date(lastWeekEnd);
+            lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
+            start = lastWeekStart.toISOString().split('T')[0];
+            end = lastWeekEnd.toISOString().split('T')[0];
         } else if (rangeType === 'thisMonth') {
             start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
             end = new Date().toISOString().split('T')[0];
@@ -112,12 +130,53 @@ function CustomerExternalEvaluationsViewModel() {
         return { start: start, end: end };
     };
 
-    // Date range helper for UI
+    // Date range helper for UI (dropdown içi)
     self.setDateRange = function(rangeType) {
         var range = self.calculateDateRange(rangeType);
         self.tempFilter.startDate(range.start);
         self.tempFilter.endDate(range.end);
         self.tempFilter.dateRangeType(rangeType);
+    };
+
+    // Quick date range filter - direkt uygula ve ara (hızlı erişim butonları için)
+    self.setQuickDateRange = function(rangeType) {
+        // Mevcut tarih filtresini kaldır
+        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
+
+        var range = self.calculateDateRange(rangeType);
+        var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
+
+        self.activeFilters.push({
+            type: 'dateRange',
+            value: null,
+            startDate: range.start,
+            endDate: range.end,
+            dateRangeType: rangeType,
+            label: 'Tarih',
+            displayValue: displayValue
+        });
+
+        self.search();
+    };
+
+    // Quick CallId search
+    self.quickCallId = ko.observable('');
+    self.searchByCallId = function() {
+        var callId = self.quickCallId().trim();
+        if (!callId) return;
+
+        // Mevcut callId filtresini kaldır
+        self.activeFilters.remove(function(f) { return f.type === 'callId'; });
+
+        self.activeFilters.push({
+            type: 'callId',
+            value: callId,
+            label: 'Çağrı ID',
+            displayValue: callId
+        });
+
+        self.quickCallId('');
+        self.search();
     };
 
     // Add filter
@@ -158,17 +217,24 @@ function CustomerExternalEvaluationsViewModel() {
             } else {
                 displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
             }
+        } else if (type === 'scoreRange') {
+            filter.minScore = self.tempFilter.minScore();
+            filter.maxScore = self.tempFilter.maxScore();
+            label = 'Puan';
+            var min = filter.minScore !== '' ? filter.minScore : '0';
+            var max = filter.maxScore !== '' ? filter.maxScore : '100';
+            displayValue = min + ' - ' + max;
         }
 
-        // Remove existing filter of same type
-        self.activeFilters.remove(function(f) { return f.type === type; });
-
+        // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push({
             type: type,
             value: filter.value,
             startDate: filter.startDate,
             endDate: filter.endDate,
             dateRangeType: filter.dateRangeType,
+            minScore: filter.minScore,
+            maxScore: filter.maxScore,
             label: label,
             displayValue: displayValue
         });
@@ -176,6 +242,7 @@ function CustomerExternalEvaluationsViewModel() {
         // Reset temp
         self.resetTempFilter();
         self.selectedFilterType('');
+        self.search(); // Filtre eklenince otomatik ara
     };
 
     self.resetTempFilter = function() {
@@ -186,14 +253,18 @@ function CustomerExternalEvaluationsViewModel() {
         self.tempFilter.startDate('');
         self.tempFilter.endDate('');
         self.tempFilter.dateRangeType('');
+        self.tempFilter.minScore('');
+        self.tempFilter.maxScore('');
     };
 
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
+        self.search(); // Filtre kaldırılınca otomatik ara
     };
 
     self.clearFilters = function() {
         self.activeFilters.removeAll();
+        self.search(); // Tüm filtreler temizlenince otomatik ara
     };
 
     // Search
@@ -201,26 +272,70 @@ function CustomerExternalEvaluationsViewModel() {
         self.loadEvaluations(1);
     };
 
-    // Build query params from active filters
+    // Build query params from active filters (çoklu değer desteği)
     self.buildQueryParams = function() {
         var params = {};
+
+        // Çoklu değer için array'ler
+        var projectIds = [];
+        var personnelNames = [];
+        var organizationIds = [];
+        var callIds = [];
+        var startDate = null;
+        var endDate = null;
+        var minScore = null;
+        var maxScore = null;
+
         self.activeFilters().forEach(function(f) {
-            if (f.type === 'project') params.projectId = f.value;
-            if (f.type === 'personnel') params.personnelName = f.value;
-            if (f.type === 'organization') params.organizationId = f.value;
-            if (f.type === 'callId') params.callId = f.value;
-            if (f.type === 'dateRange') {
-                // If it's a named range type, recalculate dates dynamically
-                if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
-                    var range = self.calculateDateRange(f.dateRangeType);
-                    params.startDate = range.start;
-                    params.endDate = range.end;
-                } else {
-                    if (f.startDate) params.startDate = f.startDate;
-                    if (f.endDate) params.endDate = f.endDate;
-                }
+            switch (f.type) {
+                case 'project':
+                    projectIds.push(f.value);
+                    break;
+                case 'personnel':
+                    personnelNames.push(f.value);
+                    break;
+                case 'organization':
+                    organizationIds.push(f.value);
+                    break;
+                case 'callId':
+                    callIds.push(f.value);
+                    break;
+                case 'dateRange':
+                    // If it's a named range type, recalculate dates dynamically
+                    if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                        var range = self.calculateDateRange(f.dateRangeType);
+                        startDate = range.start;
+                        endDate = range.end;
+                    } else {
+                        if (f.startDate) startDate = f.startDate;
+                        if (f.endDate) endDate = f.endDate;
+                    }
+                    break;
+                case 'scoreRange':
+                    if (f.minScore !== '' && f.minScore !== null && f.minScore !== undefined) minScore = f.minScore;
+                    if (f.maxScore !== '' && f.maxScore !== null && f.maxScore !== undefined) maxScore = f.maxScore;
+                    break;
             }
         });
+
+        // Array'leri params'a ekle (boş olmayanları)
+        if (projectIds.length === 1) params.projectId = projectIds[0];
+        else if (projectIds.length > 1) params.projectIds = projectIds;
+
+        if (personnelNames.length === 1) params.personnelName = personnelNames[0];
+        else if (personnelNames.length > 1) params.personnelNames = personnelNames;
+
+        if (organizationIds.length === 1) params.organizationId = organizationIds[0];
+        else if (organizationIds.length > 1) params.organizationIds = organizationIds;
+
+        if (callIds.length === 1) params.callId = callIds[0];
+        else if (callIds.length > 1) params.callIds = callIds;
+
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+        if (minScore !== null) params.minScore = minScore;
+        if (maxScore !== null) params.maxScore = maxScore;
+
         return params;
     };
 

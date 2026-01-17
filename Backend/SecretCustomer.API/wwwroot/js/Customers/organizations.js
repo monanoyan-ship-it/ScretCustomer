@@ -26,15 +26,140 @@ function OrganizationsViewModel() {
     // Search
     self.orgSearchText = ko.observable('');
 
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        name: ko.observable(''),
+        code: ko.observable(''),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        name: 'Organizasyon Adı',
+        code: 'Kod',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'name': return self.tempFilter.name().trim() !== '';
+            case 'code': return self.tempFilter.code().trim() !== '';
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'name':
+                var name = self.tempFilter.name().trim();
+                if (!name) return;
+                filter.value = name;
+                filter.displayValue = name;
+                self.tempFilter.name('');
+                break;
+
+            case 'code':
+                var code = self.tempFilter.code().trim();
+                if (!code) return;
+                filter.value = code;
+                filter.displayValue = code;
+                self.tempFilter.code('');
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.orgSearchText('');
+    };
+
     // Filtered organizations
     self.filteredOrganizations = ko.computed(function() {
         var search = (self.orgSearchText() || '').toLowerCase().trim();
         var orgs = self.organizations();
-        if (!search) return orgs;
-        return orgs.filter(function(o) {
-            return (o.name || '').toLowerCase().indexOf(search) >= 0 ||
-                   (o.code || '').toLowerCase().indexOf(search) >= 0;
-        });
+        var filters = self.activeFilters();
+
+        // Global search filter
+        if (search) {
+            orgs = orgs.filter(function(o) {
+                return (o.name || '').toLowerCase().indexOf(search) >= 0 ||
+                       (o.code || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                orgs = orgs.filter(function(o) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'name':
+                                return (o.name || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'code':
+                                return (o.code || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
+                            case 'isActive':
+                                return o.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
+            });
+        }
+
+        return orgs;
     });
 
     // Personnel pool for supervisor (role 2 = Supervisor, unassigned)

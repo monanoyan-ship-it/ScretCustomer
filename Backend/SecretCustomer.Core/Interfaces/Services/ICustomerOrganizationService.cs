@@ -12,6 +12,7 @@ public interface ICustomerOrganizationService
 
     // Organizasyon CRUD
     Task<IEnumerable<CustomerOrganizationDto>> GetAllAsync();
+    Task<PagedOrganizationResult> GetFilteredListAsync(OrganizationFilterDto filter);
     Task<CustomerOrganizationDto?> GetByIdAsync(int id);
     Task<IEnumerable<CustomerOrganizationDto>> GetByCustomerIdAsync(int customerId, bool includeInactive = false);
     Task<OrganizationTreeDto?> GetOrganizationTreeAsync(int customerId);

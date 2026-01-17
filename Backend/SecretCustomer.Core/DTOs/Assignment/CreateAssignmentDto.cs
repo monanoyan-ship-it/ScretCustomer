@@ -90,9 +90,13 @@ public class UpdateDueDateDto
 /// </summary>
 public class AssignmentFilterDto
 {
-    public int? ProjectId { get; set; }
-    public int? AssignedUserId { get; set; }
-    public string? Status { get; set; }
+    // Çoklu filtreler (OR mantığı)
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? AssignedUserIds { get; set; }
+    public List<int>? ChecklistIds { get; set; }
+    public List<string>? Statuses { get; set; }
+
+    // Tekil filtreler (çoklu mantıklı değil)
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
     public bool? IsCompleted { get; set; }

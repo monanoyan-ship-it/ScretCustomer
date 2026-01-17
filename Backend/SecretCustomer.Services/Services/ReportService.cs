@@ -22,6 +22,7 @@ public class ReportService : IReportService
 
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
     {
+
         // Liste görünümü için Answers dahil EDİLMEZ - sadece detay sayfasında lazım
         // Bu Include optimizasyonu performansı önemli ölçüde artırır
         var query = _context.Evaluations
@@ -39,40 +40,59 @@ public class ReportService : IReportService
             // .Include(e => e.Answers) - KALDIRILDI: Liste için gereksiz, detay sayfasında ayrı yükleniyor
             .AsQueryable();
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // ===== ÇOKLU DEĞER DESTEKLİ FİLTRELER (OR mantığı) =====
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        // Project filter (çoklu)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+
+        // Project Type filter (çoklu)
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        // /Listenings sayfası Çağrı Denetimi için
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+        // Evaluator filter (çoklu)
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
-        }
+            // Her tarih aralığı için OR koşulu oluştur
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+            // En geniş aralığı bul (OR mantığı için)
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
         // PRENSIP: Export için sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
@@ -80,68 +100,76 @@ public class ReportService : IReportService
         {
             query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
         }
-        else if (!string.IsNullOrEmpty(filter.Status))
+        // Status filter (çoklu)
+        else if (filter.Statuses?.Any() == true)
         {
-            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
-            if (statusItem != null)
-                query = query.Where(e => e.StatusId == statusItem.Id);
+            var statusIds = filter.Statuses
+                .Select(s => EvaluationStatuses.GetBySystemName(s))
+                .Where(s => s != null)
+                .Select(s => s!.Id)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(e => statusIds.Contains(e.StatusId));
         }
 
-        // Evaluation source filter
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            if (filter.EvaluationSource == "internal")
-            {
-                // Müşteri iç değerlendirmeleri (CustomerPersonnel = 4)
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            }
-            else if (filter.EvaluationSource == "ours")
-            {
-                // Bizim değerlendirmelerimiz (CustomerPersonnel dışındakiler)
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
-            }
+            // Eğer ikisi de seçiliyse filtre uygulanmaz (tümü gelir)
         }
 
-        // Customer filter (evaluated personnel's customer)
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
-        if (filter.ProjectCustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
 
-        // Organization filter
-        if (filter.OrganizationId.HasValue)
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
 
-        // Period filter
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
 
-        // Evaluated Personnel name search (case-insensitive)
-        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        // Evaluated Personnel name search (çoklu - OR mantığı)
+        if (filter.PersonnelNames?.Any() == true)
         {
             query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null &&
-                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
-                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
-                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+                filter.PersonnelNames.Any(name =>
+                    (e.EvaluatedCustomerPersonnel != null &&
+                        (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{name}%") ||
+                         EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{name}%"))) ||
+                    (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{name}%"))));
         }
 
-        // Supervisor name search
-        if (!string.IsNullOrEmpty(filter.SupervisorName))
+        // Supervisor name search (çoklu - OR mantığı)
+        if (filter.SupervisorNames?.Any() == true)
         {
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
                     oa.Supervisor != null &&
-                    (EF.Functions.ILike(oa.Supervisor.FirstName, $"%{filter.SupervisorName}%") ||
-                     EF.Functions.ILike(oa.Supervisor.LastName, $"%{filter.SupervisorName}%"))));
+                    filter.SupervisorNames.Any(name =>
+                        EF.Functions.ILike(oa.Supervisor.FirstName, $"%{name}%") ||
+                        EF.Functions.ILike(oa.Supervisor.LastName, $"%{name}%"))));
         }
 
-        // CallId search
-        if (!string.IsNullOrEmpty(filter.CallId))
-            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
+        // CallId search (çoklu - OR mantığı)
+        if (filter.CallIds?.Any() == true)
+            query = query.Where(e => e.CallId != null &&
+                filter.CallIds.Any(callId => EF.Functions.ILike(e.CallId, $"%{callId}%")));
 
         // Get total count (skip if requested for faster initial load)
         var totalCount = filter.SkipCount ? -1 : await query.CountAsync();
@@ -210,86 +238,120 @@ public class ReportService : IReportService
         // Count için Include'lar gereksiz - sadece filtreleme yeterli
         var query = _context.Evaluations.AsQueryable();
 
-        // Apply filters (aynı filtreler)
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
+        {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
-
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
-
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
-
-        if (filter.StartDate.HasValue)
-        {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
         }
 
-        if (filter.EndDate.HasValue)
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
+
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        if (!string.IsNullOrEmpty(filter.Status))
+        // Status filter (çoklu)
+        if (filter.Statuses?.Any() == true)
         {
-            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
-            if (statusItem != null)
-                query = query.Where(e => e.StatusId == statusItem.Id);
+            var statusIds = filter.Statuses
+                .Select(s => EvaluationStatuses.GetBySystemName(s))
+                .Where(s => s != null)
+                .Select(s => s!.Id)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(e => statusIds.Contains(e.StatusId));
         }
 
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            if (filter.EvaluationSource == "internal")
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            else if (filter.EvaluationSource == "ours")
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
-
-        if (filter.ProjectCustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
-
-        if (filter.OrganizationId.HasValue)
+        if (filter.CustomerIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue &&
+                filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
 
-        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
+
+        // Personnel name search (çoklu - OR mantığı)
+        if (filter.PersonnelNames?.Any() == true)
         {
             query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null &&
-                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
-                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
-                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+                filter.PersonnelNames.Any(name =>
+                    (e.EvaluatedCustomerPersonnel != null &&
+                        (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{name}%") ||
+                         EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{name}%"))) ||
+                    (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{name}%"))));
         }
 
-        if (!string.IsNullOrEmpty(filter.SupervisorName))
+        // Supervisor name search (çoklu - OR mantığı)
+        if (filter.SupervisorNames?.Any() == true)
         {
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
                     oa.Supervisor != null &&
-                    (EF.Functions.ILike(oa.Supervisor.FirstName, $"%{filter.SupervisorName}%") ||
-                     EF.Functions.ILike(oa.Supervisor.LastName, $"%{filter.SupervisorName}%"))));
+                    filter.SupervisorNames.Any(name =>
+                        EF.Functions.ILike(oa.Supervisor.FirstName, $"%{name}%") ||
+                        EF.Functions.ILike(oa.Supervisor.LastName, $"%{name}%"))));
         }
 
-        if (!string.IsNullOrEmpty(filter.CallId))
-            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
+        // CallId search (çoklu - OR mantığı)
+        if (filter.CallIds?.Any() == true)
+            query = query.Where(e => e.CallId != null &&
+                filter.CallIds.Any(callId => EF.Functions.ILike(e.CallId, $"%{callId}%")));
 
         return await query.CountAsync();
     }
@@ -571,33 +633,47 @@ public class ReportService : IReportService
             .Where(e => !e.IsDeleted)
             .AsQueryable();
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
-        }
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
         // Veritabanında aggregate - memory'ye çekmeden
@@ -771,28 +847,48 @@ public class ReportService : IReportService
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.StartDate.HasValue)
-            query = query.Where(e => e.CompletedAt >= filter.StartDate.Value || e.CreatedAt >= filter.StartDate.Value);
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-            query = query.Where(e => e.CompletedAt <= filter.EndDate.Value || e.CreatedAt <= filter.EndDate.Value);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+        }
 
         var evaluations = await query.Take(1000).ToListAsync();
 
@@ -944,40 +1040,48 @@ public class ReportService : IReportService
             .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
             .AsQueryable();
 
-        // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (!filter.ProjectId.HasValue)
+        // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
+        if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
 
-        if (filter.OrganizationId.HasValue)
-            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId == filter.OrganizationId.Value);
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(a => a.Question.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Question.ChecklistId));
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(a => a.Evaluation.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
 
-        if (!string.IsNullOrEmpty(filter.PenaltyType))
+        // PenaltyType - çoklu değer desteği
+        if (filter.PenaltyTypes?.Any() == true)
         {
-            var penaltyTypeItem = PenaltyTypes.GetBySystemName(filter.PenaltyType);
-            if (penaltyTypeItem != null)
-                query = query.Where(a => a.AppliedPenaltyTypeId == penaltyTypeItem.Id);
+            var penaltyTypeIds = filter.PenaltyTypes
+                .Select(pt => PenaltyTypes.GetBySystemName(pt)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (penaltyTypeIds.Any())
+                query = query.Where(a => penaltyTypeIds.Contains(a.AppliedPenaltyTypeId));
         }
 
+        // Date Range filtresi
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value || a.Evaluation.ControlDate >= filter.StartDate.Value);
-
         if (filter.EndDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt <= filter.EndDate.Value || a.Evaluation.ControlDate <= filter.EndDate.Value);
+        {
+            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay || a.Evaluation.ControlDate <= endOfDay);
+        }
 
         var penaltyAnswers = await query.ToListAsync();
 
@@ -1003,6 +1107,9 @@ public class ReportService : IReportService
                 EvaluationId = a.EvaluationId,
                 AnswerId = a.Id,
                 QuestionId = a.QuestionId,
+                CallId = a.Evaluation.CallId,
+                CallTime = a.Evaluation.CallTime,
+                Duration = a.Evaluation.Duration,
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
                 PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
@@ -1153,6 +1260,9 @@ public class ReportService : IReportService
         var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
+            await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"),
+            await _localizationService.GetResourceAsync("Report.CallTime", defaultValue: "Çağrı Saati"),
+            await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre"),
             await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Organization", defaultValue: "Organizasyon"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
@@ -1183,6 +1293,9 @@ public class ReportService : IReportService
         {
             int col = 1;
             penaltiesSheet.Cell(row, col++).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.CallId ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.CallTime ?? "";
+            penaltiesSheet.Cell(row, col++).Value = penalty.Duration ?? "";
             penaltiesSheet.Cell(row, col++).Value = penalty.ProjectName;
             penaltiesSheet.Cell(row, col++).Value = penalty.OrganizationName ?? "";
             penaltiesSheet.Cell(row, col++).Value = penalty.ChecklistName ?? "";
@@ -1396,11 +1509,11 @@ public class ReportService : IReportService
 
     public async Task<PersonnelReportCardDto?> GetPersonnelReportCardAsync(PersonnelReportCardFilterDto filter)
     {
-        // EvaluatedPersonnel aslında User entity'sine işaret ediyor
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == filter.PersonnelId);
+        // CustomerPersonnel tablosundan personeli bul
+        var personnel = await _context.CustomerPersonnel
+            .FirstOrDefaultAsync(p => p.Id == filter.PersonnelId);
 
-        if (user == null)
+        if (personnel == null)
             return null;
 
         var query = _context.Evaluations
@@ -1438,10 +1551,10 @@ public class ReportService : IReportService
         {
             return new PersonnelReportCardDto
             {
-                PersonnelId = user.Id,
-                PersonnelName = $"{user.FirstName} {user.LastName}",
-                Title = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
-                Department = null
+                PersonnelId = personnel.Id,
+                PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
+                Title = personnel.Title ?? "",
+                Department = personnel.Department
             };
         }
 
@@ -1500,7 +1613,10 @@ public class ReportService : IReportService
                 ScorePercentage = e.ScorePercentage ?? 0,
                 YellowCards = e.YellowCardCount,
                 RedCards = e.RedCardCount,
-                Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? ""
+                Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? "",
+                CallId = e.CallId,
+                CallTime = e.CallTime,
+                Duration = e.Duration
             })
             .ToList();
 
@@ -1527,10 +1643,10 @@ public class ReportService : IReportService
 
         return new PersonnelReportCardDto
         {
-            PersonnelId = user.Id,
-            PersonnelName = $"{user.FirstName} {user.LastName}",
-            Title = UserRoles.GetById(user.RoleId)?.SystemName ?? "",
-            Department = null,
+            PersonnelId = personnel.Id,
+            PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
+            Title = personnel.Title ?? "",
+            Department = personnel.Department,
             TotalEvaluations = evaluations.Count,
             AverageScore = completedScores.Any() ? Math.Round(completedScores.Average(), 2) : 0,
             BestScore = completedScores.Any() ? completedScores.Max() : 0,
@@ -1638,26 +1754,35 @@ public class ReportService : IReportService
         var evalSheet = workbook.Worksheets.Add("Son Değerlendirmeler");
         evalSheet.Cell(1, 1).Value = "Tarih";
         evalSheet.Cell(1, 1).Style.Font.Bold = true;
-        evalSheet.Cell(1, 2).Value = "Proje";
+        evalSheet.Cell(1, 2).Value = "Çağrı ID";
         evalSheet.Cell(1, 2).Style.Font.Bold = true;
-        evalSheet.Cell(1, 3).Value = "Kontrol Listesi";
+        evalSheet.Cell(1, 3).Value = "Çağrı Saati";
         evalSheet.Cell(1, 3).Style.Font.Bold = true;
-        evalSheet.Cell(1, 4).Value = "Puan";
+        evalSheet.Cell(1, 4).Value = "Süre";
         evalSheet.Cell(1, 4).Style.Font.Bold = true;
-        evalSheet.Cell(1, 5).Value = "Sarı Kart";
+        evalSheet.Cell(1, 5).Value = "Proje";
         evalSheet.Cell(1, 5).Style.Font.Bold = true;
-        evalSheet.Cell(1, 6).Value = "Kırmızı Kart";
+        evalSheet.Cell(1, 6).Value = "Kontrol Listesi";
         evalSheet.Cell(1, 6).Style.Font.Bold = true;
+        evalSheet.Cell(1, 7).Value = "Puan";
+        evalSheet.Cell(1, 7).Style.Font.Bold = true;
+        evalSheet.Cell(1, 8).Value = "Sarı Kart";
+        evalSheet.Cell(1, 8).Style.Font.Bold = true;
+        evalSheet.Cell(1, 9).Value = "Kırmızı Kart";
+        evalSheet.Cell(1, 9).Style.Font.Bold = true;
 
         row = 2;
         foreach (var eval in report.RecentEvaluations)
         {
             evalSheet.Cell(row, 1).Value = eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-";
-            evalSheet.Cell(row, 2).Value = eval.ProjectName;
-            evalSheet.Cell(row, 3).Value = eval.ChecklistName;
-            evalSheet.Cell(row, 4).Value = $"{eval.ScorePercentage:F1}%";
-            evalSheet.Cell(row, 5).Value = eval.YellowCards;
-            evalSheet.Cell(row, 6).Value = eval.RedCards;
+            evalSheet.Cell(row, 2).Value = eval.CallId ?? "-";
+            evalSheet.Cell(row, 3).Value = eval.CallTime ?? "-";
+            evalSheet.Cell(row, 4).Value = eval.Duration ?? "-";
+            evalSheet.Cell(row, 5).Value = eval.ProjectName;
+            evalSheet.Cell(row, 6).Value = eval.ChecklistName;
+            evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F1}%";
+            evalSheet.Cell(row, 8).Value = eval.YellowCards;
+            evalSheet.Cell(row, 9).Value = eval.RedCards;
             row++;
         }
         evalSheet.Columns().AdjustToContents();
@@ -1725,33 +1850,39 @@ public class ReportService : IReportService
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (!filter.ProjectId.HasValue)
+        // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
+        if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(a => a.Evaluation.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
 
-        if (filter.PersonnelId.HasValue)
-            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId == filter.PersonnelId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
 
+        if (filter.PersonnelIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
+
+        // Date Range filtresi
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value);
-
         if (filter.EndDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt <= filter.EndDate.Value);
+        {
+            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay);
+        }
 
         if (!string.IsNullOrEmpty(filter.SearchText))
         {
@@ -1841,27 +1972,30 @@ public class ReportService : IReportService
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (!filter.ProjectId.HasValue)
+        // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
+        if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId == filter.CustomerId.Value);
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(a => a.Evaluation.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
 
+        // Date Range filtresi
         if (filter.StartDate.HasValue)
             query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value);
-
         if (filter.EndDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt <= filter.EndDate.Value);
+        {
+            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay);
+        }
 
         var answers = await query.ToListAsync();
 
@@ -2129,64 +2263,83 @@ public class ReportService : IReportService
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Apply filters (same as GetEvaluationsAsync)
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        if (filter.EndDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
-        }
-
-        // Customer filter (evaluated personnel's customer)
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
-        if (filter.ProjectCustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
 
-        // Organization filter
-        if (filter.OrganizationId.HasValue)
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
 
-        // Period filter
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
 
-        // Evaluation source filter
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            if (filter.EvaluationSource == "internal")
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            else if (filter.EvaluationSource == "ours")
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
@@ -2288,39 +2441,53 @@ public class ReportService : IReportService
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Apply filters (same as GetEvaluationsAsync)
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
-        }
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
         // PRENSIP: Export için sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
@@ -2328,52 +2495,64 @@ public class ReportService : IReportService
         {
             query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
         }
-        else if (!string.IsNullOrEmpty(filter.Status))
+        // Status filter (çoklu)
+        else if (filter.Statuses?.Any() == true)
         {
-            var statusItem = EvaluationStatuses.GetBySystemName(filter.Status);
-            if (statusItem != null)
-                query = query.Where(e => e.StatusId == statusItem.Id);
+            var statusIds = filter.Statuses
+                .Select(s => EvaluationStatuses.GetBySystemName(s))
+                .Where(s => s != null)
+                .Select(s => s!.Id)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(e => statusIds.Contains(e.StatusId));
         }
 
-        // Evaluation source filter
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            if (filter.EvaluationSource == "internal")
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            else if (filter.EvaluationSource == "ours")
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
-        // Customer filter (evaluated personnel's customer)
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
-        if (filter.ProjectCustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
 
-        // Organization filter
-        if (filter.OrganizationId.HasValue)
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
 
-        // Period filter
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
 
-        // Evaluated Personnel name search
-        if (!string.IsNullOrEmpty(filter.EvaluatedPersonnelName))
+        // Evaluated Personnel name search (çoklu - OR mantığı)
+        if (filter.PersonnelNames?.Any() == true)
         {
             query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null &&
-                    (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{filter.EvaluatedPersonnelName}%") ||
-                     EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{filter.EvaluatedPersonnelName}%"))) ||
-                (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{filter.EvaluatedPersonnelName}%")));
+                filter.PersonnelNames.Any(name =>
+                    (e.EvaluatedCustomerPersonnel != null &&
+                        (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{name}%") ||
+                         EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{name}%"))) ||
+                    (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{name}%"))));
         }
 
-        // CallId search
-        if (!string.IsNullOrEmpty(filter.CallId))
-            query = query.Where(e => e.CallId != null && EF.Functions.ILike(e.CallId, $"%{filter.CallId}%"));
+        // CallId search (çoklu - OR mantığı)
+        if (filter.CallIds?.Any() == true)
+            query = query.Where(e => e.CallId != null &&
+                filter.CallIds.Any(callId => EF.Functions.ILike(e.CallId, $"%{callId}%")));
 
         var evaluations = await query
             .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
@@ -2520,64 +2699,83 @@ public class ReportService : IReportService
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue)
             .AsQueryable();
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
-        if (filter.ChecklistId.HasValue)
-            query = query.Where(e => e.Assignment.ChecklistId == filter.ChecklistId.Value);
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        if (filter.EndDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
-        }
-
-        // Customer filter (evaluated personnel's customer)
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
-        if (filter.ProjectCustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.ProjectCustomerId.Value);
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
 
-        // Organization filter
-        if (filter.OrganizationId.HasValue)
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == filter.OrganizationId.Value));
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
 
-        // Period filter
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
 
-        // Evaluation source filter
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            if (filter.EvaluationSource == "internal")
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            else if (filter.EvaluationSource == "ours")
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
@@ -2676,52 +2874,75 @@ public class ReportService : IReportService
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
 
-        if (!string.IsNullOrEmpty(filter.ProjectType))
+        if (filter.ProjectTypes?.Any() == true)
         {
-            var projectTypeItem = ProjectTypes.GetBySystemName(filter.ProjectType);
-            if (projectTypeItem != null)
-                query = query.Where(e => e.Assignment.Project.ProjectTypeId == projectTypeItem.Id);
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
         }
-
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (string.IsNullOrEmpty(filter.ProjectType) && !filter.ProjectId.HasValue)
+        else if (filter.ProjectIds?.Any() != true)
         {
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
-        if (filter.EvaluatorId.HasValue)
-            query = query.Where(e => e.EvaluatorId == filter.EvaluatorId.Value);
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var startDateUtc = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc || e.CreatedAt >= startDateUtc);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        if (filter.EndDate.HasValue)
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
+
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue &&
+                filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
+
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
         {
-            var endDateUtc = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc || e.CreatedAt <= endDateUtc);
-        }
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.CustomerId == filter.CustomerId.Value);
-
-        if (filter.OrganizationId.HasValue)
-            query = query.Where(e => e.EvaluatedOrganizationId == filter.OrganizationId.Value);
-
-        if (filter.PeriodId.HasValue)
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
-
-        if (!string.IsNullOrEmpty(filter.EvaluationSource))
-        {
-            if (filter.EvaluationSource == "internal")
+            if (hasInternal && !hasOurs)
                 query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
-            else if (filter.EvaluationSource == "ours")
+            else if (hasOurs && !hasInternal)
                 query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 

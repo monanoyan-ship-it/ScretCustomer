@@ -90,6 +90,123 @@ public class CustomerService : ICustomerService
             .ToListAsync();
     }
 
+    public async Task<PagedCustomerResult> GetFilteredListAsync(CustomerFilterDto filter)
+    {
+        var query = _context.Customers
+            .Where(c => !c.IsDeleted)
+            .AsQueryable();
+
+        // Active status filter
+        if (!filter.IncludeInactive)
+        {
+            if (filter.IsActive.HasValue)
+                query = query.Where(c => c.IsActive == filter.IsActive.Value);
+            else
+                query = query.Where(c => c.IsActive);
+        }
+
+        // Search term (global search)
+        if (!string.IsNullOrEmpty(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(c =>
+                c.CompanyName.ToLower().Contains(term) ||
+                (c.Code != null && c.Code.ToLower().Contains(term)) ||
+                (c.Email != null && c.Email.ToLower().Contains(term)) ||
+                (c.City != null && c.City.ToLower().Contains(term)) ||
+                (c.TaxNumber != null && c.TaxNumber.ToLower().Contains(term)));
+        }
+
+        // Çoklu firma adı filtresi (OR mantığı)
+        if (filter.CompanyNames?.Any() == true)
+        {
+            var names = filter.CompanyNames.Select(n => n.ToLower()).ToList();
+            query = query.Where(c => names.Any(n => c.CompanyName.ToLower().Contains(n)));
+        }
+
+        // Çoklu kod filtresi (OR mantığı)
+        if (filter.Codes?.Any() == true)
+        {
+            var codes = filter.Codes.Select(code => code.ToLower()).ToList();
+            query = query.Where(c => c.Code != null && codes.Any(code => c.Code.ToLower().Contains(code)));
+        }
+
+        // Çoklu email filtresi (OR mantığı)
+        if (filter.Emails?.Any() == true)
+        {
+            var emails = filter.Emails.Select(e => e.ToLower()).ToList();
+            query = query.Where(c => c.Email != null && emails.Any(email => c.Email.ToLower().Contains(email)));
+        }
+
+        // Çoklu şehir filtresi (OR mantığı)
+        if (filter.Cities?.Any() == true)
+        {
+            var cities = filter.Cities.Select(city => city.ToLower()).ToList();
+            query = query.Where(c => c.City != null && cities.Any(city => c.City.ToLower().Contains(city)));
+        }
+
+        // Çoklu vergi numarası filtresi (OR mantığı)
+        if (filter.TaxNumbers?.Any() == true)
+        {
+            var taxNumbers = filter.TaxNumbers.Select(t => t.ToLower()).ToList();
+            query = query.Where(c => c.TaxNumber != null && taxNumbers.Any(t => c.TaxNumber.ToLower().Contains(t)));
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync();
+
+        // Sorting
+        var sortBy = filter.SortBy?.ToLower() ?? "companyname";
+        var sortDesc = filter.SortDirection?.ToLower() == "desc";
+
+        query = sortBy switch
+        {
+            "code" => sortDesc ? query.OrderByDescending(c => c.Code) : query.OrderBy(c => c.Code),
+            "email" => sortDesc ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email),
+            "city" => sortDesc ? query.OrderByDescending(c => c.City) : query.OrderBy(c => c.City),
+            "taxnumber" => sortDesc ? query.OrderByDescending(c => c.TaxNumber) : query.OrderBy(c => c.TaxNumber),
+            "isactive" => sortDesc ? query.OrderByDescending(c => c.IsActive) : query.OrderBy(c => c.IsActive),
+            "createdat" => sortDesc ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt),
+            _ => sortDesc ? query.OrderByDescending(c => c.CompanyName) : query.OrderBy(c => c.CompanyName)
+        };
+
+        // Pagination
+        var items = await query
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .Select(c => new CustomerListDto
+            {
+                Id = c.Id,
+                Code = c.Code,
+                CompanyName = c.CompanyName,
+                TaxNumber = c.TaxNumber,
+                Phone = c.Phone,
+                Email = c.Email,
+                City = c.City,
+                IsActive = c.IsActive,
+                ContractStartDate = c.ContractStartDate,
+                ContractEndDate = c.ContractEndDate,
+                CreatedAt = c.CreatedAt,
+                PersonnelCount = c.Personnel.Count(p => !p.IsDeleted),
+                OrganizationCount = c.Organizations.Count(o => !o.IsDeleted),
+                BranchCount = c.Organizations.Count(o => !o.IsDeleted),
+                ProjectCount = c.Projects.Count(p => !p.IsDeleted),
+                TargetCount = c.TargetCount,
+                DailyQuota = c.DailyQuota,
+                WeeklyQuota = c.WeeklyQuota,
+                MonthlyQuota = c.MonthlyQuota
+            })
+            .ToListAsync();
+
+        return new PagedCustomerResult
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = filter.Page,
+            PageSize = filter.PageSize
+        };
+    }
+
     public async Task<CustomerDto?> GetByTaxNumberAsync(string taxNumber)
     {
         var customer = await _customerRepository.GetByTaxNumberAsync(taxNumber);

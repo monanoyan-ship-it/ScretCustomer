@@ -156,11 +156,145 @@ function ChecklistViewModel() {
     self.selectedCustomerId = ko.observable(null);
     self._isLoadingChecklist = false; // Düzenleme sırasında org sıfırlamayı engelle
 
-    // Arama/Filtreleme
+    // ========== CHIP-BASED FILTER SYSTEM ==========
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.tempFilter = {
+        customerId: ko.observable(null),
+        organizationId: ko.observable(null),
+        searchText: ko.observable(''),
+        isActive: ko.observable(null)
+    };
+
+    // Filter labels
+    self.filterLabels = {
+        customer: 'Firma',
+        organization: 'Organizasyon',
+        searchText: 'Arama',
+        isActive: 'Durum'
+    };
+
+    self.statusLabels = {
+        'true': 'Aktif',
+        'false': 'Pasif'
+    };
+
+    // Legacy filter references
     self.searchText = ko.observable('');
     self.filterCustomerId = ko.observable(null);
     self.filterOrganizationId = ko.observable(null);
     self.filterOrganizations = ko.observableArray([]);
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+
+        switch (type) {
+            case 'customer': return self.tempFilter.customerId() !== null;
+            case 'organization': return self.tempFilter.organizationId() !== null;
+            case 'searchText': return self.tempFilter.searchText().trim() !== '';
+            case 'isActive': return self.tempFilter.isActive() !== null;
+            default: return false;
+        }
+    });
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = {
+            type: type,
+            label: self.filterLabels[type],
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'customer':
+                var customerId = self.tempFilter.customerId();
+                if (!customerId) return;
+                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                filter.value = customerId;
+                filter.displayValue = customer ? customer.companyName : customerId;
+                self.tempFilter.customerId(null);
+                break;
+
+            case 'organization':
+                var orgId = self.tempFilter.organizationId();
+                if (!orgId) return;
+                var org = self.filterOrganizations().find(function(o) { return o.id === orgId; });
+                filter.value = orgId;
+                filter.displayValue = org ? org.name : orgId;
+                self.tempFilter.organizationId(null);
+                break;
+
+            case 'searchText':
+                var searchText = self.tempFilter.searchText().trim();
+                if (!searchText) return;
+                filter.value = searchText;
+                filter.displayValue = searchText;
+                self.tempFilter.searchText('');
+                break;
+
+            case 'isActive':
+                var isActive = self.tempFilter.isActive();
+                if (isActive === null) return;
+                filter.value = isActive;
+                filter.displayValue = self.statusLabels[String(isActive)];
+                self.tempFilter.isActive(null);
+                break;
+
+            default:
+                return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.loadChecklists();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.loadChecklists();
+    };
+
+    // Clear all filters
+    self.clearFilters = function() {
+        self.activeFilters([]);
+        self.searchText('');
+        self.filterCustomerId(null);
+        self.filterOrganizationId(null);
+        self.loadChecklists();
+    };
+
+    // Build filter params
+    self.buildFilterParams = function() {
+        var params = [];
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customer':
+                    params.push('customerId=' + filter.value);
+                    break;
+                case 'organization':
+                    params.push('customerOrganizationId=' + filter.value);
+                    break;
+                case 'searchText':
+                    params.push('search=' + encodeURIComponent(filter.value));
+                    break;
+                case 'isActive':
+                    params.push('isActive=' + filter.value);
+                    break;
+            }
+        });
+
+        return params;
+    };
 
     // Soru grupları (autocomplete için)
     self.questionGroups = ko.observableArray([]);
@@ -322,15 +456,8 @@ function ChecklistViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
-        // Query parametrelerini oluştur
-        var params = [];
-        var search = self.searchText();
-        var customerId = self.filterCustomerId();
-        var orgId = self.filterOrganizationId();
-
-        if (search) params.push('search=' + encodeURIComponent(search));
-        if (customerId) params.push('customerId=' + customerId);
-        if (orgId) params.push('customerOrganizationId=' + orgId);
+        // Build chip-based filter params
+        var params = self.buildFilterParams();
 
         var url = '/checklists' + (params.length > 0 ? '?' + params.join('&') : '');
 
@@ -371,8 +498,22 @@ function ChecklistViewModel() {
     };
 
     self.viewChecklist = function (checklist) {
-        self.viewingChecklist(checklist);
+        // Liste verisi sadece questionCount içeriyor, tam veriyi çekmemiz gerekiyor
+        self.isEditLoading(true);
         self.isViewModalOpen(true);
+
+        apiService.get('/checklists/' + checklist.id)
+            .then(function (fullChecklist) {
+                self.viewingChecklist(fullChecklist);
+            })
+            .catch(function (error) {
+                console.error('Load checklist error:', error);
+                toastr.error('Kontrol listesi yüklenirken bir hata oluştu.');
+                self.isViewModalOpen(false);
+            })
+            .finally(function () {
+                self.isEditLoading(false);
+            });
     };
 
     self.editChecklist = function (checklist) {

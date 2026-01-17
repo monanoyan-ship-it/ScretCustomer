@@ -25,21 +25,51 @@
             <h5 class="mb-0"><i class="bi bi-funnel"></i> @Html.T("Common.Filters", "Filtreler")</h5>
         </div>
         <div class="card-body">
-            <div class="row g-3">
+            <!-- Active Filters (Chips) -->
+            <div class="mb-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9rem;">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $root.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+                    <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Filter -->
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.FilterType", "Filtre Tipi")</label>
+                    <select class="form-select" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.SelectFilterType", "Filtre tipi seçin...")</option>
+                        <option value="project">@Html.T("Report.Project", "Proje")</option>
+                        <option value="organization">@Html.T("Report.Organization", "Organizasyon")</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Filter Value -->
+                <!-- ko if: selectedFilterType() === 'project' -->
                 <div class="col-md-4">
                     <label class="form-label">@Html.T("Report.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllProjects", "Tum Projeler")'"></select>
+                    <select class="form-select" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectProject", "Proje Seçin")'"></select>
                 </div>
+                <!-- /ko -->
+
+                <!-- ko if: selectedFilterType() === 'organization' -->
                 <div class="col-md-4">
                     <label class="form-label">@Html.T("Report.Organization", "Organizasyon")</label>
-                    <select class="form-select" data-bind="value: filter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllOrganizations", "Tum Organizasyonlar")'"></select>
+                    <select class="form-select" data-bind="value: tempFilter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectOrganization", "Organizasyon Seçin")'"></select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end gap-2">
-                    <button class="btn btn-primary" data-bind="click: loadReport">
-                        <i class="bi bi-search"></i> @Html.T("Common.Search", "Ara")
-                    </button>
-                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+                <!-- /ko -->
+
+                <div class="col-md-2" data-bind="visible: selectedFilterType()">
+                    <button class="btn btn-primary w-100" data-bind="click: addFilter, enable: canAddFilter">
+                        <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
                     </button>
                 </div>
             </div>
@@ -89,7 +119,7 @@
                                 <small class="text-muted" data-bind="text: organizationName"></small>
                             </td>
                             <!-- ko foreach: periodScores -->
-                            <td class="text-center" data-bind="css: $parent.getScoreCellClass(averageScore)">
+                            <td class="text-center" data-bind="css: $root.getScoreCellClass(averageScore)">
                                 <!-- ko if: averageScore !== null -->
                                 <span data-bind="text: averageScore.toFixed(1) + '%'"></span>
                                 <small class="d-block text-muted" data-bind="text: '(' + evaluationCount + ')'"></small>

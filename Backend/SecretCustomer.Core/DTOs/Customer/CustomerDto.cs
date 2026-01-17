@@ -160,3 +160,39 @@ public class UpdateCustomerDto
     public int? EvaluationNotificationTemplateId { get; set; }
     public string? NotificationEmails { get; set; }
 }
+
+/// <summary>
+/// Müşteri filtre DTO - server-side filtering için
+/// </summary>
+public class CustomerFilterDto
+{
+    public string? SearchTerm { get; set; }
+    public bool? IsActive { get; set; }
+
+    // Çoklu parametreler
+    public List<string>? CompanyNames { get; set; }
+    public List<string>? Codes { get; set; }
+    public List<string>? Emails { get; set; }
+    public List<string>? Cities { get; set; }
+    public List<string>? TaxNumbers { get; set; }
+
+    public bool IncludeInactive { get; set; } = false;
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+
+    // Sorting
+    public string? SortBy { get; set; }
+    public string? SortDirection { get; set; }
+}
+
+/// <summary>
+/// Sayfalı müşteri sonucu
+/// </summary>
+public class PagedCustomerResult
+{
+    public List<CustomerListDto> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+}
