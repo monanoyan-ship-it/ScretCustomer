@@ -28,7 +28,8 @@ public class EnumsApiController : ControllerBase
             periodStatuses = PeriodStatuses.All.Select(MapTypeItem),
             approvalStatuses = ApprovalStatuses.All.Select(MapTypeItem),
             months = Months.All.Select(MapTypeItem),
-            daysOfWeek = DaysOfWeek.All.Select(MapTypeItem)
+            daysOfWeek = DaysOfWeek.All.Select(MapTypeItem),
+            evaluationNotificationFrequency = EvaluationNotificationFrequencies.All.Select(MapTypeItem)
         });
     }
 

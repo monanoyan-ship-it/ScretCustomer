@@ -13,7 +13,7 @@ function SettingsViewModel() {
     self.form = {
         key: ko.observable(''),
         value: ko.observable(''),
-        valueType: ko.observable('0'),
+        valueTypeId: ko.observable('0'),
         category: ko.observable('General'),
         description: ko.observable('')
     };
@@ -57,7 +57,7 @@ function SettingsViewModel() {
         self.isEditing(false);
         self.form.key('');
         self.form.value('');
-        self.form.valueType('0');
+        self.form.valueTypeId('0');
         self.form.category('General');
         self.form.description('');
         new bootstrap.Modal(document.getElementById('settingModal')).show();
@@ -68,7 +68,7 @@ function SettingsViewModel() {
         self.isEditing(true);
         self.form.key(setting.key);
         self.form.value(setting.value);
-        self.form.valueType(String(setting.valueType));
+        self.form.valueTypeId(String(setting.valueTypeId));
         self.form.category(setting.category);
         self.form.description(setting.description || '');
         new bootstrap.Modal(document.getElementById('settingModal')).show();
@@ -90,7 +90,7 @@ function SettingsViewModel() {
         var data = {
             key: self.form.key(),
             value: self.form.value(),
-            valueType: parseInt(self.form.valueType()),
+            valueTypeId: parseInt(self.form.valueTypeId()),
             category: self.form.category() || 'General',
             description: self.form.description()
         };

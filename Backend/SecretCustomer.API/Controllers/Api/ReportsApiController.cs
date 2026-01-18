@@ -958,6 +958,49 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Personel Soru Bazlı Performans Raporu - Tablo görünümü
+    /// </summary>
+    [HttpGet("personnel-question-performance")]
+    public async Task<IActionResult> GetPersonnelQuestionPerformance(
+        [FromQuery] List<int>? customerIds = null,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] List<int>? personnelIds = null,
+        [FromQuery] List<int>? periodIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new PersonnelQuestionPerformanceFilterDto
+            {
+                CustomerIds = customerIds,
+                ProjectIds = projectIds,
+                OrganizationIds = organizationIds,
+                PersonnelIds = personnelIds,
+                PeriodIds = periodIds
+            };
+
+            // Tarih aralığı varsa DateRanges'a ekle
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.GetPersonnelQuestionPerformanceAsync(filter);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting personnel question performance report");
+            return StatusCode(500, CreateErrorResponse("Personel soru performans raporu yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Personel Soru Bazlı Performans Raporu Excel Export
     /// </summary>
     [HttpGet("personnel-question-performance/export")]

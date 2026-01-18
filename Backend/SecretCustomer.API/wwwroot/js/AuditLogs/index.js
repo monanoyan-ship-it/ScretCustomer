@@ -84,9 +84,9 @@
         self.calculateStats = function (data) {
             var errors = 0, warnings = 0, logins = 0;
             data.forEach(function (log) {
-                if (log.logType === 2) errors++;
-                if (log.logType === 1) warnings++;
-                if (log.logType === 20) logins++;
+                if (log.logTypeId === 2) errors++;
+                if (log.logTypeId === 1) warnings++;
+                if (log.logTypeId === 20) logins++;
             });
             self.errorCount(errors);
             self.warningCount(warnings);

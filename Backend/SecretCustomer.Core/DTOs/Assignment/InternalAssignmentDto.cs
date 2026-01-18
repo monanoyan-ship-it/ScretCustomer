@@ -84,6 +84,12 @@ public class InternalAssignmentFilterDto
     public bool? IsCompleted { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
+
+    /// <summary>
+    /// Son tarih filtresi - atama son tarihine göre filtreleme
+    /// Değerler: overdue, today, tomorrow, next7Days, thisWeek, next30Days, thisMonth, nextMonth
+    /// </summary>
+    public string? DueDateFilter { get; set; }
 }
 
 /// <summary>

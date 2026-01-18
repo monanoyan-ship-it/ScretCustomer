@@ -183,9 +183,10 @@ function CustomerOrganizationsViewModel() {
         self.isLoading(true);
         self.errorMessage('');
 
-        ApiService.get('/customers')
+        ApiService.get('/customers?pageSize=1000')
             .then(function(data) {
-                var customersWithCount = data.map(function(c) {
+                // API returns PagedCustomerResult { items, totalCount, page, pageSize }
+                var customersWithCount = (data.items || []).map(function(c) {
                     c.organizationCount = c.organizationCount || 0;
                     return c;
                 });

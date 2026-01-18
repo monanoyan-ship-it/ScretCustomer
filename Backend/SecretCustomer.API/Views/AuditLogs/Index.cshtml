@@ -105,10 +105,10 @@
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: logs">
-                        <tr data-bind="css: { 'table-danger': logType === 2, 'table-warning': logType === 1, 'table-info': logType === 20 }">
+                        <tr data-bind="css: { 'table-danger': logTypeId === 2, 'table-warning': logTypeId === 1, 'table-info': logTypeId === 20 }">
                             <td data-bind="text: id"></td>
                             <td>
-                                <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logType)"></span>
+                                <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logTypeId)"></span>
                             </td>
                             <td data-bind="text: category || '-'"></td>
                             <td>
@@ -174,7 +174,7 @@
                         </div>
                         <div class="col-md-6">
                             <strong>@Html.T("AuditLog.Type", "Tür"):</strong>
-                            <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logType)"></span>
+                            <span class="badge" data-bind="text: logTypeName, css: $parent.getLogTypeBadgeClass(logTypeId)"></span>
                         </div>
                     </div>
                     <div class="row mb-3">

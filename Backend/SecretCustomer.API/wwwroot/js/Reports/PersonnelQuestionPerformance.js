@@ -1,323 +1,318 @@
-// Personnel Question Performance Report ViewModel
+// PersonnelQuestionPerformance.js - Personel Soru Bazli Performans Raporu
+
 function PersonnelQuestionPerformanceViewModel() {
     var self = this;
 
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
+    self.report = ko.observable(null);
 
-    // Lookup Data
+    // Lookups
     self.customers = ko.observableArray([]);
-    self.projects = ko.observableArray([]);
     self.organizations = ko.observableArray([]);
+    self.projects = ko.observableArray([]);
 
-    // Filter UI state
+    // Stage 1: Hierarchical selection
+    self.selectedCustomerId = ko.observable('');
+    self.selectedOrganizationId = ko.observable('');
+    self.selectedProjectId = ko.observable('');
+
+    // Filtered lists
+    self.filteredProjects = ko.computed(function() {
+        var customerId = self.selectedCustomerId();
+        if (!customerId) return self.projects();
+        return self.projects().filter(function(p) { return p.customerId == customerId; });
+    });
+
+    // Stage 2: Chip-based filters
+    self.activeFilters = ko.observableArray([]);
     self.selectedFilterType = ko.observable('');
     self.tempFilter = {
-        customerId: ko.observable(''),
-        projectId: ko.observable(''),
-        organizationId: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         dateRangeType: ko.observable('')
     };
 
-    // Active filters (chip-based)
-    self.activeFilters = ko.observableArray([]);
-
     // Date range labels
     self.dateRangeLabels = {
-        'today': 'Bugün',
-        'yesterday': 'Dün',
+        'today': 'Bugun',
+        'yesterday': 'Dun',
         'thisWeek': 'Bu Hafta',
-        'lastWeek': 'Geçen Hafta',
+        'lastWeek': 'Gecen Hafta',
         'thisMonth': 'Bu Ay',
-        'lastMonth': 'Geçen Ay',
+        'lastMonth': 'Gecen Ay',
         'last3Months': 'Son 3 Ay',
         'last6Months': 'Son 6 Ay',
-        'thisYear': 'Bu Yıl',
-        'lastYear': 'Geçen Yıl'
+        'thisYear': 'Bu Yil',
+        'lastYear': 'Gecen Yil'
     };
 
-    // Computed: Filtered Projects by selected customer in temp filter
-    self.filteredProjects = ko.computed(function() {
-        var customerId = self.tempFilter.customerId();
-        if (!customerId) {
-            return self.projects();
-        }
-        return self.projects().filter(function(p) {
-            return p.customerId == customerId;
-        });
-    });
-
-    // Computed: Filtered Organizations by selected customer in temp filter
-    self.filteredOrganizations = ko.computed(function() {
-        var customerId = self.tempFilter.customerId();
-        if (!customerId) {
-            return self.organizations();
-        }
-        return self.organizations().filter(function(o) {
-            return o.customerId == customerId;
-        });
-    });
-
-    // Can add filter check
+    // Can add filter computed
     self.canAddFilter = ko.computed(function() {
         var type = self.selectedFilterType();
-        if (!type) return false;
-        if (type === 'customer') return self.tempFilter.customerId();
-        if (type === 'project') return self.tempFilter.projectId();
-        if (type === 'organization') return self.tempFilter.organizationId();
-        if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
+        if (type === 'dateRange') {
+            return self.tempFilter.startDate() || self.tempFilter.endDate();
+        }
         return false;
     });
 
-    // Load Lookup Data
-    self.loadLookupData = function() {
-        self.isLoading(true);
+    // Hierarchical change handlers
+    self.onCustomerChange = function() {
+        self.selectedOrganizationId('');
+        self.organizations([]);
+        self.report(null);
 
-        Promise.all([
-            fetch('/api/customers/active', { credentials: 'include' }).then(r => r.json()),
-            fetch('/api/projects', { credentials: 'include' }).then(r => r.json()).then(d => d.items || d),
-            fetch('/api/customer-organizations', { credentials: 'include' }).then(r => r.json()).then(d => d.items || d)
-        ])
-        .then(function(results) {
-            self.customers(results[0] || []);
-            self.projects(results[1] || []);
-            self.organizations(results[2] || []);
-        })
-        .catch(function(error) {
-            console.error('Error loading lookup data:', error);
-        })
-        .finally(function() {
-            self.isLoading(false);
-        });
+        var customerId = self.selectedCustomerId();
+        if (customerId) {
+            // Load organizations for selected customer
+            fetch('/api/reports/organizations/' + customerId, { credentials: 'include' })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    self.organizations(data || []);
+                })
+                .catch(function(error) {
+                    console.error('Error loading organizations:', error);
+                });
+        }
     };
 
-    // Calculate date range from type
+    self.onOrganizationChange = function() {
+        self.report(null);
+    };
+
+    // Calculate date range
     self.calculateDateRange = function(rangeType) {
         var today = new Date();
         var start, end;
 
-        if (rangeType === 'today') {
-            start = end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'yesterday') {
-            var yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            start = end = yesterday.toISOString().split('T')[0];
-        } else if (rangeType === 'thisWeek') {
-            var dayOfWeek = today.getDay();
-            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            var weekStart = new Date(today);
-            weekStart.setDate(diff);
-            start = weekStart.toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'lastWeek') {
-            var dayOfWeek = today.getDay();
-            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            var lastWeekEnd = new Date(today);
-            lastWeekEnd.setDate(diff - 1);
-            var lastWeekStart = new Date(lastWeekEnd);
-            lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
-            start = lastWeekStart.toISOString().split('T')[0];
-            end = lastWeekEnd.toISOString().split('T')[0];
-        } else if (rangeType === 'thisMonth') {
-            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'lastMonth') {
-            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
-        } else if (rangeType === 'last3Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'last6Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'thisYear') {
-            start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'lastYear') {
-            start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+        switch (rangeType) {
+            case 'today':
+                start = end = today;
+                break;
+            case 'yesterday':
+                start = end = new Date(today.getTime() - 86400000);
+                break;
+            case 'thisWeek':
+                var dayOfWeek = today.getDay();
+                var diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                start = new Date(today.getTime() - diff * 86400000);
+                end = today;
+                break;
+            case 'lastWeek':
+                var dayOfWeek = today.getDay();
+                var diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                var thisWeekStart = new Date(today.getTime() - diff * 86400000);
+                start = new Date(thisWeekStart.getTime() - 7 * 86400000);
+                end = new Date(thisWeekStart.getTime() - 86400000);
+                break;
+            case 'thisMonth':
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end = today;
+                break;
+            case 'lastMonth':
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'last3Months':
+                start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+                end = today;
+                break;
+            case 'last6Months':
+                start = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+                end = today;
+                break;
+            case 'thisYear':
+                start = new Date(today.getFullYear(), 0, 1);
+                end = today;
+                break;
+            case 'lastYear':
+                start = new Date(today.getFullYear() - 1, 0, 1);
+                end = new Date(today.getFullYear() - 1, 11, 31);
+                break;
+            default:
+                return null;
         }
 
-        return { start: start, end: end };
+        var formatDate = function(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+
+        return {
+            start: formatDate(start),
+            end: formatDate(end)
+        };
     };
 
-    // Set date range in dropdown (sadece değer atar)
-    self.setDateRange = function(rangeType) {
+    // Set temp date range
+    self.setTempDateRange = function(rangeType) {
         var range = self.calculateDateRange(rangeType);
-        self.tempFilter.startDate(range.start);
-        self.tempFilter.endDate(range.end);
-        self.tempFilter.dateRangeType(rangeType);
-    };
-
-    // Quick date range filter - direkt uygula (hızlı erişim butonları için)
-    self.setQuickDateRange = function(rangeType) {
-        var range = self.calculateDateRange(rangeType);
-        var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
-
-        self.activeFilters.push({
-            type: 'dateRange',
-            value: null,
-            startDate: range.start,
-            endDate: range.end,
-            dateRangeType: rangeType,
-            label: 'Tarih',
-            displayValue: displayValue
-        });
+        if (range) {
+            self.tempFilter.startDate(range.start);
+            self.tempFilter.endDate(range.end);
+            self.tempFilter.dateRangeType(rangeType);
+        }
     };
 
     // Add filter
     self.addFilter = function() {
         var type = self.selectedFilterType();
-        if (!type) return;
 
-        var filter = { type: type };
-        var label = '';
-        var displayValue = '';
+        if (type === 'dateRange') {
+            var startDate = self.tempFilter.startDate();
+            var endDate = self.tempFilter.endDate();
+            var rangeType = self.tempFilter.dateRangeType();
 
-        if (type === 'customer') {
-            filter.value = self.tempFilter.customerId();
-            var customer = self.customers().find(function(c) { return c.id == filter.value; });
-            label = 'Müşteri';
-            displayValue = customer ? customer.companyName : filter.value;
-        } else if (type === 'project') {
-            filter.value = self.tempFilter.projectId();
-            var project = self.projects().find(function(p) { return p.id == filter.value; });
-            label = 'Proje';
-            displayValue = project ? project.name : filter.value;
-        } else if (type === 'organization') {
-            filter.value = self.tempFilter.organizationId();
-            var org = self.organizations().find(function(o) { return o.id == filter.value; });
-            label = 'Organizasyon';
-            displayValue = org ? org.name : filter.value;
-        } else if (type === 'dateRange') {
-            filter.dateRangeType = self.tempFilter.dateRangeType();
-            filter.startDate = self.tempFilter.startDate();
-            filter.endDate = self.tempFilter.endDate();
-            label = 'Tarih';
-            if (filter.dateRangeType && self.dateRangeLabels[filter.dateRangeType]) {
-                displayValue = self.dateRangeLabels[filter.dateRangeType];
-            } else {
-                displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
+            if (startDate || endDate) {
+                // Remove existing date range filter
+                self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
+
+                var displayValue = rangeType ? self.dateRangeLabels[rangeType] : (startDate + ' - ' + endDate);
+
+                self.activeFilters.push({
+                    type: 'dateRange',
+                    startDate: startDate,
+                    endDate: endDate,
+                    dateRangeType: rangeType,
+                    label: 'Tarih',
+                    displayValue: displayValue
+                });
+
+                // Clear temp
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.dateRangeType('');
+                self.selectedFilterType('');
             }
         }
-
-        self.activeFilters.push({
-            type: type,
-            value: filter.value,
-            startDate: filter.startDate,
-            endDate: filter.endDate,
-            dateRangeType: filter.dateRangeType,
-            label: label,
-            displayValue: displayValue
-        });
-
-        // Reset temp filter
-        self.resetTempFilter();
-        self.selectedFilterType('');
     };
 
-    self.resetTempFilter = function() {
-        self.tempFilter.customerId('');
-        self.tempFilter.projectId('');
-        self.tempFilter.organizationId('');
-        self.tempFilter.startDate('');
-        self.tempFilter.endDate('');
-        self.tempFilter.dateRangeType('');
-    };
-
-    // Remove single filter
+    // Remove filter
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
     };
 
     // Clear all filters
-    self.clearFilters = function() {
+    self.clearAllFilters = function() {
         self.activeFilters.removeAll();
     };
 
-    // Build query params from active filters
-    self.buildQueryParams = function() {
-        var params = {};
-        var customerIds = [];
-        var projectIds = [];
-        var organizationIds = [];
-        var startDate = null;
-        var endDate = null;
-
-        self.activeFilters().forEach(function(f) {
-            switch (f.type) {
-                case 'customer':
-                    customerIds.push(f.value);
-                    break;
-                case 'project':
-                    projectIds.push(f.value);
-                    break;
-                case 'organization':
-                    organizationIds.push(f.value);
-                    break;
-                case 'dateRange':
-                    if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
-                        var range = self.calculateDateRange(f.dateRangeType);
-                        startDate = range.start;
-                        endDate = range.end;
-                    } else {
-                        if (f.startDate) startDate = f.startDate;
-                        if (f.endDate) endDate = f.endDate;
-                    }
-                    break;
-            }
-        });
-
-        if (customerIds.length > 0) params.customerIds = customerIds;
-        if (projectIds.length > 0) params.projectIds = projectIds;
-        if (organizationIds.length > 0) params.organizationIds = organizationIds;
-        if (startDate) params.startDate = startDate;
-        if (endDate) params.endDate = endDate;
-
-        return params;
+    // Clear all (including hierarchical)
+    self.clearFilters = function() {
+        self.selectedCustomerId('');
+        self.selectedOrganizationId('');
+        self.selectedProjectId('');
+        self.activeFilters.removeAll();
+        self.report(null);
     };
 
-    // Export Report
-    self.exportReport = function() {
-        self.isExporting(true);
+    // Build filter params using URLSearchParams
+    self.buildFilterParams = function() {
+        var params = new URLSearchParams();
 
-        var params = self.buildQueryParams();
-        var queryParts = [];
+        // Hierarchical filters
+        if (self.selectedCustomerId()) {
+            params.append('customerIds', self.selectedCustomerId());
+        }
+        if (self.selectedOrganizationId()) {
+            params.append('organizationIds', self.selectedOrganizationId());
+        }
+        if (self.selectedProjectId()) {
+            params.append('projectIds', self.selectedProjectId());
+        }
 
-        Object.keys(params).forEach(function(key) {
-            var value = params[key];
-            if (Array.isArray(value)) {
-                value.forEach(function(v) {
-                    queryParts.push(key + '=' + encodeURIComponent(v));
-                });
-            } else {
-                queryParts.push(key + '=' + encodeURIComponent(value));
+        // Active filters
+        self.activeFilters().forEach(function(filter) {
+            if (filter.type === 'dateRange') {
+                if (filter.startDate) params.append('startDate', filter.startDate);
+                if (filter.endDate) params.append('endDate', filter.endDate);
             }
         });
 
+        return params.toString();
+    };
+
+    // Load report
+    self.loadReport = function() {
+        self.isLoading(true);
+        self.report(null);
+
+        var params = self.buildFilterParams();
+        var url = '/api/reports/personnel-question-performance';
+        if (params) url += '?' + params;
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(function(data) {
+                self.report(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading report:', error);
+                toastr.error('Rapor yuklenirken hata olustu.');
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
+    };
+
+    // Export to Excel
+    self.exportToExcel = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
         var url = '/api/reports/personnel-question-performance/export';
-        if (queryParts.length > 0) {
-            url += '?' + queryParts.join('&');
-        }
+        if (params) url += '?' + params;
 
-        // Download file
-        window.location.href = url;
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var filename = 'PersonelSoruPerformansi_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                toastr.success('Excel dosyasi indirildi.');
+            })
+            .catch(function(error) {
+                console.error('Error exporting:', error);
+                toastr.error('Excel export sirasinda hata olustu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
 
-        // Reset exporting state after a delay
-        setTimeout(function() {
-            self.isExporting(false);
-        }, 2000);
+    // Get score cell CSS class
+    self.getScoreCellClass = function(score) {
+        if (score === null || score === undefined) return '';
+        if (score >= 80) return 'table-success-light';
+        if (score >= 60) return 'table-warning-light';
+        return 'table-danger-light';
+    };
+
+    // Load lookups
+    self.loadLookups = function() {
+        fetch('/api/reports/lookups', { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                self.customers(data.customers || []);
+                self.projects(data.projects || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading lookups:', error);
+            });
+        // Organizations are loaded when customer is selected (onCustomerChange)
     };
 
     // Initialize
-    self.init = function() {
-        self.loadLookupData();
-    };
-
-    self.init();
+    self.loadLookups();
 }
 
 // Apply bindings

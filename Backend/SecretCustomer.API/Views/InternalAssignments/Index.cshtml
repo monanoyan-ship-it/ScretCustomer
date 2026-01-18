@@ -67,36 +67,75 @@
         </div>
     </div>
 
-    <!-- Filters -->
+    <!-- Filters (Chip-based) -->
     <div class="card shadow-sm mb-4">
         <div class="card-body py-2">
+            <!-- Filter Add Row -->
             <div class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">@Html.T("Customer.Title", "Müşteri")</label>
-                    <select class="form-select form-select-sm" data-bind="value: filter.customerId, options: customers, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">@Html.T("Project.Title", "Proje")</label>
-                    <select class="form-select form-select-sm" data-bind="value: filter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
-                </div>
+                <!-- Filter Type Select -->
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">@Html.T("Common.Status", "Durum")</label>
-                    <select class="form-select form-select-sm" data-bind="value: filter.isCompleted">
-                        <option value="">@Html.T("Common.All", "Tümü")</option>
-                        <option value="false">@Html.T("Status.Pending", "Bekleyen")</option>
-                        <option value="true">@Html.T("Status.Completed", "Tamamlanan")</option>
+                    <label class="form-label small text-muted">@Html.T("Common.FilterType", "Filtre Tipi")</label>
+                    <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                        <option value="customer">@Html.T("Customer.Title", "Müşteri")</option>
+                        <option value="project">@Html.T("Project.Title", "Proje")</option>
+                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                        <option value="dueDate">@Html.T("Common.DueDate", "Son Tarih")</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small mb-1">@Html.T("Common.DueDate", "Son Tarih")</label>
-                    <input type="date" class="form-control form-control-sm" data-bind="value: filter.dueDateTo">
+
+                <!-- Dynamic Filter Input -->
+                <div class="col-md-8">
+                    <!-- Customer Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'customer'">
+                        <label class="form-label small text-muted">@Html.T("Customer.Title", "Müşteri")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.customerId, options: customers, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- Project Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'project'">
+                        <label class="form-label small text-muted">@Html.T("Project.Title", "Proje")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div data-bind="visible: selectedFilterType() === 'status'">
+                        <label class="form-label small text-muted">@Html.T("Common.Status", "Durum")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.status, options: statusOptions, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- Due Date Filter (Projects pattern) -->
+                    <div data-bind="visible: selectedFilterType() === 'dueDate'">
+                        <label class="form-label small text-muted">@Html.T("Common.DueDate", "Son Tarih")</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.selectedDueDateType, options: dueDateOptions, optionsValue: 'systemName', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                    </div>
+
+                    <!-- No filter selected message -->
+                    <div data-bind="visible: !selectedFilterType()" class="text-muted small pt-4">
+                        <i class="bi bi-info-circle"></i> @Html.T("Common.SelectFilterToAdd", "Eklemek için bir filtre tipi seçin")
+                    </div>
                 </div>
-                <div class="col-md-2 text-end">
-                    <button class="btn btn-sm btn-outline-secondary me-1" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i>
+
+                <!-- Add Filter Button -->
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-primary w-100" data-bind="click: addFilter, enable: canAddFilter">
+                        <i class="bi bi-plus-circle"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
                     </button>
-                    <button class="btn btn-sm btn-primary" data-bind="click: applyFilter">
-                        <i class="bi bi-funnel"></i> @Html.T("Common.Filter", "Filtrele")
+                </div>
+            </div>
+
+            <!-- Active Filters (Chips) -->
+            <div class="mt-3" data-bind="visible: activeFilters().length > 0">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">@Html.T("Common.ActiveFilters", "Aktif Filtreler"):</span>
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.9em;">
+                        <span data-bind="text: label"></span>: <span data-bind="text: displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
                     </button>
                 </div>
             </div>

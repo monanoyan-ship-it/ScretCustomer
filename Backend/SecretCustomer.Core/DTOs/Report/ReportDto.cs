@@ -1063,57 +1063,68 @@ public class PersonnelQuestionPerformanceFilterDto
 }
 
 /// <summary>
-/// Personel Soru Bazlı Performans Raporu satır DTO
+/// Personel Soru Bazlı Performans Raporu satır DTO (Excel export için)
 /// </summary>
 public class PersonnelQuestionPerformanceDto
 {
-    /// <summary>
-    /// Proje adı
-    /// </summary>
     public string ProjectName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Müşteri Temsilcisi (personel adı)
-    /// </summary>
     public string PersonnelName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Personel ID
-    /// </summary>
     public int PersonnelId { get; set; }
-
-    /// <summary>
-    /// Departman
-    /// </summary>
     public string? Department { get; set; }
-
-    /// <summary>
-    /// Kontrol Sorusu (GroupName)
-    /// </summary>
     public string GroupName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Periyot (Yıl)
-    /// </summary>
     public int Year { get; set; }
-
-    /// <summary>
-    /// Periyot (Ay) - YYYYMM formatında
-    /// </summary>
     public string PeriodMonth { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Ortalama Puan (yüzde)
-    /// </summary>
     public decimal AverageScore { get; set; }
+    public int ErrorCount { get; set; }
+    public int EvaluationCount { get; set; }
+}
+
+/// <summary>
+/// Personel Soru Bazlı Performans Raporu - Tablo görünümü için ana DTO
+/// </summary>
+public class PersonnelQuestionPerformanceReportDto
+{
+    /// <summary>
+    /// Kolon başlıkları (soru grup isimleri)
+    /// </summary>
+    public List<string> GroupNames { get; set; } = new();
 
     /// <summary>
-    /// Hata Sayısı (tam puan almayan cevap sayısı)
+    /// Personel satırları
     /// </summary>
-    public int ErrorCount { get; set; }
+    public List<PersonnelQuestionPerformanceRowDto> Rows { get; set; } = new();
 
     /// <summary>
     /// Toplam değerlendirme sayısı
     /// </summary>
+    public int TotalEvaluations { get; set; }
+}
+
+/// <summary>
+/// Personel Soru Bazlı Performans Raporu - Satır DTO
+/// </summary>
+public class PersonnelQuestionPerformanceRowDto
+{
+    public int PersonnelId { get; set; }
+    public string PersonnelName { get; set; } = string.Empty;
+    public string? Department { get; set; }
+    public string? OrganizationName { get; set; }
+    public int TotalEvaluations { get; set; }
+    public decimal OverallAverage { get; set; }
+
+    /// <summary>
+    /// Her GroupName için puan bilgisi (sıralama GroupNames ile aynı)
+    /// </summary>
+    public List<GroupScoreDto> GroupScores { get; set; } = new();
+}
+
+/// <summary>
+/// Grup bazlı puan bilgisi
+/// </summary>
+public class GroupScoreDto
+{
+    public string GroupName { get; set; } = string.Empty;
+    public decimal? AverageScore { get; set; }
     public int EvaluationCount { get; set; }
+    public int ErrorCount { get; set; }
 }

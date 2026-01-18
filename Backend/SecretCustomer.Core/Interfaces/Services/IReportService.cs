@@ -131,6 +131,9 @@ public interface IReportService
 
     // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU =====
 
+    // Personel Soru Bazlı Performans Raporu - Tablo görünümü için
+    Task<PersonnelQuestionPerformanceReportDto> GetPersonnelQuestionPerformanceAsync(PersonnelQuestionPerformanceFilterDto filter);
+
     // Personel Soru Bazlı Performans Raporu Excel export
     Task<ExcelExportDto> ExportPersonnelQuestionPerformanceReportAsync(PersonnelQuestionPerformanceFilterDto filter);
 }

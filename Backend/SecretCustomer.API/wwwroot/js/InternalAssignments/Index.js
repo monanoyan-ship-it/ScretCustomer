@@ -62,8 +62,7 @@ function InternalAssignmentsViewModel() {
         customerId: ko.observable(null),
         projectId: ko.observable(null),
         status: ko.observable(null),
-        dueDateFrom: ko.observable(''),
-        dueDateTo: ko.observable('')
+        selectedDueDateType: ko.observable('')
     };
 
     // Filter labels
@@ -71,8 +70,20 @@ function InternalAssignmentsViewModel() {
         customer: 'Müşteri',
         project: 'Proje',
         status: 'Durum',
-        dateRange: 'Tarih Aralığı'
+        dueDate: 'Son Tarih'
     };
+
+    // Son Tarih filtre seçenekleri (Projects pattern)
+    self.dueDateOptions = [
+        { systemName: 'overdue', name: 'Süresi Geçmiş' },
+        { systemName: 'today', name: 'Bugün Son Tarih' },
+        { systemName: 'tomorrow', name: 'Yarın Son Tarih' },
+        { systemName: 'next7Days', name: '7 Gün İçinde' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'next30Days', name: '30 Gün İçinde' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'nextMonth', name: 'Gelecek Ay' }
+    ];
 
     self.statusOptions = [
         { id: 'NotStarted', name: 'Başlamadı' },
@@ -91,7 +102,7 @@ function InternalAssignmentsViewModel() {
             case 'customer': return self.tempFilter.customerId() !== null;
             case 'project': return self.tempFilter.projectId() !== null;
             case 'status': return self.tempFilter.status() !== null;
-            case 'dateRange': return self.tempFilter.dueDateFrom() || self.tempFilter.dueDateTo();
+            case 'dueDate': return !!self.tempFilter.selectedDueDateType();
             default: return false;
         }
     });
@@ -136,14 +147,15 @@ function InternalAssignmentsViewModel() {
                 self.tempFilter.status(null);
                 break;
 
-            case 'dateRange':
-                var startDate = self.tempFilter.dueDateFrom();
-                var endDate = self.tempFilter.dueDateTo();
-                if (!startDate && !endDate) return;
-                filter.value = { startDate: startDate, endDate: endDate };
-                filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
-                self.tempFilter.dueDateFrom('');
-                self.tempFilter.dueDateTo('');
+            case 'dueDate':
+                var dueDateType = self.tempFilter.selectedDueDateType();
+                if (!dueDateType) return;
+
+                var optionInfo = self.dueDateOptions.find(function(o) { return o.systemName === dueDateType; });
+                filter.value = dueDateType;
+                filter.displayValue = optionInfo ? optionInfo.name : dueDateType;
+
+                self.tempFilter.selectedDueDateType('');
                 break;
 
             default:
@@ -183,9 +195,8 @@ function InternalAssignmentsViewModel() {
                 case 'status':
                     params.push('status=' + filter.value);
                     break;
-                case 'dateRange':
-                    if (filter.value.startDate) params.push('dueDateFrom=' + filter.value.startDate);
-                    if (filter.value.endDate) params.push('dueDateTo=' + filter.value.endDate);
+                case 'dueDate':
+                    params.push('dueDateFilter=' + filter.value);
                     break;
             }
         });

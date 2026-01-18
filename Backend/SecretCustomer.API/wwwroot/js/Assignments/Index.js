@@ -259,10 +259,21 @@ function AssignmentsViewModel() {
         projectId: ko.observable(''),
         status: ko.observable(''),
         assignedUserId: ko.observable(''),
-        startDate: ko.observable(''),
-        endDate: ko.observable(''),
+        selectedDueDateType: ko.observable(''),
         searchTerm: ko.observable('')
     };
+
+    // Son Tarih filtre seçenekleri (Projects pattern)
+    self.dueDateOptions = [
+        { systemName: 'overdue', name: 'Süresi Geçmiş' },
+        { systemName: 'today', name: 'Bugün Son Tarih' },
+        { systemName: 'tomorrow', name: 'Yarın Son Tarih' },
+        { systemName: 'next7Days', name: '7 Gün İçinde' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'next30Days', name: '30 Gün İçinde' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'nextMonth', name: 'Gelecek Ay' }
+    ];
 
     // Can add filter
     self.canAddFilter = ko.computed(function() {
@@ -273,7 +284,7 @@ function AssignmentsViewModel() {
             case 'project': return !!self.tempFilter.projectId();
             case 'status': return !!self.tempFilter.status();
             case 'assignedUser': return !!self.tempFilter.assignedUserId();
-            case 'dateRange': return !!self.tempFilter.startDate() || !!self.tempFilter.endDate();
+            case 'dueDate': return !!self.tempFilter.selectedDueDateType();
             case 'search': return !!self.tempFilter.searchTerm();
             default: return false;
         }
@@ -325,15 +336,16 @@ function AssignmentsViewModel() {
                 filter.displayValue = user.displayName;
                 self.tempFilter.assignedUserId('');
                 break;
-            case 'dateRange':
-                var start = self.tempFilter.startDate();
-                var end = self.tempFilter.endDate();
-                if (!start && !end) return;
-                filter.label = T('Common.DateRange', 'Tarih Aralığı');
-                filter.value = { start: start, end: end };
-                filter.displayValue = (start || '...') + ' - ' + (end || '...');
-                self.tempFilter.startDate('');
-                self.tempFilter.endDate('');
+            case 'dueDate':
+                var dueDateType = self.tempFilter.selectedDueDateType();
+                if (!dueDateType) return;
+
+                var optionInfo = self.dueDateOptions.find(function(o) { return o.systemName === dueDateType; });
+                filter.label = T('Common.DueDate', 'Son Tarih');
+                filter.value = dueDateType;
+                filter.displayValue = optionInfo ? optionInfo.name : dueDateType;
+
+                self.tempFilter.selectedDueDateType('');
                 break;
             case 'search':
                 var term = self.tempFilter.searchTerm();
@@ -357,55 +369,6 @@ function AssignmentsViewModel() {
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
         self.applyFilters();
-    };
-
-    // Set temp date range (quick select)
-    self.setTempDateRange = function(rangeType) {
-        var today = new Date();
-        var start, end;
-
-        switch (rangeType) {
-            case 'today':
-                start = end = today;
-                break;
-            case 'yesterday':
-                start = end = new Date(today.setDate(today.getDate() - 1));
-                break;
-            case 'thisWeek':
-                var day = today.getDay();
-                var diff = today.getDate() - day + (day === 0 ? -6 : 1);
-                start = new Date(today.setDate(diff));
-                end = new Date();
-                break;
-            case 'lastWeek':
-                var day = today.getDay();
-                var diff = today.getDate() - day + (day === 0 ? -6 : 1) - 7;
-                start = new Date(new Date().setDate(diff));
-                end = new Date(start);
-                end.setDate(end.getDate() + 6);
-                break;
-            case 'thisMonth':
-                start = new Date(today.getFullYear(), today.getMonth(), 1);
-                end = new Date();
-                break;
-            case 'lastMonth':
-                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                end = new Date(today.getFullYear(), today.getMonth(), 0);
-                break;
-            case 'last7Days':
-                start = new Date(new Date().setDate(new Date().getDate() - 7));
-                end = new Date();
-                break;
-            case 'last30Days':
-                start = new Date(new Date().setDate(new Date().getDate() - 30));
-                end = new Date();
-                break;
-            default:
-                return;
-        }
-
-        self.tempFilter.startDate(start.toISOString().split('T')[0]);
-        self.tempFilter.endDate(end.toISOString().split('T')[0]);
     };
 
     // Sorting
@@ -572,8 +535,7 @@ function AssignmentsViewModel() {
         var statuses = [];
         var assignedUserIds = [];
         var searchTerms = [];
-        var dueDateFrom = null;
-        var dueDateTo = null;
+        var dueDateFilter = '';
 
         self.activeFilters().forEach(function(f) {
             switch (f.type) {
@@ -586,9 +548,8 @@ function AssignmentsViewModel() {
                 case 'assignedUser':
                     assignedUserIds.push(f.value);
                     break;
-                case 'dateRange':
-                    dueDateFrom = f.value.start || null;
-                    dueDateTo = f.value.end || null;
+                case 'dueDate':
+                    dueDateFilter = f.value;
                     break;
                 case 'search':
                     searchTerms.push(f.value);
@@ -601,8 +562,7 @@ function AssignmentsViewModel() {
         statuses.forEach(function(s) { params.append('statuses', s); });
         assignedUserIds.forEach(function(id) { params.append('assignedUserIds', id); });
 
-        if (dueDateFrom) params.append('dueDateFrom', dueDateFrom);
-        if (dueDateTo) params.append('dueDateTo', dueDateTo);
+        if (dueDateFilter) params.append('dueDateFilter', dueDateFilter);
         if (searchTerms.length > 0) params.append('searchTerm', searchTerms.join(' '));
 
         return params.toString();

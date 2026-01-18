@@ -2553,8 +2553,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/personnel-report-card/{personnelId}")]
     public async Task<IActionResult> GetPersonnelReportCard(
         int personnelId,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2569,21 +2569,10 @@ public class CustomerPortalApiController : ControllerBase
 
             var filter = new PersonnelReportCardFilterDto
             {
-                PersonnelId = personnelId
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
             };
-
-            // DateRanges pattern
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter
-                    {
-                        StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
-                        EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
-                    }
-                };
-            }
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
 
@@ -2611,8 +2600,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/personnel-report-card/{personnelId}/export")]
     public async Task<IActionResult> ExportPersonnelReportCard(
         int personnelId,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2627,21 +2616,10 @@ public class CustomerPortalApiController : ControllerBase
 
             var filter = new PersonnelReportCardFilterDto
             {
-                PersonnelId = personnelId
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
             };
-
-            // DateRanges pattern
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter
-                    {
-                        StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
-                        EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
-                    }
-                };
-            }
 
             var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2705,35 +2683,8 @@ public class CustomerPortalApiController : ControllerBase
 
             if (!filteredProjectIds.Any())
             {
-                return Ok(new { periods = new List<object>(), personnel = new List<object>(), data = new List<object>() });
+                return Ok(new { periods = new List<object>(), data = new List<object>() });
             }
-
-            // Dönemleri al (bu müşterinin projelerine ait atamalardan)
-            var periodsQuery = _context.AssignmentPeriods
-                .Include(ap => ap.Assignment)
-                    .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
-                .OrderByDescending(ap => ap.StartDate);
-
-            var periods = await periodsQuery
-                .Select(ap => new
-                {
-                    ap.Id,
-                    ap.Name,
-                    ap.StartDate,
-                    ap.EndDate,
-                    ProjectName = ap.Assignment.Project.Name,
-                    ap.TargetCount,
-                    ap.CompletedCount
-                })
-                .ToListAsync();
-
-            if (!periods.Any())
-            {
-                return Ok(new { periods = new List<object>(), personnel = new List<object>(), data = new List<object>() });
-            }
-
-            var periodIds = periods.Select(p => p.Id).ToList();
 
             // Personelleri al (organizasyon filtresiyle)
             var personnelQuery = _context.CustomerPersonnel
@@ -2761,34 +2712,133 @@ public class CustomerPortalApiController : ControllerBase
 
             var personnelIds = personnel.Select(p => p.Id).ToList();
 
-            // Değerlendirmeleri al (dönem ve personel bazlı)
-            var evaluations = await _context.Evaluations
-                .Where(e => e.AssignmentPeriodId.HasValue &&
-                           periodIds.Contains(e.AssignmentPeriodId.Value) &&
-                           e.EvaluatedCustomerPersonnelId.HasValue &&
-                           personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed &&
-                           e.ScorePercentage.HasValue)
-                .Select(e => new
+            // Önce AssignmentPeriod'ları kontrol et
+            var assignmentPeriods = await _context.AssignmentPeriods
+                .Include(ap => ap.Assignment)
+                    .ThenInclude(a => a.Project)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .OrderByDescending(ap => ap.StartDate)
+                .Select(ap => new
                 {
-                    e.AssignmentPeriodId,
-                    e.EvaluatedCustomerPersonnelId,
-                    e.ScorePercentage,
-                    e.YellowCardCount,
-                    e.RedCardCount
+                    ap.Id,
+                    ap.Name,
+                    ap.StartDate,
+                    ap.EndDate,
+                    ProjectName = ap.Assignment.Project.Name
                 })
                 .ToListAsync();
 
-            // Pivot data oluştur: Her personel için her dönemdeki ortalama puan
-            var data = personnel.Select(p => new
+            // AssignmentPeriod varsa onları kullan
+            if (assignmentPeriods.Any())
+            {
+                var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
+
+                var evaluations = await _context.Evaluations
+                    .Where(e => e.AssignmentPeriodId.HasValue &&
+                               periodIds.Contains(e.AssignmentPeriodId.Value) &&
+                               e.EvaluatedCustomerPersonnelId.HasValue &&
+                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed &&
+                               e.ScorePercentage.HasValue)
+                    .Select(e => new
+                    {
+                        e.AssignmentPeriodId,
+                        e.EvaluatedCustomerPersonnelId,
+                        e.ScorePercentage,
+                        e.YellowCardCount,
+                        e.RedCardCount
+                    })
+                    .ToListAsync();
+
+                var data = personnel.Select(p => new
+                {
+                    personnelId = p.Id,
+                    personnelName = p.FullName,
+                    organizationName = p.OrganizationName,
+                    periodScores = assignmentPeriods.Select(period =>
+                    {
+                        var periodEvals = evaluations
+                            .Where(e => e.AssignmentPeriodId == period.Id && e.EvaluatedCustomerPersonnelId == p.Id)
+                            .ToList();
+
+                        return new
+                        {
+                            periodId = period.Id,
+                            periodName = period.Name,
+                            evaluationCount = periodEvals.Count,
+                            averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 1) : (double?)null,
+                            yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
+                            redCardCount = periodEvals.Sum(e => e.RedCardCount)
+                        };
+                    }).ToList(),
+                    overallAverage = evaluations
+                        .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
+                        .Select(e => (double)e.ScorePercentage!.Value)
+                        .DefaultIfEmpty()
+                        .Average(),
+                    totalEvaluations = evaluations.Count(e => e.EvaluatedCustomerPersonnelId == p.Id)
+                })
+                .Where(p => p.totalEvaluations > 0)
+                .OrderByDescending(p => p.overallAverage)
+                .ToList();
+
+                return Ok(new
+                {
+                    periods = assignmentPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
+                    data
+                });
+            }
+
+            // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
+            var allEvaluations = await _context.Evaluations
+                .Include(e => e.Assignment)
+                .Where(e => e.Assignment != null &&
+                           filteredProjectIds.Contains(e.Assignment.ProjectId) &&
+                           e.EvaluatedCustomerPersonnelId.HasValue &&
+                           personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue &&
+                           e.CallDate.HasValue)
+                .Select(e => new
+                {
+                    e.EvaluatedCustomerPersonnelId,
+                    e.ScorePercentage,
+                    e.YellowCardCount,
+                    e.RedCardCount,
+                    e.CallDate,
+                    ProjectName = e.Assignment!.Project!.Name
+                })
+                .ToListAsync();
+
+            if (!allEvaluations.Any())
+            {
+                return Ok(new { periods = new List<object>(), data = new List<object>() });
+            }
+
+            // CallDate'e göre aylık dönemler oluştur
+            var monthlyPeriods = allEvaluations
+                .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
+                .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month)
+                .Select((g, idx) => new
+                {
+                    Id = -(idx + 1), // Negatif ID (sanal dönem)
+                    Name = $"{g.Key.Year}-{g.Key.Month:D2}",
+                    StartDate = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    EndDate = new DateTime(g.Key.Year, g.Key.Month, DateTime.DaysInMonth(g.Key.Year, g.Key.Month)),
+                    ProjectName = g.Select(e => e.ProjectName).FirstOrDefault() ?? "-",
+                    Evaluations = g.ToList()
+                })
+                .ToList();
+
+            var monthlyData = personnel.Select(p => new
             {
                 personnelId = p.Id,
                 personnelName = p.FullName,
                 organizationName = p.OrganizationName,
-                periodScores = periods.Select(period =>
+                periodScores = monthlyPeriods.Select(period =>
                 {
-                    var periodEvals = evaluations
-                        .Where(e => e.AssignmentPeriodId == period.Id && e.EvaluatedCustomerPersonnelId == p.Id)
+                    var periodEvals = period.Evaluations
+                        .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
                         .ToList();
 
                     return new
@@ -2801,22 +2851,21 @@ public class CustomerPortalApiController : ControllerBase
                         redCardCount = periodEvals.Sum(e => e.RedCardCount)
                     };
                 }).ToList(),
-                // Genel ortalama
-                overallAverage = evaluations
+                overallAverage = allEvaluations
                     .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
                     .Select(e => (double)e.ScorePercentage!.Value)
                     .DefaultIfEmpty()
                     .Average(),
-                totalEvaluations = evaluations.Count(e => e.EvaluatedCustomerPersonnelId == p.Id)
+                totalEvaluations = allEvaluations.Count(e => e.EvaluatedCustomerPersonnelId == p.Id)
             })
-            .Where(p => p.totalEvaluations > 0) // Sadece değerlendirmesi olan personeller
+            .Where(p => p.totalEvaluations > 0)
             .OrderByDescending(p => p.overallAverage)
             .ToList();
 
             return Ok(new
             {
-                periods = periods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
-                data
+                periods = monthlyPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
+                data = monthlyData
             });
         }
         catch (Exception ex)
@@ -2840,7 +2889,7 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            // Önce veriyi al (aynı sorgu)
+            // Proje filtresi
             var projectsQuery = _context.Projects
                 .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
 
@@ -2851,18 +2900,7 @@ public class CustomerPortalApiController : ControllerBase
 
             var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
 
-            var periodsQuery = _context.AssignmentPeriods
-                .Include(ap => ap.Assignment)
-                    .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
-                .OrderByDescending(ap => ap.StartDate);
-
-            var periods = await periodsQuery
-                .Select(ap => new { ap.Id, ap.Name })
-                .ToListAsync();
-
-            var periodIds = periods.Select(p => p.Id).ToList();
-
+            // Personel filtresi
             var personnelQuery = _context.CustomerPersonnel
                 .Include(cp => cp.OrganizationAssignments)
                     .ThenInclude(cpo => cpo.CustomerOrganization)
@@ -2888,83 +2926,188 @@ public class CustomerPortalApiController : ControllerBase
 
             var personnelIds = personnel.Select(p => p.Id).ToList();
 
-            var evaluations = await _context.Evaluations
-                .Where(e => e.AssignmentPeriodId.HasValue &&
-                           periodIds.Contains(e.AssignmentPeriodId.Value) &&
-                           e.EvaluatedCustomerPersonnelId.HasValue &&
-                           personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed &&
-                           e.ScorePercentage.HasValue)
-                .Select(e => new
-                {
-                    e.AssignmentPeriodId,
-                    e.EvaluatedCustomerPersonnelId,
-                    e.ScorePercentage
-                })
+            // AssignmentPeriod kontrolü
+            var assignmentPeriods = await _context.AssignmentPeriods
+                .Include(ap => ap.Assignment)
+                    .ThenInclude(a => a.Project)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .OrderByDescending(ap => ap.StartDate)
+                .Select(ap => new { ap.Id, ap.Name })
                 .ToListAsync();
 
             // Excel oluştur
             using var workbook = new ClosedXML.Excel.XLWorkbook();
             var sheet = workbook.Worksheets.Add("Dönem Bazlı Başarı");
 
-            // Headers
-            sheet.Cell(1, 1).Value = "Personel";
-            sheet.Cell(1, 1).Style.Font.Bold = true;
-            sheet.Cell(1, 2).Value = "Organizasyon";
-            sheet.Cell(1, 2).Style.Font.Bold = true;
-
-            int col = 3;
-            foreach (var period in periods)
+            // AssignmentPeriod varsa onu kullan
+            if (assignmentPeriods.Any())
             {
-                sheet.Cell(1, col).Value = period.Name;
-                sheet.Cell(1, col).Style.Font.Bold = true;
-                col++;
-            }
-            sheet.Cell(1, col).Value = "Genel Ortalama";
-            sheet.Cell(1, col).Style.Font.Bold = true;
-            sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
-            sheet.Cell(1, col + 1).Style.Font.Bold = true;
+                var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
 
-            // Data rows
-            int row = 2;
-            foreach (var p in personnel)
-            {
-                var personEvals = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
-                if (!personEvals.Any()) continue;
+                var evaluations = await _context.Evaluations
+                    .Where(e => e.AssignmentPeriodId.HasValue &&
+                               periodIds.Contains(e.AssignmentPeriodId.Value) &&
+                               e.EvaluatedCustomerPersonnelId.HasValue &&
+                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed &&
+                               e.ScorePercentage.HasValue)
+                    .Select(e => new
+                    {
+                        e.AssignmentPeriodId,
+                        e.EvaluatedCustomerPersonnelId,
+                        e.ScorePercentage
+                    })
+                    .ToListAsync();
 
-                sheet.Cell(row, 1).Value = p.FullName;
-                sheet.Cell(row, 2).Value = p.OrganizationName;
+                // Headers
+                sheet.Cell(1, 1).Value = "Personel";
+                sheet.Cell(1, 1).Style.Font.Bold = true;
+                sheet.Cell(1, 2).Value = "Organizasyon";
+                sheet.Cell(1, 2).Style.Font.Bold = true;
 
-                col = 3;
-                foreach (var period in periods)
+                int col = 3;
+                foreach (var period in assignmentPeriods)
                 {
-                    var periodEvals = personEvals.Where(e => e.AssignmentPeriodId == period.Id).ToList();
-                    if (periodEvals.Any())
-                    {
-                        var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                        // Renklendirme
-                        if (avg >= 80)
-                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
-                        else if (avg >= 60)
-                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
-                        else
-                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
-                    }
-                    else
-                    {
-                        sheet.Cell(row, col).Value = "-";
-                    }
+                    sheet.Cell(1, col).Value = period.Name;
+                    sheet.Cell(1, col).Style.Font.Bold = true;
                     col++;
                 }
+                sheet.Cell(1, col).Value = "Genel Ortalama";
+                sheet.Cell(1, col).Style.Font.Bold = true;
+                sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+                sheet.Cell(1, col + 1).Style.Font.Bold = true;
 
-                // Genel ortalama
-                var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
-                sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
-                sheet.Cell(row, col).Style.Font.Bold = true;
-                sheet.Cell(row, col + 1).Value = personEvals.Count;
+                // Data rows
+                int row = 2;
+                foreach (var p in personnel)
+                {
+                    var personEvals = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
+                    if (!personEvals.Any()) continue;
 
-                row++;
+                    sheet.Cell(row, 1).Value = p.FullName;
+                    sheet.Cell(row, 2).Value = p.OrganizationName;
+
+                    col = 3;
+                    foreach (var period in assignmentPeriods)
+                    {
+                        var periodEvals = personEvals.Where(e => e.AssignmentPeriodId == period.Id).ToList();
+                        if (periodEvals.Any())
+                        {
+                            var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
+                            sheet.Cell(row, col).Value = Math.Round(avg, 1);
+                            if (avg >= 80)
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
+                            else if (avg >= 60)
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
+                            else
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
+                        }
+                        else
+                        {
+                            sheet.Cell(row, col).Value = "-";
+                        }
+                        col++;
+                    }
+
+                    var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
+                    sheet.Cell(row, col).Style.Font.Bold = true;
+                    sheet.Cell(row, col + 1).Value = personEvals.Count;
+
+                    row++;
+                }
+            }
+            else
+            {
+                // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
+                var allEvaluations = await _context.Evaluations
+                    .Include(e => e.Assignment)
+                    .Where(e => e.Assignment != null &&
+                               filteredProjectIds.Contains(e.Assignment.ProjectId) &&
+                               e.EvaluatedCustomerPersonnelId.HasValue &&
+                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                               e.StatusId == EvaluationStatuses.Ids.Completed &&
+                               e.ScorePercentage.HasValue &&
+                               e.CallDate.HasValue)
+                    .Select(e => new
+                    {
+                        e.EvaluatedCustomerPersonnelId,
+                        e.ScorePercentage,
+                        e.CallDate
+                    })
+                    .ToListAsync();
+
+                // CallDate'e göre aylık dönemler oluştur
+                var monthlyPeriods = allEvaluations
+                    .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
+                    .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month)
+                    .Select(g => new
+                    {
+                        Name = $"{g.Key.Year}-{g.Key.Month:D2}",
+                        Year = g.Key.Year,
+                        Month = g.Key.Month
+                    })
+                    .ToList();
+
+                // Headers
+                sheet.Cell(1, 1).Value = "Personel";
+                sheet.Cell(1, 1).Style.Font.Bold = true;
+                sheet.Cell(1, 2).Value = "Organizasyon";
+                sheet.Cell(1, 2).Style.Font.Bold = true;
+
+                int col = 3;
+                foreach (var period in monthlyPeriods)
+                {
+                    sheet.Cell(1, col).Value = period.Name;
+                    sheet.Cell(1, col).Style.Font.Bold = true;
+                    col++;
+                }
+                sheet.Cell(1, col).Value = "Genel Ortalama";
+                sheet.Cell(1, col).Style.Font.Bold = true;
+                sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+                sheet.Cell(1, col + 1).Style.Font.Bold = true;
+
+                // Data rows
+                int row = 2;
+                foreach (var p in personnel)
+                {
+                    var personEvals = allEvaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
+                    if (!personEvals.Any()) continue;
+
+                    sheet.Cell(row, 1).Value = p.FullName;
+                    sheet.Cell(row, 2).Value = p.OrganizationName;
+
+                    col = 3;
+                    foreach (var period in monthlyPeriods)
+                    {
+                        var periodEvals = personEvals
+                            .Where(e => e.CallDate!.Value.Year == period.Year && e.CallDate!.Value.Month == period.Month)
+                            .ToList();
+                        if (periodEvals.Any())
+                        {
+                            var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
+                            sheet.Cell(row, col).Value = Math.Round(avg, 1);
+                            if (avg >= 80)
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
+                            else if (avg >= 60)
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
+                            else
+                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
+                        }
+                        else
+                        {
+                            sheet.Cell(row, col).Value = "-";
+                        }
+                        col++;
+                    }
+
+                    var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
+                    sheet.Cell(row, col).Style.Font.Bold = true;
+                    sheet.Cell(row, col + 1).Value = personEvals.Count;
+
+                    row++;
+                }
             }
 
             sheet.Columns().AdjustToContents();

@@ -4659,6 +4659,179 @@ public class ReportService : IReportService
     // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU =====
 
     /// <summary>
+    /// Personel Soru Bazlı Performans Raporu - Tablo görünümü için
+    /// Personel + GroupName bazında ortalama puan (pivot tablo yapısı)
+    /// </summary>
+    public async Task<PersonnelQuestionPerformanceReportDto> GetPersonnelQuestionPerformanceAsync(PersonnelQuestionPerformanceFilterDto filter)
+    {
+        // Temel sorgu - tamamlanmış değerlendirmeler
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.EvaluatedCustomerPersonnelId != null);
+
+        // Filtreler - çoğul parametreler (KURALLAR.md Bölüm 20)
+        if (filter.CustomerIds?.Any() == true)
+        {
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+        }
+
+        if (filter.ProjectIds?.Any() == true)
+        {
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+        }
+
+        if (filter.OrganizationIds?.Any() == true)
+        {
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+        }
+
+        if (filter.PersonnelIds?.Any() == true)
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        if (filter.PeriodIds?.Any() == true)
+        {
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
+        }
+
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= maxEnd);
+        }
+
+        // Verileri çek
+        var evaluations = await query.ToListAsync();
+
+        // Tüm benzersiz GroupName'leri bul
+        var allGroupNames = evaluations
+            .SelectMany(e => e.Answers.Where(a => !a.Question.IsDeleted && !string.IsNullOrEmpty(a.Question.GroupName)))
+            .Select(a => a.Question.GroupName!)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToList();
+
+        // Personel + GroupName bazında gruplama
+        var rawData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => !a.Question.IsDeleted && !string.IsNullOrEmpty(a.Question.GroupName))
+                .Select(a => new
+                {
+                    PersonnelId = e.EvaluatedCustomerPersonnelId!.Value,
+                    PersonnelName = e.EvaluatedCustomerPersonnel != null
+                        ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim()
+                        : "",
+                    Department = e.EvaluatedCustomerPersonnel?.Department,
+                    OrganizationName = e.EvaluatedOrganization?.Name,
+                    GroupName = a.Question.GroupName ?? "",
+                    EvalId = e.Id,
+                    Score = a.AnswerNumeric,
+                    MaxPoints = a.Question.MaxPoints,
+                    IsError = a.AnswerNumeric.HasValue && a.Question.MaxPoints > 0 && a.AnswerNumeric.Value < a.Question.MaxPoints
+                }))
+            .ToList();
+
+        // Personel bazında gruplama
+        var personnelGroups = rawData
+            .GroupBy(x => new { x.PersonnelId, x.PersonnelName, x.Department, x.OrganizationName })
+            .ToList();
+
+        var rows = new List<PersonnelQuestionPerformanceRowDto>();
+
+        foreach (var personnelGroup in personnelGroups)
+        {
+            var row = new PersonnelQuestionPerformanceRowDto
+            {
+                PersonnelId = personnelGroup.Key.PersonnelId,
+                PersonnelName = personnelGroup.Key.PersonnelName,
+                Department = personnelGroup.Key.Department,
+                OrganizationName = personnelGroup.Key.OrganizationName,
+                TotalEvaluations = personnelGroup.Select(x => x.EvalId).Distinct().Count(),
+                GroupScores = new List<GroupScoreDto>()
+            };
+
+            // Her GroupName için puan hesapla
+            decimal totalScore = 0;
+            int totalCount = 0;
+
+            foreach (var groupName in allGroupNames)
+            {
+                var groupData = personnelGroup.Where(x => x.GroupName == groupName).ToList();
+
+                if (groupData.Any())
+                {
+                    var validScores = groupData.Where(x => x.Score.HasValue && x.MaxPoints > 0).ToList();
+                    var avgScore = validScores.Any()
+                        ? Math.Round((decimal)validScores.Average(x => (double)(x.Score!.Value / x.MaxPoints * 100)), 1)
+                        : (decimal?)null;
+
+                    row.GroupScores.Add(new GroupScoreDto
+                    {
+                        GroupName = groupName,
+                        AverageScore = avgScore,
+                        EvaluationCount = groupData.Select(x => x.EvalId).Distinct().Count(),
+                        ErrorCount = groupData.Count(x => x.IsError)
+                    });
+
+                    if (avgScore.HasValue)
+                    {
+                        totalScore += avgScore.Value;
+                        totalCount++;
+                    }
+                }
+                else
+                {
+                    // Bu personel için bu grup verisi yok
+                    row.GroupScores.Add(new GroupScoreDto
+                    {
+                        GroupName = groupName,
+                        AverageScore = null,
+                        EvaluationCount = 0,
+                        ErrorCount = 0
+                    });
+                }
+            }
+
+            // Genel ortalama
+            row.OverallAverage = totalCount > 0 ? Math.Round(totalScore / totalCount, 1) : 0;
+
+            rows.Add(row);
+        }
+
+        return new PersonnelQuestionPerformanceReportDto
+        {
+            GroupNames = allGroupNames,
+            Rows = rows.OrderBy(r => r.PersonnelName).ToList(),
+            TotalEvaluations = evaluations.Count
+        };
+    }
+
+    /// <summary>
     /// Personel Soru Bazlı Performans Raporu - Excel Export
     /// Proje + Personel + GroupName + Periyot bazında ortalama puan ve hata sayısı
     /// </summary>

@@ -96,6 +96,13 @@ var EnumsService = (function() {
         });
     }
 
+    // Tip adina gore enum array dondur (cache'den)
+    // Ornek: getByType('evaluationNotificationFrequency') => [{id: 0, ...}, {id: 1, ...}]
+    function getByType(typeName) {
+        if (!_cache) return [];
+        return _cache[typeName] || [];
+    }
+
     // ===== Kisayol metodlari =====
 
     // User Roles
@@ -227,6 +234,7 @@ var EnumsService = (function() {
         getCssClass: getCssClass,
         getIcon: getIcon,
         toSelectOptions: toSelectOptions,
+        getByType: getByType,
 
         // Kisayollar
         getUserRoleDisplay: getUserRoleDisplay,

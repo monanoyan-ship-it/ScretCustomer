@@ -138,9 +138,9 @@ function PerformanceByPeriodViewModel() {
             }
         });
 
-        // Çoklu değerleri query string'e ekle
-        projectIds.forEach(function(id) { params.push('projectId=' + id); });
-        organizationIds.forEach(function(id) { params.push('organizationId=' + id); });
+        // Çoklu değerleri query string'e ekle (API çoğul parametre bekliyor)
+        projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+        organizationIds.forEach(function(id) { params.push('organizationIds=' + id); });
 
         return params.length > 0 ? '?' + params.join('&') : '';
     };

@@ -432,6 +432,62 @@ public class AssignmentService : IAssignmentService
         if (filter.DueDateTo.HasValue)
             query = query.Where(a => a.DueDate <= filter.DueDateTo.Value);
 
+        // Son tarih filtresi (semantic date filtering - Projects pattern)
+        if (!string.IsNullOrEmpty(filter.DueDateFilter))
+        {
+            var today = DateTime.UtcNow.Date;
+            var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+            var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+
+            switch (filter.DueDateFilter)
+            {
+                case "overdue":
+                    // Süresi geçmiş: DueDate bugünden önce ve tamamlanmamış
+                    query = query.Where(a => a.DueDate < todayStart && !a.IsCompleted);
+                    break;
+                case "today":
+                    // Bugün son tarih
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= todayEnd);
+                    break;
+                case "tomorrow":
+                    // Yarın son tarih
+                    var tomorrowStart = DateTime.SpecifyKind(today.AddDays(1), DateTimeKind.Utc);
+                    var tomorrowEnd = DateTime.SpecifyKind(today.AddDays(2).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= tomorrowStart && a.DueDate <= tomorrowEnd);
+                    break;
+                case "next7Days":
+                    // 7 gün içinde
+                    var next7Days = DateTime.SpecifyKind(today.AddDays(7).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= next7Days);
+                    break;
+                case "thisWeek":
+                    // Bu hafta (Pazartesi-Pazar)
+                    var dayOfWeek = (int)today.DayOfWeek;
+                    var daysToMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+                    var weekStart = DateTime.SpecifyKind(today.AddDays(-daysToMonday), DateTimeKind.Utc);
+                    var weekEnd = DateTime.SpecifyKind(weekStart.AddDays(7).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= weekStart && a.DueDate <= weekEnd);
+                    break;
+                case "next30Days":
+                    // 30 gün içinde
+                    var next30Days = DateTime.SpecifyKind(today.AddDays(30).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= next30Days);
+                    break;
+                case "thisMonth":
+                    // Bu ay
+                    var monthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1), DateTimeKind.Utc);
+                    var monthEnd = DateTime.SpecifyKind(monthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= monthStart && a.DueDate <= monthEnd);
+                    break;
+                case "nextMonth":
+                    // Gelecek ay
+                    var nextMonthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1).AddMonths(1), DateTimeKind.Utc);
+                    var nextMonthEnd = DateTime.SpecifyKind(nextMonthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= nextMonthStart && a.DueDate <= nextMonthEnd);
+                    break;
+            }
+        }
+
         if (filter.IsExpired == true)
             query = query.Where(a => !a.IsCompleted && a.DueDate < DateTime.UtcNow);
 
@@ -1022,6 +1078,62 @@ public class AssignmentService : IAssignmentService
         if (filter.DueDateTo.HasValue)
         {
             query = query.Where(a => a.DueDate <= filter.DueDateTo);
+        }
+
+        // Son tarih filtresi (semantic date filtering - Projects pattern)
+        if (!string.IsNullOrEmpty(filter.DueDateFilter))
+        {
+            var today = DateTime.UtcNow.Date;
+            var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+            var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+
+            switch (filter.DueDateFilter)
+            {
+                case "overdue":
+                    // Süresi geçmiş: DueDate bugünden önce ve tamamlanmamış
+                    query = query.Where(a => a.DueDate < todayStart && !a.IsCompleted);
+                    break;
+                case "today":
+                    // Bugün son tarih
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= todayEnd);
+                    break;
+                case "tomorrow":
+                    // Yarın son tarih
+                    var tomorrowStart = DateTime.SpecifyKind(today.AddDays(1), DateTimeKind.Utc);
+                    var tomorrowEnd = DateTime.SpecifyKind(today.AddDays(2).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= tomorrowStart && a.DueDate <= tomorrowEnd);
+                    break;
+                case "next7Days":
+                    // 7 gün içinde
+                    var next7Days = DateTime.SpecifyKind(today.AddDays(7).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= next7Days);
+                    break;
+                case "thisWeek":
+                    // Bu hafta (Pazartesi-Pazar)
+                    var dayOfWeek = (int)today.DayOfWeek;
+                    var daysToMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+                    var weekStart = DateTime.SpecifyKind(today.AddDays(-daysToMonday), DateTimeKind.Utc);
+                    var weekEnd = DateTime.SpecifyKind(weekStart.AddDays(7).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= weekStart && a.DueDate <= weekEnd);
+                    break;
+                case "next30Days":
+                    // 30 gün içinde
+                    var next30Days = DateTime.SpecifyKind(today.AddDays(30).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= todayStart && a.DueDate <= next30Days);
+                    break;
+                case "thisMonth":
+                    // Bu ay
+                    var monthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1), DateTimeKind.Utc);
+                    var monthEnd = DateTime.SpecifyKind(monthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= monthStart && a.DueDate <= monthEnd);
+                    break;
+                case "nextMonth":
+                    // Gelecek ay
+                    var nextMonthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1).AddMonths(1), DateTimeKind.Utc);
+                    var nextMonthEnd = DateTime.SpecifyKind(nextMonthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(a => a.DueDate >= nextMonthStart && a.DueDate <= nextMonthEnd);
+                    break;
+            }
         }
 
         var assignments = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();

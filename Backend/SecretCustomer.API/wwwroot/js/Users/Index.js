@@ -627,9 +627,9 @@ function UsersViewModel() {
     };
 
     self.loadCustomers = function() {
-        fetch('/api/customers', { credentials: 'include' })
+        fetch('/api/customers?pageSize=1000', { credentials: 'include' })
             .then(function(res) { return res.json(); })
-            .then(function(data) { self.customers(data || []); })
+            .then(function(data) { self.customers(data.items || []); })
             .catch(function(err) { console.error('Error loading customers:', err); });
     };
 
@@ -653,13 +653,16 @@ function UsersViewModel() {
                 return Promise.all([
                     fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
                     fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
-                    fetch('/api/customers', { credentials: 'include' }).then(function(r) { return r.json(); })
+                    fetch('/api/customers?pageSize=1000', { credentials: 'include' }).then(function(r) { return r.json(); })
                 ]);
             })
             .then(function(results) {
                 self.allUsers(results[0] || []);
-                self.allCustomerPersonnel(results[1] || []);
-                self.customers(results[2] || []);
+                // customer-personnel API returns PagedPersonnelResult { items: [], totalCount: X }
+                var cpData = results[1];
+                self.allCustomerPersonnel(cpData.items || cpData || []);
+                // customers API returns PagedCustomerResult { items: [], totalCount: X }
+                self.customers(results[2].items || []);
                 self.usersPage(1);
                 self.cpPage(1);
             })

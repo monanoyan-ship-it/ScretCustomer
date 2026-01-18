@@ -258,7 +258,7 @@ function PersonnelViewModel() {
 
         self.isLoading(true);
 
-        ApiService.get('/customer-personnel?customerId=' + self.customerId)
+        ApiService.get('/customer-personnel/by-customer/' + self.customerId + '?includeInactive=true')
             .then(function(data) {
                 self.allPersonnel(data || []);
                 self.currentPage(1);

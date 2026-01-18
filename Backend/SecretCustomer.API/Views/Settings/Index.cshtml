@@ -64,16 +64,16 @@
                                 <!-- /ko -->
                             </td>
                             <td>
-                                <!-- ko if: valueType === 1 -->
+                                <!-- ko if: valueTypeId === 1 -->
                                 <span class="badge" data-bind="text: value === 'true' ? '@Html.T("Common.Yes", "Evet")' : '@Html.T("Common.No", "Hayır")',
                                       css: { 'bg-success': value === 'true', 'bg-danger': value !== 'true' }"></span>
                                 <!-- /ko -->
-                                <!-- ko if: valueType !== 1 -->
+                                <!-- ko if: valueTypeId !== 1 -->
                                 <span data-bind="text: value.length > 50 ? value.substring(0, 50) + '...' : value"></span>
                                 <!-- /ko -->
                             </td>
                             <td>
-                                <span class="badge bg-info" data-bind="text: $parent.getValueTypeName(valueType)"></span>
+                                <span class="badge bg-info" data-bind="text: $parent.getValueTypeName(valueTypeId)"></span>
                             </td>
                             <td data-bind="text: category"></td>
                             <td class="text-muted small" data-bind="text: description || '-'"></td>
@@ -118,7 +118,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Setting.ValueType", "Değer Tipi")</label>
-                        <select class="form-select" data-bind="value: form.valueType">
+                        <select class="form-select" data-bind="value: form.valueTypeId">
                             <option value="0">String</option>
                             <option value="1">Boolean</option>
                             <option value="2">Integer</option>
@@ -129,13 +129,13 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Setting.Value", "Değer")</label>
-                        <!-- ko if: form.valueType() == '1' -->
+                        <!-- ko if: form.valueTypeId() == '1' -->
                         <select class="form-select" data-bind="value: form.value">
                             <option value="true">@Html.T("Common.Yes", "Evet") (true)</option>
                             <option value="false">@Html.T("Common.No", "Hayır") (false)</option>
                         </select>
                         <!-- /ko -->
-                        <!-- ko if: form.valueType() != '1' -->
+                        <!-- ko if: form.valueTypeId() != '1' -->
                         <input type="text" class="form-control" data-bind="value: form.value" />
                         <!-- /ko -->
                     </div>

@@ -103,6 +103,12 @@ public class AssignmentFilterDto
     public bool? IsExpired { get; set; }
     public string? SearchTerm { get; set; }
 
+    /// <summary>
+    /// Son tarih filtresi - atama son tarihine göre filtreleme
+    /// Değerler: overdue, today, tomorrow, next7Days, thisWeek, next30Days, thisMonth, nextMonth
+    /// </summary>
+    public string? DueDateFilter { get; set; }
+
     // Sorting
     public string? SortBy { get; set; }
     public string SortDirection { get; set; } = "desc";

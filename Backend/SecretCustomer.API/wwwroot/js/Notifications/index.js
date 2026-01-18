@@ -242,5 +242,5 @@ function NotificationsIndexViewModel() {
 
 // Initialize when document is ready
 $(document).ready(function() {
-    ko.applyBindings(new NotificationsIndexViewModel());
+    ko.applyBindings(new NotificationsIndexViewModel(), document.getElementById('notifications-app'));
 });
