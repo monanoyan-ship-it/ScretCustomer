@@ -8012,6 +8012,15 @@
   <LocaleResource Name="Report.LoadError">
     <Value>Error al cargar los datos.</Value>
   </LocaleResource>
+  <LocaleResource Name="Report.ScoreDetail">
+    <Value>Detalle de Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ViewScoreDetail">
+    <Value>Detalle de Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AnswerDistribution">
+    <Value>Distribución de Respuestas</Value>
+  </LocaleResource>
 
   <!-- Support Request / Solicitudes de Soporte -->
   <LocaleResource Name="Menu.SupportRequests">

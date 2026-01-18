@@ -8091,6 +8091,15 @@
   <LocaleResource Name="Report.LoadError">
     <Value>Veriler yüklenirken hata oluştu.</Value>
   </LocaleResource>
+  <LocaleResource Name="Report.ScoreDetail">
+    <Value>Puan Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ViewScoreDetail">
+    <Value>Puan Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AnswerDistribution">
+    <Value>Cevap Dağılımı</Value>
+  </LocaleResource>
 
   <!-- Support Request / Destek Talepleri -->
   <LocaleResource Name="Menu.SupportRequests">
