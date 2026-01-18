@@ -887,6 +887,48 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Online Anket - Soru Puan Detayı ve Cevap Dağılımları (Puan Detayı Modalı için)
+    /// </summary>
+    [HttpGet("survey-projects/{projectId}/score-detail")]
+    public async Task<IActionResult> GetSurveyQuestionScoreDetail(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.GetSurveyQuestionScoreDetailAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading score detail for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Puan detayı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Online Anket - Soru Puan Detayı Excel Export
+    /// </summary>
+    [HttpGet("survey-results/{projectId}/export/score-detail")]
+    public async Task<IActionResult> ExportSurveyQuestionScoreDetail(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyQuestionScoreDetailAsync(projectId);
+            if (result.FileContent.Length == 0)
+                return NotFound(CreateErrorResponse("Proje bulunamadı."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting score detail for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Puan detayı export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Öneriler Raporu Excel Export
     /// </summary>
     [HttpGet("suggestions/export")]

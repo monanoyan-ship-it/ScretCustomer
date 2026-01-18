@@ -3817,10 +3817,18 @@ public class ReportService : IReportService
 
         foreach (var project in projects)
         {
-            // Gönderilen davetiye sayısı
-            var invitationCount = await _context.SurveyInvitations
-                .Where(si => si.ProjectId == project.Id && si.StatusId == SurveyInvitationStatuses.Ids.Sent)
+            // Gönderilen davetiye sayısı (internal + external)
+            var internalInvitations = await _context.SurveyInvitations
+                .Where(si => si.ProjectId == project.Id &&
+                       (si.StatusId == SurveyInvitationStatuses.Ids.Sent || si.StatusId == SurveyInvitationStatuses.Ids.Pending))
                 .CountAsync();
+
+            var externalInvitations = await _context.SurveyExternalInvitations
+                .Where(si => si.ProjectId == project.Id &&
+                       (si.StatusId == SurveyInvitationStatuses.Ids.Sent || si.StatusId == SurveyInvitationStatuses.Ids.Pending))
+                .CountAsync();
+
+            var invitationCount = internalInvitations + externalInvitations;
 
             // Tamamlanan anket sayısı
             var completedCount = await _context.Evaluations
@@ -4135,78 +4143,178 @@ public class ReportService : IReportService
         var results = await GetSurveyResultsAsync(projectId, null, null);
         if (results == null) return null;
 
+        // Puan detayı verilerini de al
+        var scoreDetail = await GetSurveyQuestionScoreDetailAsync(projectId);
+
         using var workbook = new XLWorkbook();
-        var sheet = workbook.Worksheets.Add("Soru İstatistikleri");
+
+        // ===== SHEET 1: GENEL DURUM =====
+        var sheet1 = workbook.Worksheets.Add("Genel Durum");
 
         // Header
-        sheet.Cell(1, 1).Value = results.ProjectName;
-        sheet.Cell(1, 1).Style.Font.Bold = true;
-        sheet.Cell(1, 1).Style.Font.FontSize = 14;
-        sheet.Range(1, 1, 1, 5).Merge();
+        sheet1.Cell(1, 1).Value = results.ProjectName;
+        sheet1.Cell(1, 1).Style.Font.Bold = true;
+        sheet1.Cell(1, 1).Style.Font.FontSize = 14;
+        sheet1.Range(1, 1, 1, 5).Merge();
 
-        var row = 3;
+        // Özet bilgiler
+        sheet1.Cell(2, 1).Value = "Toplam Yanıt:";
+        sheet1.Cell(2, 2).Value = results.TotalResponses;
+        sheet1.Cell(2, 3).Value = "Genel Ortalama:";
+        sheet1.Cell(2, 4).Value = scoreDetail?.OverallAverageScore.HasValue == true
+            ? $"%{scoreDetail.OverallAverageScore:F1}"
+            : "-";
+        sheet1.Range(2, 1, 2, 4).Style.Font.Bold = true;
+
+        // Soru listesi başlıkları
+        var row = 4;
+        sheet1.Cell(row, 1).Value = "Soru Grubu";
+        sheet1.Cell(row, 2).Value = "Soru";
+        sheet1.Cell(row, 3).Value = "Yanıt Sayısı";
+        sheet1.Cell(row, 4).Value = "Ortalama Puan (%)";
+        sheet1.Range(row, 1, row, 4).Style.Font.Bold = true;
+        row++;
+
+        // scoreDetail'den soru puanlarını dictionary'e al
+        var scoreByQuestionId = scoreDetail?.Questions
+            .ToDictionary(q => q.QuestionId, q => q.AverageScorePercentage)
+            ?? new Dictionary<int, decimal?>();
+
+        // Soruların özet listesi
         foreach (var question in results.QuestionResults)
         {
-            // Question header
-            sheet.Cell(row, 1).Value = $"{question.GroupName} - {question.QuestionText}";
-            sheet.Cell(row, 1).Style.Font.Bold = true;
-            sheet.Range(row, 1, row, 5).Merge();
+            // scoreDetail'den doğru ortalamayı al
+            var avgScore = scoreByQuestionId.GetValueOrDefault(question.QuestionId);
+
+            sheet1.Cell(row, 1).Value = question.GroupName ?? "-";
+            sheet1.Cell(row, 2).Value = question.QuestionText;
+            sheet1.Cell(row, 3).Value = question.ResponseCount;
+            sheet1.Cell(row, 4).Value = avgScore.HasValue
+                ? $"%{avgScore:F1}"
+                : "-";
             row++;
-
-            sheet.Cell(row, 1).Value = $"Yanıt Sayısı: {question.ResponseCount}";
-            if (question.AverageScore.HasValue)
-            {
-                sheet.Cell(row, 3).Value = $"Ortalama Puan: {question.AverageScore:F1}%";
-            }
-            row++;
-
-            // SubCriteria stats
-            if (question.SubCriteriaResults != null && question.SubCriteriaResults.Any())
-            {
-                sheet.Cell(row, 1).Value = "Alt Kriter";
-                sheet.Cell(row, 2).Value = "Seçim Sayısı";
-                sheet.Cell(row, 3).Value = "Yüzde";
-                sheet.Range(row, 1, row, 3).Style.Fill.BackgroundColor = XLColor.LightGray;
-                row++;
-
-                foreach (var sc in question.SubCriteriaResults)
-                {
-                    sheet.Cell(row, 1).Value = sc.Description;
-                    sheet.Cell(row, 2).Value = sc.SelectionCount;
-                    sheet.Cell(row, 3).Value = $"{sc.SelectionPercentage:F1}%";
-                    row++;
-                }
-            }
-
-            // Score distribution
-            if (question.ScoreDistribution != null && question.ScoreDistribution.Any())
-            {
-                sheet.Cell(row, 1).Value = "Puan";
-                sheet.Cell(row, 2).Value = "Seçim Sayısı";
-                sheet.Cell(row, 3).Value = "Yüzde";
-                sheet.Range(row, 1, row, 3).Style.Fill.BackgroundColor = XLColor.LightBlue;
-                row++;
-
-                foreach (var sd in question.ScoreDistribution)
-                {
-                    sheet.Cell(row, 1).Value = sd.Score;
-                    sheet.Cell(row, 2).Value = sd.Count;
-                    sheet.Cell(row, 3).Value = $"{sd.Percentage:F1}%";
-                    row++;
-                }
-            }
-
-            row++; // Empty row between questions
         }
 
-        sheet.Columns().AdjustToContents();
+        // Kolon genişlikleri
+        sheet1.Column(1).Width = 20;  // Soru Grubu
+        sheet1.Column(2).Width = 60;  // Soru (geniş)
+        sheet1.Column(3).Width = 15;  // Yanıt Sayısı
+        sheet1.Column(4).Width = 18;  // Ortalama Puan
+
+        // Soru kolonuna text wrap uygula
+        sheet1.Column(2).Style.Alignment.WrapText = true;
+        sheet1.Column(2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+        // ===== SHEET 2: PUAN DETAYI =====
+        var sheet2 = workbook.Worksheets.Add("Puan Detayı");
+
+        if (scoreDetail != null && scoreDetail.Questions.Any())
+        {
+            // Header
+            sheet2.Cell(1, 1).Value = results.ProjectName + " - Puan Detayı";
+            sheet2.Cell(1, 1).Style.Font.Bold = true;
+            sheet2.Cell(1, 1).Style.Font.FontSize = 14;
+            sheet2.Range(1, 1, 1, 7).Merge();
+
+            sheet2.Cell(2, 1).Value = "Toplam Yanıt:";
+            sheet2.Cell(2, 2).Value = scoreDetail.TotalResponses;
+            sheet2.Cell(2, 3).Value = "Genel Ortalama:";
+            sheet2.Cell(2, 4).Value = scoreDetail.OverallAverageScore.HasValue
+                ? $"%{scoreDetail.OverallAverageScore:F1}"
+                : "-";
+
+            // Tablo başlıkları
+            var headerRow = 4;
+            sheet2.Cell(headerRow, 1).Value = "Soru Grubu";
+            sheet2.Cell(headerRow, 2).Value = "Soru";
+            sheet2.Cell(headerRow, 3).Value = "Yanıt";
+            sheet2.Cell(headerRow, 4).Value = "Ort. (%)";
+            sheet2.Cell(headerRow, 5).Value = "Cevap";
+            sheet2.Cell(headerRow, 6).Value = "Seçim";
+            sheet2.Cell(headerRow, 7).Value = "Yüzde";
+            sheet2.Range(headerRow, 1, headerRow, 7).Style.Font.Bold = true;
+
+            row = headerRow + 1;
+            foreach (var question in scoreDetail.Questions)
+            {
+                var questionStartRow = row;
+                var hasDistributions = question.AnswerDistributions.Any();
+
+                if (hasDistributions)
+                {
+                    // Her alt kriter için bir satır
+                    foreach (var dist in question.AnswerDistributions)
+                    {
+                        sheet2.Cell(row, 5).Value = dist.AnswerText;
+                        sheet2.Cell(row, 6).Value = dist.SelectionCount;
+                        sheet2.Cell(row, 7).Value = $"%{dist.Percentage:F1}";
+                        row++;
+                    }
+
+                    // Soru bilgilerini merge et
+                    var questionEndRow = row - 1;
+                    if (questionEndRow > questionStartRow)
+                    {
+                        sheet2.Range(questionStartRow, 1, questionEndRow, 1).Merge();
+                        sheet2.Range(questionStartRow, 2, questionEndRow, 2).Merge();
+                        sheet2.Range(questionStartRow, 3, questionEndRow, 3).Merge();
+                        sheet2.Range(questionStartRow, 4, questionEndRow, 4).Merge();
+                    }
+
+                    sheet2.Cell(questionStartRow, 1).Value = question.GroupName ?? "-";
+                    sheet2.Cell(questionStartRow, 2).Value = question.QuestionText;
+                    sheet2.Cell(questionStartRow, 3).Value = question.ResponseCount;
+                    sheet2.Cell(questionStartRow, 4).Value = question.AverageScorePercentage.HasValue
+                        ? $"%{question.AverageScorePercentage:F1}"
+                        : "-";
+                }
+                else
+                {
+                    // Alt kriter yoksa tek satır
+                    sheet2.Cell(row, 1).Value = question.GroupName ?? "-";
+                    sheet2.Cell(row, 2).Value = question.QuestionText;
+                    sheet2.Cell(row, 3).Value = question.ResponseCount;
+                    sheet2.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
+                        ? $"%{question.AverageScorePercentage:F1}"
+                        : "-";
+                    sheet2.Cell(row, 5).Value = "-";
+                    sheet2.Cell(row, 6).Value = "-";
+                    sheet2.Cell(row, 7).Value = "-";
+                    row++;
+                }
+            }
+
+            // Kolon genişlikleri
+            sheet2.Column(1).Width = 20;  // Soru Grubu
+            sheet2.Column(2).Width = 60;  // Soru (geniş)
+            sheet2.Column(3).Width = 10;  // Yanıt
+            sheet2.Column(4).Width = 12;  // Ort. (%)
+            sheet2.Column(5).Width = 40;  // Cevap
+            sheet2.Column(6).Width = 10;  // Seçim
+            sheet2.Column(7).Width = 10;  // Yüzde
+
+            // Soru kolonuna text wrap uygula
+            sheet2.Column(2).Style.Alignment.WrapText = true;
+            sheet2.Column(5).Style.Alignment.WrapText = true;
+
+            // Dikey hizalama (üste)
+            sheet2.Column(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            sheet2.Column(2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            sheet2.Column(3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            sheet2.Column(4).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+        }
+        else
+        {
+            sheet2.Cell(1, 1).Value = "Puan detayı verisi bulunamadı.";
+        }
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
+        var safeProjectName = string.Join("_", results.ProjectName.Split(Path.GetInvalidFileNameChars()));
         return new ExcelExportDto
         {
-            FileName = $"Soru_Istatistikleri_{results.ProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Soru_Istatistikleri_{safeProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -4653,6 +4761,287 @@ public class ReportService : IReportService
             Questions = questionStats,
             TotalResponses = evaluationIds.Count,
             OverallAverageScore = overallAverage
+        };
+    }
+
+    /// <summary>
+    /// Proje bazlı soru puan detayı ve cevap dağılımları (Puan Detayı modalı için)
+    /// Her soru için: soru metni, ortalama puan %, alt kriterlerin seçilme sayısı ve yüzdesi
+    /// </summary>
+    public async Task<SurveyQuestionScoreDetailResultDto?> GetSurveyQuestionScoreDetailAsync(int projectId)
+    {
+        // Proje bilgisi
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+            return null;
+
+        // Bu projedeki tamamlanmış değerlendirmeler
+        var evaluationIds = await _context.Evaluations
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.Assignment.ProjectId == projectId)
+            .Select(e => e.Id)
+            .ToListAsync();
+
+        if (!evaluationIds.Any())
+        {
+            return new SurveyQuestionScoreDetailResultDto
+            {
+                ProjectId = projectId,
+                ProjectName = project.Name,
+                TotalResponses = 0,
+                OverallAverageScore = null,
+                Questions = new List<SurveyQuestionScoreDetailDto>()
+            };
+        }
+
+        // Cevapları ve soruları getir (alt kriterlerle birlikte)
+        var answers = await _context.Answers
+            .Include(a => a.Question)
+                .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted))
+            .Include(a => a.SubCriteriaSelections)
+                .ThenInclude(s => s.SubCriteria)
+            .Where(a => evaluationIds.Contains(a.EvaluationId) && !a.Question.IsDeleted)
+            .ToListAsync();
+
+        // Soru bazlı gruplama
+        var questionGroups = answers
+            .GroupBy(a => a.QuestionId)
+            .ToList();
+
+        var questionDetails = new List<SurveyQuestionScoreDetailDto>();
+
+        foreach (var group in questionGroups)
+        {
+            var firstAnswer = group.First();
+            var question = firstAnswer.Question;
+            var responseCount = group.Count();
+
+            // Puansız soruları atla
+            if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
+                continue;
+
+            // Ortalama puan hesapla
+            decimal? avgScorePercentage = null;
+
+            // Cezalı sorular için: Penalty uygulanma oranı (negatif etki)
+            if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
+            {
+                // Penalty uygulanan cevap sayısı
+                var penaltyAppliedCount = group.Count(a => a.IsPenaltyApplied);
+                // Yüzde olarak göster (ne kadar ceza uygulandı)
+                avgScorePercentage = responseCount > 0
+                    ? Math.Round((decimal)penaltyAppliedCount / responseCount * 100, 1)
+                    : 0;
+            }
+            // Normal puanlı sorular
+            else if (question.WeightPoints > 0 && responseCount > 0)
+            {
+                // Önce EarnedPoints'i kontrol et (zaten hesaplanmış olabilir)
+                var answersWithEarned = group.Where(a => a.EarnedPoints.HasValue).ToList();
+                if (answersWithEarned.Any())
+                {
+                    // EarnedPoints varsa onu kullan
+                    var avgEarned = answersWithEarned.Average(a => a.EarnedPoints!.Value);
+                    avgScorePercentage = Math.Round(avgEarned / question.WeightPoints * 100, 1);
+                }
+                else
+                {
+                    // Yoksa SubCriteria'lardan hesapla
+                    var answerScores = group.Select(a =>
+                        a.SubCriteriaSelections.Sum(s => s.SubCriteria?.WeightPoints ?? 0)
+                    ).ToList();
+
+                    if (answerScores.Any())
+                    {
+                        var avgScore = answerScores.Average();
+                        avgScorePercentage = Math.Round((decimal)avgScore / question.WeightPoints * 100, 1);
+                    }
+                }
+            }
+
+            // Alt kriter dağılımları
+            var answerDistributions = new List<SurveyAnswerDistributionDto>();
+            var allSubCriteria = question.SubCriteria.OrderBy(sc => sc.Order).ToList();
+
+            foreach (var subCriteria in allSubCriteria)
+            {
+                // Bu alt kriteri seçen cevap sayısı
+                var selectionCount = group
+                    .SelectMany(a => a.SubCriteriaSelections)
+                    .Count(ss => ss.SubCriteriaId == subCriteria.Id);
+
+                var percentage = responseCount > 0
+                    ? Math.Round((decimal)selectionCount / responseCount * 100, 1)
+                    : 0;
+
+                answerDistributions.Add(new SurveyAnswerDistributionDto
+                {
+                    SubCriteriaId = subCriteria.Id,
+                    AnswerText = subCriteria.Description,
+                    Points = subCriteria.WeightPoints,
+                    SelectionCount = selectionCount,
+                    Percentage = percentage
+                });
+            }
+
+            questionDetails.Add(new SurveyQuestionScoreDetailDto
+            {
+                QuestionId = question.Id,
+                QuestionText = question.Text,
+                GroupName = question.GroupName,
+                Order = question.Order,
+                ScoringTypeId = question.ScoringTypeId,
+                ResponseCount = responseCount,
+                MaxPoints = question.MaxPoints,
+                AverageScorePercentage = avgScorePercentage,
+                AnswerDistributions = answerDistributions
+            });
+        }
+
+        // Sırala
+        questionDetails = questionDetails
+            .OrderBy(q => q.GroupName)
+            .ThenBy(q => q.Order)
+            .ToList();
+
+        // Genel ortalama (penalty sorular hariç)
+        var overallAverage = questionDetails
+            .Where(q => q.AverageScorePercentage.HasValue && q.ScoringTypeId != ScoringTypes.Ids.Penalty)
+            .Select(q => q.AverageScorePercentage!.Value)
+            .DefaultIfEmpty(0)
+            .Average();
+
+        return new SurveyQuestionScoreDetailResultDto
+        {
+            ProjectId = projectId,
+            ProjectName = project.Name,
+            TotalResponses = evaluationIds.Count,
+            OverallAverageScore = Math.Round(overallAverage, 1),
+            Questions = questionDetails
+        };
+    }
+
+    /// <summary>
+    /// Proje bazlı soru puan detayı Excel export
+    /// </summary>
+    public async Task<ExcelExportDto> ExportSurveyQuestionScoreDetailAsync(int projectId)
+    {
+        var data = await GetSurveyQuestionScoreDetailAsync(projectId);
+
+        if (data == null)
+        {
+            return new ExcelExportDto
+            {
+                FileName = "PuanDetayi_Bulunamadi.xlsx",
+                FileContent = Array.Empty<byte>()
+            };
+        }
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Puan Detayı");
+
+        // Başlık bilgileri
+        worksheet.Cell(1, 1).Value = "Proje:";
+        worksheet.Cell(1, 2).Value = data.ProjectName;
+        worksheet.Cell(2, 1).Value = "Toplam Yanıt:";
+        worksheet.Cell(2, 2).Value = data.TotalResponses;
+        worksheet.Cell(3, 1).Value = "Genel Ortalama:";
+        worksheet.Cell(3, 2).Value = data.OverallAverageScore.HasValue ? $"%{data.OverallAverageScore:F1}" : "-";
+
+        worksheet.Range(1, 1, 3, 1).Style.Font.Bold = true;
+
+        // Tablo başlıkları
+        var headerRow = 5;
+        worksheet.Cell(headerRow, 1).Value = "Soru Grubu";
+        worksheet.Cell(headerRow, 2).Value = "Soru";
+        worksheet.Cell(headerRow, 3).Value = "Yanıt Sayısı";
+        worksheet.Cell(headerRow, 4).Value = "Ortalama Puan (%)";
+        worksheet.Cell(headerRow, 5).Value = "Cevap";
+        worksheet.Cell(headerRow, 6).Value = "Puan";
+        worksheet.Cell(headerRow, 7).Value = "Seçilme Sayısı";
+        worksheet.Cell(headerRow, 8).Value = "Yüzde (%)";
+
+        var headerRange = worksheet.Range(headerRow, 1, headerRow, 8);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+        // Veri satırları
+        var row = headerRow + 1;
+        foreach (var question in data.Questions)
+        {
+            var questionStartRow = row;
+
+            if (question.AnswerDistributions.Any())
+            {
+                foreach (var answer in question.AnswerDistributions)
+                {
+                    worksheet.Cell(row, 1).Value = question.GroupName ?? "-";
+                    worksheet.Cell(row, 2).Value = question.QuestionText;
+                    worksheet.Cell(row, 3).Value = question.ResponseCount;
+                    worksheet.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
+                        ? $"%{question.AverageScorePercentage:F1}"
+                        : "-";
+                    worksheet.Cell(row, 5).Value = answer.AnswerText;
+                    worksheet.Cell(row, 6).Value = answer.Points;
+                    worksheet.Cell(row, 7).Value = answer.SelectionCount;
+                    worksheet.Cell(row, 8).Value = $"%{answer.Percentage:F1}";
+                    row++;
+                }
+
+                // Soru bilgilerini birleştir (merge cells)
+                if (row > questionStartRow + 1)
+                {
+                    worksheet.Range(questionStartRow, 1, row - 1, 1).Merge();
+                    worksheet.Range(questionStartRow, 2, row - 1, 2).Merge();
+                    worksheet.Range(questionStartRow, 3, row - 1, 3).Merge();
+                    worksheet.Range(questionStartRow, 4, row - 1, 4).Merge();
+                }
+            }
+            else
+            {
+                // Alt kriter yoksa sadece soru bilgisi
+                worksheet.Cell(row, 1).Value = question.GroupName ?? "-";
+                worksheet.Cell(row, 2).Value = question.QuestionText;
+                worksheet.Cell(row, 3).Value = question.ResponseCount;
+                worksheet.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
+                    ? $"%{question.AverageScorePercentage:F1}"
+                    : "-";
+                worksheet.Cell(row, 5).Value = "-";
+                worksheet.Cell(row, 6).Value = "-";
+                worksheet.Cell(row, 7).Value = "-";
+                worksheet.Cell(row, 8).Value = "-";
+                row++;
+            }
+        }
+
+        // Sütun genişlikleri
+        worksheet.Column(1).Width = 20;
+        worksheet.Column(2).Width = 50;
+        worksheet.Column(3).Width = 12;
+        worksheet.Column(4).Width = 15;
+        worksheet.Column(5).Width = 40;
+        worksheet.Column(6).Width = 10;
+        worksheet.Column(7).Width = 15;
+        worksheet.Column(8).Width = 12;
+
+        // Kenarlıklar
+        var dataRange = worksheet.Range(headerRow, 1, row - 1, 8);
+        dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var safeProjectName = string.Join("_", data.ProjectName.Split(Path.GetInvalidFileNameChars()));
+
+        return new ExcelExportDto
+        {
+            FileName = $"PuanDetayi_{safeProjectName}_{DateTime.Now:yyyyMMdd}.xlsx",
+            FileContent = stream.ToArray()
         };
     }
 

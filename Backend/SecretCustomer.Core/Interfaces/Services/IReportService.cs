@@ -129,6 +129,12 @@ public interface IReportService
     // Online anket projelerindeki soruların genel puan dağılımı
     Task<SurveyQuestionScoreDistributionResultDto> GetSurveyQuestionScoreDistributionAsync(int? projectId = null, DateTime? startDate = null, DateTime? endDate = null);
 
+    // Proje bazlı soru puan detayı ve cevap dağılımları (Puan Detayı modalı için)
+    Task<SurveyQuestionScoreDetailResultDto?> GetSurveyQuestionScoreDetailAsync(int projectId);
+
+    // Proje bazlı soru puan detayı Excel export
+    Task<ExcelExportDto> ExportSurveyQuestionScoreDetailAsync(int projectId);
+
     // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU =====
 
     // Personel Soru Bazlı Performans Raporu - Tablo görünümü için

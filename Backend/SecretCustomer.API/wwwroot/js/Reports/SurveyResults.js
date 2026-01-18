@@ -15,6 +15,20 @@ function SurveyResultsViewModel() {
     self.projectDetail = ko.observable(null);
     self.responseDetail = ko.observable(null);
     self.questionDistribution = ko.observable(null);
+    self.scoreDetail = ko.observable(null);
+    self.isLoadingScoreDetail = ko.observable(false);
+
+    // Project Search
+    self.projectSearchTerm = ko.observable('');
+    self.filteredProjects = ko.computed(function() {
+        var term = (self.projectSearchTerm() || '').toLowerCase().trim();
+        var projects = self.surveyProjects();
+        if (!term) return projects;
+        return projects.filter(function(p) {
+            return (p.projectName || '').toLowerCase().indexOf(term) !== -1 ||
+                   (p.customerName || '').toLowerCase().indexOf(term) !== -1;
+        });
+    });
 
     // Popup Filters
     self.popupFilter = {
@@ -46,12 +60,14 @@ function SurveyResultsViewModel() {
     self.allResponsesModal = null;
     self.projectDetailModal = null;
     self.responseDetailModal = null;
+    self.scoreDetailModal = null;
 
     // Initialize modals
     self.initModals = function() {
         self.allResponsesModal = new bootstrap.Modal(document.getElementById('allResponsesModal'));
         self.projectDetailModal = new bootstrap.Modal(document.getElementById('projectDetailModal'));
         self.responseDetailModal = new bootstrap.Modal(document.getElementById('responseDetailModal'));
+        self.scoreDetailModal = new bootstrap.Modal(document.getElementById('scoreDetailModal'));
     };
 
     // Load initial data
@@ -219,6 +235,32 @@ function SurveyResultsViewModel() {
         if (url) {
             window.location.href = url;
         }
+    };
+
+    // Show Score Detail Modal
+    self.showScoreDetail = function(project) {
+        self.scoreDetail(null);
+        self.isLoadingScoreDetail(true);
+        self.scoreDetailModal.show();
+
+        apiService.get('/reports/survey-projects/' + project.projectId + '/score-detail')
+            .then(function(data) {
+                self.scoreDetail(data);
+            })
+            .catch(function(error) {
+                console.error('Error loading score detail:', error);
+                toastr.error('Puan detayı yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isLoadingScoreDetail(false);
+            });
+    };
+
+    // Export Score Detail Report
+    self.exportScoreDetail = function() {
+        if (!self.scoreDetail()) return;
+        var projectId = self.scoreDetail().projectId;
+        window.location.href = '/api/reports/survey-results/' + projectId + '/export/score-detail';
     };
 
     // Load Question Score Distribution

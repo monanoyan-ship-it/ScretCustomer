@@ -1051,6 +1051,86 @@ public class SurveyQuestionScoreDistributionDto
     public decimal? AverageRawScore { get; set; }
 }
 
+/// <summary>
+/// Soru bazlı puan detayı ve cevap dağılımı (Puan Detayı modalı için)
+/// </summary>
+public class SurveyQuestionScoreDetailResultDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public int TotalResponses { get; set; }
+    public decimal? OverallAverageScore { get; set; }
+    public List<SurveyQuestionScoreDetailDto> Questions { get; set; } = new();
+}
+
+/// <summary>
+/// Tek soru için puan detayı ve cevap dağılımı
+/// </summary>
+public class SurveyQuestionScoreDetailDto
+{
+    public int QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string? GroupName { get; set; }
+    public int Order { get; set; }
+
+    /// <summary>
+    /// Puanlama tipi: 1=Scored, 2=Unscored, 3=Penalty
+    /// </summary>
+    public int ScoringTypeId { get; set; }
+
+    /// <summary>
+    /// Bu soruya verilen toplam yanıt sayısı
+    /// </summary>
+    public int ResponseCount { get; set; }
+
+    /// <summary>
+    /// Ortalama puan (yüzde olarak)
+    /// Penalty sorular için: Ceza uygulama oranı
+    /// </summary>
+    public decimal? AverageScorePercentage { get; set; }
+
+    /// <summary>
+    /// Maksimum alınabilecek puan
+    /// </summary>
+    public int MaxPoints { get; set; }
+
+    /// <summary>
+    /// Alt kriter (cevap) dağılımları
+    /// </summary>
+    public List<SurveyAnswerDistributionDto> AnswerDistributions { get; set; } = new();
+}
+
+/// <summary>
+/// Tek cevap (alt kriter) için dağılım
+/// </summary>
+public class SurveyAnswerDistributionDto
+{
+    /// <summary>
+    /// Alt kriter ID
+    /// </summary>
+    public int SubCriteriaId { get; set; }
+
+    /// <summary>
+    /// Cevap metni
+    /// </summary>
+    public string AnswerText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bu cevabın puanı
+    /// </summary>
+    public decimal Points { get; set; }
+
+    /// <summary>
+    /// Bu cevabı seçen toplam kişi sayısı
+    /// </summary>
+    public int SelectionCount { get; set; }
+
+    /// <summary>
+    /// Yüzdelik oranı
+    /// </summary>
+    public decimal Percentage { get; set; }
+}
+
 // ===== PERSONEL SORU BAZLI PERFORMANS RAPORU DTO'LARI =====
 
 /// <summary>
