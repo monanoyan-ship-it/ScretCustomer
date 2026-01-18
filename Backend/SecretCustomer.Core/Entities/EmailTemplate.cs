@@ -112,7 +112,7 @@ public static class EmailPlaceholders
                 Icon = "bi-link-45deg",
                 Placeholders = new List<PlaceholderInfo>
                 {
-                    new(SurveyLink, "Anket Linki", "Ankete erişim URL'i"),
+                    new(SurveyLink, "Anket Linki", "Ankete erişim linki (tıklanabilir)"),
                     new(SurveyQRCode, "QR Kod", "Anket QR kodu (img tag olarak)")
                 }
             },

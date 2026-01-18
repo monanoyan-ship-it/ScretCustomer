@@ -1190,8 +1190,8 @@ public class SurveyApiController : ControllerBase
     {
         if (string.IsNullOrEmpty(text)) return text;
 
-        // Anket Linkleri
-        text = text.Replace(EmailPlaceholders.SurveyLink, surveyUrl);
+        // Anket Linkleri - HTML link olarak (<a href="url">url</a>)
+        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl));
         text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon
@@ -1217,6 +1217,16 @@ public class SurveyApiController : ControllerBase
         text = text.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         return text;
+    }
+
+    /// <summary>
+    /// Tıklanabilir HTML link oluştur (email placeholder için)
+    /// Format: &lt;a href="url"&gt;url&lt;/a&gt;
+    /// </summary>
+    private string GenerateHtmlLink(string url)
+    {
+        // Tıklanabilir link - mobil cihazlar yanlış parse etmesin
+        return $@"<a href=""{url}"" target=""_blank"">{url}</a>";
     }
 
     /// <summary>
@@ -2293,8 +2303,8 @@ public class SurveyApiController : ControllerBase
     {
         if (string.IsNullOrEmpty(text)) return text;
 
-        // Anket Linkleri
-        text = text.Replace(EmailPlaceholders.SurveyLink, surveyUrl);
+        // Anket Linkleri - HTML link olarak (<a href="url">url</a>)
+        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl));
         text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon
