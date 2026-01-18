@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = Html.T("MyTrainings.Title", "Egitimlerim");
+}
+
+<div id="my-trainings-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-mortarboard"></i> @Html.T("MyTrainings.Title", "Egitimlerim")</h2>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4" data-bind="visible: !isLoading()">
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">@Html.T("MyTrainings.Pending", "Bekleyen")</h6>
+                            <h3 class="mb-0" data-bind="text: stats().pending"></h3>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">@Html.T("MyTrainings.InProgress", "Devam Eden")</h6>
+                            <h3 class="mb-0" data-bind="text: stats().inProgress"></h3>
+                        </div>
+                        <i class="bi bi-play-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">@Html.T("MyTrainings.Completed", "Tamamlanan")</h6>
+                            <h3 class="mb-0" data-bind="text: stats().completed"></h3>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">@Html.T("MyTrainings.Overdue", "Geciken")</h6>
+                            <h3 class="mb-0" data-bind="text: stats().overdue"></h3>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trainings List -->
+    <div data-bind="visible: !isLoading()">
+        <div class="row" data-bind="foreach: trainings">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm" data-bind="css: { 'border-danger': isOverdue && !isCompleted, 'border-success': isCompleted }">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("MyTrainings.StatusPending", "Bekliyor")</span>
+                        <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("MyTrainings.StatusInProgress", "Izleniyor")</span>
+                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("MyTrainings.StatusCompleted", "Tamamlandi")</span>
+                        <span data-bind="visible: isOverdue && !isCompleted" class="badge bg-danger">@Html.T("MyTrainings.Overdue", "Geciken")</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" data-bind="text: videoTitle"></h5>
+                        <!-- ko if: videoDescription -->
+                        <p class="card-text text-muted small" data-bind="text: videoDescription"></p>
+                        <!-- /ko -->
+
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i>
+                                <span data-bind="text: $parent.formatDate(startDate)"></span> -
+                                <span data-bind="text: $parent.formatDate(dueDate)"></span>
+                            </small>
+                        </div>
+
+                        <!-- ko if: !isCompleted && daysRemaining > 0 -->
+                        <div class="mb-2">
+                            <small class="text-warning">
+                                <i class="bi bi-clock"></i> <span data-bind="text: daysRemaining"></span> @Html.T("MyTrainings.DaysLeft", "gun kaldi")
+                            </small>
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- Progress -->
+                        <div class="mb-3" data-bind="visible: videoDurationSeconds > 0">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar"
+                                     data-bind="style: { width: $parent.getProgressPercentage($data) + '%' }, css: { 'bg-success': isCompleted }"></div>
+                            </div>
+                            <small class="text-muted" data-bind="text: $parent.formatDuration(watchedSeconds) + ' / ' + $parent.formatDuration(videoDurationSeconds)"></small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <button class="btn btn-primary w-100" data-bind="click: $parent.watchVideo, visible: !isCompleted">
+                            <i class="bi bi-play-fill"></i>
+                            <span data-bind="visible: statusId === 1">@Html.T("MyTrainings.StartWatching", "Izlemeye Basla")</span>
+                            <span data-bind="visible: statusId === 2">@Html.T("MyTrainings.ContinueWatching", "Izlemeye Devam Et")</span>
+                        </button>
+                        <button class="btn btn-success w-100" data-bind="click: $parent.watchVideo, visible: isCompleted">
+                            <i class="bi bi-play-fill"></i> @Html.T("MyTrainings.WatchAgain", "Tekrar Izle")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: trainings().length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-mortarboard fs-1"></i>
+            <p class="mt-2">@Html.T("MyTrainings.NoTrainings", "Size atanmis egitim bulunmuyor.")</p>
+        </div>
+    </div>
+
+    <!-- Video Watch Modal -->
+    <div class="modal fade" id="watchModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-play-fill me-2"></i><span data-bind="text: currentTraining() ? currentTraining().videoTitle : ''"></span></h5>
+                    <button type="button" class="btn-close" data-bind="click: closeWatchModal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <video id="videoPlayer" class="w-100" controls data-bind="attr: { src: videoUrl }">
+                        @Html.T("MyTrainings.BrowserNotSupported", "Tarayiciniz video oynatmayi desteklemiyor.")
+                    </video>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <span class="text-muted">@Html.T("MyTrainings.WatchedTime", "Izlenen:")
+                            <strong data-bind="text: formatDuration(watchedSeconds())"></strong>
+                        </span>
+                    </div>
+                    <div>
+                        <span data-bind="visible: !isVideoCompleted()" class="text-muted me-3">
+                            @Html.T("MyTrainings.WatchToComplete", "Tamamlamak icin videoyu sonuna kadar izleyin")
+                        </span>
+                        <span data-bind="visible: isVideoCompleted()" class="text-success me-3">
+                            <i class="bi bi-check-circle"></i> @Html.T("MyTrainings.VideoCompleted", "Video tamamlandi!")
+                        </span>
+                        <button type="button" class="btn btn-secondary" data-bind="click: closeWatchModal">@Html.T("Common.Close", "Kapat")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/MyTrainings/Index.js"></script>
+}

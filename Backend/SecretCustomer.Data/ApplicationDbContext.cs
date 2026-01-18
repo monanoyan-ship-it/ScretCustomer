@@ -58,20 +58,18 @@ public class ApplicationDbContext : DbContext
     // Announcements
     public DbSet<Announcement> Announcements { get; set; }
 
-    // Meetings
-    public DbSet<Meeting> Meetings { get; set; }
-    public DbSet<MeetingParticipant> MeetingParticipants { get; set; }
-    public DbSet<MeetingAttachment> MeetingAttachments { get; set; }
-
-    // Trainings
-    public DbSet<Training> Trainings { get; set; }
-    public DbSet<TrainingParticipant> TrainingParticipants { get; set; }
-    public DbSet<TrainingMaterial> TrainingMaterials { get; set; }
-
-    // Approvals and Notifications
-    public DbSet<Approval> Approvals { get; set; }
+    // Notifications
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<NotificationSetting> NotificationSettings { get; set; }
+
+    // Approvals (Onay Talepleri)
+    public DbSet<Approval> Approvals { get; set; }
+
+    // Training Videos
+    public DbSet<TrainingVideo> TrainingVideos { get; set; }
+    public DbSet<TrainingVideoScope> TrainingVideoScopes { get; set; }
+    public DbSet<TrainingVideoAssignment> TrainingVideoAssignments { get; set; }
+    public DbSet<TrainingVideoParticipant> TrainingVideoParticipants { get; set; }
 
     // App Settings (tek satırlık ayar tablosu)
     public DbSet<AppSettings> AppSettings { get; set; }
@@ -154,20 +152,15 @@ public class ApplicationDbContext : DbContext
         // Announcements
         modelBuilder.Entity<Announcement>().HasQueryFilter(e => !e.IsDeleted);
 
-        // Meetings
-        modelBuilder.Entity<Meeting>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<MeetingParticipant>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<MeetingAttachment>().HasQueryFilter(e => !e.IsDeleted);
-
-        // Trainings
-        modelBuilder.Entity<Training>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<TrainingParticipant>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<TrainingMaterial>().HasQueryFilter(e => !e.IsDeleted);
-
-        // Approvals and Notifications
-        modelBuilder.Entity<Approval>().HasQueryFilter(e => !e.IsDeleted);
+        // Notifications
         modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<NotificationSetting>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Training Videos
+        modelBuilder.Entity<TrainingVideo>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingVideoScope>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingVideoAssignment>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingVideoParticipant>().HasQueryFilter(e => !e.IsDeleted);
 
         // Personnel Requests
         modelBuilder.Entity<PersonnelRequest>().HasQueryFilter(e => !e.IsDeleted);

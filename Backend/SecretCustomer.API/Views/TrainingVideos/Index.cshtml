@@ -1,0 +1,320 @@
+@{
+    ViewData["Title"] = Html.T("TrainingVideo.Title", "Egitim Videolari");
+}
+
+<div id="training-videos-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-play-circle"></i> @Html.T("TrainingVideo.Title", "Egitim Videolari")</h2>
+        <div>
+            <a href="/TrainingVideos/Assignments" class="btn btn-outline-primary me-2">
+                <i class="bi bi-people"></i> @Html.T("TrainingVideo.Assignments", "Atamalar")
+            </a>
+            <button class="btn btn-primary" data-bind="click: openUploadModal">
+                <i class="bi bi-upload"></i> @Html.T("TrainingVideo.Upload", "Video Yukle")
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Common.Search", "Ara")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("TrainingVideo.SearchPlaceholder", "Video adi veya aciklama...")"
+                           data-bind="value: searchTerm, valueUpdate: 'input', event: { input: loadVideos }">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filterStatus, event: { change: loadVideos }">
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                        <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("TrainingVideo.Checklist", "Kontrol Listesi")</label>
+                    <select class="form-select" data-bind="value: filterChecklistId, options: checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: T('Common.All', 'Tumu'), event: { change: loadVideos }"></select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
+    <!-- Videos List -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm" data-bind="visible: videos().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.T("TrainingVideo.VideoTitle", "Video")</th>
+                            <th class="text-center">@Html.T("TrainingVideo.Duration", "Sure")</th>
+                            <th class="text-center">@Html.T("TrainingVideo.Scopes", "Kapsam")</th>
+                            <th class="text-center">@Html.T("TrainingVideo.Assignments", "Atama")</th>
+                            <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                            <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: videos">
+                        <tr data-bind="css: { 'opacity-50': !isActive }">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <!-- ko if: thumbnailUrl -->
+                                    <img data-bind="attr: { src: thumbnailUrl }"
+                                         class="rounded me-3"
+                                         style="width: 80px; height: 45px; object-fit: cover; border: 1px solid #dee2e6;">
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: thumbnailUrl -->
+                                    <div class="rounded me-3 bg-light d-flex align-items-center justify-content-center"
+                                         style="width: 80px; height: 45px; border: 1px solid #dee2e6;">
+                                        <i class="bi bi-film text-muted"></i>
+                                    </div>
+                                    <!-- /ko -->
+                                    <div>
+                                        <strong data-bind="text: title"></strong>
+                                        <!-- ko if: description -->
+                                        <br><small class="text-muted" data-bind="text: description"></small>
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary" data-bind="text: $parent.formatDuration(durationSeconds)"></span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info" data-bind="text: scopeCount + ' kapsam'"></span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary" data-bind="text: assignmentCount + ' atama'"></span>
+                                <br>
+                                <small class="text-muted" data-bind="text: completedParticipants + '/' + totalParticipants + ' tamamlandi'"></small>
+                            </td>
+                            <td class="text-center">
+                                <span data-bind="visible: isActive" class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>
+                                <span data-bind="visible: !isActive" class="badge bg-danger">@Html.T("Common.Inactive", "Pasif")</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="@Html.T("Common.Edit", "Duzenle")">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.previewVideo" title="@Html.T("Common.Preview", "Onizleme")">
+                                        <i class="bi bi-play"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteVideo" title="@Html.T("Common.Delete", "Sil")">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: videos().length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-film fs-1"></i>
+            <p class="mt-2">@Html.T("TrainingVideo.NoVideos", "Henuz egitim videosu bulunmuyor.")</p>
+            <button class="btn btn-primary" data-bind="click: openUploadModal">
+                <i class="bi bi-upload"></i> @Html.T("TrainingVideo.UploadFirst", "Ilk Videoyu Yukle")
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i>@Html.T("TrainingVideo.UploadVideo", "Video Yukle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("TrainingVideo.VideoTitle", "Video Basligi") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: formTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("Common.Description", "Aciklama")</label>
+                            <textarea class="form-control" rows="3" data-bind="value: formDescription"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("TrainingVideo.VideoFile", "Video Dosyasi") <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="videoFile" accept="video/*" required data-bind="event: { change: onVideoFileChange }">
+                            <small class="text-muted">@Html.T("TrainingVideo.SupportedFormats", "Desteklenen formatlar: MP4, WebM, MOV") | @Html.T("TrainingVideo.MaxFileSize", "Maksimum dosya boyutu: 500MB")</small>
+                            <!-- Video Info & Thumbnail Preview -->
+                            <div class="row mt-2" data-bind="visible: formDurationSeconds() > 0">
+                                <div class="col-auto">
+                                    <img data-bind="attr: { src: formThumbnailPreview }" class="rounded" style="width: 120px; height: 68px; object-fit: cover; border: 1px solid #dee2e6;">
+                                </div>
+                                <div class="col d-flex align-items-center">
+                                    <small class="text-success">
+                                        <i class="bi bi-check-circle"></i> @Html.T("TrainingVideo.Duration", "Sure"): <strong data-bind="text: formatDuration(formDurationSeconds())"></strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@Html.T("TrainingVideo.Scopes", "Kapsam") <span class="text-muted">(@Html.T("Common.Optional", "Opsiyonel"))</span></label>
+                            <div class="border rounded p-3 bg-light">
+                                <!-- Hierarchical Scope Selection -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeChecklist", "Kontrol Listesi")</label>
+                                        <select class="form-select form-select-sm" data-bind="value: newScopeChecklistId, options: scopeOptions().checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Kontrol listesi sec...'"></select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestionGroup", "Soru Grubu") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                        <select class="form-select form-select-sm" data-bind="value: newScopeGroupName, options: filteredQuestionGroups, optionsValue: 'groupName', optionsText: function(item) { return item.groupName + ' (' + item.questionCount + ')'; }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestion", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                        <select class="form-select form-select-sm" data-bind="value: newScopeQuestionId, options: filteredQuestions, optionsValue: 'id', optionsText: function(item) { return item.text.substring(0, 30) + (item.text.length > 30 ? '...' : ''); }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-outline-primary w-100" data-bind="click: addScope, enable: canAddScope">
+                                            <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Added Scopes List -->
+                                <div data-bind="visible: formScopes().length > 0">
+                                    <hr class="my-2">
+                                    <div data-bind="foreach: formScopes" class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-secondary d-flex align-items-center">
+                                            <span data-bind="text: $parent.getScopeDisplayText($data)"></span>
+                                            <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" data-bind="click: $parent.removeScope"></button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div data-bind="visible: formScopes().length === 0" class="text-muted small">
+                                    @Html.T("TrainingVideo.NoScopesSelected", "Henuz kapsam eklenmedi. Kapsam eklemek opsiyoneldir.")
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- Upload Progress -->
+                    <div data-bind="visible: isUploading" class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p class="text-center mt-2 text-muted">@Html.T("TrainingVideo.Uploading", "Video yukleniyor...")</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: uploadVideo, disable: isUploading">
+                        <i class="bi bi-upload"></i> @Html.T("TrainingVideo.Upload", "Yukle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>@Html.T("TrainingVideo.EditVideo", "Video Duzenle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.VideoTitle", "Video Basligi") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: editTitle">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.Description", "Aciklama")</label>
+                        <textarea class="form-control" rows="3" data-bind="value: editDescription"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="editIsActive" data-bind="checked: editIsActive">
+                            <label class="form-check-label" for="editIsActive">@Html.T("Common.Active", "Aktif")</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.Scopes", "Kapsam")</label>
+                        <div class="border rounded p-3 bg-light">
+                            <!-- Hierarchical Scope Selection -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeChecklist", "Kontrol Listesi")</label>
+                                    <select class="form-select form-select-sm" data-bind="value: newScopeChecklistId, options: scopeOptions().checklists, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Kontrol listesi sec...'"></select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestionGroup", "Soru Grubu") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                    <select class="form-select form-select-sm" data-bind="value: newScopeGroupName, options: filteredQuestionGroups, optionsValue: 'groupName', optionsText: function(item) { return item.groupName + ' (' + item.questionCount + ')'; }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestion", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                    <select class="form-select form-select-sm" data-bind="value: newScopeQuestionId, options: filteredQuestions, optionsValue: 'id', optionsText: function(item) { return item.text.substring(0, 30) + (item.text.length > 30 ? '...' : ''); }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100" data-bind="click: addEditScope, enable: canAddScope">
+                                        <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                                    </button>
+                                </div>
+                            </div>
+                            <div data-bind="visible: editScopes().length > 0">
+                                <hr class="my-2">
+                                <div data-bind="foreach: editScopes" class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-secondary d-flex align-items-center">
+                                        <span data-bind="text: $parent.getScopeDisplayText($data)"></span>
+                                        <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" data-bind="click: $parent.removeEditScope"></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div data-bind="visible: editScopes().length === 0" class="text-muted small">
+                                @Html.T("TrainingVideo.NoScopesSelected", "Henuz kapsam eklenmedi.")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: updateVideo, disable: isSaving">
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Common.Save", "Kaydet")</span>
+                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-play me-2"></i><span data-bind="text: previewTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <video id="previewPlayer" class="w-100" controls data-bind="attr: { src: previewUrl }">
+                        @Html.T("TrainingVideo.BrowserNotSupported", "Tarayiciniz video oynatmayi desteklemiyor.")
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/TrainingVideos/Index.js"></script>
+}

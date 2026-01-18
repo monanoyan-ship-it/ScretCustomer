@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace SecretCustomer.API.Controllers;
 
 /// <summary>
-/// Onay yönetimi MVC controller
+/// Kullanıcının kendi eğitimlerini görüntüleme sayfası
 /// </summary>
-[Authorize(Roles = "Admin,QualitySpecialist")]
-public class ApprovalsController : Controller
+[Authorize]
+public class MyTrainingsController : Controller
 {
     /// <summary>
-    /// Onay yönetimi sayfası (Liste + Detail modali)
+    /// Kullanıcıya atanan eğitimler sayfası
     /// </summary>
     public IActionResult Index()
     {

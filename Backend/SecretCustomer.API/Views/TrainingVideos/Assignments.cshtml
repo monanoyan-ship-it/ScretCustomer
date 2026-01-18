@@ -1,0 +1,284 @@
+@{
+    ViewData["Title"] = Html.T("TrainingVideo.Assignments", "Egitim Atamalari");
+}
+
+<div id="assignments-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people"></i> @Html.T("TrainingVideo.Assignments", "Egitim Atamalari")</h2>
+        <div>
+            <a href="/TrainingVideos" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> @Html.T("TrainingVideo.BackToVideos", "Videolara Don")
+            </a>
+            <button class="btn btn-primary" data-bind="click: openCreateModal">
+                <i class="bi bi-plus-circle"></i> @Html.T("TrainingVideo.NewAssignment", "Yeni Atama")
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Common.Search", "Ara")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("TrainingVideo.SearchAssignmentPlaceholder", "Atama adi...")"
+                           data-bind="value: searchTerm, valueUpdate: 'input', event: { input: loadAssignments }">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("TrainingVideo.Video", "Video")</label>
+                    <select class="form-select" data-bind="value: filterVideoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: T('Common.All', 'Tumu'), event: { change: loadAssignments }"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filterStatus, event: { change: loadAssignments }">
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                        <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
+    <!-- Assignments List -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm" data-bind="visible: assignments().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.T("TrainingVideo.Assignment", "Atama")</th>
+                            <th>@Html.T("TrainingVideo.Video", "Video")</th>
+                            <th class="text-center">@Html.T("TrainingVideo.DateRange", "Tarih Araligi")</th>
+                            <th class="text-center">@Html.T("TrainingVideo.Progress", "Ilerleme")</th>
+                            <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                            <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: assignments">
+                        <tr data-bind="css: { 'opacity-50': !isActive }">
+                            <td>
+                                <strong data-bind="text: title"></strong>
+                                <!-- ko if: sourceProjectName -->
+                                <br><small class="text-muted">Kaynak: <span data-bind="text: sourceProjectName"></span></small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" data-bind="text: trainingVideoTitle"></span>
+                            </td>
+                            <td class="text-center">
+                                <small>
+                                    <span data-bind="text: $parent.formatDate(startDate)"></span> -
+                                    <span data-bind="text: $parent.formatDate(dueDate)"></span>
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar"
+                                         data-bind="style: { width: completionPercentage + '%' }, text: completionPercentage + '%'"></div>
+                                </div>
+                                <small class="text-muted" data-bind="text: completedParticipants + '/' + totalParticipants + ' kisi'"></small>
+                            </td>
+                            <td class="text-center">
+                                <span data-bind="visible: isActive" class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>
+                                <span data-bind="visible: !isActive" class="badge bg-danger">@Html.T("Common.Inactive", "Pasif")</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.viewParticipants" title="@Html.T("TrainingVideo.ViewParticipants", "Katilimcilari Gor")">
+                                        <i class="bi bi-people"></i>
+                                    </button>
+                                    <button class="btn btn-outline-warning" data-bind="click: $parent.sendReminders" title="@Html.T("TrainingVideo.SendReminders", "Hatirlatma Gonder")">
+                                        <i class="bi bi-bell"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteAssignment" title="@Html.T("Common.Delete", "Sil")">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: assignments().length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1"></i>
+            <p class="mt-2">@Html.T("TrainingVideo.NoAssignments", "Henuz egitim atamasi bulunmuyor.")</p>
+            <button class="btn btn-primary" data-bind="click: openCreateModal">
+                <i class="bi bi-plus-circle"></i> @Html.T("TrainingVideo.CreateFirstAssignment", "Ilk Atamayi Olustur")
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Assignment Modal -->
+    <div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>@Html.T("TrainingVideo.NewAssignment", "Yeni Atama")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.AssignmentTitle", "Atama Basligi") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: formTitle" placeholder="orn: Ocak 2026 Aktif Dinleme Egitimi">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.SelectVideo", "Video Sec") <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="value: formVideoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Video secin...'"></select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.StartDate", "Baslangic Tarihi") <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: formStartDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.DueDate", "Bitis Tarihi") <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: formDueDate">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6><i class="bi bi-magic"></i> @Html.T("TrainingVideo.AutoAssignment", "Otomatik Atama")</h6>
+                    <p class="text-muted small">@Html.T("TrainingVideo.AutoAssignmentDesc", "Video kapsamindaki sorularda dusuk puan alanlara otomatik atama yapin.")</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.SourceProject", "Kaynak Proje")</label>
+                        <select class="form-select" data-bind="value: formProjectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Proje secin (opsiyonel)...'"></select>
+                    </div>
+                    <div data-bind="visible: formProjectId">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">@Html.T("TrainingVideo.ScoreThreshold", "Puan Esigi") (%)</label>
+                                <input type="number" class="form-control" data-bind="value: formScoreThreshold" placeholder="orn: 70" min="0" max="100">
+                                <small class="text-muted">@Html.T("TrainingVideo.ScoreThresholdDesc", "Bu puanin altinda kalanlara atanir")</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">@Html.T("TrainingVideo.SourceStartDate", "Kaynak Baslangic")</label>
+                                <input type="date" class="form-control" data-bind="value: formSourceStartDate">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">@Html.T("TrainingVideo.SourceEndDate", "Kaynak Bitis")</label>
+                                <input type="date" class="form-control" data-bind="value: formSourceEndDate">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-info btn-sm" data-bind="click: previewAutoAssignment, disable: isLoadingPreview">
+                            <span data-bind="visible: !isLoadingPreview()"><i class="bi bi-eye"></i> @Html.T("TrainingVideo.Preview", "Onizle")</span>
+                            <span data-bind="visible: isLoadingPreview"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+
+                        <!-- Preview Results -->
+                        <!-- ko with: previewResult -->
+                        <div class="mt-3">
+                            <div class="alert alert-info">
+                                <strong data-bind="text: totalUsers"></strong> @Html.T("TrainingVideo.UsersWillBeAssigned", "kisi atanacak")
+                            </div>
+                            <div data-bind="visible: users && users.length > 0" class="small" style="max-height: 200px; overflow-y: auto;">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>@Html.T("Common.User", "Kullanici")</th>
+                                            <th>@Html.T("Common.Score", "Puan")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: users">
+                                        <tr>
+                                            <td data-bind="text: userName"></td>
+                                            <td><span class="badge bg-warning" data-bind="text: (scopeScore || 0).toFixed(1) + '%'"></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+
+                    <hr>
+                    <h6><i class="bi bi-hand-index"></i> @Html.T("TrainingVideo.ManualAssignment", "Manuel Atama")</h6>
+                    <p class="text-muted small">@Html.T("TrainingVideo.ManualAssignmentDesc", "Veya dogrudan kullanicilar secin.")</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.SelectCustomerPersonnel", "Personel Sec")</label>
+                        <select class="form-select" multiple size="6" data-bind="selectedOptions: formManualUserIds, options: customerPersonnel, optionsValue: 'id', optionsText: function(p) { return p.fullName + ' (' + p.email + ')'; }"></select>
+                        <small class="text-muted">@Html.T("TrainingVideo.HoldCtrl", "Birden fazla secmek icin Ctrl tusuna basin")</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "Iptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: createAssignment, disable: isSaving">
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Common.Create", "Olustur")</span>
+                        <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participants Modal -->
+    <div class="modal fade" id="participantsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-people me-2"></i>@Html.T("TrainingVideo.Participants", "Katilimcilar")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="visible: isLoadingParticipants" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+                    <div data-bind="visible: !isLoadingParticipants()">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>@Html.T("Common.User", "Kullanici")</th>
+                                    <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                    <th class="text-center">@Html.T("TrainingVideo.WatchedTime", "Izlenen")</th>
+                                    <th class="text-center">@Html.T("TrainingVideo.CompletedAt", "Tamamlama")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: participants">
+                                <tr>
+                                    <td>
+                                        <span data-bind="text: userName"></span>
+                                        <br><small class="text-muted" data-bind="text: email"></small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("TrainingVideo.StatusPending", "Bekliyor")</span>
+                                        <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("TrainingVideo.StatusInProgress", "Izliyor")</span>
+                                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("TrainingVideo.StatusCompleted", "Tamamladi")</span>
+                                    </td>
+                                    <td class="text-center" data-bind="text: $parent.formatDuration(watchedSeconds)"></td>
+                                    <td class="text-center" data-bind="text: completedAt ? $parent.formatDate(completedAt) : '-'"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div data-bind="visible: participants().length === 0" class="text-center text-muted py-3">
+                            @Html.T("TrainingVideo.NoParticipants", "Henuz katilimci yok")
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/TrainingVideos/Assignments.js"></script>
+}

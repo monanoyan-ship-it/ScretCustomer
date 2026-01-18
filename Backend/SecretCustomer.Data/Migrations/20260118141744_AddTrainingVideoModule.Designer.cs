@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118141744_AddTrainingVideoModule")]
+    partial class AddTrainingVideoModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3068,9 +3071,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<int>("CustomerPersonnelId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
@@ -3095,12 +3095,13 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("WatchedSeconds")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerPersonnelId");
 
                     b.HasIndex("SourceEvaluationId");
 
@@ -3108,7 +3109,9 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("TrainingVideoAssignmentId");
 
-                    b.HasIndex("TrainingVideoAssignmentId", "CustomerPersonnelId")
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("TrainingVideoAssignmentId", "UserId")
                         .IsUnique();
 
                     b.ToTable("TrainingVideoParticipants");
@@ -4020,12 +4023,6 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoParticipant", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.CustomerPersonnel", "CustomerPersonnel")
-                        .WithMany()
-                        .HasForeignKey("CustomerPersonnelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SecretCustomer.Core.Entities.Evaluation", "SourceEvaluation")
                         .WithMany()
                         .HasForeignKey("SourceEvaluationId")
@@ -4037,11 +4034,17 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SecretCustomer.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Assignment");
 
-                    b.Navigation("CustomerPersonnel");
-
                     b.Navigation("SourceEvaluation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoScope", b =>

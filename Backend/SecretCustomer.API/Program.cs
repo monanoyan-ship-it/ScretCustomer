@@ -204,6 +204,7 @@ builder.Services.AddScoped<IDealerRequestService, DealerRequestService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
+builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 
 // Background Services
 builder.Services.AddHostedService<SecretCustomer.API.BackgroundServices.EvaluationNotificationJob>();
@@ -232,6 +233,20 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
+});
+
+// Configure form options for large file uploads (videos up to 500MB)
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 500 * 1024 * 1024; // 500MB
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// Configure Kestrel for large file uploads
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 500 * 1024 * 1024; // 500MB
 });
 
 // Add MVC Controllers with Views

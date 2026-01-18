@@ -1651,3 +1651,47 @@ public static class SupportRequestStatuses
         public const int Closed = 4;
     }
 }
+
+// ============================================================
+// TRAINING VIDEO SCOPE TYPES (Eğitim Videosu Kapsam Türleri)
+// ============================================================
+public static class TrainingVideoScopeTypes
+{
+    public static readonly TypeItem Checklist = new(1, "Checklist", "TrainingVideoScopeType.Checklist", "Kontrol Listesi", "bi-list-check", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem QuestionGroup = new(2, "QuestionGroup", "TrainingVideoScopeType.QuestionGroup", "Soru Grubu", "bi-collection", "bg-info", 2);
+    public static readonly TypeItem Question = new(3, "Question", "TrainingVideoScopeType.Question", "Soru", "bi-question-circle", "bg-warning text-dark", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Checklist, QuestionGroup, Question };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Checklist = 1;
+        public const int QuestionGroup = 2;
+        public const int Question = 3;
+    }
+}
+
+// ============================================================
+// TRAINING VIDEO PARTICIPANT STATUSES (Eğitim Videosu Katılımcı Durumları)
+// ============================================================
+public static class TrainingVideoParticipantStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", "TrainingVideoParticipantStatus.Pending", "Bekliyor", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem InProgress = new(2, "InProgress", "TrainingVideoParticipantStatus.InProgress", "İzliyor", "bi-play-circle", "bg-info", 2);
+    public static readonly TypeItem Completed = new(3, "Completed", "TrainingVideoParticipantStatus.Completed", "Tamamladı", "bi-check-circle", "bg-success", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Pending, InProgress, Completed };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int InProgress = 2;
+        public const int Completed = 3;
+    }
+}
