@@ -25,6 +25,8 @@ public interface ITrainingVideoService
 
     // ===== KATILIMCI YÖNETİMİ =====
     Task<IEnumerable<TrainingVideoParticipantDto>> GetParticipantsAsync(int assignmentId);
+    Task<IEnumerable<AllParticipantDto>> GetAllParticipantsAsync();
+    Task<int> SendEmailsAsync(SendTrainingEmailDto dto, int? sentByUserId = null, int emailTypeId = 1);
     Task<bool> SendRemindersAsync(int assignmentId);
 
     // ===== KULLANICI EĞİTİMLERİ =====
@@ -35,4 +37,7 @@ public interface ITrainingVideoService
     // ===== VİDEO STREAMING =====
     Task<Stream?> GetVideoStreamAsync(int videoId);
     Task<string?> GetVideoPathAsync(int videoId);
+
+    // ===== SCOPE-BASED DATA =====
+    Task<IEnumerable<object>> GetScopeCustomersAsync(int videoId);
 }

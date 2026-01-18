@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118161849_AddTrainingVideoEmailTracking")]
+    partial class AddTrainingVideoEmailTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3001,12 +3004,6 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("AllowSeeking")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("AllowSpeedChange")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -3016,20 +3013,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("EmailTemplateId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<int?>("MaxWatchCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MinWatchCount")
-                        .HasColumnType("integer");
 
                     b.Property<decimal?>("ScoreThreshold")
                         .HasColumnType("numeric");
@@ -3063,8 +3051,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DueDate");
-
-                    b.HasIndex("EmailTemplateId");
 
                     b.HasIndex("IsActive");
 
@@ -3184,9 +3170,6 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
-
-                    b.Property<int>("WatchCount")
-                        .HasColumnType("integer");
 
                     b.Property<int>("WatchedSeconds")
                         .HasColumnType("integer");
@@ -4095,10 +4078,6 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoAssignment", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.EmailTemplate", "EmailTemplate")
-                        .WithMany()
-                        .HasForeignKey("EmailTemplateId");
-
                     b.HasOne("SecretCustomer.Core.Entities.Project", "SourceProject")
                         .WithMany()
                         .HasForeignKey("SourceProjectId")
@@ -4109,8 +4088,6 @@ namespace SecretCustomer.Data.Migrations
                         .HasForeignKey("TrainingVideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("EmailTemplate");
 
                     b.Navigation("SourceProject");
 

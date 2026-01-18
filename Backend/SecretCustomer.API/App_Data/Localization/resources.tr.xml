@@ -8213,4 +8213,214 @@
   <LocaleResource Name="Common.AllSenders">
     <Value>Tüm Göndericiler</Value>
   </LocaleResource>
+
+  <!-- MyTrainings (CustomerPortal - Personel Eğitimleri) -->
+  <LocaleResource Name="CustomerPortal.MyTrainings.Title">
+    <Value>Eğitimlerim</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ActiveTab">
+    <Value>Aktif</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.UpcomingTab">
+    <Value>Gelecek</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.PastTab">
+    <Value>Geçmiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Pending">
+    <Value>Bekleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.InProgress">
+    <Value>Devam Eden</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Completed">
+    <Value>Tamamlanan</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Overdue">
+    <Value>Geciken</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusPending">
+    <Value>Bekliyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusInProgress">
+    <Value>İzleniyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusCompleted">
+    <Value>Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.DaysLeft">
+    <Value>gün kaldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.TimesWatched">
+    <Value>kere izlendi</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.RemainingWatches">
+    <Value>hak kaldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StartWatching">
+    <Value>İzlemeye Başla</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ContinueWatching">
+    <Value>İzlemeye Devam Et</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchAgain">
+    <Value>Tekrar İzle</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NotStartedYet">
+    <Value>Eğitim henüz başlamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ExpiredTraining">
+    <Value>Eğitim süresi doldu</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoActiveTrainings">
+    <Value>Aktif eğitim bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoUpcomingTrainings">
+    <Value>Gelecek eğitim bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoPastTrainings">
+    <Value>Geçmiş eğitim bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.BrowserNotSupported">
+    <Value>Tarayıcınız video oynatmayı desteklemiyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchedTime">
+    <Value>İzlenen:</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchToComplete">
+    <Value>Tamamlamak için videoyu sonuna kadar izleyin</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.VideoCompleted">
+    <Value>Video tamamlandı!</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ConfirmWatchVideo">
+    <Value>Videoyu izlemeye başlamak istiyor musunuz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchCountWarning">
+    <Value>Bu videoyu izlemeye başladığınızda 1 izleme hakkınız kullanılacak.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CurrentWatchCount">
+    <Value>Mevcut</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.RemainingAfter">
+    <Value>Kalan hak</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseVideo">
+    <Value>Videoyu Kapat</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseVideoWarning">
+    <Value>Videoyu kapatmak istediğinize emin misiniz? İlerlemeniz kaydedilecektir.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseAndSave">
+    <Value>Kapat ve Kaydet</Value>
+  </LocaleResource>
+
+  <!-- StaffTrainings (CustomerPortal - Personel Eğitim Takibi) -->
+  <LocaleResource Name="CustomerPortal.StaffTrainings.Title">
+    <Value>Personel Eğitimleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Personnel">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Training">
+    <Value>Eğitim</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.TotalPersonnel">
+    <Value>Toplam Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.PendingTrainings">
+    <Value>Bekleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.CompletedTrainings">
+    <Value>Tamamlanan</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.OverdueTrainings">
+    <Value>Geciken</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.TrainingsList">
+    <Value>Eğitim Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Progress">
+    <Value>İlerleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.DueDate">
+    <Value>Son Tarih</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.CompletedAt">
+    <Value>Tamamlama</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.NoTrainings">
+    <Value>Görüntülenecek eğitim bulunmuyor.</Value>
+  </LocaleResource>
+
+  <!-- TrainingVideos (Admin - Video Yönetimi) -->
+  <LocaleResource Name="TrainingVideo.Title">
+    <Value>Eğitim Videoları</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Assignments">
+    <Value>Atamalar</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Upload">
+    <Value>Video Yükle</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.SearchPlaceholder">
+    <Value>Video adı veya açıklama...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Checklist">
+    <Value>Kontrol Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.VideoTitle">
+    <Value>Video Başlığı</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Duration">
+    <Value>Süre</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Scopes">
+    <Value>Kapsam</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.NoVideos">
+    <Value>Henüz eğitim videosu bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.UploadFirst">
+    <Value>İlk Videoyu Yükle</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.UploadVideo">
+    <Value>Video Yükle</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.VideoFile">
+    <Value>Video Dosyası</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.SupportedFormats">
+    <Value>Desteklenen formatlar: MP4, WebM, MOV</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.MaxFileSize">
+    <Value>Maksimum dosya boyutu: 500MB</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeChecklist">
+    <Value>Kontrol Listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeQuestionGroup">
+    <Value>Soru Grubu</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeQuestion">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.NoScopesSelected">
+    <Value>Henüz kapsam eklenmedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Uploading">
+    <Value>Video yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.EditVideo">
+    <Value>Video Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.BrowserNotSupported">
+    <Value>Tarayıcınız video oynatmayı desteklemiyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.MyTrainings">
+    <Value>Eğitimlerim</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
+    <Value>Personel Eğitimleri</Value>
+  </LocaleResource>
 </Language>

@@ -255,6 +255,230 @@ function UsersViewModel() {
         }
     });
 
+    // ===== Sorting =====
+    self.sorting = TableSorting.createSortState('username', 'asc');
+    self.cpSorting = TableSorting.createSortState('username', 'asc');
+
+    // ===== Users Pagination =====
+    self.usersPage = ko.observable(1);
+    self.usersPageSize = ko.observable(20);
+
+    // Filtered and sorted users (before pagination)
+    self.filteredAndSortedUsers = ko.computed(function() {
+        var items = self.allUsers();
+        var search = (self.usersSearchText() || '').toLocaleLowerCase('tr-TR');
+        var filters = self.usersActiveFilters();
+
+        // Global search
+        if (search) {
+            items = items.filter(function(u) {
+                return (u.username || '').toLocaleLowerCase('tr-TR').indexOf(search) >= 0 ||
+                       (u.firstName || '').toLocaleLowerCase('tr-TR').indexOf(search) >= 0 ||
+                       (u.lastName || '').toLocaleLowerCase('tr-TR').indexOf(search) >= 0 ||
+                       (u.email || '').toLocaleLowerCase('tr-TR').indexOf(search) >= 0;
+            });
+        }
+
+        // Apply chip-based filters
+        if (filters.length > 0) {
+            var filtersByType = {};
+            filters.forEach(function(f) {
+                if (!filtersByType[f.type]) filtersByType[f.type] = [];
+                filtersByType[f.type].push(f);
+            });
+
+            Object.keys(filtersByType).forEach(function(type) {
+                var typeFilters = filtersByType[type];
+                items = items.filter(function(u) {
+                    return typeFilters.some(function(f) {
+                        switch (f.type) {
+                            case 'username':
+                                return (u.username || '').toLocaleLowerCase('tr-TR').indexOf(f.value.toLocaleLowerCase('tr-TR')) >= 0;
+                            case 'fullName':
+                                var fullName = ((u.firstName || '') + ' ' + (u.lastName || '')).toLocaleLowerCase('tr-TR');
+                                return fullName.indexOf(f.value.toLocaleLowerCase('tr-TR')) >= 0;
+                            case 'email':
+                                return (u.email || '').toLocaleLowerCase('tr-TR').indexOf(f.value.toLocaleLowerCase('tr-TR')) >= 0;
+                            case 'role':
+                                return String(u.roleId) === f.value;
+                            case 'isActive':
+                                return u.isActive === f.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
+            });
+        }
+
+        var sortBy = self.sorting.sortBy();
+        var sortDir = self.sorting.sortDirection();
+        if (sortBy && items.length > 0) {
+            items = TableSorting.clientSort(items, sortBy, sortDir);
+        }
+        return items;
+    });
+
+    // Paginated users
+    self.sortedUsers = ko.computed(function() {
+        var list = self.filteredAndSortedUsers();
+        var page = parseInt(self.usersPage(), 10);
+        var pageSize = parseInt(self.usersPageSize(), 10);
+        var start = (page - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    });
+
+    // Backwards compatibility
+    self.users = self.sortedUsers;
+
+    self.usersTotalCount = ko.computed(function() {
+        return self.filteredAndSortedUsers().length;
+    });
+
+    self.usersTotalPages = ko.computed(function() {
+        return Math.ceil(self.usersTotalCount() / parseInt(self.usersPageSize(), 10)) || 1;
+    });
+
+    self.usersPageSize.subscribe(function() {
+        self.usersPage(1);
+    });
+
+    self.usersSearchText.subscribe(function() {
+        self.usersPage(1);
+    });
+
+    self.usersGoToPage = function(page) {
+        if (page >= 1 && page <= self.usersTotalPages()) {
+            self.usersPage(page);
+        }
+    };
+
+    self.usersPreviousPage = function() {
+        if (self.usersPage() > 1) {
+            self.usersPage(self.usersPage() - 1);
+        }
+    };
+
+    self.usersNextPage = function() {
+        if (self.usersPage() < self.usersTotalPages()) {
+            self.usersPage(self.usersPage() + 1);
+        }
+    };
+
+    // ===== Customer Personnel Pagination =====
+    self.cpPage = ko.observable(1);
+    self.cpPageSize = ko.observable(50);
+    self.cpTotalCountServer = ko.observable(0);
+    self.cpIsLoading = ko.observable(false);
+
+    // ===== Editing State =====
+    self.editingUser = ko.observable(null);
+    self.editingCustomerPersonnel = ko.observable(null);
+    self.passwordChangeUser = ko.observable(null);
+
+    // ===== Modal State =====
+    self.isModalOpen = ko.observable(false);
+    self.isCustomerPersonnelModalOpen = ko.observable(false);
+    self.isPasswordModalOpen = ko.observable(false);
+
+    // ===== Server-side Customer Personnel Search =====
+    self.searchCustomerPersonnel = function() {
+        self.cpIsLoading(true);
+
+        var params = new URLSearchParams();
+        params.append('Page', self.cpPage());
+        params.append('PageSize', self.cpPageSize());
+
+        // Global search
+        var search = (self.searchText() || '').trim();
+        if (search) {
+            params.append('SearchTerm', search);
+        }
+
+        // Legacy dropdown filter
+        var customerId = self.selectedCustomerId();
+        if (customerId) {
+            params.append('CustomerIds', customerId);
+        }
+
+        // Chip-based filters
+        var filters = self.cpActiveFilters();
+        filters.forEach(function(f) {
+            switch (f.type) {
+                case 'customer':
+                    params.append('CustomerIds', f.value);
+                    break;
+                case 'fullName':
+                    params.append('FullNames', f.value);
+                    break;
+                case 'email':
+                    params.append('Emails', f.value);
+                    break;
+                case 'isActive':
+                    params.append('IsActive', f.value);
+                    break;
+            }
+        });
+
+        // Include inactive based on filter
+        var hasActiveFilter = filters.some(function(f) { return f.type === 'isActive'; });
+        if (!hasActiveFilter) {
+            params.append('IncludeInactive', 'true');
+        }
+
+        fetch('/api/customer-personnel?' + params.toString(), { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.allCustomerPersonnel(data.items || []);
+                self.cpTotalCountServer(data.totalCount || 0);
+            })
+            .catch(function(err) {
+                console.error('Error searching customer personnel:', err);
+                toastr.error('Arama sırasında hata oluştu');
+            })
+            .finally(function() {
+                self.cpIsLoading(false);
+            });
+    };
+
+    // Customer Personnel list (directly from server)
+    self.filteredCustomerPersonnel = ko.computed(function() {
+        return self.allCustomerPersonnel();
+    });
+
+    // Backwards compatibility
+    self.customerPersonnel = self.filteredCustomerPersonnel;
+
+    self.cpTotalCount = ko.computed(function() {
+        return self.cpTotalCountServer();
+    });
+
+    self.cpTotalPages = ko.computed(function() {
+        return Math.ceil(self.cpTotalCount() / parseInt(self.cpPageSize(), 10)) || 1;
+    });
+
+    // Debounced search for text input
+    var cpSearchTimeout = null;
+    self.searchText.subscribe(function() {
+        clearTimeout(cpSearchTimeout);
+        cpSearchTimeout = setTimeout(function() {
+            self.cpPage(1);
+            self.searchCustomerPersonnel();
+        }, 300);
+    });
+
+    self.selectedCustomerId.subscribe(function() {
+        self.cpPage(1);
+        self.searchCustomerPersonnel();
+    });
+
+    self.cpPageSize.subscribe(function() {
+        self.cpPage(1);
+        self.searchCustomerPersonnel();
+    });
+
+    // Override filter functions to trigger search
+    var originalCpAddFilter = self.cpAddFilter;
     self.cpAddFilter = function() {
         var type = self.cpSelectedFilterType();
         if (!type) return;
@@ -324,11 +548,13 @@ function UsersViewModel() {
         self.cpActiveFilters.push(filter);
         self.cpSelectedFilterType('');
         self.cpPage(1);
+        self.searchCustomerPersonnel();
     };
 
     self.cpRemoveFilter = function(filter) {
         self.cpActiveFilters.remove(filter);
         self.cpPage(1);
+        self.searchCustomerPersonnel();
     };
 
     self.cpClearFilters = function() {
@@ -336,247 +562,27 @@ function UsersViewModel() {
         self.searchText('');
         self.selectedCustomerId('');
         self.cpPage(1);
+        self.searchCustomerPersonnel();
     };
-
-    // ===== Sorting =====
-    self.sorting = TableSorting.createSortState('username', 'asc');
-    self.cpSorting = TableSorting.createSortState('username', 'asc');
-
-    // ===== Users Pagination =====
-    self.usersPage = ko.observable(1);
-    self.usersPageSize = ko.observable(20);
-
-    // Filtered and sorted users (before pagination)
-    self.filteredAndSortedUsers = ko.computed(function() {
-        var items = self.allUsers();
-        var search = (self.usersSearchText() || '').toLowerCase();
-        var filters = self.usersActiveFilters();
-
-        // Global search
-        if (search) {
-            items = items.filter(function(u) {
-                return (u.username || '').toLowerCase().indexOf(search) >= 0 ||
-                       (u.firstName || '').toLowerCase().indexOf(search) >= 0 ||
-                       (u.lastName || '').toLowerCase().indexOf(search) >= 0 ||
-                       (u.email || '').toLowerCase().indexOf(search) >= 0;
-            });
-        }
-
-        // Apply chip-based filters
-        if (filters.length > 0) {
-            var filtersByType = {};
-            filters.forEach(function(f) {
-                if (!filtersByType[f.type]) filtersByType[f.type] = [];
-                filtersByType[f.type].push(f);
-            });
-
-            Object.keys(filtersByType).forEach(function(type) {
-                var typeFilters = filtersByType[type];
-                items = items.filter(function(u) {
-                    return typeFilters.some(function(f) {
-                        switch (f.type) {
-                            case 'username':
-                                return (u.username || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
-                            case 'fullName':
-                                var fullName = ((u.firstName || '') + ' ' + (u.lastName || '')).toLowerCase();
-                                return fullName.indexOf(f.value.toLowerCase()) >= 0;
-                            case 'email':
-                                return (u.email || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
-                            case 'role':
-                                return String(u.roleId) === f.value;
-                            case 'isActive':
-                                return u.isActive === f.value;
-                            default:
-                                return true;
-                        }
-                    });
-                });
-            });
-        }
-
-        var sortBy = self.sorting.sortBy();
-        var sortDir = self.sorting.sortDirection();
-        if (sortBy && items.length > 0) {
-            items = TableSorting.clientSort(items, sortBy, sortDir);
-        }
-        return items;
-    });
-
-    // Paginated users
-    self.sortedUsers = ko.computed(function() {
-        var list = self.filteredAndSortedUsers();
-        var page = parseInt(self.usersPage(), 10);
-        var pageSize = parseInt(self.usersPageSize(), 10);
-        var start = (page - 1) * pageSize;
-        return list.slice(start, start + pageSize);
-    });
-
-    // Backwards compatibility
-    self.users = self.sortedUsers;
-
-    self.usersTotalCount = ko.computed(function() {
-        return self.filteredAndSortedUsers().length;
-    });
-
-    self.usersTotalPages = ko.computed(function() {
-        return Math.ceil(self.usersTotalCount() / parseInt(self.usersPageSize(), 10)) || 1;
-    });
-
-    self.usersPageSize.subscribe(function() {
-        self.usersPage(1);
-    });
-
-    self.usersSearchText.subscribe(function() {
-        self.usersPage(1);
-    });
-
-    self.usersGoToPage = function(page) {
-        if (page >= 1 && page <= self.usersTotalPages()) {
-            self.usersPage(page);
-        }
-    };
-
-    self.usersPreviousPage = function() {
-        if (self.usersPage() > 1) {
-            self.usersPage(self.usersPage() - 1);
-        }
-    };
-
-    self.usersNextPage = function() {
-        if (self.usersPage() < self.usersTotalPages()) {
-            self.usersPage(self.usersPage() + 1);
-        }
-    };
-
-    // ===== Customer Personnel Pagination =====
-    self.cpPage = ko.observable(1);
-    self.cpPageSize = ko.observable(20);
-
-    // ===== Editing State =====
-    self.editingUser = ko.observable(null);
-    self.editingCustomerPersonnel = ko.observable(null);
-    self.passwordChangeUser = ko.observable(null);
-
-    // ===== Modal State =====
-    self.isModalOpen = ko.observable(false);
-    self.isCustomerPersonnelModalOpen = ko.observable(false);
-    self.isPasswordModalOpen = ko.observable(false);
-
-    // ===== Filtered Customer Personnel (before pagination) =====
-    self.allFilteredCustomerPersonnel = ko.computed(function() {
-        var list = self.allCustomerPersonnel();
-        var customerId = self.selectedCustomerId();
-        var search = (self.searchText() || '').toLowerCase();
-        var filters = self.cpActiveFilters();
-
-        // Legacy filter (dropdown)
-        if (customerId) {
-            list = list.filter(function(p) {
-                return p.customerId == customerId;
-            });
-        }
-
-        // Global search
-        if (search) {
-            list = list.filter(function(p) {
-                return (p.username || '').toLowerCase().indexOf(search) >= 0 ||
-                       (p.firstName || '').toLowerCase().indexOf(search) >= 0 ||
-                       (p.lastName || '').toLowerCase().indexOf(search) >= 0 ||
-                       (p.email || '').toLowerCase().indexOf(search) >= 0;
-            });
-        }
-
-        // Apply chip-based filters
-        if (filters.length > 0) {
-            var filtersByType = {};
-            filters.forEach(function(f) {
-                if (!filtersByType[f.type]) filtersByType[f.type] = [];
-                filtersByType[f.type].push(f);
-            });
-
-            Object.keys(filtersByType).forEach(function(type) {
-                var typeFilters = filtersByType[type];
-                list = list.filter(function(p) {
-                    return typeFilters.some(function(f) {
-                        switch (f.type) {
-                            case 'customer':
-                                return p.customerId == f.value;
-                            case 'username':
-                                return (p.username || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
-                            case 'fullName':
-                                var fullName = ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase();
-                                return fullName.indexOf(f.value.toLowerCase()) >= 0;
-                            case 'email':
-                                return (p.email || '').toLowerCase().indexOf(f.value.toLowerCase()) >= 0;
-                            case 'role':
-                                return p.role === f.value;
-                            case 'isActive':
-                                return p.isActive === f.value;
-                            default:
-                                return true;
-                        }
-                    });
-                });
-            });
-        }
-
-        // Sıralama uygula
-        var sortBy = self.cpSorting.sortBy();
-        var sortDir = self.cpSorting.sortDirection();
-        if (sortBy && list.length > 0) {
-            list = TableSorting.clientSort(list, sortBy, sortDir);
-        }
-
-        return list;
-    });
-
-    // Paginated customer personnel
-    self.filteredCustomerPersonnel = ko.computed(function() {
-        var list = self.allFilteredCustomerPersonnel();
-        var page = parseInt(self.cpPage(), 10);
-        var pageSize = parseInt(self.cpPageSize(), 10);
-        var start = (page - 1) * pageSize;
-        return list.slice(start, start + pageSize);
-    });
-
-    // Backwards compatibility
-    self.customerPersonnel = self.filteredCustomerPersonnel;
-
-    self.cpTotalCount = ko.computed(function() {
-        return self.allFilteredCustomerPersonnel().length;
-    });
-
-    self.cpTotalPages = ko.computed(function() {
-        return Math.ceil(self.cpTotalCount() / parseInt(self.cpPageSize(), 10)) || 1;
-    });
-
-    self.cpPageSize.subscribe(function() {
-        self.cpPage(1);
-    });
-
-    self.selectedCustomerId.subscribe(function() {
-        self.cpPage(1);
-    });
-
-    self.searchText.subscribe(function() {
-        self.cpPage(1);
-    });
 
     self.cpGoToPage = function(page) {
         if (page >= 1 && page <= self.cpTotalPages()) {
             self.cpPage(page);
+            self.searchCustomerPersonnel();
         }
     };
 
     self.cpPreviousPage = function() {
         if (self.cpPage() > 1) {
             self.cpPage(self.cpPage() - 1);
+            self.searchCustomerPersonnel();
         }
     };
 
     self.cpNextPage = function() {
         if (self.cpPage() < self.cpTotalPages()) {
             self.cpPage(self.cpPage() + 1);
+            self.searchCustomerPersonnel();
         }
     };
 
@@ -652,19 +658,16 @@ function UsersViewModel() {
                 }
                 return Promise.all([
                     fetch('/api/users', { credentials: 'include' }).then(function(r) { return r.json(); }),
-                    fetch('/api/customer-personnel', { credentials: 'include' }).then(function(r) { return r.json(); }),
                     fetch('/api/customers?pageSize=1000', { credentials: 'include' }).then(function(r) { return r.json(); })
                 ]);
             })
             .then(function(results) {
                 self.allUsers(results[0] || []);
-                // customer-personnel API returns PagedPersonnelResult { items: [], totalCount: X }
-                var cpData = results[1];
-                self.allCustomerPersonnel(cpData.items || cpData || []);
                 // customers API returns PagedCustomerResult { items: [], totalCount: X }
-                self.customers(results[2].items || []);
+                self.customers(results[1].items || []);
                 self.usersPage(1);
-                self.cpPage(1);
+                // Customer personnel server-side arama ile yüklenecek
+                self.searchCustomerPersonnel();
             })
             .catch(function(err) {
                 console.error('Error loading data:', err);

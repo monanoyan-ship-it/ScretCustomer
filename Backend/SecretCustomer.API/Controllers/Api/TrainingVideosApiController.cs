@@ -26,6 +26,12 @@ public class TrainingVideosApiController : BaseApiController
         _localizationService = localizationService;
     }
 
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
+    }
+
     #region Video CRUD
 
     /// <summary>
@@ -161,6 +167,25 @@ public class TrainingVideosApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Video scope'undaki checklist'lerde değerlendirmesi olan müşterileri getir
+    /// </summary>
+    [HttpGet("{id}/scope-customers")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetScopeCustomers(int id)
+    {
+        try
+        {
+            var customers = await _trainingVideoService.GetScopeCustomersAsync(id);
+            return Ok(customers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading scope customers for video {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Müşteri listesi yüklenirken hata oluştu", ex));
+        }
+    }
+
     #endregion
 
     #region Video Streaming
@@ -231,6 +256,48 @@ public class TrainingVideosApiController : BaseApiController
         };
     }
 
+    /// <summary>
+    /// Video scope'una göre ilişkili projeleri getir
+    /// </summary>
+    [HttpGet("{id}/related-projects")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetRelatedProjects(int id)
+    {
+        try
+        {
+            var video = await _trainingVideoService.GetByIdAsync(id);
+            if (video == null)
+                return NotFound(CreateErrorResponse("Video bulunamadı"));
+
+            // Video scope'undaki checklist'lerin projelerini bul
+            var checklistIds = video.Scopes
+                .Where(s => s.ChecklistId.HasValue)
+                .Select(s => s.ChecklistId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (!checklistIds.Any())
+                return Ok(new List<object>());
+
+            // ApplicationDbContext'e erişim için IServiceProvider kullan
+            using var scope = HttpContext.RequestServices.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<SecretCustomer.Data.ApplicationDbContext>();
+
+            var projects = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                context.Projects
+                    .Where(p => !p.IsDeleted && checklistIds.Contains(p.ChecklistId))
+                    .Select(p => new { p.Id, p.Name, p.ChecklistId })
+            );
+
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading related projects for video {Id}", id);
+            return StatusCode(500, CreateErrorResponse("İlişkili projeler yüklenirken hata oluştu", ex));
+        }
+    }
+
     #endregion
 }
 
@@ -249,6 +316,12 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
     {
         _trainingVideoService = trainingVideoService;
         _logger = logger;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
 
     #region Assignment CRUD
@@ -354,9 +427,64 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Eğitim video atamaları için email şablonlarını getir
+    /// </summary>
+    [HttpGet("email-templates")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetEmailTemplates()
+    {
+        try
+        {
+            using var scope = HttpContext.RequestServices.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<SecretCustomer.Data.ApplicationDbContext>();
+
+            var templates = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                context.EmailTemplates
+                    .Where(t => !t.IsDeleted && t.IsActive &&
+                           t.TemplateTypeId == SecretCustomer.Core.Enums.EmailTemplateTypes.Ids.TrainingVideo)
+                    .Select(t => new
+                    {
+                        t.Id,
+                        t.Name,
+                        t.Description,
+                        t.TemplateTypeId,
+                        TemplateTypeName = SecretCustomer.Core.Enums.EmailTemplateTypes.GetById(t.TemplateTypeId)!.Description,
+                        t.IsDefault
+                    })
+            );
+
+            return Ok(templates);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading email templates");
+            return StatusCode(500, CreateErrorResponse("Email şablonları yüklenirken hata oluştu", ex));
+        }
+    }
+
     #endregion
 
     #region Participants
+
+    /// <summary>
+    /// Tüm atamalardaki katılımcıları getir
+    /// </summary>
+    [HttpGet("all-participants")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllParticipants()
+    {
+        try
+        {
+            var participants = await _trainingVideoService.GetAllParticipantsAsync();
+            return Ok(participants);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading all participants");
+            return StatusCode(500, CreateErrorResponse("Katılımcılar yüklenirken hata oluştu", ex));
+        }
+    }
 
     /// <summary>
     /// Atama katılımcılarını getir
@@ -378,7 +506,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Hatırlatma gönder
+    /// Hatırlatma gönder (tamamlamamışlara)
     /// </summary>
     [HttpPost("{id}/send-reminders")]
     [Authorize(Roles = "Admin")]
@@ -396,110 +524,25 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Seçili katılımcılara email gönder
+    /// </summary>
+    [HttpPost("send-emails")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SendEmails([FromBody] SecretCustomer.Core.DTOs.TrainingVideo.SendTrainingEmailDto dto)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var count = await _trainingVideoService.SendEmailsAsync(dto, userId, dto.EmailTypeId);
+            return Ok(new { message = $"{count} kişiye email gönderildi", sentCount = count, success = count > 0 });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending emails for assignment {AssignmentId}", dto.AssignmentId);
+            return StatusCode(500, CreateErrorResponse("Email gönderilirken hata oluştu", ex));
+        }
+    }
+
     #endregion
-}
-
-[ApiController]
-[Route("api/my-trainings")]
-[Authorize]
-public class MyTrainingsApiController : BaseApiController
-{
-    private readonly ITrainingVideoService _trainingVideoService;
-    private readonly ILogger<MyTrainingsApiController> _logger;
-
-    public MyTrainingsApiController(
-        ITrainingVideoService trainingVideoService,
-        ILogger<MyTrainingsApiController> logger,
-        IConfiguration configuration) : base(configuration)
-    {
-        _trainingVideoService = trainingVideoService;
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// CustomerPersonnelId'yi claim'den alır
-    /// </summary>
-    private int GetCurrentCustomerPersonnelId()
-    {
-        // CustomerPersonnel için özel claim kullanılıyor
-        var claim = User.FindFirst("CustomerPersonnelId");
-        if (claim != null && int.TryParse(claim.Value, out var cpId))
-            return cpId;
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Kendi eğitimlerimi getir (CustomerPersonnel için)
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GetMyTrainings()
-    {
-        try
-        {
-            var customerPersonnelId = GetCurrentCustomerPersonnelId();
-            if (customerPersonnelId == 0)
-                return Unauthorized(CreateErrorResponse("CustomerPersonnel yetkisi gerekli"));
-
-            var trainings = await _trainingVideoService.GetMyTrainingsAsync(customerPersonnelId);
-            return Ok(trainings);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading my trainings");
-            return StatusCode(500, CreateErrorResponse("Eğitimler yüklenirken hata oluştu", ex));
-        }
-    }
-
-    /// <summary>
-    /// Tek bir eğitimi getir
-    /// </summary>
-    [HttpGet("{participantId}")]
-    public async Task<IActionResult> GetMyTraining(int participantId)
-    {
-        try
-        {
-            var customerPersonnelId = GetCurrentCustomerPersonnelId();
-            if (customerPersonnelId == 0)
-                return Unauthorized(CreateErrorResponse("CustomerPersonnel yetkisi gerekli"));
-
-            var training = await _trainingVideoService.GetMyTrainingByIdAsync(customerPersonnelId, participantId);
-            if (training == null)
-                return NotFound(CreateErrorResponse("Eğitim bulunamadı"));
-
-            return Ok(training);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading my training {ParticipantId}", participantId);
-            return StatusCode(500, CreateErrorResponse("Eğitim yüklenirken hata oluştu", ex));
-        }
-    }
-
-    /// <summary>
-    /// İzleme ilerlemesini güncelle
-    /// </summary>
-    [HttpPost("{participantId}/progress")]
-    public async Task<IActionResult> UpdateProgress(int participantId, [FromBody] UpdateWatchProgressDto dto)
-    {
-        try
-        {
-            var customerPersonnelId = GetCurrentCustomerPersonnelId();
-            if (customerPersonnelId == 0)
-                return Unauthorized(CreateErrorResponse("CustomerPersonnel yetkisi gerekli"));
-
-            // Katılımcının kendisine ait olduğunu doğrula
-            var training = await _trainingVideoService.GetMyTrainingByIdAsync(customerPersonnelId, participantId);
-            if (training == null)
-                return NotFound(CreateErrorResponse("Eğitim bulunamadı"));
-
-            var result = await _trainingVideoService.UpdateWatchProgressAsync(participantId, dto);
-            return Ok(new { success = result });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating watch progress for {ParticipantId}", participantId);
-            return StatusCode(500, CreateErrorResponse("İlerleme güncellenirken hata oluştu", ex));
-        }
-    }
 }

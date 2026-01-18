@@ -1,21 +1,33 @@
 @{
-    ViewData["Title"] = Html.T("MyTrainings.Title", "Egitimlerim");
+    ViewData["Title"] = Html.T("CustomerPortal.MyTrainings.Title", "Egitimlerim");
+    Layout = "_CustomerLayout";
 }
 
 <div id="my-trainings-app">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-mortarboard"></i> @Html.T("MyTrainings.Title", "Egitimlerim")</h2>
-    </div>
-
-    <!-- Loading -->
-    <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
-    </div>
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" data-bind="visible: !isLoading()">
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'active' }, click: function() { switchTab('active'); }">
+                <i class="bi bi-play-circle me-1"></i>@Html.T("MyTrainings.ActiveTab", "Aktif")
+                <span class="badge bg-primary ms-1" data-bind="text: activeTrainings().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'upcoming' }, click: function() { switchTab('upcoming'); }">
+                <i class="bi bi-calendar-plus me-1"></i>@Html.T("MyTrainings.UpcomingTab", "Gelecek")
+                <span class="badge bg-info ms-1" data-bind="text: upcomingTrainings().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'past' }, click: function() { switchTab('past'); }">
+                <i class="bi bi-clock-history me-1"></i>@Html.T("MyTrainings.PastTab", "Gecmis")
+                <span class="badge bg-secondary ms-1" data-bind="text: pastTrainings().length"></span>
+            </a>
+        </li>
+    </ul>
 
     <!-- Stats Cards -->
-    <div class="row mb-4" data-bind="visible: !isLoading()">
+    <div class="row mb-4" data-bind="visible: !isLoading() && activeTab() === 'active'">
         <div class="col-md-3">
             <div class="card bg-warning text-dark">
                 <div class="card-body">
@@ -70,16 +82,22 @@
         </div>
     </div>
 
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
     <!-- Trainings List -->
     <div data-bind="visible: !isLoading()">
-        <div class="row" data-bind="foreach: trainings">
+        <div class="row" data-bind="foreach: filteredTrainings">
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100 shadow-sm" data-bind="css: { 'border-danger': isOverdue && !isCompleted, 'border-success': isCompleted }">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("MyTrainings.StatusPending", "Bekliyor")</span>
                         <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("MyTrainings.StatusInProgress", "Izleniyor")</span>
                         <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("MyTrainings.StatusCompleted", "Tamamlandi")</span>
-                        <span data-bind="visible: isOverdue && !isCompleted" class="badge bg-danger">@Html.T("MyTrainings.Overdue", "Geciken")</span>
+                        <span data-bind="visible: isOverdue && !isCompleted" class="badge bg-danger ms-2">@Html.T("MyTrainings.Overdue", "Geciken")</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title" data-bind="text: videoTitle"></h5>
@@ -103,6 +121,18 @@
                         </div>
                         <!-- /ko -->
 
+                        <!-- İzleme sayısı bilgisi -->
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-eye"></i> <span data-bind="text: watchCount"></span> @Html.T("MyTrainings.TimesWatched", "kere izlendi")
+                                <!-- ko if: maxWatchCount -->
+                                <span class="ms-2">
+                                    (<span data-bind="text: remainingWatches"></span> @Html.T("MyTrainings.RemainingWatches", "hak kaldi"))
+                                </span>
+                                <!-- /ko -->
+                            </small>
+                        </div>
+
                         <!-- Progress -->
                         <div class="mb-3" data-bind="visible: videoDurationSeconds > 0">
                             <div class="progress" style="height: 8px;">
@@ -113,6 +143,8 @@
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
+                        <!-- Aktif tab: izleme butonu -->
+                        <!-- ko if: $parent.activeTab() === 'active' -->
                         <button class="btn btn-primary w-100" data-bind="click: $parent.watchVideo, visible: !isCompleted">
                             <i class="bi bi-play-fill"></i>
                             <span data-bind="visible: statusId === 1">@Html.T("MyTrainings.StartWatching", "Izlemeye Basla")</span>
@@ -121,20 +153,41 @@
                         <button class="btn btn-success w-100" data-bind="click: $parent.watchVideo, visible: isCompleted">
                             <i class="bi bi-play-fill"></i> @Html.T("MyTrainings.WatchAgain", "Tekrar Izle")
                         </button>
+                        <!-- /ko -->
+                        <!-- Gelecek tab: başlamadı mesajı -->
+                        <!-- ko if: $parent.activeTab() === 'upcoming' -->
+                        <div class="text-center text-muted">
+                            <i class="bi bi-clock"></i> @Html.T("MyTrainings.NotStartedYet", "Egitim henuz baslamadi")
+                        </div>
+                        <!-- /ko -->
+                        <!-- Geçmiş tab: süre doldu mesajı -->
+                        <!-- ko if: $parent.activeTab() === 'past' -->
+                        <div class="text-center text-muted">
+                            <i class="bi bi-hourglass-bottom"></i> @Html.T("MyTrainings.ExpiredTraining", "Egitim suresi doldu")
+                        </div>
+                        <!-- /ko -->
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Empty State -->
-        <div data-bind="visible: trainings().length === 0" class="text-center py-5 text-muted">
+        <div data-bind="visible: filteredTrainings().length === 0" class="text-center py-5 text-muted">
             <i class="bi bi-mortarboard fs-1"></i>
-            <p class="mt-2">@Html.T("MyTrainings.NoTrainings", "Size atanmis egitim bulunmuyor.")</p>
+            <!-- ko if: activeTab() === 'active' -->
+            <p class="mt-2">@Html.T("MyTrainings.NoActiveTrainings", "Aktif egitim bulunmuyor.")</p>
+            <!-- /ko -->
+            <!-- ko if: activeTab() === 'upcoming' -->
+            <p class="mt-2">@Html.T("MyTrainings.NoUpcomingTrainings", "Gelecek egitim bulunmuyor.")</p>
+            <!-- /ko -->
+            <!-- ko if: activeTab() === 'past' -->
+            <p class="mt-2">@Html.T("MyTrainings.NoPastTrainings", "Gecmis egitim bulunmuyor.")</p>
+            <!-- /ko -->
         </div>
     </div>
 
     <!-- Video Watch Modal -->
-    <div class="modal fade" id="watchModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="watchModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -142,7 +195,11 @@
                     <button type="button" class="btn-close" data-bind="click: closeWatchModal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <video id="videoPlayer" class="w-100" controls data-bind="attr: { src: videoUrl }">
+                    <video id="videoPlayer" class="w-100" controls
+                           controlsList="nodownload noplaybackrate"
+                           disablePictureInPicture
+                           oncontextmenu="return false;"
+                           data-bind="attr: { src: videoUrl }">
                         @Html.T("MyTrainings.BrowserNotSupported", "Tarayiciniz video oynatmayi desteklemiyor.")
                     </video>
                 </div>
@@ -168,5 +225,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/MyTrainings/Index.js"></script>
+    <script src="~/js/CustomerPortal/myTrainings.js"></script>
 }

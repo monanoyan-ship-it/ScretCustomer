@@ -25,7 +25,7 @@ function showConfirmModal(options) {
     document.getElementById('confirmModalHeader').className = 'modal-header ' + headerClass;
     document.getElementById('confirmModalIcon').className = 'bi ' + icon + ' me-2';
     document.getElementById('confirmModalTitle').textContent = options.title || T('Confirm.Title', 'Onay');
-    document.getElementById('confirmModalMessage').textContent = options.message || T('Confirm.Message', 'Bu işlemi onaylıyor musunuz?');
+    document.getElementById('confirmModalMessage').innerHTML = options.message || T('Confirm.Message', 'Bu işlemi onaylıyor musunuz?');
     document.getElementById('confirmModalBtn').className = 'btn ' + btnClass;
     document.getElementById('confirmModalBtnIcon').className = 'bi ' + (options.confirmIcon || 'bi-check') + ' me-1';
     document.getElementById('confirmModalBtnText').textContent = options.confirmText || T('Common.Confirm', 'Onayla');

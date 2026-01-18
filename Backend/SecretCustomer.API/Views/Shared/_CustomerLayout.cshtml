@@ -32,87 +32,142 @@
                 <small class="text-white-50" id="customer-company-name"></small>
             </div>
 
+            @{
+                var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+                var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings" };
+                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod" };
+                var isManagementActive = managementPages.Contains(currentAction);
+                var isReportActive = reportPages.Contains(currentAction);
+            }
+
             <ul class="nav flex-column mt-3">
+                <!-- ===== ANA MENÜLER (Her zaman görünür) ===== -->
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")" href="/CustomerPortal/Dashboard">
+                    <a class="nav-link @(currentAction == "Dashboard" ? "active" : "")" href="/CustomerPortal/Dashboard">
                         <i class="bi bi-speedometer2"></i>
                         @Html.T("CustomerPortal.Menu.Dashboard", "Dashboard")
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Evaluations" ? "active" : "")" href="/CustomerPortal/Evaluations">
+                    <a class="nav-link @(currentAction == "Evaluations" ? "active" : "")" href="/CustomerPortal/Evaluations">
                         <i class="bi bi-clipboard-check"></i>
-                        @Html.T("CustomerPortal.Menu.Evaluations", "Değerlendirmeler")
+                        @Html.T("CustomerPortal.Menu.Evaluations", "Degerlendirmeler")
                     </a>
                 </li>
-                @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
+
+                <!-- ===== EĞİTİM VİDEOLARI ===== -->
+                @if (User.IsInRole("CustomerOperator"))
                 {
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Projects" ? "active" : "")" href="/CustomerPortal/Projects">
-                        <i class="bi bi-folder"></i>
-                        @Html.T("CustomerPortal.Menu.Projects", "Projeler")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Organizations" ? "active" : "")" href="/CustomerPortal/Organizations">
-                        <i class="bi bi-diagram-3"></i>
-                        @Html.T("CustomerPortal.Menu.Organizations", "Organizasyonlar")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Supervisors" ? "active" : "")" href="/CustomerPortal/Supervisors">
-                        <i class="bi bi-people"></i>
-                        @Html.T("CustomerPortal.Menu.Supervisors", "Supervizorler")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "InternalEvaluations" ? "active" : "")" href="/CustomerPortal/InternalEvaluations">
-                        <i class="bi bi-clipboard-check"></i>
-                        @Html.T("CustomerPortal.Menu.InternalEvaluations", "Ic Dinlemeler")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ExternalEvaluations" ? "active" : "")" href="/CustomerPortal/ExternalEvaluations">
-                        <i class="bi bi-clipboard-data"></i>
-                        @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
+                    <a class="nav-link @(currentAction == "MyTrainings" ? "active" : "")" href="/CustomerPortal/MyTrainings">
+                        <i class="bi bi-mortarboard text-info"></i>
+                        @Html.T("CustomerPortal.Menu.MyTrainings", "Egitimlerim")
                     </a>
                 </li>
                 }
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")" href="/CustomerPortal/Reports">
-                        <i class="bi bi-graph-up"></i>
-                        @Html.T("CustomerPortal.Menu.Reports", "Raporlar")
+                @if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") || User.IsInRole("Admin"))
+                {
+                <!-- ===== YÖNETİM (Açılır-Kapanır) ===== -->
+                <li class="nav-item mt-2">
+                    <a class="nav-link d-flex justify-content-between align-items-center @(isManagementActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#managementMenu" role="button"
+                       aria-expanded="@(isManagementActive ? "true" : "false")" aria-controls="managementMenu">
+                        <span><i class="bi bi-gear"></i> @Html.T("CustomerPortal.Menu.Management", "Yonetim")</span>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
                     </a>
+                    <div class="collapse @(isManagementActive ? "show" : "")" id="managementMenu">
+                        <ul class="nav flex-column ms-3 submenu">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "StaffTrainings" ? "active" : "")" href="/CustomerPortal/StaffTrainings">
+                                    <i class="bi bi-people-fill text-warning"></i>
+                                    @Html.T("CustomerPortal.Menu.StaffTrainings", "Personel Egitimleri")
+                                </a>
+                            </li>
+                            @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
+                            {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Projects" ? "active" : "")" href="/CustomerPortal/Projects">
+                                    <i class="bi bi-folder"></i>
+                                    @Html.T("CustomerPortal.Menu.Projects", "Projeler")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Organizations" ? "active" : "")" href="/CustomerPortal/Organizations">
+                                    <i class="bi bi-diagram-3"></i>
+                                    @Html.T("CustomerPortal.Menu.Organizations", "Organizasyonlar")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Supervisors" ? "active" : "")" href="/CustomerPortal/Supervisors">
+                                    <i class="bi bi-people"></i>
+                                    @Html.T("CustomerPortal.Menu.Supervisors", "Supervizorler")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "InternalEvaluations" ? "active" : "")" href="/CustomerPortal/InternalEvaluations">
+                                    <i class="bi bi-clipboard-check"></i>
+                                    @Html.T("CustomerPortal.Menu.InternalEvaluations", "Ic Dinlemeler")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "ExternalEvaluations" ? "active" : "")" href="/CustomerPortal/ExternalEvaluations">
+                                    <i class="bi bi-clipboard-data"></i>
+                                    @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
+                                </a>
+                            </li>
+                            }
+                        </ul>
+                    </div>
                 </li>
+                }
+
                 @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
                 {
+                <!-- ===== RAPORLAR (Açılır-Kapanır) ===== -->
                 <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Penalties" ? "active" : "")" href="/CustomerPortal/Penalties">
-                        <i class="bi bi-card-checklist text-warning"></i>
-                        @Html.T("CustomerPortal.Menu.Penalties", "Cezali KL Raporu")
+                    <a class="nav-link d-flex justify-content-between align-items-center @(isReportActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#reportsMenu" role="button"
+                       aria-expanded="@(isReportActive ? "true" : "false")" aria-controls="reportsMenu">
+                        <span><i class="bi bi-bar-chart"></i> @Html.T("CustomerPortal.Menu.ReportsGroup", "Raporlar")</span>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Suggestions" ? "active" : "")" href="/CustomerPortal/Suggestions">
-                        <i class="bi bi-chat-quote text-info"></i>
-                        @Html.T("CustomerPortal.Menu.Suggestions", "Oneriler Raporu")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PersonnelReportCard" ? "active" : "")" href="/CustomerPortal/PersonnelReportCard">
-                        <i class="bi bi-person-badge text-primary"></i>
-                        @Html.T("CustomerPortal.Menu.PersonnelReportCard", "Temsilci Karnesi")
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PerformanceByPeriod" ? "active" : "")" href="/CustomerPortal/PerformanceByPeriod">
-                        <i class="bi bi-calendar3 text-success"></i>
-                        @Html.T("CustomerPortal.Menu.PerformanceByPeriod", "Donem Bazli Basari")
-                    </a>
+                    <div class="collapse @(isReportActive ? "show" : "")" id="reportsMenu">
+                        <ul class="nav flex-column ms-3 submenu">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Reports" ? "active" : "")" href="/CustomerPortal/Reports">
+                                    <i class="bi bi-graph-up"></i>
+                                    @Html.T("CustomerPortal.Menu.Reports", "Genel Raporlar")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Penalties" ? "active" : "")" href="/CustomerPortal/Penalties">
+                                    <i class="bi bi-card-checklist text-warning"></i>
+                                    @Html.T("CustomerPortal.Menu.Penalties", "Cezali KL Raporu")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "Suggestions" ? "active" : "")" href="/CustomerPortal/Suggestions">
+                                    <i class="bi bi-chat-quote text-info"></i>
+                                    @Html.T("CustomerPortal.Menu.Suggestions", "Oneriler Raporu")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "PersonnelReportCard" ? "active" : "")" href="/CustomerPortal/PersonnelReportCard">
+                                    <i class="bi bi-person-badge text-primary"></i>
+                                    @Html.T("CustomerPortal.Menu.PersonnelReportCard", "Temsilci Karnesi")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "PerformanceByPeriod" ? "active" : "")" href="/CustomerPortal/PerformanceByPeriod">
+                                    <i class="bi bi-calendar3 text-success"></i>
+                                    @Html.T("CustomerPortal.Menu.PerformanceByPeriod", "Donem Bazli Basari")
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
                 }
             </ul>
-
         </nav>
 
         <!-- Main Content -->
@@ -210,6 +265,9 @@
     <!-- Support Request Widget -->
     <partial name="_SupportRequestWidget" />
 
+    <!-- Shared Confirm Modal -->
+    <partial name="_ConfirmModal" />
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -230,6 +288,9 @@
 
     <!-- Localization System -->
     <script src="~/js/shared/localization.js"></script>
+
+    <!-- Confirm Modal -->
+    <script src="~/js/shared/confirm-modal.js"></script>
 
     <!-- Inputmask (for time/duration fields) -->
     <script src="~/lib/inputmask.min.js"></script>

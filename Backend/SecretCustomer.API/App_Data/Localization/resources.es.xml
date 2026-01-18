@@ -8134,4 +8134,214 @@
   <LocaleResource Name="Common.AllSenders">
     <Value>Todos los Remitentes</Value>
   </LocaleResource>
+
+  <!-- MyTrainings (CustomerPortal - Personnel Trainings) -->
+  <LocaleResource Name="CustomerPortal.MyTrainings.Title">
+    <Value>Mis Capacitaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ActiveTab">
+    <Value>Activo</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.UpcomingTab">
+    <Value>Próximo</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.PastTab">
+    <Value>Pasado</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Pending">
+    <Value>Pendiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.InProgress">
+    <Value>En Progreso</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Completed">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.Overdue">
+    <Value>Vencido</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusPending">
+    <Value>Pendiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusInProgress">
+    <Value>Viendo</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StatusCompleted">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.DaysLeft">
+    <Value>días restantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.TimesWatched">
+    <Value>veces visto</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.RemainingWatches">
+    <Value>restante</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.StartWatching">
+    <Value>Empezar a Ver</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ContinueWatching">
+    <Value>Continuar Viendo</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchAgain">
+    <Value>Ver de Nuevo</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NotStartedYet">
+    <Value>La capacitación aún no ha comenzado</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ExpiredTraining">
+    <Value>El período de capacitación ha expirado</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoActiveTrainings">
+    <Value>No hay capacitaciones activas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoUpcomingTrainings">
+    <Value>No hay capacitaciones próximas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.NoPastTrainings">
+    <Value>No hay capacitaciones pasadas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.BrowserNotSupported">
+    <Value>Su navegador no soporta reproducción de video.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchedTime">
+    <Value>Visto:</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchToComplete">
+    <Value>Ver el video hasta el final para completar</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.VideoCompleted">
+    <Value>¡Video completado!</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.ConfirmWatchVideo">
+    <Value>¿Desea comenzar a ver el video?</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.WatchCountWarning">
+    <Value>Iniciar este video usará 1 de sus créditos de visualización.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CurrentWatchCount">
+    <Value>Actual</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.RemainingAfter">
+    <Value>Restante</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseVideo">
+    <Value>Cerrar Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseVideoWarning">
+    <Value>¿Está seguro de que desea cerrar el video? Su progreso será guardado.</Value>
+  </LocaleResource>
+  <LocaleResource Name="MyTrainings.CloseAndSave">
+    <Value>Cerrar y Guardar</Value>
+  </LocaleResource>
+
+  <!-- StaffTrainings -->
+  <LocaleResource Name="CustomerPortal.StaffTrainings.Title">
+    <Value>Capacitaciones del Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Training">
+    <Value>Capacitación</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.TotalPersonnel">
+    <Value>Total Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.PendingTrainings">
+    <Value>Pendiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.CompletedTrainings">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.OverdueTrainings">
+    <Value>Vencido</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.TrainingsList">
+    <Value>Lista de Capacitaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.Progress">
+    <Value>Progreso</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.DueDate">
+    <Value>Fecha Límite</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.CompletedAt">
+    <Value>Completado el</Value>
+  </LocaleResource>
+  <LocaleResource Name="StaffTrainings.NoTrainings">
+    <Value>No hay capacitaciones para mostrar.</Value>
+  </LocaleResource>
+
+  <!-- TrainingVideos -->
+  <LocaleResource Name="TrainingVideo.Title">
+    <Value>Videos de Capacitación</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Assignments">
+    <Value>Asignaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Upload">
+    <Value>Subir Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.SearchPlaceholder">
+    <Value>Título o descripción del video...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Checklist">
+    <Value>Lista de Verificación</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.VideoTitle">
+    <Value>Título del Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Duration">
+    <Value>Duración</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Scopes">
+    <Value>Alcance</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.NoVideos">
+    <Value>Aún no hay videos de capacitación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.UploadFirst">
+    <Value>Subir Primer Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.UploadVideo">
+    <Value>Subir Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.VideoFile">
+    <Value>Archivo de Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.SupportedFormats">
+    <Value>Formatos soportados: MP4, WebM, MOV</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.MaxFileSize">
+    <Value>Tamaño máximo de archivo: 500MB</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeChecklist">
+    <Value>Lista de Verificación</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeQuestionGroup">
+    <Value>Grupo de Preguntas</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.ScopeQuestion">
+    <Value>Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.NoScopesSelected">
+    <Value>Aún no se han agregado alcances.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.Uploading">
+    <Value>Subiendo video...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.EditVideo">
+    <Value>Editar Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.BrowserNotSupported">
+    <Value>Su navegador no soporta reproducción de video.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.MyTrainings">
+    <Value>Mis Capacitaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
+    <Value>Capacitaciones del Personal</Value>
+  </LocaleResource>
 </Language>

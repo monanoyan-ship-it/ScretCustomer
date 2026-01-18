@@ -90,6 +90,15 @@ public static class EmailPlaceholders
     public const string CurrentYear = "{CurrentYear}";
     public const string SystemName = "{SystemName}";
 
+    // Eğitim Videosu
+    public const string TrainingVideoTitle = "{TrainingVideoTitle}";
+    public const string TrainingVideoDescription = "{TrainingVideoDescription}";
+    public const string TrainingVideoDuration = "{TrainingVideoDuration}";
+    public const string TrainingVideoLink = "{TrainingVideoLink}";
+    public const string TrainingAssignmentTitle = "{TrainingAssignmentTitle}";
+    public const string TrainingDueDate = "{TrainingDueDate}";
+    public const string TrainingStartDate = "{TrainingStartDate}";
+
     /// <summary>
     /// Tüm placeholder'ları kategorili listele
     /// </summary>
@@ -167,6 +176,21 @@ public static class EmailPlaceholders
                     new(CurrentDate, "Bugün", "Bugünün tarihi"),
                     new(CurrentYear, "Yıl", "Mevcut yıl"),
                     new(SystemName, "Sistem Adı", "Uygulama adı")
+                }
+            },
+            new PlaceholderCategory
+            {
+                Name = "Eğitim Videosu",
+                Icon = "bi-play-circle",
+                Placeholders = new List<PlaceholderInfo>
+                {
+                    new(TrainingVideoTitle, "Video Başlığı", "Eğitim videosu başlığı"),
+                    new(TrainingVideoDescription, "Video Açıklaması", "Video açıklaması"),
+                    new(TrainingVideoDuration, "Video Süresi", "Video süresi (örn: 5 dk 30 sn)"),
+                    new(TrainingVideoLink, "Video Linki", "Videoyu izleme linki"),
+                    new(TrainingAssignmentTitle, "Atama Başlığı", "Eğitim ataması başlığı"),
+                    new(TrainingStartDate, "Başlangıç Tarihi", "Eğitim başlangıç tarihi"),
+                    new(TrainingDueDate, "Son Tarih", "Eğitim son tarihi")
                 }
             }
         };

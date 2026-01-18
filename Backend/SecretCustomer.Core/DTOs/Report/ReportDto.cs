@@ -40,6 +40,10 @@ public class DateRangeFilter
 {
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    /// <summary>
+    /// Filtre tipi: "start" = Başlangıç tarihi, "due" = Bitiş tarihi
+    /// </summary>
+    public string? FilterType { get; set; }
 }
 
 /// <summary>

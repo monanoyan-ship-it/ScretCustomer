@@ -235,9 +235,20 @@ public class CustomerPortalApiController : ControllerBase
 
     private int? GetPersonnelId()
     {
+        // CustomerPersonnel token'ında ClaimTypes.NameIdentifier kullanılıyor
+        // Önce UserType claim'ini kontrol et - CustomerPersonnel mi?
+        var userType = User.FindFirst("UserType")?.Value;
+        if (userType == "CustomerPersonnel")
+        {
+            var nameIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(nameIdClaim, out var personnelId))
+                return personnelId;
+        }
+
+        // Eski yöntem - PersonnelId claim'i (geriye uyumluluk)
         var personnelIdClaim = User.FindFirst("PersonnelId")?.Value;
-        if (int.TryParse(personnelIdClaim, out var personnelId))
-            return personnelId;
+        if (int.TryParse(personnelIdClaim, out var pId))
+            return pId;
 
         // Token'dan manuel parse et
         var authHeader = Request.Headers["Authorization"].FirstOrDefault();
@@ -248,9 +259,20 @@ public class CustomerPortalApiController : ControllerBase
                 var token = authHeader.Substring("Bearer ".Length);
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
+
+                // UserType kontrolü
+                var userTypeClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "UserType")?.Value;
+                if (userTypeClaim == "CustomerPersonnel")
+                {
+                    var nameIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid")?.Value;
+                    if (int.TryParse(nameIdClaim, out var personnelId))
+                        return personnelId;
+                }
+
+                // Eski yöntem
                 var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "PersonnelId")?.Value;
-                if (int.TryParse(claim, out personnelId))
-                    return personnelId;
+                if (int.TryParse(claim, out pId))
+                    return pId;
             }
             catch { }
         }
@@ -287,8 +309,8 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        // CustomerManager tüm personeli görebilir
-        if (role == "CustomerManager")
+        // Admin ve CustomerManager tüm personeli görebilir
+        if (role == "Admin" || role == "CustomerManager")
             return null;
 
         // CustomerSupervisor
@@ -3126,5 +3148,240 @@ public class CustomerPortalApiController : ControllerBase
             _logger.LogError(ex, "[CustomerPortal] Error exporting performance by period for customer {CustomerId}", customerId);
             return StatusCode(500, new { message = "Excel oluşturulurken hata oluştu." });
         }
+    }
+
+    // ==================== EĞİTİM VİDEOLARI ====================
+
+    /// <summary>
+    /// Kullanıcının kendi eğitim videolarını listele
+    /// </summary>
+    [HttpGet("my-trainings")]
+    public async Task<IActionResult> GetMyTrainings()
+    {
+        var personnelId = GetPersonnelId();
+
+        // Admin kullanıcılar için boş liste dön (PersonnelId yok)
+        if (!personnelId.HasValue)
+            return Ok(new List<object>());
+
+        var now = DateTime.UtcNow;
+
+        var trainings = await _context.TrainingVideoParticipants
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .Where(p => p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted)
+            .Where(p => p.Assignment.IsActive && !p.Assignment.IsDeleted)
+            .OrderByDescending(p => p.Assignment.DueDate)
+            .Select(p => new
+            {
+                participantId = p.Id,
+                assignmentId = p.Assignment.Id,
+                assignmentTitle = p.Assignment.Title,
+                videoId = p.Assignment.TrainingVideo.Id,
+                videoTitle = p.Assignment.TrainingVideo.Title,
+                videoDescription = p.Assignment.TrainingVideo.Description,
+                videoDurationSeconds = p.Assignment.TrainingVideo.DurationSeconds,
+                startDate = p.Assignment.StartDate,
+                dueDate = p.Assignment.DueDate,
+                statusId = p.StatusId,
+                statusName = p.StatusId == 1 ? "Bekliyor" : p.StatusId == 2 ? "İzleniyor" : "Tamamlandı",
+                startedAt = p.StartedAt,
+                completedAt = p.CompletedAt,
+                watchedSeconds = p.WatchedSeconds,
+                isCompleted = p.IsCompleted,
+                isOverdue = p.Assignment.DueDate < now && !p.IsCompleted,
+                daysRemaining = p.IsCompleted ? 0 : (int)Math.Max(0, (p.Assignment.DueDate - now).TotalDays),
+                // Video izleme kuralları (Video'dan)
+                minWatchPercentage = p.Assignment.TrainingVideo.MinWatchPercentage,
+                allowSkipping = p.Assignment.TrainingVideo.AllowSkipping,
+                maxPlaybackSpeed = p.Assignment.TrainingVideo.MaxPlaybackSpeed,
+                // Atama izleme kuralları (Assignment'tan)
+                allowSeeking = p.Assignment.AllowSeeking,
+                allowSpeedChange = p.Assignment.AllowSpeedChange,
+                // İzleme sayısı bilgileri
+                watchCount = p.WatchCount,
+                minWatchCount = p.Assignment.MinWatchCount,
+                maxWatchCount = p.Assignment.MaxWatchCount,
+                remainingWatches = p.Assignment.MaxWatchCount.HasValue
+                    ? Math.Max(0, p.Assignment.MaxWatchCount.Value - p.WatchCount)
+                    : (int?)null
+            })
+            .ToListAsync();
+
+        return Ok(trainings);
+    }
+
+    /// <summary>
+    /// Eğitim izleme ilerleme güncelle
+    /// </summary>
+    [HttpPost("my-trainings/{participantId}/progress")]
+    public async Task<IActionResult> UpdateMyTrainingProgress(int participantId, [FromBody] UpdateWatchProgressDto dto)
+    {
+        var personnelId = GetPersonnelId();
+        if (!personnelId.HasValue)
+            return Unauthorized(new { message = "Personel bilgisi bulunamadı." });
+
+        var participant = await _context.TrainingVideoParticipants
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .FirstOrDefaultAsync(p => p.Id == participantId && p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted);
+
+        if (participant == null)
+            return NotFound(new { message = "Eğitim kaydı bulunamadı." });
+
+        var now = DateTime.UtcNow;
+
+        // İlk izlemeye başlama
+        if (participant.StatusId == 1 && dto.WatchedSeconds > 0)
+        {
+            participant.StatusId = 2;
+            participant.StartedAt = now;
+        }
+
+        participant.WatchedSeconds = dto.WatchedSeconds;
+
+        // Tamamlama kontrolü
+        if (dto.IsCompleted || participant.WatchedSeconds >= participant.Assignment.TrainingVideo.DurationSeconds)
+        {
+            participant.IsCompleted = true;
+            participant.StatusId = 3;
+            participant.CompletedAt ??= now;
+        }
+
+        participant.UpdatedAt = now;
+        await _context.SaveChangesAsync();
+
+        return Ok(new {
+            success = true,
+            watchCount = participant.WatchCount,
+            maxWatchCount = participant.Assignment.MaxWatchCount,
+            remainingWatches = participant.Assignment.MaxWatchCount.HasValue
+                ? Math.Max(0, participant.Assignment.MaxWatchCount.Value - participant.WatchCount)
+                : (int?)null
+        });
+    }
+
+    /// <summary>
+    /// Video izleme oturumu başlat - izleme hakkını kullanır
+    /// </summary>
+    [HttpPost("my-trainings/{participantId}/start-session")]
+    public async Task<IActionResult> StartWatchSession(int participantId)
+    {
+        var personnelId = GetPersonnelId();
+        if (!personnelId.HasValue)
+            return Unauthorized(new { message = "Personel bilgisi bulunamadı." });
+
+        var participant = await _context.TrainingVideoParticipants
+            .Include(p => p.Assignment)
+            .FirstOrDefaultAsync(p => p.Id == participantId && p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted);
+
+        if (participant == null)
+            return NotFound(new { message = "Eğitim kaydı bulunamadı." });
+
+        var now = DateTime.UtcNow;
+
+        // MaxWatchCount kontrolü
+        var maxWatches = participant.Assignment.MaxWatchCount;
+        if (maxWatches.HasValue && participant.WatchCount >= maxWatches.Value)
+        {
+            return BadRequest(new {
+                success = false,
+                message = "Maksimum izleme hakkınızı doldurdunuz.",
+                watchCount = participant.WatchCount,
+                maxWatchCount = maxWatches.Value
+            });
+        }
+
+        // İzleme hakkını kullan
+        participant.WatchCount++;
+
+        // İlk izlemeye başlama
+        if (participant.StatusId == 1)
+        {
+            participant.StatusId = 2;
+            participant.StartedAt = now;
+        }
+
+        participant.UpdatedAt = now;
+        await _context.SaveChangesAsync();
+
+        return Ok(new {
+            success = true,
+            watchCount = participant.WatchCount,
+            maxWatchCount = participant.Assignment.MaxWatchCount,
+            remainingWatches = participant.Assignment.MaxWatchCount.HasValue
+                ? Math.Max(0, participant.Assignment.MaxWatchCount.Value - participant.WatchCount)
+                : (int?)null
+        });
+    }
+
+    /// <summary>
+    /// Yönetici/Süpervizör için personel eğitimlerini listele
+    /// </summary>
+    [HttpGet("staff-trainings")]
+    public async Task<IActionResult> GetStaffTrainings()
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
+        // İzin verilen personel ID'lerini belirle
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
+        var now = DateTime.UtcNow;
+
+        var query = _context.TrainingVideoParticipants
+            .Include(p => p.CustomerPersonnel)
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .Where(p => !p.IsDeleted && p.Assignment.IsActive && !p.Assignment.IsDeleted)
+            .Where(p => p.CustomerPersonnel.CustomerId == customerId.Value);
+
+        // CustomerManager tüm personeli görebilir
+        // CustomerSupervisor sadece altındakileri görebilir
+        if (allowedPersonnelIds != null)
+        {
+            query = query.Where(p => allowedPersonnelIds.Contains(p.CustomerPersonnelId));
+        }
+
+        var trainings = await query
+            .OrderByDescending(p => p.Assignment.DueDate)
+            .ThenBy(p => p.CustomerPersonnel.FirstName)
+            .Select(p => new
+            {
+                participantId = p.Id,
+                personnelId = p.CustomerPersonnelId,
+                personnelName = p.CustomerPersonnel.FirstName + " " + p.CustomerPersonnel.LastName,
+                personnelEmail = p.CustomerPersonnel.Email,
+                assignmentId = p.Assignment.Id,
+                assignmentTitle = p.Assignment.Title,
+                videoId = p.Assignment.TrainingVideo.Id,
+                videoTitle = p.Assignment.TrainingVideo.Title,
+                videoDurationSeconds = p.Assignment.TrainingVideo.DurationSeconds,
+                startDate = p.Assignment.StartDate,
+                dueDate = p.Assignment.DueDate,
+                statusId = p.StatusId,
+                startedAt = p.StartedAt,
+                completedAt = p.CompletedAt,
+                watchedSeconds = p.WatchedSeconds,
+                isCompleted = p.IsCompleted,
+                isOverdue = p.Assignment.DueDate < now && !p.IsCompleted,
+                daysRemaining = p.IsCompleted ? 0 : (int)Math.Max(0, (p.Assignment.DueDate - now).TotalDays)
+            })
+            .ToListAsync();
+
+        return Ok(new { trainings });
+    }
+
+    /// <summary>
+    /// İzleme ilerleme DTO
+    /// </summary>
+    public class UpdateWatchProgressDto
+    {
+        public int WatchedSeconds { get; set; }
+        public bool IsCompleted { get; set; }
     }
 }

@@ -98,3 +98,31 @@
     max-height: 300px;
     overflow-y: auto;
 }
+
+/* ===== Collapsible Menu ===== */
+.customer-sidebar .collapse-icon {
+    transition: transform 0.3s ease;
+}
+
+.customer-sidebar .nav-link.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.customer-sidebar .nav-link:not(.collapsed) .collapse-icon {
+    transform: rotate(0deg);
+}
+
+/* Submenu styling */
+.customer-sidebar .submenu {
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    padding-left: 0.5rem;
+}
+
+.customer-sidebar .submenu .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.customer-sidebar .submenu .nav-link i {
+    font-size: 0.95rem;
+}

@@ -10,12 +10,16 @@ namespace SecretCustomer.Services.Services;
 public class TrainingVideoService : ITrainingVideoService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
     private readonly string _videoStoragePath;
+    private readonly string _baseUrl;
 
-    public TrainingVideoService(ApplicationDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration)
+    public TrainingVideoService(ApplicationDbContext context, IEmailService emailService, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         _context = context;
+        _emailService = emailService;
         _videoStoragePath = configuration["Storage:VideoPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "Storage", "Videos");
+        _baseUrl = configuration["App:BaseUrl"] ?? "https://localhost";
 
         // Klasör yoksa oluştur
         if (!Directory.Exists(_videoStoragePath))
@@ -92,7 +96,11 @@ public class TrainingVideoService : ITrainingVideoService
             AssignmentCount = v.Assignments.Count(a => !a.IsDeleted),
             TotalParticipants = v.Assignments.Where(a => !a.IsDeleted).SelectMany(a => a.Participants).Count(p => !p.IsDeleted),
             CompletedParticipants = v.Assignments.Where(a => !a.IsDeleted).SelectMany(a => a.Participants).Count(p => !p.IsDeleted && p.IsCompleted),
-            ThumbnailUrl = !string.IsNullOrEmpty(v.ThumbnailPath) ? $"/api/training-videos/{v.Id}/thumbnail" : null
+            ThumbnailUrl = !string.IsNullOrEmpty(v.ThumbnailPath) ? $"/api/training-videos/{v.Id}/thumbnail" : null,
+            // İzleme kontrol ayarları
+            MinWatchPercentage = v.MinWatchPercentage,
+            AllowSkipping = v.AllowSkipping,
+            MaxPlaybackSpeed = v.MaxPlaybackSpeed
         });
     }
 
@@ -135,7 +143,11 @@ public class TrainingVideoService : ITrainingVideoService
             FileSize = fileInfo.Length,
             DurationSeconds = dto.DurationSeconds, // Frontend'den gelen süre
             ThumbnailPath = thumbnailPath,
-            IsActive = true
+            IsActive = true,
+            // İzleme kontrol ayarları
+            MinWatchPercentage = dto.MinWatchPercentage,
+            AllowSkipping = dto.AllowSkipping,
+            MaxPlaybackSpeed = dto.MaxPlaybackSpeed
         };
 
         // Kapsamları ekle
@@ -172,6 +184,11 @@ public class TrainingVideoService : ITrainingVideoService
         video.Description = dto.Description;
         video.IsActive = dto.IsActive;
         video.UpdatedAt = DateTime.UtcNow;
+
+        // İzleme kontrol ayarları
+        video.MinWatchPercentage = dto.MinWatchPercentage;
+        video.AllowSkipping = dto.AllowSkipping;
+        video.MaxPlaybackSpeed = dto.MaxPlaybackSpeed;
 
         // Kapsamları güncelle - önce sil sonra ekle
         foreach (var scope in video.Scopes.ToList())
@@ -299,6 +316,34 @@ public class TrainingVideoService : ITrainingVideoService
 
             if (filter.IsActive.HasValue)
                 query = query.Where(a => a.IsActive == filter.IsActive.Value);
+
+            // DateRanges pattern (KURALLAR.md Section 20)
+            // Birden fazla tarih filtresi desteklenir (start ve due ayrı ayrı)
+            if (filter.DateRanges?.Any() == true)
+            {
+                foreach (var dateRange in filter.DateRanges)
+                {
+                    var filterType = dateRange.FilterType ?? filter.DateFilterType ?? "start";
+
+                    if (dateRange.StartDate.HasValue)
+                    {
+                        var startUtc = DateTime.SpecifyKind(dateRange.StartDate.Value.Date, DateTimeKind.Utc);
+                        if (filterType == "due")
+                            query = query.Where(a => a.DueDate >= startUtc);
+                        else
+                            query = query.Where(a => a.StartDate >= startUtc);
+                    }
+
+                    if (dateRange.EndDate.HasValue)
+                    {
+                        var endUtc = DateTime.SpecifyKind(dateRange.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                        if (filterType == "due")
+                            query = query.Where(a => a.DueDate <= endUtc);
+                        else
+                            query = query.Where(a => a.StartDate <= endUtc);
+                    }
+                }
+            }
         }
 
         var assignments = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
@@ -308,6 +353,8 @@ public class TrainingVideoService : ITrainingVideoService
             var participants = a.Participants.Where(p => !p.IsDeleted).ToList();
             var completed = participants.Count(p => p.IsCompleted);
             var inProgress = participants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.InProgress);
+            var notStarted = participants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.Pending);
+            var emailSent = participants.Count(p => p.EmailSentCount > 0);
             var total = participants.Count;
 
             return new TrainingVideoAssignmentListDto
@@ -323,7 +370,9 @@ public class TrainingVideoService : ITrainingVideoService
                 TotalParticipants = total,
                 CompletedParticipants = completed,
                 InProgressParticipants = inProgress,
-                CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0
+                CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
+                EmailSentParticipants = emailSent,
+                NotStartedParticipants = notStarted
             };
         });
     }
@@ -347,7 +396,13 @@ public class TrainingVideoService : ITrainingVideoService
             SourceProjectId = dto.ProjectId,
             ScoreThreshold = dto.ScoreThreshold,
             SourceStartDate = ToUtc(dto.SourceStartDate),
-            SourceEndDate = ToUtc(dto.SourceEndDate)
+            SourceEndDate = ToUtc(dto.SourceEndDate),
+            // İzleme ayarları
+            MinWatchCount = dto.MinWatchCount,
+            MaxWatchCount = dto.MaxWatchCount,
+            AllowSpeedChange = dto.AllowSpeedChange,
+            AllowSeeking = dto.AllowSeeking,
+            EmailTemplateId = dto.EmailTemplateId
         };
 
         // Manuel atama mı otomatik mi?
@@ -402,7 +457,8 @@ public class TrainingVideoService : ITrainingVideoService
 
     public async Task<AssignmentPreviewDto> PreviewAutoAssignmentAsync(CreateTrainingVideoAssignmentDto dto)
     {
-        if (!dto.ProjectId.HasValue || !dto.ScoreThreshold.HasValue || !dto.SourceStartDate.HasValue || !dto.SourceEndDate.HasValue)
+        // SourceStartDate ve SourceEndDate zorunlu, diğer filtreler opsiyonel
+        if (!dto.SourceStartDate.HasValue || !dto.SourceEndDate.HasValue)
             return new AssignmentPreviewDto { TotalUsers = 0, Users = new List<AssignmentPreviewUserDto>() };
 
         var video = await _context.TrainingVideos
@@ -422,6 +478,7 @@ public class TrainingVideoService : ITrainingVideoService
                 UserId = p.CustomerPersonnelId, // CustomerPersonnelId olarak kullanılıyor
                 UserName = p.PersonnelName,
                 Email = p.Email,
+                CustomerName = p.CustomerName,
                 ScopeScore = p.ScopeScore
             }).ToList()
         };
@@ -435,6 +492,7 @@ public class TrainingVideoService : ITrainingVideoService
         public int CustomerPersonnelId { get; set; }
         public string PersonnelName { get; set; } = string.Empty;
         public string? Email { get; set; }
+        public string? CustomerName { get; set; }
         public decimal ScopeScore { get; set; }
     }
 
@@ -488,14 +546,37 @@ public class TrainingVideoService : ITrainingVideoService
             .Include(a => a.Question)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+                    .ThenInclude(cp => cp!.Customer)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
             .Where(a => !a.IsDeleted)
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
-            .Where(a => a.Evaluation.Assignment.ProjectId == dto.ProjectId)
             .Where(a => a.Evaluation.CompletedAt >= sourceStartUtc)
             .Where(a => a.Evaluation.CompletedAt <= sourceEndUtc)
             .Where(a => a.Evaluation.EvaluatedCustomerPersonnelId != null); // Sadece CustomerPersonnel değerlendirmeleri
+
+        // Opsiyonel filtreler
+        if (dto.ProjectId.HasValue)
+        {
+            query = query.Where(a => a.Evaluation.Assignment.ProjectId == dto.ProjectId);
+        }
+
+        if (dto.CustomerId.HasValue)
+        {
+            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnel!.CustomerId == dto.CustomerId);
+        }
+
+        if (dto.OrganizationId.HasValue)
+        {
+            // CustomerPersonnel'in organizasyon atamasını kontrol et
+            var orgPersonnelIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerOrganizationId == dto.OrganizationId && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerPersonnelId)
+                .Distinct()
+                .ToListAsync();
+
+            query = query.Where(a => orgPersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId!.Value));
+        }
 
         if (questionIds.Any())
         {
@@ -505,6 +586,7 @@ public class TrainingVideoService : ITrainingVideoService
         var answers = await query.ToListAsync();
 
         // CustomerPersonnel bazında grupla ve ortalama puan hesapla
+        var scoreThreshold = dto.ScoreThreshold ?? 100m; // Eğer threshold yoksa tüm sonuçları getir
         var personnelScores = answers
             .GroupBy(a => a.Evaluation.EvaluatedCustomerPersonnelId!.Value)
             .Select(g =>
@@ -520,10 +602,11 @@ public class TrainingVideoService : ITrainingVideoService
                     CustomerPersonnelId = g.Key,
                     ScopeScore = score,
                     PersonnelName = cp != null ? $"{cp.FirstName} {cp.LastName}" : "",
-                    Email = cp?.Email
+                    Email = cp?.Email,
+                    CustomerName = cp?.Customer?.CompanyName
                 };
             })
-            .Where(x => x.ScopeScore < dto.ScoreThreshold!.Value)
+            .Where(x => x.ScopeScore <= scoreThreshold)
             .ToList();
 
         return personnelScores;
@@ -551,23 +634,222 @@ public class TrainingVideoService : ITrainingVideoService
             StartedAt = p.StartedAt,
             CompletedAt = p.CompletedAt,
             WatchedSeconds = p.WatchedSeconds,
-            IsCompleted = p.IsCompleted
+            IsCompleted = p.IsCompleted,
+            // Email durumu
+            FirstEmailSentAt = p.FirstEmailSentAt,
+            LastEmailSentAt = p.LastEmailSentAt,
+            EmailSentCount = p.EmailSentCount
         });
+    }
+
+    public async Task<IEnumerable<AllParticipantDto>> GetAllParticipantsAsync()
+    {
+        var participants = await _context.TrainingVideoParticipants
+            .Include(p => p.CustomerPersonnel)
+                .ThenInclude(cp => cp.Customer)
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .Where(p => !p.IsDeleted && !p.Assignment.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        return participants.Select(p => {
+            var videoDuration = p.Assignment.TrainingVideo.DurationSeconds;
+            var watchProgress = videoDuration > 0
+                ? (int)Math.Round((decimal)p.WatchedSeconds / videoDuration * 100)
+                : 0;
+
+            return new AllParticipantDto
+            {
+                Id = p.Id,
+                UserId = p.CustomerPersonnelId,
+                UserName = p.CustomerPersonnel.FullName,
+                Email = p.CustomerPersonnel.Email,
+                CustomerName = p.CustomerPersonnel.Customer?.CompanyName,
+                VideoId = p.Assignment.TrainingVideoId,
+                VideoTitle = p.Assignment.TrainingVideo.Title,
+                AssignmentId = p.TrainingVideoAssignmentId,
+                AssignmentTitle = p.Assignment.Title,
+                StatusId = p.StatusId,
+                StatusName = TrainingVideoParticipantStatuses.GetById(p.StatusId)?.Description ?? "",
+                StartedAt = p.StartedAt,
+                CompletedAt = p.CompletedAt,
+                WatchedSeconds = p.WatchedSeconds,
+                VideoDurationSeconds = videoDuration,
+                WatchProgress = Math.Min(watchProgress, 100)
+            };
+        });
+    }
+
+    public async Task<int> SendEmailsAsync(SendTrainingEmailDto dto, int? sentByUserId = null, int emailTypeId = 1)
+    {
+        var assignment = await _context.TrainingVideoAssignments
+            .Include(a => a.TrainingVideo)
+            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            return 0;
+
+        var participants = await _context.TrainingVideoParticipants
+            .Include(p => p.CustomerPersonnel)
+            .Where(p => dto.ParticipantIds.Contains(p.Id) && !p.IsDeleted)
+            .ToListAsync();
+
+        if (!participants.Any())
+            return 0;
+
+        // Email şablonunu al - Öncelik sırası:
+        // 1. DTO'da belirtilen şablon
+        // 2. Atamaya kaydedilen şablon
+        // 3. Varsayılan training video şablonu
+        EmailTemplate? template = null;
+
+        // 1. DTO'da şablon belirtilmişse onu kullan
+        if (dto.EmailTemplateId.HasValue)
+        {
+            template = await _context.EmailTemplates
+                .FirstOrDefaultAsync(t => t.Id == dto.EmailTemplateId.Value && !t.IsDeleted);
+        }
+
+        // 2. Atamaya kaydedilen şablonu kullan
+        if (template == null && assignment.EmailTemplateId.HasValue)
+        {
+            template = await _context.EmailTemplates
+                .FirstOrDefaultAsync(t => t.Id == assignment.EmailTemplateId.Value && !t.IsDeleted);
+        }
+
+        // 3. Varsayılan training video şablonunu kullan
+        if (template == null)
+        {
+            template = await _context.EmailTemplates
+                .Where(t => t.TemplateTypeId == EmailTemplateTypes.Ids.TrainingVideo && !t.IsDeleted)
+                .OrderBy(t => t.IsDefault ? 0 : 1)
+                .FirstOrDefaultAsync();
+        }
+
+        var now = DateTime.UtcNow;
+        var sentCount = 0;
+
+        foreach (var p in participants)
+        {
+            var emailLog = new TrainingVideoEmailLog
+            {
+                TrainingVideoParticipantId = p.Id,
+                EmailTemplateId = template?.Id,
+                SentAt = now,
+                SentByUserId = sentByUserId,
+                EmailTypeId = emailTypeId,
+                IsSuccess = false
+            };
+
+            try
+            {
+                // Email gönder
+                if (!string.IsNullOrEmpty(p.CustomerPersonnel?.Email) && template != null)
+                {
+                    var subject = ReplaceTrainingVideoPlaceholders(template.Subject, assignment, p);
+                    var body = ReplaceTrainingVideoPlaceholders(template.Body, assignment, p);
+
+                    var result = await _emailService.SendEmailAsync(p.CustomerPersonnel.Email, subject, body, true);
+                    emailLog.IsSuccess = result.Success;
+                    if (!result.Success)
+                        emailLog.ErrorMessage = result.ErrorMessage;
+                    else
+                        sentCount++;
+                }
+                else
+                {
+                    emailLog.ErrorMessage = string.IsNullOrEmpty(p.CustomerPersonnel?.Email)
+                        ? "Email adresi bulunamadı"
+                        : "Email şablonu bulunamadı";
+                }
+            }
+            catch (Exception ex)
+            {
+                emailLog.IsSuccess = false;
+                emailLog.ErrorMessage = ex.Message;
+            }
+
+            _context.TrainingVideoEmailLogs.Add(emailLog);
+
+            // Participant özet alanlarını güncelle
+            if (p.FirstEmailSentAt == null)
+                p.FirstEmailSentAt = now;
+            p.LastEmailSentAt = now;
+            p.EmailSentCount++;
+            p.UpdatedAt = now;
+        }
+
+        await _context.SaveChangesAsync();
+        return sentCount;
+    }
+
+    /// <summary>
+    /// Training video email şablonundaki placeholder'ları değiştirir
+    /// </summary>
+    private string ReplaceTrainingVideoPlaceholders(string content, TrainingVideoAssignment assignment, TrainingVideoParticipant participant)
+    {
+        if (string.IsNullOrEmpty(content))
+            return content;
+
+        var video = assignment.TrainingVideo;
+        var personnel = participant.CustomerPersonnel;
+
+        // Video süresi formatı
+        var duration = video.DurationSeconds;
+        var durationStr = duration >= 60
+            ? $"{duration / 60} dk {duration % 60} sn"
+            : $"{duration} sn";
+
+        // Eğitimler sayfası linki - HTML anchor olarak oluştur (mobil cihazların yanlış parse etmemesi için)
+        var trainingsUrl = $"{_baseUrl}/MyTrainings";
+        var videoLinkHtml = $"<a href=\"{trainingsUrl}\" style=\"color: #007bff; text-decoration: underline;\">Eğitimlerim Sayfası</a>";
+
+        // Placeholder değiştirmeleri
+        content = content.Replace(EmailPlaceholders.TrainingVideoTitle, video.Title);
+        content = content.Replace(EmailPlaceholders.TrainingVideoDescription, video.Description ?? "");
+        content = content.Replace(EmailPlaceholders.TrainingVideoDuration, durationStr);
+        content = content.Replace(EmailPlaceholders.TrainingVideoLink, videoLinkHtml);
+        content = content.Replace(EmailPlaceholders.TrainingAssignmentTitle, assignment.Title);
+        content = content.Replace(EmailPlaceholders.TrainingStartDate, assignment.StartDate.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.TrainingDueDate, assignment.DueDate.ToString("dd.MM.yyyy"));
+
+        // Kişi bilgileri
+        if (personnel != null)
+        {
+            var fullName = $"{personnel.FirstName} {personnel.LastName}".Trim();
+            content = content.Replace(EmailPlaceholders.RecipientName, fullName);
+            content = content.Replace(EmailPlaceholders.RecipientFirstName, personnel.FirstName ?? "");
+            content = content.Replace(EmailPlaceholders.RecipientLastName, personnel.LastName ?? "");
+            content = content.Replace(EmailPlaceholders.RecipientEmail, personnel.Email ?? "");
+        }
+
+        // Sistem bilgileri
+        content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+        return content;
     }
 
     public async Task<bool> SendRemindersAsync(int assignmentId)
     {
-        // TODO: Email gönderimi için EmailService kullanılacak
-        // CustomerPersonnel için Notification sistemi farklı olabilir
+        // Tamamlamamış katılımcılara email gönder
         var participants = await _context.TrainingVideoParticipants
-            .Include(p => p.CustomerPersonnel)
-            .Include(p => p.Assignment)
             .Where(p => p.TrainingVideoAssignmentId == assignmentId && !p.IsDeleted && !p.IsCompleted)
+            .Select(p => p.Id)
             .ToListAsync();
 
-        // TODO: CustomerPersonnel için bildirim/email gönderimi eklenecek
-        // Şimdilik sadece count dönüyor
-        return participants.Count > 0;
+        if (!participants.Any())
+            return false;
+
+        var result = await SendEmailsAsync(new SendTrainingEmailDto
+        {
+            AssignmentId = assignmentId,
+            ParticipantIds = participants
+        });
+
+        return result > 0;
     }
 
     #endregion
@@ -603,7 +885,11 @@ public class TrainingVideoService : ITrainingVideoService
             WatchedSeconds = p.WatchedSeconds,
             IsCompleted = p.IsCompleted,
             IsOverdue = !p.IsCompleted && p.Assignment.DueDate < now,
-            DaysRemaining = Math.Max(0, (p.Assignment.DueDate - now).Days)
+            DaysRemaining = Math.Max(0, (p.Assignment.DueDate - now).Days),
+            // İzleme kontrol ayarları
+            MinWatchPercentage = p.Assignment.TrainingVideo.MinWatchPercentage,
+            AllowSkipping = p.Assignment.TrainingVideo.AllowSkipping,
+            MaxPlaybackSpeed = p.Assignment.TrainingVideo.MaxPlaybackSpeed
         });
     }
 
@@ -637,7 +923,11 @@ public class TrainingVideoService : ITrainingVideoService
             WatchedSeconds = participant.WatchedSeconds,
             IsCompleted = participant.IsCompleted,
             IsOverdue = !participant.IsCompleted && participant.Assignment.DueDate < now,
-            DaysRemaining = Math.Max(0, (participant.Assignment.DueDate - now).Days)
+            DaysRemaining = Math.Max(0, (participant.Assignment.DueDate - now).Days),
+            // İzleme kontrol ayarları
+            MinWatchPercentage = participant.Assignment.TrainingVideo.MinWatchPercentage,
+            AllowSkipping = participant.Assignment.TrainingVideo.AllowSkipping,
+            MaxPlaybackSpeed = participant.Assignment.TrainingVideo.MaxPlaybackSpeed
         };
     }
 
@@ -714,6 +1004,10 @@ public class TrainingVideoService : ITrainingVideoService
             AssignmentCount = 0,
             TotalParticipants = 0,
             CompletedParticipants = 0,
+            // İzleme kontrol ayarları
+            MinWatchPercentage = video.MinWatchPercentage,
+            AllowSkipping = video.AllowSkipping,
+            MaxPlaybackSpeed = video.MaxPlaybackSpeed,
             Scopes = video.Scopes.Where(s => !s.IsDeleted).Select(s => new TrainingVideoScopeDto
             {
                 Id = s.Id,
@@ -768,6 +1062,89 @@ public class TrainingVideoService : ITrainingVideoService
                 IsCompleted = p.IsCompleted
             }).ToList()
         };
+    }
+
+    #endregion
+
+    #region Scope-based Data
+
+    /// <summary>
+    /// Video scope'undaki checklist'lerde değerlendirmesi olan müşterileri getirir
+    /// </summary>
+    public async Task<IEnumerable<object>> GetScopeCustomersAsync(int videoId)
+    {
+        var video = await _context.TrainingVideos
+            .Include(v => v.Scopes)
+            .FirstOrDefaultAsync(v => v.Id == videoId && !v.IsDeleted);
+
+        if (video == null)
+            return new List<object>();
+
+        // Video scope'undaki checklist'leri al
+        var checklistIds = video.Scopes
+            .Where(s => !s.IsDeleted && s.ChecklistId.HasValue)
+            .Select(s => s.ChecklistId!.Value)
+            .Distinct()
+            .ToList();
+
+        // QuestionGroup veya Question scope'ları için, ilişkili checklist'leri bul
+        var questionGroupNames = video.Scopes
+            .Where(s => !s.IsDeleted && !string.IsNullOrEmpty(s.QuestionGroupName))
+            .Select(s => s.QuestionGroupName!)
+            .Distinct()
+            .ToList();
+
+        var questionIds = video.Scopes
+            .Where(s => !s.IsDeleted && s.QuestionId.HasValue)
+            .Select(s => s.QuestionId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (questionGroupNames.Any())
+        {
+            var groupChecklistIds = await _context.Questions
+                .Where(q => !q.IsDeleted && q.GroupName != null && questionGroupNames.Contains(q.GroupName))
+                .Select(q => q.ChecklistId)
+                .Distinct()
+                .ToListAsync();
+            checklistIds = checklistIds.Union(groupChecklistIds).ToList();
+        }
+
+        if (questionIds.Any())
+        {
+            var questionChecklistIds = await _context.Questions
+                .Where(q => !q.IsDeleted && questionIds.Contains(q.Id))
+                .Select(q => q.ChecklistId)
+                .Distinct()
+                .ToListAsync();
+            checklistIds = checklistIds.Union(questionChecklistIds).ToList();
+        }
+
+        if (!checklistIds.Any())
+        {
+            // Scope yoksa tüm aktif müşterileri getir
+            return await _context.Customers
+                .Where(c => !c.IsDeleted && c.IsActive)
+                .Select(c => new { c.Id, c.CompanyName })
+                .OrderBy(c => c.CompanyName)
+                .ToListAsync();
+        }
+
+        // Bu checklist'lerde değerlendirmesi olan müşterileri bul
+        var customerIds = await _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => checklistIds.Contains(e.Assignment.ChecklistId))
+            .Where(e => e.EvaluatedCustomerPersonnelId.HasValue && e.EvaluatedCustomerPersonnel != null)
+            .Select(e => e.EvaluatedCustomerPersonnel!.CustomerId)
+            .Distinct()
+            .ToListAsync();
+
+        // Müşteri listesini getir
+        return await _context.Customers
+            .Where(c => !c.IsDeleted && customerIds.Contains(c.Id))
+            .Select(c => new { c.Id, c.CompanyName })
+            .OrderBy(c => c.CompanyName)
+            .ToListAsync();
     }
 
     #endregion

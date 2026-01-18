@@ -152,7 +152,12 @@
                         <select class="form-select form-select-sm" data-bind="value: selectedCustomerId, options: customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("CustomerPersonnel.AllCustomers", "Tüm Müşteriler")'"></select>
                     </div>
                     <div class="col-md-4">
-                        <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
+                            <span class="input-group-text" data-bind="visible: cpIsLoading">
+                                <span class="spinner-border spinner-border-sm"></span>
+                            </span>
+                        </div>
                     </div>
                     <div class="col-md-4 text-end">
                         <span class="text-muted small" data-bind="text: cpTotalCount() + ' kayıt'"></span>
@@ -162,7 +167,7 @@
         </div>
 
         <!-- Empty State -->
-        <div data-bind="visible: cpTotalCount() === 0">
+        <div data-bind="visible: cpTotalCount() === 0 && !cpIsLoading()">
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> @Html.T("CustomerPersonnel.NoPersonnel", "Müşteri personeli bulunmamaktadır.")
             </div>

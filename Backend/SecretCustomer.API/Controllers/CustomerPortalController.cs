@@ -122,4 +122,23 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Kullanıcının kendi eğitim videoları
+    /// </summary>
+    [Route("CustomerPortal/MyTrainings")]
+    public IActionResult MyTrainings()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Personel eğitimleri - Yönetici ve süpervizörler için
+    /// </summary>
+    [Route("CustomerPortal/StaffTrainings")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult StaffTrainings()
+    {
+        return View();
+    }
 }

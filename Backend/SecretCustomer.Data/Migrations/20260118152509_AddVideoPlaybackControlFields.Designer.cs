@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118152509_AddVideoPlaybackControlFields")]
+    partial class AddVideoPlaybackControlFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3001,12 +3004,6 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("AllowSeeking")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("AllowSpeedChange")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -3016,20 +3013,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("EmailTemplateId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<int?>("MaxWatchCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MinWatchCount")
-                        .HasColumnType("integer");
 
                     b.Property<decimal?>("ScoreThreshold")
                         .HasColumnType("numeric");
@@ -3064,8 +3052,6 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasIndex("DueDate");
 
-                    b.HasIndex("EmailTemplateId");
-
                     b.HasIndex("IsActive");
 
                     b.HasIndex("SourceProjectId");
@@ -3075,61 +3061,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasIndex("TrainingVideoId");
 
                     b.ToTable("TrainingVideoAssignments");
-                });
-
-            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoEmailLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("EmailTemplateId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EmailTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("SentByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TrainingVideoParticipantId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmailTemplateId");
-
-                    b.HasIndex("SentByUserId");
-
-                    b.HasIndex("TrainingVideoParticipantId");
-
-                    b.ToTable("TrainingVideoEmailLogs");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoParticipant", b =>
@@ -3152,20 +3083,11 @@ namespace SecretCustomer.Data.Migrations
                     b.Property<int>("CustomerPersonnelId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("EmailSentCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("FirstEmailSentAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastEmailSentAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("SourceEvaluationId")
                         .HasColumnType("integer");
@@ -3184,9 +3106,6 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
-
-                    b.Property<int>("WatchCount")
-                        .HasColumnType("integer");
 
                     b.Property<int>("WatchedSeconds")
                         .HasColumnType("integer");
@@ -4095,10 +4014,6 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoAssignment", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.EmailTemplate", "EmailTemplate")
-                        .WithMany()
-                        .HasForeignKey("EmailTemplateId");
-
                     b.HasOne("SecretCustomer.Core.Entities.Project", "SourceProject")
                         .WithMany()
                         .HasForeignKey("SourceProjectId")
@@ -4110,34 +4025,9 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("EmailTemplate");
-
                     b.Navigation("SourceProject");
 
                     b.Navigation("TrainingVideo");
-                });
-
-            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoEmailLog", b =>
-                {
-                    b.HasOne("SecretCustomer.Core.Entities.EmailTemplate", "EmailTemplate")
-                        .WithMany()
-                        .HasForeignKey("EmailTemplateId");
-
-                    b.HasOne("SecretCustomer.Core.Entities.User", "SentByUser")
-                        .WithMany()
-                        .HasForeignKey("SentByUserId");
-
-                    b.HasOne("SecretCustomer.Core.Entities.TrainingVideoParticipant", "Participant")
-                        .WithMany("EmailLogs")
-                        .HasForeignKey("TrainingVideoParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EmailTemplate");
-
-                    b.Navigation("Participant");
-
-                    b.Navigation("SentByUser");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoParticipant", b =>
@@ -4345,11 +4235,6 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoAssignment", b =>
                 {
                     b.Navigation("Participants");
-                });
-
-            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoParticipant", b =>
-                {
-                    b.Navigation("EmailLogs");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.User", b =>

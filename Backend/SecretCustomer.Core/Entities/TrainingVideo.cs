@@ -46,6 +46,21 @@ public class TrainingVideo : BaseEntity
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Minimum izleme yüzdesi (tamamlanmış sayılması için). Örn: 90 = %90 izlenmeli
+    /// </summary>
+    public int MinWatchPercentage { get; set; } = 90;
+
+    /// <summary>
+    /// İleri/geri atlama izni var mı?
+    /// </summary>
+    public bool AllowSkipping { get; set; } = false;
+
+    /// <summary>
+    /// Maksimum oynatma hızı. Örn: 1.0 = normal hız, 1.5 = 1.5x hız
+    /// </summary>
+    public decimal MaxPlaybackSpeed { get; set; } = 1.0m;
+
+    /// <summary>
     /// Video kapsamları - hangi checklist/soru grubu/soruları kapsıyor
     /// </summary>
     public ICollection<TrainingVideoScope> Scopes { get; set; } = new List<TrainingVideoScope>();
@@ -166,6 +181,36 @@ public class TrainingVideoAssignment : BaseEntity
     /// Katılımcılar
     /// </summary>
     public ICollection<TrainingVideoParticipant> Participants { get; set; } = new List<TrainingVideoParticipant>();
+
+    /// <summary>
+    /// Minimum izleme sayısı (varsayılan: 1)
+    /// </summary>
+    public int MinWatchCount { get; set; } = 1;
+
+    /// <summary>
+    /// Maksimum izleme sayısı (null = sınırsız)
+    /// </summary>
+    public int? MaxWatchCount { get; set; }
+
+    /// <summary>
+    /// Video hızını değiştirmeye izin ver
+    /// </summary>
+    public bool AllowSpeedChange { get; set; } = false;
+
+    /// <summary>
+    /// Videoyu ileri/geri sarmaya izin ver
+    /// </summary>
+    public bool AllowSeeking { get; set; } = false;
+
+    /// <summary>
+    /// Email şablon ID
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Email şablonu
+    /// </summary>
+    public EmailTemplate? EmailTemplate { get; set; }
 }
 
 /// <summary>
@@ -219,6 +264,26 @@ public class TrainingVideoParticipant : BaseEntity
     public bool IsCompleted { get; set; }
 
     /// <summary>
+    /// Toplam izleme sayısı (video sonuna kadar izlendiğinde artar)
+    /// </summary>
+    public int WatchCount { get; set; }
+
+    /// <summary>
+    /// İlk email gönderim tarihi
+    /// </summary>
+    public DateTime? FirstEmailSentAt { get; set; }
+
+    /// <summary>
+    /// Son email gönderim tarihi
+    /// </summary>
+    public DateTime? LastEmailSentAt { get; set; }
+
+    /// <summary>
+    /// Toplam gönderilen email sayısı
+    /// </summary>
+    public int EmailSentCount { get; set; }
+
+    /// <summary>
     /// Kaynak değerlendirme ID (varsa - bu değerlendirmeden dolayı atandı)
     /// </summary>
     public int? SourceEvaluationId { get; set; }
@@ -227,4 +292,65 @@ public class TrainingVideoParticipant : BaseEntity
     /// Kaynak değerlendirme
     /// </summary>
     public Evaluation? SourceEvaluation { get; set; }
+
+    /// <summary>
+    /// Email gönderim geçmişi
+    /// </summary>
+    public ICollection<TrainingVideoEmailLog> EmailLogs { get; set; } = new List<TrainingVideoEmailLog>();
+}
+
+/// <summary>
+/// Eğitim Video Email Logu - Her email gönderimini ayrı ayrı takip eder
+/// </summary>
+public class TrainingVideoEmailLog : BaseEntity
+{
+    /// <summary>
+    /// Katılımcı ID
+    /// </summary>
+    public int TrainingVideoParticipantId { get; set; }
+
+    /// <summary>
+    /// Katılımcı
+    /// </summary>
+    public TrainingVideoParticipant Participant { get; set; } = null!;
+
+    /// <summary>
+    /// Email şablon ID
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Email şablonu
+    /// </summary>
+    public EmailTemplate? EmailTemplate { get; set; }
+
+    /// <summary>
+    /// Email gönderim tarihi
+    /// </summary>
+    public DateTime SentAt { get; set; }
+
+    /// <summary>
+    /// Gönderen kullanıcı ID (Admin)
+    /// </summary>
+    public int? SentByUserId { get; set; }
+
+    /// <summary>
+    /// Gönderen kullanıcı
+    /// </summary>
+    public User? SentByUser { get; set; }
+
+    /// <summary>
+    /// Email türü: 1=Initial (ilk atama), 2=Reminder (hatırlatma)
+    /// </summary>
+    public int EmailTypeId { get; set; } = 1;
+
+    /// <summary>
+    /// Email başarılı mı?
+    /// </summary>
+    public bool IsSuccess { get; set; } = true;
+
+    /// <summary>
+    /// Hata mesajı (varsa)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }
