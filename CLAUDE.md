@@ -26,6 +26,12 @@ Her entity/özellik eklerken şunları MUTLAKA kontrol et:
 - Migration'lar `SecretCustomer.Data` projesinde
 - Migration komutu: `cd Backend/SecretCustomer.Data && dotnet ef migrations add MigrationName --startup-project ../SecretCustomer.API`
 
+## Zorunlu Okunacak Dosyalar
+
+Her oturumda ve yeni özellik eklemeden önce bu dosyaları oku:
+- `Storage/Documentation/KURALLAR.md` - Development pattern'leri ve standartlar
+- `Storage/Documentation/CLAUDE.md` - Detaylı proje talimatları
+
 ## Proje Yapısı
 
 - Backend: ASP.NET Core

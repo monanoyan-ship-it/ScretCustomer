@@ -1,3 +1,5 @@
+using SecretCustomer.Core.DTOs.Report;
+
 namespace SecretCustomer.Core.DTOs.Meeting;
 
 /// <summary>
@@ -197,9 +199,8 @@ public class MeetingFilterDto
     public List<string>? MeetingTypes { get; set; }
     public List<string>? Statuses { get; set; }
 
-    // Tekil filtreler (çoklu mantıklı değil)
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    // Tarih filtresi (çoklu)
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public bool? IsOnline { get; set; }
     public bool? MyMeetingsOnly { get; set; }
     public int Page { get; set; } = 1;

@@ -1,3 +1,5 @@
+using SecretCustomer.Core.DTOs.Report;
+
 namespace SecretCustomer.Core.DTOs.SupportRequest;
 
 /// <summary>
@@ -86,8 +88,7 @@ public class SupportRequestFilterDto
     public int? StatusId { get; set; }
     public string? SenderType { get; set; }
     public string? SearchTerm { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
 }

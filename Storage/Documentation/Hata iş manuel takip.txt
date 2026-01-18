@@ -140,3 +140,14 @@ anket sayfası hata veriyor. \test edilecek
 Tüm kullanıcıların hata durumlarını anlatacağı bir system. \test edilecek
 
 Taslağa alma talebi hata veriyor.\anlık bir durumdu sanırım sorun olmadan taslağa aldı.
+
+Eğitim videoları konusunda çalışma: 
+
+4) test edilecek
+evulations da control tarihi sorgulama koyalaım. 
+evulations Dinlemeler Ziyaretler sekmesi excel e alınacak. 
+
+2)
+Bir CustomerPersonnel Full Admin yazılacak hangi müşteriyi seçtiyse giriş yaparken onun gözüyle uygulamayı görecek.
+
+

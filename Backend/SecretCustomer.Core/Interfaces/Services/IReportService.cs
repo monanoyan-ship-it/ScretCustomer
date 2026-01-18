@@ -15,7 +15,7 @@ public interface IReportService
     Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId);
 
     // Değerlendirme detayı Excel export
-    Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId);
+    Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId, bool excludeEvaluatorInfo = false);
 
     // Özet rapor
     Task<SummaryReportDto> GetSummaryReportAsync(ReportFilterDto filter);
@@ -42,6 +42,9 @@ public interface IReportService
 
     // Değerlendirilen personel listesi (müşteri ve organizasyona göre filtrelenebilir)
     Task<IEnumerable<PersonnelListItemDto>> GetEvaluatedPersonnelListAsync(int? customerId = null, int? organizationId = null);
+
+    // Personelin değerlendirildiği projeler (karne filtresi için)
+    Task<IEnumerable<ProjectListItemDto>> GetPersonnelProjectsAsync(int personnelId);
 
     // Temsilci Karnesi raporu
     Task<PersonnelReportCardDto?> GetPersonnelReportCardAsync(PersonnelReportCardFilterDto filter);
@@ -114,7 +117,12 @@ public interface IReportService
     // ===== PERFORMANS TAKİBİ =====
 
     // Performans Takibi raporu (Dinleyici performansı + Firma kotaları)
-    Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync();
+    Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync(
+        List<int>? customerIds = null,
+        List<int>? evaluatorIds = null,
+        List<int>? projectIds = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null);
 
     // ===== GENEL SORU PUAN DAĞILIMI =====
 

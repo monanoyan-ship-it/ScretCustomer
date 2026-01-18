@@ -27,7 +27,7 @@ public interface IAssignmentService
     Task<IEnumerable<AssignmentDto>> GetByProjectIdAsync(int projectId);
     Task<IEnumerable<AssignmentDto>> GetByUserIdAsync(int userId);
     Task<IEnumerable<AssignmentDto>> GetByCustomerPersonnelIdAsync(int customerPersonnelId);
-    Task<IEnumerable<AssignmentDto>> GetFilteredAsync(AssignmentFilterDto filter);
+    Task<PagedAssignmentResult> GetFilteredAsync(AssignmentFilterDto filter);
 
     // ===== DURUM YÖNETİMİ =====
     Task<AssignmentDto> CompleteAssignmentAsync(int id);

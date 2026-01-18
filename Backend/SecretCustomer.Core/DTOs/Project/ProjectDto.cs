@@ -180,9 +180,13 @@ public class ProjectFilterDto
     public List<string>? Statuses { get; set; }
     public List<int>? ProjectManagerIds { get; set; }
 
-    // Tekil filtreler (çoklu mantıklı değil)
+    // Tekil filtreler
     public string? SearchText { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
     public bool IncludeInactive { get; set; }
+
+    /// <summary>
+    /// Bitiş tarihi filtresi - proje bitiş tarihine göre filtreleme
+    /// Değerler: overdue, today, next7Days, thisWeek, next30Days, thisMonth, nextMonth, thisQuarter
+    /// </summary>
+    public string? EndingDateFilter { get; set; }
 }

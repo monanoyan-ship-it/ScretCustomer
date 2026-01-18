@@ -2134,7 +2134,7 @@ public class CustomerPortalApiController : ControllerBase
             if (evaluation?.Assignment?.Project?.CustomerId != customerId)
                 return Forbid();
 
-            var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId);
+            var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId, excludeEvaluatorInfo: true);
             if (result == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
 
@@ -2224,11 +2224,17 @@ public class CustomerPortalApiController : ControllerBase
                 OrganizationIds = organizationIds,
                 ChecklistIds = checklistIds,
                 PenaltyTypes = penaltyTypes,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = page,
                 PageSize = pageSize
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.GetPenaltiesReportAsync(filter);
 
@@ -2272,11 +2278,17 @@ public class CustomerPortalApiController : ControllerBase
                 OrganizationIds = organizationIds,
                 ChecklistIds = checklistIds,
                 PenaltyTypes = penaltyTypes,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = 1,
                 PageSize = int.MaxValue
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.ExportPenaltiesToExcelAsync(filter, excludeEvaluator: true);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2313,11 +2325,17 @@ public class CustomerPortalApiController : ControllerBase
                 CustomerIds = new List<int> { customerId.Value }, // Otomatik müşteri filtresi
                 ChecklistIds = checklistIds,
                 SearchText = searchText,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = page,
                 PageSize = pageSize
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.GetSuggestionsReportAsync(filter);
 
@@ -2360,10 +2378,16 @@ public class CustomerPortalApiController : ControllerBase
             {
                 ProjectIds = projectIds,
                 CustomerIds = new List<int> { customerId.Value },
-                ChecklistIds = checklistIds,
-                StartDate = startDate,
-                EndDate = endDate
+                ChecklistIds = checklistIds
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
             return Ok(result);
@@ -2396,10 +2420,16 @@ public class CustomerPortalApiController : ControllerBase
             {
                 ProjectIds = projectIds,
                 CustomerIds = new List<int> { customerId.Value },
-                ChecklistIds = checklistIds,
-                StartDate = startDate,
-                EndDate = endDate
+                ChecklistIds = checklistIds
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var data = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
 
@@ -2471,11 +2501,17 @@ public class CustomerPortalApiController : ControllerBase
                 CustomerIds = new List<int> { customerId.Value },
                 ChecklistIds = checklistIds,
                 SearchText = searchText,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = 1,
                 PageSize = int.MaxValue
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.ExportSuggestionsToExcelAsync(filter, excludeEvaluator: true);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -2526,13 +2562,28 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Güvenlik kontrolü: Personelin bu müşteriye ait olup olmadığını doğrula
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Temsilci bulunamadı." });
+
             var filter = new PersonnelReportCardFilterDto
             {
-                PersonnelId = personnelId,
-                CustomerId = customerId.Value, // Otomatik müşteri filtresi
-                StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
-                EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
+                PersonnelId = personnelId
             };
+
+            // DateRanges pattern
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter
+                    {
+                        StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
+                        EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
+                    }
+                };
+            }
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
 
@@ -2569,13 +2620,28 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Güvenlik kontrolü: Personelin bu müşteriye ait olup olmadığını doğrula
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Temsilci bulunamadı." });
+
             var filter = new PersonnelReportCardFilterDto
             {
-                PersonnelId = personnelId,
-                CustomerId = customerId.Value,
-                StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
-                EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
+                PersonnelId = personnelId
             };
+
+            // DateRanges pattern
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter
+                    {
+                        StartDate = startDate.HasValue ? DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc) : null,
+                        EndDate = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc) : null
+                    }
+                };
+            }
 
             var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);

@@ -166,55 +166,5 @@
     </div>
 </div>
 
-<style>
-.support-request-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
-.support-request-btn:hover {
-    transform: scale(1.1);
-}
-.support-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: #dc3545;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.request-item {
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.request-item:hover {
-    background-color: #f8f9fa;
-}
-.request-item:last-child {
-    border-bottom: none;
-}
-.request-item.unread {
-    background-color: #fff3cd;
-}
-.white-space-pre-wrap {
-    white-space: pre-wrap;
-}
-</style>
-
+<link rel="stylesheet" href="~/css/widgets/support-request-widget.css" />
 <script src="~/js/Shared/supportRequestWidget.js"></script>

@@ -108,6 +108,11 @@ function PenaltiesViewModel() {
     self.topPenaltyPersonnel = ko.observableArray([]);
     self.monthlyTrend = ko.observableArray([]);
 
+    // Evaluation Detail Modal
+    self.isDetailModalOpen = ko.observable(false);
+    self.isDetailLoading = ko.observable(false);
+    self.detailData = ko.observable(null);
+
     // Pagination
     self.totalCount = ko.observable(0);
     self.totalPages = ko.observable(0);
@@ -357,24 +362,13 @@ function PenaltiesViewModel() {
             }
         });
 
-        // Query string olustur (çoklu değer desteği)
-        if (customerIds.length === 1) params.push('customerId=' + customerIds[0]);
-        else if (customerIds.length > 1) customerIds.forEach(function(id) { params.push('customerIds=' + id); });
-
-        if (organizationIds.length === 1) params.push('organizationId=' + organizationIds[0]);
-        else if (organizationIds.length > 1) organizationIds.forEach(function(id) { params.push('organizationIds=' + id); });
-
-        if (projectIds.length === 1) params.push('projectId=' + projectIds[0]);
-        else if (projectIds.length > 1) projectIds.forEach(function(id) { params.push('projectIds=' + id); });
-
-        if (checklistIds.length === 1) params.push('checklistId=' + checklistIds[0]);
-        else if (checklistIds.length > 1) checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
-
-        if (evaluatorIds.length === 1) params.push('evaluatorId=' + evaluatorIds[0]);
-        else if (evaluatorIds.length > 1) evaluatorIds.forEach(function(id) { params.push('evaluatorIds=' + id); });
-
-        if (penaltyTypes.length === 1) params.push('penaltyType=' + penaltyTypes[0]);
-        else if (penaltyTypes.length > 1) penaltyTypes.forEach(function(t) { params.push('penaltyTypes=' + t); });
+        // Query string olustur - HER ZAMAN ÇOĞUL KULLAN
+        customerIds.forEach(function(id) { params.push('customerIds=' + id); });
+        organizationIds.forEach(function(id) { params.push('organizationIds=' + id); });
+        projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+        checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
+        evaluatorIds.forEach(function(id) { params.push('evaluatorIds=' + id); });
+        penaltyTypes.forEach(function(t) { params.push('penaltyTypes=' + t); });
 
         if (dateRanges.length > 0) {
             if (dateRanges[0].startDate) params.push('startDate=' + dateRanges[0].startDate);
@@ -395,8 +389,8 @@ function PenaltiesViewModel() {
 
     // Load filter options
     self.loadFilterOptions = function() {
-        // Load customers
-        fetch('/api/customers', { credentials: 'include' })
+        // Load customers (use /active endpoint for simple list)
+        fetch('/api/customers/active', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.customers(data || []);
@@ -405,41 +399,49 @@ function PenaltiesViewModel() {
                 console.error('Error loading customers:', error);
             });
 
-        // Load projects
+        // Load projects (paginated response)
         fetch('/api/projects', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                self.projects(data || []);
+                // Handle paginated response
+                var projects = data.items || data || [];
+                self.projects(projects);
             })
             .catch(function(error) {
                 console.error('Error loading projects:', error);
             });
 
-        // Load organizations
+        // Load organizations (paginated response)
         fetch('/api/customer-organizations', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                self.organizations(data || []);
+                // Handle paginated response
+                var orgs = data.items || data || [];
+                self.organizations(orgs);
             })
             .catch(function(error) {
                 console.error('Error loading organizations:', error);
             });
 
-        // Load checklists
+        // Load checklists (paginated response)
         fetch('/api/checklists', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                self.checklists(data || []);
+                // Handle paginated response
+                var checklists = data.items || data || [];
+                self.checklists(checklists);
             })
             .catch(function(error) {
                 console.error('Error loading checklists:', error);
             });
 
-        // Load evaluators (users)
+        // Load evaluators (users - paginated response)
         fetch('/api/users', { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                var users = (data || []).map(function(u) {
+                // Handle paginated response
+                var userList = data.items || data || [];
+                var users = userList.map(function(u) {
                     return {
                         id: u.id,
                         fullName: u.firstName + ' ' + u.lastName
@@ -595,6 +597,71 @@ function PenaltiesViewModel() {
             });
     };
 
+    // Show evaluation detail in modal
+    self.showEvaluationDetail = function(penalty) {
+        if (!penalty.evaluationId) {
+            toastr.warning(T('Evaluation.NotFound', 'Degerlendirme bulunamadi'));
+            return;
+        }
+
+        self.isDetailModalOpen(true);
+        self.isDetailLoading(true);
+        self.detailData(null);
+
+        fetch('/api/evaluations/' + penalty.evaluationId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error(T('Evaluation.NotFound', 'Degerlendirme bulunamadi'));
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailData(data);
+            })
+            .catch(function(error) {
+                console.error('Detail load error:', error);
+                self.closeDetailModal();
+                toastr.error(T('Evaluation.DetailsLoadError', 'Degerlendirme detaylari yuklenirken hata olustu.'));
+            })
+            .finally(function() {
+                self.isDetailLoading(false);
+            });
+    };
+
+    // Export detail to Excel
+    self.exportDetailToExcel = function() {
+        var detail = self.detailData();
+        if (!detail || !detail.evaluationId) return;
+
+        self.isExporting(true);
+        fetch('/api/reports/evaluations/' + detail.evaluationId + '/export', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'Degerlendirme_Detay_' + detail.evaluationId + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                alert('Excel export hatası');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Close detail modal
+    self.closeDetailModal = function() {
+        self.isDetailModalOpen(false);
+        self.detailData(null);
+    };
+
     // Initialize
     self.loadFilterOptions();
     self.loadReport();
@@ -608,7 +675,9 @@ var TRANSLATION_KEYS = [
     'Report.ExcelExportError',
     'Penalty.YellowCard',
     'Penalty.RedCard',
-    'File.PenaltyReport'
+    'File.PenaltyReport',
+    'Evaluation.NotFound',
+    'Evaluation.DetailsLoadError'
 ];
 
 // Apply bindings

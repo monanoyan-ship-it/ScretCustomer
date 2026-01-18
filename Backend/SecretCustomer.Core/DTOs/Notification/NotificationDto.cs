@@ -1,3 +1,5 @@
+using SecretCustomer.Core.DTOs.Report;
+
 namespace SecretCustomer.Core.DTOs.Notification;
 
 /// <summary>
@@ -98,8 +100,7 @@ public class NotificationFilterDto
     public string? Channel { get; set; }
     public string? Priority { get; set; }
     public bool? IsRead { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public string? SearchTerm { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;

@@ -1,0 +1,62 @@
+/* Survey Page Styles */
+
+/* Large spinner (loading state) */
+.spinner-lg {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Large icon (error/success states) */
+.icon-xl {
+    font-size: 4rem;
+}
+
+/* Extra large icon (success checkmark) */
+.icon-xxl {
+    font-size: 6rem;
+}
+
+/* Radio/checkbox pointer events fix */
+.form-check-input-static {
+    pointer-events: none;
+}
+
+/* ===== Survey Error Page Styles ===== */
+.survey-error-body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.survey-error-card {
+    background: white;
+    border-radius: 20px;
+    padding: 60px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    margin: 20px;
+}
+
+.survey-error-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px;
+}
+
+.survey-error-icon i {
+    font-size: 50px;
+    color: white;
+}
+
+.survey-error-title {
+    color: #dc3545;
+    margin-bottom: 15px;
+}

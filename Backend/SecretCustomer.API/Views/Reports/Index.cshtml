@@ -31,7 +31,7 @@
                     <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                     </button>
-                    <div class="dropdown-menu p-3" style="min-width: 320px;">
+                    <div class="dropdown-menu p-3 filter-dropdown">
                         <!-- Filter Type Selector -->
                         <div class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
@@ -222,11 +222,11 @@
                                 <small class="text-muted d-block" data-bind="text: checklistName"></small>
                             </td>
                             <td>
-                                <span data-bind="text: assigneeName || '-'"></span>
+                                <span data-bind="text: $data.assigneeName || '-'"></span>
                             </td>
                             <td>
-                                <span data-bind="text: evaluatorName || '-'"></span>
-                                <small class="text-muted d-block" data-bind="visible: evaluatedPersonnelName, text: '@Html.T("Report.EvaluatedPerson", "Denetlenen"): ' + (evaluatedPersonnelName || '')"></small>
+                                <span data-bind="text: $data.evaluatorName || '-'"></span>
+                                <small class="text-muted d-block" data-bind="visible: $data.evaluatedPersonnelName, text: '@Html.T("Report.EvaluatedPerson", "Denetlenen"): ' + ($data.evaluatedPersonnelName || '')"></small>
                             </td>
                             <td>
                                 <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : '-'"></span>
@@ -268,7 +268,7 @@
         <!-- Pagination Footer -->
         <div class="card-footer bg-white" data-bind="visible: paginationInfo().totalPages > 1">
             <nav>
-                <ul class="pagination justify-content-center mb-0">
+                <ul class="pagination mb-0">
                     <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasPreviousPage }">
                         <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Onceki")</a>
                     </li>
@@ -304,7 +304,7 @@
                                 <dt class="col-sm-4">@Html.T("Report.Checklist", "Kontrol Listesi"):</dt>
                                 <dd class="col-sm-8" data-bind="text: checklistName"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Evaluator", "Degerlendirici"):</dt>
-                                <dd class="col-sm-8" data-bind="text: evaluatorName || '-'"></dd>
+                                <dd class="col-sm-8" data-bind="text: $data.evaluatorName || '-'"></dd>
                             </dl>
                         </div>
                         <div class="col-md-6">
@@ -326,43 +326,38 @@
                         </div>
                     </div>
 
-                    <!-- Question Groups -->
-                    <div data-bind="foreach: groups">
-                        <div class="card mb-3">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">
-                                    <span data-bind="text: order"></span>. <span data-bind="text: groupName"></span>
-                                    <span class="float-end badge bg-primary" data-bind="text: (groupScore || 0).toFixed(1) + '/' + (groupMaxScore || 0).toFixed(1)"></span>
-                                </h6>
-                            </div>
-                            <div class="card-body p-0">
-                                <table class="table table-sm mb-0">
+                    <!-- Answers Table -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-list-check"></i> @Html.T("Evaluation.Answers", "Verilen Cevaplar")</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 50%;">@Html.T("Report.Question", "Soru")</th>
-                                            <th>@Html.T("Report.Answer", "Cevap")</th>
-                                            <th>@Html.T("Report.Score", "Puan")</th>
-                                            <th>@Html.T("Report.Note", "Not")</th>
+                                            <th style="width: 15%;">@Html.T("Evaluation.Group", "Grup")</th>
+                                            <th style="width: 35%;">@Html.T("Report.Question", "Soru")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Report.Score", "Puan")</th>
+                                            <th style="width: 35%;">@Html.T("Report.Note", "Not")</th>
                                         </tr>
                                     </thead>
-                                    <tbody data-bind="foreach: questions">
-                                        <tr data-bind="css: { 'table-warning': penaltyType === 'YellowCard', 'table-danger': penaltyType === 'RedCard' }">
-                                            <td>
-                                                <small><span data-bind="text: order"></span>.</small>
-                                                <span data-bind="text: questionText"></span>
+                                    <tbody data-bind="foreach: $data.answers || []">
+                                        <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
+                                            <td class="text-wrap" data-bind="text: groupName || '-'"></td>
+                                            <td class="text-wrap" data-bind="text: questionText"></td>
+                                            <td class="text-center">
+                                                <!-- ko if: givenPoints !== null && givenPoints !== undefined -->
+                                                <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: givenPoints === null || givenPoints === undefined -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
                                             </td>
                                             <td>
-                                                <span data-bind="visible: isNA" class="badge bg-secondary">N/A</span>
-                                                <span data-bind="visible: !isNA && answerText, text: answerText"></span>
-                                                <span data-bind="visible: !isNA && answerNumeric, text: answerNumeric"></span>
-                                            </td>
-                                            <td>
-                                                <span data-bind="text: (givenPoints || 0).toFixed(1) + '/' + (maxPoints || 0).toFixed(1)"></span>
-                                            </td>
-                                            <td>
-                                                <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">@Html.T("Report.YellowCard", "Sari Kart")</span>
-                                                <span data-bind="visible: penaltyType === 'RedCard'" class="badge bg-danger">@Html.T("Report.RedCard", "Kirmizi Kart")</span>
-                                                <small data-bind="text: notes" class="d-block text-muted"></small>
+                                                <span data-bind="visible: appliedPenaltyType === 'YellowCard'" class="badge bg-warning text-dark me-1">Sarı Kart</span>
+                                                <span data-bind="visible: appliedPenaltyType === 'RedCard'" class="badge bg-danger me-1">Kırmızı Kart</span>
+                                                <small data-bind="text: notes" class="text-muted"></small>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -371,9 +366,14 @@
                         </div>
                     </div>
 
-                    <!-- Comment -->
-                    <div data-bind="visible: comment" class="alert alert-info">
-                        <strong>@Html.T("Report.GeneralComment", "Genel Yorum"):</strong> <span data-bind="text: comment"></span>
+                    <!-- Evaluation Comment -->
+                    <div data-bind="visible: $data.evaluationComment" class="card mt-3">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0" data-bind="text: $data.evaluationComment"></p>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

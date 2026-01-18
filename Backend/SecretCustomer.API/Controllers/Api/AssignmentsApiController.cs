@@ -14,21 +14,18 @@ public class AssignmentsApiController : BaseApiController
 {
     private readonly IAssignmentService _assignmentService;
     private readonly IProjectService _projectService;
-    private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<AssignmentsApiController> _logger;
     private readonly ILocalizationService _localizationService;
 
     public AssignmentsApiController(
         IAssignmentService assignmentService,
         IProjectService projectService,
-        IQRCodeService qrCodeService,
         ILogger<AssignmentsApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _assignmentService = assignmentService;
         _projectService = projectService;
-        _qrCodeService = qrCodeService;
         _logger = logger;
         _localizationService = localizationService;
     }
@@ -548,58 +545,6 @@ public class AssignmentsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error loading upcoming due assignments");
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.UpcomingLoadError"), ex));
-        }
-    }
-
-    #endregion
-
-    #region QR CODE
-
-    [HttpGet("{id}/qr-code")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetQRCode(int id)
-    {
-        try
-        {
-            var assignment = await _assignmentService.GetByIdAsync(id);
-            if (assignment == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
-
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
-            var qrBytes = _qrCodeService.GenerateAssignmentQRCode(
-                assignment.UniqueLink,
-                baseUrl);
-
-            return File(qrBytes, "image/png", $"assignment-{id}-qr.png");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating QR code for assignment {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.QRCodeError"), ex));
-        }
-    }
-
-    [HttpGet("{id}/qr-code/base64")]
-    [AllowAnonymous]
-    public async Task<ActionResult<object>> GetQRCodeBase64(int id)
-    {
-        try
-        {
-            var assignment = await _assignmentService.GetByIdAsync(id);
-            if (assignment == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
-
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            var qrBase64 = _qrCodeService.GenerateQRCodeBase64(
-                $"{baseUrl}/form/{assignment.UniqueLink}");
-
-            return Ok(new { qrCode = $"data:image/png;base64,{qrBase64}" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating QR code base64 for assignment {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.QRCodeError"), ex));
         }
     }
 

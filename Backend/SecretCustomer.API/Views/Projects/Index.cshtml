@@ -82,7 +82,7 @@
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
                         <option value="projectManager">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</option>
                         <option value="search">@Html.T("Common.Search", "Arama")</option>
-                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                        <option value="endingDate">Bitiş Tarihi</option>
                     </select>
                 </div>
 
@@ -135,40 +135,15 @@
                         <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Project.SearchPlaceholder", "Proje ara...")" data-bind="value: tempFilter.searchTerm, valueUpdate: 'input'">
                     </div>
 
-                    <!-- Date Range Filter -->
-                    <div data-bind="visible: selectedFilterType() === 'dateRange'">
-                        <label class="form-label small text-muted">@Html.T("Common.DateRange", "Tarih Aralığı")</label>
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
-                            </div>
-                            <div class="col-md-4">
-                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-calendar-range"></i> @Html.T("Common.QuickSelect", "Hızlı Seçim")
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">@Html.T("Common.Today", "Bugün")</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last7Days'); }">@Html.T("Common.Last7Days", "Son 7 Gün")</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last30Days'); }">@Html.T("Common.Last30Days", "Son 30 Gün")</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisQuarter'); }">@Html.T("Common.ThisQuarter", "Bu Çeyrek")</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisYear'); }">@Html.T("Common.ThisYear", "Bu Yıl")</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Ending Date Filter (Proje bitiş tarihine göre) -->
+                    <div data-bind="visible: selectedFilterType() === 'endingDate'">
+                        <label class="form-label small text-muted">Bitiş Tarihi Filtresi</label>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.selectedDateRangeType">
+                            <option value="">Seçiniz...</option>
+                            <!-- ko foreach: endingDateOptions -->
+                            <option data-bind="value: systemName, text: name"></option>
+                            <!-- /ko -->
+                        </select>
                     </div>
 
                     <!-- No filter selected message -->
@@ -336,10 +311,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="card-footer d-flex justify-content-between align-items-center" data-bind="visible: totalPages() > 1">
-                <div class="text-muted small">
-                    <span data-bind="text: ((currentPage() - 1) * pageSize() + 1) + '-' + Math.min(currentPage() * pageSize(), totalCount()) + ' / ' + totalCount()"></span>
-                </div>
+            <div class="card-footer d-flex align-items-center gap-3" data-bind="visible: totalPages() > 1">
                 <nav>
                     <ul class="pagination pagination-sm mb-0">
                         <li class="page-item" data-bind="css: { disabled: currentPage() === 1 }">

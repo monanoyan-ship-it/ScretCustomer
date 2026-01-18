@@ -361,7 +361,7 @@ public class AssignmentService : IAssignmentService
         return assignments.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> GetFilteredAsync(AssignmentFilterDto filter)
+    public async Task<PagedAssignmentResult> GetFilteredAsync(AssignmentFilterDto filter)
     {
         var query = _context.Assignments
             .Include(a => a.Project)
@@ -469,8 +469,22 @@ public class AssignmentService : IAssignmentService
             _ => query.OrderByDescending(a => a.CreatedAt) // Default
         };
 
-        var assignments = await orderedQuery.ToListAsync();
-        return assignments.Select(MapToDto);
+        // Total count (paging için)
+        var totalCount = await orderedQuery.CountAsync();
+
+        // Paging uygula
+        var assignments = await orderedQuery
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        return new PagedAssignmentResult
+        {
+            Items = assignments.Select(MapToDto).ToList(),
+            TotalCount = totalCount,
+            Page = filter.Page,
+            PageSize = filter.PageSize
+        };
     }
 
     #endregion

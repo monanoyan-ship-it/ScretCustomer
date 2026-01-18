@@ -28,7 +28,7 @@
                     <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                     </button>
-                    <div class="dropdown-menu p-3" style="min-width: 320px;">
+                    <div class="dropdown-menu p-3 filter-dropdown">
                         <!-- Filter Type Selector -->
                         <div class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
@@ -292,7 +292,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div data-bind="visible: totalPages() > 1" class="d-flex justify-content-center align-items-center py-3 border-top">
+                    <div data-bind="visible: totalPages() > 1" class="py-3 border-top">
                         <nav>
                             <ul class="pagination mb-0">
                                 <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">

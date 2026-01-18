@@ -360,24 +360,13 @@ function ReportsViewModel() {
             }
         });
 
-        // Array'leri params'a ekle (çoklu değer desteği)
-        if (projectIds.length === 1) params.projectId = projectIds[0];
-        else if (projectIds.length > 1) params.projectIds = projectIds;
-
-        if (branchIds.length === 1) params.branchId = branchIds[0];
-        else if (branchIds.length > 1) params.branchIds = branchIds;
-
-        if (evaluatorIds.length === 1) params.evaluatorId = evaluatorIds[0];
-        else if (evaluatorIds.length > 1) params.evaluatorIds = evaluatorIds;
-
-        if (checklistIds.length === 1) params.checklistId = checklistIds[0];
-        else if (checklistIds.length > 1) params.checklistIds = checklistIds;
-
-        if (regions.length === 1) params.region = regions[0];
-        else if (regions.length > 1) params.regions = regions;
-
-        if (statuses.length === 1) params.status = statuses[0];
-        else if (statuses.length > 1) params.statuses = statuses;
+        // Array'leri params'a ekle - HER ZAMAN ÇOĞUL KULLAN
+        if (projectIds.length > 0) params.projectIds = projectIds;
+        if (branchIds.length > 0) params.branchIds = branchIds;
+        if (evaluatorIds.length > 0) params.evaluatorIds = evaluatorIds;
+        if (checklistIds.length > 0) params.checklistIds = checklistIds;
+        if (regions.length > 0) params.regions = regions;
+        if (statuses.length > 0) params.statuses = statuses;
 
         if (dateRanges.length > 0) {
             params.startDate = dateRanges[0].startDate;

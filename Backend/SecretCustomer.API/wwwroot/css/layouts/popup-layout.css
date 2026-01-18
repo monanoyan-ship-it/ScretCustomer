@@ -1,0 +1,24 @@
+/* Popup Layout Styles */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.popup-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.popup-header h4 {
+    margin: 0;
+}

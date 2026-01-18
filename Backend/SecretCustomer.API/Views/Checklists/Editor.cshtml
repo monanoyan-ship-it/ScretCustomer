@@ -128,7 +128,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Checklist.MaxTotalPoints", "Maks. Toplam Puan")</label>
-                        <input type="number" class="form-control" data-bind="value: maxTotalPoints" min="0" style="max-width: 200px;" />
+                        <input type="number" class="form-control max-points-input" data-bind="value: maxTotalPoints" min="0" />
                         <small class="text-muted">@Html.T("Checklist.MaxTotalPointsHelp", "Varsayılan: 100")</small>
                     </div>
 
@@ -159,7 +159,7 @@
                         <i class="bi bi-plus-circle"></i> @Html.T("Checklist.AddQuestion", "Soru Ekle")
                     </button>
                 </div>
-                <div class="card-body p-2" style="max-height: calc(100vh - 250px); overflow-y: auto;">
+                <div class="card-body p-2 questions-container">
                     <!-- Questions -->
                     <div data-bind="foreach: questions">
                         <div class="card mb-2 question-card" data-bind="css: { 'border-warning': penaltyType() === 'YellowCard', 'border-danger': penaltyType() === 'RedCard' }">
@@ -181,7 +181,7 @@
                                                data-bind="value: groupName, event: { focus: $root.showGroupSuggestions, input: $root.filterGroupSuggestions, blur: $root.hideGroupSuggestions }"
                                                placeholder="@Html.T("Question.GroupNamePlaceholder", "Grup adı...")"
                                                autocomplete="off" />
-                                        <div class="dropdown-menu w-100 show" style="max-height: 200px; overflow-y: auto;" data-bind="visible: $root.showGroupDropdown() && $root.filteredGroups().length > 0, foreach: $root.filteredGroups">
+                                        <div class="dropdown-menu w-100 show group-suggestions-dropdown" data-bind="visible: $root.showGroupDropdown() && $root.filteredGroups().length > 0, foreach: $root.filteredGroups">
                                             <a class="dropdown-item" href="#" data-bind="text: $data, click: function() { $parent.groupName($data); $root.showGroupDropdown(false); }"></a>
                                         </div>
                                     </div>
@@ -450,7 +450,7 @@
                     </div>
 
                     <h6 class="mt-3">@Html.T("Checklist.QuestionSummary", "Soru Özeti")</h6>
-                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <div class="table-responsive summary-table-container">
                         <table class="table table-sm table-bordered">
                             <thead class="table-light sticky-top">
                                 <tr>
@@ -497,20 +497,17 @@
     </div>
 
     <!-- Sol Orta - Geri Butonu -->
-    <button type="button" class="btn btn-outline-primary rounded-circle position-fixed top-50 start-0 translate-middle-y ms-2 shadow"
-            style="width:50px;height:50px;z-index:1000;"
+    <button type="button" class="btn btn-outline-primary rounded-circle position-fixed top-50 start-0 translate-middle-y ms-2 shadow wizard-nav-btn"
             data-bind="visible: !isLoading() && checklist() && wizardStep() > 1, click: prevStep">
         <i class="bi bi-arrow-left fs-5"></i>
     </button>
 
     <!-- Sağ Orta - İleri/Kaydet Butonu -->
-    <button type="button" class="btn btn-primary rounded-circle position-fixed top-50 end-0 translate-middle-y me-2 shadow"
-            style="width:50px;height:50px;z-index:1000;"
+    <button type="button" class="btn btn-primary rounded-circle position-fixed top-50 end-0 translate-middle-y me-2 shadow wizard-nav-btn"
             data-bind="visible: !isLoading() && checklist() && wizardStep() < 4, click: nextStep">
         <i class="bi bi-arrow-right fs-5"></i>
     </button>
-    <button type="button" class="btn btn-success rounded-circle position-fixed top-50 end-0 translate-middle-y me-2 shadow"
-            style="width:50px;height:50px;z-index:1000;"
+    <button type="button" class="btn btn-success rounded-circle position-fixed top-50 end-0 translate-middle-y me-2 shadow wizard-nav-btn"
             data-bind="visible: !isLoading() && checklist() && wizardStep() === 4, click: saveChecklist, disable: isSaving">
         <span data-bind="visible: !isSaving()"><i class="bi bi-save fs-5"></i></span>
         <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
@@ -527,25 +524,7 @@
 </script>
 
 @section Styles {
-    <style>
-        /* Genel font küçültme */
-        #checklist-editor { font-size: 0.85rem; padding-left: 70px; padding-right: 70px; }
-        #checklist-editor .form-control,
-        #checklist-editor .form-select { font-size: 0.85rem; padding: 0.35rem 0.65rem; }
-        #checklist-editor .form-label { font-size: 0.8rem; margin-bottom: 0.25rem; }
-        #checklist-editor .btn { font-size: 0.85rem; }
-        #checklist-editor .card-header { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
-        #checklist-editor .card-body { padding: 0.75rem; }
-        #checklist-editor .nav-pills .nav-link { font-size: 0.85rem; padding: 0.5rem 0.75rem; }
-        #checklist-editor .table { font-size: 0.8rem; }
-        /* Question card */
-        .question-card { border-left: 3px solid #6c757d; }
-        .question-card.border-warning { border-left-color: #ffc107 !important; }
-        .question-card.border-danger { border-left-color: #dc3545 !important; }
-        .nav-pills .nav-link { cursor: pointer; }
-        .nav-pills .nav-link:not(.active) { color: #6c757d; }
-        .form-label-sm { font-size: 0.75rem; }
-    </style>
+    <link rel="stylesheet" href="~/css/pages/checklist-editor.css" />
 }
 
 @section Scripts {

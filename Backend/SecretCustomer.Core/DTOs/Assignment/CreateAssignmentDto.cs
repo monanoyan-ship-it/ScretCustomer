@@ -106,4 +106,20 @@ public class AssignmentFilterDto
     // Sorting
     public string? SortBy { get; set; }
     public string SortDirection { get; set; } = "desc";
+
+    // Pagination
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Sayfalanmış atama sonucu
+/// </summary>
+public class PagedAssignmentResult
+{
+    public List<AssignmentDto> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }

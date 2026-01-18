@@ -98,11 +98,11 @@
 
         <!-- Sağ Panel: Placeholder Seçici -->
         <div class="col-lg-4">
-            <div class="card shadow-sm sticky-top" style="top: 20px;">
+            <div class="card shadow-sm sticky-top placeholder-panel">
                 <div class="card-header bg-info text-white py-2">
                     <h6 class="mb-0"><i class="bi bi-braces"></i> Değişken Ekle</h6>
                 </div>
-                <div class="card-body p-0" style="max-height: 450px; overflow-y: auto;">
+                <div class="card-body p-0 placeholder-panel-body">
                     <div class="accordion accordion-flush" id="placeholderAccordion" data-bind="foreach: placeholderCategories">
                         <div class="accordion-item">
                             <h2 class="accordion-header">
@@ -170,20 +170,7 @@
 
 @section Styles {
     <link href="~/lib/summernote/summernote-lite.min.css" rel="stylesheet">
-    <style>
-        .note-editor { border-radius: 0.375rem; }
-        .note-toolbar { border-radius: 0.375rem 0.375rem 0 0; }
-        /* Fullscreen fix */
-        .note-editor.note-fullscreen {
-            z-index: 9999 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: #fff;
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/pages/email-template-editor.css" />
 }
 
 @section Scripts {

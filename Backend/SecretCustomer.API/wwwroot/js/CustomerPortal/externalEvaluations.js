@@ -140,9 +140,6 @@ function CustomerExternalEvaluationsViewModel() {
 
     // Quick date range filter - direkt uygula ve ara (hızlı erişim butonları için)
     self.setQuickDateRange = function(rangeType) {
-        // Mevcut tarih filtresini kaldır
-        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
-
         var range = self.calculateDateRange(rangeType);
         var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
 
@@ -318,18 +315,11 @@ function CustomerExternalEvaluationsViewModel() {
             }
         });
 
-        // Array'leri params'a ekle (boş olmayanları)
-        if (projectIds.length === 1) params.projectId = projectIds[0];
-        else if (projectIds.length > 1) params.projectIds = projectIds;
-
-        if (personnelNames.length === 1) params.personnelName = personnelNames[0];
-        else if (personnelNames.length > 1) params.personnelNames = personnelNames;
-
-        if (organizationIds.length === 1) params.organizationId = organizationIds[0];
-        else if (organizationIds.length > 1) params.organizationIds = organizationIds;
-
-        if (callIds.length === 1) params.callId = callIds[0];
-        else if (callIds.length > 1) params.callIds = callIds;
+        // Array'leri params'a ekle - HER ZAMAN ÇOĞUL KULLAN
+        if (projectIds.length > 0) params.projectIds = projectIds;
+        if (personnelNames.length > 0) params.personnelNames = personnelNames;
+        if (organizationIds.length > 0) params.organizationIds = organizationIds;
+        if (callIds.length > 0) params.callIds = callIds;
 
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
@@ -348,7 +338,15 @@ function CustomerExternalEvaluationsViewModel() {
         var url = '/api/customer/portal/evaluations/external?page=' + page + '&pageSize=' + self.pageSize();
 
         Object.keys(params).forEach(function(key) {
-            url += '&' + key + '=' + encodeURIComponent(params[key]);
+            var value = params[key];
+            // Array ise her elemanı ayrı parametre olarak ekle
+            if (Array.isArray(value)) {
+                value.forEach(function(v) {
+                    url += '&' + key + '=' + encodeURIComponent(v);
+                });
+            } else {
+                url += '&' + key + '=' + encodeURIComponent(value);
+            }
         });
 
         customerApiFetch(url)
@@ -361,10 +359,11 @@ function CustomerExternalEvaluationsViewModel() {
                 self.total(data.total || 0);
                 self.averageScore(data.averageScore || 0);
                 self.page(data.page || 1);
-                self.isLoading(false);
             })
             .catch(function(error) {
                 console.error('External evaluations load error:', error);
+            })
+            .finally(function() {
                 self.isLoading(false);
             });
     };

@@ -139,9 +139,6 @@ function CustomerInternalEvaluationsViewModel() {
 
     // Quick date range filter - direkt uygula ve ara (hızlı erişim butonları için)
     self.setQuickDateRange = function(rangeType) {
-        // Mevcut tarih filtresini kaldır
-        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
-
         var range = self.calculateDateRange(rangeType);
         var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
 
@@ -309,21 +306,12 @@ function CustomerInternalEvaluationsViewModel() {
             }
         });
 
-        // Array'leri params'a ekle (boş olmayanları)
-        if (projectIds.length === 1) params.projectId = projectIds[0];
-        else if (projectIds.length > 1) params.projectIds = projectIds;
-
-        if (evaluatorNames.length === 1) params.evaluatorName = evaluatorNames[0];
-        else if (evaluatorNames.length > 1) params.evaluatorNames = evaluatorNames;
-
-        if (personnelNames.length === 1) params.personnelName = personnelNames[0];
-        else if (personnelNames.length > 1) params.personnelNames = personnelNames;
-
-        if (organizationIds.length === 1) params.organizationId = organizationIds[0];
-        else if (organizationIds.length > 1) params.organizationIds = organizationIds;
-
-        if (callIds.length === 1) params.callId = callIds[0];
-        else if (callIds.length > 1) params.callIds = callIds;
+        // Array'leri params'a ekle - HER ZAMAN ÇOĞUL KULLAN
+        if (projectIds.length > 0) params.projectIds = projectIds;
+        if (evaluatorNames.length > 0) params.evaluatorNames = evaluatorNames;
+        if (personnelNames.length > 0) params.personnelNames = personnelNames;
+        if (organizationIds.length > 0) params.organizationIds = organizationIds;
+        if (callIds.length > 0) params.callIds = callIds;
 
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
@@ -340,7 +328,14 @@ function CustomerInternalEvaluationsViewModel() {
         var url = '/api/customer/portal/evaluations/internal?page=' + page + '&pageSize=' + self.pageSize();
 
         Object.keys(params).forEach(function(key) {
-            url += '&' + key + '=' + encodeURIComponent(params[key]);
+            var value = params[key];
+            if (Array.isArray(value)) {
+                value.forEach(function(v) {
+                    url += '&' + key + '=' + encodeURIComponent(v);
+                });
+            } else {
+                url += '&' + key + '=' + encodeURIComponent(value);
+            }
         });
 
         customerApiFetch(url)

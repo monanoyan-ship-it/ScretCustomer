@@ -1,0 +1,52 @@
+/* Organization Card & Tree Styles - CustomerOrganizations/Index */
+
+/* Organization Card */
+.org-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.org-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.org-card .card-header {
+    transition: all 0.2s ease;
+}
+
+/* Personnel Tree */
+.personnel-tree {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tree-item {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tree-item:hover {
+    background-color: #f8f9fa;
+}
+
+.tree-children {
+    margin-left: 20px;
+    border-left: 2px solid #e0e0e0;
+}
+
+.tree-children .tree-item {
+    background-color: #fafafa;
+}
+
+.tree-connector {
+    color: #ccc;
+    font-family: monospace;
+}
+
+.tree-supervisor {
+    background-color: #fff;
+}
+
+.tree-section-header {
+    font-size: 0.85rem;
+}

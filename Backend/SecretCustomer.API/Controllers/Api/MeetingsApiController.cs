@@ -89,11 +89,28 @@ public class MeetingsApiController : BaseApiController
                 query = query.Where(m => statusIds.Contains(m.StatusId));
         }
 
-        if (filter.StartDate.HasValue)
-            query = query.Where(m => m.PlannedDate >= filter.StartDate.Value);
+        // DateRanges pattern
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-            query = query.Where(m => m.PlannedDate <= filter.EndDate.Value);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(m => m.PlannedDate >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(m => m.PlannedDate <= maxEnd);
+        }
 
         if (filter.IsOnline.HasValue)
             query = query.Where(m => m.IsOnline == filter.IsOnline.Value);

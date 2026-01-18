@@ -198,7 +198,7 @@
                                     <th class="text-center">@Html.T("Report.AvgPercentage", "Yüzde")</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: questionDistribution().questions">
+                            <tbody data-bind="foreach: (questionDistribution() && questionDistribution().questions) || []">
                                 <tr>
                                     <td>
                                         <div data-bind="text: questionText"></div>

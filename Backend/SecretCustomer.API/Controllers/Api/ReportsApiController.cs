@@ -353,11 +353,18 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PenaltyTypes = penaltyTypes,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = page,
                 PageSize = pageSize
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
             var result = await _reportService.GetPenaltiesReportAsync(filter);
             return Ok(result);
         }
@@ -392,11 +399,18 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PenaltyTypes = penaltyTypes,
-                StartDate = startDate,
-                EndDate = endDate,
                 Page = 1,
                 PageSize = int.MaxValue // Export için pagination yok
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
             var result = await _reportService.ExportPenaltiesToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
@@ -469,6 +483,24 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Personelin değerlendirildiği projeleri getirir (karne filtresi için)
+    /// </summary>
+    [HttpGet("personnel-projects/{personnelId:int}")]
+    public async Task<IActionResult> GetPersonnelProjects(int personnelId)
+    {
+        try
+        {
+            var projects = await _reportService.GetPersonnelProjectsAsync(personnelId);
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading projects for personnel {PersonnelId}", personnelId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
+        }
+    }
+
+    /// <summary>
     /// Temsilci Karnesi raporunu getirir
     /// </summary>
     [HttpGet("personnel-report-card/{personnelId:int}")]
@@ -483,10 +515,17 @@ public class ReportsApiController : BaseApiController
             var filter = new PersonnelReportCardFilterDto
             {
                 PersonnelId = personnelId,
-                ProjectId = projectIds?.FirstOrDefault(),
-                StartDate = startDate,
-                EndDate = endDate
+                ProjectIds = projectIds
             };
+
+            // DateRanges pattern: startDate/endDate -> DateRanges
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
             if (result == null)
@@ -516,10 +555,17 @@ public class ReportsApiController : BaseApiController
             var filter = new PersonnelReportCardFilterDto
             {
                 PersonnelId = personnelId,
-                ProjectId = projectIds?.FirstOrDefault(),
-                StartDate = startDate,
-                EndDate = endDate
+                ProjectIds = projectIds
             };
+
+            // DateRanges pattern: startDate/endDate -> DateRanges
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -560,12 +606,19 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PersonnelIds = personnelIds,
-                StartDate = startDate,
-                EndDate = endDate,
                 SearchText = searchText,
                 Page = page,
                 PageSize = pageSize
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
             var result = await _reportService.GetSuggestionsReportAsync(filter);
             return Ok(result);
         }
@@ -594,10 +647,17 @@ public class ReportsApiController : BaseApiController
             {
                 ProjectIds = projectIds,
                 CustomerIds = customerIds,
-                ChecklistIds = checklistIds,
-                StartDate = startDate,
-                EndDate = endDate
+                ChecklistIds = checklistIds
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
             var result = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
             return Ok(result);
         }
@@ -851,10 +911,17 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PersonnelIds = personnelIds,
-                StartDate = startDate,
-                EndDate = endDate,
                 SearchText = searchText
             };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
             var result = await _reportService.ExportSuggestionsToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
@@ -870,11 +937,17 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("performance-tracking")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetPerformanceTracking()
+    public async Task<IActionResult> GetPerformanceTracking(
+        [FromQuery] List<int>? customerIds = null,
+        [FromQuery] List<int>? evaluatorIds = null,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         try
         {
-            var result = await _reportService.GetPerformanceTrackingAsync();
+            var result = await _reportService.GetPerformanceTrackingAsync(
+                customerIds, evaluatorIds, projectIds, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)
@@ -901,14 +974,21 @@ public class ReportsApiController : BaseApiController
         {
             var filter = new PersonnelQuestionPerformanceFilterDto
             {
-                CustomerId = customerIds?.FirstOrDefault(),
-                ProjectId = projectIds?.FirstOrDefault(),
-                OrganizationId = organizationIds?.FirstOrDefault(),
-                PersonnelId = personnelIds?.FirstOrDefault(),
-                PeriodId = periodIds?.FirstOrDefault(),
-                StartDate = startDate,
-                EndDate = endDate
+                CustomerIds = customerIds,
+                ProjectIds = projectIds,
+                OrganizationIds = organizationIds,
+                PersonnelIds = personnelIds,
+                PeriodIds = periodIds
             };
+
+            // Tarih aralığı varsa DateRanges'a ekle
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
 
             var result = await _reportService.ExportPersonnelQuestionPerformanceReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);

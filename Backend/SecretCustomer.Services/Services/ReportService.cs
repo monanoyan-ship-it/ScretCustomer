@@ -24,8 +24,11 @@ public class ReportService : IReportService
     {
 
         // Liste görünümü için Answers dahil EDİLMEZ - sadece detay sayfasında lazım
-        // Bu Include optimizasyonu performansı önemli ölçüde artırır
+        // AsNoTracking: Read-only sorgu, performans için change tracking kapalı
+        // AsSplitQuery: Çok fazla Include olduğunda tek büyük sorgu yerine ayrı sorgular
         var query = _context.Evaluations
+            .AsNoTracking()
+            .AsSplitQuery()
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
@@ -37,7 +40,6 @@ public class ReportService : IReportService
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.Supervisor)
             .Include(e => e.AssignmentPeriod)
-            // .Include(e => e.Answers) - KALDIRILDI: Liste için gereksiz, detay sayfasında ayrı yükleniyor
             .AsQueryable();
 
         // ===== ÇOKLU DEĞER DESTEKLİ FİLTRELER (OR mantığı) =====
@@ -236,7 +238,8 @@ public class ReportService : IReportService
     public async Task<int> GetEvaluationsCountAsync(ReportFilterDto filter)
     {
         // Count için Include'lar gereksiz - sadece filtreleme yeterli
-        var query = _context.Evaluations.AsQueryable();
+        // AsNoTracking: Count için tracking gereksiz
+        var query = _context.Evaluations.AsNoTracking().AsQueryable();
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
@@ -359,6 +362,8 @@ public class ReportService : IReportService
     public async Task<EvaluationDetailReportDto?> GetEvaluationDetailAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
+            .AsNoTracking()
+            .AsSplitQuery()
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
@@ -470,13 +475,34 @@ public class ReportService : IReportService
                         .Select(s => s.SubCriteria.Description)
                         .ToList(),
                     Comment = a.Notes
-                }).ToList()
+                }).ToList(),
+
+            // Dinleme detay modalı için düz cevap listesi
+            Answers = evaluation.Answers
+                .Where(a => a.Question != null)
+                .OrderBy(a => a.Question!.GroupName ?? "")
+                .ThenBy(a => a.Question!.Order)
+                .Select(a => new EvaluationAnswerDto
+                {
+                    GroupName = a.Question!.GroupName,
+                    QuestionText = a.Question.Text,
+                    GivenPoints = a.EarnedPoints,
+                    MaxPoints = a.Question.WeightPoints,
+                    AppliedPenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName,
+                    Notes = a.Notes
+                }).ToList(),
+
+            // Değerlendirme yorumu
+            EvaluationComment = evaluation.EvaluationComment,
+
+            // Genel notlar (şimdilik null - entity'de yoksa)
+            Notes = null
         };
 
         return dto;
     }
 
-    public async Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId)
+    public async Task<ExcelExportDto?> ExportEvaluationDetailToExcelAsync(int evaluationId, bool excludeEvaluatorInfo = false)
     {
         var detail = await GetEvaluationDetailAsync(evaluationId);
         if (detail == null)
@@ -487,7 +513,7 @@ public class ReportService : IReportService
 
         int row = 1;
 
-        // ===== 3 BÖLÜM YAN YANA =====
+        // ===== BÖLÜMLER YAN YANA =====
         // Başlık satırı
         worksheet.Cell(row, 1).Value = "Değerlendirilen Bilgileri";
         worksheet.Cell(row, 1).Style.Font.Bold = true;
@@ -498,6 +524,15 @@ public class ReportService : IReportService
         worksheet.Cell(row, 3).Style.Font.Bold = true;
         worksheet.Cell(row, 3).Style.Fill.BackgroundColor = XLColor.LightGray;
         worksheet.Range(row, 3, row, 4).Merge();
+
+        // Değerlendirme Bilgileri başlığı - sadece Listenings için göster
+        if (!excludeEvaluatorInfo)
+        {
+            worksheet.Cell(row, 5).Value = "Değerlendirme Bilgileri";
+            worksheet.Cell(row, 5).Style.Font.Bold = true;
+            worksheet.Cell(row, 5).Style.Fill.BackgroundColor = XLColor.LightGray;
+            worksheet.Range(row, 5, row, 6).Merge();
+        }
         row++;
 
         // Satır 1
@@ -505,6 +540,18 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.CustomerName ?? "-";
         worksheet.Cell(row, 3).Value = "Çağrı ID";
         worksheet.Cell(row, 4).Value = detail.CallId ?? "-";
+        if (!excludeEvaluatorInfo)
+        {
+            worksheet.Cell(row, 5).Value = "Değerlendiren";
+            worksheet.Cell(row, 6).Value = detail.EvaluatorName ?? "-";
+        }
+        else
+        {
+            // CustomerPortal için sadece Puan göster (bold label)
+            worksheet.Cell(row, 5).Value = "Puan:";
+            worksheet.Cell(row, 5).Style.Font.Bold = true;
+            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F1}" : "-";
+        }
         row++;
 
         // Satır 2
@@ -512,6 +559,11 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.OrganizationName ?? "-";
         worksheet.Cell(row, 3).Value = "Çağrı Tarihi";
         worksheet.Cell(row, 4).Value = detail.CallDate?.ToString("dd.MM.yyyy") ?? "-";
+        if (!excludeEvaluatorInfo)
+        {
+            worksheet.Cell(row, 5).Value = "Değerlendirme Tarihi";
+            worksheet.Cell(row, 6).Value = detail.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-";
+        }
         row++;
 
         // Satır 3
@@ -519,6 +571,11 @@ public class ReportService : IReportService
         worksheet.Cell(row, 2).Value = detail.EvaluatedPersonnelName ?? "-";
         worksheet.Cell(row, 3).Value = "Süre";
         worksheet.Cell(row, 4).Value = detail.Duration ?? "-";
+        if (!excludeEvaluatorInfo)
+        {
+            worksheet.Cell(row, 5).Value = "Puan";
+            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F1}" : "-";
+        }
         row++;
 
         row++; // Boş satır
@@ -1074,13 +1131,27 @@ public class ReportService : IReportService
                 query = query.Where(a => penaltyTypeIds.Contains(a.AppliedPenaltyTypeId));
         }
 
-        // Date Range filtresi
-        if (filter.StartDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value || a.Evaluation.ControlDate >= filter.StartDate.Value);
-        if (filter.EndDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
-            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay || a.Evaluation.ControlDate <= endOfDay);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) <= maxEnd);
         }
 
         var penaltyAnswers = await query.ToListAsync();
@@ -1507,6 +1578,26 @@ public class ReportService : IReportService
             .ToList();
     }
 
+    /// <summary>
+    /// Personelin değerlendirildiği projeleri getirir (karne filtresi için)
+    /// </summary>
+    public async Task<IEnumerable<ProjectListItemDto>> GetPersonnelProjectsAsync(int personnelId)
+    {
+        var projects = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.EvaluatedCustomerPersonnelId == personnelId && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Select(e => new { e.Assignment.ProjectId, e.Assignment.Project.Name })
+            .Distinct()
+            .ToListAsync();
+
+        return projects.Select(p => new ProjectListItemDto
+        {
+            Id = p.ProjectId,
+            Name = p.Name
+        }).OrderBy(p => p.Name).ToList();
+    }
+
     public async Task<PersonnelReportCardDto?> GetPersonnelReportCardAsync(PersonnelReportCardFilterDto filter)
     {
         // CustomerPersonnel tablosundan personeli bul
@@ -1526,24 +1617,39 @@ public class ReportService : IReportService
                 .ThenInclude(a => a.Question)
             .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.StatusId == EvaluationStatuses.Ids.Completed);
 
-        // Varsayılan proje tipi filtresi: Çağrı Denetimi
-        if (!filter.ProjectId.HasValue)
+        // Proje filtresi: Çoğul ProjectIds veya varsayılan Çağrı Denetimi
+        if (filter.ProjectIds?.Any() != true)
         {
+            // Varsayılan: Çağrı Denetimi projeleri
             query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
+        else
+        {
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+        }
 
-        // Apply filters
-        if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+        // DateRanges pattern (UTC dönüşümü Service'de)
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
-        if (filter.StartDate.HasValue)
-            query = query.Where(e => e.CompletedAt >= filter.StartDate.Value);
-
-        if (filter.EndDate.HasValue)
-            query = query.Where(e => e.CompletedAt <= filter.EndDate.Value);
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CompletedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CompletedAt <= maxEnd);
+        }
 
         var evaluations = await query.ToListAsync();
 
@@ -1599,10 +1705,9 @@ public class ReportService : IReportService
             .OrderByDescending(s => s.PercentageScore)
             .ToList();
 
-        // Son değerlendirmeler
+        // Değerlendirmeler (filtreye göre tümü)
         var recentEvaluations = evaluations
             .OrderByDescending(e => e.CompletedAt)
-            .Take(10)
             .Select(e => new PersonnelEvaluationSummaryDto
             {
                 EvaluationId = e.Id,
@@ -1750,8 +1855,8 @@ public class ReportService : IReportService
         }
         groupSheet.Columns().AdjustToContents();
 
-        // Son Değerlendirmeler
-        var evalSheet = workbook.Worksheets.Add("Son Değerlendirmeler");
+        // Değerlendirmeler
+        var evalSheet = workbook.Worksheets.Add("Değerlendirmeler");
         evalSheet.Cell(1, 1).Value = "Tarih";
         evalSheet.Cell(1, 1).Style.Font.Bold = true;
         evalSheet.Cell(1, 2).Value = "Çağrı ID";
@@ -1875,13 +1980,27 @@ public class ReportService : IReportService
         if (filter.PersonnelIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
 
-        // Date Range filtresi
-        if (filter.StartDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value);
-        if (filter.EndDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
-            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(a => a.Evaluation.CompletedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(a => a.Evaluation.CompletedAt <= maxEnd);
         }
 
         if (!string.IsNullOrEmpty(filter.SearchText))
@@ -1988,13 +2107,27 @@ public class ReportService : IReportService
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
 
-        // Date Range filtresi
-        if (filter.StartDate.HasValue)
-            query = query.Where(a => a.Evaluation.CompletedAt >= filter.StartDate.Value);
-        if (filter.EndDate.HasValue)
+        // DateRanges pattern (UTC dönüşümü Service'de)
+        if (filter.DateRanges?.Any() == true)
         {
-            var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
-            query = query.Where(a => a.Evaluation.CompletedAt <= endOfDay);
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(a => a.Evaluation.CompletedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(a => a.Evaluation.CompletedAt <= maxEnd);
         }
 
         var answers = await query.ToListAsync();
@@ -4229,7 +4362,12 @@ public class ReportService : IReportService
 
     // ===== PERFORMANS TAKİBİ =====
 
-    public async Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync()
+    public async Task<PerformanceTrackingResultDto> GetPerformanceTrackingAsync(
+        List<int>? customerIds = null,
+        List<int>? evaluatorIds = null,
+        List<int>? projectIds = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null)
     {
         var now = DateTime.UtcNow;
         var todayStart = now.Date;
@@ -4240,9 +4378,25 @@ public class ReportService : IReportService
 
         var result = new PerformanceTrackingResultDto();
 
+        // Base query with filters
+        var baseQuery = _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Apply filters
+        if (customerIds?.Any() == true)
+            baseQuery = baseQuery.Where(e => e.Assignment.Project.CustomerId.HasValue && customerIds.Contains(e.Assignment.Project.CustomerId.Value));
+        if (evaluatorIds?.Any() == true)
+            baseQuery = baseQuery.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
+        if (projectIds?.Any() == true)
+            baseQuery = baseQuery.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+        if (startDate.HasValue)
+            baseQuery = baseQuery.Where(e => e.CompletedAt >= startDate.Value);
+        if (endDate.HasValue)
+            baseQuery = baseQuery.Where(e => e.CompletedAt <= endDate.Value.Date.AddDays(1));
+
         // 1. Değerlendirici (Evaluator) Performansları
-        var evaluatorStats = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId != null)
+        var evaluatorStats = await baseQuery
+            .Where(e => e.EvaluatorId != null)
             .GroupBy(e => new { e.EvaluatorId, e.Evaluator!.FirstName, e.Evaluator.LastName })
             .Select(g => new
             {
@@ -4521,42 +4675,53 @@ public class ReportService : IReportService
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.EvaluatedCustomerPersonnelId != null);
 
-        // Filtreler
-        if (filter.CustomerId.HasValue)
+        // Filtreler - çoğul parametreler (KURALLAR.md Bölüm 20)
+        if (filter.CustomerIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
+            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
         }
 
-        if (filter.ProjectId.HasValue)
+        if (filter.ProjectIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
         }
 
-        if (filter.OrganizationId.HasValue)
+        if (filter.OrganizationIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedOrganizationId == filter.OrganizationId.Value);
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
         }
 
-        if (filter.PersonnelId.HasValue)
+        if (filter.PersonnelIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId.Value);
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        if (filter.PeriodId.HasValue)
+        if (filter.PeriodIds?.Any() == true)
         {
-            query = query.Where(e => e.AssignmentPeriodId == filter.PeriodId.Value);
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
         }
 
-        if (filter.StartDate.HasValue)
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
         {
-            var start = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
-        }
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= maxEnd);
         }
 
         // Verileri çek

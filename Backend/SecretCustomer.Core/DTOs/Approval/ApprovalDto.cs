@@ -1,3 +1,5 @@
+using SecretCustomer.Core.DTOs.Report;
+
 namespace SecretCustomer.Core.DTOs.Approval;
 
 /// <summary>
@@ -85,9 +87,8 @@ public class ApprovalFilterDto
     public List<int>? RequestedByUserIds { get; set; }
     public List<int>? ApproverUserIds { get; set; }
 
-    // Tekil filtreler (çoklu mantıklı değil)
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    // Tarih filtresi (çoklu)
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public bool? IsOverdue { get; set; }
     public string? SearchTerm { get; set; }
     public int Page { get; set; } = 1;

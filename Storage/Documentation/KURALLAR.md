@@ -843,10 +843,17 @@ $(document).ready(function() {
     - Delete sonrası: `self.items.remove(item)` kullan, `loadItems()` çağırma
     - Update sonrası: API'den dönen veriyle listedeki öğeyi güncelle
     - **NEDEN:** Gereksiz API çağrısı, kullanıcı deneyimini bozar, scroll pozisyonu kaybolur
-11. **Tarih filtreleri için KISAYOL BUTONLARI kullan:**
-    - Bugün, Bu Hafta, Bu Ay, Geçen Ay butonları ekle
+11. **Tarih filtreleri için KISAYOL DROPDOWN kullan:**
+    - Bugün, Dün, Bu Hafta, Geçen Hafta, Bu Ay, Geçen Ay, Son 3 Ay, Son 6 Ay, Bu Yıl, Geçen Yıl seçenekleri
+    - Gruplu dropdown yapısı (Gün, Hafta, Ay, Yıl başlıklarıyla)
     - `calculateDateRange(rangeType)` helper fonksiyonu kullan
     - Kullanıcı deneyimini iyileştirir, manuel tarih girişi azaltır
+12. **INLINE CSS YASAKTIR:**
+    - Global stiller `app.css`'de
+    - Layout stiller `css/layouts/` klasöründe
+    - Sayfa-spesifik stiller `css/pages/` klasöründe
+    - Widget stiller `css/widgets/` klasöründe
+    - **`style=""` attribute'u kullanma - CSS class oluştur!**
 
 ---
 
@@ -861,6 +868,13 @@ Tarih aralığı filtresi olan sayfalarda kısayol butonları ekle.
 | `setDateRange()` | Dropdown içi | Sadece değer atar, aramayı tetiklemez |
 | `setQuickDateRange()` | Dropdown dışı butonlar | Değer atar VE aramayı tetikler |
 
+### ⛔ AYNI SORGU İÇİN İKİSİNİ BİRDEN KULLANMA!
+
+Bir sayfada hem "Filtre Ekle" dropdown'ı içinde tarih filtresi hem de ayrı "Hızlı Tarih" dropdown'ı OLMAMALI. İkisi de aynı işi yapar (tarih chip'i ekler). Kullanıcı için kafa karıştırıcıdır.
+
+**DOĞRU:** Sadece "Filtre Ekle" dropdown'ı içinde `setDateRange()` kullan
+**YANLIŞ:** Hem "Filtre Ekle" içinde tarih, hem ayrı "Hızlı Tarih" dropdown'ı
+
 ### JavaScript Helper Fonksiyonları
 
 ```javascript
@@ -871,7 +885,11 @@ self.dateRangeLabels = {
     'thisWeek': 'Bu Hafta',
     'lastWeek': 'Geçen Hafta',
     'thisMonth': 'Bu Ay',
-    'lastMonth': 'Geçen Ay'
+    'lastMonth': 'Geçen Ay',
+    'last3Months': 'Son 3 Ay',
+    'last6Months': 'Son 6 Ay',
+    'thisYear': 'Bu Yıl',
+    'lastYear': 'Geçen Yıl'
 };
 
 // Calculate date range from type
@@ -907,6 +925,18 @@ self.calculateDateRange = function(rangeType) {
     } else if (rangeType === 'lastMonth') {
         start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
         end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+    } else if (rangeType === 'last3Months') {
+        start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
+        end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'last6Months') {
+        start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
+        end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'thisYear') {
+        start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+        end = today.toISOString().split('T')[0];
+    } else if (rangeType === 'lastYear') {
+        start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+        end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
     }
 
     return { start: start, end: end };
@@ -922,9 +952,6 @@ self.setDateRange = function(rangeType) {
 
 // Hızlı erişim butonları - değer atar VE aramayı tetikler
 self.setQuickDateRange = function(rangeType) {
-    // Mevcut tarih filtresini kaldır
-    self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
-
     var range = self.calculateDateRange(rangeType);
     var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
 
@@ -957,12 +984,28 @@ self.setQuickDateRange = function(rangeType) {
         </div>
         <span class="text-muted">|</span>
         <!-- Quick Date Range Buttons -->
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('today'); }">Bugün</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('yesterday'); }">Dün</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisWeek'); }">Bu Hafta</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastWeek'); }">Geçen Hafta</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisMonth'); }">Bu Ay</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastMonth'); }">Geçen Ay</button>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Hızlı Tarih</button>
+            <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header">Gün</h6></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('today'); }">Bugün</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('yesterday'); }">Dün</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Hafta</h6></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('thisWeek'); }">Bu Hafta</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('lastWeek'); }">Geçen Hafta</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Ay</h6></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('thisMonth'); }">Bu Ay</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('lastMonth'); }">Geçen Ay</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('last3Months'); }">Son 3 Ay</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('last6Months'); }">Son 6 Ay</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Yıl</h6></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('thisYear'); }">Bu Yıl</a></li>
+                <li><a class="dropdown-item" href="#" data-bind="click: function() { setQuickDateRange('lastYear'); }">Geçen Yıl</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 ```
@@ -977,13 +1020,29 @@ self.setQuickDateRange = function(rangeType) {
         <span class="align-self-center">-</span>
         <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
     </div>
-    <div class="d-flex flex-wrap gap-1">
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-success' : 'btn-outline-secondary'">Bugün</button>
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-success' : 'btn-outline-secondary'">Dün</button>
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-success' : 'btn-outline-secondary'">Bu Hafta</button>
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-success' : 'btn-outline-secondary'">Geçen Hafta</button>
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-success' : 'btn-outline-secondary'">Bu Ay</button>
-        <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-success' : 'btn-outline-secondary'">Geçen Ay</button>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <span data-bind="text: tempFilter.dateRangeType() ? dateRangeLabels[tempFilter.dateRangeType()] : 'Hızlı Seç'"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Gün</h6></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('today'); }, css: { active: tempFilter.dateRangeType() === 'today' }">Bugün</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('yesterday'); }, css: { active: tempFilter.dateRangeType() === 'yesterday' }">Dün</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Hafta</h6></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisWeek'); }, css: { active: tempFilter.dateRangeType() === 'thisWeek' }">Bu Hafta</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastWeek'); }, css: { active: tempFilter.dateRangeType() === 'lastWeek' }">Geçen Hafta</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Ay</h6></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisMonth'); }, css: { active: tempFilter.dateRangeType() === 'thisMonth' }">Bu Ay</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastMonth'); }, css: { active: tempFilter.dateRangeType() === 'lastMonth' }">Geçen Ay</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last3Months'); }, css: { active: tempFilter.dateRangeType() === 'last3Months' }">Son 3 Ay</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last6Months'); }, css: { active: tempFilter.dateRangeType() === 'last6Months' }">Son 6 Ay</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Yıl</h6></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisYear'); }, css: { active: tempFilter.dateRangeType() === 'thisYear' }">Bu Yıl</a></li>
+            <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastYear'); }, css: { active: tempFilter.dateRangeType() === 'lastYear' }">Geçen Yıl</a></li>
+        </ul>
     </div>
 </div>
 ```
@@ -1457,6 +1516,61 @@ public async Task<IActionResult> GetAll(
 4. [ ] Controller'da `[FromQuery] FilterDto filter` kullan
 5. [ ] NormalizeFilters() metodu YAZMA - gerekli değil!
 6. [ ] Nullable int için `.HasValue` kontrolü ekle
+7. [ ] **JavaScript'te URLSearchParams kullan** (aşağıdaki pattern)
+
+### ⛔ JavaScript - URLSearchParams ZORUNLU!
+
+Çoklu değer gönderirken **URLSearchParams** kullanılmalıdır. Array + join() KULLANMA!
+
+```javascript
+// ✅ DOĞRU - URLSearchParams pattern
+self.buildFilterParams = function() {
+    var params = new URLSearchParams();
+
+    self.activeFilters().forEach(function(filter) {
+        switch (filter.type) {
+            case 'project':
+                params.append('projectIds', filter.value);  // append() ile çoklu değer
+                break;
+            case 'customer':
+                params.append('customerIds', filter.value);
+                break;
+            case 'dateRange':
+                if (filter.value.startDate) params.append('startDate', filter.value.startDate);
+                if (filter.value.endDate) params.append('endDate', filter.value.endDate);
+                break;
+        }
+    });
+
+    return params.toString();  // "projectIds=1&projectIds=2&customerIds=5"
+};
+
+// URL oluşturma
+var params = self.buildFilterParams();
+if (params) {
+    url += '?' + params;
+}
+```
+
+```javascript
+// ❌ YANLIŞ - Array + join() pattern (ASP.NET Core düzgün parse edemez!)
+self.buildFilterParams = function() {
+    var params = [];
+    self.activeFilters().forEach(function(filter) {
+        if (filter.type === 'project') {
+            params.push('projectIds=' + filter.value);  // ❌ YANLIŞ!
+        }
+    });
+    return params;  // Array döndürür
+};
+
+// ❌ YANLIŞ - join ile birleştirme
+if (params.length > 0) {
+    url += '?' + params.join('&');  // ❌ Çoklu değerler düzgün gönderilmez!
+}
+```
+
+**NEDEN:** `URLSearchParams.append()` aynı parametre adını birden fazla kez ekler ve ASP.NET Core `List<int>` olarak doğru parse eder.
 
 ### Avantajları
 
@@ -1465,3 +1579,218 @@ public async Task<IActionResult> GetAll(
 - ✅ Chip-based filter UI ile uyumlu
 - ✅ Kod tekrarı azalır
 - ✅ Frontend'de addFilter/removeFilter kolaylaşır
+
+### Tarih Aralığı Filtresi - DateRangeFilter Pattern
+
+Tarih aralığı filtreleri için `DateRangeFilter` sınıfı kullanılır:
+
+```csharp
+// Core/DTOs/Report/ReportDto.cs içinde tanımlı
+public class DateRangeFilter
+{
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+```
+
+### DOĞRU - FilterDto'da DateRanges Kullanımı
+
+```csharp
+public class MyFilterDto
+{
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }  // Sadece bu!
+}
+```
+
+### YANLIŞ - Geriye Uyumluluk Property'leri (KULLANMA!)
+
+```csharp
+public class MyFilterDto
+{
+    public List<DateRangeFilter>? DateRanges { get; set; }
+
+    // ❌ YANLIŞ - Geriye uyumluluk property'leri token israfı
+    public DateTime? StartDate
+    {
+        get => DateRanges?.FirstOrDefault()?.StartDate;
+        set { ... }
+    }
+}
+```
+
+### Controller'da DateRanges Oluşturma
+
+```csharp
+[HttpGet("export")]
+public async Task<IActionResult> Export(
+    [FromQuery] List<int>? customerIds = null,
+    [FromQuery] DateTime? startDate = null,
+    [FromQuery] DateTime? endDate = null)
+{
+    var filter = new MyFilterDto
+    {
+        CustomerIds = customerIds
+    };
+
+    // Tarih aralığı varsa DateRanges'a ekle (UTC dönüşümü SERVICE'de yapılır!)
+    if (startDate.HasValue || endDate.HasValue)
+    {
+        filter.DateRanges = new List<DateRangeFilter>
+        {
+            new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+        };
+    }
+
+    return Ok(await _service.GetAsync(filter));
+}
+```
+
+### Service'de DateRanges Kullanımı (UTC dönüşümü burada!)
+
+```csharp
+// Date Range filter (çoklu - OR mantığı)
+if (filter.DateRanges?.Any() == true)
+{
+    var datePredicates = filter.DateRanges.Select(dr =>
+    {
+        DateTime? startUtc = dr.StartDate.HasValue
+            ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+            : null;
+        DateTime? endUtc = dr.EndDate.HasValue
+            ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+            : null;
+        return (Start: startUtc, End: endUtc);
+    }).ToList();
+
+    var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+    var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+    if (minStart != DateTime.MinValue)
+        query = query.Where(e => e.CreatedAt >= minStart);
+    if (maxEnd != DateTime.MaxValue)
+        query = query.Where(e => e.CreatedAt <= maxEnd);
+}
+```
+
+### Checklist: Tarih Filtresi Eklerken
+
+1. [ ] DTO'da SADECE `List<DateRangeFilter>? DateRanges` kullan
+2. [ ] Geriye uyumluluk property'leri EKLEME
+3. [ ] Controller'da DateRanges listesine ekle (UTC dönüşümü YAPMA)
+4. [ ] Service'de UTC dönüşümü yap ve OR mantığı uygula
+
+---
+
+## 21. CSS Organizasyon Pattern'i (ZORUNLU!)
+
+### ⛔ INLINE CSS YASAKTIR!
+
+Sayfalarda inline `<style>` blokları ve `style=""` attribute'ları kullanılmamalıdır. Tüm CSS'ler ayrı dosyalarda olmalıdır.
+
+### CSS Dosya Yapısı
+
+```
+wwwroot/css/
+├── app.css                          # Global stiller (tüm sayfalarda)
+├── layouts/
+│   ├── customer-layout.css          # Customer Portal layout
+│   └── popup-layout.css             # Popup layout (_LayoutPopup)
+├── pages/
+│   ├── organizations.css            # CustomerOrganizations sayfası
+│   ├── organizations-popup.css      # Customers/Organizations popup
+│   ├── checklist-editor.css         # Checklist Editor
+│   ├── email-template-editor.css    # Email Template Editor
+│   └── survey.css                   # Survey/Anket sayfaları
+└── widgets/
+    └── support-request-widget.css   # Support Request widget
+```
+
+### Ne Nereye Gider?
+
+| CSS Tipi | Dosya | Örnek |
+|----------|-------|-------|
+| Global utility class | `app.css` | `.spin`, `.sticky-col`, `.badge-sm` |
+| Layout stilleri | `layouts/*.css` | `.customer-sidebar`, `.popup-container` |
+| Sayfa-spesifik stiller | `pages/*.css` | `.question-card`, `.wizard-nav-btn` |
+| Widget stilleri | `widgets/*.css` | `.support-request-btn`, `.support-badge` |
+| Print stilleri | `app.css` | `@media print { ... }` |
+
+### app.css'de Olması Gereken Global Stiller
+
+```css
+/* ===== Utility Classes ===== */
+.spin { animation: spin 1s linear infinite; }
+.white-space-pre-wrap { white-space: pre-wrap; }
+.sticky-col { position: sticky; left: 0; z-index: 1; }
+.badge-sm { font-size: 0.65rem; padding: 0.15rem 0.35rem; }
+.table-success-light { background-color: rgba(25, 135, 84, 0.15) !important; }
+.table-warning-light { background-color: rgba(255, 193, 7, 0.15) !important; }
+.table-danger-light { background-color: rgba(220, 53, 69, 0.15) !important; }
+
+/* ===== Filter Dropdown ===== */
+.filter-dropdown { min-width: 320px; z-index: 1030; }
+
+/* ===== Sortable Table Headers ===== */
+th.sortable { cursor: pointer; user-select: none; }
+
+/* ===== Print Styles ===== */
+@media print {
+    .bg-success { background-color: #198754 !important; -webkit-print-color-adjust: exact; }
+    /* ... diğer print stilleri ... */
+}
+```
+
+### Sayfa-Spesifik CSS Ekleme
+
+```html
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/checklist-editor.css" />
+}
+```
+
+### Layout CSS Ekleme
+
+```html
+<!-- _CustomerLayout.cshtml içinde -->
+<link rel="stylesheet" href="~/css/app.css">
+<link rel="stylesheet" href="~/css/layouts/customer-layout.css">
+```
+
+### DOĞRU - CSS Class Kullanımı
+
+```html
+<!-- ✅ DOĞRU - CSS class kullan -->
+<div class="card-body questions-container">
+<button class="btn wizard-nav-btn">
+<div class="filter-dropdown">
+```
+
+### YANLIŞ - Inline Style
+
+```html
+<!-- ❌ YANLIŞ - Inline style kullanma -->
+<div class="card-body" style="max-height: calc(100vh - 250px); overflow-y: auto;">
+<button style="width:50px;height:50px;z-index:1000;">
+<div style="min-width: 320px;">
+```
+
+### Checklist: Yeni Sayfa Eklerken
+
+1. [ ] Sayfa-spesifik CSS varsa `pages/sayfa-adi.css` oluştur
+2. [ ] Global utility class gerekiyorsa `app.css`'e ekle
+3. [ ] Widget CSS'i `widgets/` klasörüne koy
+4. [ ] `@section Styles` ile CSS dosyasını dahil et
+5. [ ] **INLINE STYLE KULLANMA!**
+
+### İstisna: Fonksiyonel Inline Style
+
+JavaScript ile dinamik kontrol edilen stiller kabul edilebilir:
+
+```html
+<!-- ✅ Kabul edilebilir - JS visibility kontrolü -->
+<div id="admin-banner" style="display: none !important;">
+```
+
+Bu durumda bile mümkünse CSS class kullanılmalıdır.

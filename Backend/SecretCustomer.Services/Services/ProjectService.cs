@@ -322,17 +322,61 @@ public class ProjectService : IProjectService
         if (filter.ProjectManagerIds?.Any() == true)
             query = query.Where(p => p.ProjectManagerId.HasValue && filter.ProjectManagerIds.Contains(p.ProjectManagerId.Value));
 
-        // Tarih filtreleri
-        if (filter.StartDate.HasValue)
+        // Bitiş tarihi filtresi (proje bitiş tarihine göre)
+        if (!string.IsNullOrEmpty(filter.EndingDateFilter))
         {
-            var start = DateTime.SpecifyKind(filter.StartDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(p => p.StartDate >= start || p.EndDate >= start);
-        }
+            var today = DateTime.UtcNow.Date;
+            var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+            var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
-        if (filter.EndDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(filter.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(p => p.StartDate <= end || p.EndDate <= end);
+            switch (filter.EndingDateFilter)
+            {
+                case "overdue":
+                    // Süresi geçmiş: EndDate bugünden önce ve status hala Active
+                    query = query.Where(p => p.EndDate < todayStart && p.StatusId == ProjectStatuses.Ids.Active);
+                    break;
+                case "today":
+                    // Bugün bitecek
+                    query = query.Where(p => p.EndDate >= todayStart && p.EndDate <= todayEnd);
+                    break;
+                case "next7Days":
+                    // 7 gün içinde bitecek
+                    var next7Days = DateTime.SpecifyKind(today.AddDays(7).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= todayStart && p.EndDate <= next7Days);
+                    break;
+                case "thisWeek":
+                    // Bu hafta bitecek (Pazartesi-Pazar)
+                    var dayOfWeek = (int)today.DayOfWeek;
+                    var daysToMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+                    var weekStart = DateTime.SpecifyKind(today.AddDays(-daysToMonday), DateTimeKind.Utc);
+                    var weekEnd = DateTime.SpecifyKind(weekStart.AddDays(7).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= weekStart && p.EndDate <= weekEnd);
+                    break;
+                case "next30Days":
+                    // 30 gün içinde bitecek
+                    var next30Days = DateTime.SpecifyKind(today.AddDays(30).AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= todayStart && p.EndDate <= next30Days);
+                    break;
+                case "thisMonth":
+                    // Bu ay bitecek
+                    var monthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1), DateTimeKind.Utc);
+                    var monthEnd = DateTime.SpecifyKind(monthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= monthStart && p.EndDate <= monthEnd);
+                    break;
+                case "nextMonth":
+                    // Gelecek ay bitecek
+                    var nextMonthStart = DateTime.SpecifyKind(new DateTime(today.Year, today.Month, 1).AddMonths(1), DateTimeKind.Utc);
+                    var nextMonthEnd = DateTime.SpecifyKind(nextMonthStart.AddMonths(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= nextMonthStart && p.EndDate <= nextMonthEnd);
+                    break;
+                case "thisQuarter":
+                    // Bu çeyrek bitecek
+                    var quarter = (today.Month - 1) / 3;
+                    var quarterStart = DateTime.SpecifyKind(new DateTime(today.Year, quarter * 3 + 1, 1), DateTimeKind.Utc);
+                    var quarterEnd = DateTime.SpecifyKind(quarterStart.AddMonths(3).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(p => p.EndDate >= quarterStart && p.EndDate <= quarterEnd);
+                    break;
+            }
         }
 
         return await query

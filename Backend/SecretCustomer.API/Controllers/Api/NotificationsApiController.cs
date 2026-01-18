@@ -62,11 +62,28 @@ public class NotificationsApiController : BaseApiController
         if (filter.IsRead.HasValue)
             query = query.Where(n => n.IsRead == filter.IsRead.Value);
 
-        if (filter.StartDate.HasValue)
-            query = query.Where(n => n.CreatedAt >= filter.StartDate.Value);
+        // DateRanges pattern
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-            query = query.Where(n => n.CreatedAt <= filter.EndDate.Value);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(n => n.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(n => n.CreatedAt <= maxEnd);
+        }
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {

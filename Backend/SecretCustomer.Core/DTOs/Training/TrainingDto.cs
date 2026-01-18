@@ -1,3 +1,5 @@
+using SecretCustomer.Core.DTOs.Report;
+
 namespace SecretCustomer.Core.DTOs.Training;
 
 /// <summary>
@@ -229,9 +231,8 @@ public class TrainingFilterDto
     public List<string>? Statuses { get; set; }
     public List<string>? Categories { get; set; }
 
-    // Tekil filtreler (çoklu mantıklı değil)
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    // Tarih filtresi (çoklu)
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public bool? IsMandatory { get; set; }
     public string? SearchTerm { get; set; }
     public int Page { get; set; } = 1;

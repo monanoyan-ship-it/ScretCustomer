@@ -4,16 +4,7 @@
 }
 
 <div id="customer-external-evaluations-app">
-    <!-- Loading -->
-    <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
-        </div>
-    </div>
-
-    <!-- Content -->
-    <div data-bind="visible: !isLoading()">
-        <!-- Filters -->
+    <!-- Filters - Her zaman görünür -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body py-2">
                 <div class="d-flex flex-wrap align-items-center gap-2">
@@ -22,7 +13,7 @@
                         <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                             <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                         </button>
-                        <div class="dropdown-menu p-3" style="min-width: 300px;">
+                        <div class="dropdown-menu p-3 filter-dropdown">
                             <!-- Filter Type Selector -->
                             <div class="mb-2">
                                 <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
@@ -64,8 +55,16 @@
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Yesterday", "Dün")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisMonth", "Bu Ay")</button>
                                     <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastMonth", "Geçen Ay")</button>
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last3Months'); }, css: tempFilter.dateRangeType() === 'last3Months' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Last3Months", "Son 3 Ay")</button>
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last6Months'); }, css: tempFilter.dateRangeType() === 'last6Months' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Last6Months", "Son 6 Ay")</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisYear'); }, css: tempFilter.dateRangeType() === 'thisYear' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisYear", "Bu Yıl")</button>
+                                    <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastYear'); }, css: tempFilter.dateRangeType() === 'lastYear' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastYear", "Geçen Yıl")</button>
                                 </div>
                             </div>
                             <!-- Score Range -->
@@ -147,50 +146,56 @@
                                 <i class="bi bi-search"></i>
                             </button>
                         </div>
-                        <span class="text-muted">|</span>
-                        <!-- Quick Date Range Buttons -->
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('today'); }">@Html.T("Common.Today", "Bugün")</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setQuickDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Summary -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-primary text-white">
-                    <div class="card-body text-center">
-                        <h3 data-bind="text: total"></h3>
-                        <small>@Html.T("CustomerPortal.ExternalEvaluations.TotalCount", "Toplam Dinleme")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <h3 class="text-primary" data-bind="text: averageScore().toFixed(1)"></h3>
-                        <small class="text-muted">@Html.T("CustomerPortal.ExternalEvaluations.AverageScore", "Ortalama Puan")</small>
-                    </div>
+    <!-- Summary -->
+    <div class="row mb-4">
+        <!-- Loading durumu için placeholder -->
+        <div data-bind="visible: isLoading" class="col-12 text-center py-3">
+            <div class="spinner-border text-success"></div>
+            <p class="text-muted mt-2 mb-0">@Html.T("Common.Loading", "Yükleniyor...")</p>
+        </div>
+        <!-- Loaded durumu -->
+        <div data-bind="visible: !isLoading()" class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 data-bind="text: total"></h3>
+                    <small>@Html.T("CustomerPortal.ExternalEvaluations.TotalCount", "Toplam Dinleme")</small>
                 </div>
             </div>
         </div>
-
-        <!-- Empty State -->
-        <div data-bind="visible: evaluations().length === 0" class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-clipboard-check fs-1 text-muted"></i>
-                <h5 class="mt-3">@Html.T("CustomerPortal.ExternalEvaluations.NotFound", "Dinleme Bulunamadi")</h5>
-                <p class="text-muted">@Html.T("CustomerPortal.ExternalEvaluations.NoRecords", "Dis dinleme kaydi bulunmuyor.")</p>
+        <div data-bind="visible: !isLoading()" class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-primary" data-bind="text: averageScore().toFixed(1)"></h3>
+                    <small class="text-muted">@Html.T("CustomerPortal.ExternalEvaluations.AverageScore", "Ortalama Puan")</small>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Evaluations Table -->
-        <div data-bind="visible: evaluations().length > 0" class="card border-0 shadow-sm">
+    <!-- Table Loading -->
+    <div data-bind="visible: isLoading" class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center py-5">
+            <div class="spinner-border text-success"></div>
+            <p class="text-muted mt-2 mb-0">@Html.T("CustomerPortal.ExternalEvaluations.Loading", "Dinlemeler yükleniyor...")</p>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div data-bind="visible: !isLoading() && evaluations().length === 0" class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-clipboard-check fs-1 text-muted"></i>
+            <h5 class="mt-3">@Html.T("CustomerPortal.ExternalEvaluations.NotFound", "Dinleme Bulunamadi")</h5>
+            <p class="text-muted">@Html.T("CustomerPortal.ExternalEvaluations.NoRecords", "Dis dinleme kaydi bulunmuyor.")</p>
+        </div>
+    </div>
+
+    <!-- Evaluations Table -->
+    <div data-bind="visible: !isLoading() && evaluations().length > 0" class="card border-0 shadow-sm">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="bi bi-clipboard-check me-2"></i>
@@ -270,10 +275,7 @@
             </div>
             <!-- Pagination -->
             <div class="card-footer bg-white" data-bind="visible: totalPages() > 1">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">
-                        @Html.T("Common.Page", "Sayfa") <span data-bind="text: page"></span> / <span data-bind="text: totalPages"></span>
-                    </span>
+                <div class="d-flex align-items-center gap-3">
                     <nav>
                         <ul class="pagination pagination-sm mb-0">
                             <li class="page-item" data-bind="css: { disabled: page() <= 1 }">
@@ -294,7 +296,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Save Filter Modal -->
     <div class="modal fade" data-bind="css: { show: showSaveFilterModal }, style: { display: showSaveFilterModal() ? 'block' : 'none' }" tabindex="-1">

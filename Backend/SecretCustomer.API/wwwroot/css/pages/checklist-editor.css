@@ -1,0 +1,98 @@
+/* Checklist Editor Page Styles */
+
+/* Genel font küçültme */
+#checklist-editor {
+    font-size: 0.85rem;
+    padding-left: 70px;
+    padding-right: 70px;
+}
+
+#checklist-editor .form-control,
+#checklist-editor .form-select {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.65rem;
+}
+
+#checklist-editor .form-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+#checklist-editor .btn {
+    font-size: 0.85rem;
+}
+
+#checklist-editor .card-header {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+#checklist-editor .card-body {
+    padding: 0.75rem;
+}
+
+#checklist-editor .nav-pills .nav-link {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+}
+
+#checklist-editor .table {
+    font-size: 0.8rem;
+}
+
+/* Question card */
+.question-card {
+    border-left: 3px solid #6c757d;
+}
+
+.question-card.border-warning {
+    border-left-color: #ffc107 !important;
+}
+
+.question-card.border-danger {
+    border-left-color: #dc3545 !important;
+}
+
+/* Navigation pills */
+.nav-pills .nav-link {
+    cursor: pointer;
+}
+
+.nav-pills .nav-link:not(.active) {
+    color: #6c757d;
+}
+
+/* Form label small */
+.form-label-sm {
+    font-size: 0.75rem;
+}
+
+/* Questions container scroll */
+.questions-container {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+/* Group suggestions dropdown */
+.group-suggestions-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Summary table scroll */
+.summary-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Wizard navigation buttons */
+.wizard-nav-btn {
+    width: 50px;
+    height: 50px;
+    z-index: 1000;
+}
+
+/* Max points input */
+.max-points-input {
+    max-width: 200px;
+}

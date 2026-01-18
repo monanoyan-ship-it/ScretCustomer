@@ -144,48 +144,54 @@ function AssignmentsViewModel() {
     self.modalErrorMessage = ko.observable('');
     self.isEditing = ko.observable(false);
 
-    // ===== Pagination =====
+    // ===== Server-Side Pagination =====
     self.currentPage = ko.observable(1);
-    self.pageSize = ko.observable(20);
+    self.pageSize = ko.observable(50);
     self.allAssignments = ko.observableArray([]);
 
-    // Paginated assignments
+    // Server-side pagination - assignments zaten paginated gelecek
     self.assignments = ko.computed(function() {
-        var list = self.allAssignments();
-        var page = parseInt(self.currentPage(), 10);
-        var pageSize = parseInt(self.pageSize(), 10);
-        var start = (page - 1) * pageSize;
-        return list.slice(start, start + pageSize);
+        return self.allAssignments();
     });
 
-    self.totalCount = ko.computed(function() {
-        return self.allAssignments().length;
-    });
-
-    self.totalPages = ko.computed(function() {
-        return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
-    });
-
-    // Sayfa değiştiğinde ilk sayfaya dön
+    // Sayfa boyutu değişince ilk sayfaya dön ve yeniden yükle
     self.pageSize.subscribe(function() {
         self.currentPage(1);
+        self.loadAssignments();
     });
 
     self.goToPage = function(page) {
         if (page >= 1 && page <= self.totalPages()) {
             self.currentPage(page);
+            self.loadAssignments();
         }
     };
 
     self.previousPage = function() {
         if (self.currentPage() > 1) {
             self.currentPage(self.currentPage() - 1);
+            self.loadAssignments();
         }
     };
 
     self.nextPage = function() {
         if (self.currentPage() < self.totalPages()) {
             self.currentPage(self.currentPage() + 1);
+            self.loadAssignments();
+        }
+    };
+
+    self.firstPage = function() {
+        if (self.currentPage() !== 1) {
+            self.currentPage(1);
+            self.loadAssignments();
+        }
+    };
+
+    self.lastPage = function() {
+        if (self.currentPage() !== self.totalPages()) {
+            self.currentPage(self.totalPages());
+            self.loadAssignments();
         }
     };
 
@@ -443,23 +449,27 @@ function AssignmentsViewModel() {
     self.periodModalError = ko.observable('');
     self.isSavingPeriod = ko.observable(false);
 
-    // QR Code
-    self.qrCodeImage = ko.observable('');
-    self.qrCodeLink = ko.observable('');
+    // Total count for server-side pagination
+    self.totalCount = ko.observable(0);
+    self.totalPages = ko.computed(function() {
+        return Math.ceil(self.totalCount() / parseInt(self.pageSize(), 10)) || 1;
+    });
 
     // ===== Load Data =====
     self.loadAssignments = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        fetch('/api/assignments', { credentials: 'include' })
+        var queryString = self.buildFilterQueryString();
+        fetch('/api/assignments?' + queryString, { credentials: 'include' })
             .then(function(res) {
                 if (!res.ok) throw new Error(T('Message.LoadError', 'Yükleme başarısız'));
                 return res.json();
             })
             .then(function(data) {
-                self.allAssignments(data);
-                self.currentPage(1);
+                // PagedAssignmentResult: { items, totalCount, page, pageSize }
+                self.allAssignments(data.items || []);
+                self.totalCount(data.totalCount || 0);
             })
             .catch(function(error) {
                 console.error('Error:', error);
@@ -545,17 +555,19 @@ function AssignmentsViewModel() {
     };
 
     // ===== Filter Methods =====
-    self.applyFilters = function() {
-        self.isLoading(true);
-        self.errorMessage('');
+    // Build query string from active filters
+    self.buildFilterQueryString = function() {
+        var params = new URLSearchParams();
 
-        // Build filter from activeFilters (çoklu değer desteği)
-        var filter = {
-            sortBy: self.sorting.sortBy() || null,
-            sortDirection: self.sorting.sortDirection() || 'desc'
-        };
+        // Pagination
+        params.append('page', self.currentPage());
+        params.append('pageSize', self.pageSize());
 
-        // Çoklu değer için array'ler
+        // Sorting
+        if (self.sorting.sortBy()) params.append('sortBy', self.sorting.sortBy());
+        params.append('sortDirection', self.sorting.sortDirection() || 'desc');
+
+        // Collect filter values
         var projectIds = [];
         var statuses = [];
         var assignedUserIds = [];
@@ -584,46 +596,21 @@ function AssignmentsViewModel() {
             }
         });
 
-        // Array'leri filter'a ekle (geriye uyumluluk için tekil değer de desteklenir)
-        if (projectIds.length === 1) filter.projectId = projectIds[0];
-        else if (projectIds.length > 1) filter.projectIds = projectIds;
+        // Add arrays to query string (çoğul parametreler)
+        projectIds.forEach(function(id) { params.append('projectIds', id); });
+        statuses.forEach(function(s) { params.append('statuses', s); });
+        assignedUserIds.forEach(function(id) { params.append('assignedUserIds', id); });
 
-        if (statuses.length === 1) filter.status = statuses[0];
-        else if (statuses.length > 1) filter.statuses = statuses;
+        if (dueDateFrom) params.append('dueDateFrom', dueDateFrom);
+        if (dueDateTo) params.append('dueDateTo', dueDateTo);
+        if (searchTerms.length > 0) params.append('searchTerm', searchTerms.join(' '));
 
-        if (assignedUserIds.length === 1) filter.assignedUserId = assignedUserIds[0];
-        else if (assignedUserIds.length > 1) filter.assignedUserIds = assignedUserIds;
+        return params.toString();
+    };
 
-        if (dueDateFrom) filter.dueDateFrom = dueDateFrom;
-        if (dueDateTo) filter.dueDateTo = dueDateTo;
-
-        // Combine search terms
-        if (searchTerms.length > 0) {
-            filter.searchTerm = searchTerms.join(' ');
-        }
-
-        fetch('/api/assignments/filter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(filter)
-        })
-            .then(function(res) {
-                if (!res.ok) throw new Error(T('Message.FilterError', 'Filtreleme başarısız'));
-                return res.json();
-            })
-            .then(function(data) {
-                self.allAssignments(data);
-                self.currentPage(1);
-                self.loadSummary(filter.projectId);
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                toastr.error(T('Assignment.FilterError', 'Atamalar filtrelenirken bir hata oluştu.'));
-            })
-            .finally(function() {
-                self.isLoading(false);
-            });
+    self.applyFilters = function() {
+        self.currentPage(1);
+        self.loadAssignments();
     };
 
     self.clearFilters = function() {
@@ -1145,47 +1132,6 @@ function AssignmentsViewModel() {
         modal.show();
     };
 
-    // ===== QR Code =====
-    self.showQRCode = function(assignment) {
-        var baseUrl = window.location.origin;
-        var link = baseUrl + '/form/' + assignment.uniqueLink;
-
-        self.qrCodeLink(link);
-
-        fetch('/api/assignments/' + assignment.id + '/qr-code/base64', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                self.qrCodeImage(data.qrCode);
-                var modal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
-                modal.show();
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                toastr.error(T('Assignment.QRCodeError', 'QR kod oluşturulurken bir hata oluştu.'));
-            });
-    };
-
-    self.copyQRLink = function() {
-        navigator.clipboard.writeText(self.qrCodeLink()).then(function() {
-            toastr.success(T('Message.LinkCopied', 'Link kopyalandı!'));
-        }).catch(function(error) {
-            console.error('Error copying link:', error);
-            toastr.error(T('Message.LinkCopyError', 'Link kopyalanırken hata oluştu.'));
-        });
-    };
-
-    self.copyLink = function(assignment) {
-        var baseUrl = window.location.origin;
-        var link = baseUrl + '/form/' + assignment.uniqueLink;
-
-        navigator.clipboard.writeText(link).then(function() {
-            toastr.success(T('Message.LinkCopiedToClipboard', 'Link panoya kopyalandı!'));
-        }).catch(function(error) {
-            console.error('Error copying link:', error);
-            toastr.error(T('Message.LinkCopyError', 'Link kopyalanırken bir hata oluştu.'));
-        });
-    };
-
     // ===== Status Helpers - EnumsService kullanir =====
     self.getStatusBadgeClass = function(status) {
         return EnumsService.getAssignmentStatusCss(status);
@@ -1277,10 +1223,6 @@ var TRANSLATION_KEYS = [
     'Period.CreateError',
     'Period.CreateSuccess',
     'Assignment.DetailLoadError',
-    'Assignment.QRCodeError',
-    'Message.LinkCopied',
-    'Message.LinkCopyError',
-    'Message.LinkCopiedToClipboard',
     'Assignment.External',
     'Role.CustomerPersonnel',
     'Common.DaysPassed',

@@ -342,15 +342,10 @@ function SuggestionsViewModel() {
             }
         });
 
-        // Query string oluştur (çoklu değer desteği)
-        if (projectIds.length === 1) params.push('projectId=' + projectIds[0]);
-        else if (projectIds.length > 1) projectIds.forEach(function(id) { params.push('projectIds=' + id); });
-
-        if (branchIds.length === 1) params.push('branchId=' + branchIds[0]);
-        else if (branchIds.length > 1) branchIds.forEach(function(id) { params.push('branchIds=' + id); });
-
-        if (checklistIds.length === 1) params.push('checklistId=' + checklistIds[0]);
-        else if (checklistIds.length > 1) checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
+        // Query string oluştur - HER ZAMAN ÇOĞUL KULLAN
+        projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+        branchIds.forEach(function(id) { params.push('branchIds=' + id); });
+        checklistIds.forEach(function(id) { params.push('checklistIds=' + id); });
 
         if (searchTexts.length > 0) params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
 

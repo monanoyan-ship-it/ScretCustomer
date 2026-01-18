@@ -98,11 +98,28 @@ public class ApprovalsApiController : BaseApiController
         if (filter.ApproverUserIds?.Any() == true)
             query = query.Where(a => a.ApproverUserId.HasValue && filter.ApproverUserIds.Contains(a.ApproverUserId.Value));
 
-        if (filter.StartDate.HasValue)
-            query = query.Where(a => a.RequestedAt >= filter.StartDate.Value);
+        // DateRanges pattern
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
 
-        if (filter.EndDate.HasValue)
-            query = query.Where(a => a.RequestedAt <= filter.EndDate.Value);
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(a => a.RequestedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(a => a.RequestedAt <= maxEnd);
+        }
 
         if (filter.IsOverdue.HasValue && filter.IsOverdue.Value)
             query = query.Where(a => a.DueDate.HasValue && a.DueDate.Value < DateTime.UtcNow && a.StatusId == ApprovalStatuses.Ids.Pending);

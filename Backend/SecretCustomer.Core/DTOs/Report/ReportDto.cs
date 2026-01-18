@@ -121,6 +121,34 @@ public class EvaluationDetailReportDto : EvaluationReportDto
     /// Düz liste halinde tüm soru-cevaplar (Online Anket detayı için)
     /// </summary>
     public List<FlatQuestionAnswerDto> QuestionAnswers { get; set; } = new();
+
+    /// <summary>
+    /// Dinleme detay modalı için düz cevap listesi
+    /// </summary>
+    public List<EvaluationAnswerDto> Answers { get; set; } = new();
+
+    /// <summary>
+    /// Değerlendirme yorumu (EvaluationComment alanı)
+    /// </summary>
+    public string? EvaluationComment { get; set; }
+
+    /// <summary>
+    /// Genel notlar
+    /// </summary>
+    public string? Notes { get; set; }
+}
+
+/// <summary>
+/// Dinleme detay modalı için cevap DTO
+/// </summary>
+public class EvaluationAnswerDto
+{
+    public string? GroupName { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public decimal? GivenPoints { get; set; }
+    public decimal MaxPoints { get; set; }
+    public string? AppliedPenaltyType { get; set; }
+    public string? Notes { get; set; }
 }
 
 /// <summary>
@@ -225,18 +253,6 @@ public class PenaltyFilterDto
     public List<int>? EvaluatorIds { get; set; }
     public List<string>? PenaltyTypes { get; set; }
     public List<DateRangeFilter>? DateRanges { get; set; }
-
-    // Tekil property'ler (geriye uyumluluk - setter array'e ekler)
-    public DateTime? StartDate
-    {
-        get => DateRanges?.FirstOrDefault()?.StartDate;
-        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].StartDate = value; } }
-    }
-    public DateTime? EndDate
-    {
-        get => DateRanges?.FirstOrDefault()?.EndDate;
-        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].EndDate = value; } }
-    }
 
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
@@ -358,10 +374,8 @@ public class PenaltyMonthlyTrendDto
 public class PersonnelReportCardFilterDto
 {
     public int PersonnelId { get; set; }
-    public int? CustomerId { get; set; }
-    public int? ProjectId { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
 }
 
 /// <summary>
@@ -481,6 +495,15 @@ public class OrganizationListItemDto
     public int EvaluationCount { get; set; }
 }
 
+/// <summary>
+/// Proje listesi (basit dropdown/filtre için)
+/// </summary>
+public class ProjectListItemDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
 // ===== ÖNERİLER RAPORU DTO'LARI (Video 5-6) =====
 
 /// <summary>
@@ -498,18 +521,6 @@ public class SuggestionsFilterDto
     public List<int>? PersonnelIds { get; set; }
     public List<DateRangeFilter>? DateRanges { get; set; }
     public string? SearchText { get; set; }
-
-    // Tekil property'ler (geriye uyumluluk - setter array'e ekler)
-    public DateTime? StartDate
-    {
-        get => DateRanges?.FirstOrDefault()?.StartDate;
-        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].StartDate = value; } }
-    }
-    public DateTime? EndDate
-    {
-        get => DateRanges?.FirstOrDefault()?.EndDate;
-        set { if (value.HasValue) { DateRanges ??= new List<DateRangeFilter>(); if (DateRanges.Count == 0) DateRanges.Add(new DateRangeFilter()); DateRanges[0].EndDate = value; } }
-    }
 
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 50;
@@ -1043,13 +1054,12 @@ public class SurveyQuestionScoreDistributionDto
 /// </summary>
 public class PersonnelQuestionPerformanceFilterDto
 {
-    public int? CustomerId { get; set; }
-    public int? ProjectId { get; set; }
-    public int? OrganizationId { get; set; }
-    public int? PersonnelId { get; set; }
-    public int? PeriodId { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public List<int>? CustomerIds { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<int>? OrganizationIds { get; set; }
+    public List<int>? PersonnelIds { get; set; }
+    public List<int>? PeriodIds { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
 }
 
 /// <summary>

@@ -1,3 +1,4 @@
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 
 namespace SecretCustomer.Core.DTOs.FieldWorker;
@@ -123,8 +124,7 @@ public class VisitFilterDto
     public int? DealerId { get; set; }
     public int? CustomerId { get; set; }
     public int? StatusId { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
     public string? SearchTerm { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;

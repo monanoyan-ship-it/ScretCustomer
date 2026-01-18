@@ -1,0 +1,74 @@
+"/Reports/PerformanceTracking"
+ Dinleyici Performansı tablosu altındaki panelin altına doğru uzanıyor. Kaydırma çubuğu eklenmeli.
+Filitre eklenmeli
+ Firma Kota Durumu tablosunun da kaydırmasını kontrol et.
+
+"/Listenings"
+bu sayfanın performans sorununa bir çare bulamadın. 
+detaya tıklayınca : "Uncaught ReferenceError: Unable to process binding "visible: function(){return evaluationComment }"" bu hatadan kaç tane daha vermesini bekliyoruz düzeltmek için. DTO belli değil mi bakıp düzeltesene her şeyi.
+default sıralama deye göre geliyor bilemedim. Son eklenen en üste gelecekti default da. 
+
+"/Reports"
+"ReferenceError: Unable to process binding "text: function(){return assigneeName ||'-' }""
+
+
+"/Reports/Penalties"
+değerlendirmeyi gör e tıklıyorum başka sayfaya atıyor beni. Lan modalda açılacak böyle şeyler bunun neyini anlamadın. Hadi sayfa çok kalabalık o zamand a popup da açılacak. Yeni sayfa açmak nedir. O da yanlış link bir de bari tıkladım da detayı gördüm diyebilsem. 
+"Musteri / Organizasyon" seçiyorum filter da altta 2 combobox açılıyor. ama müşteri seçimi boş (alttakine bakamadım haliyle belki de organizasyon sorgusu da boş)
+
+
+"/Reports/PersonnelReportCard"
+Acaba göze tıklayınca nasıl bir aptallık yapıyor? aaa tabiki bir linke atmaya çalışıyor ve o link de tabiki yanlış.
+Filter ına Filter kuralı uygulanmamış.
+
+"/Reports/SurveyResults"
+"jquery.min.js:2 Uncaught TypeError: Unable to process binding "foreach: function(){return questionDistribution().questions }"" sayfaya girer girmez hata veriyor.
+
+"/Reports/PersonnelQuestionPerformance"
+filitreleme kuralları uygulanmamış.
+api.service.js:80  GET https://localhost:5004/api/lookup/customers 404 (Not Found)
+https://localhost:5004/api/lookup/organizations 404 (Not Found)
+https://localhost:5004/api/lookup/projects 404 (Not Found)
+ https://localhost:5004/api/lookup/periods 404 (Not Found)
+
+"/Projects"
+Filitre kuralları uygulanmamış. (uygulanmış gibi duruyor ama uygulanmamış) ve filitre tipinden müşteri seçince yanındaki combobox boş geliyor.
+
+"/Assignments"
+"/Listenings" gibi çok geç yükleniyor bir çözüm bekliyorum bu duruma. 
+bir qr butonu var ama sanırım bir işe yaramıyor. İşe yaramıyorsa kaldıralım onu. 
+
+"/InternalAssignments"
+"Uncaught (in promise) ReferenceError: Unable to process binding "options: function(){return customers }""
+
+"/Users"
+"Index.js:667 Error loading data: TypeError: list.slice is not a function"
+
+"/Customers"
+"Uncaught (in promise) TypeError: EnumsService.getByType is not a function"
+
+"/CustomerOrganizations"
+"Error loading customers: TypeError: data.map is not a function"
+
+"/Settings"
+"index.js:50 Settings load error: ReferenceError: Unable to process binding "if: function(){return valueType === 1 }""
+
+"/Notifications"
+"Uncaught Error: You cannot apply bindings multiple times to the same element."
+
+"/SupportRequests"
+Filter kuralları uygulanmamış.
+
+"/AuditLogs"
+"Uncaught ReferenceError: Unable to process binding "css: function(){return {'table-danger':logType === 2,'table-warning':logType === 1,'table-info':logType === 20} }""
+
+"/CustomerPortal/Reports"
+"Aylık Trend" sheması "/CustomerPortal/Organizations" sayfasındaki "Gelişim Trendi" gibi olacak.
+
+
+"/CustomerPortal/PerformanceByPeriod"
+sanırım sorgusu yanlış boş geliyor. 
+Filter kralları uygulanmış gibi görünüyor ama uygulanmamış.
+
+
+

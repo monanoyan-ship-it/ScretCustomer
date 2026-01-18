@@ -94,9 +94,6 @@ function CustomerSuggestionsViewModel() {
 
     // Quick date range filter - direkt uygula ve ara
     self.setQuickDateRange = function(rangeType) {
-        // Mevcut tarih filtresini kaldır
-        self.activeFilters.remove(function(f) { return f.type === 'dateRange'; });
-
         var range = self.calculateDateRange(rangeType);
         var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
 

@@ -157,7 +157,7 @@ function ProjectsViewModel() {
         status: 'Durum',
         projectManager: 'Proje Yöneticisi',
         search: 'Arama',
-        dateRange: 'Tarih'
+        endingDate: 'Bitiş Tarihi'
     };
 
     self.statusLabels = {
@@ -169,18 +169,16 @@ function ProjectsViewModel() {
         'Cancelled': 'İptal Edildi'
     };
 
-    // Date range options
-    self.dateRanges = [
-        { systemName: 'today', name: 'Bugün' },
-        { systemName: 'yesterday', name: 'Dün' },
-        { systemName: 'thisWeek', name: 'Bu Hafta' },
-        { systemName: 'lastWeek', name: 'Geçen Hafta' },
-        { systemName: 'thisMonth', name: 'Bu Ay' },
-        { systemName: 'lastMonth', name: 'Geçen Ay' },
-        { systemName: 'last7Days', name: 'Son 7 Gün' },
-        { systemName: 'last30Days', name: 'Son 30 Gün' },
-        { systemName: 'thisQuarter', name: 'Bu Çeyrek' },
-        { systemName: 'thisYear', name: 'Bu Yıl' }
+    // Proje bitiş tarihi seçenekleri
+    self.endingDateOptions = [
+        { systemName: 'overdue', name: 'Süresi Geçmiş' },
+        { systemName: 'today', name: 'Bugün Bitecek' },
+        { systemName: 'next7Days', name: '7 Gün İçinde Bitecek' },
+        { systemName: 'thisWeek', name: 'Bu Hafta Bitecek' },
+        { systemName: 'next30Days', name: '30 Gün İçinde Bitecek' },
+        { systemName: 'thisMonth', name: 'Bu Ay Bitecek' },
+        { systemName: 'nextMonth', name: 'Gelecek Ay Bitecek' },
+        { systemName: 'thisQuarter', name: 'Bu Çeyrek Bitecek' }
     ];
 
     // Can add filter check
@@ -194,7 +192,7 @@ function ProjectsViewModel() {
             case 'status': return self.tempFilter.status();
             case 'projectManager': return self.tempFilter.projectManagerId();
             case 'search': return self.tempFilter.searchTerm().trim() !== '';
-            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            case 'endingDate': return self.tempFilter.selectedDateRangeType();
             default: return false;
         }
     });
@@ -335,23 +333,14 @@ function ProjectsViewModel() {
                 self.tempFilter.searchTerm('');
                 break;
 
-            case 'dateRange':
-                var startDate = self.tempFilter.startDate();
-                var endDate = self.tempFilter.endDate();
-                var dateRangeType = self.tempFilter.selectedDateRangeType();
-                if (!startDate && !endDate) return;
+            case 'endingDate':
+                var endingType = self.tempFilter.selectedDateRangeType();
+                if (!endingType) return;
 
-                filter.value = { startDate: startDate, endDate: endDate, dateRangeType: dateRangeType };
+                var optionInfo = self.endingDateOptions.find(function(o) { return o.systemName === endingType; });
+                filter.value = endingType;
+                filter.displayValue = optionInfo ? optionInfo.name : endingType;
 
-                if (dateRangeType) {
-                    var rangeInfo = self.dateRanges.find(function(r) { return r.systemName === dateRangeType; });
-                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
-                } else {
-                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
-                }
-
-                self.tempFilter.startDate('');
-                self.tempFilter.endDate('');
                 self.tempFilter.selectedDateRangeType(null);
                 break;
 
@@ -362,17 +351,23 @@ function ProjectsViewModel() {
         // Tüm filtre tipleri çoklu değer destekler (aynı tipten birden fazla eklenebilir)
         self.activeFilters.push(filter);
         self.selectedFilterType('');
+        self.currentPage(1);
+        self.loadProjects(); // Backend'e filtre gönder
     };
 
     // Remove filter
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
+        self.currentPage(1);
+        self.loadProjects(); // Backend'e filtre gönder
     };
 
     // Clear all filters
     self.clearFilters = function() {
         self.activeFilters([]);
         self.sorting.reset();
+        self.currentPage(1);
+        self.loadProjects(); // Backend'e filtre gönder
     };
 
     // Modals
@@ -447,51 +442,11 @@ function ProjectsViewModel() {
         return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
     };
 
-    // Filtered projects (based on active filters) - Tam liste
+    // Sorted projects - Filtreleme backend'de yapılıyor, sadece client-side sıralama
     self.allFilteredProjects = ko.computed(function() {
         var result = self.projects();
 
-        // Apply active filters
-        self.activeFilters().forEach(function(filter) {
-            switch (filter.type) {
-                case 'customer':
-                    result = result.filter(function(p) { return p.customerId === filter.value; });
-                    break;
-                case 'projectType':
-                    result = result.filter(function(p) { return p.projectType === filter.value; });
-                    break;
-                case 'status':
-                    result = result.filter(function(p) { return p.status === filter.value; });
-                    break;
-                case 'projectManager':
-                    result = result.filter(function(p) { return p.projectManagerId === filter.value; });
-                    break;
-                case 'search':
-                    var term = filter.value.toLowerCase();
-                    result = result.filter(function(p) {
-                        return (p.name && p.name.toLowerCase().indexOf(term) >= 0) ||
-                               (p.code && p.code.toLowerCase().indexOf(term) >= 0) ||
-                               (p.description && p.description.toLowerCase().indexOf(term) >= 0) ||
-                               (p.customerName && p.customerName.toLowerCase().indexOf(term) >= 0) ||
-                               (p.customerCode && p.customerCode.toLowerCase().indexOf(term) >= 0);
-                    });
-                    break;
-                case 'dateRange':
-                    var startDate = filter.value.startDate ? new Date(filter.value.startDate) : null;
-                    var endDate = filter.value.endDate ? new Date(filter.value.endDate) : null;
-                    if (endDate) endDate.setHours(23, 59, 59, 999);
-                    result = result.filter(function(p) {
-                        var pStart = new Date(p.startDate);
-                        var pEnd = new Date(p.endDate);
-                        if (startDate && pEnd < startDate) return false;
-                        if (endDate && pStart > endDate) return false;
-                        return true;
-                    });
-                    break;
-            }
-        });
-
-        // Apply sorting
+        // Apply sorting (filtreleme backend'de yapılıyor)
         var sortBy = self.sorting.sortBy();
         var sortDir = self.sorting.sortDirection();
         if (sortBy) {
@@ -515,8 +470,7 @@ function ProjectsViewModel() {
         return list.slice(start, start + pageSize);
     });
 
-    // Filtre değişince sayfa 1'e dön
-    self.activeFilters.subscribe(function() { self.currentPage(1); });
+    // Sayfa boyutu değişince sayfa 1'e dön
     self.pageSize.subscribe(function() { self.currentPage(1); });
 
     // Pagination fonksiyonları
@@ -548,10 +502,10 @@ function ProjectsViewModel() {
             .then(function(data) { self.checklists(data || []); })
             .catch(function() { console.error('Checklists could not be loaded'); });
 
-        // Load customers
-        fetch('/api/customers', { credentials: 'include' })
+        // Load customers (PagedCustomerResult döner, items içindeki listeyi al)
+        fetch('/api/customers?pageSize=1000', { credentials: 'include' })
             .then(function(res) { return res.json(); })
-            .then(function(data) { self.customers(data || []); })
+            .then(function(data) { self.customers(data.items || []); })
             .catch(function() { console.error('Customers could not be loaded'); });
 
         // Load users
@@ -588,12 +542,60 @@ function ProjectsViewModel() {
             });
     };
 
-    // Load projects
+    // Build query string from active filters
+    self.buildFilterQueryString = function() {
+        var params = new URLSearchParams();
+        params.append('includeInactive', 'true');
+
+        // Collect filter values by type (çoklu değer desteği)
+        var customerIds = [];
+        var projectTypes = [];
+        var statuses = [];
+        var projectManagerIds = [];
+        var searchText = '';
+        var endingDateFilter = '';
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'customer':
+                    customerIds.push(filter.value);
+                    break;
+                case 'projectType':
+                    projectTypes.push(filter.value);
+                    break;
+                case 'status':
+                    statuses.push(filter.value);
+                    break;
+                case 'projectManager':
+                    projectManagerIds.push(filter.value);
+                    break;
+                case 'search':
+                    searchText = filter.value;
+                    break;
+                case 'endingDate':
+                    endingDateFilter = filter.value;
+                    break;
+            }
+        });
+
+        // Add to query string (çoğul parametreler)
+        customerIds.forEach(function(id) { params.append('customerIds', id); });
+        projectTypes.forEach(function(t) { params.append('projectTypes', t); });
+        statuses.forEach(function(s) { params.append('statuses', s); });
+        projectManagerIds.forEach(function(id) { params.append('projectManagerIds', id); });
+        if (searchText) params.append('searchText', searchText);
+        if (endingDateFilter) params.append('endingDateFilter', endingDateFilter);
+
+        return params.toString();
+    };
+
+    // Load projects with filters
     self.loadProjects = function() {
         self.isLoading(true);
         self.errorMessage('');
 
-        fetch('/api/projects?includeInactive=true', { credentials: 'include' })
+        var queryString = self.buildFilterQueryString();
+        fetch('/api/projects?' + queryString, { credentials: 'include' })
             .then(function(res) {
                 if (!res.ok) throw new Error('Yükleme başarısız');
                 return res.json();

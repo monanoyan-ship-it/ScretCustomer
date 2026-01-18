@@ -104,6 +104,54 @@ tbody tr:nth-last-child(-n+3) .dropdown-menu {
     transform: none !important;
 }
 
+/* ===== Utility Classes ===== */
+.spin {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.white-space-pre-wrap {
+    white-space: pre-wrap;
+}
+
+.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.badge-sm {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.35rem;
+}
+
+.table-success-light { background-color: rgba(25, 135, 84, 0.15) !important; }
+.table-warning-light { background-color: rgba(255, 193, 7, 0.15) !important; }
+.table-danger-light { background-color: rgba(220, 53, 69, 0.15) !important; }
+
+/* ===== Print Styles ===== */
+@media print {
+    .card-header.bg-primary { background-color: #0d6efd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header.bg-dark { background-color: #212529 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header.bg-info { background-color: #0dcaf0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header.bg-secondary { background-color: #6c757d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bg-success { background-color: #198754 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bg-warning { background-color: #ffc107 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bg-danger { background-color: #dc3545 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .text-white { color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .progress-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ===== Filter Dropdown - Global Styles ===== */
+.filter-dropdown {
+    min-width: 320px;
+    z-index: 1030;
+}
+
 /* ===== Sortable Table Headers ===== */
 th.sortable {
     cursor: pointer;
