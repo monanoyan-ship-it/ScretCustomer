@@ -302,8 +302,12 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Süpervizör ise takımındaki personel ID'lerini döndürür, değilse null (tüm personel görülebilir)
+    /// Rol bazlı personel erişim kontrolü - Organizasyon bazında hibrit mantık
     /// </summary>
+    /// <returns>
+    /// null = Tüm personeli görebilir (Admin/Manager)
+    /// List = Sadece bu ID'lerdeki personeli görebilir
+    /// </returns>
     private async Task<List<int>?> GetAllowedPersonnelIdsAsync()
     {
         var role = GetPersonnelRole();
@@ -313,49 +317,60 @@ public class CustomerPortalApiController : ControllerBase
         if (role == "Admin" || role == "CustomerManager")
             return null;
 
-        // CustomerSupervisor
+        // CustomerSupervisor - Organizasyon bazında hibrit kontrol
         if (role == "CustomerSupervisor" && personnelId.HasValue)
         {
-            // Önce süpervizör olarak atandığı personelleri bul
-            var teamMemberIds = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => cpo.SupervisorId == personnelId.Value)
-                .Select(cpo => cpo.CustomerPersonnelId)
+            // 1. Süpervizörün atandığı organizasyonları bul
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
                 .Distinct()
                 .ToListAsync();
 
-            // Eğer altında eleman varsa, onları göster
-            if (teamMemberIds.Any())
-            {
-                // Kendisini de ekle
-                if (!teamMemberIds.Contains(personnelId.Value))
-                    teamMemberIds.Add(personnelId.Value);
+            // Hiçbir organizasyona atanmamış → sadece kendisi
+            if (!myOrgIds.Any())
+                return new List<int> { personnelId.Value };
 
-                return teamMemberIds;
-            }
-
-            // Altında eleman yoksa, atandığı organizasyonlardaki tüm personeli göster
-            var myOrganizationIds = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value)
-                .Select(cpo => cpo.CustomerOrganizationId)
+            // 2. Bu organizasyonlarda süpervizör olduğu personeller
+            var supervisedPersonnel = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => myOrgIds.Contains(cpo.CustomerOrganizationId) &&
+                             cpo.SupervisorId == personnelId.Value &&
+                             !cpo.IsDeleted)
+                .Select(cpo => new { cpo.CustomerOrganizationId, cpo.CustomerPersonnelId })
                 .ToListAsync();
 
-            if (myOrganizationIds.Any())
+            // 3. Hangi organizasyonlarda altında personel var?
+            var orgsWithTeam = supervisedPersonnel
+                .Select(x => x.CustomerOrganizationId)
+                .Distinct()
+                .ToHashSet();
+
+            // 4. Altında personel olmayan organizasyonlar
+            var orgsWithoutTeam = myOrgIds.Except(orgsWithTeam).ToList();
+
+            var result = new HashSet<int>();
+
+            // Altında personel olan org'lardan sadece o personeller
+            foreach (var p in supervisedPersonnel)
+                result.Add(p.CustomerPersonnelId);
+
+            // Altında personel olmayan org'lardan TÜM personeller
+            if (orgsWithoutTeam.Any())
             {
-                var orgPersonnelIds = await _context.CustomerPersonnelOrganizations
-                    .Where(cpo => myOrganizationIds.Contains(cpo.CustomerOrganizationId))
+                var allPersonnelInEmptyOrgs = await _context.CustomerPersonnelOrganizations
+                    .Where(cpo => orgsWithoutTeam.Contains(cpo.CustomerOrganizationId) && !cpo.IsDeleted)
                     .Select(cpo => cpo.CustomerPersonnelId)
                     .Distinct()
                     .ToListAsync();
 
-                // Kendisini de ekle
-                if (!orgPersonnelIds.Contains(personnelId.Value))
-                    orgPersonnelIds.Add(personnelId.Value);
-
-                return orgPersonnelIds;
+                foreach (var id in allPersonnelInEmptyOrgs)
+                    result.Add(id);
             }
 
-            // Hiçbir organizasyona atanmamışsa sadece kendini görebilir
-            return new List<int> { personnelId.Value };
+            // Kendisini de ekle
+            result.Add(personnelId.Value);
+
+            return result.ToList();
         }
 
         // CustomerOperator sadece kendini görebilir
@@ -1114,12 +1129,36 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId);
+
+        // Rol bazlı filtreleme
+        // Manager/Supervisor: Kendi yaptıkları değerlendirmeler (EvaluatorCustomerPersonnelId)
+        // Operator: Kendilerinin değerlendirildiği kayıtlar (EvaluatedCustomerPersonnelId)
+        if (role == "CustomerOperator" && personnelId.HasValue)
+        {
+            // Operator: Sadece kendisinin değerlendirildiği kayıtlar
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
+        }
+        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            // Supervisor: Kendi yaptığı değerlendirmeler + allowedPersonnelIds'deki personelin değerlendirildiği kayıtlar
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null)
+            {
+                query = query.Where(e =>
+                    e.EvaluatorCustomerPersonnelId == personnelId.Value ||
+                    (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
+            }
+        }
+        // Manager ve Admin: Tüm kayıtları görür (ek filtre yok)
 
         var totalCount = await query.CountAsync();
 
@@ -1794,6 +1833,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
@@ -1803,6 +1845,25 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
                        e.EvaluatorCustomerPersonnelId != null &&
                        e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Rol bazlı filtreleme (İç Dinlemeler)
+        // Operator: Sadece kendisinin değerlendirildiği kayıtlar
+        // Supervisor: Kendi yaptığı değerlendirmeler + takımındaki personelin değerlendirildiği kayıtlar
+        if (role == "CustomerOperator" && personnelId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
+        }
+        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null)
+            {
+                query = query.Where(e =>
+                    e.EvaluatorCustomerPersonnelId == personnelId.Value ||
+                    (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
+            }
+        }
+        // Manager ve Admin: Tüm kayıtları görür
 
         // Date filters
         if (startDate.HasValue)
@@ -2018,6 +2079,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
@@ -2027,6 +2091,24 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
                        e.EvaluatorId != null &&
                        e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Rol bazlı filtreleme (Dış Dinlemeler)
+        // Operator: Sadece kendisinin değerlendirildiği kayıtlar
+        // Supervisor: Takımındaki personelin değerlendirildiği kayıtlar
+        if (role == "CustomerOperator" && personnelId.HasValue)
+        {
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
+        }
+        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null)
+            {
+                query = query.Where(e =>
+                    e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+            }
+        }
+        // Manager ve Admin: Tüm kayıtları görür
 
         // Date filters
         if (startDate.HasValue)

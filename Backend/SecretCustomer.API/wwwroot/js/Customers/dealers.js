@@ -13,6 +13,13 @@ function DealersViewModel() {
     // Data
     self.dealers = ko.observableArray([]);
 
+    // Filter object (used in view)
+    self.filter = {
+        searchTerm: ko.observable(''),
+        dealerTypeId: ko.observable(''),
+        isActive: ko.observable('')
+    };
+
     // ========== CHIP-BASED FILTER SYSTEM ==========
     self.selectedFilterType = ko.observable('');
     self.activeFilters = ko.observableArray([]);
@@ -123,8 +130,47 @@ function DealersViewModel() {
     // Clear all filters
     self.clearFilters = function() {
         self.activeFilters([]);
-        self.loadDealers();
+        self.filter.searchTerm('');
+        self.filter.dealerTypeId('');
+        self.filter.isActive('');
     };
+
+    // Apply filters (triggers computed update)
+    self.applyFilters = function() {
+        // Filtreleme otomatik computed ile yapılıyor, bu fonksiyon sadece UI için
+    };
+
+    // Filtered dealers (client-side filtering)
+    self.filteredDealers = ko.computed(function() {
+        var list = self.dealers();
+        var search = (self.filter.searchTerm() || '').toLowerCase().trim();
+        var typeId = self.filter.dealerTypeId();
+        var isActive = self.filter.isActive();
+
+        if (search) {
+            list = list.filter(function(d) {
+                return (d.name || '').toLowerCase().indexOf(search) >= 0 ||
+                       (d.code || '').toLowerCase().indexOf(search) >= 0 ||
+                       (d.address || '').toLowerCase().indexOf(search) >= 0 ||
+                       (d.contactPerson || '').toLowerCase().indexOf(search) >= 0;
+            });
+        }
+
+        if (typeId) {
+            list = list.filter(function(d) {
+                return String(d.dealerTypeId) === String(typeId);
+            });
+        }
+
+        if (isActive !== '' && isActive !== null) {
+            var active = isActive === 'true' || isActive === true;
+            list = list.filter(function(d) {
+                return d.isActive === active;
+            });
+        }
+
+        return list;
+    });
 
     // Editing dealer
     self.editingDealer = ko.observable(null);

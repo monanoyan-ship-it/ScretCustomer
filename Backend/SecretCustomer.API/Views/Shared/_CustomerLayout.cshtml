@@ -103,6 +103,7 @@
                                     @Html.T("CustomerPortal.Menu.Supervisors", "Supervizorler")
                                 </a>
                             </li>
+                            }
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "InternalEvaluations" ? "active" : "")" href="/CustomerPortal/InternalEvaluations">
                                     <i class="bi bi-clipboard-check"></i>
@@ -115,13 +116,12 @@
                                     @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
                                 </a>
                             </li>
-                            }
                         </ul>
                     </div>
                 </li>
                 }
 
-                @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
+                @if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") || User.IsInRole("Admin"))
                 {
                 <!-- ===== RAPORLAR (Açılır-Kapanır) ===== -->
                 <li class="nav-item">

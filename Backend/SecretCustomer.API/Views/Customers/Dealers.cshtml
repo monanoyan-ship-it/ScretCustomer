@@ -75,18 +75,18 @@
                 <!-- Summary -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">
-                        @Html.T("Common.Total", "Toplam") <strong data-bind="text: dealers().length"></strong> @Html.T("Dealer.Dealer", "bayi")
+                        @Html.T("Common.Total", "Toplam") <strong data-bind="text: filteredDealers().length"></strong> @Html.T("Dealer.Dealer", "bayi")
                     </span>
                 </div>
 
                 <!-- Empty State -->
-                <div data-bind="visible: dealers().length === 0" class="text-center py-5">
+                <div data-bind="visible: filteredDealers().length === 0" class="text-center py-5">
                     <i class="bi bi-shop text-muted" style="font-size: 3rem;"></i>
                     <p class="mt-3 text-muted">@Html.T("Dealer.NoDealers", "Bu müşteriye ait bayi bulunmamaktadır.")</p>
                 </div>
 
                 <!-- Table -->
-                <div data-bind="visible: dealers().length > 0" class="table-responsive">
+                <div data-bind="visible: filteredDealers().length > 0" class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
@@ -100,7 +100,7 @@
                                 <th style="width: 120px;">@Html.T("Common.Actions", "İşlemler")</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: dealers">
+                        <tbody data-bind="foreach: filteredDealers">
                             <tr>
                                 <td><span class="badge bg-primary" data-bind="text: code"></span></td>
                                 <td>

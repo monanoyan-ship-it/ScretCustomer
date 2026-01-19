@@ -33,15 +33,16 @@ function PersonnelViewModel() {
         isActive: 'Durum'
     };
 
+    var labels = (window.personnelConfig && window.personnelConfig.labels) || {};
     self.statusLabels = {
-        'true': 'Aktif',
-        'false': 'Pasif'
+        'true': labels.active || 'Aktif',
+        'false': labels.inactive || 'Pasif'
     };
 
     self.roles = [
-        { id: '1', name: 'Yönetici' },
-        { id: '2', name: 'Süpervizör' },
-        { id: '3', name: 'Operatör' }
+        { id: 'CustomerManager', name: 'Firma Yöneticisi' },
+        { id: 'CustomerSupervisor', name: 'Süpervizör' },
+        { id: 'CustomerOperator', name: 'Operatör' }
     ];
 
     // Can add filter
@@ -238,15 +239,32 @@ function PersonnelViewModel() {
         if (self.currentPage() < self.totalPages()) self.currentPage(self.currentPage() + 1);
     };
 
-    // Role helpers
+    // Role helpers (badge class için kullanılıyor, role int/string olabilir)
     self.getRoleName = function(role) {
-        var roles = { '1': 'Yönetici', '2': 'Süpervizör', '3': 'Operatör' };
-        return roles[String(role)] || role;
+        var roleMap = {
+            '1': 'Firma Yöneticisi',
+            '2': 'Süpervizör',
+            '3': 'Operatör'
+        };
+        return roleMap[String(role)] || role;
     };
 
     self.getRoleBadgeClass = function(role) {
-        var classes = { '1': 'bg-danger', '2': 'bg-warning text-dark', '3': 'bg-info' };
+        // role system name olarak geliyor: CustomerManager, CustomerSupervisor, CustomerOperator
+        var classes = {
+            'CustomerManager': 'bg-danger',
+            'CustomerSupervisor': 'bg-warning text-dark',
+            'CustomerOperator': 'bg-info',
+            // Eski ID desteği
+            '1': 'bg-danger',
+            '2': 'bg-warning text-dark',
+            '3': 'bg-info'
+        };
         return classes[String(role)] || 'bg-secondary';
+    };
+
+    self.getStatusLabel = function(isActive) {
+        return isActive ? self.statusLabels['true'] : self.statusLabels['false'];
     };
 
     // Load personnel
@@ -285,7 +303,7 @@ function PersonnelViewModel() {
             phoneNumber: ko.observable(''),
             department: ko.observable(''),
             title: ko.observable(''),
-            role: ko.observable('3'),
+            role: ko.observable('CustomerOperator'),
             isActive: ko.observable(true)
         });
         self.showModal();

@@ -422,10 +422,12 @@ function CustomerOrganizationsViewModel() {
                 toastr.success(message, 'Tasima Basarili');
                 self.closeMoveModal();
 
+                // Mevcut açık organizasyonun personel listesini yenile
                 if (self.selectedOrganization()) {
                     self.loadPersonnel(self.selectedOrganization().id);
                 }
-                self.loadOrganizations(self.selectedCustomer().id);
+                // Unassigned listesini yenile
+                self.loadUnassignedPersonnel(self.selectedCustomer().id);
             })
             .catch(function(error) {
                 console.error('Error moving personnel:', error);
@@ -534,10 +536,12 @@ function CustomerOrganizationsViewModel() {
                 toastr.success(message, 'Kopyalama Basarili');
                 self.closeMoveModal();
 
+                // Mevcut açık organizasyonun personel listesini yenile
                 if (self.selectedOrganization()) {
                     self.loadPersonnel(self.selectedOrganization().id);
                 }
-                self.loadOrganizations(self.selectedCustomer().id);
+                // Unassigned listesini yenile
+                self.loadUnassignedPersonnel(self.selectedCustomer().id);
             })
             .catch(function(error) {
                 console.error('Error copying personnel:', error);
@@ -565,8 +569,10 @@ function CustomerOrganizationsViewModel() {
                 ApiService.delete('/customer-organizations/' + orgId + '/personnel/' + person.id + '/supervisor/' + supervisor.id)
                     .then(function() {
                         toastr.success(personName + ' ekipten çıkarıldı.');
+                        // Sadece mevcut personel listesini güncelle, sayfa yenilenmesin
                         self.loadPersonnel(orgId);
-                        self.loadOrganizations(self.selectedCustomer().id);
+                        // Unassigned listesini güncelle
+                        self.loadUnassignedPersonnel(self.selectedCustomer().id);
                     })
                     .catch(function(error) {
                         console.error('Error removing from team:', error);
@@ -591,8 +597,10 @@ function CustomerOrganizationsViewModel() {
                 ApiService.delete('/customer-organizations/' + orgId + '/personnel/' + person.id + '/v2')
                     .then(function() {
                         toastr.success(personName + ' organizasyondan çıkarıldı.');
+                        // Sadece mevcut personel listesini güncelle, sayfa yenilenmesin
                         self.loadPersonnel(orgId);
-                        self.loadOrganizations(self.selectedCustomer().id);
+                        // Unassigned listesini güncelle
+                        self.loadUnassignedPersonnel(self.selectedCustomer().id);
                     })
                     .catch(function(error) {
                         console.error('Error removing from organization:', error);

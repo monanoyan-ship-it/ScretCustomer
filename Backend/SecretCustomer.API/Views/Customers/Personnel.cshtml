@@ -74,10 +74,10 @@
                             <td><code data-bind="text: username"></code></td>
                             <td data-bind="text: email"></td>
                             <td>
-                                <span class="badge" data-bind="text: $parent.getRoleName(role), css: $parent.getRoleBadgeClass(role)"></span>
+                                <span class="badge" data-bind="text: roleName, css: $parent.getRoleBadgeClass(role)"></span>
                             </td>
                             <td>
-                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: $parent.getStatusLabel(isActive)"></span>
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
@@ -169,9 +169,9 @@
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Common.Role", "Rol") <span class="text-danger">*</span></label>
                             <select class="form-select" data-bind="value: role">
-                                <option value="1">Firma Yöneticisi</option>
-                                <option value="2">Süpervizör</option>
-                                <option value="3">Operatör</option>
+                                <option value="CustomerManager">@Html.T("CustomerPersonnel.Role.Manager", "Firma Yöneticisi")</option>
+                                <option value="CustomerSupervisor">@Html.T("CustomerPersonnel.Role.Supervisor", "Süpervizör")</option>
+                                <option value="CustomerOperator">@Html.T("CustomerPersonnel.Role.Operator", "Operatör")</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -236,7 +236,11 @@
 
 <script>
     window.personnelConfig = {
-        customerId: @customerId
+        customerId: @customerId,
+        labels: {
+            active: '@Html.T("Common.Active", "Aktif")',
+            inactive: '@Html.T("Common.Inactive", "Pasif")'
+        }
     };
 </script>
 
