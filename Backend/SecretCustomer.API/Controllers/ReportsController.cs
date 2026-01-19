@@ -65,4 +65,13 @@ public class ReportsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// AI Destekli Rapor Oluşturma (Gemini API)
+    /// </summary>
+    [Authorize(Roles = "Admin")]
+    public IActionResult AIReport()
+    {
+        return View();
+    }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SecretCustomer.Core.DTOs.AI;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
@@ -18,6 +19,7 @@ public class ReportsApiController : BaseApiController
     private readonly IUserService _userService;
     private readonly ILogger<ReportsApiController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly IAIReportService _aiReportService;
 
     public ReportsApiController(
         IReportService reportService,
@@ -27,6 +29,7 @@ public class ReportsApiController : BaseApiController
         IUserService userService,
         ILogger<ReportsApiController> logger,
         ILocalizationService localizationService,
+        IAIReportService aiReportService,
         IConfiguration configuration) : base(configuration)
     {
         _reportService = reportService;
@@ -36,6 +39,7 @@ public class ReportsApiController : BaseApiController
         _userService = userService;
         _logger = logger;
         _localizationService = localizationService;
+        _aiReportService = aiReportService;
     }
 
     /// <summary>
@@ -46,7 +50,7 @@ public class ReportsApiController : BaseApiController
     {
         try
         {
-            var customers = await _customerService.GetActiveAsync();
+            var customers = await _customerService.GetListAsync(includeInactive: false);
             var projects = await _projectService.GetAllAsync(includeInactive: true); // Listenings filtresi için tüm projeler
             var evaluators = await _userService.GetByRoleIdAsync(UserRoles.Ids.QualitySpecialist);
 
@@ -1082,6 +1086,44 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error exporting personnel question performance report");
             return StatusCode(500, CreateErrorResponse("Personel soru performans raporu export edilirken hata oluştu.", ex));
+        }
+    }
+
+    // ===== AI RAPOR ENDPOINT'LERİ =====
+
+    /// <summary>
+    /// AI destekli rapor oluştur (Gemini API)
+    /// </summary>
+    [HttpPost("ai/generate")]
+    public async Task<IActionResult> GenerateAIReport([FromBody] AIReportRequestDto request)
+    {
+        try
+        {
+            var result = await _aiReportService.GenerateReportAsync(request);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "AI rapor oluşturma hatası: CustomerId={CustomerId}", request.CustomerId);
+            return StatusCode(500, CreateErrorResponse("AI rapor oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// AI raporu için veri topla (önizleme/debug için)
+    /// </summary>
+    [HttpPost("ai/collect-data")]
+    public async Task<IActionResult> CollectAIReportData([FromBody] AIReportRequestDto request)
+    {
+        try
+        {
+            var result = await _aiReportService.CollectReportDataAsync(request);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "AI rapor verisi toplama hatası: CustomerId={CustomerId}", request.CustomerId);
+            return StatusCode(500, CreateErrorResponse("Rapor verisi toplanırken hata oluştu.", ex));
         }
     }
 }

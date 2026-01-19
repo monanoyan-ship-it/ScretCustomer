@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using MimeKit;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SecretCustomer.Services.Services;
 
 /// <summary>
-/// SMTP üzerinden email gönderme servisi
+/// SMTP üzerinden email gönderme servisi (OAuth 2.0 destekli)
 /// </summary>
 public class SmtpEmailService : IEmailService
 {
@@ -25,6 +26,12 @@ public class SmtpEmailService : IEmailService
     private const string KEY_FROM_EMAIL = "Smtp.FromEmail";
     private const string KEY_FROM_NAME = "Smtp.FromName";
     private const string KEY_ENABLED = "Smtp.Enabled";
+
+    // OAuth 2.0 ayar key'leri
+    private const string KEY_USE_OAUTH = "Smtp.UseOAuth";
+    private const string KEY_TENANT_ID = "Smtp.TenantId";
+    private const string KEY_CLIENT_ID = "Smtp.ClientId";
+    private const string KEY_CLIENT_SECRET = "Smtp.ClientSecret";
 
     public SmtpEmailService(ApplicationDbContext context, ILogger<SmtpEmailService> logger)
     {
@@ -142,7 +149,15 @@ public class SmtpEmailService : IEmailService
 
             await client.ConnectAsync(settings.Host, settings.Port, secureSocketOptions);
 
-            if (!string.IsNullOrEmpty(settings.Username))
+            // OAuth 2.0 veya Basic Auth ile kimlik doğrulama
+            if (settings.UseOAuth && !string.IsNullOrEmpty(settings.ClientId))
+            {
+                var accessToken = await GetOAuthTokenAsync(settings);
+                var oauth2 = new SaslMechanismOAuth2(settings.Username, accessToken);
+                await client.AuthenticateAsync(oauth2);
+                _logger.LogDebug("OAuth 2.0 ile kimlik doğrulama yapıldı");
+            }
+            else if (!string.IsNullOrEmpty(settings.Username))
             {
                 await client.AuthenticateAsync(settings.Username, settings.Password);
             }
@@ -179,14 +194,23 @@ public class SmtpEmailService : IEmailService
 
             await client.ConnectAsync(settings.Host, settings.Port, secureSocketOptions);
 
-            if (!string.IsNullOrEmpty(settings.Username))
+            // OAuth 2.0 veya Basic Auth ile kimlik doğrulama
+            if (settings.UseOAuth && !string.IsNullOrEmpty(settings.ClientId))
+            {
+                var accessToken = await GetOAuthTokenAsync(settings);
+                var oauth2 = new SaslMechanismOAuth2(settings.Username, accessToken);
+                await client.AuthenticateAsync(oauth2);
+                _logger.LogDebug("OAuth 2.0 ile bağlantı testi yapıldı");
+            }
+            else if (!string.IsNullOrEmpty(settings.Username))
             {
                 await client.AuthenticateAsync(settings.Username, settings.Password);
             }
 
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("SMTP bağlantı testi başarılı: {Host}:{Port}", settings.Host, settings.Port);
+            var authMethod = settings.UseOAuth ? "OAuth 2.0" : "Basic Auth";
+            _logger.LogInformation("SMTP bağlantı testi başarılı: {Host}:{Port} ({AuthMethod})", settings.Host, settings.Port, authMethod);
 
             return EmailResult.Ok();
         }
@@ -205,7 +229,11 @@ public class SmtpEmailService : IEmailService
 
     private async Task<SmtpSettings?> GetSmtpSettingsAsync()
     {
-        var keys = new[] { KEY_HOST, KEY_PORT, KEY_USERNAME, KEY_PASSWORD, KEY_USE_SSL, KEY_FROM_EMAIL, KEY_FROM_NAME, KEY_ENABLED };
+        var keys = new[] {
+            KEY_HOST, KEY_PORT, KEY_USERNAME, KEY_PASSWORD, KEY_USE_SSL,
+            KEY_FROM_EMAIL, KEY_FROM_NAME, KEY_ENABLED,
+            KEY_USE_OAUTH, KEY_TENANT_ID, KEY_CLIENT_ID, KEY_CLIENT_SECRET
+        };
         var settingsDict = await _context.SystemSettings
             .Where(s => keys.Contains(s.Key))
             .ToDictionaryAsync(s => s.Key, s => s.Value);
@@ -224,8 +252,34 @@ public class SmtpEmailService : IEmailService
             UseSsl = settingsDict.GetValueOrDefault(KEY_USE_SSL, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
             FromEmail = settingsDict.GetValueOrDefault(KEY_FROM_EMAIL, ""),
             FromName = settingsDict.GetValueOrDefault(KEY_FROM_NAME, "Secret Customer"),
-            Enabled = settingsDict.GetValueOrDefault(KEY_ENABLED, "true").Equals("true", StringComparison.OrdinalIgnoreCase)
+            Enabled = settingsDict.GetValueOrDefault(KEY_ENABLED, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
+            // OAuth 2.0 ayarları
+            UseOAuth = settingsDict.GetValueOrDefault(KEY_USE_OAUTH, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
+            TenantId = settingsDict.GetValueOrDefault(KEY_TENANT_ID, ""),
+            ClientId = settingsDict.GetValueOrDefault(KEY_CLIENT_ID, ""),
+            ClientSecret = settingsDict.GetValueOrDefault(KEY_CLIENT_SECRET, "")
         };
+    }
+
+    /// <summary>
+    /// Microsoft Entra ID'den OAuth 2.0 access token alır
+    /// </summary>
+    private async Task<string> GetOAuthTokenAsync(SmtpSettings settings)
+    {
+        var app = ConfidentialClientApplicationBuilder
+            .Create(settings.ClientId)
+            .WithClientSecret(settings.ClientSecret)
+            .WithAuthority($"https://login.microsoftonline.com/{settings.TenantId}")
+            .Build();
+
+        // Microsoft 365 SMTP için gerekli scope
+        var scopes = new[] { "https://outlook.office365.com/.default" };
+
+        var result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
+
+        _logger.LogDebug("OAuth token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
+
+        return result.AccessToken;
     }
 
     private class SmtpSettings
@@ -238,5 +292,11 @@ public class SmtpEmailService : IEmailService
         public string FromEmail { get; set; } = "";
         public string FromName { get; set; } = "Secret Customer";
         public bool Enabled { get; set; } = true;
+
+        // OAuth 2.0 ayarları
+        public bool UseOAuth { get; set; } = false;
+        public string TenantId { get; set; } = "";
+        public string ClientId { get; set; } = "";
+        public string ClientSecret { get; set; } = "";
     }
 }

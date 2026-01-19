@@ -95,14 +95,27 @@
                     <h5 class="mb-0"><i class="bi bi-key"></i> Kimlik Doğrulama</h5>
                 </div>
                 <div class="card-body">
-                    <!-- Username -->
+                    <!-- OAuth Toggle -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="useOAuth" data-bind="checked: settings.useOAuth" style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label ms-2" for="useOAuth">
+                                <strong>OAuth 2.0 Kullan (Microsoft 365)</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted">Microsoft 365 için önerilen modern kimlik doğrulama yöntemi.</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- Username (her zaman görünür) -->
                     <div class="mb-3">
                         <label class="form-label">Kullanıcı Adı / Email</label>
                         <input type="text" class="form-control" placeholder="user@domain.com" data-bind="value: settings.username">
                     </div>
 
-                    <!-- Password -->
-                    <div class="mb-3">
+                    <!-- Basic Auth: Password -->
+                    <div class="mb-3" data-bind="visible: !settings.useOAuth()">
                         <label class="form-label">Şifre / Uygulama Şifresi</label>
                         <div class="input-group">
                             <input class="form-control" placeholder="••••••••"
@@ -112,6 +125,40 @@
                             </button>
                         </div>
                         <small class="text-muted">Gmail için "Uygulama Şifresi" kullanın.</small>
+                    </div>
+
+                    <!-- OAuth 2.0 Settings -->
+                    <div data-bind="visible: settings.useOAuth">
+                        <div class="alert alert-info py-2 mb-3">
+                            <small><i class="bi bi-info-circle"></i> Azure Portal'dan uygulama kaydı oluşturun ve SMTP.Send izni verin.</small>
+                        </div>
+
+                        <!-- Tenant ID -->
+                        <div class="mb-3">
+                            <label class="form-label">Tenant ID <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" data-bind="value: settings.tenantId">
+                            <small class="text-muted">Azure Active Directory Tenant ID</small>
+                        </div>
+
+                        <!-- Client ID -->
+                        <div class="mb-3">
+                            <label class="form-label">Client ID (Application ID) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" data-bind="value: settings.clientId">
+                            <small class="text-muted">Uygulama kaydının Application (client) ID değeri</small>
+                        </div>
+
+                        <!-- Client Secret -->
+                        <div class="mb-3">
+                            <label class="form-label">Client Secret <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input class="form-control" placeholder="••••••••"
+                                       data-bind="value: settings.clientSecret, attr: { type: showClientSecret() ? 'text' : 'password' }">
+                                <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleClientSecret">
+                                    <i data-bind="css: showClientSecret() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Certificates & secrets bölümünden oluşturulan değer</small>
+                        </div>
                     </div>
 
                     <hr>
@@ -177,12 +224,14 @@
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h6><i class="bi bi-microsoft text-primary"></i> Outlook / Office 365</h6>
+                    <h6><i class="bi bi-microsoft text-primary"></i> Microsoft 365 (OAuth 2.0)</h6>
                     <ul class="small">
                         <li>Host: smtp.office365.com</li>
                         <li>Port: 587</li>
                         <li>SSL: Evet</li>
-                        <li>Normal şifre kullanabilirsiniz</li>
+                        <li>OAuth 2.0: <strong>Önerilen</strong></li>
+                        <li><a href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank">Azure App Registration</a></li>
+                        <li>API izni: SMTP.Send</li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -210,6 +259,7 @@
             self.isTesting = ko.observable(false);
             self.isSendingTest = ko.observable(false);
             self.showPassword = ko.observable(false);
+            self.showClientSecret = ko.observable(false);
             self.testEmail = ko.observable('');
 
             // Settings
@@ -221,7 +271,12 @@
                 useSsl: ko.observable(true),
                 fromEmail: ko.observable(''),
                 fromName: ko.observable('Secret Customer'),
-                enabled: ko.observable(true)
+                enabled: ko.observable(true),
+                // OAuth 2.0
+                useOAuth: ko.observable(false),
+                tenantId: ko.observable(''),
+                clientId: ko.observable(''),
+                clientSecret: ko.observable('')
             };
 
             // Load settings
@@ -238,6 +293,11 @@
                         self.settings.fromEmail(data.fromEmail || '');
                         self.settings.fromName(data.fromName || 'Secret Customer');
                         self.settings.enabled(data.enabled !== false);
+                        // OAuth 2.0
+                        self.settings.useOAuth(data.useOAuth === true);
+                        self.settings.tenantId(data.tenantId || '');
+                        self.settings.clientId(data.clientId || '');
+                        self.settings.clientSecret(data.clientSecret || '');
                     })
                     .catch(function(error) {
                         console.error('Error:', error);
@@ -260,7 +320,12 @@
                     useSsl: self.settings.useSsl(),
                     fromEmail: self.settings.fromEmail(),
                     fromName: self.settings.fromName(),
-                    enabled: self.settings.enabled()
+                    enabled: self.settings.enabled(),
+                    // OAuth 2.0
+                    useOAuth: self.settings.useOAuth(),
+                    tenantId: self.settings.tenantId(),
+                    clientId: self.settings.clientId(),
+                    clientSecret: self.settings.clientSecret()
                 };
 
                 fetch('/api/smtp/settings', {
@@ -343,6 +408,11 @@
             // Toggle password visibility
             self.togglePassword = function() {
                 self.showPassword(!self.showPassword());
+            };
+
+            // Toggle client secret visibility
+            self.toggleClientSecret = function() {
+                self.showClientSecret(!self.showClientSecret());
             };
 
             // Initialize

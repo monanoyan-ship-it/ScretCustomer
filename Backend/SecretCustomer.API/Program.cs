@@ -184,6 +184,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAIReportService, AIReportService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerPersonnelService, CustomerPersonnelService>();

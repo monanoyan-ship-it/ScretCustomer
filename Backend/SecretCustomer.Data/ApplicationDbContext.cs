@@ -32,6 +32,7 @@ public class ApplicationDbContext : DbContext
     // Customer Organization DbSets (Yeni Hiyerarşi)
     public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
     public DbSet<CustomerPersonnelOrganization> CustomerPersonnelOrganizations { get; set; }
+    public DbSet<CustomerPersonnelNotificationLog> CustomerPersonnelNotificationLogs { get; set; }
 
     // Permission Management DbSets
     public DbSet<Permission> Permissions { get; set; }

@@ -55,4 +55,10 @@ public static class SystemSettingKeys
     public const string SmtpFromEmail = "Smtp.FromEmail";
     public const string SmtpFromName = "Smtp.FromName";
     public const string SmtpEnabled = "Smtp.Enabled";
+
+    // OAuth 2.0 Ayarları (Microsoft 365)
+    public const string SmtpUseOAuth = "Smtp.UseOAuth";
+    public const string SmtpTenantId = "Smtp.TenantId";
+    public const string SmtpClientId = "Smtp.ClientId";
+    public const string SmtpClientSecret = "Smtp.ClientSecret";
 }

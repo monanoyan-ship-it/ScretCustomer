@@ -73,4 +73,9 @@ public class CustomerPersonnel : BaseEntity
     /// Bu personelin gorev aldigi organizasyonlar (many-to-many, her atamada farkli supervisor olabilir)
     /// </summary>
     public ICollection<CustomerPersonnelOrganization> OrganizationAssignments { get; set; } = new List<CustomerPersonnelOrganization>();
+
+    /// <summary>
+    /// Bu personele gönderilen bildirim e-postaları
+    /// </summary>
+    public ICollection<CustomerPersonnelNotificationLog> NotificationLogs { get; set; } = new List<CustomerPersonnelNotificationLog>();
 }

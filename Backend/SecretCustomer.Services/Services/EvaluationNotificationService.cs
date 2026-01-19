@@ -28,11 +28,26 @@ public class EvaluationNotificationService : IEvaluationNotificationService
 
     /// <summary>
     /// Tekil değerlendirme bildirimi gönderir (Her Kayıtta seçeneği için)
+    /// Değerlendirilen personelin email adresine gönderilir
     /// </summary>
     public async Task SendSingleEvaluationNotificationAsync(Evaluation evaluation)
     {
         try
         {
+            // Değerlendirilen personel kontrolü
+            if (evaluation.EvaluatedCustomerPersonnel == null)
+            {
+                _logger.LogDebug("No evaluated personnel for evaluation {EvaluationId}, skipping notification", evaluation.Id);
+                return;
+            }
+
+            var personnelEmail = evaluation.EvaluatedCustomerPersonnel.Email;
+            if (string.IsNullOrWhiteSpace(personnelEmail))
+            {
+                _logger.LogWarning("No email for evaluated personnel {PersonnelId}", evaluation.EvaluatedCustomerPersonnelId);
+                return;
+            }
+
             // Müşteri bilgilerini al
             var customer = await _context.Customers
                 .Include(c => c.EvaluationNotificationTemplate)
@@ -47,12 +62,6 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             // Bildirim ayarları kontrol
             if (customer.EvaluationNotificationFrequencyId != EvaluationNotificationFrequencies.Ids.PerEvaluation)
                 return;
-
-            if (string.IsNullOrWhiteSpace(customer.NotificationEmails))
-            {
-                _logger.LogWarning("No notification emails configured for customer {CustomerId}", customer.Id);
-                return;
-            }
 
             // Email şablonunu al
             var template = customer.EvaluationNotificationTemplate;
@@ -71,31 +80,41 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             }
 
             // Değerlendirilen personel adı
-            var evaluatedPersonnel = evaluation.EvaluatedCustomerPersonnel != null
-                ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
-                : evaluation.EvaluatedUnknownPersonnel ?? "-";
+            var evaluatedPersonnelName = $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}";
 
             // Placeholder'ları değiştir
-            var subject = ReplacePlaceholders(template.Subject, customer, evaluation, evaluatedPersonnel, null, null, 1);
-            var body = ReplacePlaceholders(template.Body, customer, evaluation, evaluatedPersonnel, null, null, 1);
+            var subject = ReplacePlaceholders(template.Subject, customer, evaluation, evaluatedPersonnelName, null, null, 1);
+            var body = ReplacePlaceholders(template.Body, customer, evaluation, evaluatedPersonnelName, null, null, 1);
 
-            // Email gönder
-            var emails = customer.NotificationEmails.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(e => e.Trim())
-                .Where(e => !string.IsNullOrEmpty(e))
-                .ToList();
+            // Personelin email adresine gönder
+            var result = await _emailService.SendEmailAsync(personnelEmail, subject, body);
 
-            foreach (var email in emails)
+            // Log kaydı oluştur
+            var notificationLog = new CustomerPersonnelNotificationLog
             {
-                var result = await _emailService.SendEmailAsync(email, subject, body);
-                if (!result.Success)
-                {
-                    _logger.LogError("Failed to send evaluation notification to {Email}: {Error}", email, result.ErrorMessage);
-                }
-            }
+                CustomerPersonnelId = evaluation.EvaluatedCustomerPersonnelId!.Value,
+                CustomerId = customer.Id,
+                SentAt = DateTime.UtcNow,
+                NotificationType = EvaluationNotificationTypes.PerEvaluation,
+                Email = personnelEmail,
+                Subject = subject,
+                EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(new[] { evaluation.Id }),
+                EvaluationCount = 1,
+                IsSuccess = result.Success,
+                ErrorMessage = result.Success ? null : result.ErrorMessage
+            };
+            _context.CustomerPersonnelNotificationLogs.Add(notificationLog);
+            await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Sent single evaluation notification for evaluation {EvaluationId} to customer {CustomerId}",
-                evaluation.Id, customer.Id);
+            if (!result.Success)
+            {
+                _logger.LogError("Failed to send evaluation notification to {Email}: {Error}", personnelEmail, result.ErrorMessage);
+            }
+            else
+            {
+                _logger.LogInformation("Sent evaluation notification for evaluation {EvaluationId} to personnel {Email}",
+                    evaluation.Id, personnelEmail);
+            }
         }
         catch (Exception ex)
         {
@@ -152,6 +171,7 @@ public class EvaluationNotificationService : IEvaluationNotificationService
 
     /// <summary>
     /// Dönem bazlı bildirim gönderir
+    /// Her değerlendirilen personele kendi değerlendirmelerinin özeti gönderilir
     /// </summary>
     private async Task SendPeriodNotificationsAsync(int frequencyId, DateTime periodStart, DateTime periodEnd, string periodName)
     {
@@ -161,8 +181,7 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             var customers = await _context.Customers
                 .Include(c => c.EvaluationNotificationTemplate)
                 .Where(c => !c.IsDeleted && c.IsActive &&
-                           c.EvaluationNotificationFrequencyId == frequencyId &&
-                           !string.IsNullOrEmpty(c.NotificationEmails))
+                           c.EvaluationNotificationFrequencyId == frequencyId)
                 .ToListAsync();
 
             _logger.LogInformation("Found {Count} customers for {Period} notification", customers.Count, periodName);
@@ -171,11 +190,11 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             {
                 try
                 {
-                    await SendPeriodNotificationToCustomerAsync(customer, periodStart, periodEnd, periodName);
+                    await SendPeriodNotificationToPersonnelAsync(customer, periodStart, periodEnd, periodName);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error sending {Period} notification to customer {CustomerId}", periodName, customer.Id);
+                    _logger.LogError(ex, "Error sending {Period} notification for customer {CustomerId}", periodName, customer.Id);
                 }
             }
         }
@@ -186,11 +205,12 @@ public class EvaluationNotificationService : IEvaluationNotificationService
     }
 
     /// <summary>
-    /// Belirli bir müşteriye dönem bildirimi gönderir
+    /// Belirli bir müşterinin değerlendirilen personellerine dönem bildirimi gönderir
+    /// Her personele kendi değerlendirmelerinin özeti gönderilir
     /// </summary>
-    private async Task SendPeriodNotificationToCustomerAsync(Customer customer, DateTime periodStart, DateTime periodEnd, string periodName)
+    private async Task SendPeriodNotificationToPersonnelAsync(Customer customer, DateTime periodStart, DateTime periodEnd, string periodName)
     {
-        // Bu dönemdeki değerlendirmeleri al
+        // Bu dönemdeki değerlendirmeleri al (sadece tanımlı personeli olanlar)
         var evaluations = await _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a!.Project)
@@ -199,13 +219,16 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             .Where(e => e.Assignment!.Project!.CustomerId == customer.Id &&
                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                        e.CompletedAt >= periodStart &&
-                       e.CompletedAt < periodEnd)
+                       e.CompletedAt < periodEnd &&
+                       e.EvaluatedCustomerPersonnelId != null &&
+                       e.EvaluatedCustomerPersonnel!.Email != null &&
+                       e.EvaluatedCustomerPersonnel.Email != "")
             .OrderByDescending(e => e.CompletedAt)
             .ToListAsync();
 
         if (!evaluations.Any())
         {
-            _logger.LogDebug("No evaluations found for customer {CustomerId} in period {PeriodStart} - {PeriodEnd}",
+            _logger.LogDebug("No evaluations with personnel found for customer {CustomerId} in period {PeriodStart} - {PeriodEnd}",
                 customer.Id, periodStart, periodEnd);
             return;
         }
@@ -225,34 +248,70 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             return;
         }
 
-        // Özet tablo oluştur
-        var summaryTable = BuildSummaryTable(evaluations);
-
-        // Placeholder'ları değiştir
-        var subject = ReplacePlaceholders(template.Subject, customer, null, null, periodStart, periodEnd, evaluations.Count, summaryTable);
-        var body = ReplacePlaceholders(template.Body, customer, null, null, periodStart, periodEnd, evaluations.Count, summaryTable);
-
-        // Email gönder
-        var emails = customer.NotificationEmails!.Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(e => e.Trim())
-            .Where(e => !string.IsNullOrEmpty(e))
+        // Personel bazlı grupla
+        var evaluationsByPersonnel = evaluations
+            .GroupBy(e => e.EvaluatedCustomerPersonnelId!.Value)
             .ToList();
 
-        foreach (var email in emails)
+        _logger.LogInformation("Sending {Period} notifications to {Count} personnel for customer {CustomerId}",
+            periodName, evaluationsByPersonnel.Count, customer.Id);
+
+        foreach (var group in evaluationsByPersonnel)
         {
-            var result = await _emailService.SendEmailAsync(email, subject, body);
+            var personnelEvaluations = group.ToList();
+            var personnel = personnelEvaluations.First().EvaluatedCustomerPersonnel!;
+            var personnelEmail = personnel.Email;
+            var personnelName = $"{personnel.FirstName} {personnel.LastName}";
+
+            // Özet tablo oluştur (sadece bu personelin değerlendirmeleri)
+            var summaryTable = BuildSummaryTable(personnelEvaluations);
+
+            // Placeholder'ları değiştir
+            var subject = ReplacePlaceholders(template.Subject, customer, null, personnelName, periodStart, periodEnd, personnelEvaluations.Count, summaryTable);
+            var body = ReplacePlaceholders(template.Body, customer, null, personnelName, periodStart, periodEnd, personnelEvaluations.Count, summaryTable);
+
+            // Personelin email adresine gönder
+            var result = await _emailService.SendEmailAsync(personnelEmail, subject, body);
+
+            // Bildirim tipi
+            var notificationType = periodName switch
+            {
+                "Günlük" => EvaluationNotificationTypes.Daily,
+                "Haftalık" => EvaluationNotificationTypes.Weekly,
+                "Aylık" => EvaluationNotificationTypes.Monthly,
+                _ => periodName
+            };
+
+            // Log kaydı oluştur
+            var notificationLog = new CustomerPersonnelNotificationLog
+            {
+                CustomerPersonnelId = personnel.Id,
+                CustomerId = customer.Id,
+                SentAt = DateTime.UtcNow,
+                NotificationType = notificationType,
+                PeriodStart = periodStart,
+                PeriodEnd = periodEnd,
+                Email = personnelEmail,
+                Subject = subject,
+                EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(personnelEvaluations.Select(e => e.Id).ToArray()),
+                EvaluationCount = personnelEvaluations.Count,
+                IsSuccess = result.Success,
+                ErrorMessage = result.Success ? null : result.ErrorMessage
+            };
+            _context.CustomerPersonnelNotificationLogs.Add(notificationLog);
+
             if (!result.Success)
             {
-                _logger.LogError("Failed to send {Period} notification to {Email}: {Error}", periodName, email, result.ErrorMessage);
+                _logger.LogError("Failed to send {Period} notification to personnel {Email}: {Error}", periodName, personnelEmail, result.ErrorMessage);
+            }
+            else
+            {
+                _logger.LogInformation("Sent {Period} notification to personnel {PersonnelName} ({Email}) with {Count} evaluations",
+                    periodName, personnelName, personnelEmail, personnelEvaluations.Count);
             }
         }
 
-        // Son bildirim tarihini güncelle
-        customer.LastNotificationSentAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Sent {Period} notification to customer {CustomerId} with {Count} evaluations",
-            periodName, customer.Id, evaluations.Count);
     }
 
     /// <summary>

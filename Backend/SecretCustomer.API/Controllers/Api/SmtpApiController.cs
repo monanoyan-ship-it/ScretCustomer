@@ -36,7 +36,12 @@ public class SmtpApiController : ControllerBase
             SystemSettingKeys.SmtpUseSsl,
             SystemSettingKeys.SmtpFromEmail,
             SystemSettingKeys.SmtpFromName,
-            SystemSettingKeys.SmtpEnabled
+            SystemSettingKeys.SmtpEnabled,
+            // OAuth 2.0
+            SystemSettingKeys.SmtpUseOAuth,
+            SystemSettingKeys.SmtpTenantId,
+            SystemSettingKeys.SmtpClientId,
+            SystemSettingKeys.SmtpClientSecret
         };
 
         var settings = await _context.SystemSettings
@@ -52,7 +57,12 @@ public class SmtpApiController : ControllerBase
             UseSsl = settings.GetValueOrDefault(SystemSettingKeys.SmtpUseSsl, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
             FromEmail = settings.GetValueOrDefault(SystemSettingKeys.SmtpFromEmail, ""),
             FromName = settings.GetValueOrDefault(SystemSettingKeys.SmtpFromName, "Secret Customer"),
-            Enabled = settings.GetValueOrDefault(SystemSettingKeys.SmtpEnabled, "true").Equals("true", StringComparison.OrdinalIgnoreCase)
+            Enabled = settings.GetValueOrDefault(SystemSettingKeys.SmtpEnabled, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
+            // OAuth 2.0
+            UseOAuth = settings.GetValueOrDefault(SystemSettingKeys.SmtpUseOAuth, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
+            TenantId = settings.GetValueOrDefault(SystemSettingKeys.SmtpTenantId, ""),
+            ClientId = settings.GetValueOrDefault(SystemSettingKeys.SmtpClientId, ""),
+            ClientSecret = settings.GetValueOrDefault(SystemSettingKeys.SmtpClientSecret, "")
         });
     }
 
@@ -71,7 +81,12 @@ public class SmtpApiController : ControllerBase
             { SystemSettingKeys.SmtpUseSsl, dto.UseSsl.ToString().ToLower() },
             { SystemSettingKeys.SmtpFromEmail, dto.FromEmail ?? "" },
             { SystemSettingKeys.SmtpFromName, dto.FromName ?? "Secret Customer" },
-            { SystemSettingKeys.SmtpEnabled, dto.Enabled.ToString().ToLower() }
+            { SystemSettingKeys.SmtpEnabled, dto.Enabled.ToString().ToLower() },
+            // OAuth 2.0
+            { SystemSettingKeys.SmtpUseOAuth, dto.UseOAuth.ToString().ToLower() },
+            { SystemSettingKeys.SmtpTenantId, dto.TenantId ?? "" },
+            { SystemSettingKeys.SmtpClientId, dto.ClientId ?? "" },
+            { SystemSettingKeys.SmtpClientSecret, dto.ClientSecret ?? "" }
         };
 
         foreach (var kvp in settingsToSave)
@@ -154,6 +169,11 @@ public class SmtpApiController : ControllerBase
         SystemSettingKeys.SmtpFromEmail => "Gönderen email adresi",
         SystemSettingKeys.SmtpFromName => "Gönderen adı",
         SystemSettingKeys.SmtpEnabled => "SMTP servisi aktif",
+        // OAuth 2.0
+        SystemSettingKeys.SmtpUseOAuth => "OAuth 2.0 kullan",
+        SystemSettingKeys.SmtpTenantId => "Azure Tenant ID",
+        SystemSettingKeys.SmtpClientId => "Azure Client ID (Application ID)",
+        SystemSettingKeys.SmtpClientSecret => "Azure Client Secret",
         _ => ""
     };
 
@@ -208,6 +228,12 @@ public class SmtpSettingsDto
     public string? FromEmail { get; set; }
     public string? FromName { get; set; } = "Secret Customer";
     public bool Enabled { get; set; } = true;
+
+    // OAuth 2.0 (Microsoft 365)
+    public bool UseOAuth { get; set; } = false;
+    public string? TenantId { get; set; }
+    public string? ClientId { get; set; }
+    public string? ClientSecret { get; set; }
 }
 
 public class TestEmailDto
