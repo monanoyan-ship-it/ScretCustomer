@@ -4,8 +4,8 @@ function CustomerPersonnelReportCardViewModel() {
 
     // State
     self.isLoading = ko.observable(false);
+    self.isLoadingPersonnel = ko.observable(false);
     self.isExporting = ko.observable(false);
-    self.errorMessage = ko.observable('');
     self.report = ko.observable(null);
 
     // Details modal
@@ -14,19 +14,50 @@ function CustomerPersonnelReportCardViewModel() {
     self.detailsData = ko.observable(null);
     self.isExportingDetail = ko.observable(false);
 
-    // ===== HİYERARŞİK SEÇİM (Personele ulaşmak için) =====
+    // Personnel selection
     self.organizations = ko.observableArray([]);
     self.personnelList = ko.observableArray([]);
     self.projects = ko.observableArray([]);
 
     self.selectedOrganizationId = ko.observable('');
     self.selectedPersonnelId = ko.observable('');
+    self.searchText = ko.observable('');
 
-    // ===== FİLTRE SİSTEMİ (Chip-based pattern) =====
+    // Selected personnel name
+    self.selectedPersonnelName = ko.computed(function() {
+        var personnelId = self.selectedPersonnelId();
+        if (!personnelId) return '';
+        var personnel = self.personnelList().find(function(p) { return p.id == personnelId; });
+        return personnel ? personnel.name : '';
+    });
+
+    // Filtered personnel list (organization + search)
+    self.filteredPersonnelList = ko.computed(function() {
+        var organizationId = self.selectedOrganizationId();
+        var search = (self.searchText() || '').toLowerCase().trim();
+        var list = self.personnelList();
+
+        // Filter by organization
+        if (organizationId) {
+            list = list.filter(function(p) {
+                return p.organizationId == organizationId;
+            });
+        }
+
+        // Filter by search text
+        if (search) {
+            list = list.filter(function(p) {
+                return (p.name || '').toLowerCase().indexOf(search) > -1;
+            });
+        }
+
+        return list;
+    });
+
+    // Filter system
     self.activeFilters = ko.observableArray([]);
     self.selectedFilterType = ko.observable('');
 
-    // Temp filter values
     self.tempFilter = {
         projectId: ko.observable(null),
         startDate: ko.observable(''),
@@ -34,13 +65,11 @@ function CustomerPersonnelReportCardViewModel() {
         dateRangeType: ko.observable('')
     };
 
-    // Filter labels
     self.filterLabels = {
         project: 'Proje',
         dateRange: 'Tarih'
     };
 
-    // Date range options
     self.dateRanges = ko.observableArray([
         { systemName: 'today', name: 'Bugün' },
         { systemName: 'yesterday', name: 'Dün' },
@@ -54,25 +83,10 @@ function CustomerPersonnelReportCardViewModel() {
         { systemName: 'lastYear', name: 'Geçen Yıl' }
     ]);
 
-    // Computed: Filtered personnel based on organization selection
-    self.filteredPersonnelList = ko.computed(function() {
-        var organizationId = self.selectedOrganizationId();
-        var list = self.personnelList();
-
-        if (organizationId) {
-            list = list.filter(function(p) {
-                return p.organizationId == organizationId;
-            });
-        }
-
-        return list;
-    });
-
     // Can add filter
     self.canAddFilter = ko.computed(function() {
         var type = self.selectedFilterType();
         if (!type) return false;
-
         switch (type) {
             case 'project': return self.tempFilter.projectId();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
@@ -80,66 +94,36 @@ function CustomerPersonnelReportCardViewModel() {
         }
     });
 
-    // Calculate date range from type
+    // Calculate date range
     self.calculateDateRange = function(rangeType) {
         var today = new Date();
         var start, end;
-
-        var formatDate = function(date) {
-            return date.toISOString().split('T')[0];
-        };
+        var formatDate = function(date) { return date.toISOString().split('T')[0]; };
 
         switch (rangeType) {
-            case 'today':
-                start = end = today;
-                break;
-            case 'yesterday':
-                start = end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-                break;
+            case 'today': start = end = today; break;
+            case 'yesterday': start = end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1); break;
             case 'thisWeek':
-                var dayOfWeek = today.getDay();
-                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                var dow = today.getDay();
+                var diff = today.getDate() - dow + (dow === 0 ? -6 : 1);
                 start = new Date(today.getFullYear(), today.getMonth(), diff);
                 end = today;
                 break;
             case 'lastWeek':
-                var dayOfWeek = today.getDay();
-                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                var dow = today.getDay();
+                var diff = today.getDate() - dow + (dow === 0 ? -6 : 1);
                 start = new Date(today.getFullYear(), today.getMonth(), diff - 7);
                 end = new Date(today.getFullYear(), today.getMonth(), diff - 1);
                 break;
-            case 'thisMonth':
-                start = new Date(today.getFullYear(), today.getMonth(), 1);
-                end = today;
-                break;
-            case 'lastMonth':
-                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                end = new Date(today.getFullYear(), today.getMonth(), 0);
-                break;
-            case 'last3Months':
-                start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-                end = today;
-                break;
-            case 'last6Months':
-                start = new Date(today.getFullYear(), today.getMonth() - 5, 1);
-                end = today;
-                break;
-            case 'thisYear':
-                start = new Date(today.getFullYear(), 0, 1);
-                end = today;
-                break;
-            case 'lastYear':
-                start = new Date(today.getFullYear() - 1, 0, 1);
-                end = new Date(today.getFullYear() - 1, 11, 31);
-                break;
-            default:
-                return null;
+            case 'thisMonth': start = new Date(today.getFullYear(), today.getMonth(), 1); end = today; break;
+            case 'lastMonth': start = new Date(today.getFullYear(), today.getMonth() - 1, 1); end = new Date(today.getFullYear(), today.getMonth(), 0); break;
+            case 'last3Months': start = new Date(today.getFullYear(), today.getMonth() - 2, 1); end = today; break;
+            case 'last6Months': start = new Date(today.getFullYear(), today.getMonth() - 5, 1); end = today; break;
+            case 'thisYear': start = new Date(today.getFullYear(), 0, 1); end = today; break;
+            case 'lastYear': start = new Date(today.getFullYear() - 1, 0, 1); end = new Date(today.getFullYear() - 1, 11, 31); break;
+            default: return null;
         }
-
-        return {
-            start: formatDate(start),
-            end: formatDate(end)
-        };
+        return { start: formatDate(start), end: formatDate(end) };
     };
 
     // Set temp date range
@@ -157,29 +141,18 @@ function CustomerPersonnelReportCardViewModel() {
         var type = self.selectedFilterType();
         if (!type) return;
 
-        var filter = {
-            type: type,
-            label: self.filterLabels[type],
-            value: null,
-            displayValue: ''
-        };
+        var filter = { type: type, label: self.filterLabels[type], value: null, displayValue: '' };
 
         switch (type) {
             case 'project':
                 var projectId = self.tempFilter.projectId();
                 var project = self.projects().find(function(p) { return p.id == projectId; });
                 if (!project) return;
-
-                // Aynı proje zaten eklenmişse ekleme
-                var alreadyExists = self.activeFilters().some(function(f) {
-                    return f.type === 'project' && f.value == projectId;
-                });
-                if (alreadyExists) {
-                    toastr.warning('Bu proje zaten filtrelere eklenmiş.');
+                if (self.activeFilters().some(function(f) { return f.type === 'project' && f.value == projectId; })) {
+                    toastr.warning('Bu proje zaten eklenmiş.');
                     self.tempFilter.projectId(null);
                     return;
                 }
-
                 filter.value = projectId;
                 filter.displayValue = project.name;
                 self.tempFilter.projectId(null);
@@ -190,38 +163,30 @@ function CustomerPersonnelReportCardViewModel() {
                 var endDate = self.tempFilter.endDate();
                 var dateRangeType = self.tempFilter.dateRangeType();
                 if (!startDate && !endDate) return;
-
-                filter.value = {
-                    startDate: startDate,
-                    endDate: endDate,
-                    dateRangeType: dateRangeType
-                };
-
+                filter.value = { startDate: startDate, endDate: endDate, dateRangeType: dateRangeType };
                 if (dateRangeType) {
                     var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
                     filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
                 } else {
                     filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
                 }
-
                 self.tempFilter.startDate('');
                 self.tempFilter.endDate('');
                 self.tempFilter.dateRangeType('');
                 break;
 
-            default:
-                return;
+            default: return;
         }
 
         self.activeFilters.push(filter);
         self.selectedFilterType('');
-        self.loadReport(); // Filtre eklenince otomatik ara
+        self.loadReport();
     };
 
     // Remove filter
     self.removeFilter = function(filter) {
         self.activeFilters.remove(filter);
-        self.loadReport(); // Filtre kaldırılınca otomatik ara
+        self.loadReport();
     };
 
     // Clear all filters
@@ -230,7 +195,12 @@ function CustomerPersonnelReportCardViewModel() {
         self.loadReport();
     };
 
-    // Build query params from active filters
+    // Clear search
+    self.clearSearch = function() {
+        self.searchText('');
+    };
+
+    // Build query params
     self.buildQueryParams = function() {
         var params = [];
         var projectIds = [];
@@ -240,19 +210,13 @@ function CustomerPersonnelReportCardViewModel() {
             if (f.type === 'project') {
                 projectIds.push(f.value);
             } else if (f.type === 'dateRange') {
-                // DateRanges pattern - çoğul tarih aralığı desteği
-                if (f.value.startDate) {
-                    params.push('dateRanges[' + dateRangeIndex + '].startDate=' + f.value.startDate);
-                }
-                if (f.value.endDate) {
-                    params.push('dateRanges[' + dateRangeIndex + '].endDate=' + f.value.endDate);
-                }
+                if (f.value.startDate) params.push('dateRanges[' + dateRangeIndex + '].startDate=' + f.value.startDate);
+                if (f.value.endDate) params.push('dateRanges[' + dateRangeIndex + '].endDate=' + f.value.endDate);
                 dateRangeIndex++;
             }
         });
 
         projectIds.forEach(function(id) { params.push('projectIds=' + id); });
-
         return params.length > 0 ? '?' + params.join('&') : '';
     };
 
@@ -279,6 +243,7 @@ function CustomerPersonnelReportCardViewModel() {
 
     // Load personnel list
     self.loadPersonnelList = function() {
+        self.isLoadingPersonnel(true);
         customerApiFetch('/api/customer/portal/reports/personnel-list')
             .then(function(response) {
                 if (!response.ok) throw new Error('Personel listesi yüklenemedi');
@@ -289,12 +254,15 @@ function CustomerPersonnelReportCardViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading personnel list:', error);
+            })
+            .finally(function() {
+                self.isLoadingPersonnel(false);
             });
     };
 
-    // Load projects
+    // Load projects (sadece CallAuditing = 2)
     self.loadProjects = function() {
-        customerApiFetch('/api/customer/portal/projects')
+        customerApiFetch('/api/customer/portal/projects?projectTypeId=2')
             .then(function(response) {
                 if (!response.ok) throw new Error('Proje listesi yüklenemedi');
                 return response.json();
@@ -307,27 +275,18 @@ function CustomerPersonnelReportCardViewModel() {
             });
     };
 
-    // Organization change handler
-    self.onOrganizationChange = function() {
-        self.selectedPersonnelId('');
-        self.report(null);
+    // Select personnel from list
+    self.selectPersonnel = function(personnel) {
+        self.selectedPersonnelId(personnel.id);
         self.activeFilters.removeAll();
-    };
-
-    // Personnel change handler
-    self.onPersonnelChange = function() {
-        self.report(null);
-        self.activeFilters.removeAll();
+        self.loadReport();
     };
 
     // Load report
     self.loadReport = function() {
-        if (!self.selectedPersonnelId()) {
-            return;
-        }
+        if (!self.selectedPersonnelId()) return;
 
         self.isLoading(true);
-        self.errorMessage('');
         self.report(null);
 
         var url = '/api/customer/portal/reports/personnel-report-card/' + self.selectedPersonnelId() + self.buildQueryParams();
@@ -353,21 +312,11 @@ function CustomerPersonnelReportCardViewModel() {
             });
     };
 
-    // Clear all (selection + filters)
-    self.clearFilters = function() {
-        self.selectedOrganizationId('');
-        self.selectedPersonnelId('');
-        self.activeFilters.removeAll();
-        self.report(null);
-        self.errorMessage('');
-    };
-
     // Export to Excel
     self.exportToExcel = function() {
         if (!self.selectedPersonnelId()) return;
 
         self.isExporting(true);
-
         var url = '/api/customer/portal/reports/personnel-report-card/' + self.selectedPersonnelId() + '/export' + self.buildQueryParams();
 
         customerApiFetch(url)
@@ -394,7 +343,7 @@ function CustomerPersonnelReportCardViewModel() {
             });
     };
 
-    // Details modal functions
+    // Details modal
     self.showDetails = function(evaluationId) {
         self.isDetailsModalOpen(true);
         self.isDetailsLoading(true);
@@ -402,7 +351,7 @@ function CustomerPersonnelReportCardViewModel() {
 
         customerApiFetch('/api/customer/portal/evaluations/' + evaluationId)
             .then(function(response) {
-                if (!response.ok) throw new Error('Detay yuklenemedi');
+                if (!response.ok) throw new Error('Detay yüklenemedi');
                 return response.json();
             })
             .then(function(data) {
@@ -450,18 +399,18 @@ function CustomerPersonnelReportCardViewModel() {
         return 'bg-secondary';
     };
 
-    // Print report as PDF
+    // Print report
     self.printReport = function() {
-        var header = document.querySelector('.d-flex.justify-content-between.align-items-center.mb-4');
-        var selection = document.querySelector('.card.shadow-sm.mb-4');
+        var leftPanel = document.querySelector('.col-md-3');
+        var filterCard = document.querySelector('.card.shadow-sm.mb-3');
 
-        if (header) header.style.display = 'none';
-        if (selection) selection.style.display = 'none';
+        if (leftPanel) leftPanel.style.display = 'none';
+        if (filterCard) filterCard.style.display = 'none';
 
         window.print();
 
-        if (header) header.style.display = '';
-        if (selection) selection.style.display = '';
+        if (leftPanel) leftPanel.style.display = '';
+        if (filterCard) filterCard.style.display = '';
     };
 
     // Initialize
@@ -470,7 +419,7 @@ function CustomerPersonnelReportCardViewModel() {
     self.loadProjects();
 }
 
-// Apply bindings when DOM is ready
+// Apply bindings
 $(document).ready(function() {
     ko.applyBindings(new CustomerPersonnelReportCardViewModel(), document.getElementById('personnel-report-card-app'));
 });

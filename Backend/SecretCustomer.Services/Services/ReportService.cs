@@ -1615,6 +1615,9 @@ public class ReportService : IReportService
             .Include(e => e.Evaluator)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
             .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Proje filtresi: Çoğul ProjectIds veya varsayılan Çağrı Denetimi
@@ -1726,8 +1729,12 @@ public class ReportService : IReportService
             .ToList();
 
         // Güçlü ve zayıf yönler (soru bazlı analiz)
-        var questionPerformance = allAnswers
-            .Where(a => a.Question != null)
+        // 1. Sadece Scored (puanlı) sorulardan güçlü/zayıf yönler
+        var scoredAnswers = allAnswers
+            .Where(a => a.Question != null && a.Question.ScoringTypeId == ScoringTypes.Ids.Scored)
+            .ToList();
+
+        var questionPerformance = scoredAnswers
             .GroupBy(a => new { a.Question!.Id, a.Question.Text, GroupName = a.Question.GroupName ?? "" })
             .Select(g => new PersonnelStrengthWeaknessDto
             {
@@ -1744,7 +1751,33 @@ public class ReportService : IReportService
             .ToList();
 
         var strengths = questionPerformance.OrderByDescending(q => q.PercentageScore).Take(5).ToList();
-        var weaknesses = questionPerformance.OrderBy(q => q.PercentageScore).Take(5).ToList();
+
+        // 2. Zayıf yönler: Scored sorular + Penalty sorular (ceza uygulanmışsa)
+        var scoredWeaknesses = questionPerformance.OrderBy(q => q.PercentageScore).Take(5).ToList();
+
+        // 3. Penalty (cezalı) sorulardan zayıf yönler - ceza uygulanmışsa
+        var penaltyWeaknesses = allAnswers
+            .Where(a => a.Question != null &&
+                        a.Question.ScoringTypeId == ScoringTypes.Ids.Penalty &&
+                        a.IsPenaltyApplied)
+            .GroupBy(a => new { a.Question!.Id, a.Question.Text, GroupName = a.Question.GroupName ?? "" })
+            .Select(g => new PersonnelStrengthWeaknessDto
+            {
+                QuestionText = g.Key.Text + (g.SelectMany(a => a.SubCriteriaSelections).Any()
+                    ? " (" + string.Join(", ", g.SelectMany(a => a.SubCriteriaSelections).Select(s => s.SubCriteria?.Description).Where(n => n != null).Distinct().Take(3)) + ")"
+                    : ""),
+                GroupName = g.Key.GroupName,
+                PercentageScore = 0, // Cezalı sorular için 0%
+                EvaluationCount = g.Count()
+            })
+            .Where(q => q.EvaluationCount >= 1) // Cezalılar için en az 1 kez
+            .ToList();
+
+        // Zayıf yönleri birleştir: önce cezalılar, sonra düşük puanlı scored sorular
+        var weaknesses = penaltyWeaknesses
+            .Concat(scoredWeaknesses)
+            .Take(5)
+            .ToList();
 
         return new PersonnelReportCardDto
         {
@@ -2501,7 +2534,7 @@ public class ReportService : IReportService
                 Year = g.Key.Year,
                 EvaluationCount = g.Select(x => x.EvaluationId).Distinct().Count(),
                 AverageScore = g.Sum(x => x.MaxPoints) > 0
-                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 0)
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 2)
                     : 0
             })
             .OrderBy(x => x.ProjectName)
@@ -2537,6 +2570,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 3).Value = item.Year;
             worksheet.Cell(row, 4).Value = item.EvaluationCount;
             worksheet.Cell(row, 5).Value = item.AverageScore;
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.00";
             row++;
         }
 
@@ -2801,6 +2835,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 11).Value = evalDate.Year;
             worksheet.Cell(row, 12).Value = periodMonth;
             worksheet.Cell(row, 13).Value = e.ScorePercentage ?? 0;
+            worksheet.Cell(row, 13).Style.NumberFormat.Format = "0.00";
             worksheet.Cell(row, 14).Value = combinedDescription;
 
             row++;
@@ -2969,6 +3004,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 3).Value = item.Year;
             worksheet.Cell(row, 4).Value = item.EvaluationCount;
             worksheet.Cell(row, 5).Value = item.AverageScore;
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.00";
             row++;
         }
 

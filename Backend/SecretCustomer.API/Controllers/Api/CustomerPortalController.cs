@@ -1010,13 +1010,19 @@ public class CustomerPortalApiController : ControllerBase
     /// Müşterinin projeleri
     /// </summary>
     [HttpGet("projects")]
-    public async Task<IActionResult> GetProjects()
+    public async Task<IActionResult> GetProjects([FromQuery] int? projectTypeId = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
+        var query = _context.Projects
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
+
+        // Proje tipi filtresi
+        if (projectTypeId.HasValue)
+            query = query.Where(p => p.ProjectTypeId == projectTypeId.Value);
+
+        var projects = await query
             .Select(p => new
             {
                 Id = p.Id,
@@ -1263,6 +1269,58 @@ public class CustomerPortalApiController : ControllerBase
         };
 
         return Ok(summary);
+    }
+
+    /// <summary>
+    /// Puan aralığına göre değerlendirmeler (detay modal için)
+    /// </summary>
+    [HttpGet("reports/score-range")]
+    public async Task<IActionResult> GetEvaluationsByScoreRange(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] decimal minScore,
+        [FromQuery] decimal maxScore)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
+
+        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
+        var end = endDate ?? DateTime.UtcNow;
+
+        if (start.Kind == DateTimeKind.Unspecified)
+            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+        if (end.Kind == DateTimeKind.Unspecified)
+            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedPersonnel)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
+                && e.CreatedAt >= start
+                && e.CreatedAt <= end
+                && e.StatusId == EvaluationStatuses.Ids.Completed
+                && e.ScorePercentage.HasValue
+                && e.ScorePercentage >= minScore
+                && e.ScorePercentage < maxScore)
+            .OrderByDescending(e => e.CreatedAt)
+            .Take(100)
+            .Select(e => new
+            {
+                evaluationId = e.Id,
+                evaluationDate = e.CreatedAt,
+                projectName = e.Assignment.Project != null ? e.Assignment.Project.Name : "-",
+                personnelName = e.EvaluatedPersonnel != null
+                    ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
+                    : "-",
+                scorePercentage = e.ScorePercentage,
+                yellowCards = e.YellowCardCount,
+                redCards = e.RedCardCount
+            })
+            .ToListAsync();
+
+        return Ok(evaluations);
     }
 
     /// <summary>
@@ -2739,7 +2797,7 @@ public class CustomerPortalApiController : ControllerBase
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
                 .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
-                .OrderByDescending(ap => ap.StartDate)
+                .OrderBy(ap => ap.StartDate)
                 .Select(ap => new
                 {
                     ap.Id,
@@ -2840,7 +2898,7 @@ public class CustomerPortalApiController : ControllerBase
             // CallDate'e göre aylık dönemler oluştur
             var monthlyPeriods = allEvaluations
                 .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
-                .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month)
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                 .Select((g, idx) => new
                 {
                     Id = -(idx + 1), // Negatif ID (sanal dönem)
@@ -2953,7 +3011,7 @@ public class CustomerPortalApiController : ControllerBase
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
                 .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
-                .OrderByDescending(ap => ap.StartDate)
+                .OrderBy(ap => ap.StartDate)
                 .Select(ap => new { ap.Id, ap.Name })
                 .ToListAsync();
 
@@ -3062,7 +3120,7 @@ public class CustomerPortalApiController : ControllerBase
                 // CallDate'e göre aylık dönemler oluştur
                 var monthlyPeriods = allEvaluations
                     .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
-                    .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month)
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                     .Select(g => new
                     {
                         Name = $"{g.Key.Year}-{g.Key.Month:D2}",

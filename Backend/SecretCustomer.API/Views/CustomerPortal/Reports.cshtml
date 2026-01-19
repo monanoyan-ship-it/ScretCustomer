@@ -88,20 +88,28 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-3">
-                                <div class="display-6 text-success" data-bind="text: summary().excellentCount || 0"></div>
-                                <small class="text-muted">90+</small>
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(90, 101, 'Mükemmel (90+)', 'success'); }">
+                                    <div class="display-6 text-success" data-bind="text: summary().excellentCount || 0"></div>
+                                    <small class="text-muted">90+</small>
+                                </a>
                             </div>
                             <div class="col-3">
-                                <div class="display-6 text-primary" data-bind="text: summary().goodCount || 0"></div>
-                                <small class="text-muted">80-89</small>
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(80, 90, 'İyi (80-89)', 'primary'); }">
+                                    <div class="display-6 text-primary" data-bind="text: summary().goodCount || 0"></div>
+                                    <small class="text-muted">80-89</small>
+                                </a>
                             </div>
                             <div class="col-3">
-                                <div class="display-6 text-warning" data-bind="text: summary().averageCount || 0"></div>
-                                <small class="text-muted">60-79</small>
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(60, 80, 'Orta (60-79)', 'warning'); }">
+                                    <div class="display-6 text-warning" data-bind="text: summary().averageCount || 0"></div>
+                                    <small class="text-muted">60-79</small>
+                                </a>
                             </div>
                             <div class="col-3">
-                                <div class="display-6 text-danger" data-bind="text: summary().poorCount || 0"></div>
-                                <small class="text-muted">&lt;60</small>
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(0, 60, 'Düşük (<60)', 'danger'); }">
+                                    <div class="display-6 text-danger" data-bind="text: summary().poorCount || 0"></div>
+                                    <small class="text-muted">&lt;60</small>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -162,6 +170,78 @@
             </div>
         </div>
     </div>
+
+    <!-- Score Range Detail Modal -->
+    <div class="modal fade" data-bind="css: { show: isScoreRangeModalOpen }, style: { display: isScoreRangeModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" data-bind="css: 'bg-' + scoreRangeModalColor() + ' text-white'">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        <span data-bind="text: scoreRangeModalTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeScoreRangeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isScoreRangeLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Content -->
+                    <div data-bind="visible: !isScoreRangeLoading()">
+                        <div data-bind="visible: scoreRangeEvaluations().length === 0" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Bu aralıkta değerlendirme bulunamadı.</p>
+                        </div>
+                        <div data-bind="visible: scoreRangeEvaluations().length > 0" class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Common.Date", "Tarih")</th>
+                                        <th>@Html.T("Common.Project", "Proje")</th>
+                                        <th>@Html.T("Common.Personnel", "Personel")</th>
+                                        <th class="text-center">@Html.T("Common.Score", "Puan")</th>
+                                        <th class="text-center">@Html.T("Common.Cards", "Kartlar")</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: scoreRangeEvaluations">
+                                    <tr>
+                                        <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                        <td data-bind="text: projectName"></td>
+                                        <td data-bind="text: personnelName"></td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage || 0)"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
+                                            <span data-bind="visible: redCards > 0" class="badge bg-danger" data-bind="text: redCards"></span>
+                                            <span data-bind="visible: yellowCards === 0 && redCards === 0">-</span>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary" data-bind="attr: { href: '/CustomerPortal/ExternalEvaluations?evaluationId=' + evaluationId }" target="_blank">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div data-bind="visible: scoreRangeEvaluations().length >= 100" class="text-muted small text-center mt-2">
+                            <i class="bi bi-info-circle"></i> İlk 100 kayıt gösteriliyor
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeScoreRangeModal">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isScoreRangeModalOpen }, style: { display: isScoreRangeModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

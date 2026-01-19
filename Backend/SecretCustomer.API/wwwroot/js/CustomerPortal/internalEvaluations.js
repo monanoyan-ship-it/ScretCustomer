@@ -358,8 +358,8 @@ function CustomerInternalEvaluationsViewModel() {
 
     // Load filter options
     self.loadFilterOptions = function() {
-        // Load projects
-        customerApiFetch('/api/customer/portal/projects')
+        // Load projects (sadece CallAuditing = 2)
+        customerApiFetch('/api/customer/portal/projects?projectTypeId=2')
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.projects(data || []);
@@ -568,6 +568,17 @@ function CustomerInternalEvaluationsViewModel() {
 
     self.downloadAttachment = function(attachment) {
         window.open('/api/answers/' + attachment.answerId + '/attachment', '_blank');
+    };
+
+    // Copy to clipboard
+    self.copyToClipboard = function(text) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(function() {
+            toastr.success('Kopyalandı');
+        }).catch(function(err) {
+            console.error('Copy failed:', err);
+            toastr.error('Kopyalama başarısız');
+        });
     };
 
     // Export Reports

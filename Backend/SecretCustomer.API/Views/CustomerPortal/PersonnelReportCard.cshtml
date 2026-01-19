@@ -4,371 +4,361 @@
 }
 
 <div id="personnel-report-card-app">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-person-badge"></i> @Html.T("Report.PersonnelReportCard", "Temsilci Karnesi")</h2>
-        <div class="btn-group" data-bind="visible: report()">
-            <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
-                <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
-                </span>
-                <span data-bind="visible: isExporting">
-                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
-                </span>
-            </button>
-            <button class="btn btn-danger" data-bind="click: printReport">
-                <i class="bi bi-file-pdf"></i> @Html.T("Report.PrintPdf", "PDF Yazdir")
-            </button>
-        </div>
-    </div>
+    <div class="row g-3">
+        <!-- Sol Panel: Personel Listesi -->
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white py-2">
+                    <h6 class="mb-0"><i class="bi bi-people"></i> @Html.T("Report.Personnel", "Temsilciler")</h6>
+                </div>
+                <div class="card-body p-2">
+                    <!-- Arama Kutusu -->
+                    <div class="mb-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="@Html.T("Common.Search", "Ara...")"
+                                   data-bind="value: searchText, valueUpdate: 'input'" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" data-bind="visible: searchText(), click: clearSearch">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    </div>
 
-    <!-- Personnel Selection -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-person-check"></i> @Html.T("Report.PersonnelSelection", "Temsilci Secimi")</h5>
+                    <!-- Organizasyon Filtresi -->
+                    <div class="mb-2">
+                        <select class="form-select form-select-sm" data-bind="value: selectedOrganizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.AllBranches", "Tüm Şubeler")'"></select>
+                    </div>
+
+                    <!-- Personel Listesi -->
+                    <div class="personnel-list-container" style="max-height: calc(100vh - 280px); overflow-y: auto;">
+                        <!-- Loading -->
+                        <div data-bind="visible: isLoadingPersonnel" class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div data-bind="visible: !isLoadingPersonnel() && filteredPersonnelList().length === 0" class="text-center py-3 text-muted">
+                            <i class="bi bi-person-x"></i>
+                            <small class="d-block">@Html.T("Report.NoPersonnelFound", "Temsilci bulunamadı")</small>
+                        </div>
+
+                        <!-- Personnel List -->
+                        <div class="list-group list-group-flush" data-bind="foreach: filteredPersonnelList">
+                            <a href="#" class="list-group-item list-group-item-action py-2 px-2"
+                               data-bind="click: $parent.selectPersonnel, css: { active: $parent.selectedPersonnelId() == id }">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        <span data-bind="text: name"></span>
+                                    </div>
+                                    <!-- ko if: organizationName -->
+                                    <small class="text-muted" data-bind="text: organizationName" style="font-size: 0.7rem;"></small>
+                                    <!-- /ko -->
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Personel Sayısı -->
+                    <div class="border-top pt-2 mt-2">
+                        <small class="text-muted">
+                            <span data-bind="text: filteredPersonnelList().length"></span> / <span data-bind="text: personnelList().length"></span> @Html.T("Report.Personnel", "temsilci")
+                        </small>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <!-- Hiyerarsik Secim (Personele ulasmak icin) -->
-            <div class="row g-2 mb-3">
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">@Html.T("Report.Organization", "Sube")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedOrganizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tum Subeler', event: { change: onOrganizationChange }"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small mb-1">@Html.T("Report.Personnel", "Temsilci")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedPersonnelId, options: filteredPersonnelList, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Secin...', enable: personnelList().length > 0, event: { change: onPersonnelChange }"></select>
-                </div>
-                <div class="col-md-6 d-flex align-items-end gap-1">
-                    <button class="btn btn-primary btn-sm" data-bind="click: loadReport, disable: !selectedPersonnelId()">
-                        <i class="bi bi-search"></i> Getir
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i> Temizle
-                    </button>
+
+        <!-- Sağ Panel: Karne -->
+        <div class="col-md-9">
+            <!-- Personel Seçilmedi -->
+            <div data-bind="visible: !selectedPersonnelId()" class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-person-badge text-muted" style="font-size: 4rem;"></i>
+                    <h5 class="mt-3 text-muted">@Html.T("Report.SelectPersonnelToViewReport", "Karne görmek için bir temsilci seçin")</h5>
+                    <p class="text-muted">@Html.T("Report.SelectFromLeftPanel", "Sol panelden bir temsilci seçerek karnesini görüntüleyebilirsiniz.")</p>
                 </div>
             </div>
 
-            <!-- Filtre Sistemi (Chip-based pattern) -->
-            <div class="border-top pt-3" data-bind="visible: selectedPersonnelId()">
-                <div class="row g-2 align-items-end">
-                    <!-- Filtre Tipi Secimi -->
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Report.AddFilter", "Filtre Ekle")</label>
-                        <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
-                            <option value="">Secin...</option>
-                            <option value="project">Proje</option>
-                            <option value="dateRange">Tarih Araligi</option>
-                        </select>
+            <!-- Personel Seçildi -->
+            <div data-bind="visible: selectedPersonnelId()">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-badge"></i>
+                        <span data-bind="text: selectedPersonnelName"></span>
+                    </h4>
+                    <div class="btn-group" data-bind="visible: report()">
+                        <button class="btn btn-success btn-sm" data-bind="click: exportToExcel, disable: isExporting">
+                            <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-excel"></i> Excel</span>
+                            <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button class="btn btn-danger btn-sm" data-bind="click: printReport">
+                            <i class="bi bi-file-pdf"></i> PDF
+                        </button>
                     </div>
+                </div>
 
-                    <!-- Proje Secimi -->
-                    <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
-                        <label class="form-label small mb-1">@Html.T("Report.Project", "Proje")</label>
-                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Secin...'"></select>
-                    </div>
-
-                    <!-- Tarih Araligi Secimi -->
-                    <div class="col-md-6" data-bind="visible: selectedFilterType() === 'dateRange'">
-                        <label class="form-label small mb-1">@Html.T("Report.DateRange", "Tarih Araligi")</label>
-                        <div class="d-flex gap-1 align-items-center flex-wrap">
-                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate" style="width: 130px;">
-                            <span class="text-muted">-</span>
-                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate" style="width: 130px;">
+                <!-- Filtreler -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body py-2">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <!-- Filtre Ekle Dropdown -->
                             <div class="dropdown">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span data-bind="text: tempFilter.dateRangeType() ? dateRanges().find(function(d) { return d.systemName === tempFilter.dateRangeType(); })?.name : 'Hizli Sec'"></span>
+                                <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                    <i class="bi bi-funnel"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
                                 </button>
-                                <ul class="dropdown-menu">
-                                    <li><h6 class="dropdown-header">Gun</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">Bugun</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">Dun</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Hafta</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">Bu Hafta</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">Gecen Hafta</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Ay</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">Bu Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">Gecen Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last3Months'); }">Son 3 Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last6Months'); }">Son 6 Ay</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Yil</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisYear'); }">Bu Yil</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastYear'); }">Gecen Yil</a></li>
-                                </ul>
+                                <div class="dropdown-menu p-3" style="min-width: 300px;">
+                                    <!-- Filter Type -->
+                                    <div class="mb-2">
+                                        <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                                            <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                                            <option value="project">@Html.T("Common.Project", "Proje")</option>
+                                            <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Project Filter -->
+                                    <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
+                                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                                    </div>
+
+                                    <!-- Date Range Filter -->
+                                    <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                                        <div class="d-flex gap-1 mb-2">
+                                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                                            <span class="align-self-center">-</span>
+                                            <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('thisMonth'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'thisMonth' }">Bu Ay</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('lastMonth'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'lastMonth' }">Geçen Ay</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('last3Months'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'last3Months' }">Son 3 Ay</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('thisYear'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'thisYear' }">Bu Yıl</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Add Button -->
+                                    <button type="button" class="btn btn-primary btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
+                                        <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Active Filters -->
+                            <!-- ko foreach: activeFilters -->
+                            <span class="badge bg-primary d-flex align-items-center gap-1 py-2">
+                                <span data-bind="text: label + ': ' + displayValue"></span>
+                                <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.5rem;" data-bind="click: $parent.removeFilter"></button>
+                            </span>
+                            <!-- /ko -->
+
+                            <!-- Clear All -->
+                            <button class="btn btn-outline-danger btn-sm" data-bind="visible: activeFilters().length > 0, click: clearAllFilters">
+                                <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div data-bind="visible: isLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">@Html.T("Report.LoadingReportCard", "Karne yükleniyor...")</p>
+                </div>
+
+                <!-- No Data -->
+                <div data-bind="visible: !isLoading() && !report()" class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">@Html.T("Report.NoEvaluationsForPersonnel", "Bu temsilci için değerlendirme bulunamadı")</h5>
+                    </div>
+                </div>
+
+                <!-- Report Content -->
+                <div id="printable-report" data-bind="visible: !isLoading() && report()">
+                    <!-- Summary Cards -->
+                    <div class="row mb-3" data-bind="with: report">
+                        <div class="col">
+                            <div class="card text-center h-100">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h3>
+                                    <small class="text-muted">Ortalama</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card text-center h-100 bg-success text-white">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0" data-bind="text: bestScore.toFixed(1) + '%'"></h3>
+                                    <small>En Yüksek</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card text-center h-100 bg-danger text-white">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0" data-bind="text: worstScore.toFixed(1) + '%'"></h3>
+                                    <small>En Düşük</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card text-center h-100">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0 text-primary" data-bind="text: totalEvaluations"></h3>
+                                    <small class="text-muted">Toplam</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card text-center h-100 bg-warning">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0" data-bind="text: totalYellowCards"></h3>
+                                    <small>Sarı Kart</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card text-center h-100 bg-danger text-white">
+                                <div class="card-body py-2">
+                                    <h3 class="mb-0" data-bind="text: totalRedCards"></h3>
+                                    <small>Kırmızı Kart</small>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Filtre Ekle Butonu -->
-                    <div class="col-auto" data-bind="visible: selectedFilterType()">
-                        <button class="btn btn-success btn-sm" data-bind="click: addFilter, enable: canAddFilter">
-                            <i class="bi bi-plus-circle"></i> Ekle
-                        </button>
+                    <!-- Monthly Trend -->
+                    <div class="card shadow-sm mb-3" data-bind="visible: report() && report().monthlyTrend && report().monthlyTrend.length > 0">
+                        <div class="card-header bg-info text-white py-2">
+                            <h6 class="mb-0"><i class="bi bi-graph-up"></i> Aylık Performans</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Dönem</th>
+                                            <th class="text-center">Değerlendirme</th>
+                                            <th class="text-center">Ort. Puan</th>
+                                            <th class="text-center">S.Kart</th>
+                                            <th class="text-center">K.Kart</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: report() ? report().monthlyTrend : []">
+                                        <tr>
+                                            <td data-bind="text: monthName"></td>
+                                            <td class="text-center" data-bind="text: evaluationCount"></td>
+                                            <td class="text-center">
+                                                <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                            </td>
+                                            <td class="text-center" data-bind="text: yellowCards"></td>
+                                            <td class="text-center" data-bind="text: redCards"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Aktif Filtreler (Chips) -->
-                <div class="mt-2" data-bind="visible: activeFilters().length > 0">
-                    <div class="d-flex flex-wrap gap-1 align-items-center">
-                        <small class="text-muted me-1">Filtreler:</small>
-                        <!-- ko foreach: activeFilters -->
-                        <span class="badge bg-primary d-inline-flex align-items-center">
-                            <span data-bind="text: label + ': ' + displayValue"></span>
-                            <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
-                        </span>
-                        <!-- /ko -->
-                        <button class="btn btn-link btn-sm text-danger p-0 ms-2" data-bind="click: clearAllFilters, visible: activeFilters().length > 1">
-                            <i class="bi bi-x-circle"></i> Tumu Temizle
-                        </button>
+                    <!-- Group Performance & Strengths/Weaknesses -->
+                    <div class="row mb-3">
+                        <div class="col-md-6" data-bind="visible: report() && report().groupPerformances && report().groupPerformances.length > 0">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-secondary text-white py-2">
+                                    <h6 class="mb-0"><i class="bi bi-list-task"></i> Grup Performansı</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <tbody data-bind="foreach: report() ? report().groupPerformances : []">
+                                            <tr>
+                                                <td data-bind="text: groupName"></td>
+                                                <td style="width: 50%;">
+                                                    <div class="progress" style="height: 18px;">
+                                                        <div class="progress-bar" data-bind="style: { width: percentageScore + '%' }, css: percentageScore >= 70 ? 'bg-success' : (percentageScore >= 50 ? 'bg-warning' : 'bg-danger'), text: percentageScore.toFixed(1) + '%'"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-secondary text-white py-2">
+                                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Güçlü/Zayıf Yönler</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="p-2 bg-success bg-opacity-10" data-bind="visible: report() && report().strengths && report().strengths.length > 0">
+                                        <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle"></i> Güçlü</small>
+                                    </div>
+                                    <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().strengths : []">
+                                        <li class="list-group-item py-1 small">
+                                            <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                            <span data-bind="text: questionText"></span>
+                                        </li>
+                                    </ul>
+                                    <div class="p-2 bg-danger bg-opacity-10" data-bind="visible: report() && report().weaknesses && report().weaknesses.length > 0">
+                                        <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> Geliştirilmeli</small>
+                                    </div>
+                                    <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
+                                        <li class="list-group-item py-1 small">
+                                            <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                            <span data-bind="text: questionText"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Loading -->
-    <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">@Html.T("Common.Loading", "Yukleniyor...")</span>
-        </div>
-        <p class="mt-2 text-muted">@Html.T("Report.LoadingReportCard", "Karne yukleniyor...")</p>
-    </div>
-
-    <!-- Report Content (printable area) -->
-    <div id="printable-report" data-bind="visible: report() && !isLoading()">
-        <!-- Personnel Info Header -->
-        <div class="card shadow-sm mb-4" data-bind="with: report">
-            <div class="card-header bg-dark text-white">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h4 class="mb-0">
-                            <i class="bi bi-person-circle"></i>
-                            <span data-bind="text: personnelName"></span>
-                        </h4>
-                        <small>
-                            <span data-bind="text: title || ''"></span>
-                        </small>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <span class="badge bg-light text-dark fs-5" data-bind="text: totalEvaluations + ' Degerlendirme'"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Summary Cards -->
-        <div class="row mb-4" data-bind="with: report">
-            <div class="col-md-2">
-                <div class="card text-center h-100">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h2>
-                        <small class="text-muted">@Html.T("Report.AverageScore", "Ortalama Puan")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card text-center h-100 bg-success text-white">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: bestScore.toFixed(1) + '%'"></h2>
-                        <small>@Html.T("Report.HighestScore", "En Yuksek")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card text-center h-100 bg-danger text-white">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: worstScore.toFixed(1) + '%'"></h2>
-                        <small>@Html.T("Report.LowestScore", "En Dusuk")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card text-center h-100">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0 text-primary" data-bind="text: totalEvaluations"></h2>
-                        <small class="text-muted">@Html.T("Report.Total", "Toplam")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card text-center h-100 bg-warning">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: totalYellowCards"></h2>
-                        <small>@Html.T("Report.YellowCard", "Sari Kart")</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card text-center h-100 bg-danger text-white">
-                    <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: totalRedCards"></h2>
-                        <small>@Html.T("Report.RedCard", "Kirmizi Kart")</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Monthly Trend Chart -->
-        <div class="row mb-4" data-bind="visible: report() && report().monthlyTrend.length > 0">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-info text-white">
-                        <h6 class="mb-0"><i class="bi bi-graph-up"></i> @Html.T("Report.MonthlyPerformanceTrend", "Aylik Performans Trendi")</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-sm mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>@Html.T("Report.Period", "Donem")</th>
-                                        <th class="text-center">@Html.T("Report.Evaluation", "Degerlendirme")</th>
-                                        <th class="text-center">@Html.T("Report.AverageScore", "Ort. Puan")</th>
-                                        <th class="text-center">@Html.T("Report.YellowCard", "Sari Kart")</th>
-                                        <th class="text-center">@Html.T("Report.RedCard", "Kirmizi Kart")</th>
-                                    </tr>
-                                </thead>
-                                <tbody data-bind="foreach: report() ? report().monthlyTrend : []">
-                                    <tr>
-                                        <td data-bind="text: monthName"></td>
-                                        <td class="text-center" data-bind="text: evaluationCount"></td>
-                                        <td class="text-center">
-                                            <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
-                                        </td>
-                                        <td class="text-center" data-bind="text: yellowCards"></td>
-                                        <td class="text-center" data-bind="text: redCards"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <!-- Recent Evaluations -->
+                    <div class="card shadow-sm" data-bind="visible: report() && report().recentEvaluations && report().recentEvaluations.length > 0">
+                        <div class="card-header bg-primary text-white py-2">
+                            <h6 class="mb-0"><i class="bi bi-clock-history"></i> Son Değerlendirmeler</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tarih</th>
+                                            <th>Proje</th>
+                                            <th>Kontrol Listesi</th>
+                                            <th class="text-center">Puan</th>
+                                            <th class="text-center">Kartlar</th>
+                                            <th class="text-center">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: report() ? report().recentEvaluations : []">
+                                        <tr>
+                                            <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                            <td data-bind="text: projectName"></td>
+                                            <td data-bind="text: checklistName"></td>
+                                            <td class="text-center">
+                                                <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
+                                                <span data-bind="visible: redCards > 0" class="badge bg-danger" data-bind="text: redCards"></span>
+                                                <span data-bind="visible: yellowCards === 0 && redCards === 0">-</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-primary" data-bind="click: function() { $root.showDetails(evaluationId); }">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Group Performance & Strengths/Weaknesses -->
-        <div class="row mb-4">
-            <!-- Group Performance -->
-            <div class="col-md-6" data-bind="visible: report() && report().groupPerformances && report().groupPerformances.length > 0">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0"><i class="bi bi-list-task"></i> @Html.T("Report.GroupPerformance", "Grup Performansi")</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-sm mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>@Html.T("Report.QuestionGroup", "Soru Grubu")</th>
-                                    <th class="text-center">@Html.T("Report.SuccessRate", "Basari %")</th>
-                                </tr>
-                            </thead>
-                            <tbody data-bind="foreach: report() ? report().groupPerformances : []">
-                                <tr>
-                                    <td data-bind="text: groupName"></td>
-                                    <td class="text-center">
-                                        <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar" role="progressbar"
-                                                 data-bind="style: { width: percentageScore + '%' },
-                                                            css: percentageScore >= 70 ? 'bg-success' : (percentageScore >= 50 ? 'bg-warning' : 'bg-danger'),
-                                                            text: percentageScore.toFixed(1) + '%'">
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Strengths & Weaknesses -->
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0"><i class="bi bi-bar-chart"></i> @Html.T("Report.StrengthsWeaknesses", "Guclu ve Zayif Yonler")</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <!-- Strengths -->
-                        <div class="p-2 bg-success bg-opacity-10" data-bind="visible: report() && report().strengths.length > 0">
-                            <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle"></i> @Html.T("Report.Strengths", "Guclu Yonler")</small>
-                        </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().strengths : []">
-                            <li class="list-group-item py-1 small">
-                                <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
-                                <span data-bind="text: questionText"></span>
-                            </li>
-                        </ul>
-
-                        <!-- Weaknesses -->
-                        <div class="p-2 bg-danger bg-opacity-10" data-bind="visible: report() && report().weaknesses.length > 0">
-                            <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> @Html.T("Report.NeedsImprovement", "Gelistirilmesi Gereken")</small>
-                        </div>
-                        <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
-                            <li class="list-group-item py-1 small">
-                                <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
-                                <span data-bind="text: questionText"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Evaluations (Degerlendirici kolonu YOK) -->
-        <div class="card shadow-sm" data-bind="visible: report() && report().recentEvaluations.length > 0">
-            <div class="card-header bg-primary text-white">
-                <h6 class="mb-0"><i class="bi bi-clock-history"></i> @Html.T("Report.RecentEvaluations", "Son Degerlendirmeler")</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Html.T("Report.Date", "Tarih")</th>
-                                <th>@Html.T("Report.Project", "Proje")</th>
-                                <th>@Html.T("Report.Checklist", "Kontrol Listesi")</th>
-                                <th class="text-center">@Html.T("Report.Score", "Puan")</th>
-                                <th class="text-center">@Html.T("Report.Cards", "Kartlar")</th>
-                                <th class="text-center">@Html.T("Common.Actions", "Islem")</th>
-                            </tr>
-                        </thead>
-                        <tbody data-bind="foreach: report() ? report().recentEvaluations : []">
-                            <tr>
-                                <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
-                                <td data-bind="text: projectName"></td>
-                                <td data-bind="text: checklistName"></td>
-                                <td class="text-center">
-                                    <span class="badge" data-bind="text: scorePercentage.toFixed(2) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
-                                </td>
-                                <td class="text-center">
-                                    <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
-                                    <span data-bind="visible: redCards > 0" class="badge bg-danger" data-bind="text: redCards"></span>
-                                    <span data-bind="visible: yellowCards === 0 && redCards === 0">-</span>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: function() { $root.showDetails(evaluationId); }">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Empty State -->
-    <div data-bind="visible: !report() && !isLoading() && selectedPersonnelId()" class="text-center text-muted py-5">
-        <i class="bi bi-inbox fs-1"></i>
-        <p class="mt-2">@Html.T("Report.NoEvaluationsForPersonnel", "Bu temsilci icin degerlendirme bulunamadi.")</p>
-    </div>
-
-    <!-- Initial State -->
-    <div data-bind="visible: !report() && !isLoading() && !selectedPersonnelId()" class="text-center text-muted py-5">
-        <i class="bi bi-person-badge fs-1"></i>
-        <p class="mt-2">@Html.T("Report.SelectPersonnelToViewReport", "Karne gormek icin bir temsilci secin.")</p>
     </div>
 
     <!-- Details Modal -->
@@ -376,7 +366,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="bi bi-clipboard-check me-2"></i>@Html.T("Evaluation.Details", "Dinleme Detayı")</h5>
+                    <h5 class="modal-title"><i class="bi bi-clipboard-check me-2"></i>Dinleme Detayı</h5>
                     <div class="ms-auto d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-outline-light btn-sm" data-bind="click: exportDetailToExcel, disable: isExportingDetail">
                             <span data-bind="visible: !isExportingDetail()"><i class="bi bi-file-earmark-excel me-1"></i>Excel</span>
@@ -386,155 +376,86 @@
                     </div>
                 </div>
                 <div class="modal-body">
-                    <!-- Loading -->
                     <div data-bind="visible: isDetailsLoading" class="text-center py-5">
                         <div class="spinner-border text-primary"></div>
                     </div>
-                    <!-- Content -->
                     <div data-bind="visible: !isDetailsLoading() && detailsData()">
                         <!-- ko with: detailsData -->
-                        <!-- Score Summary -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">Toplam Puan</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="progress" style="height: 25px;">
-                                            <div class="progress-bar" role="progressbar"
-                                                 data-bind="style: { width: (scorePercentage || 0) + '%' },
-                                                            css: $parent.getProgressBarClass(scorePercentage || 0),
-                                                            text: (scorePercentage || 0).toFixed(2) + '%'">
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between mt-1">
-                                            <small class="text-muted">0%</small>
-                                            <small class="text-muted">100%</small>
+                                            <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $parent.getProgressBarClass(scorePercentage || 0), text: (scorePercentage || 0).toFixed(2) + '%'"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Info Cards -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="card h-100">
-                                    <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="bi bi-building"></i> @Html.T("Evaluation.EvaluatedInfo", "Değerlendirilen Bilgileri")</h6>
-                                    </div>
+                                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-building"></i> Değerlendirilen</h6></div>
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
-                                            <tr>
-                                                <th style="width: 40%;">@Html.T("Common.Customer", "Firma")</th>
-                                                <td data-bind="text: customerName || '-'"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>@Html.T("Common.Organization", "Organizasyon")</th>
-                                                <td data-bind="text: organizationName || '-'"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
-                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
-                                            </tr>
-                                            <!-- ko if: supervisorName -->
-                                            <tr>
-                                                <th>@Html.T("Evaluation.Supervisor", "Takım Lideri")</th>
-                                                <td data-bind="text: supervisorName"></td>
-                                            </tr>
-                                            <!-- /ko -->
+                                            <tr><th style="width:40%;">Firma</th><td data-bind="text: customerName || '-'"></td></tr>
+                                            <tr><th>Organizasyon</th><td data-bind="text: organizationName || '-'"></td></tr>
+                                            <tr><th>Temsilci</th><td data-bind="text: evaluatedPersonnelName || '-'"></td></tr>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card h-100">
-                                    <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
-                                    </div>
+                                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-telephone"></i> Çağrı Bilgileri</h6></div>
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
-                                            <tr>
-                                                <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                <td data-bind="text: callId || '-'"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
-                                                <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>@Html.T("Evaluation.Duration", "Süre")</th>
-                                                <td data-bind="text: duration || '-'"></td>
-                                            </tr>
+                                            <tr><th style="width:40%;">Çağrı ID</th><td data-bind="text: callId || '-'"></td></tr>
+                                            <tr><th>Tarih</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                                            <tr><th>Süre</th><td data-bind="text: duration || '-'"></td></tr>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Evaluation Comment -->
                         <div class="card mb-4" data-bind="visible: evaluationComment">
-                            <div class="card-header bg-info text-white">
-                                <h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</h6>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0" data-bind="text: evaluationComment"></p>
-                            </div>
+                            <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-chat-quote"></i> Denetim Yorumu</h6></div>
+                            <div class="card-body"><p class="mb-0" data-bind="text: evaluationComment"></p></div>
                         </div>
-
-                        <!-- Answers Table -->
                         <div class="card">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="bi bi-list-check"></i> @Html.T("Evaluation.Answers", "Verilen Cevaplar")</h6>
-                            </div>
+                            <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-list-check"></i> Cevaplar</h6></div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-striped table-hover mb-0" style="table-layout: fixed;">
+                                    <table class="table table-sm table-striped mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
-                                                <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
+                                                <th style="width:12%;">Grup</th>
+                                                <th style="width:30%;">Soru</th>
+                                                <th class="text-center" style="width:10%;">Cevap</th>
+                                                <th class="text-center" style="width:10%;">Ağırlık</th>
+                                                <th class="text-center" style="width:10%;">Kazanılan</th>
+                                                <th style="width:28%;">Notlar</th>
                                             </tr>
                                         </thead>
                                         <tbody data-bind="foreach: answers || []">
                                             <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
-                                                <td class="text-wrap" data-bind="text: groupName || '-'"></td>
-                                                <td class="text-wrap">
-                                                    <span data-bind="text: questionText"></span>
-                                                </td>
+                                                <td data-bind="text: groupName || '-'"></td>
+                                                <td data-bind="text: questionText"></td>
                                                 <td class="text-center">
-                                                    <!-- ko if: givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
+                                                    <!-- ko if: givenPoints !== null && maxPoints > 0 -->
                                                     <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: maxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
+                                                    <!-- ko ifnot: givenPoints !== null && maxPoints > 0 -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
-                                                <td class="text-center">
-                                                    <!-- ko if: maxPoints > 0 -->
-                                                    <span data-bind="text: maxPoints"></span>
-                                                    <!-- /ko -->
-                                                    <!-- ko ifnot: maxPoints > 0 -->
-                                                    <span class="text-muted">-</span>
-                                                    <!-- /ko -->
-                                                </td>
-                                                <td class="text-center">
-                                                    <!-- ko if: maxPoints > 0 -->
-                                                    <span class="text-success" data-bind="text: (givenPoints || 0).toFixed(1)"></span>
-                                                    <!-- /ko -->
-                                                    <!-- ko ifnot: maxPoints > 0 -->
-                                                    <span class="text-muted">-</span>
-                                                    <!-- /ko -->
-                                                </td>
-                                                <td class="text-wrap">
-                                                    <span data-bind="text: notes || '-'"></span>
-                                                </td>
+                                                <td class="text-center" data-bind="text: maxPoints > 0 ? maxPoints : '-'"></td>
+                                                <td class="text-center" data-bind="text: maxPoints > 0 ? (givenPoints || 0).toFixed(1) : '-'"></td>
+                                                <td data-bind="text: notes || '-'"></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -545,7 +466,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bind="click: closeDetailsModal">@Html.T("Common.Close", "Kapat")</button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeDetailsModal">Kapat</button>
                 </div>
             </div>
         </div>
@@ -556,4 +477,3 @@
 @section Scripts {
     <script src="~/js/CustomerPortal/personnelReportCard.js"></script>
 }
-

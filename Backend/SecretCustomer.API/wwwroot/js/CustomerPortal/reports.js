@@ -15,6 +15,13 @@ function CustomerReportsViewModel() {
     self.startDate = ko.observable(threeMonthsAgo.toISOString().split('T')[0]);
     self.endDate = ko.observable(today.toISOString().split('T')[0]);
 
+    // Score Range Modal State
+    self.isScoreRangeModalOpen = ko.observable(false);
+    self.isScoreRangeLoading = ko.observable(false);
+    self.scoreRangeModalTitle = ko.observable('');
+    self.scoreRangeModalColor = ko.observable('primary');
+    self.scoreRangeEvaluations = ko.observableArray([]);
+
     // Helpers
     self.getScoreBadgeClass = function(score) {
         if (score >= 90) return 'bg-success';
@@ -130,6 +137,45 @@ function CustomerReportsViewModel() {
                 }
             }
         });
+    };
+
+    // Show Score Range Detail Modal
+    self.showScoreRangeDetail = function(minScore, maxScore, title, color) {
+        self.scoreRangeModalTitle(title);
+        self.scoreRangeModalColor(color);
+        self.isScoreRangeModalOpen(true);
+        self.isScoreRangeLoading(true);
+        self.scoreRangeEvaluations([]);
+
+        var params = [];
+        if (self.startDate()) params.push('startDate=' + self.startDate());
+        if (self.endDate()) params.push('endDate=' + self.endDate());
+        params.push('minScore=' + minScore);
+        params.push('maxScore=' + maxScore);
+
+        var url = '/api/customer/portal/reports/score-range?' + params.join('&');
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.scoreRangeEvaluations(data || []);
+            })
+            .catch(function(error) {
+                console.error('Score range load error:', error);
+                toastr.error('Veriler yüklenirken hata oluştu.');
+            })
+            .finally(function() {
+                self.isScoreRangeLoading(false);
+            });
+    };
+
+    // Close Score Range Modal
+    self.closeScoreRangeModal = function() {
+        self.isScoreRangeModalOpen(false);
+        self.scoreRangeEvaluations([]);
     };
 
     // Initialize
