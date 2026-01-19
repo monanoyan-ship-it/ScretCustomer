@@ -18,6 +18,7 @@ function TrainingVideosViewModel() {
     self.isLoading = ko.observable(false);
     self.isSaving = ko.observable(false);
     self.isUploading = ko.observable(false);
+    self.uploadProgress = ko.observable(0);
     self.videos = ko.observableArray([]);
     self.checklists = ko.observableArray([]);
     self.scopeOptions = ko.observable({ checklists: [], questionGroups: [], questions: [] });
@@ -319,6 +320,7 @@ function TrainingVideosViewModel() {
         }
 
         self.isUploading(true);
+        self.uploadProgress(0);
 
         var formData = new FormData();
         formData.append('videoFile', fileInput.files[0]);
@@ -339,28 +341,53 @@ function TrainingVideosViewModel() {
             if (scope.questionId) formData.append('scopes[' + index + '].questionId', scope.questionId);
         });
 
-        fetch('/api/training-videos', {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.id) {
-                toastr.success(T('TrainingVideo.UploadSuccess', 'Video basariyla yuklendi'));
-                self.uploadModal.hide();
-                self.loadVideos();
-            } else {
-                toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+        // XMLHttpRequest ile progress tracking
+        var xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                self.uploadProgress(percent);
             }
-        })
-        .catch(function(err) {
-            toastr.error(T('Common.Error', 'Hata olustu'));
-            console.error(err);
-        })
-        .finally(function() {
-            self.isUploading(false);
         });
+
+        xhr.addEventListener('load', function() {
+            self.isUploading(false);
+            self.uploadProgress(0);
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    var result = JSON.parse(xhr.responseText);
+                    if (result.id) {
+                        toastr.success(T('TrainingVideo.UploadSuccess', 'Video basariyla yuklendi'));
+                        self.uploadModal.hide();
+                        self.loadVideos();
+                    } else {
+                        toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+                    }
+                } catch (e) {
+                    toastr.error(T('Common.Error', 'Hata olustu'));
+                }
+            } else {
+                toastr.error(T('Common.Error', 'Hata olustu') + ' (' + xhr.status + ')');
+            }
+        });
+
+        xhr.addEventListener('error', function() {
+            self.isUploading(false);
+            self.uploadProgress(0);
+            toastr.error(T('Common.Error', 'Hata olustu'));
+        });
+
+        xhr.addEventListener('abort', function() {
+            self.isUploading(false);
+            self.uploadProgress(0);
+            toastr.warning('Yukleme iptal edildi');
+        });
+
+        xhr.open('POST', '/api/training-videos');
+        xhr.withCredentials = true;
+        xhr.send(formData);
     };
 
     // Open edit modal
@@ -434,25 +461,28 @@ function TrainingVideosViewModel() {
 
     // Delete video
     self.deleteVideo = function(video) {
-        if (!confirm(T('TrainingVideo.DeleteConfirm', 'Bu videoyu silmek istediginize emin misiniz?'))) return;
-
-        fetch('/api/training-videos/' + video.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.message) {
-                toastr.success(T('TrainingVideo.DeleteSuccess', 'Video silindi'));
-                self.loadVideos();
-            } else {
-                toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+        deleteConfirmation.show(
+            '<strong>' + video.title + '</strong> videosunu silmek istediğinize emin misiniz?',
+            function() {
+                fetch('/api/training-videos/' + video.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.message) {
+                        toastr.success(T('TrainingVideo.DeleteSuccess', 'Video silindi'));
+                        self.loadVideos();
+                    } else {
+                        toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+                    }
+                })
+                .catch(function(err) {
+                    toastr.error(T('Common.Error', 'Hata olustu'));
+                    console.error(err);
+                });
             }
-        })
-        .catch(function(err) {
-            toastr.error(T('Common.Error', 'Hata olustu'));
-            console.error(err);
-        });
+        );
     };
 
     // Preview video

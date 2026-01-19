@@ -8367,4 +8367,30 @@
   <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
     <Value>Mitarbeiterschulungen</Value>
   </LocaleResource>
+
+  <!-- Survey / Umfrage -->
+  <LocaleResource Name="Survey.GeneralGroup">
+    <Value>Allgemein</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.AnswerAtLeastOne">
+    <Value>Bitte beantworten Sie mindestens eine Frage.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.RequiredUnanswered">
+    <Value>{0} Pflichtfragen wurden nicht beantwortet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmit">
+    <Value>Umfrage absenden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmitMessage">
+    <Value>Sind Sie sicher, dass Sie die Umfrage absenden möchten?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitSuccess">
+    <Value>Umfrage erfolgreich gesendet!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitFailed">
+    <Value>Umfrage konnte nicht gesendet werden.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitError">
+    <Value>Beim Senden der Umfrage ist ein Fehler aufgetreten.</Value>
+  </LocaleResource>
 </Language>

@@ -644,16 +644,16 @@ function UsersViewModel() {
         // Once EnumsService'i yukle, sonra verileri cek
         EnumsService.load()
             .then(function() {
-                // Rol listelerini EnumsService'den al
+                // Rol listelerini EnumsService'den al (displayName artik API'den lokalize gelir)
                 var cache = EnumsService.cache;
                 if (cache && cache.userRoles) {
                     self.userRoles(cache.userRoles.map(function(r) {
-                        return { id: r.id.toString(), name: T(r.nameKey, r.nameKey.split('.').pop()) };
+                        return { id: r.id.toString(), name: r.displayName || r.nameKey.split('.').pop() };
                     }));
                 }
                 if (cache && cache.customerPersonnelRoles) {
                     self.customerPersonnelRoles(cache.customerPersonnelRoles.map(function(r) {
-                        return { id: r.systemName, name: T(r.nameKey, r.nameKey.split('.').pop()) };
+                        return { id: r.systemName, name: r.displayName || r.nameKey.split('.').pop() };
                     }));
                 }
                 return Promise.all([

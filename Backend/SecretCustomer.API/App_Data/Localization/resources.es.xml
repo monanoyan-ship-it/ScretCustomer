@@ -8353,4 +8353,30 @@
   <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
     <Value>Capacitaciones del Personal</Value>
   </LocaleResource>
+
+  <!-- Survey / Encuesta -->
+  <LocaleResource Name="Survey.GeneralGroup">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.AnswerAtLeastOne">
+    <Value>Por favor responda al menos una pregunta.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.RequiredUnanswered">
+    <Value>{0} preguntas obligatorias no fueron respondidas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmit">
+    <Value>Envío de Encuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmitMessage">
+    <Value>¿Está seguro de que desea enviar la encuesta?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitSuccess">
+    <Value>¡Encuesta enviada exitosamente!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitFailed">
+    <Value>No se pudo enviar la encuesta.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitError">
+    <Value>Ocurrió un error al enviar la encuesta.</Value>
+  </LocaleResource>
 </Language>

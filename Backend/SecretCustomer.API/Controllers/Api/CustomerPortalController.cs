@@ -2824,7 +2824,9 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/performance-by-period")]
     public async Task<IActionResult> GetPerformanceByPeriod(
         [FromQuery] List<int>? projectIds = null,
-        [FromQuery] List<int>? organizationIds = null)
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2875,10 +2877,22 @@ public class CustomerPortalApiController : ControllerBase
             var personnelIds = personnel.Select(p => p.Id).ToList();
 
             // Önce AssignmentPeriod'ları kontrol et
-            var assignmentPeriods = await _context.AssignmentPeriods
+            var assignmentPeriodsQuery = _context.AssignmentPeriods
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
+
+            // Tarih filtresi (AssignmentPeriod'lar için dönem tarihlerine göre)
+            if (startDate.HasValue)
+            {
+                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
+            }
+
+            var assignmentPeriods = await assignmentPeriodsQuery
                 .OrderBy(ap => ap.StartDate)
                 .Select(ap => new
                 {
@@ -2952,7 +2966,7 @@ public class CustomerPortalApiController : ControllerBase
             }
 
             // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
-            var allEvaluations = await _context.Evaluations
+            var allEvaluationsQuery = _context.Evaluations
                 .Include(e => e.Assignment)
                 .Where(e => e.Assignment != null &&
                            filteredProjectIds.Contains(e.Assignment.ProjectId) &&
@@ -2960,7 +2974,19 @@ public class CustomerPortalApiController : ControllerBase
                            personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
                            e.StatusId == EvaluationStatuses.Ids.Completed &&
                            e.ScorePercentage.HasValue &&
-                           e.CallDate.HasValue)
+                           e.CallDate.HasValue);
+
+            // Tarih filtresi (CallDate'e göre)
+            if (startDate.HasValue)
+            {
+                allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate <= endDate.Value);
+            }
+
+            var allEvaluations = await allEvaluationsQuery
                 .Select(e => new
                 {
                     e.EvaluatedCustomerPersonnelId,
@@ -3043,7 +3069,9 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/performance-by-period/export")]
     public async Task<IActionResult> ExportPerformanceByPeriod(
         [FromQuery] List<int>? projectIds = null,
-        [FromQuery] List<int>? organizationIds = null)
+        [FromQuery] List<int>? organizationIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -3089,10 +3117,22 @@ public class CustomerPortalApiController : ControllerBase
             var personnelIds = personnel.Select(p => p.Id).ToList();
 
             // AssignmentPeriod kontrolü
-            var assignmentPeriods = await _context.AssignmentPeriods
+            var assignmentPeriodsQuery = _context.AssignmentPeriods
                 .Include(ap => ap.Assignment)
                     .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted)
+                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
+
+            // Tarih filtresi (AssignmentPeriod'lar için dönem tarihlerine göre)
+            if (startDate.HasValue)
+            {
+                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
+            }
+
+            var assignmentPeriods = await assignmentPeriodsQuery
                 .OrderBy(ap => ap.StartDate)
                 .Select(ap => new { ap.Id, ap.Name })
                 .ToListAsync();
@@ -3182,7 +3222,7 @@ public class CustomerPortalApiController : ControllerBase
             else
             {
                 // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
-                var allEvaluations = await _context.Evaluations
+                var allEvaluationsQuery = _context.Evaluations
                     .Include(e => e.Assignment)
                     .Where(e => e.Assignment != null &&
                                filteredProjectIds.Contains(e.Assignment.ProjectId) &&
@@ -3190,7 +3230,19 @@ public class CustomerPortalApiController : ControllerBase
                                personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
                                e.StatusId == EvaluationStatuses.Ids.Completed &&
                                e.ScorePercentage.HasValue &&
-                               e.CallDate.HasValue)
+                               e.CallDate.HasValue);
+
+                // Tarih filtresi (CallDate'e göre)
+                if (startDate.HasValue)
+                {
+                    allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate >= startDate.Value);
+                }
+                if (endDate.HasValue)
+                {
+                    allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate <= endDate.Value);
+                }
+
+                var allEvaluations = await allEvaluationsQuery
                     .Select(e => new
                     {
                         e.EvaluatedCustomerPersonnelId,

@@ -52,7 +52,80 @@
 
         <!-- Questions -->
         <div data-bind="visible: questions().length > 0">
-            <!-- Question Groups -->
+            <!-- MODE 1: Hiç groupName yoksa - her soru kendi kartı -->
+            <!-- ko if: !hasAnyGroupName() -->
+            <div data-bind="foreach: questions">
+                <div class="card shadow-sm mb-3" data-bind="attr: { 'data-question-id': id }">
+                    <div class="card-header bg-primary text-white py-2">
+                        <!-- ko if: isRequired --><span class="text-warning fw-bold me-1">*</span><!-- /ko -->
+                        <span data-bind="text: text"></span>
+                    </div>
+                    <div class="card-body">
+                        <!-- ko if: description -->
+                        <p class="text-muted mb-2" data-bind="text: description"></p>
+                        <!-- /ko -->
+
+                        <!-- Score Input -->
+                        <!-- ko if: showScoreInput -->
+                        <div class="btn-group mb-2" role="group">
+                            <!-- ko foreach: $root.getScoreOptions(maxPoints) -->
+                            <input type="radio" class="btn-check"
+                                   data-bind="attr: { id: 'q' + $parent.id + '_' + $data, name: 'score_' + $parent.id },
+                                              checked: $parent.answer().score,
+                                              checkedValue: $data">
+                            <label class="btn btn-outline-primary btn-sm" data-bind="attr: { for: 'q' + $parent.id + '_' + $data }, text: $data"></label>
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- SubCriteria Selection -->
+                        <!-- ko if: hasSubCriteria -->
+                        <div class="mt-2">
+                            <small class="text-muted d-block mb-1">
+                                <!-- ko if: selectionTypeId === 1 -->
+                                <i class="bi bi-ui-radios"></i> Birini seçin:
+                                <!-- /ko -->
+                                <!-- ko if: selectionTypeId !== 1 -->
+                                <i class="bi bi-ui-checks"></i> Seçin (birden fazla seçilebilir):
+                                <!-- /ko -->
+                            </small>
+                            <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
+                                <!-- Single Selection (Radio) -->
+                                <!-- ko if: $parent.selectionTypeId === 1 -->
+                                <label class="list-group-item list-group-item-action py-2 px-3"
+                                       data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); return true; }">
+                                    <input type="radio" class="form-check-input me-2 form-check-input-static"
+                                           data-bind="attr: { name: 'subcriteria_' + $parent.id, checked: isSelected() ? 'checked' : null }">
+                                    <span data-bind="text: description"></span>
+                                </label>
+                                <!-- /ko -->
+                                <!-- Multiple Selection (Checkbox) -->
+                                <!-- ko if: $parent.selectionTypeId !== 1 -->
+                                <label class="list-group-item list-group-item-action py-2 px-3"
+                                       data-bind="css: { 'active': isSelected() }, click: function() { $root.selectSubCriteria($parent, $data); }">
+                                    <input type="checkbox" class="form-check-input me-2" data-bind="checked: isSelected">
+                                    <span data-bind="text: description"></span>
+                                </label>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- Comment -->
+                        <!-- ko if: allowComment -->
+                        <div class="mt-2">
+                            <input type="text" class="form-control form-control-sm"
+                                   placeholder="Yorum (opsiyonel)"
+                                   data-bind="value: answer().comment">
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+
+            <!-- MODE 2: En az bir groupName varsa - gruplu yapı -->
+            <!-- ko if: hasAnyGroupName() -->
             <div data-bind="foreach: questionGroups">
                 <div class="card shadow-sm mb-3">
                     <div class="card-header bg-primary text-white py-2">
@@ -133,6 +206,7 @@
                     </div>
                 </div>
             </div>
+            <!-- /ko -->
         </div>
 
         <!-- Submit -->

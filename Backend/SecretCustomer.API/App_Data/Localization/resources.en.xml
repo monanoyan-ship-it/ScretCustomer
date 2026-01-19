@@ -8437,4 +8437,30 @@
   <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
     <Value>Staff Trainings</Value>
   </LocaleResource>
+
+  <!-- Survey -->
+  <LocaleResource Name="Survey.GeneralGroup">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.AnswerAtLeastOne">
+    <Value>Please answer at least one question.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.RequiredUnanswered">
+    <Value>{0} required questions are not answered.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmit">
+    <Value>Survey Submission</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmitMessage">
+    <Value>Are you sure you want to submit the survey?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitSuccess">
+    <Value>Survey submitted successfully!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitFailed">
+    <Value>Survey could not be submitted.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitError">
+    <Value>An error occurred while submitting the survey.</Value>
+  </LocaleResource>
 </Language>

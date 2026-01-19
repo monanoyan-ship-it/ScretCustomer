@@ -248,6 +248,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = 500 * 1024 * 1024; // 500MB
+    options.Limits.MinRequestBodyDataRate = null; // Yavaş upload için timeout kaldır
+    options.Limits.MinResponseDataRate = null; // Yavaş response için timeout kaldır
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(60); // Keep-alive 60 dakika
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(10); // Header timeout 10 dakika
 });
 
 // Add MVC Controllers with Views

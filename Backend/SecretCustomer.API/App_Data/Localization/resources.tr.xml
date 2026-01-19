@@ -8432,4 +8432,30 @@
   <LocaleResource Name="CustomerPortal.Menu.StaffTrainings">
     <Value>Personel Eğitimleri</Value>
   </LocaleResource>
+
+  <!-- Survey / Anket -->
+  <LocaleResource Name="Survey.GeneralGroup">
+    <Value>Genel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.AnswerAtLeastOne">
+    <Value>Lütfen en az bir soruyu cevaplayın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.RequiredUnanswered">
+    <Value>{0} zorunlu soru cevaplanmadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmit">
+    <Value>Anket Gönderimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ConfirmSubmitMessage">
+    <Value>Anketi göndermek istediğinize emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitSuccess">
+    <Value>Anket başarıyla gönderildi!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitFailed">
+    <Value>Anket gönderilemedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SubmitError">
+    <Value>Anket gönderilirken bir hata oluştu.</Value>
+  </LocaleResource>
 </Language>

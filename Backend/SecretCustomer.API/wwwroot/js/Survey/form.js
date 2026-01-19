@@ -7,6 +7,7 @@ var TRANSLATION_KEYS = [
     'Survey.SubmitSuccess',
     'Survey.SubmitFailed',
     'Survey.SubmitError',
+    'Survey.GeneralGroup',
     'Common.Confirm'
 ];
 
@@ -26,17 +27,27 @@ function SurveyFormViewModel() {
     self.surveyInfo = ko.observable(null);
     self.questions = ko.observableArray([]);
 
+    // Computed: Has any group name (en az bir soruda groupName var mı?)
+    self.hasAnyGroupName = ko.computed(function() {
+        return self.questions().some(function(q) {
+            return q.groupName && q.groupName.trim() !== '';
+        });
+    });
+
     // Computed: Question groups
     self.questionGroups = ko.computed(function() {
         var questions = self.questions();
         var groups = {};
         var groupOrder = [];
 
+        var defaultGroupName = T('Survey.GeneralGroup', 'Genel');
         questions.forEach(function(q) {
-            var groupName = q.groupName || 'Genel';
+            var isDefault = !q.groupName || q.groupName.trim() === '';
+            var groupName = isDefault ? defaultGroupName : q.groupName;
             if (!groups[groupName]) {
                 groups[groupName] = {
                     name: groupName,
+                    isDefaultGroup: isDefault,
                     order: q.groupOrder || 0,
                     questions: []
                 };

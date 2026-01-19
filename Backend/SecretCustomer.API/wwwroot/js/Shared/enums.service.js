@@ -52,7 +52,7 @@ var EnumsService = (function() {
         return enumArray.find(function(item) { return item.systemName === systemName; });
     }
 
-    // Display name dondur (lokalize edilmis)
+    // Display name dondur (lokalize edilmis - API'den displayName olarak gelir)
     function getDisplayName(enumArray, idOrSystemName) {
         var item = typeof idOrSystemName === 'number'
             ? getById(enumArray, idOrSystemName)
@@ -60,7 +60,12 @@ var EnumsService = (function() {
 
         if (!item) return 'Bilinmiyor';
 
-        // T fonksiyonu varsa lokalize et, yoksa nameKey'in son kismini kullan
+        // API'den gelen displayName'i kullan
+        if (item.displayName) {
+            return item.displayName;
+        }
+
+        // Fallback: T fonksiyonu varsa lokalize et, yoksa nameKey'in son kismini kullan
         if (typeof T === 'function') {
             return T(item.nameKey, item.nameKey.split('.').pop());
         }
@@ -89,9 +94,11 @@ var EnumsService = (function() {
     function toSelectOptions(enumArray) {
         if (!enumArray) return [];
         return enumArray.map(function(item) {
+            // API'den gelen displayName'i kullan
+            var name = item.displayName || (typeof T === 'function' ? T(item.nameKey, item.nameKey.split('.').pop()) : item.nameKey.split('.').pop());
             return {
                 id: item.id,
-                name: typeof T === 'function' ? T(item.nameKey, item.nameKey.split('.').pop()) : item.nameKey.split('.').pop()
+                name: name
             };
         });
     }

@@ -1,5 +1,45 @@
 /* Survey Page Styles */
 
+/* ===== Survey Form Colors ===== */
+/* Başlıklar: #404040 */
+#survey-app h3 {
+    color: #404040 !important;
+    background-color: #fff !important;
+}
+
+#survey-app .card-header.bg-primary {
+    background-color: #404040 !important;
+    color: #fff !important;
+}
+
+#survey-app .card-header .badge.bg-light {
+    background-color: #fff !important;
+    color: #404040 !important;
+}
+
+#survey-app .list-group-item strong {
+    color: #404040;
+}
+
+/* Seçilmiş seçenekler: #fba92d */
+#survey-app .list-group-item.active {
+    background-color: #fba92d !important;
+    border-color: #fba92d !important;
+    color: #fff !important;
+}
+
+#survey-app .btn-check:checked + .btn-outline-primary {
+    background-color: #fba92d !important;
+    border-color: #fba92d !important;
+    color: #fff !important;
+}
+
+#survey-app .btn-outline-primary:hover {
+    background-color: rgba(251, 169, 45, 0.2);
+    border-color: #fba92d;
+    color: #404040;
+}
+
 /* Large spinner (loading state) */
 .spinner-lg {
     width: 3rem;

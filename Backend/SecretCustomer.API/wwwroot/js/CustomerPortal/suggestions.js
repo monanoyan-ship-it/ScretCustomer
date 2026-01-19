@@ -258,7 +258,7 @@ function CustomerSuggestionsViewModel() {
         });
 
         // Çoklu değerleri query string'e ekle
-        projectIds.forEach(function(id) { params.push('projectId=' + id); });
+        projectIds.forEach(function(id) { params.push('projectIds=' + id); });
         // SearchText için birleştir (veya her birini ayrı gönder)
         if (searchTexts.length > 0) {
             params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));

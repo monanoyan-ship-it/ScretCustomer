@@ -209,10 +209,16 @@
                     </form>
                     <!-- Upload Progress -->
                     <div data-bind="visible: isUploading" class="mt-3">
-                        <div class="progress">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                 role="progressbar"
+                                 data-bind="style: { width: uploadProgress() + '%' }, text: uploadProgress() + '%'"
+                                 style="font-weight: bold; line-height: 25px;"></div>
                         </div>
-                        <p class="text-center mt-2 text-muted">@Html.T("TrainingVideo.Uploading", "Video yukleniyor...")</p>
+                        <p class="text-center mt-2 text-muted">
+                            <i class="bi bi-cloud-upload"></i> @Html.T("TrainingVideo.Uploading", "Video yukleniyor...")
+                            <span data-bind="text: uploadProgress() < 100 ? '' : '(Islem tamamlaniyor...)'"></span>
+                        </p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -297,6 +303,8 @@
         </div>
     </div>
 
+    <partial name="_DeleteConfirmationModal" />
+
     <!-- Preview Modal -->
     <div class="modal fade" id="previewModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -316,5 +324,6 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/Shared/delete-confirmation.js"></script>
     <script src="~/js/TrainingVideos/Index.js"></script>
 }

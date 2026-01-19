@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -9,27 +10,34 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize]
 public class EnumsApiController : ControllerBase
 {
+    private readonly ILocalizationService _localizationService;
+
+    public EnumsApiController(ILocalizationService localizationService)
+    {
+        _localizationService = localizationService;
+    }
+
     /// <summary>
     /// Tum enum tanimlarini dondurur
     /// Frontend bu veriyi cache'leyerek kullanabilir
     /// </summary>
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
         return Ok(new
         {
-            userRoles = UserRoles.All.Select(MapTypeItem),
-            customerPersonnelRoles = CustomerPersonnelRoles.All.Select(MapTypeItem),
-            assignmentStatuses = AssignmentStatuses.All.Select(MapTypeItem),
-            evaluationStatuses = EvaluationStatuses.All.Select(MapTypeItem),
-            projectStatuses = ProjectStatuses.All.Select(MapTypeItem),
-            questionScoringTypes = QuestionScoringTypes.All.Select(MapTypeItem),
-            penaltyTypes = PenaltyTypes.All.Select(MapTypeItem),
-            periodStatuses = PeriodStatuses.All.Select(MapTypeItem),
-            approvalStatuses = ApprovalStatuses.All.Select(MapTypeItem),
-            months = Months.All.Select(MapTypeItem),
-            daysOfWeek = DaysOfWeek.All.Select(MapTypeItem),
-            evaluationNotificationFrequency = EvaluationNotificationFrequencies.All.Select(MapTypeItem)
+            userRoles = await MapTypeItemsAsync(UserRoles.All),
+            customerPersonnelRoles = await MapTypeItemsAsync(CustomerPersonnelRoles.All),
+            assignmentStatuses = await MapTypeItemsAsync(AssignmentStatuses.All),
+            evaluationStatuses = await MapTypeItemsAsync(EvaluationStatuses.All),
+            projectStatuses = await MapTypeItemsAsync(ProjectStatuses.All),
+            questionScoringTypes = await MapTypeItemsAsync(QuestionScoringTypes.All),
+            penaltyTypes = await MapTypeItemsAsync(PenaltyTypes.All),
+            periodStatuses = await MapTypeItemsAsync(PeriodStatuses.All),
+            approvalStatuses = await MapTypeItemsAsync(ApprovalStatuses.All),
+            months = await MapTypeItemsAsync(Months.All),
+            daysOfWeek = await MapTypeItemsAsync(DaysOfWeek.All),
+            evaluationNotificationFrequency = await MapTypeItemsAsync(EvaluationNotificationFrequencies.All)
         });
     }
 
@@ -37,113 +45,124 @@ public class EnumsApiController : ControllerBase
     /// Kullanici rollerini dondurur
     /// </summary>
     [HttpGet("user-roles")]
-    public IActionResult GetUserRoles()
+    public async Task<IActionResult> GetUserRoles()
     {
-        return Ok(UserRoles.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(UserRoles.All));
     }
 
     /// <summary>
     /// Musteri personeli rollerini dondurur
     /// </summary>
     [HttpGet("customer-personnel-roles")]
-    public IActionResult GetCustomerPersonnelRoles()
+    public async Task<IActionResult> GetCustomerPersonnelRoles()
     {
-        return Ok(CustomerPersonnelRoles.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(CustomerPersonnelRoles.All));
     }
 
     /// <summary>
     /// Atama durumlarini dondurur
     /// </summary>
     [HttpGet("assignment-statuses")]
-    public IActionResult GetAssignmentStatuses()
+    public async Task<IActionResult> GetAssignmentStatuses()
     {
-        return Ok(AssignmentStatuses.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(AssignmentStatuses.All));
     }
 
     /// <summary>
     /// Degerlendirme durumlarini dondurur
     /// </summary>
     [HttpGet("evaluation-statuses")]
-    public IActionResult GetEvaluationStatuses()
+    public async Task<IActionResult> GetEvaluationStatuses()
     {
-        return Ok(EvaluationStatuses.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(EvaluationStatuses.All));
     }
 
     /// <summary>
     /// Proje durumlarini dondurur
     /// </summary>
     [HttpGet("project-statuses")]
-    public IActionResult GetProjectStatuses()
+    public async Task<IActionResult> GetProjectStatuses()
     {
-        return Ok(ProjectStatuses.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(ProjectStatuses.All));
     }
 
     /// <summary>
     /// Soru puanlama tiplerini dondurur
     /// </summary>
     [HttpGet("scoring-types")]
-    public IActionResult GetScoringTypes()
+    public async Task<IActionResult> GetScoringTypes()
     {
-        return Ok(QuestionScoringTypes.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(QuestionScoringTypes.All));
     }
 
     /// <summary>
     /// Ceza tiplerini dondurur
     /// </summary>
     [HttpGet("penalty-types")]
-    public IActionResult GetPenaltyTypes()
+    public async Task<IActionResult> GetPenaltyTypes()
     {
-        return Ok(PenaltyTypes.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(PenaltyTypes.All));
     }
 
     /// <summary>
     /// Donem durumlarini dondurur
     /// </summary>
     [HttpGet("period-statuses")]
-    public IActionResult GetPeriodStatuses()
+    public async Task<IActionResult> GetPeriodStatuses()
     {
-        return Ok(PeriodStatuses.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(PeriodStatuses.All));
     }
 
     /// <summary>
     /// Onay durumlarini dondurur
     /// </summary>
     [HttpGet("approval-statuses")]
-    public IActionResult GetApprovalStatuses()
+    public async Task<IActionResult> GetApprovalStatuses()
     {
-        return Ok(ApprovalStatuses.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(ApprovalStatuses.All));
     }
 
     /// <summary>
     /// Aylari dondurur
     /// </summary>
     [HttpGet("months")]
-    public IActionResult GetMonths()
+    public async Task<IActionResult> GetMonths()
     {
-        return Ok(Months.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(Months.All));
     }
 
     /// <summary>
     /// Haftanin gunlerini dondurur
     /// </summary>
     [HttpGet("days-of-week")]
-    public IActionResult GetDaysOfWeek()
+    public async Task<IActionResult> GetDaysOfWeek()
     {
-        return Ok(DaysOfWeek.All.Select(MapTypeItem));
+        return Ok(await MapTypeItemsAsync(DaysOfWeek.All));
     }
 
-    private static object MapTypeItem(TypeItem item)
+    private async Task<IEnumerable<object>> MapTypeItemsAsync(IEnumerable<TypeItem> items)
     {
-        return new
+        var result = new List<object>();
+        foreach (var item in items)
         {
-            id = item.Id,
-            systemName = item.SystemName,
-            nameKey = item.NameResourceKey,
-            description = item.Description,
-            icon = item.Icon,
-            cssClass = item.CssClass,
-            displayOrder = item.DisplayOrder,
-            isDefault = item.IsDefault
-        };
+            var displayName = await _localizationService.GetResourceAsync(
+                item.NameResourceKey,
+                languageId: null,
+                defaultValue: item.NameResourceKey.Split('.').LastOrDefault() ?? item.SystemName);
+
+            result.Add(new
+            {
+                id = item.Id,
+                systemName = item.SystemName,
+                nameKey = item.NameResourceKey,
+                displayName = displayName,
+                description = item.Description,
+                icon = item.Icon,
+                cssClass = item.CssClass,
+                displayOrder = item.DisplayOrder,
+                isDefault = item.IsDefault
+            });
+        }
+        return result;
     }
 }
