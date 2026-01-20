@@ -1,0 +1,4 @@
+Code,CompanyName,TaxNumber,Phone,Email,Address,City,IsActive,ContractStartDate,ContractEndDate,Notes,TargetCount,DailyQuota,WeeklyQuota,MonthlyQuota
+MUS-001,ABC Perakende A.Ş.,1234567890,0212 123 4567,info@abc.com,"Maslak Mah. Büyükdere Cad. No:123, Sarıyer",İstanbul,true,2024-01-01,2025-12-31,Önemli müşteri - çağrı merkezi projesi,300,10,50,200
+MUS-002,XYZ Holding,9876543210,0216 456 7890,info@xyz.com,"Kozyatağı Mah. Değirmen Sok. No:45, Kadıköy",İstanbul,true,2024-06-01,,Yeni müşteri,150,5,25,100
+MUS-003,DEF Bankası,5555555555,0312 789 0123,info@defbank.com,"Kızılay Mah. Atatürk Blv. No:78",Ankara,true,2024-03-15,2026-03-15,Banka şube denetimi,100,,,50

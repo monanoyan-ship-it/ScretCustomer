@@ -1059,24 +1059,30 @@ function AssignmentsViewModel() {
 
     // Delete assignment
     self.deleteAssignment = function(assignment) {
-        if (!confirm(T('TrainingVideo.DeleteConfirm', 'Bu atamayi silmek istediginize emin misiniz?'))) return;
-
-        fetch('/api/training-video-assignments/' + assignment.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.message) {
-                toastr.success(T('TrainingVideo.DeleteSuccess', 'Atama silindi'));
-                self.loadAssignments();
-            } else {
-                toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('TrainingVideo.DeleteConfirm', 'Bu atamayı silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                fetch('/api/training-video-assignments/' + assignment.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.message) {
+                        toastr.success(T('TrainingVideo.DeleteSuccess', 'Atama silindi'));
+                        self.loadAssignments();
+                    } else {
+                        toastr.error(result.message || T('Common.Error', 'Hata oluştu'));
+                    }
+                })
+                .catch(function(err) {
+                    toastr.error(T('Common.Error', 'Hata oluştu'));
+                    console.error(err);
+                });
             }
-        })
-        .catch(function(err) {
-            toastr.error(T('Common.Error', 'Hata olustu'));
-            console.error(err);
         });
     };
 
@@ -1210,43 +1216,49 @@ function AssignmentsViewModel() {
         });
 
         if (selectedIds.length === 0) {
-            toastr.warning('Lutfen en az bir katilimci secin');
+            toastr.warning(T('TrainingVideo.SelectParticipant', 'Lütfen en az bir katılımcı seçin'));
             return;
         }
 
-        if (!confirm(selectedIds.length + ' kisiye email gondermek istediginize emin misiniz?')) return;
+        showConfirmModal({
+            title: T('TrainingVideo.SendEmailTitle', 'Email Gönder'),
+            message: selectedIds.length + T('TrainingVideo.SendEmailConfirm', ' kişiye email göndermek istediğinize emin misiniz?'),
+            confirmText: T('Common.Send', 'Gönder'),
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                self.isSendingEmails(true);
 
-        self.isSendingEmails(true);
+                var dto = {
+                    assignmentId: self.emailModalAssignmentId(),
+                    participantIds: selectedIds,
+                    emailTypeId: parseInt(self.emailModalTypeId())
+                };
 
-        var dto = {
-            assignmentId: self.emailModalAssignmentId(),
-            participantIds: selectedIds,
-            emailTypeId: parseInt(self.emailModalTypeId())
-        };
-
-        fetch('/api/training-video-assignments/send-emails', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dto),
-            credentials: 'include'
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.sentCount !== undefined) {
-                toastr.success(result.sentCount + ' email gonderildi');
-                // Listeyi yenile
-                self.loadEmailParticipants(self.emailModalAssignmentId());
-                self.loadAssignments();
-            } else {
-                toastr.error(result.message || T('Common.Error', 'Hata olustu'));
+                fetch('/api/training-video-assignments/send-emails', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto),
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.sentCount !== undefined) {
+                        toastr.success(result.sentCount + T('TrainingVideo.EmailsSent', ' email gönderildi'));
+                        // Listeyi yenile
+                        self.loadEmailParticipants(self.emailModalAssignmentId());
+                        self.loadAssignments();
+                    } else {
+                        toastr.error(result.message || T('Common.Error', 'Hata oluştu'));
+                    }
+                })
+                .catch(function(err) {
+                    toastr.error(T('TrainingVideo.EmailSendError', 'Email gönderilemedi'));
+                    console.error(err);
+                })
+                .finally(function() {
+                    self.isSendingEmails(false);
+                });
             }
-        })
-        .catch(function(err) {
-            toastr.error(T('Common.Error', 'Email gonderilemedi'));
-            console.error(err);
-        })
-        .finally(function() {
-            self.isSendingEmails(false);
         });
     };
 

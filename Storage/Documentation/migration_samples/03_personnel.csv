@@ -1,0 +1,13 @@
+CustomerCode,Username,Email,FirstName,LastName,PhoneNumber,Department,Title,RoleId,IsActive,Notes
+MUS-001,zeynep.yildiz,zeynep.yildiz@abc.com,Zeynep,Yıldız,0555 111 0001,Kalite,Kalite Müdürü,1,true,Firma yöneticisi
+MUS-001,can.aksoy,can.aksoy@abc.com,Can,Aksoy,0555 111 0002,Operasyon,Takım Lideri,2,true,Concentrix TL
+MUS-001,elif.kara,elif.kara@abc.com,Elif,Kara,0555 111 0003,Operasyon,Takım Lideri,2,true,Teleperformance TL
+MUS-001,burak.sen,burak.sen@abc.com,Burak,Şen,0555 111 0004,Operasyon,Müşteri Temsilcisi,3,true,
+MUS-001,selin.oz,selin.oz@abc.com,Selin,Öz,0555 111 0005,Operasyon,Müşteri Temsilcisi,3,true,
+MUS-001,emre.tas,emre.tas@abc.com,Emre,Taş,0555 111 0006,Operasyon,Müşteri Temsilcisi,3,true,
+MUS-001,deniz.kurt,deniz.kurt@abc.com,Deniz,Kurt,0555 111 0007,Operasyon,Müşteri Temsilcisi,3,true,
+MUS-001,gizem.ay,gizem.ay@abc.com,Gizem,Ay,0555 111 0008,Operasyon,Müşteri Temsilcisi,3,true,
+MUS-002,murat.erdem,murat.erdem@xyz.com,Murat,Erdem,0555 222 0001,Yönetim,Operasyon Müdürü,1,true,
+MUS-002,sibel.tan,sibel.tan@xyz.com,Sibel,Tan,0555 222 0002,Satış,Satış Temsilcisi,3,true,
+MUS-003,kemal.yavuz,kemal.yavuz@defbank.com,Kemal,Yavuz,0555 333 0001,Şube,Şube Müdürü,1,true,
+MUS-003,hale.dogan,hale.dogan@defbank.com,Hale,Doğan,0555 333 0002,Şube,Gişe Yetkilisi,3,true,

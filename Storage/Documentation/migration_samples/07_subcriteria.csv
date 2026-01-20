@@ -1,0 +1,18 @@
+ChecklistCode,QuestionOrder,Description,Order,WeightPoints,IsActive
+KL-001,1,Selamlama yapılmadı,1,2,true
+KL-001,1,Firma adı söylenmedi,2,1,true
+KL-001,1,Kendi adını söylemedi,3,1,true
+KL-001,2,Hiç isim kullanmadı,1,2,true
+KL-001,2,Yanlış isim kullandı,2,1,true
+KL-001,3,Müşterinin sözünü kesti,1,2,true
+KL-001,3,Dikkatli dinlemedi,2,1,true
+KL-001,3,Konuyu anlamadı,3,2,true
+KL-001,4,Empati cümlesi kurmadı,1,1,true
+KL-001,4,Soğuk/mesafeli davrandı,2,2,true
+KL-001,5,Yanlış bilgi verdi,1,3,true
+KL-001,5,Eksik bilgi verdi,2,2,true
+KL-001,6,Çözüm önermedi,1,2,true
+KL-001,6,Alternatif sunmadı,2,1,true
+KL-001,7,Vedalaşmadı,1,1,true
+KL-001,7,Teşekkür etmedi,2,1,true
+KL-001,7,Başka sorusu var mı demedi,3,1,true

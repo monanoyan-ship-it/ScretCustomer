@@ -1,6 +1,6 @@
-""# Gizli Müşteri Değerlendirme Sistemi
+# NCAcademy
 
-Kapsamlı bir gizli müşteri (secret customer) değerlendirme ve raporlama sistemi.
+Kapsamlı bir değerlendirme ve raporlama sistemi.
 
 ## 📋 Özellikler
 

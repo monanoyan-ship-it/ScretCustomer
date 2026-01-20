@@ -1,0 +1,7 @@
+Username,Email,FirstName,LastName,RoleId,IsActive,PhoneNumber
+admin,admin@sirket.com,Sistem,Admin,1,true,
+ahmet.yilmaz,ahmet.yilmaz@sirket.com,Ahmet,Yılmaz,2,true,0532 111 2233
+mehmet.kaya,mehmet.kaya@sirket.com,Mehmet,Kaya,2,true,0533 222 3344
+ayse.demir,ayse.demir@sirket.com,Ayşe,Demir,2,true,0534 333 4455
+fatma.ozturk,fatma.ozturk@sirket.com,Fatma,Öztürk,3,true,0535 444 5566
+ali.celik,ali.celik@sirket.com,Ali,Çelik,3,true,0536 555 6677

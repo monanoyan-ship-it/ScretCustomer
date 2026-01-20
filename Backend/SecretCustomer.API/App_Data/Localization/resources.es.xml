@@ -177,7 +177,7 @@
     <Value>Puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AppName">
-    <Value>Cliente Misterioso</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ViewAsCustomer">
     <Value>Ver como cliente</Value>
@@ -261,7 +261,7 @@
     <Value>¿Está seguro de que desea continuar con esta acción?</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.AppTitle">
-    <Value>Sistema de Evaluación de Cliente Misterioso</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.ViewingAs">
     <Value>viendo como</Value>

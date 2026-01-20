@@ -1,0 +1,20 @@
+ChecklistCode,Text,Order,ScoringTypeId,WeightPoints,MaxPoints,PenaltyTypeId,AllowNA,IsRequired,RecommendedNote,HelpText,GroupName
+KL-001,Açılış standartlarına uyum sağlandı mı?,1,1,10,5,0,false,true,,Müşteriyi karşılama ve selamlama,Açılış
+KL-001,Müşteriye ismi ile hitap edildi mi?,2,1,10,5,0,false,true,,İsim kullanımı,Açılış
+KL-001,Aktif dinleme yapıldı mı?,3,1,15,5,0,false,true,,Müşteriyi kesintisiz dinleme,İletişim
+KL-001,Empati kuruldu mu?,4,1,10,5,0,false,true,,Müşterinin duygularını anlama,İletişim
+KL-001,Doğru bilgi verildi mi?,5,1,15,5,0,false,true,,Verilen bilginin doğruluğu,Bilgi
+KL-001,Çözüm odaklı yaklaşıldı mı?,6,1,15,5,0,false,true,,Problem çözme becerisi,Çözüm
+KL-001,Kapanış standartlarına uyuldu mu?,7,1,10,5,0,false,true,,Görüşme sonlandırma,Kapanış
+KL-001,Küfür veya hakaret içeren ifade kullanıldı mı?,8,3,0,1,2,false,true,Kırmızı kart - değerlendirme sıfırlanır,Uygunsuz ifade tespiti,Cezalar
+KL-001,Müşteriye kaba davranıldı mı?,9,3,0,1,1,false,true,Sarı kart - uyarı,Kaba davranış tespiti,Cezalar
+KL-001,Genel değerlendirme notu,10,2,0,5,0,false,false,,Genel izlenim (puansız),Genel
+KL-002,Şube temizliği uygun mu?,1,1,20,5,0,false,true,,Genel temizlik durumu,Fiziksel
+KL-002,Personel kıyafetleri standartlara uygun mu?,2,1,15,5,0,false,true,,Kıyafet kontrolü,Personel
+KL-002,Bekleme süresi makul mü?,3,1,20,5,0,false,true,,Müşteri bekleme süresi,Hizmet
+KL-002,Güvenlik önlemleri alınmış mı?,4,1,25,5,0,false,true,,Güvenlik kontrolü,Güvenlik
+KL-002,Erişilebilirlik uygun mu?,5,1,20,5,0,false,true,,Engelli erişimi vb.,Erişim
+KL-003,Genel memnuniyet düzeyiniz nedir?,1,1,25,5,0,false,true,,1-5 arası puanlama,Memnuniyet
+KL-003,Hizmet kalitesini nasıl değerlendirirsiniz?,2,1,25,5,0,false,true,,1-5 arası puanlama,Memnuniyet
+KL-003,Bizi tavsiye eder misiniz?,3,1,25,5,0,false,true,,NPS sorusu,Tavsiye
+KL-003,Eklemek istediğiniz bir şey var mı?,4,2,0,0,0,false,false,,Açık uçlu soru,Yorum

@@ -31,7 +31,11 @@ function CustomerSuggestionsViewModel() {
         'thisWeek': 'Bu Hafta',
         'lastWeek': 'Geçen Hafta',
         'thisMonth': 'Bu Ay',
-        'lastMonth': 'Geçen Ay'
+        'lastMonth': 'Geçen Ay',
+        'last3Months': 'Son 3 Ay',
+        'last6Months': 'Son 6 Ay',
+        'thisYear': 'Bu Yıl',
+        'lastYear': 'Geçen Yıl'
     };
 
     // Can add filter check
@@ -79,6 +83,18 @@ function CustomerSuggestionsViewModel() {
         } else if (rangeType === 'lastMonth') {
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
             end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+        } else if (rangeType === 'last3Months') {
+            start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'last6Months') {
+            start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'thisYear') {
+            start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastYear') {
+            start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+            end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
         }
 
         return { start: start, end: end };

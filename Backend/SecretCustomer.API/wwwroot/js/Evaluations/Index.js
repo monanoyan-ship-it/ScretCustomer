@@ -1065,23 +1065,29 @@ function EvaluationsViewModel() {
 
     // Yüklenmiş dosyayı sil
     self.deleteAttachment = function(attachment) {
-        if (!confirm(T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'))) return;
-
-        fetch('/api/evaluations/attachments/' + attachment.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Delete failed');
-            return response.json();
-        })
-        .then(function() {
-            self.uploadedAttachments.remove(attachment);
-            toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
-        })
-        .catch(function(error) {
-            console.error('Delete error:', error);
-            toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                fetch('/api/evaluations/attachments/' + attachment.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Delete failed');
+                    return response.json();
+                })
+                .then(function() {
+                    self.uploadedAttachments.remove(attachment);
+                    toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
+                })
+                .catch(function(error) {
+                    console.error('Delete error:', error);
+                    toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
+                });
+            }
         });
     };
 

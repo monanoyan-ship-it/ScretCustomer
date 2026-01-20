@@ -1119,17 +1119,23 @@ function ListeningsViewModel() {
 
     // Delete a saved filter
     self.deleteSavedFilter = function(savedFilter) {
-        if (!confirm('Bu filtreyi silmek istediğinize emin misiniz?')) return;
-
-        ApiService.delete('/saved-filters/' + savedFilter.id)
-            .then(function() {
-                toastr.success('Filtre silindi');
-                self.savedFilters.remove(savedFilter);
-            })
-            .catch(function(error) {
-                console.error('Error deleting filter:', error);
-                toastr.error('Filtre silinirken hata oluştu');
-            });
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('Filter.ConfirmDelete', 'Bu filtreyi silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                ApiService.delete('/saved-filters/' + savedFilter.id)
+                    .then(function() {
+                        toastr.success(T('Filter.Deleted', 'Filtre silindi'));
+                        self.savedFilters.remove(savedFilter);
+                    })
+                    .catch(function(error) {
+                        console.error('Error deleting filter:', error);
+                        toastr.error(T('Filter.DeleteError', 'Filtre silinirken hata oluştu'));
+                    });
+            }
+        });
     };
 
     // Set a filter as default

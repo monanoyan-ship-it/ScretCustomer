@@ -86,19 +86,25 @@ function EmailTemplatesViewModel() {
 
     // Delete template
     self.deleteTemplate = function(template) {
-        if (!confirm('Bu şablonu silmek istediğinize emin misiniz?')) return;
-
-        fetch('/api/email-templates/' + template.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(result) {
-            if (result.success) {
-                toastr.success(result.message);
-                self.loadTemplates();
-            } else {
-                toastr.error(result.message);
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('EmailTemplate.ConfirmDelete', 'Bu şablonu silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                fetch('/api/email-templates/' + template.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        self.loadTemplates();
+                    } else {
+                        toastr.error(result.message);
+                    }
+                });
             }
         });
     };

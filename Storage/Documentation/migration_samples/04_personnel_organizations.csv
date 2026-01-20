@@ -1,0 +1,10 @@
+PersonnelEmail,OrganizationCode,SupervisorEmail,Notes
+can.aksoy@abc.com,CONC-IST,,Concentrix TL - tüm şubeler
+burak.sen@abc.com,CONC-KDK,can.aksoy@abc.com,Kadıköy ekibi
+selin.oz@abc.com,CONC-KDK,can.aksoy@abc.com,Kadıköy ekibi
+emre.tas@abc.com,CONC-MSL,can.aksoy@abc.com,Maslak ekibi
+elif.kara@abc.com,TP-IST,,Teleperformance TL
+deniz.kurt@abc.com,TP-IST,elif.kara@abc.com,TP ekibi
+gizem.ay@abc.com,TP-IST,elif.kara@abc.com,TP ekibi
+sibel.tan@xyz.com,XYZ-AND,murat.erdem@xyz.com,Anadolu satış
+hale.dogan@defbank.com,DEF-KZL,kemal.yavuz@defbank.com,Kızılay şube

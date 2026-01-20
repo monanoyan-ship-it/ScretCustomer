@@ -35,7 +35,7 @@
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
                 var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings" };
-                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod" };
+                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
             }
@@ -161,6 +161,12 @@
                                 <a class="nav-link @(currentAction == "PerformanceByPeriod" ? "active" : "")" href="/CustomerPortal/PerformanceByPeriod">
                                     <i class="bi bi-calendar3 text-success"></i>
                                     @Html.T("CustomerPortal.Menu.PerformanceByPeriod", "Donem Bazli Basari")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "SurveyResults" ? "active" : "")" href="/CustomerPortal/SurveyResults">
+                                    <i class="bi bi-clipboard-data text-info"></i>
+                                    @Html.T("CustomerPortal.Menu.SurveyResults", "Anket Sonuclari")
                                 </a>
                             </li>
                         </ul>

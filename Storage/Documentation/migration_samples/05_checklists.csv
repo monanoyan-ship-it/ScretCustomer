@@ -1,0 +1,4 @@
+Code,Name,Description,IsScored,IsActive,Version,ChecklistTypeId,ScoringMethodId,MaxTotalPoints,CustomerCode,ValidFrom,ValidUntil
+KL-001,Çağrı Performans Değerlendirmesi,Müşteri temsilcisi çağrı kalitesi değerlendirme formu,true,true,1,1,1,100,MUS-001,2024-01-01,
+KL-002,Banka Şube Denetim Formu,Fiziksel şube denetim kontrol listesi,true,true,1,2,1,100,MUS-003,2024-01-01,
+KL-003,Müşteri Memnuniyeti Anketi,Online müşteri memnuniyeti anketi,true,true,1,5,2,100,,2024-01-01,

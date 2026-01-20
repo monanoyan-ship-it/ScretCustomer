@@ -1,0 +1,5 @@
+Code,Name,Description,ChecklistCode,ProjectTypeId,StatusId,AssignmentTypeId,StartDate,EndDate,IsActive,CustomerCode,TargetCount,MinimumScoreThreshold,Priority
+PRJ-001,ABC 2024 Q1 Çağrı Kalitesi,İlk çeyrek çağrı denetimi projesi,KL-001,2,3,2,2024-01-01,2024-03-31,true,MUS-001,300,70,High
+PRJ-002,ABC 2024 Q2 Çağrı Kalitesi,İkinci çeyrek çağrı denetimi projesi,KL-001,2,3,2,2024-04-01,2024-06-30,true,MUS-001,300,70,High
+PRJ-003,DEF Banka Şube Denetimi 2024,Yıllık şube denetim projesi,KL-002,3,3,2,2024-01-01,2024-12-31,true,MUS-003,100,80,Medium
+PRJ-004,Genel Müşteri Memnuniyeti Anketi,Online anket projesi,KL-003,4,3,3,2024-06-01,2024-06-30,true,,500,0,Low

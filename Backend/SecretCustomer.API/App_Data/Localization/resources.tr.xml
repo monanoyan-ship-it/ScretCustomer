@@ -180,7 +180,7 @@
     <Value>Puan</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AppName">
-    <Value>Gizli Müşteri</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ViewAsCustomer">
     <Value>Firma Olarak Görüntüle</Value>
@@ -264,7 +264,7 @@
     <Value>Bu işlemi onaylıyor musunuz?</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.AppTitle">
-    <Value>Gizli Müşteri Değerlendirme Sistemi</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.ViewingAs">
     <Value>olarak görüntüleniyor</Value>

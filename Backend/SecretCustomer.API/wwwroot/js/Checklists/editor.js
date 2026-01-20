@@ -241,21 +241,27 @@ function ChecklistEditorViewModel() {
 
     // Dosya silme
     self.removeQuestionAttachment = function (attachment, question) {
-        if (!confirm('Bu dosyayi silmek istediginize emin misiniz?')) return;
-
-        fetch('/api/question-attachments/' + attachment.id, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-            .then(function (response) { return response.json(); })
-            .then(function (result) {
-                question._attachments.remove(attachment);
-                toastr.success('Dosya silindi.');
-            })
-            .catch(function (error) {
-                console.error('Delete error:', error);
-                toastr.error('Dosya silinirken bir hata olustu.');
-            });
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('Checklist.ConfirmDeleteAttachment', 'Bu dosyayı silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                fetch('/api/question-attachments/' + attachment.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(function (result) {
+                        question._attachments.remove(attachment);
+                        toastr.success(T('Checklist.AttachmentDeleted', 'Dosya silindi.'));
+                    })
+                    .catch(function (error) {
+                        console.error('Delete error:', error);
+                        toastr.error(T('Checklist.AttachmentDeleteError', 'Dosya silinirken bir hata oluştu.'));
+                    });
+            }
+        });
     };
 
     // Load checklist

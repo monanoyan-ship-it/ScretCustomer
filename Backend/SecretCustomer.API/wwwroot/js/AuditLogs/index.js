@@ -155,19 +155,25 @@
         self.cleanupLogs = function () {
             var days = prompt('Kaç günden eski loglar silinsin?', '90');
             if (days && !isNaN(days)) {
-                if (confirm(days + ' günden eski tüm loglar silinecek. Emin misiniz?')) {
-                    $.ajax({
-                        url: '/api/auditlogs/cleanup?daysToKeep=' + days,
-                        type: 'DELETE',
-                        success: function (result) {
-                            toastr.success(result.message);
-                            self.loadLogs();
-                        },
-                        error: function () {
-                            toastr.error('Silme işlemi başarısız');
-                        }
-                    });
-                }
+                showConfirmModal({
+                    title: T('AuditLog.CleanupTitle', 'Log Temizleme'),
+                    message: days + T('AuditLog.CleanupConfirm', ' günden eski tüm loglar silinecek. Emin misiniz?'),
+                    confirmText: T('Common.Delete', 'Sil'),
+                    confirmClass: 'btn-danger',
+                    onConfirm: function() {
+                        $.ajax({
+                            url: '/api/auditlogs/cleanup?daysToKeep=' + days,
+                            type: 'DELETE',
+                            success: function (result) {
+                                toastr.success(result.message);
+                                self.loadLogs();
+                            },
+                            error: function () {
+                                toastr.error(T('AuditLog.CleanupError', 'Silme işlemi başarısız'));
+                            }
+                        });
+                    }
+                });
             }
         };
 

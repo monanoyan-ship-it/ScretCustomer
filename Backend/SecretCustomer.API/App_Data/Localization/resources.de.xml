@@ -177,7 +177,7 @@
     <Value>Punkte</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AppName">
-    <Value>Mystery Shopper</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ViewAsCustomer">
     <Value>Als Kunde anzeigen</Value>
@@ -261,7 +261,7 @@
     <Value>Möchten Sie mit dieser Aktion wirklich fortfahren?</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.AppTitle">
-    <Value>Mystery Shopper Bewertungssystem</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.ViewingAs">
     <Value>angezeigt als</Value>

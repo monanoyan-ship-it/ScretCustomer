@@ -1,0 +1,31 @@
+ProjectCode,AssignmentIndex,EvaluationIndex,QuestionOrder,AnswerText,AnswerNumeric,IsNA,EarnedPoints,GivenPoints,Notes,RecommendationNotes,IsPenaltyApplied,AppliedPenaltyTypeId
+PRJ-001,1,1,1,,5,false,10,5,Mükemmel açılış yaptı,,false,0
+PRJ-001,1,1,2,,5,false,10,5,İsimle hitap etti,,false,0
+PRJ-001,1,1,3,,4,false,12,4,İyi dinledi,,false,0
+PRJ-001,1,1,4,,4,false,8,4,Empati kurdu,,false,0
+PRJ-001,1,1,5,,4,false,12,4,Doğru bilgi verdi,,false,0
+PRJ-001,1,1,6,,5,false,15,5,Çözüm odaklıydı,,false,0
+PRJ-001,1,1,7,,4,false,8,4,Kapanış iyiydi,,false,0
+PRJ-001,1,1,8,,0,false,0,0,,Sorun yok,false,0
+PRJ-001,1,1,9,,0,false,0,0,,Sorun yok,false,0
+PRJ-001,1,1,10,Genel olarak iyi bir görüşme,4,false,0,0,,,false,0
+PRJ-001,1,2,1,,4,false,8,4,İyi açılış,,false,0
+PRJ-001,1,2,2,,3,false,6,3,Bazen isim kullandı,,false,0
+PRJ-001,1,2,3,,2,false,6,2,Sözünü kesti,Aktif dinleme eğitimi önerilir,false,0
+PRJ-001,1,2,4,,3,false,6,3,Kısmen empati kurdu,,false,0
+PRJ-001,1,2,5,,4,false,12,4,Bilgi doğruydu,,false,0
+PRJ-001,1,2,6,,4,false,12,4,Çözüm önerdi,,false,0
+PRJ-001,1,2,7,,4,false,8,4,Kapanış tamamdı,,false,0
+PRJ-001,1,2,8,,0,false,0,0,,,false,0
+PRJ-001,1,2,9,,1,false,0,0,Biraz kaba davrandı,Davranış eğitimi gerekli,true,1
+PRJ-001,1,2,10,Geliştirilmesi gereken alanlar var,3,false,0,0,,,false,0
+PRJ-001,1,4,1,,0,false,0,0,Açılış yapılmadı,,false,0
+PRJ-001,1,4,2,,0,false,0,0,İsim kullanılmadı,,false,0
+PRJ-001,1,4,3,,0,false,0,0,Dinlemedi,,false,0
+PRJ-001,1,4,4,,0,false,0,0,Empati yok,,false,0
+PRJ-001,1,4,5,,0,false,0,0,Yanlış bilgi,,false,0
+PRJ-001,1,4,6,,0,false,0,0,Çözüm yok,,false,0
+PRJ-001,1,4,7,,0,false,0,0,Kapanış yok,,false,0
+PRJ-001,1,4,8,,1,false,0,0,Hakaret tespit edildi!,Disiplin süreci başlatılmalı,true,2
+PRJ-001,1,4,9,,0,false,0,0,,,false,0
+PRJ-001,1,4,10,Kabul edilemez performans,0,false,0,0,,,false,0

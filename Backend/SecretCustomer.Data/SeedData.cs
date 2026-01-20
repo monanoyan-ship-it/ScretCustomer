@@ -1220,7 +1220,7 @@ public static class SeedData
             new AppSettings
             {
                 Key = "General.AppName",
-                Value = "Gizli Müşteri Değerlendirme Sistemi",
+                Value = "NCAcademy",
                 ValueTypeId = SettingValueTypes.Ids.String,
                 Category = "General",
                 Description = "Uygulama adı",

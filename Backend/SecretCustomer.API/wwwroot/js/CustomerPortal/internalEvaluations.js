@@ -88,7 +88,11 @@ function CustomerInternalEvaluationsViewModel() {
         'thisWeek': 'Bu Hafta',
         'lastWeek': 'Geçen Hafta',
         'thisMonth': 'Bu Ay',
-        'lastMonth': 'Geçen Ay'
+        'lastMonth': 'Geçen Ay',
+        'last3Months': 'Son 3 Ay',
+        'last6Months': 'Son 6 Ay',
+        'thisYear': 'Bu Yıl',
+        'lastYear': 'Geçen Yıl'
     };
 
     // Calculate date range from type
@@ -124,6 +128,18 @@ function CustomerInternalEvaluationsViewModel() {
         } else if (rangeType === 'lastMonth') {
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
             end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+        } else if (rangeType === 'last3Months') {
+            start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'last6Months') {
+            start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'thisYear') {
+            start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+            end = today.toISOString().split('T')[0];
+        } else if (rangeType === 'lastYear') {
+            start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+            end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
         }
 
         return { start: start, end: end };
@@ -491,11 +507,18 @@ function CustomerInternalEvaluationsViewModel() {
     };
 
     self.deleteSavedFilter = function(savedFilter) {
-        if (!confirm('Bu filtreyi silmek istediginize emin misiniz?')) return;
-        customerApiFetch('/api/customer/portal/saved-filters/' + savedFilter.id, { method: 'DELETE' })
-            .then(function() {
-                self.loadSavedFilters();
-            });
+        showConfirmModal({
+            title: T('Common.Delete', 'Sil'),
+            message: T('Filter.ConfirmDelete', 'Bu filtreyi silmek istediğinize emin misiniz?'),
+            confirmText: T('Common.Delete', 'Sil'),
+            confirmClass: 'btn-danger',
+            onConfirm: function() {
+                customerApiFetch('/api/customer/portal/saved-filters/' + savedFilter.id, { method: 'DELETE' })
+                    .then(function() {
+                        self.loadSavedFilters();
+                    });
+            }
+        });
     };
 
     // Details Modal Functions

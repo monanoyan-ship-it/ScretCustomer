@@ -1794,3 +1794,73 @@ JavaScript ile dinamik kontrol edilen stiller kabul edilebilir:
 ```
 
 Bu durumda bile mümkünse CSS class kullanılmalıdır.
+
+---
+
+## 22. CustomerPortal Erişim Kuralları (MÜŞTERİ PORTALI)
+
+### CustomerPortal Rol Yapısı
+
+| Rol | Açıklama |
+|-----|----------|
+| `CustomerManager` | Müşteri Yöneticisi - Tüm yetkilere sahip |
+| `CustomerSupervisor` | Müşteri Süpervizörü - Yönetim (kısıtlı) + Raporlar |
+| `CustomerOperator` | Müşteri Operatörü - Sadece temel erişim |
+| `Admin` | Admin - Müşteri seçerek tüm portala erişebilir |
+
+### Menü Erişim Tablosu
+
+| Menü | CustomerOperator | CustomerSupervisor | CustomerManager | Admin |
+|------|------------------|-------------------|-----------------|-------|
+| **Dashboard** | ✅ | ✅ | ✅ | ✅ |
+| **Değerlendirmeler** | ✅ | ✅ | ✅ | ✅ |
+| **Eğitimlerim** | ✅ | ❌ | ❌ | ❌ |
+| **YÖNETİM** | | | | |
+| └ Personel Eğitimleri | ❌ | ✅ | ✅ | ✅ |
+| └ Projeler | ❌ | ❌ | ✅ | ✅ |
+| └ Organizasyonlar | ❌ | ❌ | ✅ | ✅ |
+| └ Süpervizörler | ❌ | ❌ | ✅ | ✅ |
+| └ İç Dinlemeler | ❌ | ✅ | ✅ | ✅ |
+| └ Dış Dinlemeler | ❌ | ✅ | ✅ | ✅ |
+| **RAPORLAR** | | | | |
+| └ Genel Raporlar | ❌ | ✅ | ✅ | ✅ |
+| └ Cezalı KL Raporu | ❌ | ✅ | ✅ | ✅ |
+| └ Öneriler Raporu | ❌ | ✅ | ✅ | ✅ |
+| └ Temsilci Karnesi | ❌ | ✅ | ✅ | ✅ |
+| └ Dönem Bazlı Başarı | ❌ | ✅ | ✅ | ✅ |
+| └ Anket Sonuçları | ❌ | ✅ | ✅ | ✅ |
+
+### Sidebar Erişim Kontrolü (_CustomerLayout.cshtml)
+
+```csharp
+// Yönetim menüsü - CustomerManager, CustomerSupervisor, Admin
+@if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") || User.IsInRole("Admin"))
+{
+    // Yönetim alt menüleri
+}
+
+// Projeler, Organizasyonlar, Süpervizörler - Sadece CustomerManager, Admin
+@if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
+{
+    // Bu menüler
+}
+
+// Raporlar menüsü - CustomerManager, CustomerSupervisor, Admin
+@if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") || User.IsInRole("Admin"))
+{
+    // Rapor alt menüleri
+}
+```
+
+### API Yapısı
+
+- **Base URL:** `/api/customer/portal`
+- **Auth:** JWT token ile CustomerId claim'i
+- **Admin Erişimi:** Session'dan `AdminViewAsCustomerId` ile müşteri seçimi
+
+### Önemli Notlar
+
+1. CustomerPortal API'leri `[AllowAnonymous]` ile işaretli ama token kontrolü manuel yapılıyor
+2. Admin kullanıcılar session'daki `AdminViewAsCustomerId` ile herhangi bir müşteriyi görüntüleyebilir
+3. Tüm veriler `CustomerId` filtresine tabi
+4. `_CustomerLayout.cshtml` kullanılmalı (normal `_Layout.cshtml` değil)

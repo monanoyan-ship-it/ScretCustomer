@@ -1182,41 +1182,45 @@ function ProjectsViewModel() {
 
         var stats = self.invitationStats();
         if (!stats || stats.failed === 0) {
-            toastr.info('Yeniden gönderilecek başarısız davetiye yok.');
+            toastr.info(T('Survey.NoFailedInvitations', 'Yeniden gönderilecek başarısız davetiye yok.'));
             return;
         }
 
-        if (!confirm('Toplam ' + stats.failed + ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?')) {
-            return;
-        }
+        showConfirmModal({
+            title: T('Survey.RetryFailedTitle', 'Başarısız Davetiyeleri Yeniden Gönder'),
+            message: T('Survey.RetryFailedConfirm', 'Toplam ') + stats.failed + T('Survey.RetryFailedConfirm2', ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?'),
+            confirmText: T('Common.Send', 'Gönder'),
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                self.isRetrying(true);
 
-        self.isRetrying(true);
+                var baseUrl = window.location.origin + '/Survey/Form';
+                var dto = { baseUrl: baseUrl };
 
-        var baseUrl = window.location.origin + '/Survey/Form';
-        var dto = { baseUrl: baseUrl };
-
-        fetch('/api/surveys/' + project.id + '/retry-failed', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(result) {
-            if (result.success) {
-                toastr.success(result.message);
-                // Refresh stats
-                self.loadInvitationStats(project.id);
-            } else {
-                toastr.error(result.message || 'Yeniden gönderim sırasında hata oluştu.');
+                fetch('/api/surveys/' + project.id + '/retry-failed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        // Refresh stats
+                        self.loadInvitationStats(project.id);
+                    } else {
+                        toastr.error(result.message || T('Survey.RetryError', 'Yeniden gönderim sırasında hata oluştu.'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error retrying invitations:', error);
+                    toastr.error(T('Survey.RetryError', 'Yeniden gönderim sırasında bir hata oluştu.'));
+                })
+                .finally(function() {
+                    self.isRetrying(false);
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error retrying invitations:', error);
-            toastr.error('Yeniden gönderim sırasında bir hata oluştu.');
-        })
-        .finally(function() {
-            self.isRetrying(false);
         });
     };
 
@@ -1329,41 +1333,45 @@ function ProjectsViewModel() {
 
         var stats = self.externalInvitationStats();
         if (!stats || stats.failed === 0) {
-            toastr.info('Yeniden gönderilecek başarısız davetiye yok.');
+            toastr.info(T('Survey.NoFailedInvitations', 'Yeniden gönderilecek başarısız davetiye yok.'));
             return;
         }
 
-        if (!confirm('Toplam ' + stats.failed + ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?')) {
-            return;
-        }
+        showConfirmModal({
+            title: T('Survey.RetryFailedTitle', 'Başarısız Davetiyeleri Yeniden Gönder'),
+            message: T('Survey.RetryFailedConfirm', 'Toplam ') + stats.failed + T('Survey.RetryFailedConfirm2', ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?'),
+            confirmText: T('Common.Send', 'Gönder'),
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                self.isExternalRetrying(true);
 
-        self.isExternalRetrying(true);
+                var baseUrl = window.location.origin + '/Survey/Form';
+                var dto = { baseUrl: baseUrl };
 
-        var baseUrl = window.location.origin + '/Survey/Form';
-        var dto = { baseUrl: baseUrl };
-
-        fetch('/api/surveys/' + project.id + '/retry-external-failed', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(result) {
-            if (result.success) {
-                toastr.success(result.message);
-                // Refresh stats and list
-                self.loadExternalInvitationStats(project.id);
-            } else {
-                toastr.error(result.message || 'Yeniden gönderim sırasında hata oluştu.');
+                fetch('/api/surveys/' + project.id + '/retry-external-failed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        // Refresh stats and list
+                        self.loadExternalInvitationStats(project.id);
+                    } else {
+                        toastr.error(result.message || T('Survey.RetryError', 'Yeniden gönderim sırasında hata oluştu.'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error retrying external invitations:', error);
+                    toastr.error(T('Survey.RetryError', 'Yeniden gönderim sırasında bir hata oluştu.'));
+                })
+                .finally(function() {
+                    self.isExternalRetrying(false);
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error retrying external invitations:', error);
-            toastr.error('Yeniden gönderim sırasında bir hata oluştu.');
-        })
-        .finally(function() {
-            self.isExternalRetrying(false);
         });
     };
 
@@ -1385,44 +1393,48 @@ function ProjectsViewModel() {
         }
 
         var filter = self.externalReminderFilter();
-        var filterText = filter === 'all' ? 'tümüne' :
-                         filter === 'completed' ? 'tamamlamış olanlara' :
-                         'tamamlamamış olanlara';
+        var filterText = filter === 'all' ? T('Survey.FilterAll', 'tümüne') :
+                         filter === 'completed' ? T('Survey.FilterCompleted', 'tamamlamış olanlara') :
+                         T('Survey.FilterNotCompleted', 'tamamlamamış olanlara');
 
-        if (!confirm('Seçilen filtreye göre (' + filterText + ') hatırlatma göndermek istediğinize emin misiniz?')) {
-            return;
-        }
+        showConfirmModal({
+            title: T('Survey.SendReminderTitle', 'Hatırlatma Gönder'),
+            message: T('Survey.SendReminderConfirm', 'Seçilen filtreye göre (') + filterText + T('Survey.SendReminderConfirm2', ') hatırlatma göndermek istediğinize emin misiniz?'),
+            confirmText: T('Common.Send', 'Gönder'),
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                self.isExternalSendingReminder(true);
 
-        self.isExternalSendingReminder(true);
+                var baseUrl = window.location.origin + '/Anket/Form';
 
-        var baseUrl = window.location.origin + '/Anket/Form';
-
-        fetch('/api/surveys/' + project.id + '/send-external-reminders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                baseUrl: baseUrl,
-                emailTemplateId: null, // Proje şablonunu kullan
-                filter: filter
-            })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(result) {
-            if (result.success) {
-                toastr.success(result.message);
-                // Refresh stats and list
-                self.loadExternalInvitationStats(project.id);
-            } else {
-                toastr.error(result.message || 'Hatırlatma gönderilirken hata oluştu.');
+                fetch('/api/surveys/' + project.id + '/send-external-reminders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        baseUrl: baseUrl,
+                        emailTemplateId: null, // Proje şablonunu kullan
+                        filter: filter
+                    })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        // Refresh stats and list
+                        self.loadExternalInvitationStats(project.id);
+                    } else {
+                        toastr.error(result.message || T('Survey.ReminderError', 'Hatırlatma gönderilirken hata oluştu.'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error sending external reminders:', error);
+                    toastr.error(T('Survey.ReminderError', 'Hatırlatma gönderilirken bir hata oluştu.'));
+                })
+                .finally(function() {
+                    self.isExternalSendingReminder(false);
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error sending external reminders:', error);
-            toastr.error('Hatırlatma gönderilirken bir hata oluştu.');
-        })
-        .finally(function() {
-            self.isExternalSendingReminder(false);
         });
     };
 
@@ -1524,50 +1536,54 @@ function ProjectsViewModel() {
 
         var stats = self.surveyPersonnelStats();
         if (!stats || stats.withEmail === 0) {
-            toastr.warning('Email adresi olan personel bulunamadı.');
+            toastr.warning(T('Survey.NoPersonnelWithEmail', 'Email adresi olan personel bulunamadı.'));
             return;
         }
 
         // Confirmation
-        if (!confirm('Toplam ' + stats.withEmail + ' kişiye anket davetiyesi gönderilecek. Devam etmek istiyor musunuz?')) {
-            return;
-        }
+        showConfirmModal({
+            title: T('Survey.SendInvitationsTitle', 'Anket Davetiyesi Gönder'),
+            message: T('Survey.SendInvitationsConfirm', 'Toplam ') + stats.withEmail + T('Survey.SendInvitationsConfirm2', ' kişiye anket davetiyesi gönderilecek. Devam etmek istiyor musunuz?'),
+            confirmText: T('Common.Send', 'Gönder'),
+            confirmClass: 'btn-primary',
+            onConfirm: function() {
+                self.isSurveySending(true);
+                self.surveyResult(null);
 
-        self.isSurveySending(true);
-        self.surveyResult(null);
+                // BaseUrl otomatik oluştur
+                var baseUrl = window.location.origin + '/Survey/Form';
 
-        // BaseUrl otomatik oluştur
-        var baseUrl = window.location.origin + '/Survey/Form';
+                var dto = {
+                    baseUrl: baseUrl
+                    // emailTemplateId gönderilmiyor - projede tanımlı şablon kullanılacak
+                };
 
-        var dto = {
-            baseUrl: baseUrl
-            // emailTemplateId gönderilmiyor - projede tanımlı şablon kullanılacak
-        };
-
-        fetch('/api/surveys/' + project.id + '/send-invitations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(dto)
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(result) {
-            self.surveyResult(result);
-            if (result.success) {
-                toastr.success(result.message);
-                // Refresh invitation stats
-                self.loadInvitationStats(project.id);
-            } else {
-                toastr.error(result.message || 'Gönderim sırasında hata oluştu.');
+                fetch('/api/surveys/' + project.id + '/send-invitations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(dto)
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(result) {
+                    self.surveyResult(result);
+                    if (result.success) {
+                        toastr.success(result.message);
+                        // Refresh invitation stats
+                        self.loadInvitationStats(project.id);
+                    } else {
+                        toastr.error(result.message || T('Survey.SendError', 'Gönderim sırasında hata oluştu.'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error sending invitations:', error);
+                    toastr.error(T('Survey.SendError', 'Davetiye gönderilirken bir hata oluştu.'));
+                    self.surveyResult({ success: false, message: T('Common.UnexpectedError', 'Beklenmeyen bir hata oluştu.') });
+                })
+                .finally(function() {
+                    self.isSurveySending(false);
+                });
             }
-        })
-        .catch(function(error) {
-            console.error('Error sending invitations:', error);
-            toastr.error('Davetiye gönderilirken bir hata oluştu.');
-            self.surveyResult({ success: false, message: 'Beklenmeyen bir hata oluştu.' });
-        })
-        .finally(function() {
-            self.isSurveySending(false);
         });
     };
 

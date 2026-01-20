@@ -141,4 +141,14 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Anket Sonuçları - Online Survey proje sonuçları
+    /// </summary>
+    [Route("CustomerPortal/SurveyResults")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult SurveyResults()
+    {
+        return View();
+    }
 }

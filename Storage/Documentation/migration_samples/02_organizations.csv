@@ -1,0 +1,10 @@
+CustomerCode,Name,Code,Description,Level,Order,IsActive,ParentCode
+MUS-001,Concentrix İstanbul,CONC-IST,Ana operasyon merkezi,0,1,true,
+MUS-001,Concentrix Kadıköy,CONC-KDK,Kadıköy şubesi,1,1,true,CONC-IST
+MUS-001,Concentrix Maslak,CONC-MSL,Maslak şubesi,1,2,true,CONC-IST
+MUS-001,Teleperformance,TP-IST,Teleperformance operasyonu,0,2,true,
+MUS-002,Merkez Ofis,XYZ-MRK,Merkez operasyon,0,1,true,
+MUS-002,Anadolu Bölgesi,XYZ-AND,Anadolu operasyonları,1,1,true,XYZ-MRK
+MUS-003,Ankara Bölge,DEF-ANK,Ankara şubeleri,0,1,true,
+MUS-003,Kızılay Şubesi,DEF-KZL,Kızılay merkez şube,1,1,true,DEF-ANK
+MUS-003,Çankaya Şubesi,DEF-CNK,Çankaya şubesi,1,2,true,DEF-ANK

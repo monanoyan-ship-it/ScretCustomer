@@ -180,7 +180,7 @@
     <Value>Score</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AppName">
-    <Value>Mystery Shopper</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ViewAsCustomer">
     <Value>View as Customer</Value>
@@ -264,7 +264,7 @@
     <Value>Are you sure you want to proceed with this action?</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.AppTitle">
-    <Value>Mystery Shopper Evaluation System</Value>
+    <Value>NCAcademy</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.ViewingAs">
     <Value>viewing as</Value>

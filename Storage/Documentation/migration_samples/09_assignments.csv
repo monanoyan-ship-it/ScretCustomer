@@ -1,0 +1,11 @@
+ProjectCode,TypeId,AssignedUserEmail,AssignedPersonnelEmail,ExternalEmail,ExternalName,DueDate,IsCompleted,CompletedAt
+PRJ-001,2,ahmet.yilmaz@sirket.com,,,,2024-03-31,true,2024-03-28
+PRJ-001,2,mehmet.kaya@sirket.com,,,,2024-03-31,true,2024-03-30
+PRJ-001,2,ayse.demir@sirket.com,,,,2024-03-31,true,2024-03-29
+PRJ-002,2,ahmet.yilmaz@sirket.com,,,,2024-06-30,false,
+PRJ-002,2,mehmet.kaya@sirket.com,,,,2024-06-30,false,
+PRJ-003,2,fatma.ozturk@sirket.com,,,,2024-12-31,false,
+PRJ-003,2,ali.celik@sirket.com,,,,2024-12-31,false,
+PRJ-004,3,,,musteri1@gmail.com,Ahmet Müşteri,2024-06-30,true,2024-06-15
+PRJ-004,3,,,musteri2@gmail.com,Ayşe Müşteri,2024-06-30,true,2024-06-18
+PRJ-004,3,,,musteri3@gmail.com,Mehmet Müşteri,2024-06-30,false,
