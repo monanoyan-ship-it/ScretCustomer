@@ -3576,4 +3576,617 @@ public class CustomerPortalApiController : ControllerBase
         public int WatchedSeconds { get; set; }
         public bool IsCompleted { get; set; }
     }
+
+    // ==================== SURVEY RESULTS (Reports) ====================
+
+    /// <summary>
+    /// Müşterinin Online Survey projelerini listeler
+    /// </summary>
+    [HttpGet("reports/survey-projects")]
+    public async Task<IActionResult> GetSurveyProjects()
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var projects = await _context.Projects
+            .Where(p => p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        var result = new List<object>();
+
+        foreach (var project in projects)
+        {
+            // Davetiye sayısı
+            var internalInvitations = await _context.SurveyInvitations
+                .Where(si => si.ProjectId == project.Id &&
+                       (si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent || si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Pending))
+                .CountAsync();
+
+            var externalInvitations = await _context.SurveyExternalInvitations
+                .Where(si => si.ProjectId == project.Id &&
+                       (si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent || si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Pending))
+                .CountAsync();
+
+            var invitationCount = internalInvitations + externalInvitations;
+
+            // Tamamlanan anket sayısı
+            var completedCount = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+                .CountAsync();
+
+            // Ortalama puan
+            var avgScore = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id &&
+                       e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
+                       e.ScorePercentage.HasValue)
+                .Select(e => e.ScorePercentage)
+                .AverageAsync() ?? 0;
+
+            // Son yanıt tarihi
+            var lastResponse = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+                .OrderByDescending(e => e.CompletedAt)
+                .Select(e => e.CompletedAt)
+                .FirstOrDefaultAsync();
+
+            result.Add(new
+            {
+                projectId = project.Id,
+                projectName = project.Name,
+                projectCode = project.Code,
+                totalInvitations = invitationCount,
+                totalResponses = completedCount,
+                responseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 1) : 0,
+                averageScore = completedCount > 0 ? Math.Round(avgScore, 1) : (decimal?)null,
+                lastResponseAt = lastResponse,
+                isActive = project.IsActive
+            });
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Son anket yanıtlarını listeler
+    /// </summary>
+    [HttpGet("reports/survey-responses/recent")]
+    public async Task<IActionResult> GetRecentSurveyResponses(
+        [FromQuery] int count = 20,
+        [FromQuery] int? projectId = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Where(e => e.Assignment.Project.CustomerId == customerId.Value &&
+                   e.Assignment.Project.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
+                   !e.Assignment.Project.IsDeleted)
+            .AsQueryable();
+
+        if (projectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+
+        if (startDate.HasValue)
+        {
+            var startDateUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt >= startDateUtc);
+        }
+
+        if (endDate.HasValue)
+        {
+            var endDateUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CompletedAt <= endDateUtc);
+        }
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CompletedAt)
+            .Take(count)
+            .ToListAsync();
+
+        // External invitations for evaluations without CustomerPersonnel
+        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (evaluationIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        var responses = evaluations.Select(e =>
+        {
+            string? respondentName = null;
+            string? respondentEmail = null;
+
+            if (e.EvaluatedCustomerPersonnel != null)
+            {
+                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
+                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
+            }
+            else if (externalInvitations.TryGetValue(e.Id, out var ext))
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+
+            return new
+            {
+                evaluationId = e.Id,
+                projectId = e.Assignment.ProjectId,
+                projectName = e.Assignment.Project.Name,
+                respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
+                respondentEmail,
+                score = e.ScorePercentage,
+                completedAt = e.CompletedAt
+            };
+        }).ToList();
+
+        return Ok(responses);
+    }
+
+    /// <summary>
+    /// Proje detayı - grup puanları ve son katılımcılar
+    /// </summary>
+    [HttpGet("reports/survey-projects/{projectId}/detail")]
+    public async Task<IActionResult> GetSurveyProjectDetail(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .Include(p => p.Organization)
+            .Include(p => p.Checklist)
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        // Sorular
+        var questions = await _context.Questions
+            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
+            .ToListAsync();
+
+        // Değerlendirmeler
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Answers)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+            .OrderByDescending(e => e.CompletedAt)
+            .ToListAsync();
+
+        // Davetiye sayısı
+        var invitationCount = await _context.SurveyInvitations
+            .Where(si => si.ProjectId == projectId && si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent)
+            .CountAsync();
+
+        // Grup bazlı puan hesaplaması
+        var groupScores = new List<object>();
+        var groups = questions.GroupBy(q => q.GroupName ?? "Genel");
+
+        foreach (var group in groups)
+        {
+            var groupQuestionIds = group.Select(q => q.Id).ToList();
+            var groupAnswers = evaluations
+                .SelectMany(e => e.Answers.Where(a => groupQuestionIds.Contains(a.QuestionId) && a.AnswerNumeric.HasValue))
+                .ToList();
+
+            decimal? avgScore = null;
+            if (groupAnswers.Any())
+            {
+                var totalScore = 0m;
+                var totalMaxScore = 0m;
+
+                foreach (var question in group.Where(q => q.ShowScoreInput))
+                {
+                    var questionAnswers = groupAnswers.Where(a => a.QuestionId == question.Id).ToList();
+                    if (questionAnswers.Any())
+                    {
+                        totalScore += questionAnswers.Sum(a => a.AnswerNumeric ?? 0);
+                        totalMaxScore += questionAnswers.Count * question.MaxPoints;
+                    }
+                }
+
+                avgScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 1) : null;
+            }
+
+            groupScores.Add(new
+            {
+                groupName = group.Key ?? "Genel",
+                questionCount = group.Count(),
+                totalResponses = evaluations.Count,
+                averageScore = avgScore
+            });
+        }
+
+        // Son 10 katılımcı - External invitation'ları da al
+        var top10 = evaluations.Take(10).ToList();
+        var extEvalIds = top10.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var extInvs = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (extEvalIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && extEvalIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                extInvs[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        var recentRespondents = top10.Select(e =>
+        {
+            string? fullName = null;
+            string? email = null;
+            string? orgName = null;
+
+            if (e.EvaluatedCustomerPersonnel != null)
+            {
+                fullName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
+                email = e.EvaluatedCustomerPersonnel.Email;
+                orgName = e.EvaluatedCustomerPersonnel.OrganizationAssignments.FirstOrDefault()?.CustomerOrganization?.Name;
+            }
+            else if (extInvs.TryGetValue(e.Id, out var ext))
+            {
+                fullName = $"{ext.FirstName} {ext.LastName}".Trim();
+                email = ext.Email;
+            }
+
+            return new
+            {
+                personnelId = e.EvaluatedCustomerPersonnelId ?? 0,
+                evaluationId = e.Id,
+                fullName = string.IsNullOrWhiteSpace(fullName) ? null : fullName,
+                email,
+                organizationName = orgName,
+                score = e.ScorePercentage,
+                completedAt = e.CompletedAt
+            };
+        }).ToList();
+
+        return Ok(new
+        {
+            projectId = project.Id,
+            projectName = project.Name,
+            organizationName = project.Organization?.Name,
+            totalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
+            totalResponses = evaluations.Count,
+            responseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 1) : 100,
+            averageScore = evaluations.Any(e => e.ScorePercentage.HasValue)
+                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 1)
+                : (decimal?)null,
+            totalQuestions = questions.Count,
+            groupScores = groupScores.OrderBy(g => ((dynamic)g).groupName).ToList(),
+            recentRespondents
+        });
+    }
+
+    /// <summary>
+    /// Soru bazlı puan dağılımı
+    /// </summary>
+    [HttpGet("reports/survey-question-distribution")]
+    public async Task<IActionResult> GetSurveyQuestionScoreDistribution(
+        [FromQuery] int? projectId = null)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        // Proje zorunlu
+        if (!projectId.HasValue)
+            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
+
+        // Proje müşteriye ait mi kontrol et
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId.Value &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
+
+        // Değerlendirme ID'leri
+        var evaluationIds = await _context.Evaluations
+            .Where(e => e.Assignment.ProjectId == projectId.Value &&
+                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+            .Select(e => e.Id)
+            .ToListAsync();
+
+        if (!evaluationIds.Any())
+            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
+
+        // Cevapları ve soruları getir (ReportService gibi)
+        var answers = await _context.Answers
+            .Include(a => a.Question)
+            .Where(a => evaluationIds.Contains(a.EvaluationId) && !a.Question.IsDeleted)
+            .ToListAsync();
+
+        // Soru bazlı gruplama - EarnedPoints kullan
+        var questionStats = answers
+            .GroupBy(a => new
+            {
+                a.QuestionId,
+                a.Question.Text,
+                a.Question.GroupName,
+                a.Question.Order,
+                a.Question.WeightPoints
+            })
+            .Select(g =>
+            {
+                var avgRaw = g.Where(a => a.EarnedPoints.HasValue).Any()
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value), 2)
+                    : null;
+
+                var avgPercent = g.Where(a => a.EarnedPoints.HasValue).Any() && g.Key.WeightPoints > 0
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 1)
+                    : null;
+
+                return new
+                {
+                    questionId = g.Key.QuestionId,
+                    questionText = g.Key.Text,
+                    groupName = g.Key.GroupName ?? "Genel",
+                    order = g.Key.Order,
+                    maxPoints = (int)g.Key.WeightPoints,
+                    responseCount = g.Count(),
+                    averageRawScore = avgRaw,
+                    averageScore = avgPercent
+                };
+            })
+            .OrderBy(q => q.groupName)
+            .ThenBy(q => q.order)
+            .ToList();
+
+        // Genel ortalama hesapla
+        var overallAverage = questionStats.Where(q => q.averageScore.HasValue).Any()
+            ? Math.Round(questionStats.Where(q => q.averageScore.HasValue).Average(q => q.averageScore!.Value), 1)
+            : 0m;
+
+        return Ok(new
+        {
+            questions = questionStats,
+            totalResponses = evaluationIds.Count,
+            overallAverageScore = overallAverage
+        });
+    }
+
+    /// <summary>
+    /// Proje için soru bazlı puan detayı
+    /// </summary>
+    [HttpGet("reports/survey-projects/{projectId}/score-detail")]
+    public async Task<IActionResult> GetSurveyQuestionScoreDetail(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        // Sorular
+        var questions = await _context.Questions
+            .Include(q => q.SubCriteria.Where(sc => !sc.IsDeleted))
+            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
+            .OrderBy(q => q.Order)
+            .ToListAsync();
+
+        // Değerlendirmeler ve cevapları
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+            .ToListAsync();
+
+        var questionDetails = questions.Select(q =>
+        {
+            var answers = evaluations.SelectMany(e => e.Answers.Where(a => a.QuestionId == q.Id)).ToList();
+
+            // Puan dağılımı
+            var scoreDistribution = new Dictionary<int, int>();
+            if (q.ShowScoreInput)
+            {
+                for (int i = 0; i <= q.MaxPoints; i++)
+                    scoreDistribution[i] = 0;
+
+                foreach (var answer in answers.Where(a => a.AnswerNumeric.HasValue))
+                {
+                    var score = (int)(answer.AnswerNumeric ?? 0);
+                    if (scoreDistribution.ContainsKey(score))
+                        scoreDistribution[score]++;
+                }
+            }
+
+            // Alt kriter seçim dağılımı
+            var subCriteriaStats = q.SubCriteria.Select(sc =>
+            {
+                var selectedCount = answers.Count(a => a.SubCriteriaSelections.Any(s => s.SubCriteriaId == sc.Id));
+                return new
+                {
+                    subCriteriaId = sc.Id,
+                    description = sc.Description,
+                    selectedCount,
+                    percentage = answers.Any() ? Math.Round((decimal)selectedCount / answers.Count * 100, 1) : 0
+                };
+            }).ToList();
+
+            return new
+            {
+                questionId = q.Id,
+                questionText = q.Text,
+                groupName = q.GroupName ?? "Genel",
+                maxPoints = q.MaxPoints,
+                showScoreInput = q.ShowScoreInput,
+                responseCount = answers.Count,
+                averageScore = q.ShowScoreInput && answers.Any(a => a.AnswerNumeric.HasValue)
+                    ? (decimal)Math.Round(answers.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value), 2)
+                    : (decimal?)null,
+                scoreDistribution = scoreDistribution.OrderBy(d => d.Key).Select(d => new { score = d.Key, count = d.Value }).ToList(),
+                subCriteriaStats
+            };
+        }).ToList();
+
+        return Ok(new
+        {
+            projectId = project.Id,
+            projectName = project.Name,
+            totalResponses = evaluations.Count,
+            questions = questionDetails
+        });
+    }
+
+    /// <summary>
+    /// Grup puanları raporu Excel export
+    /// </summary>
+    [HttpGet("reports/survey-results/{projectId}/export/group-scores")]
+    public async Task<IActionResult> ExportSurveyGroupScores(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        // Proje kontrolü
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyGroupScoresToExcelAsync(projectId);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Soru istatistikleri raporu Excel export
+    /// </summary>
+    [HttpGet("reports/survey-results/{projectId}/export/question-stats")]
+    public async Task<IActionResult> ExportSurveyQuestionStats(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyQuestionStatsToExcelAsync(projectId);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Detay raporu Excel export (yorumsuz)
+    /// </summary>
+    [HttpGet("reports/survey-results/{projectId}/export/detail")]
+    public async Task<IActionResult> ExportSurveyDetailReport(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: false);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Detay raporu Excel export (yorumlu)
+    /// </summary>
+    [HttpGet("reports/survey-results/{projectId}/export/full-detail")]
+    public async Task<IActionResult> ExportSurveyFullDetailReport(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: true);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Soru puan detay raporu Excel export
+    /// </summary>
+    [HttpGet("reports/survey-results/{projectId}/export/score-detail")]
+    public async Task<IActionResult> ExportSurveyScoreDetail(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyQuestionScoreDetailAsync(projectId);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
 }
