@@ -722,20 +722,43 @@ public class ReportsApiController : BaseApiController
     [HttpGet("survey-responses/recent")]
     public async Task<IActionResult> GetRecentSurveyResponses(
         [FromQuery] int count = 10,
+        [FromQuery] int? projectId = null,
         [FromQuery] List<int>? projectIds = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
         try
         {
-            var projectId = projectIds?.FirstOrDefault();
-            var result = await _reportService.GetRecentSurveyResponsesAsync(count, projectId, startDate, endDate);
+            // Hem projectId hem projectIds destekle
+            var effectiveProjectId = projectId ?? projectIds?.FirstOrDefault();
+            var result = await _reportService.GetRecentSurveyResponsesAsync(count, effectiveProjectId, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading recent survey responses");
             return StatusCode(500, CreateErrorResponse("Son anket yanıtları yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Tüm Anket Yanıtları Excel Export (2 Sheet: Yanıtlar + Cevap Detayları)
+    /// </summary>
+    [HttpGet("survey-responses/export")]
+    public async Task<IActionResult> ExportSurveyResponses([FromQuery] int? projectId = null)
+    {
+        try
+        {
+            var result = await _reportService.ExportSurveyResponsesToExcelAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Veri bulunamadı."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting survey responses for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Anket yanıtları export edilirken hata oluştu.", ex));
         }
     }
 
@@ -765,20 +788,46 @@ public class ReportsApiController : BaseApiController
     /// </summary>
     [HttpGet("survey-question-distribution")]
     public async Task<IActionResult> GetSurveyQuestionScoreDistribution(
+        [FromQuery] int? projectId = null,
         [FromQuery] List<int>? projectIds = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
         try
         {
-            var projectId = projectIds?.FirstOrDefault();
-            var result = await _reportService.GetSurveyQuestionScoreDistributionAsync(projectId, startDate, endDate);
+            // Hem projectId hem projectIds destekle
+            var effectiveProjectId = projectId ?? projectIds?.FirstOrDefault();
+            var result = await _reportService.GetSurveyQuestionScoreDistributionAsync(effectiveProjectId, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading survey question score distribution");
             return StatusCode(500, CreateErrorResponse("Soru puan dağılımı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Genel Soru Puan Dağılımı Excel Export
+    /// </summary>
+    [HttpGet("survey-question-distribution/export")]
+    public async Task<IActionResult> ExportSurveyQuestionScoreDistribution([FromQuery] int? projectId = null)
+    {
+        try
+        {
+            if (!projectId.HasValue)
+                return BadRequest(CreateErrorResponse("Proje seçimi zorunludur."));
+
+            var result = await _reportService.ExportSurveyQuestionDistributionToExcelAsync(projectId.Value);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya veri yok."));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting survey question distribution for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Soru puan dağılımı export edilirken hata oluştu.", ex));
         }
     }
 

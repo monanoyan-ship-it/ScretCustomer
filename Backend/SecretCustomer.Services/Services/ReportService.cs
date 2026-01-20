@@ -3983,6 +3983,167 @@ public class ReportService : IReportService
         return responses;
     }
 
+    public async Task<ExcelExportDto?> ExportSurveyResponsesToExcelAsync(int? projectId = null)
+    {
+        // Yanıtları al (max 500)
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                   e.StatusId == EvaluationStatuses.Ids.Completed &&
+                   !e.Assignment.Project.IsDeleted)
+            .AsQueryable();
+
+        // Filter by project
+        if (projectId.HasValue)
+        {
+            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+        }
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CompletedAt)
+            .Take(500)
+            .ToListAsync();
+
+        if (!evaluations.Any())
+            return null;
+
+        // Get external invitation names for evaluations without CustomerPersonnel
+        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (evaluationIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        // Proje adı (dosya adı için)
+        var projectName = projectId.HasValue
+            ? evaluations.FirstOrDefault()?.Assignment.Project?.Name ?? "Anket"
+            : "Tum_Anketler";
+
+        // Excel oluştur
+        using var workbook = new XLWorkbook();
+
+        // ===== Sheet 1: Yanıtlar =====
+        var sheet1 = workbook.Worksheets.Add("Yanıtlar");
+        var headers1 = new[] { "Proje", "Katılımcı Adı", "E-posta", "Puan (%)", "Tamamlanma Tarihi" };
+
+        for (int i = 0; i < headers1.Length; i++)
+        {
+            sheet1.Cell(1, i + 1).Value = headers1[i];
+            sheet1.Cell(1, i + 1).Style.Font.Bold = true;
+            sheet1.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        int row1 = 2;
+        foreach (var e in evaluations)
+        {
+            string? respondentName = null;
+            string? respondentEmail = null;
+
+            if (e.EvaluatedCustomerPersonnel != null)
+            {
+                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
+                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
+            }
+            else if (externalInvitations.TryGetValue(e.Id, out var ext))
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+
+            sheet1.Cell(row1, 1).Value = e.Assignment.Project?.Name ?? "";
+            sheet1.Cell(row1, 2).Value = respondentName ?? "-";
+            sheet1.Cell(row1, 3).Value = respondentEmail ?? "-";
+            sheet1.Cell(row1, 4).Value = e.ScorePercentage ?? 0;
+            sheet1.Cell(row1, 4).Style.NumberFormat.Format = "0.00";
+            sheet1.Cell(row1, 5).Value = e.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
+            row1++;
+        }
+
+        sheet1.Columns().AdjustToContents();
+
+        // ===== Sheet 2: Cevap Detayları =====
+        var sheet2 = workbook.Worksheets.Add("Cevap Detayları");
+        var headers2 = new[] { "Proje", "Katılımcı", "E-posta", "Grup", "Soru", "Puan", "Max Puan", "Seçilen Kriterler", "Yorum" };
+
+        for (int i = 0; i < headers2.Length; i++)
+        {
+            sheet2.Cell(1, i + 1).Value = headers2[i];
+            sheet2.Cell(1, i + 1).Style.Font.Bold = true;
+            sheet2.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        int row2 = 2;
+        foreach (var e in evaluations)
+        {
+            string? respondentName = null;
+            string? respondentEmail = null;
+
+            if (e.EvaluatedCustomerPersonnel != null)
+            {
+                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
+                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
+            }
+            else if (externalInvitations.TryGetValue(e.Id, out var ext))
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+
+            var answers = e.Answers
+                .Where(a => a.Question != null)
+                .OrderBy(a => a.Question!.GroupName ?? "")
+                .ThenBy(a => a.Question!.Order)
+                .ToList();
+
+            foreach (var a in answers)
+            {
+                var selectedCriteria = a.SubCriteriaSelections
+                    .Select(s => s.SubCriteria?.Description)
+                    .Where(d => !string.IsNullOrEmpty(d))
+                    .ToList();
+
+                sheet2.Cell(row2, 1).Value = e.Assignment.Project?.Name ?? "";
+                sheet2.Cell(row2, 2).Value = respondentName ?? "-";
+                sheet2.Cell(row2, 3).Value = respondentEmail ?? "-";
+                sheet2.Cell(row2, 4).Value = a.Question!.GroupName ?? "Genel";
+                sheet2.Cell(row2, 5).Value = a.Question.Text;
+                sheet2.Cell(row2, 6).Value = a.Question.ShowScoreInput ? (a.AnswerNumeric ?? 0) : (a.EarnedPoints ?? 0);
+                sheet2.Cell(row2, 7).Value = a.Question.ShowScoreInput ? a.Question.MaxPoints : a.Question.WeightPoints;
+                sheet2.Cell(row2, 8).Value = selectedCriteria.Any() ? string.Join(", ", selectedCriteria) : "-";
+                sheet2.Cell(row2, 9).Value = a.Notes ?? "-";
+                row2++;
+            }
+        }
+
+        sheet2.Columns().AdjustToContents();
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var safeProjectName = string.Join("_", projectName.Split(Path.GetInvalidFileNameChars()));
+
+        return new ExcelExportDto
+        {
+            FileName = $"Anket_Yanitlari_{safeProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
     public async Task<SurveyProjectDetailDto?> GetSurveyProjectDetailAsync(int projectId)
     {
         var project = await _context.Projects
@@ -4717,28 +4878,23 @@ public class ReportService : IReportService
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
-        // Default: Son 7 gün
-        var effectiveEndDate = endDate ?? DateTime.UtcNow;
-        var effectiveStartDate = startDate ?? effectiveEndDate.AddDays(-7);
+        // Proje zorunlu - tarih filtresi kaldırıldı
+        if (!projectId.HasValue)
+        {
+            return new SurveyQuestionScoreDistributionResultDto
+            {
+                Questions = new List<SurveyQuestionScoreDistributionDto>(),
+                TotalResponses = 0,
+                OverallAverageScore = 0
+            };
+        }
 
-        // UTC'ye çevir
-        if (effectiveStartDate.Kind != DateTimeKind.Utc)
-            effectiveStartDate = DateTime.SpecifyKind(effectiveStartDate, DateTimeKind.Utc);
-        if (effectiveEndDate.Kind != DateTimeKind.Utc)
-            effectiveEndDate = DateTime.SpecifyKind(effectiveEndDate.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-
-        // Online anket projelerindeki tamamlanmış değerlendirmeler
+        // Online anket projesindeki tamamlanmış değerlendirmeler
         var evalQuery = _context.Evaluations
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
-                        e.CompletedAt >= effectiveStartDate &&
-                        e.CompletedAt <= effectiveEndDate);
-
-        if (projectId.HasValue)
-        {
-            evalQuery = evalQuery.Where(e => e.Assignment.ProjectId == projectId.Value);
-        }
+                        e.Assignment.ProjectId == projectId.Value);
 
         var evaluationIds = await evalQuery.Select(e => e.Id).ToListAsync();
 
@@ -4758,7 +4914,7 @@ public class ReportService : IReportService
             .Where(a => evaluationIds.Contains(a.EvaluationId) && !a.Question.IsDeleted)
             .ToListAsync();
 
-        // Soru bazlı gruplama
+        // Soru bazlı gruplama - EarnedPoints kullan (doğru hesaplanmış puan)
         var questionStats = answers
             .GroupBy(a => new
             {
@@ -4766,7 +4922,7 @@ public class ReportService : IReportService
                 a.Question.Text,
                 a.Question.GroupName,
                 a.Question.Order,
-                a.Question.MaxPoints
+                a.Question.WeightPoints
             })
             .Select(g => new SurveyQuestionScoreDistributionDto
             {
@@ -4774,13 +4930,13 @@ public class ReportService : IReportService
                 QuestionText = g.Key.Text,
                 GroupName = g.Key.GroupName,
                 Order = g.Key.Order,
-                MaxPoints = g.Key.MaxPoints,
+                MaxPoints = (int)g.Key.WeightPoints,
                 ResponseCount = g.Count(),
-                AverageRawScore = g.Where(a => a.AnswerNumeric.HasValue).Any()
-                    ? (decimal?)Math.Round(g.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value), 2)
+                AverageRawScore = g.Where(a => a.EarnedPoints.HasValue).Any()
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value), 2)
                     : null,
-                AverageScore = g.Where(a => a.AnswerNumeric.HasValue).Any() && g.Key.MaxPoints > 0
-                    ? (decimal?)Math.Round(g.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value) / g.Key.MaxPoints * 100, 1)
+                AverageScore = g.Where(a => a.EarnedPoints.HasValue).Any() && g.Key.WeightPoints > 0
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 1)
                     : null
             })
             .OrderBy(q => q.GroupName)
@@ -4797,6 +4953,94 @@ public class ReportService : IReportService
             Questions = questionStats,
             TotalResponses = evaluationIds.Count,
             OverallAverageScore = overallAverage
+        };
+    }
+
+    /// <summary>
+    /// Genel Soru Puan Dağılımı Excel Export
+    /// </summary>
+    public async Task<ExcelExportDto?> ExportSurveyQuestionDistributionToExcelAsync(int projectId)
+    {
+        // Proje bilgisi
+        var project = await _context.Projects
+            .Include(p => p.Customer)
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+            return null;
+
+        // Veriyi al
+        var data = await GetSurveyQuestionScoreDistributionAsync(projectId, null, null);
+
+        if (data.Questions.Count == 0)
+            return null;
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Soru Puan Dağılımı");
+
+        // Başlık
+        worksheet.Cell(1, 1).Value = "Proje: " + project.Name;
+        worksheet.Cell(1, 1).Style.Font.Bold = true;
+        worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+        worksheet.Range(1, 1, 1, 5).Merge();
+
+        worksheet.Cell(2, 1).Value = $"Toplam Yanıt: {data.TotalResponses} | Genel Ortalama: %{data.OverallAverageScore:F1}";
+        worksheet.Range(2, 1, 2, 5).Merge();
+
+        // Headers
+        var headerRow = 4;
+        worksheet.Cell(headerRow, 1).Value = "Soru";
+        worksheet.Cell(headerRow, 2).Value = "Grup";
+        worksheet.Cell(headerRow, 3).Value = "Yanıt Sayısı";
+        worksheet.Cell(headerRow, 4).Value = "Ort. Puan";
+        worksheet.Cell(headerRow, 5).Value = "Yüzde (%)";
+
+        var headerRange = worksheet.Range(headerRow, 1, headerRow, 5);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+        // Data
+        var row = headerRow + 1;
+        foreach (var q in data.Questions)
+        {
+            worksheet.Cell(row, 1).Value = q.QuestionText;
+            worksheet.Cell(row, 2).Value = q.GroupName ?? "-";
+            worksheet.Cell(row, 3).Value = q.ResponseCount;
+            worksheet.Cell(row, 4).Value = q.AverageRawScore.HasValue ? $"{q.AverageRawScore:F2} / {q.MaxPoints}" : "-";
+            worksheet.Cell(row, 5).Value = q.AverageScore.HasValue ? q.AverageScore.Value : 0;
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.0";
+
+            // Renklendirme
+            if (q.AverageScore.HasValue)
+            {
+                var cell = worksheet.Cell(row, 5);
+                if (q.AverageScore >= 70)
+                    cell.Style.Fill.BackgroundColor = XLColor.LightGreen;
+                else if (q.AverageScore >= 40)
+                    cell.Style.Fill.BackgroundColor = XLColor.LightYellow;
+                else
+                    cell.Style.Fill.BackgroundColor = XLColor.LightPink;
+            }
+
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+        worksheet.Column(1).Width = 60; // Soru sütunu geniş
+
+        // Export
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var fileName = $"SoruPuanDagilimi_{project.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.xlsx";
+
+        return new ExcelExportDto
+        {
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            FileName = fileName
         };
     }
 

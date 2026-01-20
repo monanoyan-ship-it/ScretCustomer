@@ -7,6 +7,8 @@ function SurveyResultsViewModel() {
     self.isLoadingPopup = ko.observable(false);
     self.isLoadingResponseDetail = ko.observable(false);
     self.isLoadingDistribution = ko.observable(false);
+    self.isExportingDistribution = ko.observable(false);
+    self.isExportingAllResponses = ko.observable(false);
 
     // Data
     self.recentResponses = ko.observableArray([]);
@@ -37,23 +39,9 @@ function SurveyResultsViewModel() {
         endDate: ko.observable('')
     };
 
-    // Helper: Get default start date (7 days ago)
-    function getDefaultStartDate() {
-        var date = new Date();
-        date.setDate(date.getDate() - 7);
-        return date.toISOString().split('T')[0];
-    }
-
-    // Helper: Get default end date (today)
-    function getDefaultEndDate() {
-        return new Date().toISOString().split('T')[0];
-    }
-
-    // Question Distribution Filters (default: last 7 days)
+    // Question Distribution Filters (sadece proje filtresi)
     self.distributionFilter = {
-        projectId: ko.observable(null),
-        startDate: ko.observable(getDefaultStartDate()),
-        endDate: ko.observable(getDefaultEndDate())
+        projectId: ko.observable(null)
     };
 
     // Modals
@@ -128,6 +116,22 @@ function SurveyResultsViewModel() {
             .finally(function() {
                 self.isLoadingPopup(false);
             });
+    };
+
+    // Export All Responses to Excel (2 sheets: Yanıtlar + Cevap Detayları)
+    self.exportAllResponses = function() {
+        self.isExportingAllResponses(true);
+
+        var url = '/api/reports/survey-responses/export';
+        if (self.popupFilter.projectId()) {
+            url += '?projectId=' + self.popupFilter.projectId();
+        }
+
+        window.location.href = url;
+
+        setTimeout(function() {
+            self.isExportingAllResponses(false);
+        }, 1000);
     };
 
     // Show Project Detail Modal
@@ -265,24 +269,16 @@ function SurveyResultsViewModel() {
 
     // Load Question Score Distribution
     self.loadQuestionDistribution = function() {
+        // Proje seçilmeden yükleme yapma
+        if (!self.distributionFilter.projectId()) {
+            toastr.warning('Lütfen bir proje seçin.');
+            return;
+        }
+
         self.isLoadingDistribution(true);
         self.questionDistribution(null);
 
-        var params = [];
-        if (self.distributionFilter.projectId()) {
-            params.push('projectId=' + self.distributionFilter.projectId());
-        }
-        if (self.distributionFilter.startDate()) {
-            params.push('startDate=' + self.distributionFilter.startDate());
-        }
-        if (self.distributionFilter.endDate()) {
-            params.push('endDate=' + self.distributionFilter.endDate());
-        }
-
-        var url = '/reports/survey-question-distribution';
-        if (params.length > 0) {
-            url += '?' + params.join('&');
-        }
+        var url = '/reports/survey-question-distribution?projectId=' + self.distributionFilter.projectId();
 
         apiService.get(url)
             .then(function(data) {
@@ -297,11 +293,27 @@ function SurveyResultsViewModel() {
             });
     };
 
+    // Export Question Distribution to Excel
+    self.exportQuestionDistribution = function() {
+        if (!self.distributionFilter.projectId()) {
+            toastr.warning('Lütfen bir proje seçin.');
+            return;
+        }
+
+        self.isExportingDistribution(true);
+        window.location.href = '/api/reports/survey-question-distribution/export?projectId=' + self.distributionFilter.projectId();
+
+        // Reset loading state after a short delay
+        setTimeout(function() {
+            self.isExportingDistribution(false);
+        }, 1000);
+    };
+
     // Initialize
     self.init = function() {
         self.initModals();
         self.loadData();
-        self.loadQuestionDistribution();
+        // Proje seçilmeden soru dağılımı yüklenmesin
     };
 
     self.init();
