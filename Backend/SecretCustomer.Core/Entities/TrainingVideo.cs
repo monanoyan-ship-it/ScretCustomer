@@ -178,9 +178,14 @@ public class TrainingVideoAssignment : BaseEntity
     public DateTime? SourceEndDate { get; set; }
 
     /// <summary>
-    /// Katılımcılar
+    /// Katılımcılar (sistem kullanıcıları)
     /// </summary>
     public ICollection<TrainingVideoParticipant> Participants { get; set; } = new List<TrainingVideoParticipant>();
+
+    /// <summary>
+    /// Dış katılımcılar (sistemde kayıtlı olmayan email adresleri)
+    /// </summary>
+    public ICollection<TrainingVideoExternalParticipant> ExternalParticipants { get; set; } = new List<TrainingVideoExternalParticipant>();
 
     /// <summary>
     /// Minimum izleme sayısı (varsayılan: 1)
@@ -313,6 +318,165 @@ public class TrainingVideoEmailLog : BaseEntity
     /// Katılımcı
     /// </summary>
     public TrainingVideoParticipant Participant { get; set; } = null!;
+
+    /// <summary>
+    /// Email şablon ID
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+
+    /// <summary>
+    /// Email şablonu
+    /// </summary>
+    public EmailTemplate? EmailTemplate { get; set; }
+
+    /// <summary>
+    /// Email gönderim tarihi
+    /// </summary>
+    public DateTime SentAt { get; set; }
+
+    /// <summary>
+    /// Gönderen kullanıcı ID (Admin)
+    /// </summary>
+    public int? SentByUserId { get; set; }
+
+    /// <summary>
+    /// Gönderen kullanıcı
+    /// </summary>
+    public User? SentByUser { get; set; }
+
+    /// <summary>
+    /// Email türü: 1=Initial (ilk atama), 2=Reminder (hatırlatma)
+    /// </summary>
+    public int EmailTypeId { get; set; } = 1;
+
+    /// <summary>
+    /// Email başarılı mı?
+    /// </summary>
+    public bool IsSuccess { get; set; } = true;
+
+    /// <summary>
+    /// Hata mesajı (varsa)
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Dış Eğitim Video Katılımcısı - Sistemde kayıtlı olmayan email adreslerine video atama
+/// </summary>
+public class TrainingVideoExternalParticipant : BaseEntity
+{
+    /// <summary>
+    /// Atama ID
+    /// </summary>
+    public int TrainingVideoAssignmentId { get; set; }
+
+    /// <summary>
+    /// Atama
+    /// </summary>
+    public TrainingVideoAssignment Assignment { get; set; } = null!;
+
+    /// <summary>
+    /// Email adresi
+    /// </summary>
+    public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Ad (opsiyonel)
+    /// </summary>
+    public string? FirstName { get; set; }
+
+    /// <summary>
+    /// Soyad (opsiyonel)
+    /// </summary>
+    public string? LastName { get; set; }
+
+    /// <summary>
+    /// Benzersiz token (GUID) - video izleme linkinde kullanılır
+    /// </summary>
+    public string Token { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Durum: 1=Pending, 2=InProgress, 3=Completed
+    /// </summary>
+    public int StatusId { get; set; } = 1;
+
+    /// <summary>
+    /// Video linki açıldı mı?
+    /// </summary>
+    public bool IsOpened { get; set; }
+
+    /// <summary>
+    /// Açılma zamanı
+    /// </summary>
+    public DateTime? OpenedAt { get; set; }
+
+    /// <summary>
+    /// İzlemeye başlama tarihi
+    /// </summary>
+    public DateTime? StartedAt { get; set; }
+
+    /// <summary>
+    /// Tamamlama tarihi
+    /// </summary>
+    public DateTime? CompletedAt { get; set; }
+
+    /// <summary>
+    /// İzlenen süre (saniye)
+    /// </summary>
+    public int WatchedSeconds { get; set; }
+
+    /// <summary>
+    /// Tamamen izlendi mi?
+    /// </summary>
+    public bool IsCompleted { get; set; }
+
+    /// <summary>
+    /// Toplam izleme sayısı
+    /// </summary>
+    public int WatchCount { get; set; }
+
+    /// <summary>
+    /// İlk email gönderim tarihi
+    /// </summary>
+    public DateTime? FirstEmailSentAt { get; set; }
+
+    /// <summary>
+    /// Son email gönderim tarihi
+    /// </summary>
+    public DateTime? LastEmailSentAt { get; set; }
+
+    /// <summary>
+    /// Toplam gönderilen email sayısı
+    /// </summary>
+    public int EmailSentCount { get; set; }
+
+    /// <summary>
+    /// Email gönderim geçmişi
+    /// </summary>
+    public ICollection<TrainingVideoExternalEmailLog> EmailLogs { get; set; } = new List<TrainingVideoExternalEmailLog>();
+
+    /// <summary>
+    /// Tam adı döndürür
+    /// </summary>
+    public string? FullName => string.IsNullOrWhiteSpace(FirstName) && string.IsNullOrWhiteSpace(LastName)
+        ? null
+        : $"{FirstName} {LastName}".Trim();
+}
+
+/// <summary>
+/// Dış Katılımcı Email Logu
+/// </summary>
+public class TrainingVideoExternalEmailLog : BaseEntity
+{
+    /// <summary>
+    /// Dış Katılımcı ID
+    /// </summary>
+    public int TrainingVideoExternalParticipantId { get; set; }
+
+    /// <summary>
+    /// Dış Katılımcı
+    /// </summary>
+    public TrainingVideoExternalParticipant ExternalParticipant { get; set; } = null!;
 
     /// <summary>
     /// Email şablon ID

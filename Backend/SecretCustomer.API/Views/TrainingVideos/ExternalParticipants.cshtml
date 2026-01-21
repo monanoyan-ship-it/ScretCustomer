@@ -1,0 +1,288 @@
+@{
+    Layout = "_LayoutPopup";
+    var assignmentId = ViewBag.AssignmentId ?? 0;
+    var isNewMode = (int)assignmentId == 0;
+    ViewData["Title"] = isNewMode ? "Dis Katilimci Atama" : "Dis Katilimcilar";
+}
+
+<div id="external-participants-app">
+    <!-- Header -->
+    <div class="popup-header">
+        <h4>
+            <!-- ko if: isNewMode -->
+            <i class="bi bi-person-plus me-2"></i>Dis Katilimci Atama
+            <!-- /ko -->
+            <!-- ko ifnot: isNewMode -->
+            <i class="bi bi-people me-2"></i>Dis Katilimcilar
+            <small class="text-muted ms-2" data-bind="visible: assignmentTitle(), text: '- ' + assignmentTitle()"></small>
+            <!-- /ko -->
+        </h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-secondary btn-sm" onclick="window.close()">
+                <i class="bi bi-x-lg"></i> Kapat
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Yukleniyor...</p>
+    </div>
+
+    <!-- Content -->
+    <div data-bind="visible: !isLoading()">
+        <div class="row">
+            <!-- Sol Kolon -->
+            <div data-bind="css: { 'col-md-5': !isNewMode(), 'col-md-4': isNewMode() }">
+                <!-- Yeni Mod: Video ve Ayarlar -->
+                <!-- ko if: isNewMode -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white py-2">
+                        <i class="bi bi-play-circle me-2"></i>Video ve Ayarlar
+                    </div>
+                    <div class="card-body">
+                        <!-- Video Secimi -->
+                        <div class="mb-3">
+                            <label class="form-label">Video <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" data-bind="value: formVideoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Video secin...'"></select>
+                        </div>
+
+                        <!-- Atama Basligi -->
+                        <div class="mb-3">
+                            <label class="form-label">Atama Basligi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" data-bind="value: formTitle" placeholder="orn: Ocak 2026 Dis Egitim">
+                        </div>
+
+                        <!-- Tarihler -->
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Baslangic <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" data-bind="value: formStartDate">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Bitis <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" data-bind="value: formDueDate">
+                            </div>
+                        </div>
+
+                        <!-- Izleme Ayarlari -->
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <label class="form-label">Min Izleme</label>
+                                <input type="number" class="form-control form-control-sm" data-bind="value: formMinWatchCount" min="1">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label">Max Izleme</label>
+                                <input type="number" class="form-control form-control-sm" data-bind="value: formMaxWatchCount" min="1" placeholder="Sinirsiz">
+                            </div>
+                        </div>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="allowSpeedChange" data-bind="checked: formAllowSpeedChange">
+                            <label class="form-check-label small" for="allowSpeedChange">Hiz degistirmeye izin ver</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allowSeeking" data-bind="checked: formAllowSeeking">
+                            <label class="form-check-label small" for="allowSeeking">Ileri/geri sarmaya izin ver</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+
+                <!-- Katilimci Ekleme -->
+                <div class="card">
+                    <div class="card-header bg-success text-white py-2">
+                        <i class="bi bi-plus-circle me-2"></i>Katilimci Ekle
+                    </div>
+                    <div class="card-body">
+                        <!-- Ekleme Modu Secimi -->
+                        <div class="btn-group w-100 mb-3" role="group">
+                            <input type="radio" class="btn-check" name="addMode" id="addModeText" value="text" data-bind="checked: addMode">
+                            <label class="btn btn-outline-primary btn-sm" for="addModeText">
+                                <i class="bi bi-textarea-t me-1"></i>Text
+                            </label>
+                            <input type="radio" class="btn-check" name="addMode" id="addModeExcel" value="excel" data-bind="checked: addMode">
+                            <label class="btn btn-outline-primary btn-sm" for="addModeExcel">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                            </label>
+                        </div>
+
+                        <!-- Text Mode -->
+                        <div data-bind="visible: addMode() === 'text'">
+                            <div class="mb-3">
+                                <textarea class="form-control form-control-sm" rows="8" placeholder="Her satira bir email veya email;ad;soyad
+
+ornek@firma.com
+ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></textarea>
+                                <small class="text-muted">Format: <code>email</code> veya <code>email;ad;soyad</code></small>
+                            </div>
+                        </div>
+
+                        <!-- Excel Mode -->
+                        <div data-bind="visible: addMode() === 'excel'">
+                            <div class="mb-3">
+                                <input type="file" class="form-control form-control-sm" accept=".xlsx,.xls,.csv" id="fileInput" data-bind="event: { change: handleFileSelect }">
+                                <small class="text-muted">Kolonlar: Email, Ad, Soyad</small>
+                            </div>
+                            <div data-bind="visible: parsedFromFile().length > 0" class="alert alert-success py-2 small">
+                                <i class="bi bi-check-circle me-1"></i><strong data-bind="text: parsedFromFile().length"></strong> kisi bulundu
+                            </div>
+                        </div>
+
+                        <!-- Email Gonderimi -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="sendEmail" data-bind="checked: sendEmailOnAdd">
+                            <label class="form-check-label small" for="sendEmail">Email gonder</label>
+                        </div>
+                        <!-- Email Sablonu -->
+                        <div class="mb-3" data-bind="visible: sendEmailOnAdd()">
+                            <label class="form-label small">Email Sablonu</label>
+                            <select class="form-select form-select-sm" data-bind="value: formEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Sablon secin...'"></select>
+                        </div>
+
+                        <!-- Buton -->
+                        <!-- ko if: isNewMode -->
+                        <button type="button" class="btn btn-success w-100" data-bind="click: createAssignment, disable: isCreating() || !canCreate()">
+                            <span data-bind="visible: !isCreating()">
+                                <i class="bi bi-check-lg me-1"></i>Atamayi Olustur
+                            </span>
+                            <span data-bind="visible: isCreating">
+                                <span class="spinner-border spinner-border-sm"></span> Olusturuluyor...
+                            </span>
+                        </button>
+                        <!-- /ko -->
+                        <!-- ko ifnot: isNewMode -->
+                        <button type="button" class="btn btn-primary w-100" data-bind="click: addParticipants, disable: isAdding">
+                            <span data-bind="visible: !isAdding()">
+                                <i class="bi bi-plus-circle me-1"></i>Ekle
+                            </span>
+                            <span data-bind="visible: isAdding">
+                                <span class="spinner-border spinner-border-sm"></span> Ekleniyor...
+                            </span>
+                        </button>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sag Kolon: Mevcut Liste -->
+            <div data-bind="css: { 'col-md-7': !isNewMode(), 'col-md-8': isNewMode() }">
+                <div class="card">
+                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                        <span>
+                            <!-- ko if: isNewMode -->
+                            <i class="bi bi-list-check me-2"></i>Eklenecek Katilimcilar
+                            <!-- /ko -->
+                            <!-- ko ifnot: isNewMode -->
+                            <i class="bi bi-people me-2"></i>Mevcut Katilimcilar
+                            <!-- /ko -->
+                            <span class="badge bg-secondary ms-2" data-bind="text: isNewMode() ? parsedParticipants().length : participants().length"></span>
+                        </span>
+                        <!-- ko ifnot: isNewMode -->
+                        <div data-bind="visible: selectedCount() > 0" class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: sendEmailsToSelected, disable: isSendingEmails">
+                                <i class="bi bi-envelope me-1"></i>Email (<span data-bind="text: selectedCount"></span>)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearSelection">Temizle</button>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Yeni Mod: Parsed Preview -->
+                        <!-- ko if: isNewMode -->
+                        <div style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-sm table-striped mb-0" data-bind="visible: parsedParticipants().length > 0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Ad</th>
+                                        <th>Soyad</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: parsedParticipants">
+                                    <tr>
+                                        <td><small data-bind="text: email"></small></td>
+                                        <td><small data-bind="text: firstName || '-'"></small></td>
+                                        <td><small data-bind="text: lastName || '-'"></small></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div data-bind="visible: parsedParticipants().length === 0" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mb-0 mt-2">Henuz katilimci eklenmedi</p>
+                                <small>Sol taraftan email adreslerini girin</small>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- Mevcut Mod: Katilimci Listesi -->
+                        <!-- ko ifnot: isNewMode -->
+                        <div data-bind="visible: isLoadingParticipants" class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+                        <div data-bind="visible: !isLoadingParticipants()" style="max-height: 450px; overflow-y: auto;">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th style="width: 30px;"><input type="checkbox" class="form-check-input" data-bind="checked: selectAll"></th>
+                                        <th>Email / Ad Soyad</th>
+                                        <th class="text-center">Durum</th>
+                                        <th class="text-center">Email</th>
+                                        <th style="width: 80px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: participants">
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input" data-bind="checked: selected"></td>
+                                        <td>
+                                            <span data-bind="text: email"></span>
+                                            <!-- ko if: fullName -->
+                                            <br><small class="text-muted" data-bind="text: fullName"></small>
+                                            <!-- /ko -->
+                                        </td>
+                                        <td class="text-center">
+                                            <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekliyor</span>
+                                            <span data-bind="visible: statusId === 2" class="badge bg-info">Izliyor</span>
+                                            <span data-bind="visible: statusId === 3" class="badge bg-success">Tamamladi</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <!-- ko if: emailSentCount > 0 -->
+                                            <span class="badge bg-success" data-bind="text: emailSentCount + 'x'"></span>
+                                            <!-- /ko -->
+                                            <!-- ko if: emailSentCount === 0 -->
+                                            <span class="badge bg-secondary">-</span>
+                                            <!-- /ko -->
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-info me-1" data-bind="click: $parent.copyLink" title="Link Kopyala">
+                                                <i class="bi bi-link-45deg"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteParticipant, disable: statusId === 3" title="Sil">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div data-bind="visible: !isLoadingParticipants() && participants().length === 0" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mb-0 mt-2">Henuz dis katilimci eklenmemis</p>
+                            <small>Sol taraftan email adreslerini ekleyebilirsiniz</small>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script>
+        var ASSIGNMENT_ID = @(assignmentId);
+        var IS_NEW_MODE = @(isNewMode.ToString().ToLower());
+    </script>
+    <script src="~/js/TrainingVideos/ExternalParticipants.js"></script>
+}

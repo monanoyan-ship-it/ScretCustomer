@@ -72,6 +72,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<TrainingVideoAssignment> TrainingVideoAssignments { get; set; }
     public DbSet<TrainingVideoParticipant> TrainingVideoParticipants { get; set; }
     public DbSet<TrainingVideoEmailLog> TrainingVideoEmailLogs { get; set; }
+    public DbSet<TrainingVideoExternalParticipant> TrainingVideoExternalParticipants { get; set; }
+    public DbSet<TrainingVideoExternalEmailLog> TrainingVideoExternalEmailLogs { get; set; }
 
     // App Settings (tek satırlık ayar tablosu)
     public DbSet<AppSettings> AppSettings { get; set; }

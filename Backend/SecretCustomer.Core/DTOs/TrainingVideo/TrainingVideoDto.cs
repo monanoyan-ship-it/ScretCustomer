@@ -295,6 +295,11 @@ public class UpdateWatchProgressDto
 {
     public int WatchedSeconds { get; set; }
     public bool IsCompleted { get; set; }
+
+    /// <summary>
+    /// Video sonuna ulaşıldı mı? (WatchCount artırımı için)
+    /// </summary>
+    public bool IsVideoEnded { get; set; }
 }
 
 /// <summary>
@@ -352,4 +357,137 @@ public class TrainingVideoAssignmentFilterDto
     /// Tarih filtresi tipi: "start" = Başlangıç tarihi, "due" = Bitiş tarihi
     /// </summary>
     public string? DateFilterType { get; set; }
+}
+
+// ===== DIŞ KATILIMCI DTO'LARI =====
+
+/// <summary>
+/// Dış katılımcı listeleme DTO
+/// </summary>
+public class TrainingVideoExternalParticipantDto
+{
+    public int Id { get; set; }
+    public int TrainingVideoAssignmentId { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? FullName { get; set; }
+    public string Token { get; set; } = string.Empty;
+    public int StatusId { get; set; }
+    public string StatusName { get; set; } = string.Empty;
+    public bool IsOpened { get; set; }
+    public DateTime? OpenedAt { get; set; }
+    public DateTime? StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public int WatchedSeconds { get; set; }
+    public bool IsCompleted { get; set; }
+    public int WatchCount { get; set; }
+    public DateTime? FirstEmailSentAt { get; set; }
+    public DateTime? LastEmailSentAt { get; set; }
+    public int EmailSentCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Video izleme linki
+    /// </summary>
+    public string WatchUrl { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Tekil dış katılımcı ekleme DTO
+/// </summary>
+public class ExternalParticipantItemDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+}
+
+/// <summary>
+/// Toplu dış katılımcı ekleme DTO
+/// </summary>
+public class AddExternalParticipantsDto
+{
+    public int AssignmentId { get; set; }
+
+    /// <summary>
+    /// Eklenecek katılımcılar
+    /// </summary>
+    public List<ExternalParticipantItemDto> Participants { get; set; } = new();
+
+    /// <summary>
+    /// Ekleme sonrası email gönderilsin mi?
+    /// </summary>
+    public bool SendEmail { get; set; } = true;
+
+    /// <summary>
+    /// Email şablon ID (opsiyonel - belirtilmezse assignment'ın şablonu kullanılır)
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+}
+
+/// <summary>
+/// Toplu dış katılımcı ekleme sonuç DTO
+/// </summary>
+public class AddExternalParticipantsResultDto
+{
+    public int AddedCount { get; set; }
+    public int SkippedCount { get; set; }
+    public int EmailSentCount { get; set; }
+    public List<string> SkippedEmails { get; set; } = new();
+    public string Message { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Text parse sonucu DTO (email;ad;soyad formatından)
+/// </summary>
+public class ParsedExternalParticipantDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public bool IsValid { get; set; }
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>
+/// Dış katılımcılara email gönderme DTO
+/// </summary>
+public class SendExternalEmailsDto
+{
+    public int AssignmentId { get; set; }
+    public List<int> ParticipantIds { get; set; } = new();
+
+    /// <summary>
+    /// Email türü: 1=Initial, 2=Reminder
+    /// </summary>
+    public int EmailTypeId { get; set; } = 1;
+
+    /// <summary>
+    /// Email şablon ID (opsiyonel)
+    /// </summary>
+    public int? EmailTemplateId { get; set; }
+}
+
+/// <summary>
+/// Token ile video bilgisi DTO (halka açık izleme sayfası için)
+/// </summary>
+public class ExternalVideoWatchDto
+{
+    public int ParticipantId { get; set; }
+    public string VideoTitle { get; set; } = string.Empty;
+    public string? VideoDescription { get; set; }
+    public int VideoDurationSeconds { get; set; }
+    public string VideoStreamUrl { get; set; } = string.Empty;
+    public string AssignmentTitle { get; set; } = string.Empty;
+    public DateTime DueDate { get; set; }
+    public int MinWatchCount { get; set; }
+    public int? MaxWatchCount { get; set; }
+    public bool AllowSpeedChange { get; set; }
+    public bool AllowSeeking { get; set; }
+    public int CurrentWatchCount { get; set; }
+    public int WatchedSeconds { get; set; }
+    public bool IsCompleted { get; set; }
+    public bool IsExpired { get; set; }
+    public string? ParticipantName { get; set; }
 }

@@ -296,6 +296,7 @@ public class TrainingVideoService : ITrainingVideoService
         var query = _context.TrainingVideoAssignments
             .Include(a => a.TrainingVideo)
             .Include(a => a.Participants)
+            .Include(a => a.ExternalParticipants)
             .Where(a => !a.IsDeleted);
 
         // Filtreler
@@ -350,12 +351,26 @@ public class TrainingVideoService : ITrainingVideoService
 
         return assignments.Select(a =>
         {
-            var participants = a.Participants.Where(p => !p.IsDeleted).ToList();
-            var completed = participants.Count(p => p.IsCompleted);
-            var inProgress = participants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.InProgress);
-            var notStarted = participants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.Pending);
-            var emailSent = participants.Count(p => p.EmailSentCount > 0);
-            var total = participants.Count;
+            // İç katılımcılar
+            var internalParticipants = a.Participants.Where(p => !p.IsDeleted).ToList();
+            var internalCompleted = internalParticipants.Count(p => p.IsCompleted);
+            var internalInProgress = internalParticipants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.InProgress);
+            var internalNotStarted = internalParticipants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.Pending);
+            var internalEmailSent = internalParticipants.Count(p => p.EmailSentCount > 0);
+
+            // Dış katılımcılar
+            var externalParticipants = a.ExternalParticipants?.Where(p => !p.IsDeleted).ToList() ?? new List<TrainingVideoExternalParticipant>();
+            var externalCompleted = externalParticipants.Count(p => p.IsCompleted);
+            var externalInProgress = externalParticipants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.InProgress);
+            var externalNotStarted = externalParticipants.Count(p => p.StatusId == TrainingVideoParticipantStatuses.Ids.Pending);
+            var externalEmailSent = externalParticipants.Count(p => p.EmailSentCount > 0);
+
+            // Toplam
+            var total = internalParticipants.Count + externalParticipants.Count;
+            var completed = internalCompleted + externalCompleted;
+            var inProgress = internalInProgress + externalInProgress;
+            var notStarted = internalNotStarted + externalNotStarted;
+            var emailSent = internalEmailSent + externalEmailSent;
 
             return new TrainingVideoAssignmentListDto
             {
@@ -1145,6 +1160,410 @@ public class TrainingVideoService : ITrainingVideoService
             .Select(c => new { c.Id, c.CompanyName })
             .OrderBy(c => c.CompanyName)
             .ToListAsync();
+    }
+
+    #endregion
+
+    #region Dış Katılımcı Yönetimi
+
+    /// <summary>
+    /// Bir atamanın dış katılımcılarını getirir
+    /// </summary>
+    public async Task<IEnumerable<TrainingVideoExternalParticipantDto>> GetExternalParticipantsAsync(int assignmentId)
+    {
+        var participants = await _context.TrainingVideoExternalParticipants
+            .Where(p => !p.IsDeleted && p.TrainingVideoAssignmentId == assignmentId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        return participants.Select(p => new TrainingVideoExternalParticipantDto
+        {
+            Id = p.Id,
+            TrainingVideoAssignmentId = p.TrainingVideoAssignmentId,
+            Email = p.Email,
+            FirstName = p.FirstName,
+            LastName = p.LastName,
+            FullName = p.FullName,
+            Token = p.Token,
+            StatusId = p.StatusId,
+            StatusName = GetParticipantStatusName(p.StatusId),
+            IsOpened = p.IsOpened,
+            OpenedAt = p.OpenedAt,
+            StartedAt = p.StartedAt,
+            CompletedAt = p.CompletedAt,
+            WatchedSeconds = p.WatchedSeconds,
+            IsCompleted = p.IsCompleted,
+            WatchCount = p.WatchCount,
+            FirstEmailSentAt = p.FirstEmailSentAt,
+            LastEmailSentAt = p.LastEmailSentAt,
+            EmailSentCount = p.EmailSentCount,
+            CreatedAt = p.CreatedAt,
+            WatchUrl = $"{_baseUrl}/Training/External/{p.Token}"
+        });
+    }
+
+    /// <summary>
+    /// Toplu dış katılımcı ekler
+    /// </summary>
+    public async Task<AddExternalParticipantsResultDto> AddExternalParticipantsAsync(AddExternalParticipantsDto dto, int? sentByUserId = null)
+    {
+        var result = new AddExternalParticipantsResultDto();
+
+        var assignment = await _context.TrainingVideoAssignments
+            .Include(a => a.TrainingVideo)
+            .Include(a => a.ExternalParticipants.Where(p => !p.IsDeleted))
+            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+        {
+            result.Message = "Atama bulunamadı";
+            return result;
+        }
+
+        var existingEmails = assignment.ExternalParticipants
+            .Select(p => p.Email.ToLower())
+            .ToHashSet();
+
+        var addedParticipants = new List<TrainingVideoExternalParticipant>();
+
+        foreach (var item in dto.Participants)
+        {
+            var email = item.Email?.Trim().ToLower();
+            if (string.IsNullOrEmpty(email))
+            {
+                result.SkippedCount++;
+                continue;
+            }
+
+            // Email format kontrolü
+            if (!IsValidEmail(email))
+            {
+                result.SkippedCount++;
+                result.SkippedEmails.Add($"{email} (geçersiz format)");
+                continue;
+            }
+
+            // Zaten ekli mi?
+            if (existingEmails.Contains(email))
+            {
+                result.SkippedCount++;
+                result.SkippedEmails.Add($"{email} (zaten ekli)");
+                continue;
+            }
+
+            var participant = new TrainingVideoExternalParticipant
+            {
+                TrainingVideoAssignmentId = dto.AssignmentId,
+                Email = email,
+                FirstName = item.FirstName?.Trim(),
+                LastName = item.LastName?.Trim(),
+                Token = Guid.NewGuid().ToString("N"),
+                StatusId = 1, // Pending
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.TrainingVideoExternalParticipants.Add(participant);
+            addedParticipants.Add(participant);
+            existingEmails.Add(email);
+            result.AddedCount++;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Email gönderimi
+        if (dto.SendEmail && addedParticipants.Any())
+        {
+            var templateId = dto.EmailTemplateId ?? assignment.EmailTemplateId;
+            foreach (var participant in addedParticipants)
+            {
+                try
+                {
+                    await SendExternalParticipantEmailAsync(participant, assignment, templateId, sentByUserId, 1);
+                    result.EmailSentCount++;
+                }
+                catch (Exception ex)
+                {
+                    // Email hatası eklemeyi engellemez
+                    Console.WriteLine($"Email gönderilemedi: {participant.Email} - {ex.Message}");
+                }
+            }
+        }
+
+        result.Message = $"{result.AddedCount} katılımcı eklendi" +
+            (result.SkippedCount > 0 ? $", {result.SkippedCount} atlandı" : "") +
+            (result.EmailSentCount > 0 ? $", {result.EmailSentCount} email gönderildi" : "");
+
+        return result;
+    }
+
+    /// <summary>
+    /// Dış katılımcı siler
+    /// </summary>
+    public async Task<bool> DeleteExternalParticipantAsync(int participantId)
+    {
+        var participant = await _context.TrainingVideoExternalParticipants
+            .FirstOrDefaultAsync(p => p.Id == participantId && !p.IsDeleted);
+
+        if (participant == null)
+            return false;
+
+        participant.IsDeleted = true;
+        participant.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Dış katılımcılara email gönderir
+    /// </summary>
+    public async Task<int> SendExternalEmailsAsync(SendExternalEmailsDto dto, int? sentByUserId = null)
+    {
+        var assignment = await _context.TrainingVideoAssignments
+            .Include(a => a.TrainingVideo)
+            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            return 0;
+
+        var participants = await _context.TrainingVideoExternalParticipants
+            .Where(p => !p.IsDeleted && dto.ParticipantIds.Contains(p.Id))
+            .ToListAsync();
+
+        var templateId = dto.EmailTemplateId ?? assignment.EmailTemplateId;
+        var sentCount = 0;
+
+        foreach (var participant in participants)
+        {
+            try
+            {
+                await SendExternalParticipantEmailAsync(participant, assignment, templateId, sentByUserId, dto.EmailTypeId);
+                sentCount++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email gönderilemedi: {participant.Email} - {ex.Message}");
+            }
+        }
+
+        return sentCount;
+    }
+
+    /// <summary>
+    /// Token ile video bilgisini getirir (halka açık erişim)
+    /// </summary>
+    public async Task<ExternalVideoWatchDto?> GetExternalVideoByTokenAsync(string token)
+    {
+        var participant = await _context.TrainingVideoExternalParticipants
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .FirstOrDefaultAsync(p => p.Token == token && !p.IsDeleted);
+
+        if (participant == null)
+            return null;
+
+        var assignment = participant.Assignment;
+        var video = assignment.TrainingVideo;
+
+        // İlk açılış ise işaretle
+        if (!participant.IsOpened)
+        {
+            participant.IsOpened = true;
+            participant.OpenedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return new ExternalVideoWatchDto
+        {
+            ParticipantId = participant.Id,
+            VideoTitle = video.Title,
+            VideoDescription = video.Description,
+            VideoDurationSeconds = video.DurationSeconds,
+            VideoStreamUrl = $"/api/training-videos/external/{token}/stream",
+            AssignmentTitle = assignment.Title,
+            DueDate = assignment.DueDate,
+            MinWatchCount = assignment.MinWatchCount,
+            MaxWatchCount = assignment.MaxWatchCount,
+            AllowSpeedChange = assignment.AllowSpeedChange,
+            AllowSeeking = assignment.AllowSeeking,
+            CurrentWatchCount = participant.WatchCount,
+            WatchedSeconds = participant.WatchedSeconds,
+            IsCompleted = participant.IsCompleted,
+            IsExpired = DateTime.UtcNow > assignment.DueDate,
+            ParticipantName = participant.FullName
+        };
+    }
+
+    /// <summary>
+    /// Dış katılımcı izleme ilerlemesini günceller
+    /// </summary>
+    public async Task<bool> UpdateExternalWatchProgressAsync(string token, UpdateWatchProgressDto dto)
+    {
+        var participant = await _context.TrainingVideoExternalParticipants
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.TrainingVideo)
+            .FirstOrDefaultAsync(p => p.Token == token && !p.IsDeleted);
+
+        if (participant == null)
+            return false;
+
+        var assignment = participant.Assignment;
+        var video = assignment.TrainingVideo;
+
+        // İlk izleme başlangıcı
+        if (participant.StatusId == 1 && dto.WatchedSeconds > 0)
+        {
+            participant.StatusId = 2; // InProgress
+            participant.StartedAt = DateTime.UtcNow;
+        }
+
+        // İzleme süresi güncelle
+        if (dto.WatchedSeconds > participant.WatchedSeconds)
+        {
+            participant.WatchedSeconds = dto.WatchedSeconds;
+        }
+
+        // Video sonuna ulaşıldı mı?
+        if (dto.IsVideoEnded)
+        {
+            participant.WatchCount++;
+
+            // Minimum izleme yüzdesi kontrolü
+            var watchPercentage = (decimal)participant.WatchedSeconds / video.DurationSeconds * 100;
+
+            // Tamamlandı mı?
+            if (participant.WatchCount >= assignment.MinWatchCount && watchPercentage >= video.MinWatchPercentage)
+            {
+                participant.IsCompleted = true;
+                participant.StatusId = 3; // Completed
+                participant.CompletedAt = DateTime.UtcNow;
+            }
+        }
+
+        participant.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <summary>
+    /// Dış katılımcıya email gönderir (internal helper)
+    /// </summary>
+    private async Task SendExternalParticipantEmailAsync(
+        TrainingVideoExternalParticipant participant,
+        TrainingVideoAssignment assignment,
+        int? templateId,
+        int? sentByUserId,
+        int emailTypeId)
+    {
+        var watchUrl = $"{_baseUrl}/Training/External/{participant.Token}";
+
+        // Email şablonu
+        var template = templateId.HasValue
+            ? await _context.EmailTemplates.FirstOrDefaultAsync(t => t.Id == templateId && !t.IsDeleted)
+            : null;
+
+        string subject, body;
+
+        if (template != null)
+        {
+            subject = template.Subject
+                .Replace("{{VideoTitle}}", assignment.TrainingVideo.Title)
+                .Replace("{{AssignmentTitle}}", assignment.Title)
+                .Replace("{{DueDate}}", assignment.DueDate.ToString("dd.MM.yyyy"));
+
+            body = template.Body
+                .Replace("{{UserName}}", participant.FullName ?? participant.Email)
+                .Replace("{{VideoTitle}}", assignment.TrainingVideo.Title)
+                .Replace("{{AssignmentTitle}}", assignment.Title)
+                .Replace("{{DueDate}}", assignment.DueDate.ToString("dd.MM.yyyy"))
+                .Replace("{{WatchUrl}}", watchUrl)
+                .Replace("{{VideoLink}}", $"<a href=\"{watchUrl}\">Videoyu İzle</a>");
+        }
+        else
+        {
+            subject = emailTypeId == 1
+                ? $"Eğitim Videosu: {assignment.TrainingVideo.Title}"
+                : $"Hatırlatma: {assignment.TrainingVideo.Title}";
+
+            body = $@"
+                <p>Merhaba {participant.FullName ?? ""},</p>
+                <p>Size <strong>{assignment.TrainingVideo.Title}</strong> eğitim videosu atanmıştır.</p>
+                <p>Son izleme tarihi: <strong>{assignment.DueDate:dd.MM.yyyy}</strong></p>
+                <p><a href=""{watchUrl}"" style=""display:inline-block;padding:10px 20px;background-color:#0d6efd;color:white;text-decoration:none;border-radius:5px;"">Videoyu İzle</a></p>
+                <p>İyi çalışmalar.</p>
+            ";
+        }
+
+        await _emailService.SendEmailAsync(participant.Email, subject, body);
+
+        // Email log kaydet
+        var emailLog = new TrainingVideoExternalEmailLog
+        {
+            TrainingVideoExternalParticipantId = participant.Id,
+            EmailTemplateId = templateId,
+            SentAt = DateTime.UtcNow,
+            SentByUserId = sentByUserId,
+            EmailTypeId = emailTypeId,
+            IsSuccess = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.TrainingVideoExternalEmailLogs.Add(emailLog);
+
+        // Participant güncelle
+        participant.EmailSentCount++;
+        participant.LastEmailSentAt = DateTime.UtcNow;
+        if (!participant.FirstEmailSentAt.HasValue)
+        {
+            participant.FirstEmailSentAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Email format kontrolü
+    /// </summary>
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Katılımcı durumu adını getirir
+    /// </summary>
+    private static string GetParticipantStatusName(int statusId)
+    {
+        return statusId switch
+        {
+            1 => "Bekliyor",
+            2 => "İzliyor",
+            3 => "Tamamladı",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    /// <summary>
+    /// Token ile video stream'ini getirir (dış katılımcı için)
+    /// </summary>
+    public async Task<Stream?> GetExternalVideoStreamAsync(string token)
+    {
+        var participant = await _context.TrainingVideoExternalParticipants
+            .Include(p => p.Assignment)
+            .FirstOrDefaultAsync(p => p.Token == token && !p.IsDeleted);
+
+        if (participant == null)
+            return null;
+
+        return await GetVideoStreamAsync(participant.Assignment.TrainingVideoId);
     }
 
     #endregion

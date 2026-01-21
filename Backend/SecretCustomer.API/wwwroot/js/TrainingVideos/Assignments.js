@@ -1096,18 +1096,32 @@ function AssignmentsViewModel() {
         }
         self.participantsModal.show();
 
-        fetch('/api/training-video-assignments/' + assignment.id + '/participants', { credentials: 'include' })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                self.participants(data);
-            })
-            .catch(function(err) {
-                toastr.error(T('Common.Error', 'Hata olustu'));
-                console.error(err);
-            })
-            .finally(function() {
-                self.isLoadingParticipants(false);
+        // Hem iç hem dış katılımcıları yükle
+        Promise.all([
+            fetch('/api/training-video-assignments/' + assignment.id + '/participants', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/training-video-assignments/' + assignment.id + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            var internalParticipants = results[0] || [];
+            var externalParticipants = (results[1] || []).map(function(p) {
+                return {
+                    userName: p.fullName || p.email,
+                    email: p.email,
+                    statusId: p.statusId,
+                    watchedSeconds: p.watchedSeconds,
+                    completedAt: p.completedAt,
+                    isExternal: true
+                };
             });
+            self.participants(internalParticipants.concat(externalParticipants));
+        })
+        .catch(function(err) {
+            toastr.error(T('Common.Error', 'Hata olustu'));
+            console.error(err);
+        })
+        .finally(function() {
+            self.isLoadingParticipants(false);
+        });
     };
 
     // ===== EMAIL MODAL =====
@@ -1150,6 +1164,32 @@ function AssignmentsViewModel() {
         });
     });
 
+    // Yeni dış katılımcı atama popup'ı (header butonu)
+    self.openExternalAssignmentModal = function() {
+        var width = 1200;
+        var height = 700;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open(
+            '/TrainingVideos/ExternalParticipants/0',
+            'ExternalParticipants_New',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes'
+        );
+    };
+
+    // Mevcut atamaya dış katılımcı ekleme popup'ı
+    self.openExternalParticipantsModal = function(assignment) {
+        var width = 1100;
+        var height = 650;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open(
+            '/TrainingVideos/ExternalParticipants/' + assignment.id,
+            'ExternalParticipants_' + assignment.id,
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes'
+        );
+    };
+
     // Email modalını aç
     self.openEmailModal = function(assignment) {
         self.emailModalAssignmentId(assignment.id);
@@ -1169,27 +1209,44 @@ function AssignmentsViewModel() {
         self.loadEmailParticipants(assignment.id);
     };
 
-    // Email katılımcılarını yükle
+    // Email katılımcılarını yükle (iç + dış)
     self.loadEmailParticipants = function(assignmentId) {
         self.isLoadingEmailParticipants(true);
 
-        fetch('/api/training-video-assignments/' + assignmentId + '/participants', { credentials: 'include' })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                // selected observable ekle
-                var participants = data.map(function(p) {
-                    p.selected = ko.observable(false);
-                    return p;
-                });
-                self.emailModalParticipants(participants);
-            })
-            .catch(function(err) {
-                toastr.error(T('Common.Error', 'Katilimcilar yuklenemedi'));
-                console.error(err);
-            })
-            .finally(function() {
-                self.isLoadingEmailParticipants(false);
+        // Hem iç hem dış katılımcıları yükle
+        Promise.all([
+            fetch('/api/training-video-assignments/' + assignmentId + '/participants', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/training-video-assignments/' + assignmentId + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            var internalParticipants = (results[0] || []).map(function(p) {
+                p.selected = ko.observable(false);
+                p.isExternal = false;
+                return p;
             });
+            var externalParticipants = (results[1] || []).map(function(p) {
+                return {
+                    id: p.id,
+                    userName: p.fullName || p.email,
+                    email: p.email,
+                    statusId: p.statusId,
+                    emailSentCount: p.emailSentCount || 0,
+                    lastEmailSentAt: p.lastEmailSentAt,
+                    isCompleted: p.isCompleted,
+                    watchedSeconds: p.watchedSeconds,
+                    selected: ko.observable(false),
+                    isExternal: true
+                };
+            });
+            self.emailModalParticipants(internalParticipants.concat(externalParticipants));
+        })
+        .catch(function(err) {
+            toastr.error(T('Common.Error', 'Katilimcilar yuklenemedi'));
+            console.error(err);
+        })
+        .finally(function() {
+            self.isLoadingEmailParticipants(false);
+        });
     };
 
     // Tümünü seç
@@ -1206,49 +1263,85 @@ function AssignmentsViewModel() {
         });
     };
 
-    // Email gönder
+    // Email gönder (iç + dış katılımcılar için ayrı API)
     self.sendEmails = function() {
-        var selectedIds = [];
+        var internalIds = [];
+        var externalIds = [];
         ko.utils.arrayForEach(self.emailModalParticipants(), function(p) {
             if (p.selected()) {
-                selectedIds.push(p.id);
+                if (p.isExternal) {
+                    externalIds.push(p.id);
+                } else {
+                    internalIds.push(p.id);
+                }
             }
         });
 
-        if (selectedIds.length === 0) {
+        var totalSelected = internalIds.length + externalIds.length;
+        if (totalSelected === 0) {
             toastr.warning(T('TrainingVideo.SelectParticipant', 'Lütfen en az bir katılımcı seçin'));
             return;
         }
 
         showConfirmModal({
             title: T('TrainingVideo.SendEmailTitle', 'Email Gönder'),
-            message: selectedIds.length + T('TrainingVideo.SendEmailConfirm', ' kişiye email göndermek istediğinize emin misiniz?'),
+            message: totalSelected + T('TrainingVideo.SendEmailConfirm', ' kişiye email göndermek istediğinize emin misiniz?'),
             confirmText: T('Common.Send', 'Gönder'),
             confirmClass: 'btn-primary',
             onConfirm: function() {
                 self.isSendingEmails(true);
 
-                var dto = {
-                    assignmentId: self.emailModalAssignmentId(),
-                    participantIds: selectedIds,
-                    emailTypeId: parseInt(self.emailModalTypeId())
-                };
+                var promises = [];
+                var assignmentId = self.emailModalAssignmentId();
 
-                fetch('/api/training-video-assignments/send-emails', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dto),
-                    credentials: 'include'
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(result) {
-                    if (result.sentCount !== undefined) {
-                        toastr.success(result.sentCount + T('TrainingVideo.EmailsSent', ' email gönderildi'));
+                // İç katılımcılar için
+                if (internalIds.length > 0) {
+                    var internalDto = {
+                        assignmentId: assignmentId,
+                        participantIds: internalIds,
+                        emailTypeId: parseInt(self.emailModalTypeId())
+                    };
+                    promises.push(
+                        fetch('/api/training-video-assignments/send-emails', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(internalDto),
+                            credentials: 'include'
+                        }).then(function(r) { return r.json(); })
+                    );
+                }
+
+                // Dış katılımcılar için
+                if (externalIds.length > 0) {
+                    var externalDto = {
+                        participantIds: externalIds,
+                        emailTypeId: parseInt(self.emailModalTypeId())
+                    };
+                    promises.push(
+                        fetch('/api/training-video-assignments/' + assignmentId + '/external-participants/send-emails', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(externalDto),
+                            credentials: 'include'
+                        }).then(function(r) { return r.json(); })
+                    );
+                }
+
+                Promise.all(promises)
+                .then(function(results) {
+                    var totalSent = 0;
+                    results.forEach(function(result) {
+                        if (result.sentCount !== undefined) {
+                            totalSent += result.sentCount;
+                        }
+                    });
+                    if (totalSent > 0) {
+                        toastr.success(totalSent + T('TrainingVideo.EmailsSent', ' email gönderildi'));
                         // Listeyi yenile
-                        self.loadEmailParticipants(self.emailModalAssignmentId());
+                        self.loadEmailParticipants(assignmentId);
                         self.loadAssignments();
                     } else {
-                        toastr.error(result.message || T('Common.Error', 'Hata oluştu'));
+                        toastr.error(T('Common.Error', 'Hata oluştu'));
                     }
                 })
                 .catch(function(err) {

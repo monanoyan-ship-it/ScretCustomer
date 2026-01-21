@@ -118,3 +118,69 @@ public class TrainingVideoParticipantConfiguration : IEntityTypeConfiguration<Tr
         builder.HasIndex(p => new { p.TrainingVideoAssignmentId, p.CustomerPersonnelId }).IsUnique();
     }
 }
+
+public class TrainingVideoExternalParticipantConfiguration : IEntityTypeConfiguration<TrainingVideoExternalParticipant>
+{
+    public void Configure(EntityTypeBuilder<TrainingVideoExternalParticipant> builder)
+    {
+        builder.HasKey(p => p.Id);
+
+        builder.Property(p => p.Email)
+            .IsRequired()
+            .HasMaxLength(256);
+
+        builder.Property(p => p.FirstName)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.LastName)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.Token)
+            .IsRequired()
+            .HasMaxLength(64);
+
+        builder.HasOne(p => p.Assignment)
+            .WithMany(a => a.ExternalParticipants)
+            .HasForeignKey(p => p.TrainingVideoAssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Token benzersiz olmalı
+        builder.HasIndex(p => p.Token).IsUnique();
+
+        // Aynı atamaya aynı email iki kez eklenemez
+        builder.HasIndex(p => new { p.TrainingVideoAssignmentId, p.Email }).IsUnique();
+
+        builder.HasIndex(p => p.TrainingVideoAssignmentId);
+        builder.HasIndex(p => p.Email);
+        builder.HasIndex(p => p.StatusId);
+    }
+}
+
+public class TrainingVideoExternalEmailLogConfiguration : IEntityTypeConfiguration<TrainingVideoExternalEmailLog>
+{
+    public void Configure(EntityTypeBuilder<TrainingVideoExternalEmailLog> builder)
+    {
+        builder.HasKey(l => l.Id);
+
+        builder.Property(l => l.ErrorMessage)
+            .HasMaxLength(1000);
+
+        builder.HasOne(l => l.ExternalParticipant)
+            .WithMany(p => p.EmailLogs)
+            .HasForeignKey(l => l.TrainingVideoExternalParticipantId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(l => l.EmailTemplate)
+            .WithMany()
+            .HasForeignKey(l => l.EmailTemplateId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(l => l.SentByUser)
+            .WithMany()
+            .HasForeignKey(l => l.SentByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(l => l.TrainingVideoExternalParticipantId);
+        builder.HasIndex(l => l.SentAt);
+    }
+}

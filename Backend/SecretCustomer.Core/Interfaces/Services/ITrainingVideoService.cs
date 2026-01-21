@@ -40,4 +40,15 @@ public interface ITrainingVideoService
 
     // ===== SCOPE-BASED DATA =====
     Task<IEnumerable<object>> GetScopeCustomersAsync(int videoId);
+
+    // ===== DIŞ KATILIMCI YÖNETİMİ =====
+    Task<IEnumerable<TrainingVideoExternalParticipantDto>> GetExternalParticipantsAsync(int assignmentId);
+    Task<AddExternalParticipantsResultDto> AddExternalParticipantsAsync(AddExternalParticipantsDto dto, int? sentByUserId = null);
+    Task<bool> DeleteExternalParticipantAsync(int participantId);
+    Task<int> SendExternalEmailsAsync(SendExternalEmailsDto dto, int? sentByUserId = null);
+
+    // ===== DIŞ KATILIMCI VİDEO İZLEME (TOKEN İLE) =====
+    Task<ExternalVideoWatchDto?> GetExternalVideoByTokenAsync(string token);
+    Task<bool> UpdateExternalWatchProgressAsync(string token, UpdateWatchProgressDto dto);
+    Task<Stream?> GetExternalVideoStreamAsync(string token);
 }

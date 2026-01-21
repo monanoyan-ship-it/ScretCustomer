@@ -10,6 +10,9 @@
             <a href="/TrainingVideos" class="btn btn-outline-secondary me-2">
                 <i class="bi bi-arrow-left"></i> Videolara Don
             </a>
+            <button class="btn btn-success me-2" data-bind="click: openExternalAssignmentModal">
+                <i class="bi bi-person-plus"></i> Dis Katilimci Atama
+            </button>
             <button class="btn btn-primary" data-bind="click: openCreateModal">
                 <i class="bi bi-plus-circle"></i> Yeni Atama
             </button>
@@ -893,6 +896,9 @@
                                 <tr>
                                     <td>
                                         <span data-bind="text: userName"></span>
+                                        <!-- ko if: isExternal -->
+                                        <span class="badge bg-secondary ms-1">Dis</span>
+                                        <!-- /ko -->
                                         <br><small class="text-muted" data-bind="text: email"></small>
                                     </td>
                                     <td class="text-center">
@@ -997,11 +1003,18 @@
                                             <td><input type="checkbox" class="form-check-input" data-bind="checked: selected"></td>
                                             <td>
                                                 <span data-bind="text: userName"></span>
+                                                <!-- ko if: isExternal -->
+                                                <span class="badge bg-info ms-1">Dis</span>
+                                                <!-- /ko -->
                                                 <br><small class="text-muted" data-bind="text: email"></small>
                                             </td>
                                             <td class="text-center">
-                                                <span data-bind="visible: emailSentCount > 0" class="badge bg-success" data-bind="text: emailSentCount + 'x'"></span>
-                                                <span data-bind="visible: emailSentCount === 0" class="badge bg-secondary">-</span>
+                                                <!-- ko if: emailSentCount > 0 -->
+                                                <span class="badge bg-success" data-bind="text: emailSentCount + 'x'"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: emailSentCount === 0 -->
+                                                <span class="badge bg-secondary">-</span>
+                                                <!-- /ko -->
                                             </td>
                                             <td class="text-center">
                                                 <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekleme</span>
@@ -1034,6 +1047,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 @section Scripts {

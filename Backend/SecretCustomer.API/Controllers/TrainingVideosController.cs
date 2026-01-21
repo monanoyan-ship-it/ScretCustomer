@@ -24,4 +24,13 @@ public class TrainingVideosController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Dış katılımcılar popup sayfası
+    /// </summary>
+    public IActionResult ExternalParticipants(int id)
+    {
+        ViewBag.AssignmentId = id;
+        return View();
+    }
 }

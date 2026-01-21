@@ -147,14 +147,14 @@ function CustomerSurveyResultsViewModel() {
                     projectName: response.projectName,
                     score: response.score,
                     completedAt: response.completedAt,
-                    answers: (data.questionAnswers || []).map(function(qa) {
+                    answers: (data.answers || []).map(function(qa) {
                         return {
                             questionText: qa.questionText,
                             groupName: qa.groupName,
-                            score: qa.score,
-                            maxPoints: qa.maxPoints,
+                            score: qa.earnedPoints || qa.givenPoints,
+                            maxPoints: qa.weightPoints || qa.maxPoints,
                             selectedSubCriteria: qa.selectedSubCriteria || [],
-                            comment: qa.comment
+                            comment: qa.notes
                         };
                     })
                 };

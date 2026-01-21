@@ -545,4 +545,162 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
     }
 
     #endregion
+
+    #region External Participants (Dış Katılımcılar)
+
+    /// <summary>
+    /// Bir atamanın dış katılımcılarını getirir
+    /// </summary>
+    [HttpGet("{id}/external-participants")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetExternalParticipants(int id)
+    {
+        try
+        {
+            var participants = await _trainingVideoService.GetExternalParticipantsAsync(id);
+            return Ok(participants);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading external participants for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Dış katılımcılar yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dış katılımcı ekler (toplu)
+    /// </summary>
+    [HttpPost("{id}/external-participants")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AddExternalParticipants(int id, [FromBody] AddExternalParticipantsDto dto)
+    {
+        try
+        {
+            dto.AssignmentId = id;
+            var userId = GetCurrentUserId();
+            var result = await _trainingVideoService.AddExternalParticipantsAsync(dto, userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding external participants for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Dış katılımcılar eklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dış katılımcı siler
+    /// </summary>
+    [HttpDelete("external-participants/{participantId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteExternalParticipant(int participantId)
+    {
+        try
+        {
+            var result = await _trainingVideoService.DeleteExternalParticipantAsync(participantId);
+            if (!result)
+                return NotFound(new { message = "Katılımcı bulunamadı" });
+
+            return Ok(new { message = "Katılımcı silindi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting external participant {ParticipantId}", participantId);
+            return StatusCode(500, CreateErrorResponse("Katılımcı silinirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dış katılımcılara email gönderir
+    /// </summary>
+    [HttpPost("{id}/external-participants/send-emails")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SendExternalEmails(int id, [FromBody] SendExternalEmailsDto dto)
+    {
+        try
+        {
+            dto.AssignmentId = id;
+            var userId = GetCurrentUserId();
+            var count = await _trainingVideoService.SendExternalEmailsAsync(dto, userId);
+            return Ok(new { message = $"{count} kişiye email gönderildi", sentCount = count, success = count > 0 });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending emails to external participants for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Email gönderilirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Token ile video bilgisini getirir (halka açık)
+    /// </summary>
+    [HttpGet("external/{token}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetExternalVideoByToken(string token)
+    {
+        try
+        {
+            var result = await _trainingVideoService.GetExternalVideoByTokenAsync(token);
+            if (result == null)
+                return NotFound(new { message = "Video bulunamadı veya link geçersiz" });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting external video for token {Token}", token);
+            return StatusCode(500, CreateErrorResponse("Video bilgisi alınırken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Token ile video stream'i (halka açık)
+    /// </summary>
+    [HttpGet("external/{token}/stream")]
+    [AllowAnonymous]
+    public async Task<IActionResult> StreamExternalVideo(string token)
+    {
+        try
+        {
+            var videoInfo = await _trainingVideoService.GetExternalVideoByTokenAsync(token);
+            if (videoInfo == null)
+                return NotFound(new { message = "Video bulunamadı" });
+
+            // VideoStreamUrl'den video id'yi çıkar ve stream'i al
+            var videoStream = await _trainingVideoService.GetExternalVideoStreamAsync(token);
+            if (videoStream == null)
+                return NotFound(new { message = "Video dosyası bulunamadı" });
+
+            return File(videoStream, "video/mp4", enableRangeProcessing: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error streaming external video for token {Token}", token);
+            return StatusCode(500, CreateErrorResponse("Video yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dış katılımcı izleme ilerlemesini günceller (halka açık)
+    /// </summary>
+    [HttpPost("external/{token}/progress")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateExternalWatchProgress(string token, [FromBody] UpdateWatchProgressDto dto)
+    {
+        try
+        {
+            var result = await _trainingVideoService.UpdateExternalWatchProgressAsync(token, dto);
+            if (!result)
+                return NotFound(new { message = "Katılımcı bulunamadı" });
+
+            return Ok(new { message = "İlerleme kaydedildi" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating external watch progress for token {Token}", token);
+            return StatusCode(500, CreateErrorResponse("İlerleme kaydedilirken hata oluştu", ex));
+        }
+    }
+
+    #endregion
 }

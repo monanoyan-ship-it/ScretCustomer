@@ -1,0 +1,202 @@
+@{
+    Layout = null;
+    var token = ViewBag.Token as string;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egitim Videosu</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg">
+
+    <!-- Bootstrap CSS -->
+    <link href="~/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css">
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .video-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .video-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .video-player-wrapper {
+            background: #000;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            max-height: 500px;
+            display: block;
+        }
+        .video-info {
+            padding: 1.5rem;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+        .completed-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .completed-overlay i {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+        .expired-message {
+            text-align: center;
+            padding: 3rem;
+        }
+        .loading-container {
+            text-align: center;
+            padding: 4rem;
+        }
+        .error-container {
+            text-align: center;
+            padding: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container" id="training-app">
+        <!-- Loading -->
+        <div data-bind="visible: isLoading" class="loading-container">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3 text-muted">Video bilgisi yukleniyor...</p>
+        </div>
+
+        <!-- Error -->
+        <div data-bind="visible: hasError" class="error-container">
+            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">Video Bulunamadi</h4>
+            <p class="text-muted" data-bind="text: errorMessage">Bu link gecersiz veya suresi dolmus olabilir.</p>
+        </div>
+
+        <!-- Expired -->
+        <div data-bind="visible: !isLoading() && !hasError() && videoInfo() && videoInfo().isExpired" class="expired-message">
+            <i class="bi bi-clock-history text-warning" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">Sure Doldu</h4>
+            <p class="text-muted">Bu egitim videosunun izleme suresi dolmustur.</p>
+            <p><strong>Son Tarih:</strong> <span data-bind="text: formatDate(videoInfo().dueDate)"></span></p>
+        </div>
+
+        <!-- Video Content -->
+        <div data-bind="visible: !isLoading() && !hasError() && videoInfo() && !videoInfo().isExpired">
+            <!-- Header -->
+            <div class="video-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1" data-bind="text: videoInfo() ? videoInfo().videoTitle : ''"></h5>
+                        <small class="text-muted" data-bind="text: videoInfo() ? videoInfo().assignmentTitle : ''"></small>
+                    </div>
+                    <div data-bind="visible: videoInfo() && videoInfo().participantName">
+                        <span class="badge bg-primary"><i class="bi bi-person me-1"></i><span data-bind="text: videoInfo().participantName"></span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Player -->
+            <div class="video-player-wrapper">
+                <video id="videoPlayer"
+                       data-bind="attr: { src: videoInfo() ? videoInfo().videoStreamUrl : '' }"
+                       controls
+                       controlsList="nodownload">
+                    Tarayiciniz video oynatmayi desteklemiyor.
+                </video>
+
+                <!-- Completed Overlay -->
+                <div class="completed-overlay" data-bind="visible: videoInfo() && videoInfo().isCompleted">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <h4>Tebrikler!</h4>
+                    <p>Egitimi basariyla tamamladiniz.</p>
+                </div>
+            </div>
+
+            <!-- Video Info -->
+            <div class="video-info">
+                <!-- Description -->
+                <div data-bind="visible: videoInfo() && videoInfo().videoDescription">
+                    <p class="text-muted mb-3" data-bind="text: videoInfo().videoDescription"></p>
+                </div>
+
+                <!-- Progress Info -->
+                <div class="progress-info">
+                    <div>
+                        <small class="text-muted d-block">Izleme Sayisi</small>
+                        <strong>
+                            <span data-bind="text: videoInfo() ? videoInfo().currentWatchCount : 0"></span>
+                            / <span data-bind="text: videoInfo() ? videoInfo().minWatchCount : 1"></span>
+                        </strong>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Ilerleme</small>
+                        <div class="progress" style="width: 150px; height: 20px;">
+                            <div class="progress-bar" role="progressbar"
+                                 data-bind="style: { width: watchPercentage() + '%' }, text: watchPercentage() + '%'"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Son Tarih</small>
+                        <strong data-bind="text: videoInfo() ? formatDate(videoInfo().dueDate) : '-'"></strong>
+                    </div>
+                    <div data-bind="visible: videoInfo() && videoInfo().isCompleted">
+                        <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Tamamlandi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/knockout/knockout-latest.min.js"></script>
+    <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <script>
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: "3000"
+        };
+    </script>
+    <script>
+        var VIDEO_TOKEN = '@Html.Raw(token)';
+    </script>
+    <script src="~/js/Training/ExternalWatch.js"></script>
+</body>
+</html>
