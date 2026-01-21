@@ -1137,7 +1137,9 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Project)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId);
+            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
+                        e.Assignment.Project.CustomerId == customerId &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed); // PRENSIP: Taslaklar rapora dahil edilmez
 
         // Rol bazlı filtreleme
         // Manager/Supervisor: Kendi yaptıkları değerlendirmeler (EvaluatorCustomerPersonnelId)
@@ -4188,5 +4190,65 @@ public class CustomerPortalApiController : ControllerBase
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
         return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Taslak değerlendirmeyi siler
+    /// - Kullanıcı kendi taslağını silebilir
+    /// - CustomerManager tüm taslakları silebilir
+    /// - Sadece Draft durumundakiler silinebilir
+    /// </summary>
+    [HttpDelete("evaluations/{id:int}")]
+    public async Task<IActionResult> DeleteDraft(int id)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+        var isManager = role == "CustomerManager" || User.IsInRole("Admin");
+
+        // Değerlendirmeyi bul
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+
+        if (evaluation == null)
+        {
+            return NotFound(new { message = "Değerlendirme bulunamadı." });
+        }
+
+        // Müşteri kontrolü
+        if (evaluation.Assignment?.Project?.CustomerId != customerId)
+        {
+            return Forbid();
+        }
+
+        // Sadece Draft durumundakiler silinebilir
+        if (evaluation.StatusId != Core.Enums.EvaluationStatuses.Ids.Draft)
+        {
+            return BadRequest(new { message = "Sadece taslak durumundaki değerlendirmeler silinebilir." });
+        }
+
+        // Yetki kontrolü: Manager değilse kendi taslağı olmalı
+        if (!isManager && personnelId.HasValue)
+        {
+            if (evaluation.EvaluatorCustomerPersonnelId != personnelId.Value)
+            {
+                return Forbid();
+            }
+        }
+
+        // Soft delete
+        evaluation.IsDeleted = true;
+        evaluation.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Taslak değerlendirme silindi (CustomerPortal): EvaluationId={EvaluationId}, PersonnelId={PersonnelId}, IsManager={IsManager}",
+            id, personnelId, isManager);
+
+        return Ok(new { message = "Taslak başarıyla silindi." });
     }
 }

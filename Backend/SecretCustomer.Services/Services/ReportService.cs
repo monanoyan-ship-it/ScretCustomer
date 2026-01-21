@@ -97,13 +97,8 @@ public class ReportService : IReportService
                 query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        // PRENSIP: Export için sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
-        if (filter.ForExport)
-        {
-            query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
-        }
         // Status filter (çoklu)
-        else if (filter.Statuses?.Any() == true)
+        if (filter.Statuses?.Any() == true)
         {
             var statusIds = filter.Statuses
                 .Select(s => EvaluationStatuses.GetBySystemName(s))
@@ -112,6 +107,11 @@ public class ReportService : IReportService
                 .ToList();
             if (statusIds.Any())
                 query = query.Where(e => statusIds.Contains(e.StatusId));
+        }
+        // PRENSIP: Varsayılan olarak sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
+        else
+        {
+            query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
         }
 
         // Evaluation source filter (çoklu)
@@ -2657,13 +2657,8 @@ public class ReportService : IReportService
                 query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
         }
 
-        // PRENSIP: Export için sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
-        if (filter.ForExport)
-        {
-            query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
-        }
         // Status filter (çoklu)
-        else if (filter.Statuses?.Any() == true)
+        if (filter.Statuses?.Any() == true)
         {
             var statusIds = filter.Statuses
                 .Select(s => EvaluationStatuses.GetBySystemName(s))
@@ -2672,6 +2667,11 @@ public class ReportService : IReportService
                 .ToList();
             if (statusIds.Any())
                 query = query.Where(e => statusIds.Contains(e.StatusId));
+        }
+        // PRENSIP: Varsayılan olarak sadece Completed değerlendirmeler dahil edilir (taslaklar hariç)
+        else
+        {
+            query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
         }
 
         // Evaluation source filter (çoklu)

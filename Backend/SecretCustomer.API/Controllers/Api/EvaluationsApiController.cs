@@ -1116,6 +1116,78 @@ public class EvaluationsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Excel dışa aktarma hatası", ex));
         }
     }
+
+    /// <summary>
+    /// Taslak değerlendirmeyi siler
+    /// - Kullanıcı kendi taslağını silebilir
+    /// - Admin tüm taslakları silebilir
+    /// - Sadece Draft durumundakiler silinebilir
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteDraft(int id)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+            }
+
+            // Değerlendirmeyi bul
+            var evaluation = await _context.Evaluations
+                .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+
+            if (evaluation == null)
+            {
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+            }
+
+            // Sadece Draft durumundakiler silinebilir
+            if (evaluation.StatusId != EvaluationStatuses.Ids.Draft)
+            {
+                return BadRequest(CreateErrorResponse("Sadece taslak durumundaki değerlendirmeler silinebilir."));
+            }
+
+            // Yetki kontrolü: Admin değilse kendi taslağı olmalı
+            if (!isAdmin)
+            {
+                bool isOwner = false;
+                if (userType == "CustomerPersonnel")
+                {
+                    isOwner = evaluation.EvaluatorCustomerPersonnelId == userId;
+                }
+                else
+                {
+                    isOwner = evaluation.EvaluatorId == userId;
+                }
+
+                if (!isOwner)
+                {
+                    return Forbid();
+                }
+            }
+
+            // Soft delete
+            evaluation.IsDeleted = true;
+            evaluation.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Taslak değerlendirme silindi: EvaluationId={EvaluationId}, UserId={UserId}, IsAdmin={IsAdmin}",
+                id, userId, isAdmin);
+
+            return Ok(new { message = "Taslak başarıyla silindi." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting draft evaluation {EvaluationId}", id);
+            return StatusCode(500, CreateErrorResponse("Taslak silinirken hata oluştu.", ex));
+        }
+    }
 }
 
 // Request DTOs
