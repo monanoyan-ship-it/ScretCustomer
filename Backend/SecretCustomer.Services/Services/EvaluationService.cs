@@ -842,15 +842,17 @@ public class EvaluationService : IEvaluationService
             // 2. Cezalı sorular - her zaman opsiyonel, sadece ceza uygulanırsa işle
             if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
             {
-                if (answer != null && answer.ApplyPenalty)
+                if (answer != null && answer.ApplyPenalty && answer.GivenPoints.HasValue && answer.GivenPoints.Value > 0)
                 {
                     if (answer.SelectedPenaltyType == "YellowCard")
                         yellowCardCount++;
                     else if (answer.SelectedPenaltyType == "RedCard")
                         redCardCount++;
 
-                    // Ceza puanını düş (ağırlık puanı kadar)
-                    totalEarned -= question.WeightPoints;
+                    // Orantılı ceza: (cevap / MaxPoints) * WeightPoints
+                    var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 2m;
+                    var penaltyAmount = (answer.GivenPoints.Value / maxPoints) * question.WeightPoints;
+                    totalEarned -= penaltyAmount;
                 }
                 // Penalty sorular ağırlığa dahil edilmez
                 continue;
@@ -897,36 +899,41 @@ public class EvaluationService : IEvaluationService
 
     private decimal? CalculateEarnedPoints(Question question, SubmitAnswerDto answer)
     {
-        // Eğer doğrudan puan verilmişse onu kullan
-        if (answer.GivenPoints.HasValue)
-            return answer.GivenPoints.Value;
-
         // Puansız sorular için null döndür
         if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
             return null;
 
-        // Cezalı sorular ayrıca işleniyor
-        if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
-            return 0;
+        // Cevap değerini al (GivenPoints veya AnswerNumeric)
+        var answerValue = answer.GivenPoints ?? answer.AnswerNumeric ?? 0;
+        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5m;
+        var weight = question.WeightPoints;
 
-        // Ağırlık puanı ve maksimum puan sistemi
+        // Cezalı sorular - ceza uygulanmışsa orantılı ceza hesapla
+        if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
+        {
+            if (answer.ApplyPenalty && answerValue > 0)
+            {
+                // Orantılı ceza: (cevap / MaxPoints) * WeightPoints
+                return (answerValue / maxPoints) * weight;
+            }
+            return 0;
+        }
+
+        // Normal puanlı sorular
         // Formül: (cevap / MaxPoints) * WeightPoints
         // Örnek: ağırlık=10, max=5, cevap=5 → (5/5) * 10 = 10 puan
         // Örnek: ağırlık=10, max=5, cevap=3 → (3/5) * 10 = 6 puan
-        var weight = question.WeightPoints;
-        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
 
         // MaxPoints = 1 ise Evet/Hayır tipi: 0 veya tam puan
         if (maxPoints == 1)
         {
-            var answered = answer.AnswerNumeric > 0 ||
+            var answered = answerValue > 0 ||
                 answer.AnswerText?.ToLower() == "evet" ||
                 answer.AnswerText?.ToLower() == "yes";
             return answered ? weight : 0;
         }
 
         // MaxPoints > 1 için orantılı hesaplama
-        var answerValue = answer.AnswerNumeric ?? 0;
         return (answerValue / maxPoints) * weight;
     }
 

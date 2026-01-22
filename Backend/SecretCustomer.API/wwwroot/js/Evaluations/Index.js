@@ -395,14 +395,15 @@ function EvaluationsViewModel() {
     self.selectedPersonnelName = ko.observable('');
     self._personnelDropdownTimeout = null;
 
-    // Filtered personnel based on search text
+    // Filtered personnel based on search text (startsWith pattern)
     self.filteredPersonnel = ko.computed(function() {
         var search = self.personnelSearchText().toLowerCase().trim();
         var personnel = self.availablePersonnel();
         if (search.length < 1) return personnel.slice(0, 20); // Show first 20 if no search
         return personnel.filter(function(p) {
-            return (p.name || '').toLowerCase().indexOf(search) >= 0 ||
-                   (p.sicilNo || '').toLowerCase().indexOf(search) >= 0;
+            // startsWith - isim veya sicil no ile başlayanlar
+            return (p.name || '').toLowerCase().indexOf(search) === 0 ||
+                   (p.sicilNo || '').toLowerCase().indexOf(search) === 0;
         }).slice(0, 20); // Limit to 20 results
     });
 
@@ -1794,6 +1795,40 @@ function EvaluationsViewModel() {
         })
         .finally(function() {
             self.isSavingForm(false);
+        });
+    };
+
+    // ========================
+    // DELETE DRAFT
+    // ========================
+    self.deleteDraft = function(evaluation) {
+        if (evaluation.status !== 'Draft') {
+            toastr.error(T('Evaluation.OnlyDraftCanBeDeleted', 'Sadece taslak durumundaki değerlendirmeler silinebilir.'));
+            return;
+        }
+
+        showDeleteConfirm(T('Evaluation.DraftEvaluation', 'Taslak Değerlendirme'), function() {
+            fetch('/api/evaluations/' + evaluation.id, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.message || T('Evaluation.DeleteError', 'Silme işlemi başarısız'));
+                    });
+                }
+                return response.json();
+            })
+            .then(function() {
+                // Listeden kaldır
+                self.allEvaluations.remove(evaluation);
+                toastr.success(T('Evaluation.DraftDeleted', 'Taslak başarıyla silindi.'));
+            })
+            .catch(function(error) {
+                console.error('Delete error:', error);
+                toastr.error(error.message || T('Evaluation.DeleteErrorMessage', 'Taslak silinirken bir hata oluştu.'));
+            });
         });
     };
 

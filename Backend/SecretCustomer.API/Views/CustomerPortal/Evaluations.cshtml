@@ -255,6 +255,11 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <!-- /ko -->
+                                    <!-- ko if: status === 'Draft' -->
+                                    <button class="btn btn-outline-danger btn-sm" data-bind="click: $parent.deleteDraft" title="@Html.T("Common.Delete", "Sil")">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <!-- /ko -->
                                 </div>
                             </td>
                         </tr>
@@ -932,13 +937,14 @@
                                                         <div class="dropdown-menu w-100 show shadow" style="max-height: 250px; overflow-y: auto; position: absolute; top: 100%; left: 0; z-index: 1050;"
                                                              data-bind="visible: isPersonnelDropdownVisible() && filteredPersonnel().length > 0">
                                                             <!-- ko foreach: filteredPersonnel -->
-                                                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="#"
-                                                               data-bind="click: function() { $parent.selectPersonnel($data); }, event: { mousedown: function() { return true; } }">
+                                                            <div class="dropdown-item d-flex justify-content-between align-items-center"
+                                                                 style="cursor: pointer;"
+                                                                 data-bind="event: { mousedown: function() { $parent.selectPersonnel($data); } }">
                                                                 <span data-bind="text: name"></span>
                                                                 <!-- ko if: $data.sicilNo -->
                                                                 <small class="text-muted" data-bind="text: $data.sicilNo"></small>
                                                                 <!-- /ko -->
-                                                            </a>
+                                                            </div>
                                                             <!-- /ko -->
                                                         </div>
                                                         <!-- No Results -->

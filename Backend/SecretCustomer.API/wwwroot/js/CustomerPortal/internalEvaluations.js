@@ -8,6 +8,11 @@ function CustomerInternalEvaluationsViewModel() {
     self.averageScore = ko.observable(0);
     self.page = ko.observable(1);
     self.pageSize = ko.observable(20);
+    self.currentUserRole = ko.observable('');
+
+    self.isManager = ko.computed(function() {
+        return self.currentUserRole() === 'CustomerManager' || self.currentUserRole() === 'Admin';
+    });
 
     // Filter data
     self.projects = ko.observableArray([]);
@@ -647,7 +652,59 @@ function CustomerInternalEvaluationsViewModel() {
             .finally(function() { self.isExporting(false); });
     };
 
+    // ========================
+    // DELETE DRAFT
+    // ========================
+    self.deleteDraft = function(evaluation) {
+        if (evaluation.status !== 'Draft') {
+            toastr.error('Sadece taslak durumundaki değerlendirmeler silinebilir.');
+            return;
+        }
+
+        if (!self.isManager()) {
+            toastr.error('Bu işlem için yetkiniz bulunmamaktadır.');
+            return;
+        }
+
+        showDeleteConfirm('Taslak Değerlendirme', function() {
+            customerApiFetch('/api/customer/portal/evaluations/internal/' + evaluation.id, {
+                method: 'DELETE'
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.message || 'Silme işlemi başarısız');
+                    });
+                }
+                return response.json();
+            })
+            .then(function() {
+                self.evaluations.remove(evaluation);
+                toastr.success('Taslak başarıyla silindi.');
+            })
+            .catch(function(error) {
+                console.error('Delete error:', error);
+                toastr.error(error.message || 'Taslak silinirken bir hata oluştu.');
+            });
+        });
+    };
+
+    // Load current user role
+    self.loadCurrentUserRole = function() {
+        fetch('/api/auth/me', { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data && data.role) {
+                    self.currentUserRole(data.role);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading user role:', error);
+            });
+    };
+
     // Init
+    self.loadCurrentUserRole();
     self.loadFilterOptions();
     self.loadEvaluations(1);
 }

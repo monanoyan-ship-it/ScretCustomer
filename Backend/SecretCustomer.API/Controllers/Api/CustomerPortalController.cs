@@ -1845,8 +1845,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
-                       e.EvaluatorCustomerPersonnelId != null &&
-                       e.StatusId == EvaluationStatuses.Ids.Completed);
+                       e.EvaluatorCustomerPersonnelId != null); // Draftlar da görünsün
 
         // Rol bazlı filtreleme (İç Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar
@@ -4248,6 +4247,59 @@ public class CustomerPortalApiController : ControllerBase
 
         _logger.LogInformation("Taslak değerlendirme silindi (CustomerPortal): EvaluationId={EvaluationId}, PersonnelId={PersonnelId}, IsManager={IsManager}",
             id, personnelId, isManager);
+
+        return Ok(new { message = "Taslak başarıyla silindi." });
+    }
+
+    /// <summary>
+    /// İç dinleme taslağını siler (Sadece Manager)
+    /// </summary>
+    [HttpDelete("evaluations/internal/{id:int}")]
+    public async Task<IActionResult> DeleteInternalDraft(int id)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var role = GetPersonnelRole();
+        var isManager = role == "CustomerManager" || User.IsInRole("Admin");
+
+        // Sadece Manager silebilir
+        if (!isManager)
+        {
+            return Forbid();
+        }
+
+        // Değerlendirmeyi bul
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted && e.EvaluatorCustomerPersonnelId != null);
+
+        if (evaluation == null)
+        {
+            return NotFound(new { message = "Değerlendirme bulunamadı." });
+        }
+
+        // Müşteri kontrolü
+        if (evaluation.Assignment?.Project?.CustomerId != customerId)
+        {
+            return Forbid();
+        }
+
+        // Sadece Draft durumundakiler silinebilir
+        if (evaluation.StatusId != EvaluationStatuses.Ids.Draft)
+        {
+            return BadRequest(new { message = "Sadece taslak durumundaki değerlendirmeler silinebilir." });
+        }
+
+        // Soft delete
+        evaluation.IsDeleted = true;
+        evaluation.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("İç dinleme taslağı silindi (CustomerPortal): EvaluationId={EvaluationId}, Role={Role}",
+            id, role);
 
         return Ok(new { message = "Taslak başarıyla silindi." });
     }

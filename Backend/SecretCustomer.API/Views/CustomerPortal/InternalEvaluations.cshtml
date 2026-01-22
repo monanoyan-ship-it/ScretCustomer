@@ -259,6 +259,11 @@
                                         <button class="btn btn-outline-secondary" data-bind="click: $parent.showAttachments" title="@Html.T("Evaluation.Attachments", "Dosyalar")">
                                             <i class="bi bi-paperclip"></i>
                                         </button>
+                                        <!-- ko if: status === 'Draft' && $parent.isManager() -->
+                                        <button class="btn btn-outline-danger" data-bind="click: $parent.deleteDraft" title="@Html.T("Common.Delete", "Sil")">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <!-- /ko -->
                                     </div>
                                 </td>
                             </tr>
