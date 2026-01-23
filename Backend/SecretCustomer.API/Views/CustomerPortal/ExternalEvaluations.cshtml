@@ -522,26 +522,26 @@
                                                     <span data-bind="text: questionText"></span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: givenPoints !== null && givenPoints !== undefined && questionMaxPoints > 0 -->
-                                                    <span class="badge bg-primary" data-bind="text: givenPoints + '/' + questionMaxPoints"></span>
+                                                    <!-- ko if: givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
+                                                    <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: questionMaxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
+                                                    <!-- ko if: maxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: weightPoints > 0 -->
-                                                    <span data-bind="text: weightPoints"></span>
+                                                    <!-- ko if: maxPoints > 0 -->
+                                                    <span data-bind="text: maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: weightPoints > 0 -->
+                                                    <!-- ko ifnot: maxPoints > 0 -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: weightPoints > 0 -->
-                                                    <span class="text-success" data-bind="text: (earnedPoints || 0).toFixed(2)"></span>
+                                                    <!-- ko if: maxPoints > 0 -->
+                                                    <span class="text-success" data-bind="text: (givenPoints || 0).toFixed(1)"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: weightPoints > 0 -->
+                                                    <!-- ko ifnot: maxPoints > 0 -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>

@@ -22,6 +22,11 @@ function CustomerReportsViewModel() {
     self.scoreRangeModalColor = ko.observable('primary');
     self.scoreRangeEvaluations = ko.observableArray([]);
 
+    // Evaluation Details Modal State
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
+
     // Helpers
     self.getScoreBadgeClass = function(score) {
         if (score >= 90) return 'bg-success';
@@ -176,6 +181,51 @@ function CustomerReportsViewModel() {
     self.closeScoreRangeModal = function() {
         self.isScoreRangeModalOpen(false);
         self.scoreRangeEvaluations([]);
+    };
+
+    // Show Evaluation Details Modal
+    self.showDetails = function(evaluation) {
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        customerApiFetch('/api/customer/portal/evaluations/' + evaluation.evaluationId)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Detay yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                toastr.error('Detay yüklenirken hata oluştu.');
+                self.closeDetailsModal();
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    // Close Details Modal
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
+    };
+
+    // Score class helpers for details modal
+    self.getScoreClass = function(score) {
+        if (score >= 90) return 'text-success';
+        if (score >= 80) return 'text-primary';
+        if (score >= 60) return 'text-warning';
+        return 'text-danger';
+    };
+
+    self.getProgressBarClass = function(score) {
+        if (score >= 90) return 'bg-success';
+        if (score >= 80) return 'bg-primary';
+        if (score >= 60) return 'bg-warning';
+        return 'bg-danger';
     };
 
     // Initialize

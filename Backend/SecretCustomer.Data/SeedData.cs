@@ -269,7 +269,6 @@ public static class SeedData
                     WeightPoints = 5,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 1,
                     CreatedAt = DateTime.UtcNow
@@ -282,7 +281,6 @@ public static class SeedData
                     WeightPoints = 10,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 2,
                     CreatedAt = DateTime.UtcNow
@@ -295,7 +293,6 @@ public static class SeedData
                     WeightPoints = 0,
                     MaxPoints = 1,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = true,
                     IsRequired = false,
                     Order = 3,
                     CreatedAt = DateTime.UtcNow
@@ -310,7 +307,6 @@ public static class SeedData
                     WeightPoints = 5,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 4,
                     HelpText = "Müşteri girişinde karşılama kalitesini değerlendirin",
@@ -324,7 +320,6 @@ public static class SeedData
                     WeightPoints = 5,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = true,
                     IsRequired = true,
                     Order = 5,
                     CreatedAt = DateTime.UtcNow
@@ -337,7 +332,6 @@ public static class SeedData
                     WeightPoints = 10,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 6,
                     CreatedAt = DateTime.UtcNow
@@ -352,7 +346,6 @@ public static class SeedData
                     WeightPoints = 5,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 7,
                     CreatedAt = DateTime.UtcNow
@@ -365,7 +358,6 @@ public static class SeedData
                     WeightPoints = 15,
                     MaxPoints = 4,
                     PenaltyTypeId = PenaltyTypes.Ids.None,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 8,
                     CreatedAt = DateTime.UtcNow
@@ -378,7 +370,6 @@ public static class SeedData
                     WeightPoints = 10, // Ceza miktarı (eski PenaltyValue)
                     MaxPoints = 2,
                     PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
-                    AllowNA = true,
                     IsRequired = true,
                     Order = 9,
                     HelpText = "SARI KART: Porsiyon standart boyutun altındaysa 10 puan düşülür",
@@ -395,7 +386,6 @@ public static class SeedData
                     WeightPoints = 5, // Ceza miktarı: 5 puan düşürülür
                     MaxPoints = 2, // Evet/Hayır
                     PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 10,
                     HelpText = "SARI KART: İsim kartı yoksa toplam puandan 5 puan düşülür",
@@ -409,7 +399,6 @@ public static class SeedData
                     WeightPoints = 8, // Ceza miktarı: 8 puan düşülür
                     MaxPoints = 2,
                     PenaltyTypeId = PenaltyTypes.Ids.YellowCard,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 11,
                     HelpText = "SARI KART: Güler yüz yoksa 8 puan düşülür",
@@ -425,7 +414,6 @@ public static class SeedData
                     WeightPoints = 25, // Ciddi ceza: 25 puan düşülür
                     MaxPoints = 2,
                     PenaltyTypeId = PenaltyTypes.Ids.RedCard,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 12,
                     HelpText = "KIRMIZI KART: Hijyen ihlali tespit edilirse 25 puan düşülür",
@@ -439,7 +427,6 @@ public static class SeedData
                     WeightPoints = 50, // Çok ciddi ceza: 50 puan düşülür
                     MaxPoints = 2,
                     PenaltyTypeId = PenaltyTypes.Ids.RedCard,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 13,
                     HelpText = "KIRMIZI KART: Saygısız davranış tespit edilirse 50 puan düşülür",
@@ -453,7 +440,6 @@ public static class SeedData
                     WeightPoints = 100, // Tam sıfırlama: 100 puan düşülür
                     MaxPoints = 2,
                     PenaltyTypeId = PenaltyTypes.Ids.RedCard,
-                    AllowNA = false,
                     IsRequired = true,
                     Order = 14,
                     HelpText = "KIRMIZI KART: Bozuk ürün servisi = DEĞERLENDİRME SIFIRLANIR",

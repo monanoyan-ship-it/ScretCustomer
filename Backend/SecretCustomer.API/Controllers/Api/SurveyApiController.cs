@@ -2349,7 +2349,7 @@ public class SendSurveyInvitationsDto
     public int? EmailTemplateId { get; set; }
 
     /// <summary>
-    /// Anket form base URL'i (örn: https://example.com/Anket/Form)
+    /// Anket form base URL'i (örn: https://example.com/Survey/Form)
     /// </summary>
     public string BaseUrl { get; set; } = string.Empty;
 
@@ -2414,7 +2414,7 @@ public class SendExternalInvitationsDto
     public int? EmailTemplateId { get; set; }
 
     /// <summary>
-    /// Anket form base URL'i (örn: https://example.com/Anket/Form)
+    /// Anket form base URL'i (örn: https://example.com/Survey/Form)
     /// </summary>
     public string BaseUrl { get; set; } = string.Empty;
 }
@@ -2435,7 +2435,7 @@ public class ExternalRecipient
 public class SendExternalRemindersDto
 {
     /// <summary>
-    /// Anket form base URL'i (örn: https://example.com/Anket/Form)
+    /// Anket form base URL'i (örn: https://example.com/Survey/Form)
     /// </summary>
     public string BaseUrl { get; set; } = string.Empty;
 

@@ -1405,7 +1405,7 @@ function ProjectsViewModel() {
             onConfirm: function() {
                 self.isExternalSendingReminder(true);
 
-                var baseUrl = window.location.origin + '/Anket/Form';
+                var baseUrl = window.location.origin + '/Survey/Form';
 
                 fetch('/api/surveys/' + project.id + '/send-external-reminders', {
                     method: 'POST',

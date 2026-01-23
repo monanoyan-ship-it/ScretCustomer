@@ -57,32 +57,28 @@ public class Question : BaseEntity
         SampleValue = "None")]
     public int PenaltyTypeId { get; set; } = PenaltyTypes.Ids.None;
 
-    [ExcelColumn("N/A İzni", 7, ColumnType = ExcelColumnTypes.Ids.Boolean,
-        Description = "N/A seçeneğine izin verilir mi?", SampleValue = "false")]
-    public bool AllowNA { get; set; } = false;
-
-    [ExcelColumn("Zorunlu", 8, ColumnType = ExcelColumnTypes.Ids.Boolean,
+    [ExcelColumn("Zorunlu", 7, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Soru zorunlu mu?", SampleValue = "true")]
     public bool IsRequired { get; set; } = true;
 
     /// <summary>
     /// Önerilen açıklama / Öneri notu
     /// </summary>
-    [ExcelColumn("Önerilen Açıklama", 9, ColumnType = ExcelColumnTypes.Ids.Text,
+    [ExcelColumn("Önerilen Açıklama", 8, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Bu soru için önerilen açıklama/öneri")]
     public string? RecommendedNote { get; set; }
 
     /// <summary>
     /// Soru için yardımcı metin / ipucu
     /// </summary>
-    [ExcelColumn("Yardımcı Metin", 10, ColumnType = ExcelColumnTypes.Ids.Text,
+    [ExcelColumn("Yardımcı Metin", 9, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Değerlendirici için yardımcı metin")]
     public string? HelpText { get; set; }
 
     /// <summary>
     /// Soru grubu (opsiyonel) - Raporlama için gruplandırma
     /// </summary>
-    [ExcelColumn("Grup", 11, ColumnType = ExcelColumnTypes.Ids.Text,
+    [ExcelColumn("Grup", 10, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Sorunun ait olduğu grup (raporlama için)", SampleValue = "İletişim")]
     public string? GroupName { get; set; }
 

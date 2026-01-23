@@ -2222,7 +2222,7 @@ public class CustomerPortalApiController : ControllerBase
             if (evaluation?.Assignment?.Project?.CustomerId != customerId)
                 return Forbid();
 
-            var detail = await _evaluationService.GetByIdAsync(evaluationId);
+            var detail = await _reportService.GetEvaluationDetailAsync(evaluationId);
             if (detail == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
 
