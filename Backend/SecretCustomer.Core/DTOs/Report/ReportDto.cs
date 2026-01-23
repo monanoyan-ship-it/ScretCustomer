@@ -537,7 +537,9 @@ public class SuggestionsReportResultDto
 {
     public SuggestionsSummaryDto Summary { get; set; } = new();
     public List<SuggestionDetailDto> Suggestions { get; set; } = new();
+    public List<EvaluationNoteDto> EvaluationNotes { get; set; } = new();
     public int TotalCount { get; set; }
+    public int EvaluationNotesCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
@@ -552,6 +554,10 @@ public class SuggestionsSummaryDto
     public int TotalEvaluationsWithSuggestions { get; set; }
     public int UniqueEvaluators { get; set; }
     public int UniquePersonnel { get; set; }
+    public int RedCardCount { get; set; }
+    public int YellowCardCount { get; set; }
+    public int LowScoreCount { get; set; }
+    public int EvaluationNotesCount { get; set; }
 }
 
 /// <summary>
@@ -591,6 +597,34 @@ public class SuggestionDetailDto
     public string? CallId { get; set; }
     public bool IsPenaltyApplied { get; set; }
     public string? PenaltyType { get; set; }
+
+    /// <summary>
+    /// Listeye girme sebebi: RedCard, YellowCard, LowScore, Note
+    /// </summary>
+    public string ReasonType { get; set; } = "Note";
+}
+
+/// <summary>
+/// Değerlendirme genel notları (Evaluation seviyesinde)
+/// </summary>
+public class EvaluationNoteDto
+{
+    public int EvaluationId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? EvaluatedPersonnelName { get; set; }
+    public DateTime? EvaluationDate { get; set; }
+    public string? CallId { get; set; }
+    public decimal? ScorePercentage { get; set; }
+
+    /// <summary>
+    /// Genel notlar (Evaluation.Notes)
+    /// </summary>
+    public string? Notes { get; set; }
+
+    /// <summary>
+    /// Denetim yorumu (Evaluation.EvaluationComment)
+    /// </summary>
+    public string? EvaluationComment { get; set; }
 }
 
 /// <summary>

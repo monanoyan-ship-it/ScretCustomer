@@ -119,42 +119,57 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.TotalSuggestions", "Toplam Oneri/Not")</h6>
-                            <h2 class="mb-0" data-bind="text: summary().totalSuggestions"></h2>
-                        </div>
-                        <i class="bi bi-chat-quote fs-1 opacity-50"></i>
-                    </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-x-circle fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().redCardCount"></h3>
+                    <small class="text-white-50">Kırmızı Kart</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.EvaluationsWithSuggestions", "Onerili Degerlendirme")</h6>
-                            <h2 class="mb-0" data-bind="text: summary().totalEvaluationsWithSuggestions"></h2>
-                        </div>
-                        <i class="bi bi-clipboard-check fs-1 opacity-50"></i>
-                    </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-exclamation-triangle fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().yellowCardCount"></h3>
+                    <small>Sarı Kart</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <div class="card bg-secondary text-white h-100">
-                <div class="card-body py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">@Html.T("Report.PersonnelCount", "Personel Sayisi")</h6>
-                            <h2 class="mb-0" data-bind="text: summary().uniquePersonnel"></h2>
-                        </div>
-                        <i class="bi bi-people fs-1 opacity-50"></i>
-                    </div>
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-graph-down fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().lowScoreCount"></h3>
+                    <small class="text-white-50">Düşük Puan</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-chat-quote fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().totalSuggestions"></h3>
+                    <small class="text-white-50">Toplam Kayıt</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-clipboard-check fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().totalEvaluationsWithSuggestions"></h3>
+                    <small class="text-white-50">Değerlendirme</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white h-100">
+                <div class="card-body py-3 text-center">
+                    <i class="bi bi-people fs-2"></i>
+                    <h3 class="mb-0 mt-1" data-bind="text: summary().uniquePersonnel"></h3>
+                    <small class="text-white-50">Personel</small>
                 </div>
             </div>
         </div>
@@ -211,28 +226,32 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6 mb-3">
+                        <div class="col-4 mb-3">
                             <small class="text-muted d-block">@Html.T("Report.Page", "Sayfa")</small>
                             <strong data-bind="text: currentPage() + ' / ' + totalPages()"></strong>
                         </div>
-                        <div class="col-6 mb-3">
-                            <small class="text-muted d-block">@Html.T("Report.TotalRecords", "Toplam Kayit")</small>
+                        <div class="col-4 mb-3">
+                            <small class="text-muted d-block">Cevap Kayıtları</small>
                             <strong data-bind="text: totalCount()"></strong>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <small class="text-muted d-block">Genel Not Sayısı</small>
+                            <strong data-bind="text: evaluationNotesCount()"></strong>
                         </div>
                     </div>
                     <p class="text-muted small mb-0">
                         <i class="bi bi-lightbulb"></i>
-                        @Html.T("Report.SuggestionsDescription", "Bu rapor, tum degerlendirmelerde girilen notlari ve onerileri listeler.")
+                        Bu rapor kırmızı/sarı kartları, düşük puanlı cevapları ve yazılan notları listeler.
                     </p>
                 </div>
             </div>
         </div>
 
         <!-- Detailed Suggestions List -->
-        <div class="col-12">
+        <div class="col-12 mb-4">
             <div class="card shadow">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> @Html.T("Report.SuggestionList", "Oneri Listesi")</h5>
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Cevap Bazlı Kayıtlar</h5>
                     <span class="badge bg-info" data-bind="text: totalCount() + ' kayit'"></span>
                 </div>
                 <div class="card-body p-0">
@@ -244,6 +263,7 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
+                                    <th style="width: 80px;">Sebep</th>
                                     <th>@Html.T("Report.Date", "Tarih")</th>
                                     <th>@Html.T("Report.ProjectOrg", "Proje")</th>
                                     <th>@Html.T("Report.Question", "Soru")</th>
@@ -254,7 +274,10 @@
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: suggestions">
-                                <tr data-bind="css: { 'table-warning': isPenaltyApplied }">
+                                <tr data-bind="css: { 'table-danger': reasonType === 'RedCard', 'table-warning': reasonType === 'YellowCard' }">
+                                    <td>
+                                        <span class="badge" data-bind="text: $root.getReasonBadge(reasonType).text, css: $root.getReasonBadge(reasonType).class"></span>
+                                    </td>
                                     <td>
                                         <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
                                     </td>
@@ -319,6 +342,70 @@
                                 </li>
                             </ul>
                         </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation General Notes List -->
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Değerlendirme Genel Notları</h5>
+                    <span class="badge bg-secondary" data-bind="text: evaluationNotesCount() + ' kayit'"></span>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: evaluationNotes().length === 0" class="text-center text-muted py-5">
+                        <i class="bi bi-chat-left fs-1"></i>
+                        <p class="mt-2">Genel not bulunamadı.</p>
+                    </div>
+                    <div data-bind="visible: evaluationNotes().length > 0" class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Proje</th>
+                                    <th>Personel</th>
+                                    <th>Puan</th>
+                                    <th>Genel Not</th>
+                                    <th>Denetim Yorumu</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: evaluationNotes">
+                                <tr>
+                                    <td>
+                                        <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                        <small class="text-muted d-block" data-bind="text: callId || ''"></small>
+                                    </td>
+                                    <td data-bind="text: projectName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td>
+                                        <!-- ko if: scorePercentage != null -->
+                                        <span data-bind="text: scorePercentage.toFixed(1) + '%', css: { 'text-success': scorePercentage >= 70, 'text-warning': scorePercentage >= 40 && scorePercentage < 70, 'text-danger': scorePercentage < 40 }"></span>
+                                        <!-- /ko -->
+                                        <!-- ko if: scorePercentage == null -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <!-- ko if: notes -->
+                                        <div class="small p-2 rounded" style="background-color: #f8f9fa; white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 150 ? notes.substring(0, 150) + '...' : notes, attr: { title: notes }"></div>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: notes -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <!-- ko if: evaluationComment -->
+                                        <div class="small p-2 rounded" style="background-color: #e7f3ff; white-space: pre-wrap; word-break: break-word;" data-bind="text: evaluationComment.length > 150 ? evaluationComment.substring(0, 150) + '...' : evaluationComment, attr: { title: evaluationComment }"></div>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: evaluationComment -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

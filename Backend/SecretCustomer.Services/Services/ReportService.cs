@@ -1971,6 +1971,9 @@ public class ReportService : IReportService
 
     public async Task<SuggestionsReportResultDto> GetSuggestionsReportAsync(SuggestionsFilterDto filter)
     {
+        // Düşük puan eşiği: %50
+        const decimal lowScoreThreshold = 0.5m;
+
         var query = _context.Answers
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
@@ -1984,8 +1987,19 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.EvaluatedPersonnel)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
-            .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+            // Hibrit filtre: Not/Öneri VEYA Kart VEYA Düşük puan
+            .Where(a =>
+                // Not veya öneri yazılmış
+                !string.IsNullOrEmpty(a.Notes) ||
+                !string.IsNullOrEmpty(a.RecommendationNotes) ||
+                // Sarı veya kırmızı kart uygulanmış
+                a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard ||
+                a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard ||
+                // Düşük puan (%50 altı) - sadece puanlı sorular için
+                (a.Question.WeightPoints > 0 && a.EarnedPoints.HasValue &&
+                 (a.EarnedPoints.Value / a.Question.WeightPoints) < lowScoreThreshold)
+            )
             .AsQueryable();
 
         // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
@@ -2057,6 +2071,7 @@ public class ReportService : IReportService
 
         // Calculate summary
         var allSuggestionAnswers = await query.ToListAsync();
+
         var summary = new SuggestionsSummaryDto
         {
             TotalSuggestions = totalCount,
@@ -2070,43 +2085,130 @@ public class ReportService : IReportService
                 .Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue)
                 .Select(a => a.Evaluation.EvaluatedCustomerPersonnelId)
                 .Distinct()
-                .Count()
+                .Count(),
+            RedCardCount = allSuggestionAnswers
+                .Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard),
+            YellowCardCount = allSuggestionAnswers
+                .Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard),
+            LowScoreCount = allSuggestionAnswers
+                .Count(a => a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue &&
+                           (a.EarnedPoints.Value / a.Question.WeightPoints) < lowScoreThreshold &&
+                           a.AppliedPenaltyTypeId != PenaltyTypes.Ids.RedCard &&
+                           a.AppliedPenaltyTypeId != PenaltyTypes.Ids.YellowCard)
         };
 
-        // Map to DTOs
-        var suggestionDtos = suggestions.Select(a => new SuggestionDetailDto
+        // Map to DTOs with ReasonType
+        var suggestionDtos = suggestions.Select(a =>
         {
-            EvaluationId = a.EvaluationId,
-            AnswerId = a.Id,
-            QuestionId = a.QuestionId,
-            QuestionText = a.Question?.Text ?? "",
-            GroupName = a.Question?.GroupName ?? "",
-            ChecklistName = a.Evaluation.Assignment.Checklist?.Name ?? "",
-            Notes = a.Notes,
-            RecommendationNotes = a.RecommendationNotes,
-            GivenPoints = a.EarnedPoints,
-            MaxPoints = a.Question?.WeightPoints ?? 0,
-            PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
-                ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
-                : null,
-            ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-            EvaluatorName = a.Evaluation.Evaluator != null
-                ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
-                : null,
-            EvaluatedPersonnelName = a.Evaluation.EvaluatedPersonnel != null
-                ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
-                : a.Evaluation.EvaluatedUnknownPersonnel,
-            EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
-            CallId = a.Evaluation.CallId,
-            IsPenaltyApplied = a.IsPenaltyApplied,
-            PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName : null
+            // ReasonType belirleme (öncelik sırası: RedCard > YellowCard > LowScore > Note)
+            string reasonType = "Note";
+            if (a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard)
+                reasonType = "RedCard";
+            else if (a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard)
+                reasonType = "YellowCard";
+            else if (a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue &&
+                     (a.EarnedPoints.Value / a.Question.WeightPoints) < lowScoreThreshold)
+                reasonType = "LowScore";
+
+            return new SuggestionDetailDto
+            {
+                EvaluationId = a.EvaluationId,
+                AnswerId = a.Id,
+                QuestionId = a.QuestionId,
+                QuestionText = a.Question?.Text ?? "",
+                GroupName = a.Question?.GroupName ?? "",
+                ChecklistName = a.Evaluation.Assignment.Checklist?.Name ?? "",
+                Notes = a.Notes,
+                RecommendationNotes = a.RecommendationNotes,
+                GivenPoints = a.EarnedPoints,
+                MaxPoints = a.Question?.WeightPoints ?? 0,
+                PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
+                    ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
+                    : null,
+                ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
+                EvaluatorName = a.Evaluation.Evaluator != null
+                    ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
+                    : null,
+                EvaluatedPersonnelName = a.Evaluation.EvaluatedPersonnel != null
+                    ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
+                    : a.Evaluation.EvaluatedUnknownPersonnel,
+                EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
+                CallId = a.Evaluation.CallId,
+                IsPenaltyApplied = a.IsPenaltyApplied,
+                PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName : null,
+                ReasonType = reasonType
+            };
         }).ToList();
+
+        // Evaluation seviyesindeki notları getir (genel notlar ve denetim yorumları)
+        var evaluationNotesQuery = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => !string.IsNullOrEmpty(e.Notes) || !string.IsNullOrEmpty(e.EvaluationComment))
+            .AsQueryable();
+
+        // Aynı filtreleri uygula
+        if (filter.ProjectIds?.Any() == true)
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+        else
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+
+        if (filter.CustomerIds?.Any() == true)
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return new { Start = startUtc, End = endUtc };
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CompletedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CompletedAt <= maxEnd);
+        }
+
+        var evaluationNotes = await evaluationNotesQuery
+            .OrderByDescending(e => e.CompletedAt)
+            .Select(e => new EvaluationNoteDto
+            {
+                EvaluationId = e.Id,
+                ProjectName = e.Assignment.Project != null ? e.Assignment.Project.Name : "",
+                EvaluatedPersonnelName = e.EvaluatedPersonnel != null
+                    ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
+                    : (e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                        : e.EvaluatedUnknownPersonnel),
+                EvaluationDate = e.CompletedAt ?? e.ControlDate,
+                CallId = e.CallId,
+                ScorePercentage = e.ScorePercentage,
+                Notes = e.Notes,
+                EvaluationComment = e.EvaluationComment
+            })
+            .ToListAsync();
+
+        summary.EvaluationNotesCount = evaluationNotes.Count;
 
         return new SuggestionsReportResultDto
         {
             Summary = summary,
             Suggestions = suggestionDtos,
+            EvaluationNotes = evaluationNotes,
             TotalCount = totalCount,
+            EvaluationNotesCount = evaluationNotes.Count,
             Page = filter.Page,
             PageSize = filter.PageSize
         };

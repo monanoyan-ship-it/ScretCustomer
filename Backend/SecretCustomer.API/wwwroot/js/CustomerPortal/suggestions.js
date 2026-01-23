@@ -201,7 +201,11 @@ function CustomerSuggestionsViewModel() {
     self.summary = ko.observable({
         totalSuggestions: 0,
         totalEvaluationsWithSuggestions: 0,
-        uniquePersonnel: 0
+        uniquePersonnel: 0,
+        redCardCount: 0,
+        yellowCardCount: 0,
+        lowScoreCount: 0,
+        evaluationNotesCount: 0
     });
 
     // Pagination
@@ -229,6 +233,18 @@ function CustomerSuggestionsViewModel() {
     // Data
     self.suggestions = ko.observableArray([]);
     self.topSuggestedQuestions = ko.observableArray([]);
+    self.evaluationNotes = ko.observableArray([]);
+    self.evaluationNotesCount = ko.observable(0);
+
+    // ReasonType badge helper
+    self.getReasonBadge = function(reasonType) {
+        switch (reasonType) {
+            case 'RedCard': return { text: 'Kırmızı Kart', class: 'bg-danger' };
+            case 'YellowCard': return { text: 'Sarı Kart', class: 'bg-warning text-dark' };
+            case 'LowScore': return { text: 'Düşük Puan', class: 'bg-secondary' };
+            default: return { text: 'Not/Öneri', class: 'bg-info' };
+        }
+    };
 
     // Details Modal State
     self.isDetailsModalOpen = ko.observable(false);
@@ -312,10 +328,16 @@ function CustomerSuggestionsViewModel() {
             self.summary(data.summary || {
                 totalSuggestions: 0,
                 totalEvaluationsWithSuggestions: 0,
-                uniquePersonnel: 0
+                uniquePersonnel: 0,
+                redCardCount: 0,
+                yellowCardCount: 0,
+                lowScoreCount: 0,
+                evaluationNotesCount: 0
             });
             self.suggestions(data.suggestions || []);
+            self.evaluationNotes(data.evaluationNotes || []);
             self.totalCount(data.totalCount || 0);
+            self.evaluationNotesCount(data.evaluationNotesCount || 0);
             self.topSuggestedQuestions(topQuestions || []);
         })
         .catch(function(error) {
