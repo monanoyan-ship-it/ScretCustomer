@@ -603,7 +603,8 @@ public class EvaluationService : IEvaluationService
         var assignment = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
-                .ThenInclude(c => c.Questions)
+                .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
+                    .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
             .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
 
         if (assignment == null)
@@ -661,7 +662,7 @@ public class EvaluationService : IEvaluationService
             .ToList();
 
         // Calculate scores with penalty handling
-        var scoreResult = CalculateScoreWithPenalties(allQuestions, dto.Answers);
+        var scoreResult = CalculateScoreWithPenalties(allQuestions, dto.Answers, assignment.Checklist.ScoringMethodId);
 
         // Clear existing answers and add new ones
         if (evaluation.Answers.Any())
@@ -793,7 +794,7 @@ public class EvaluationService : IEvaluationService
     /// Asıl hesaplama CalculateScoreCore'da yapılır
     /// </summary>
     private (decimal TotalEarned, decimal MaxPossible, decimal Percentage, int YellowCardCount, int RedCardCount)
-        CalculateScoreWithPenalties(List<Question> allQuestions, List<SubmitAnswerDto> answers)
+        CalculateScoreWithPenalties(List<Question> allQuestions, List<SubmitAnswerDto> answers, int scoringMethodId = ScoringMethods.Ids.Maximum)
     {
         // SubmitAnswerDto -> ScoreAnswerDto dönüşümü
         // GivenPoints yoksa AnswerNumeric'i kullan (normal 0-5 arası puanlama için)
@@ -801,26 +802,32 @@ public class EvaluationService : IEvaluationService
         {
             QuestionId = a.QuestionId,
             GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
+            SelectedSubCriteriaIds = a.SelectedSubCriteriaIds,
             ApplyPenalty = a.ApplyPenalty,
             SelectedPenaltyType = a.SelectedPenaltyType
         }).ToList();
 
-        var result = CalculateScoreCore(allQuestions, scoreAnswers);
+        var result = CalculateScoreCore(allQuestions, scoreAnswers, scoringMethodId);
         return (result.TotalEarned, result.MaxPossible, result.Percentage, result.YellowCardCount, result.RedCardCount);
     }
 
     /// <summary>
     /// TEK HESAPLAMA NOKTASI - Tüm puan hesaplamaları buradan geçer
     ///
-    /// Hesaplama Mantığı:
+    /// Hesaplama Mantığı (Maximum modu - varsayılan):
     /// - Penalty sorular: Her zaman opsiyonel, sadece ApplyPenalty=true ise ceza uygulanır, ağırlığa dahil edilmez
     /// - Unscored sorular: Puan hesabına katılmaz
     /// - Scored sorular:
     ///   - Cevap verilmişse → hesaplamaya dahil
     ///   - Cevap verilmemişse + zorunlu değilse → atla
     ///   - Cevap verilmemişse + zorunluysa → 0 puan olarak dahil
+    ///
+    /// Hesaplama Mantığı (CriteriaTotal modu - SESTEK tarzı):
+    /// - Seçilen SubCriteria'nın WeightPoints değeri direkt kazanılan puan olur
+    /// - Negatif puanlar olabilir (Ödül & Ceza soruları)
+    /// - MaxPossible = Tüm soruların maksimum SubCriteria puanlarının toplamı
     /// </summary>
-    private ScoreCalculationResultDto CalculateScoreCore(List<Question> questions, List<ScoreAnswerDto> answers)
+    private ScoreCalculationResultDto CalculateScoreCore(List<Question> questions, List<ScoreAnswerDto> answers, int scoringMethodId = ScoringMethods.Ids.Maximum)
     {
         decimal totalEarned = 0;
         decimal totalMaxPoints = 0;
@@ -830,6 +837,9 @@ public class EvaluationService : IEvaluationService
 
         // Cevapları dictionary'e çevir (hızlı erişim için)
         var answerDict = answers.ToDictionary(a => a.QuestionId, a => a);
+
+        // CriteriaTotal modu mu?
+        bool isCriteriaTotal = scoringMethodId == ScoringMethods.Ids.CriteriaTotal;
 
         foreach (var question in questions)
         {
@@ -859,31 +869,70 @@ public class EvaluationService : IEvaluationService
             }
 
             // 3. Normal puanlı sorular (Scored)
-            // Cevap verilmiş mi?
-            bool hasAnswer = answer != null && answer.GivenPoints.HasValue;
-
-            // Zorunlu olmayan soru ve cevap verilmemiş → atla
-            if (!question.IsRequired && !hasAnswer)
-                continue;
-
-            // Bu soru hesaplamaya dahil
-            includedQuestionCount++;
-            totalMaxPoints += question.WeightPoints;
-
-            // Cevap varsa puanı hesapla
-            if (hasAnswer)
+            if (isCriteriaTotal)
             {
-                // Formül: (cevap / MaxPoints) * WeightPoints
-                var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
-                var earnedPoints = (answer!.GivenPoints!.Value / maxPoints) * question.WeightPoints;
-                totalEarned += earnedPoints;
+                // CriteriaTotal modu: Seçilen SubCriteria'nın puanını al
+                bool hasSubCriteriaSelection = answer?.SelectedSubCriteriaIds?.Any() == true;
+
+                // Zorunlu olmayan soru ve cevap verilmemiş → atla
+                if (!question.IsRequired && !hasSubCriteriaSelection)
+                    continue;
+
+                // Bu soru hesaplamaya dahil
+                includedQuestionCount++;
+
+                // SubCriteria'ların maksimum puanını bul (MaxPossible için)
+                var subCriteriaList = question.SubCriteria?.Where(sc => sc.IsActive).ToList() ?? new List<QuestionSubCriteria>();
+                if (subCriteriaList.Any())
+                {
+                    totalMaxPoints += subCriteriaList.Max(sc => sc.WeightPoints);
+                }
+
+                // Cevap varsa puanı hesapla
+                if (hasSubCriteriaSelection)
+                {
+                    var selectedSubCriteriaId = answer!.SelectedSubCriteriaIds!.First();
+                    var selectedSubCriteria = subCriteriaList.FirstOrDefault(sc => sc.Id == selectedSubCriteriaId);
+                    if (selectedSubCriteria != null)
+                    {
+                        totalEarned += selectedSubCriteria.WeightPoints;
+                    }
+                }
+                // Cevap yoksa (zorunlu soru ama cevap verilmemiş) → 0 puan
             }
-            // Cevap yoksa (zorunlu soru ama cevap verilmemiş) → 0 puan
+            else
+            {
+                // Maximum modu: Mevcut hesaplama mantığı
+                bool hasAnswer = answer != null && answer.GivenPoints.HasValue;
+
+                // Zorunlu olmayan soru ve cevap verilmemiş → atla
+                if (!question.IsRequired && !hasAnswer)
+                    continue;
+
+                // Bu soru hesaplamaya dahil
+                includedQuestionCount++;
+                totalMaxPoints += question.WeightPoints;
+
+                // Cevap varsa puanı hesapla
+                if (hasAnswer)
+                {
+                    // Formül: (cevap / MaxPoints) * WeightPoints
+                    var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5;
+                    var earnedPoints = (answer!.GivenPoints!.Value / maxPoints) * question.WeightPoints;
+                    totalEarned += earnedPoints;
+                }
+                // Cevap yoksa (zorunlu soru ama cevap verilmemiş) → 0 puan
+            }
         }
 
         // Yüzde hesapla
         var percentage = totalMaxPoints > 0 ? (totalEarned / totalMaxPoints) * 100 : 0;
-        percentage = Math.Max(0, Math.Round(percentage, 2)); // Negatif olamaz
+        // CriteriaTotal'da negatif yüzde olabilir, Maximum'da olamaz
+        if (!isCriteriaTotal)
+        {
+            percentage = Math.Max(0, percentage);
+        }
+        percentage = Math.Round(percentage, 2);
 
         return new ScoreCalculationResultDto
         {
@@ -1374,14 +1423,21 @@ public class EvaluationService : IEvaluationService
     /// </summary>
     public async Task<ScoreCalculationResultDto> CalculateScoreAsync(CalculateScoreRequestDto request)
     {
-        // Checklist'in sorularını getir
-        var questions = await _context.Questions
-            .Where(q => q.ChecklistId == request.ChecklistId && !q.IsDeleted)
-            .OrderBy(q => q.Order)
-            .ToListAsync();
+        // Checklist ve sorularını getir
+        var checklist = await _context.Checklists
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+                .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
+            .FirstOrDefaultAsync(c => c.Id == request.ChecklistId);
+
+        if (checklist == null)
+        {
+            return new ScoreCalculationResultDto();
+        }
+
+        var questions = checklist.Questions.OrderBy(q => q.Order).ToList();
 
         // Tek hesaplama noktasını kullan
-        return CalculateScoreCore(questions, request.Answers);
+        return CalculateScoreCore(questions, request.Answers, checklist.ScoringMethodId);
     }
 
     /// <summary>
@@ -1392,8 +1448,10 @@ public class EvaluationService : IEvaluationService
         var evaluation = await _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Checklist)
-                    .ThenInclude(c => c!.Questions)
+                    .ThenInclude(c => c!.Questions.Where(q => !q.IsDeleted))
+                        .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
             .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
             .FirstOrDefaultAsync(e => e.Id == evaluationId);
 
         if (evaluation == null)
@@ -1402,9 +1460,8 @@ public class EvaluationService : IEvaluationService
         if (evaluation.StatusId != EvaluationStatuses.Ids.Completed)
             return (false, "Sadece tamamlanmış değerlendirmeler yeniden hesaplanabilir.");
 
-        var questions = evaluation.Assignment.Checklist?.Questions
-            .Where(q => !q.IsDeleted)
-            .ToList() ?? new List<Question>();
+        var checklist = evaluation.Assignment.Checklist;
+        var questions = checklist?.Questions.ToList() ?? new List<Question>();
 
         if (!questions.Any())
             return (false, "Checklist soruları bulunamadı.");
@@ -1415,6 +1472,8 @@ public class EvaluationService : IEvaluationService
             QuestionId = a.QuestionId,
             // GivenPoints yoksa AnswerNumeric'i kullan
             GivenPoints = a.GivenPoints ?? a.AnswerNumeric,
+            // SubCriteria seçimlerini al (CriteriaTotal modu için)
+            SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList(),
             ApplyPenalty = a.AppliedPenaltyTypeId > 0,
             SelectedPenaltyType = a.AppliedPenaltyTypeId > 0
                 ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName
@@ -1422,7 +1481,7 @@ public class EvaluationService : IEvaluationService
         }).ToList();
 
         // Yeniden hesapla
-        var result = CalculateScoreCore(questions, scoreAnswers);
+        var result = CalculateScoreCore(questions, scoreAnswers, checklist?.ScoringMethodId ?? ScoringMethods.Ids.Maximum);
 
         // Sonuçları kaydet
         evaluation.TotalScore = result.TotalEarned;

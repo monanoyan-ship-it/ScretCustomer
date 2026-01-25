@@ -320,3 +320,145 @@ Toplam: 7.5 + (-10) = -2.5 puan
 - Geriye uyumlu
 - Esnek (her checklist kendi modunu seçebilir)
 - Az kod değişikliği
+
+---
+
+## 10. UI MİMARİSİ KARARLARI
+
+### 10.1 Checklist Editor - Mod Seçimi Önce
+
+**Akış:**
+1. "Yeni Checklist" butonuna tıklanır
+2. **Mod Seçim Modalı** açılır:
+   - "Maksimum" - Klasik puanlama (0-MaxPoints arası giriş)
+   - "Kriter Toplam" - SESTEK tarzı (seçenek bazlı)
+3. Mod seçildikten sonra **ilgili Popup** açılır
+
+**Dosya Yapısı:**
+```
+Views/Checklists/
+├── Index.cshtml          # Liste + Mod seçim modalı
+├── PopupMaximum.cshtml   # Maksimum mod için editör popup
+└── PopupCriteriaTotal.cshtml  # Kriter Toplam mod için editör popup
+
+wwwroot/js/Checklists/
+├── index.js              # Liste VM + mod seçimi
+├── popup-maximum.js      # Maksimum editör VM
+└── popup-criteria-total.js  # Kriter Toplam editör VM
+```
+
+**Avantajları:**
+- Kodlar ayrı ve temiz
+- Her mod kendi popup'ında bağımsız
+- Karmaşık if/else UI mantığı yok
+- Bakımı kolay
+
+### 10.2 Güncelleme (Edit) Akışı
+
+Listede checklist'e tıklandığında:
+1. Checklist'in `ScoringMethodId`'si kontrol edilir
+2. İlgili popup açılır:
+   - Maximum → PopupMaximum.cshtml
+   - CriteriaTotal → PopupCriteriaTotal.cshtml
+
+### 10.3 Değerlendirme (Evaluation) - Popup Kullanımı
+
+**Mevcut Durum:** Modal kullanılıyor (karmaşık, çok büyük)
+
+**Yeni Yaklaşım:** Popup kullanılacak
+
+**Akış:**
+1. Atama listesinde "Değerlendir" butonuna tıklanır
+2. Checklist'in `ScoringMethodId`'sine göre ilgili popup açılır:
+   - Maximum → EvaluationPopupMaximum.cshtml
+   - CriteriaTotal → EvaluationPopupCriteriaTotal.cshtml
+
+**Dosya Yapısı:**
+```
+Views/Evaluations/
+├── Index.cshtml                    # Atama listesi
+├── PopupMaximum.cshtml             # Maksimum mod değerlendirme
+└── PopupCriteriaTotal.cshtml       # Kriter Toplam mod değerlendirme
+
+wwwroot/js/Evaluations/
+├── Index.js                        # Liste VM
+├── popup-maximum.js                # Maksimum değerlendirme VM
+└── popup-criteria-total.js         # Kriter Toplam değerlendirme VM
+```
+
+### 10.4 Popup Avantajları (Modal'a Göre)
+
+| Özellik | Modal | Popup |
+|---------|-------|-------|
+| Boyut | Sınırlı (modal-lg max) | Tam ekran olabilir |
+| Ana sayfa görünürlüğü | Kapalı (backdrop) | Açık (yan yana) |
+| Çoklu açılabilirlik | Hayır | Evet |
+| Büyük formlar | Scroll problemi | Rahat |
+| Kod ayrımı | Aynı dosyada | Ayrı dosyalarda |
+| WYSIWYG/Editor | Zor | Kolay |
+
+### 10.5 Popup Standart Yapısı (_LayoutPopup)
+
+```html
+@{
+    Layout = "_LayoutPopup";
+    ViewData["Title"] = "Popup Başlığı";
+}
+
+<div id="popup-app">
+    <!-- Header -->
+    <div class="popup-header">
+        <h4><i class="bi bi-icon"></i> Başlık</h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" data-bind="click: save">Kaydet</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.close()">Kapat</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="card shadow-sm">
+        <!-- Form içeriği -->
+    </div>
+</div>
+
+<script>
+    window.popupConfig = { itemId: @(ViewBag.ItemId ?? "null") };
+</script>
+
+@section Scripts {
+    <script src="~/js/Module/popup.js"></script>
+}
+```
+
+---
+
+## 11. UYGULAMA SIRASI (GÜNCELLENMİŞ)
+
+### Faz 1: Backend Temelleri
+- [ ] TypeDefinitions: Average, WeightedAverage sil
+- [ ] TypeDefinitions: Sum → CriteriaTotal yeniden adlandır
+- [ ] Çevirileri güncelle
+- [ ] EvaluationService.CalculateScoreCore'a CriteriaTotal modu ekle
+
+### Faz 2: Checklist Editor (Popup Mimarisi)
+- [ ] Index.cshtml'e mod seçim modalı ekle
+- [ ] PopupMaximum.cshtml oluştur (mevcut editör taşınacak)
+- [ ] PopupCriteriaTotal.cshtml oluştur (yeni)
+- [ ] popup-maximum.js oluştur
+- [ ] popup-criteria-total.js oluştur
+- [ ] index.js'e mod seçim ve popup açma mantığı ekle
+
+### Faz 3: Değerlendirme (Popup Mimarisi)
+- [ ] Mevcut modal yapısını analiz et
+- [ ] PopupMaximum.cshtml oluştur (mevcut modal taşınacak)
+- [ ] PopupCriteriaTotal.cshtml oluştur (yeni)
+- [ ] popup-maximum.js oluştur
+- [ ] popup-criteria-total.js oluştur
+- [ ] Index.js'e popup açma mantığı ekle
+
+### Faz 4: Test ve Doğrulama
+- [ ] Mevcut Maximum checklistler çalışıyor mu?
+- [ ] Yeni CriteriaTotal checklistler oluşturulabiliyor mu?
+- [ ] Değerlendirmeler doğru hesaplanıyor mu?
+- [ ] Negatif puanlar doğru işleniyor mu?
+- [ ] Raporlar doğru gösteriyor mu?

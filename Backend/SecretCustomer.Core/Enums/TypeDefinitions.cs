@@ -277,12 +277,13 @@ public static class QuestionScoringTypes
 // ============================================================
 public static class ScoringMethods
 {
+    // Maksimum: Klasik puanlama - (GivenPoints / MaxPoints) * WeightPoints
     public static readonly TypeItem Maximum = new(1, "Maximum", "ScoringMethod.Maximum", "Maksimum puan uzerinden hesaplama", "bi-arrow-up-circle", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem Average = new(2, "Average", "ScoringMethod.Average", "Ortalama puan hesaplama", "bi-calculator", "bg-info", 2);
-    public static readonly TypeItem WeightedAverage = new(3, "WeightedAverage", "ScoringMethod.WeightedAverage", "Agirlikli ortalama", "bi-graph-up", "bg-warning text-dark", 3);
-    public static readonly TypeItem Sum = new(4, "Sum", "ScoringMethod.Sum", "Toplam puan", "bi-plus-circle", "bg-success", 4);
 
-    public static IEnumerable<TypeItem> All => new[] { Maximum, Average, WeightedAverage, Sum };
+    // Kriter Toplam: SESTEK tarzi - Secilen secenegin puani direkt alinir
+    public static readonly TypeItem CriteriaTotal = new(4, "CriteriaTotal", "ScoringMethod.CriteriaTotal", "Kriter Toplam - Secenek puanlari toplanir", "bi-plus-circle", "bg-success", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { Maximum, CriteriaTotal };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -290,9 +291,7 @@ public static class ScoringMethods
     public static class Ids
     {
         public const int Maximum = 1;
-        public const int Average = 2;
-        public const int WeightedAverage = 3;
-        public const int Sum = 4;
+        public const int CriteriaTotal = 4; // Eski Sum ID'si korunuyor (DB uyumlulugu)
     }
 }
 

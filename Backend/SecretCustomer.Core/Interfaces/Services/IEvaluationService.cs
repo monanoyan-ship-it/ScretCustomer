@@ -236,9 +236,14 @@ public class ScoreAnswerDto
     public bool IsIncluded { get; set; } = true;
 
     /// <summary>
-    /// Verilen puan (0-MaxPoints arası)
+    /// Verilen puan (0-MaxPoints arası) - Maximum modu için
     /// </summary>
     public decimal? GivenPoints { get; set; }
+
+    /// <summary>
+    /// Seçilen SubCriteria ID'leri - CriteriaTotal modu için
+    /// </summary>
+    public List<int>? SelectedSubCriteriaIds { get; set; }
 
     /// <summary>
     /// Ceza uygulandı mı? (Penalty sorular için)

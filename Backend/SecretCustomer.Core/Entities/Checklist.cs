@@ -41,11 +41,11 @@ public class Checklist : BaseEntity
     public int ChecklistTypeId { get; set; } = ChecklistTypes.Ids.CallPerformance;
 
     /// <summary>
-    /// Puanlama yöntemi (Maksimum, Ortalama, Ağırlıklı Ortalama vb.)
+    /// Puanlama yöntemi (Maksimum veya Kriter Toplam)
     /// </summary>
     [ExcelColumn("Puanlama Yöntemi", 7, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Puanlama hesaplama yöntemi",
-        DropdownOptions = "[\"Maximum\", \"Average\", \"WeightedAverage\", \"Sum\"]",
+        DropdownOptions = "[\"Maximum\", \"CriteriaTotal\"]",
         SampleValue = "Maximum")]
     public int ScoringMethodId { get; set; } = ScoringMethods.Ids.Maximum;
 
