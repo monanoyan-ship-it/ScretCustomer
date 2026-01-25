@@ -224,6 +224,18 @@
                             </div>
                         </div>
                     </button>
+
+                    <!-- Survey (Anket) -->
+                    <button class="btn btn-outline-info text-start p-3" data-bind="click: function() { selectScoringMethod('Survey'); }">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clipboard-data fs-2 me-3"></i>
+                            <div>
+                                <strong>@Html.T("ScoringMethod.Survey", "Anket")</strong>
+                                <br />
+                                <small class="text-muted">@Html.T("ScoringMethod.SurveyDescription", "Online anket - Tek/Çoklu seçim sorularıyla veri toplama")</small>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
             <div class="modal-footer">

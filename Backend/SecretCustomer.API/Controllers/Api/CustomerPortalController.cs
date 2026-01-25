@@ -1174,6 +1174,7 @@ public class CustomerPortalApiController : ControllerBase
                 evaluationDate = e.CreatedAt,
                 projectName = e.Assignment!.Project!.Name,
                 checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
+                scoringMethodId = e.Assignment.Checklist != null ? e.Assignment.Checklist.ScoringMethodId : 1,
                 score = e.ScorePercentage ?? 0,
                 statusId = e.StatusId
             })
@@ -1185,6 +1186,7 @@ public class CustomerPortalApiController : ControllerBase
             e.evaluationDate,
             e.projectName,
             e.checklistName,
+            scoringMethod = ScoringMethods.GetById(e.scoringMethodId)?.SystemName ?? "Maximum",
             e.score,
             status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
             statusText = GetStatusText(e.statusId)

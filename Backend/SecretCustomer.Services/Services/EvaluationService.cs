@@ -123,7 +123,12 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
+                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                        : null
+                    : null
             })
             .ToListAsync();
     }
@@ -172,7 +177,12 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
+                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                        : null
+                    : null
             })
             .ToListAsync();
     }
@@ -220,7 +230,12 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
+                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                        : null
+                    : null
             })
             .ToListAsync();
     }
@@ -266,7 +281,12 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
+                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                        : null
+                    : null
             })
             .ToListAsync();
     }
@@ -1072,6 +1092,7 @@ public class EvaluationService : IEvaluationService
                 PenaltyType = PenaltyTypes.GetById(q.PenaltyTypeId)?.SystemName ?? "None",
                 RecommendedNote = q.RecommendedNote,
                 HelpText = q.HelpText,
+                AllowComment = q.AllowComment,
                 SubCriteria = q.SubCriteria?
                     .Where(sc => !sc.IsDeleted && sc.IsActive)
                     .OrderBy(sc => sc.Order)
@@ -1282,6 +1303,9 @@ public class EvaluationService : IEvaluationService
             ChecklistName = evaluation.Assignment?.Checklist?.Name,
             AssigneeName = evaluation.Assignment?.AssignedUser != null
                 ? $"{evaluation.Assignment.AssignedUser.FirstName} {evaluation.Assignment.AssignedUser.LastName}"
+                : null,
+            ScoringMethod = evaluation.Assignment?.Checklist != null
+                ? ScoringMethods.GetById(evaluation.Assignment.Checklist.ScoringMethodId)?.SystemName
                 : null,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };

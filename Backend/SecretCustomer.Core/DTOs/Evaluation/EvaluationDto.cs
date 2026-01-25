@@ -108,6 +108,11 @@ public class EvaluationDto
     public string? ChecklistName { get; set; }
     public string? AssigneeName { get; set; }
 
+    /// <summary>
+    /// Checklist'in puanlama yöntemi (Maximum/CriteriaTotal/Survey)
+    /// </summary>
+    public string? ScoringMethod { get; set; }
+
     public List<AnswerDto> Answers { get; set; } = new();
 
     /// <summary>

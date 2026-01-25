@@ -192,6 +192,11 @@ public class EvaluationQuestionDto
     public string? HelpText { get; set; }
 
     /// <summary>
+    /// Yorum alanı gösterilsin mi
+    /// </summary>
+    public bool AllowComment { get; set; }
+
+    /// <summary>
     /// Alt Kriterler/Öneriler
     /// </summary>
     public List<EvaluationSubCriteriaDto>? SubCriteria { get; set; }

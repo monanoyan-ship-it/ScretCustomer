@@ -2,11 +2,11 @@
     Layout = "_LayoutPopup";
     var checklistId = ViewBag.ChecklistId;
     var cloneId = ViewBag.CloneId;
-    var scoringMethod = ViewBag.ScoringMethod ?? "Maximum";
+    var scoringMethod = "Maximum";
     var isNew = checklistId == null && cloneId == null;
     var isClone = cloneId != null;
-    var isCriteriaTotal = scoringMethod == "CriteriaTotal";
-    var isSurvey = scoringMethod == "Survey";
+    var isCriteriaTotal = false;
+    var isSurvey = false;
     ViewData["Title"] = isNew ? Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi") :
                         isClone ? Html.T("Checklist.CloneChecklist", "Kontrol Listesi Klonla") :
                         Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle");
@@ -28,6 +28,7 @@
             {
                 <i class="bi bi-pencil me-2"></i>@Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle")
             }
+            <span class="badge bg-primary ms-2">Maksimum</span>
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm" data-bind="click: saveChecklist, disable: isSaving">
@@ -115,22 +116,8 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.ScoringMethod", "Puanlama Yöntemi")</label>
-                            @if (isNew)
-                            {
-                                <!-- Yeni checklist - mod seçimi Index'te yapıldı, burada readonly göster -->
-                                <input type="text" class="form-control bg-light" readonly
-                                       value="@(isCriteriaTotal ? "Kriter Toplam" : "Maksimum")" />
-                                <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
-                            }
-                            else
-                            {
-                                <!-- Mevcut checklist - sadece gösterim -->
-                                <select class="form-select" data-bind="value: scoringMethod" disabled>
-                                    <option value="Maximum">Maksimum</option>
-                                    <option value="CriteriaTotal">Kriter Toplam</option>
-                                </select>
-                                <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
-                            }
+                            <input type="text" class="form-control bg-light" readonly value="Maksimum" />
+                            <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
                         </div>
                     </div>
 
@@ -303,32 +290,6 @@
                                         </div>
 
                                         <div class="mt-2" data-bind="visible: _showSubCriteria">
-                                            <!-- Online Anket Ayarları -->
-                                            <div class="row mb-2 bg-light p-2 rounded">
-                                                <div class="col-md-3">
-                                                    <label class="form-label form-label-sm mb-1">@Html.T("Question.SelectionType", "Seçim Tipi")</label>
-                                                    <select class="form-select form-select-sm" data-bind="value: selectionTypeId">
-                                                        <option value="1">@Html.T("SelectionType.Single", "Tek Seçim")</option>
-                                                        <option value="2">@Html.T("SelectionType.Multiple", "Çoklu Seçim")</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: showScoreInput" />
-                                                        <label class="form-check-label">@Html.T("Question.ShowScoreInput", "Puan girişini göster")</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: allowComment" />
-                                                        <label class="form-check-label">@Html.T("Question.AllowComment", "Yorum Yapılabilir")</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <span class="text-danger fw-bold small">Online Anket Ayarları</span>
-                                                </div>
-                                            </div>
-
                                             <!-- Alt Kriterler Başlık -->
                                             <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
                                                 <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
@@ -533,8 +494,9 @@
         cloneId: @(cloneId != null ? cloneId.ToString() : "null"),
         isNew: @(isNew ? "true" : "false"),
         isClone: @(isClone ? "true" : "false"),
-        scoringMethod: '@scoringMethod',
-        isCriteriaTotal: @(isCriteriaTotal ? "true" : "false")
+        scoringMethod: 'Maximum',
+        isCriteriaTotal: false,
+        isSurvey: false
     };
 </script>
 

@@ -54,8 +54,9 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     });
     base.subCriteria = ko.observableArray(subCriteria);
 
-    // Alt kriter toggle
-    base._showSubCriteria = ko.observable(subCriteria.length > 0);
+    // Alt kriter toggle - Survey ve CriteriaTotal modunda varsayılan açık
+    var config = window.editorConfig || {};
+    base._showSubCriteria = ko.observable((config.isSurvey || config.isCriteriaTotal) ? true : subCriteria.length > 0);
 
     // Yeni alt kriter ekle
     base.addSubCriteria = function () {
@@ -267,10 +268,15 @@ function ChecklistEditorViewModel() {
     // Load checklist
     self.loadChecklist = function () {
         if (config.isNew) {
-            // Yeni checklist - seçilen puanlama yöntemini ata
-            self.checklist(new ChecklistModel({
+            // Yeni checklist - seçilen puanlama yöntemini ve tipini ata
+            var newChecklistData = {
                 scoringMethod: config.scoringMethod || 'Maximum'
-            }));
+            };
+            // Survey modunda checklistType da Survey olmalı
+            if (config.isSurvey) {
+                newChecklistData.checklistType = 'Survey';
+            }
+            self.checklist(new ChecklistModel(newChecklistData));
             return;
         }
 
@@ -280,6 +286,12 @@ function ChecklistEditorViewModel() {
         fetch('/api/checklists/' + loadId, { credentials: 'include' })
             .then(function (r) { return r.json(); })
             .then(function (data) {
+                // Survey modunda checklistType'ı zorla
+                if (config.isSurvey) {
+                    data.checklistType = 'Survey';
+                    data.scoringMethod = 'Survey';
+                }
+
                 if (config.isClone) {
                     // Clone: ID'leri temizle, ismi değiştir
                     data.id = null;
@@ -353,14 +365,20 @@ function ChecklistEditorViewModel() {
 
         var data = ko.toJS(checklist);
 
-        // _ ile baslayan internal alanlari temizle
+        // _ ile baslayan internal alanlari temizle ve boş SubCriteria'ları filtrele
         data.questions.forEach(function (q) {
             delete q._attachments;
             delete q._isUploadingFile;
             delete q._showSubCriteria;
             delete q.addSubCriteria;
             delete q.removeSubCriteria;
-            if (q.subCriteria && q.subCriteria.length === 0) {
+            // Boş description'lı SubCriteria'ları filtrele
+            if (q.subCriteria && q.subCriteria.length > 0) {
+                q.subCriteria = q.subCriteria.filter(function(sc) {
+                    return sc.description && sc.description.trim() !== '';
+                });
+            }
+            if (!q.subCriteria || q.subCriteria.length === 0) {
                 q.subCriteria = null;
             }
         });

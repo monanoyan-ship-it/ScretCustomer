@@ -75,6 +75,7 @@ public class AssignmentService : IAssignmentService
             ProjectCode = dto.ProjectCode,
             ChecklistId = dto.ChecklistId,
             ChecklistName = dto.ChecklistName,
+            ScoringMethod = dto.ScoringMethod,
             AssignedUserId = dto.AssignedUserId,
             AssignedUserName = dto.AssignedUserName,
             AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId,
@@ -213,6 +214,7 @@ public class AssignmentService : IAssignmentService
                 ProjectCode = a.Project != null ? a.Project.Code : null,
                 ChecklistId = a.ChecklistId,
                 ChecklistName = a.Checklist != null ? a.Checklist.Name : "",
+                ScoringMethod = a.Checklist != null ? ScoringMethods.GetById(a.Checklist.ScoringMethodId)!.SystemName : "Maximum",
                 AssignedUserId = a.AssignedUserId,
                 AssignedUserName = a.AssignedUser != null
                     ? a.AssignedUser.FirstName + " " + a.AssignedUser.LastName
@@ -829,6 +831,7 @@ public class AssignmentService : IAssignmentService
             ProjectCode = assignment.Project?.Code,
             ChecklistId = assignment.ChecklistId,
             ChecklistName = assignment.Checklist?.Name ?? "",
+            ScoringMethod = assignment.Checklist != null ? ScoringMethods.GetById(assignment.Checklist.ScoringMethodId)?.SystemName : "Maximum",
             AssignedUserId = assignment.AssignedUserId,
             AssignedUserName = assignment.AssignedUser != null
                 ? $"{assignment.AssignedUser.FirstName} {assignment.AssignedUser.LastName}"

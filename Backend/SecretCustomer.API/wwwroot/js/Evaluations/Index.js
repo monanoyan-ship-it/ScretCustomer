@@ -885,15 +885,36 @@ function EvaluationsViewModel() {
     // ========================
 
     self.startEvaluation = function(assignment) {
-        self.currentAssignmentId = assignment.id;
-        self.currentEvaluationId = null;
-        self.openEvaluateModal();
+        // scoringMethod'a göre doğru popup'ı aç
+        self.openEvaluationPopup(assignment.id, null, assignment.scoringMethod);
     };
 
     self.continueEvaluation = function(evaluation) {
-        self.currentAssignmentId = null;
-        self.currentEvaluationId = evaluation.id;
-        self.openEvaluateModal();
+        // scoringMethod'a göre doğru popup'ı aç
+        self.openEvaluationPopup(null, evaluation.id, evaluation.scoringMethod);
+    };
+
+    // Değerlendirme popup'ı aç (scoringMethod'a göre farklı URL)
+    self.openEvaluationPopup = function(assignmentId, evaluationId, scoringMethod) {
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+
+        // scoringMethod'a göre URL belirle
+        var baseUrl = '/Evaluations/';
+        if (scoringMethod === 'CriteriaTotal') {
+            baseUrl += 'PopupCriteriaTotal?';
+        } else {
+            baseUrl += 'PopupMaximum?';
+        }
+
+        var url = baseUrl;
+        if (assignmentId) url += 'assignmentId=' + assignmentId;
+        if (evaluationId) url += 'evaluationId=' + evaluationId;
+
+        window.open(url, 'EvaluationPopup',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 
     self.openEvaluateModal = function() {

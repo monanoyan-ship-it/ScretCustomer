@@ -11,6 +11,7 @@ public class AssignmentListDto
     public string? ProjectCode { get; set; }
     public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
+    public string? ScoringMethod { get; set; } // Checklist'in puanlama yöntemi (Maximum/CriteriaTotal)
     public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
     public int? AssignedCustomerPersonnelId { get; set; }
@@ -54,6 +55,7 @@ public class AssignmentDto
     public string? ProjectCode { get; set; }
     public int ChecklistId { get; set; }
     public string ChecklistName { get; set; } = string.Empty;
+    public string? ScoringMethod { get; set; } // Checklist'in puanlama yöntemi (Maximum/CriteriaTotal)
     public int? AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
     public int? AssignedCustomerPersonnelId { get; set; }

@@ -503,7 +503,8 @@ function ChecklistViewModel() {
         var left = (screen.width - width) / 2;
         var top = (screen.height - height) / 2;
 
-        var editorUrl = '/Checklists/Editor?scoringMethod=' + scoringMethod;
+        // Her mod için ayrı URL
+        var editorUrl = '/Checklists/' + scoringMethod;
         window.open(editorUrl, 'ChecklistEditor',
             'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
@@ -539,11 +540,9 @@ function ChecklistViewModel() {
         var left = (screen.width - width) / 2;
         var top = (screen.height - height) / 2;
 
-        // scoringMethod bilgisi varsa URL'e ekle (editör doğru modu göstersin)
-        var editorUrl = '/Checklists/Editor?id=' + checklist.id;
-        if (checklist.scoringMethod) {
-            editorUrl += '&scoringMethod=' + checklist.scoringMethod;
-        }
+        // scoringMethod'a göre ilgili editör URL'ini belirle
+        var scoringMethod = checklist.scoringMethod || 'Maximum';
+        var editorUrl = '/Checklists/' + scoringMethod + '?id=' + checklist.id;
 
         window.open(editorUrl, 'ChecklistEditor',
             'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
@@ -555,7 +554,12 @@ function ChecklistViewModel() {
         var height = 800;
         var left = (screen.width - width) / 2;
         var top = (screen.height - height) / 2;
-        window.open('/Checklists/Editor?clone=' + checklist.id, 'ChecklistEditor',
+
+        // scoringMethod'a göre ilgili editör URL'ini belirle
+        var scoringMethod = checklist.scoringMethod || 'Maximum';
+        var editorUrl = '/Checklists/' + scoringMethod + '?clone=' + checklist.id;
+
+        window.open(editorUrl, 'ChecklistEditor',
             'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 

@@ -2,11 +2,11 @@
     Layout = "_LayoutPopup";
     var checklistId = ViewBag.ChecklistId;
     var cloneId = ViewBag.CloneId;
-    var scoringMethod = ViewBag.ScoringMethod ?? "Maximum";
+    var scoringMethod = "CriteriaTotal";
     var isNew = checklistId == null && cloneId == null;
     var isClone = cloneId != null;
-    var isCriteriaTotal = scoringMethod == "CriteriaTotal";
-    var isSurvey = scoringMethod == "Survey";
+    var isCriteriaTotal = true;
+    var isSurvey = false;
     ViewData["Title"] = isNew ? Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi") :
                         isClone ? Html.T("Checklist.CloneChecklist", "Kontrol Listesi Klonla") :
                         Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle");
@@ -28,6 +28,7 @@
             {
                 <i class="bi bi-pencil me-2"></i>@Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle")
             }
+            <span class="badge bg-success ms-2">Kriter Toplam</span>
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm" data-bind="click: saveChecklist, disable: isSaving">
@@ -115,22 +116,8 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.ScoringMethod", "Puanlama Yöntemi")</label>
-                            @if (isNew)
-                            {
-                                <!-- Yeni checklist - mod seçimi Index'te yapıldı, burada readonly göster -->
-                                <input type="text" class="form-control bg-light" readonly
-                                       value="@(isCriteriaTotal ? "Kriter Toplam" : "Maksimum")" />
-                                <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
-                            }
-                            else
-                            {
-                                <!-- Mevcut checklist - sadece gösterim -->
-                                <select class="form-select" data-bind="value: scoringMethod" disabled>
-                                    <option value="Maximum">Maksimum</option>
-                                    <option value="CriteriaTotal">Kriter Toplam</option>
-                                </select>
-                                <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
-                            }
+                            <input type="text" class="form-control bg-light" readonly value="Kriter Toplam" />
+                            <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
                         </div>
                     </div>
 
@@ -208,37 +195,20 @@
                                     </div>
                                 </div>
 
-                                <!-- Puanlama - Ağırlık Puanı - Maks Puan - Ceza Tipi - Sıra - Zorunlu -->
+                                <!-- Puanlama Tipi - Sıra - Zorunlu (CriteriaTotal: WeightPoints/MaxPoints seçeneklerden geliyor) -->
                                 <div class="row">
-                                    <div class="col-md-2 mb-2">
+                                    <div class="col-md-3 mb-2">
                                         <label class="form-label form-label-sm mb-1">@Html.T("Checklist.Scoring", "Puanlama")</label>
                                         <select class="form-select form-select-sm" data-bind="value: scoringType">
                                             <option value="Scored">@Html.T("Checklist.ScoringType.Scored", "Puanlı")</option>
                                             <option value="Unscored">@Html.T("Checklist.ScoringType.Unscored", "Puansız")</option>
-                                            <option value="Penalty">@Html.T("Checklist.ScoringType.Penalty", "Cezalı")</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() !== 'Unscored'">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.WeightPoints", "Ağırlık")</label>
-                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" />
-                                    </div>
-                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() !== 'Unscored'">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.MaxPoints", "Maks Puan")</label>
-                                        <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" min="1" max="10" />
-                                    </div>
-                                    <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.PenaltyType", "Ceza Tipi")</label>
-                                        <select class="form-select form-select-sm" data-bind="value: penaltyType">
-                                            <option value="None">@Html.T("Checklist.PenaltyType.None", "Yok")</option>
-                                            <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
-                                            <option value="RedCard">@Html.T("Checklist.PenaltyType.RedCard", "Kırmızı Kart")</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2 mb-2">
+                                    <div class="col-md-3 mb-2">
                                         <label class="form-label form-label-sm mb-1">@Html.T("Checklist.Order", "Sıra")</label>
                                         <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
                                     </div>
-                                    <div class="col-md-2 mb-2 d-flex align-items-end">
+                                    <div class="col-md-3 mb-2 d-flex align-items-end">
                                         <div class="form-check">
                                             <input type="checkbox" class="form-check-input" data-bind="checked: isRequired" />
                                             <label class="form-check-label">@Html.T("Checklist.Required", "Zorunlu")</label>
@@ -289,13 +259,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Alt Kriterler / Öneriler -->
+                                <!-- Seçenekler (Evet/Geliştirilmeli/Hayır) -->
                                 <div class="row mt-2">
                                     <div class="col-12">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <label class="form-label form-label-sm mb-0">
-                                                <i class="bi bi-list-check"></i> @Html.T("Checklist.SubCriteria", "Alt Kriterler/Öneriler")
+                                                <i class="bi bi-ui-radios"></i> @Html.T("Checklist.Options", "Seçenekler")
                                                 <small class="text-muted ms-1" data-bind="visible: subCriteria && subCriteria().length > 0, text: '(' + (subCriteria ? subCriteria().length : 0) + ')'"></small>
+                                                <small class="text-info ms-2">@Html.T("Checklist.OptionsHelp", "(Evet: +10, Geliştirilmeli: +5, Hayır: 0 veya -10)")</small>
                                             </label>
                                             <button type="button" class="btn btn-sm btn-outline-secondary py-0" data-bind="click: function() { _showSubCriteria(!_showSubCriteria()); }">
                                                 <i class="bi" data-bind="css: { 'bi-chevron-down': !_showSubCriteria(), 'bi-chevron-up': _showSubCriteria() }"></i>
@@ -303,47 +274,21 @@
                                         </div>
 
                                         <div class="mt-2" data-bind="visible: _showSubCriteria">
-                                            <!-- Online Anket Ayarları -->
-                                            <div class="row mb-2 bg-light p-2 rounded">
-                                                <div class="col-md-3">
-                                                    <label class="form-label form-label-sm mb-1">@Html.T("Question.SelectionType", "Seçim Tipi")</label>
-                                                    <select class="form-select form-select-sm" data-bind="value: selectionTypeId">
-                                                        <option value="1">@Html.T("SelectionType.Single", "Tek Seçim")</option>
-                                                        <option value="2">@Html.T("SelectionType.Multiple", "Çoklu Seçim")</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: showScoreInput" />
-                                                        <label class="form-check-label">@Html.T("Question.ShowScoreInput", "Puan girişini göster")</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: allowComment" />
-                                                        <label class="form-check-label">@Html.T("Question.AllowComment", "Yorum Yapılabilir")</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-center">
-                                                    <span class="text-danger fw-bold small">Online Anket Ayarları</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Alt Kriterler Başlık -->
+                                            <!-- Seçenekler Başlık -->
                                             <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
-                                                <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
-                                                <div class="col-md-2">@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")</div>
+                                                <div class="col-md-6">@Html.T("Checklist.OptionDescription", "Seçenek")</div>
+                                                <div class="col-md-2">@Html.T("Checklist.OptionPoints", "Puan")</div>
                                                 <div class="col-md-2">@Html.T("Checklist.Order", "Sıra")</div>
                                                 <div class="col-md-2"></div>
                                             </div>
-                                            <!-- Mevcut Alt Kriterler -->
+                                            <!-- Mevcut Seçenekler -->
                                             <div data-bind="foreach: subCriteria">
                                                 <div class="row mb-1 align-items-center">
                                                     <div class="col-md-6">
-                                                        <input type="text" class="form-control form-control-sm" data-bind="value: description" placeholder="@Html.T("Checklist.SubCriteriaDescription", "Alt kriter açıklaması")" />
+                                                        <input type="text" class="form-control form-control-sm" data-bind="value: description" placeholder="@Html.T("Checklist.OptionPlaceholder", "Evet / Geliştirilmeli / Hayır")" />
                                                     </div>
                                                     <div class="col-md-2">
-                                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")" />
+                                                        <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" step="0.5" title="@Html.T("Checklist.OptionPointsHelp", "Puan (negatif olabilir)")" />
                                                     </div>
                                                     <div class="col-md-2">
                                                         <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" title="@Html.T("Checklist.Order", "Sıra")" />
@@ -357,7 +302,7 @@
                                             </div>
 
                                             <button type="button" class="btn btn-sm btn-outline-primary mt-1" data-bind="click: addSubCriteria">
-                                                <i class="bi bi-plus"></i> @Html.T("Checklist.AddSubCriteria", "Alt Kriter Ekle")
+                                                <i class="bi bi-plus"></i> @Html.T("Checklist.AddOption", "Seçenek Ekle")
                                             </button>
                                         </div>
                                     </div>
@@ -533,8 +478,9 @@
         cloneId: @(cloneId != null ? cloneId.ToString() : "null"),
         isNew: @(isNew ? "true" : "false"),
         isClone: @(isClone ? "true" : "false"),
-        scoringMethod: '@scoringMethod',
-        isCriteriaTotal: @(isCriteriaTotal ? "true" : "false")
+        scoringMethod: 'CriteriaTotal',
+        isCriteriaTotal: true,
+        isSurvey: false
     };
 </script>
 
