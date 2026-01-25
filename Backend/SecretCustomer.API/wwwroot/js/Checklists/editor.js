@@ -267,7 +267,10 @@ function ChecklistEditorViewModel() {
     // Load checklist
     self.loadChecklist = function () {
         if (config.isNew) {
-            self.checklist(new ChecklistModel());
+            // Yeni checklist - seçilen puanlama yöntemini ata
+            self.checklist(new ChecklistModel({
+                scoringMethod: config.scoringMethod || 'Maximum'
+            }));
             return;
         }
 

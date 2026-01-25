@@ -187,6 +187,55 @@
 </div>
 <div class="modal-backdrop fade" data-bind="css: { show: isViewModalOpen }, style: { display: isViewModalOpen() ? 'block' : 'none' }"></div>
 
+<!-- Scoring Method Selection Modal -->
+<div class="modal fade" data-bind="css: { show: isScoringMethodModalOpen }, style: { display: isScoringMethodModalOpen() ? 'block' : 'none' }" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-calculator me-2"></i>@Html.T("Checklist.SelectScoringMethod", "Puanlama Yöntemi Seçin")
+                </h5>
+                <button type="button" class="btn-close" data-bind="click: closeScoringMethodModal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">@Html.T("Checklist.ScoringMethodDescription", "Kontrol listesi için kullanılacak puanlama yöntemini seçin.")</p>
+
+                <div class="d-grid gap-3">
+                    <!-- Maximum (Klasik) -->
+                    <button class="btn btn-outline-primary text-start p-3" data-bind="click: function() { selectScoringMethod('Maximum'); }">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-arrow-up-circle fs-2 me-3"></i>
+                            <div>
+                                <strong>@Html.T("ScoringMethod.Maximum", "Maksimum")</strong>
+                                <br />
+                                <small class="text-muted">@Html.T("ScoringMethod.MaximumDescription", "Klasik puanlama - 0 ile maksimum puan arasında değerlendirme yapılır")</small>
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- CriteriaTotal (Kriter Toplam) -->
+                    <button class="btn btn-outline-success text-start p-3" data-bind="click: function() { selectScoringMethod('CriteriaTotal'); }">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-plus-circle fs-2 me-3"></i>
+                            <div>
+                                <strong>@Html.T("ScoringMethod.CriteriaTotal", "Kriter Toplam")</strong>
+                                <br />
+                                <small class="text-muted">@Html.T("ScoringMethod.CriteriaTotalDescription", "Seçenek bazlı puanlama - Evet/Geliştirilmeli/Hayır seçenekleri ile değerlendirme")</small>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bind="click: closeScoringMethodModal">
+                    <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Cancel", "İptal")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade" data-bind="css: { show: isScoringMethodModalOpen }, style: { display: isScoringMethodModalOpen() ? 'block' : 'none' }"></div>
+
 <partial name="_DeleteConfirmationModal" />
 
 </div> <!-- End of checklists-app -->

@@ -133,6 +133,7 @@ function ChecklistViewModel() {
     self.modalErrorMessage = ko.observable('');
     self.isModalOpen = ko.observable(false);
     self.isViewModalOpen = ko.observable(false);
+    self.isScoringMethodModalOpen = ko.observable(false); // Puanlama yöntemi seçim modalı
     self.editingChecklist = ko.observable(null);
     self.viewingChecklist = ko.observable(null);
     self.isSaving = ko.observable(false);
@@ -488,13 +489,28 @@ function ChecklistViewModel() {
     };
 
     self.createNew = function () {
-        // Popup olarak aç
+        // Önce puanlama yöntemi seçim modalını aç
+        self.isScoringMethodModalOpen(true);
+    };
+
+    // Puanlama yöntemi seçildiğinde
+    self.selectScoringMethod = function (scoringMethod) {
+        self.isScoringMethodModalOpen(false);
+
+        // Seçilen yönteme göre ilgili editör popup'ını aç
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;
         var top = (screen.height - height) / 2;
-        window.open('/Checklists/Editor', 'ChecklistEditor',
+
+        var editorUrl = '/Checklists/Editor?scoringMethod=' + scoringMethod;
+        window.open(editorUrl, 'ChecklistEditor',
             'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+    };
+
+    // Puanlama yöntemi seçim modalını kapat
+    self.closeScoringMethodModal = function () {
+        self.isScoringMethodModalOpen(false);
     };
 
     self.viewChecklist = function (checklist) {
@@ -522,7 +538,14 @@ function ChecklistViewModel() {
         var height = 800;
         var left = (screen.width - width) / 2;
         var top = (screen.height - height) / 2;
-        window.open('/Checklists/Editor?id=' + checklist.id, 'ChecklistEditor',
+
+        // scoringMethod bilgisi varsa URL'e ekle (editör doğru modu göstersin)
+        var editorUrl = '/Checklists/Editor?id=' + checklist.id;
+        if (checklist.scoringMethod) {
+            editorUrl += '&scoringMethod=' + checklist.scoringMethod;
+        }
+
+        window.open(editorUrl, 'ChecklistEditor',
             'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 

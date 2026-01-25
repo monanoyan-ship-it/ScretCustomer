@@ -2,8 +2,10 @@
     Layout = "_LayoutPopup";
     var checklistId = ViewBag.ChecklistId;
     var cloneId = ViewBag.CloneId;
+    var scoringMethod = ViewBag.ScoringMethod ?? "Maximum";
     var isNew = checklistId == null && cloneId == null;
     var isClone = cloneId != null;
+    var isCriteriaTotal = scoringMethod == "CriteriaTotal";
     ViewData["Title"] = isNew ? Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi") :
                         isClone ? Html.T("Checklist.CloneChecklist", "Kontrol Listesi Klonla") :
                         Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle");
@@ -519,7 +521,9 @@
         checklistId: @(checklistId != null ? checklistId.ToString() : "null"),
         cloneId: @(cloneId != null ? cloneId.ToString() : "null"),
         isNew: @(isNew ? "true" : "false"),
-        isClone: @(isClone ? "true" : "false")
+        isClone: @(isClone ? "true" : "false"),
+        scoringMethod: '@scoringMethod',
+        isCriteriaTotal: @(isCriteriaTotal ? "true" : "false")
     };
 </script>
 
