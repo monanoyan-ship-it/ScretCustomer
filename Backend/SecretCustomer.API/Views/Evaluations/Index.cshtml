@@ -1224,7 +1224,7 @@
                                                                         @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                                     </span>
                                                                     <!-- /ko -->
-                                                                    <!-- ko if: isRequired -->
+                                                                    <!-- ko if: isRequired && scoringType !== 'Penalty' -->
                                                                     <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>
                                                                     <!-- /ko -->
                                                                     <!-- Zorunlu olmayan puanlı sorular için dahil et toggle'ı -->
