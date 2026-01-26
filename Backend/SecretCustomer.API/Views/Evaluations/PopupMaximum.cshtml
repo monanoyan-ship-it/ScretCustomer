@@ -229,8 +229,41 @@
     <!-- /ko -->
 
     <!-- Form Content -->
-    <div data-bind="visible: !isLoading() && formData() && !isShowingSummary()"
+    <div data-bind="visible: !isLoading() && formData() && !isShowingSummary()">
         <div class="container-fluid py-3">
+            <!-- Dönem Seçimi -->
+            <div class="row mb-3" data-bind="visible: availablePeriods().length > 0">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white py-2">
+                            <h6 class="mb-0"><i class="bi bi-calendar-range"></i> @Html.T("Evaluation.Period", "Dönem")</h6>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <select class="form-select" data-bind="value: selectedPeriodId, options: availablePeriods, optionsText: function(p) { return p.name + ' (' + new Date(p.startDate).toLocaleDateString('tr-TR') + ' - ' + new Date(p.endDate).toLocaleDateString('tr-TR') + ')'; }, optionsValue: 'id', optionsCaption: '@Html.T("Evaluation.SelectPeriod", "-- Dönem Seçin --")'"></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- ko if: selectedPeriodId() -->
+                                    <!-- ko with: availablePeriods().find(function(p) { return p.id === selectedPeriodId(); }) -->
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? '@Html.T("Evaluation.PeriodOpen", "Aktif")' : '@Html.T("Evaluation.PeriodClosed", "Kapalı")'"></span>
+                                        <span class="text-muted">
+                                            @Html.T("Evaluation.Completed", "Tamamlanan"): <strong data-bind="text: completedCount"></strong> / <span data-bind="text: targetCount"></span>
+                                        </span>
+                                        <div class="progress flex-grow-1" style="height: 8px; max-width: 150px;">
+                                            <div class="progress-bar bg-success" data-bind="style: { width: (targetCount > 0 ? (completedCount / targetCount * 100) : 0) + '%' }"></div>
+                                        </div>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Row: Çağrı Bilgileri + Personel Seçimi -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -241,8 +274,13 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">@Html.T("Evaluation.CallId", "Çağrı ID")</label>
-                                    <input type="text" class="form-control" data-bind="value: callId" autocomplete="off" />
+                                    <label class="form-label">@Html.T("Evaluation.CallId", "Çağrı ID")
+                                        <span data-bind="visible: isCheckingCallId" class="spinner-border spinner-border-sm text-secondary ms-1" role="status"></span>
+                                    </label>
+                                    <input type="text" class="form-control" data-bind="value: callId, css: { 'is-invalid': callIdExists }" placeholder="@Html.T("Evaluation.CallIdPlaceholder", "Çağrı numarası")" autocomplete="off">
+                                    <div class="invalid-feedback">
+                                        @Html.T("Evaluation.CallIdExists", "Bu Çağrı ID daha önce kaydedilmiş!")
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi") <span class="text-danger">*</span></label>
