@@ -2421,7 +2421,8 @@ public class ReportService : IReportService
 
         var answers = await query.ToListAsync();
 
-        return answers
+        // Önce not/öneri yazılmış cevapları grupla
+        var suggestionsGrouped = answers
             .Where(a => a.Question != null)
             .GroupBy(a => new
             {
@@ -2430,14 +2431,13 @@ public class ReportService : IReportService
                 GroupName = a.Question.GroupName ?? "",
                 ChecklistName = a.Question.Checklist?.Name ?? ""
             })
-            .Select(g => new QuestionSuggestionSummaryDto
+            .Select(g => new
             {
-                QuestionId = g.Key.QuestionId,
-                QuestionText = g.Key.QuestionText,
-                GroupName = g.Key.GroupName,
-                ChecklistName = g.Key.ChecklistName,
+                g.Key.QuestionId,
+                g.Key.QuestionText,
+                g.Key.GroupName,
+                g.Key.ChecklistName,
                 SuggestionCount = g.Count(),
-                EvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count(),
                 AverageScore = g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0).Any()
                     ? Math.Round(g.Where(a => a.EarnedPoints.HasValue && a.Question?.WeightPoints > 0)
                         .Average(a => (a.EarnedPoints!.Value / a.Question!.WeightPoints) * 100), 1)
@@ -2446,6 +2446,36 @@ public class ReportService : IReportService
             .OrderByDescending(q => q.SuggestionCount)
             .Take(top)
             .ToList();
+
+        // Bu soruların sorulduğu toplam değerlendirme sayısını al (not yazılmış olsun/olmasın)
+        var questionIds = suggestionsGrouped.Select(q => q.QuestionId).ToList();
+
+        // Tüm değerlendirmeler üzerinden bu soruların kaç kez cevaplandığını hesapla
+        var totalEvaluationCounts = await _context.Answers
+            .Where(a => questionIds.Contains(a.QuestionId))
+            .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+            // Aynı filtreleri uygula
+            .Where(a => filter.ProjectIds == null || !filter.ProjectIds.Any()
+                ? a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing
+                : filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId))
+            .Where(a => filter.CustomerIds == null || !filter.CustomerIds.Any()
+                || (a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value)))
+            .GroupBy(a => a.QuestionId)
+            .Select(g => new { QuestionId = g.Key, TotalEvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count() })
+            .ToListAsync();
+
+        var evalCountDict = totalEvaluationCounts.ToDictionary(x => x.QuestionId, x => x.TotalEvaluationCount);
+
+        return suggestionsGrouped.Select(q => new QuestionSuggestionSummaryDto
+        {
+            QuestionId = q.QuestionId,
+            QuestionText = q.QuestionText,
+            GroupName = q.GroupName,
+            ChecklistName = q.ChecklistName,
+            SuggestionCount = q.SuggestionCount,
+            EvaluationCount = evalCountDict.GetValueOrDefault(q.QuestionId, q.SuggestionCount),
+            AverageScore = q.AverageScore
+        }).ToList();
     }
 
     public async Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter, bool excludeEvaluator = false)

@@ -558,10 +558,16 @@ function CustomerInternalEvaluationsViewModel() {
         var data = self.detailsData();
         if (!data) return;
 
-        self.isExportingDetail(true);
-        var filename = 'Dinleme_Detay_' + (data.callId || data.id) + '_' + self.getTimestamp() + '.xlsx';
+        var evalId = data.evaluationId || data.id;
+        if (!evalId) {
+            toastr.error('Değerlendirme ID bulunamadı');
+            return;
+        }
 
-        customerApiDownloadGet('/api/customer/portal/evaluations/' + data.id + '/export', filename)
+        self.isExportingDetail(true);
+        var filename = 'Dinleme_Detay_' + (data.callId || evalId) + '_' + self.getTimestamp() + '.xlsx';
+
+        customerApiDownloadGet('/api/customer/portal/evaluations/' + evalId + '/export', filename)
             .then(function() { toastr.success('Excel dosyası indirildi'); })
             .catch(function(error) { console.error('Error exporting:', error); toastr.error('Excel oluşturulurken hata oluştu'); })
             .finally(function() { self.isExportingDetail(false); });
@@ -598,15 +604,40 @@ function CustomerInternalEvaluationsViewModel() {
         window.open('/api/answers/' + attachment.answerId + '/attachment', '_blank');
     };
 
-    // Copy to clipboard
+    // Copy to clipboard (with fallback for HTTP)
     self.copyToClipboard = function(text) {
         if (!text) return;
-        navigator.clipboard.writeText(text).then(function() {
+
+        // Modern API (HTTPS only)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                toastr.success('Kopyalandı');
+            }).catch(function(err) {
+                console.error('Copy failed:', err);
+                self.fallbackCopyToClipboard(text);
+            });
+        } else {
+            // Fallback for HTTP
+            self.fallbackCopyToClipboard(text);
+        }
+    };
+
+    self.fallbackCopyToClipboard = function(text) {
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
             toastr.success('Kopyalandı');
-        }).catch(function(err) {
-            console.error('Copy failed:', err);
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
             toastr.error('Kopyalama başarısız');
-        });
+        }
+        document.body.removeChild(textArea);
     };
 
     // Export Reports
