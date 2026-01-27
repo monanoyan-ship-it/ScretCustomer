@@ -2621,6 +2621,48 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// En çok seçilen alt kriterler (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/suggestions/top-subcriteria")]
+    public async Task<IActionResult> GetTopSubCriteria(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? checklistIds,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int top = 10)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var filter = new SuggestionsFilterDto
+            {
+                ProjectIds = projectIds,
+                CustomerIds = new List<int> { customerId.Value },
+                ChecklistIds = checklistIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.GetTopSubCriteriaAsync(filter, top);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading top subcriteria for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "En çok seçilen alt kriterler yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// En çok öneri yazılan sorular Excel Export (CustomerPortal)
     /// </summary>
     [HttpGet("reports/suggestions/top-questions/export")]

@@ -233,6 +233,7 @@ function CustomerSuggestionsViewModel() {
     // Data
     self.suggestions = ko.observableArray([]);
     self.topSuggestedQuestions = ko.observableArray([]);
+    self.topSubCriteria = ko.observableArray([]);
     self.evaluationNotes = ko.observableArray([]);
     self.evaluationNotesCount = ko.observable(0);
 
@@ -310,7 +311,7 @@ function CustomerSuggestionsViewModel() {
 
         var url = '/api/customer/portal/reports/suggestions' + self.buildQueryParams(true);
 
-        // Load main report and top questions in parallel
+        // Load main report, top questions and top subcriteria in parallel
         Promise.all([
             customerApiFetch(url).then(function(r) {
                 if (!r.ok) throw new Error('Rapor yüklenemedi');
@@ -319,11 +320,16 @@ function CustomerSuggestionsViewModel() {
             customerApiFetch('/api/customer/portal/reports/suggestions/top-questions' + self.buildQueryParams(false)).then(function(r) {
                 if (!r.ok) throw new Error('Top sorular yüklenemedi');
                 return r.json();
+            }),
+            customerApiFetch('/api/customer/portal/reports/suggestions/top-subcriteria' + self.buildQueryParams(false)).then(function(r) {
+                if (!r.ok) throw new Error('Alt kriterler yüklenemedi');
+                return r.json();
             })
         ])
         .then(function(results) {
             var data = results[0];
             var topQuestions = results[1];
+            var topSubCriteria = results[2];
 
             self.summary(data.summary || {
                 totalSuggestions: 0,
@@ -339,6 +345,7 @@ function CustomerSuggestionsViewModel() {
             self.totalCount(data.totalCount || 0);
             self.evaluationNotesCount(data.evaluationNotesCount || 0);
             self.topSuggestedQuestions(topQuestions || []);
+            self.topSubCriteria(topSubCriteria || []);
         })
         .catch(function(error) {
             console.error('Suggestions report error:', error);

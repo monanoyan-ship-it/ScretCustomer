@@ -2478,6 +2478,93 @@ public class ReportService : IReportService
         }).ToList();
     }
 
+    /// <summary>
+    /// En çok seçilen alt kriterler (SubCriteria)
+    /// </summary>
+    public async Task<IEnumerable<SubCriteriaSummaryDto>> GetTopSubCriteriaAsync(SuggestionsFilterDto filter, int top = 10)
+    {
+        var query = _context.AnswerSubCriteriaSelections
+            .Include(s => s.SubCriteria)
+                .ThenInclude(sc => sc.Question)
+                    .ThenInclude(q => q.Checklist)
+            .Include(s => s.Answer)
+                .ThenInclude(a => a.Evaluation)
+                    .ThenInclude(e => e.Assignment)
+                        .ThenInclude(a => a.Project)
+            .Where(s => s.Answer.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(s => s.SubCriteria != null && !string.IsNullOrEmpty(s.SubCriteria.Description))
+            .AsQueryable();
+
+        // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
+        if (filter.ProjectIds?.Any() != true)
+        {
+            query = query.Where(s => s.Answer.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+        }
+
+        // Apply filters
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(s => filter.ProjectIds.Contains(s.Answer.Evaluation.Assignment.ProjectId));
+
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(s => s.Answer.Evaluation.Assignment.Project.CustomerId.HasValue &&
+                filter.CustomerIds.Contains(s.Answer.Evaluation.Assignment.Project.CustomerId.Value));
+
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(s => filter.ChecklistIds.Contains(s.Answer.Evaluation.Assignment.ChecklistId));
+
+        // DateRanges filter
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(s => s.Answer.Evaluation.CompletedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(s => s.Answer.Evaluation.CompletedAt <= maxEnd);
+        }
+
+        var selections = await query.ToListAsync();
+
+        // SubCriteria bazında grupla
+        var grouped = selections
+            .Where(s => s.SubCriteria?.Question != null)
+            .GroupBy(s => new
+            {
+                s.SubCriteriaId,
+                Description = s.SubCriteria!.Description,
+                QuestionText = s.SubCriteria.Question!.Text,
+                GroupName = s.SubCriteria.Question.GroupName ?? "",
+                ChecklistName = s.SubCriteria.Question.Checklist?.Name ?? ""
+            })
+            .Select(g => new SubCriteriaSummaryDto
+            {
+                SubCriteriaId = g.Key.SubCriteriaId,
+                Description = g.Key.Description,
+                QuestionText = g.Key.QuestionText,
+                GroupName = g.Key.GroupName,
+                ChecklistName = g.Key.ChecklistName,
+                SelectionCount = g.Count(),
+                EvaluationCount = g.Select(s => s.Answer.EvaluationId).Distinct().Count()
+            })
+            .OrderByDescending(x => x.SelectionCount)
+            .Take(top)
+            .ToList();
+
+        return grouped;
+    }
+
     public async Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter, bool excludeEvaluator = false)
     {
         // Remove pagination for export

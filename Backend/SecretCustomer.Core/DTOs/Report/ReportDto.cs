@@ -641,6 +641,20 @@ public class QuestionSuggestionSummaryDto
     public decimal AverageScore { get; set; }
 }
 
+/// <summary>
+/// En çok seçilen alt kriter özeti
+/// </summary>
+public class SubCriteriaSummaryDto
+{
+    public int SubCriteriaId { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string QuestionText { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+    public int SelectionCount { get; set; }
+    public int EvaluationCount { get; set; }
+}
+
 // ===== SORU GRUBU ORTALAMA RAPORU DTO'LARI =====
 
 /// <summary>

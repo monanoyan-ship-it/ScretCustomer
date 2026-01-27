@@ -60,6 +60,9 @@ public interface IReportService
     // En çok öneri yazılan sorular
     Task<IEnumerable<QuestionSuggestionSummaryDto>> GetTopSuggestedQuestionsAsync(SuggestionsFilterDto filter, int top = 10);
 
+    // En çok seçilen alt kriterler
+    Task<IEnumerable<SubCriteriaSummaryDto>> GetTopSubCriteriaAsync(SuggestionsFilterDto filter, int top = 10);
+
     // Öneriler Excel export
     Task<ExcelExportDto> ExportSuggestionsToExcelAsync(SuggestionsFilterDto filter, bool excludeEvaluator = false);
 
