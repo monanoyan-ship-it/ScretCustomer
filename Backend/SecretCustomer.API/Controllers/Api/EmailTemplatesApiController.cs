@@ -292,7 +292,9 @@ public class EmailTemplatesApiController : ControllerBase
         var body = dto.Body;
 
         // Örnek verilerle değiştir
-        body = body.Replace(EmailPlaceholders.SurveyLink, "https://survey.example.com/abc123");
+        var exampleUrl = "https://survey.example.com/abc123";
+        body = body.Replace(EmailPlaceholders.SurveyUrl, exampleUrl);
+        body = body.Replace(EmailPlaceholders.SurveyLink, $"<a href=\"{exampleUrl}\" target=\"_blank\">{exampleUrl}</a>");
         body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
         body = body.Replace(EmailPlaceholders.CompanyName, "ABC Şirketi");
         body = body.Replace(EmailPlaceholders.OrganizationName, "İstanbul Şubesi");
@@ -375,7 +377,8 @@ public class EmailTemplatesApiController : ControllerBase
 
             // Placeholder'ları gerçek verilerle doldur
             body = template.Body;
-            body = body.Replace(EmailPlaceholders.SurveyLink, surveyUrl);
+            body = body.Replace(EmailPlaceholders.SurveyUrl, surveyUrl);
+            body = body.Replace(EmailPlaceholders.SurveyLink, $"<a href=\"{surveyUrl}\" target=\"_blank\">{surveyUrl}</a>");
             body = body.Replace(EmailPlaceholders.SurveyQRCode, qrHtml);
             body = body.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
             body = body.Replace(EmailPlaceholders.OrganizationName, project.Organization?.Name ?? personnelOrg?.Name ?? "");
@@ -400,8 +403,10 @@ public class EmailTemplatesApiController : ControllerBase
         else
         {
             // Örnek verilerle doldur (eski davranış)
+            var testUrl = "https://survey.example.com/test123";
             body = template.Body;
-            body = body.Replace(EmailPlaceholders.SurveyLink, "https://survey.example.com/test123");
+            body = body.Replace(EmailPlaceholders.SurveyUrl, testUrl);
+            body = body.Replace(EmailPlaceholders.SurveyLink, $"<a href=\"{testUrl}\" target=\"_blank\">{testUrl}</a>");
             body = body.Replace(EmailPlaceholders.SurveyQRCode, "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' alt='QR Code' style='width:150px;height:150px;border:1px solid #ccc;' />");
             body = body.Replace(EmailPlaceholders.CompanyName, "Test Şirketi");
             body = body.Replace(EmailPlaceholders.OrganizationName, "Test Şubesi");

@@ -1092,6 +1092,8 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedOrganization)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.AssignmentPeriod)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
             .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
@@ -1306,28 +1308,106 @@ public class ReportService : IReportService
 
     public async Task<ExcelExportDto> ExportPenaltiesToExcelAsync(PenaltyFilterDto filter, bool excludeEvaluator = false)
     {
-        var report = await GetPenaltiesReportAsync(filter);
+        // Export için pagination olmadan tüm veriyi çek
+        var query = _context.Answers
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.Assignment)
+                    .ThenInclude(a => a.Project)
+                        .ThenInclude(p => p!.Customer)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.Evaluator)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedPersonnel)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedOrganization)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.AssignmentPeriod)
+            .Include(a => a.Question)
+                .ThenInclude(q => q.Checklist)
+            .Include(a => a.SubCriteriaSelections)
+                .ThenInclude(s => s.SubCriteria)
+            .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
+            .AsQueryable();
+
+        // Varsayılan proje tipi filtresi
+        if (filter.ProjectIds?.Any() != true)
+        {
+            query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+        }
+
+        // Apply filters
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
+
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Question.ChecklistId));
+
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
+
+        if (filter.PenaltyTypes?.Any() == true)
+        {
+            var penaltyTypeIds = filter.PenaltyTypes
+                .Select(pt => PenaltyTypes.GetBySystemName(pt)?.Id)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (penaltyTypeIds.Any())
+                query = query.Where(a => penaltyTypeIds.Contains(a.AppliedPenaltyTypeId));
+        }
+
+        // Date Range filter
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) <= maxEnd);
+        }
+
+        var penaltyAnswers = await query.ToListAsync();
 
         using var workbook = new XLWorkbook();
 
         // Summary sheet
         var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Summary", defaultValue: "Özet"));
         summarySheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.TotalPenalties", defaultValue: "Toplam Cezalı");
-        summarySheet.Cell(1, 2).Value = report.Summary.TotalPenalties;
+        summarySheet.Cell(1, 2).Value = penaltyAnswers.Count;
         summarySheet.Cell(2, 1).Value = await _localizationService.GetResourceAsync("Report.YellowCard", defaultValue: "Sarı Kart");
-        summarySheet.Cell(2, 2).Value = report.Summary.TotalYellowCards;
+        summarySheet.Cell(2, 2).Value = penaltyAnswers.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard);
         summarySheet.Cell(3, 1).Value = await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart");
-        summarySheet.Cell(3, 2).Value = report.Summary.TotalRedCards;
+        summarySheet.Cell(3, 2).Value = penaltyAnswers.Count(a => a.AppliedPenaltyTypeId == PenaltyTypes.Ids.RedCard);
         summarySheet.Cell(4, 1).Value = await _localizationService.GetResourceAsync("Report.AffectedEvaluations", defaultValue: "Etkilenen Değerlendirme");
-        summarySheet.Cell(4, 2).Value = report.Summary.AffectedEvaluations;
+        summarySheet.Cell(4, 2).Value = penaltyAnswers.Select(a => a.EvaluationId).Distinct().Count();
         summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi");
         summarySheet.Cell(5, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
         summarySheet.Columns().AdjustToContents();
 
-        // Penalties detail sheet
+        // Penalties detail sheet (tüm veriler - pagination yok)
         var penaltiesSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.PenaltyEvaluations", defaultValue: "Cezalı Değerlendirmeler"));
 
-        // Headers - Değerlendirici kolonu excludeEvaluator true ise eklenmez
         var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
@@ -1359,58 +1439,132 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
         }
 
+        var yellowCardText = await _localizationService.GetResourceAsync("Report.YellowCard", defaultValue: "Sarı Kart");
+        var redCardText = await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart");
+
         int row = 2;
-        foreach (var penalty in report.Penalties)
+        foreach (var a in penaltyAnswers.OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt))
         {
             int col = 1;
-            penaltiesSheet.Cell(row, col++).Value = penalty.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.CallId ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.CallTime ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.Duration ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.ProjectName;
-            penaltiesSheet.Cell(row, col++).Value = penalty.OrganizationName ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.ChecklistName ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.GroupName;
-            penaltiesSheet.Cell(row, col++).Value = penalty.QuestionText;
-            penaltiesSheet.Cell(row, col++).Value = penalty.PenaltyType == "YellowCard"
-                ? await _localizationService.GetResourceAsync("Report.YellowCard", defaultValue: "Sarı Kart")
-                : await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart");
+            var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt;
+            penaltiesSheet.Cell(row, col++).Value = evalDate?.ToString("dd.MM.yyyy") ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallId ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallTime ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Duration ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Assignment.Project?.Name ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.EvaluatedOrganization?.Name ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Question?.Checklist?.Name ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Question?.GroupName ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Question?.Text ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard ? yellowCardText : redCardText;
 
             if (!excludeEvaluator)
             {
-                penaltiesSheet.Cell(row, col++).Value = penalty.EvaluatorName ?? "";
+                penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Evaluator != null
+                    ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
+                    : "";
             }
 
-            penaltiesSheet.Cell(row, col++).Value = penalty.EvaluatedPersonnelName ?? "";
-            penaltiesSheet.Cell(row, col++).Value = penalty.Notes ?? "";
+            var evaluatedName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
+                : (a.Evaluation.EvaluatedPersonnel != null
+                    ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
+                    : a.Evaluation.EvaluatedUnknownPersonnel ?? "");
+            penaltiesSheet.Cell(row, col++).Value = evaluatedName;
+            penaltiesSheet.Cell(row, col++).Value = a.Notes ?? "";
             row++;
         }
         penaltiesSheet.Columns().AdjustToContents();
 
-        // Top questions sheet
+        // Top questions sheet - Seçilen alt kriterler ile birlikte
         var questionsSheet = workbook.Worksheets.Add("En Çok Ceza Alan Sorular");
-        questionsSheet.Cell(1, 1).Value = "Soru";
-        questionsSheet.Cell(1, 1).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 2).Value = "Kontrol Listesi";
-        questionsSheet.Cell(1, 2).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 3).Value = "Bölüm";
-        questionsSheet.Cell(1, 3).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 4).Value = "Sarı Kart";
-        questionsSheet.Cell(1, 4).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 5).Value = "Kırmızı Kart";
-        questionsSheet.Cell(1, 5).Style.Font.Bold = true;
-        questionsSheet.Cell(1, 6).Value = "Toplam";
-        questionsSheet.Cell(1, 6).Style.Font.Bold = true;
+
+        // Kolonlar: Ceza Tipi, Bölüm, Soru, Seçilen Alt Kriter, Dönem, Adet
+        var qHeaders = new List<string>
+        {
+            await _localizationService.GetResourceAsync("Report.PenaltyType", defaultValue: "Ceza Tipi"),
+            await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
+            await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
+            await _localizationService.GetResourceAsync("Report.SubCriteria", defaultValue: "Seçilen Alt Kriter"),
+            await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Dönem"),
+            await _localizationService.GetResourceAsync("Common.Count", defaultValue: "Adet")
+        };
+
+        for (int i = 0; i < qHeaders.Count; i++)
+        {
+            questionsSheet.Cell(1, i + 1).Value = qHeaders[i];
+            questionsSheet.Cell(1, i + 1).Style.Font.Bold = true;
+            questionsSheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Her cezalı cevap için seçilen alt kriterleri çıkar
+        // Alt kriter varsa her biri için ayrı satır, yoksa boş alt kriter ile tek satır
+        var questionDataWithSubCriteria = penaltyAnswers
+            .Where(a => a.Question != null)
+            .SelectMany(a =>
+            {
+                var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt ?? a.Evaluation.CreatedAt;
+                var periodName = a.Evaluation.AssignmentPeriod?.Name ?? evalDate.ToString("yyyyMM");
+                var penaltyType = a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard ? "YellowCard" : "RedCard";
+
+                var subCriteriaList = a.SubCriteriaSelections?.Where(s => s.SubCriteria != null).ToList() ?? new List<AnswerSubCriteriaSelection>();
+
+                // Alt kriter yoksa boş string ile tek kayıt
+                if (!subCriteriaList.Any())
+                {
+                    return new[]
+                    {
+                        new
+                        {
+                            PenaltyType = penaltyType,
+                            GroupName = a.Question!.GroupName ?? "",
+                            QuestionText = a.Question.Text,
+                            SubCriteriaDescription = "",
+                            PeriodName = periodName
+                        }
+                    };
+                }
+
+                // Her alt kriter için ayrı kayıt
+                return subCriteriaList.Select(sc => new
+                {
+                    PenaltyType = penaltyType,
+                    GroupName = a.Question!.GroupName ?? "",
+                    QuestionText = a.Question.Text,
+                    SubCriteriaDescription = sc.SubCriteria?.Description ?? "",
+                    PeriodName = periodName
+                });
+            })
+            .ToList();
+
+        // Ceza Tipi + Bölüm + Soru + Alt Kriter + Dönem bazında gruplama
+        var detailedQuestionStats = questionDataWithSubCriteria
+            .GroupBy(x => new { x.PenaltyType, x.GroupName, x.QuestionText, x.SubCriteriaDescription, x.PeriodName })
+            .Select(g => new
+            {
+                g.Key.PenaltyType,
+                g.Key.GroupName,
+                g.Key.QuestionText,
+                g.Key.SubCriteriaDescription,
+                g.Key.PeriodName,
+                Count = g.Count()
+            })
+            .OrderBy(x => x.PenaltyType)
+            .ThenBy(x => x.GroupName)
+            .ThenBy(x => x.QuestionText)
+            .ThenBy(x => x.SubCriteriaDescription)
+            .ThenBy(x => x.PeriodName)
+            .ToList();
 
         row = 2;
-        foreach (var q in report.TopPenaltyQuestions)
+        foreach (var q in detailedQuestionStats)
         {
-            questionsSheet.Cell(row, 1).Value = q.QuestionText;
-            questionsSheet.Cell(row, 2).Value = q.ChecklistName;
-            questionsSheet.Cell(row, 3).Value = q.GroupName;
-            questionsSheet.Cell(row, 4).Value = q.YellowCardCount;
-            questionsSheet.Cell(row, 5).Value = q.RedCardCount;
-            questionsSheet.Cell(row, 6).Value = q.TotalPenalties;
+            questionsSheet.Cell(row, 1).Value = q.PenaltyType == "YellowCard" ? yellowCardText : redCardText;
+            questionsSheet.Cell(row, 2).Value = q.GroupName;
+            questionsSheet.Cell(row, 3).Value = q.QuestionText;
+            questionsSheet.Cell(row, 4).Value = q.SubCriteriaDescription;
+            questionsSheet.Cell(row, 5).Value = q.PeriodName;
+            questionsSheet.Cell(row, 6).Value = q.Count;
             row++;
         }
         questionsSheet.Columns().AdjustToContents();
@@ -3945,9 +4099,17 @@ public class ReportService : IReportService
 
     public async Task<List<SurveyProjectListItemDto>> GetSurveyProjectsAsync()
     {
+        // Enneagram checklist'lerini hariç tut - sadece Survey (ChecklistTypeId=5) olanlar gelsin
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
         var projects = await _context.Projects
             .Include(p => p.Customer)
-            .Where(p => p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey && !p.IsDeleted)
+            .Where(p => p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                       !p.IsDeleted &&
+                       !enneagramChecklistIds.Contains(p.ChecklistId))
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
@@ -4008,13 +4170,20 @@ public class ReportService : IReportService
 
     public async Task<List<RecentSurveyResponseDto>> GetRecentSurveyResponsesAsync(int count = 20, int? projectId = null, DateTime? startDate = null, DateTime? endDate = null)
     {
+        // Enneagram checklist'lerini hariç tut - sadece Survey tipi
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
         var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment.Project.IsDeleted)
+                   !e.Assignment.Project.IsDeleted &&
+                   !enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId))
             .AsQueryable();
 
         // Filter by project
@@ -5764,6 +5933,440 @@ public class ReportService : IReportService
             FileName = $"Personel_Soru_Performans_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    // ===== ENNEAGRAM SONUÇLARI RAPORU =====
+
+    /// <summary>
+    /// Enneagram tipindeki checklist'leri kullanan projeleri listele
+    /// </summary>
+    public async Task<List<EnneagramProjectListItemDto>> GetEnneagramProjectsAsync()
+    {
+        // Enneagram checklist'leri olan projeleri bul
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        if (!enneagramChecklistIds.Any())
+            return new List<EnneagramProjectListItemDto>();
+
+        // Project.ChecklistId üzerinden projeleri bul (direkt ilişki)
+        var projects = await _context.Projects
+            .Include(p => p.Customer)
+            .Where(p => enneagramChecklistIds.Contains(p.ChecklistId) && !p.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        var result = new List<EnneagramProjectListItemDto>();
+
+        foreach (var project in projects)
+        {
+            // Tamamlanan anket sayısı
+            var completedCount = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed)
+                .CountAsync();
+
+            // Son yanıt tarihi
+            var lastResponse = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed)
+                .OrderByDescending(e => e.CompletedAt)
+                .Select(e => e.CompletedAt)
+                .FirstOrDefaultAsync();
+
+            result.Add(new EnneagramProjectListItemDto
+            {
+                ProjectId = project.Id,
+                ProjectName = project.Name,
+                CustomerName = project.Customer?.CompanyName,
+                ProjectCode = project.Code,
+                TotalResponses = completedCount,
+                LastResponseAt = lastResponse,
+                IsActive = project.IsActive
+            });
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Enneagram sonuçlarını listele (filtrelenebilir)
+    /// </summary>
+    public async Task<(List<EnneagramResultListDto> Results, EnneagramSummaryDto Summary, int TotalCount)> GetEnneagramResultsAsync(EnneagramFilterDto filter)
+    {
+        // Enneagram checklist'leri
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        if (!enneagramChecklistIds.Any())
+            return (new List<EnneagramResultListDto>(), new EnneagramSummaryDto(), 0);
+
+        // Temel sorgu - Project.ChecklistId üzerinden filtrele
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.Assignment.Project != null &&
+                        enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId));
+
+        // Proje filtresi
+        if (filter.ProjectIds?.Any() == true)
+        {
+            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+        }
+
+        // Arama filtresi (isim veya e-posta) - EvaluatedCustomerPersonnel üzerinden
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    ((e.EvaluatedCustomerPersonnel.FirstName != null && e.EvaluatedCustomerPersonnel.FirstName.ToLower().Contains(term)) ||
+                     (e.EvaluatedCustomerPersonnel.LastName != null && e.EvaluatedCustomerPersonnel.LastName.ToLower().Contains(term)) ||
+                     (e.EvaluatedCustomerPersonnel.Email != null && e.EvaluatedCustomerPersonnel.Email.ToLower().Contains(term)))));
+        }
+
+        // Tarih filtresi
+        if (filter.DateRanges?.Any() == true)
+        {
+            var dateRange = filter.DateRanges.First();
+            if (dateRange.StartDate.HasValue)
+            {
+                var startUtc = DateTime.SpecifyKind(dateRange.StartDate.Value.Date, DateTimeKind.Utc);
+                query = query.Where(e => e.CompletedAt >= startUtc);
+            }
+            if (dateRange.EndDate.HasValue)
+            {
+                var endUtc = DateTime.SpecifyKind(dateRange.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                query = query.Where(e => e.CompletedAt <= endUtc);
+            }
+        }
+
+        var totalCount = await query.CountAsync();
+
+        // Sayfalama için sonuçları al
+        var evaluations = await query
+            .OrderByDescending(e => e.CompletedAt)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        // External invitations for respondent info
+        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (evaluationIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        var results = new List<EnneagramResultListDto>();
+
+        // Kişilik tipi istatistikleri için
+        var dominantTypes = new Dictionary<string, int>();
+
+        foreach (var eval in evaluations)
+        {
+            var scores = CalculateEnneagramScores(eval);
+            var dominantScore = scores.OrderByDescending(s => s.Percentage).FirstOrDefault();
+
+            // Track dominant types
+            if (dominantScore != null && !string.IsNullOrEmpty(dominantScore.PersonalityType))
+            {
+                if (!dominantTypes.ContainsKey(dominantScore.PersonalityType))
+                    dominantTypes[dominantScore.PersonalityType] = 0;
+                dominantTypes[dominantScore.PersonalityType]++;
+            }
+
+            // Get respondent info
+            string? respondentName = null;
+            string? respondentEmail = null;
+            if (eval.EvaluatedCustomerPersonnel != null)
+            {
+                respondentName = $"{eval.EvaluatedCustomerPersonnel.FirstName} {eval.EvaluatedCustomerPersonnel.LastName}".Trim();
+                respondentEmail = eval.EvaluatedCustomerPersonnel.Email;
+            }
+            else if (externalInvitations.TryGetValue(eval.Id, out var ext))
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+
+            results.Add(new EnneagramResultListDto
+            {
+                EvaluationId = eval.Id,
+                ProjectId = eval.Assignment.ProjectId,
+                ProjectName = eval.Assignment.Project?.Name ?? "",
+                RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
+                RespondentEmail = respondentEmail,
+                DominantType = dominantScore?.PersonalityType,
+                DominantPercentage = dominantScore?.Percentage,
+                TotalScore = scores.Sum(s => s.TotalPoints),
+                CompletedAt = eval.CompletedAt
+            });
+        }
+
+        var mostCommonType = dominantTypes.OrderByDescending(x => x.Value).FirstOrDefault().Key;
+
+        var projectCount = evaluations.Select(e => e.Assignment.ProjectId).Distinct().Count();
+
+        var summary = new EnneagramSummaryDto
+        {
+            TotalResponses = totalCount,
+            DominantType = mostCommonType,
+            ProjectCount = projectCount,
+            AverageCompletionRate = totalCount > 0 ? 100m : 0m // Her kayıt zaten tamamlanmış
+        };
+
+        return (results, summary, totalCount);
+    }
+
+    /// <summary>
+    /// Enneagram sonuç detayı (kişilik tipi puanlarıyla)
+    /// </summary>
+    public async Task<EnneagramResultDetailDto?> GetEnneagramResultDetailAsync(int evaluationId)
+    {
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
+
+        if (evaluation == null)
+            return null;
+
+        // Get respondent info
+        string? respondentName = null;
+        string? respondentEmail = null;
+        if (evaluation.EvaluatedCustomerPersonnel != null)
+        {
+            respondentName = $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}".Trim();
+            respondentEmail = evaluation.EvaluatedCustomerPersonnel.Email;
+        }
+        else
+        {
+            // Check external invitation
+            var ext = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId == evaluationId)
+                .Select(sei => new { sei.FirstName, sei.LastName, sei.Email })
+                .FirstOrDefaultAsync();
+            if (ext != null)
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+        }
+
+        var scores = CalculateEnneagramScores(evaluation);
+        var dominantScore = scores.OrderByDescending(s => s.Percentage).FirstOrDefault();
+
+        return new EnneagramResultDetailDto
+        {
+            EvaluationId = evaluation.Id,
+            RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
+            RespondentEmail = respondentEmail,
+            ProjectName = evaluation.Assignment.Project?.Name ?? "",
+            DominantType = dominantScore?.PersonalityType,
+            DominantPercentage = dominantScore?.Percentage,
+            CompletedAt = evaluation.CompletedAt,
+            Scores = scores
+        };
+    }
+
+    /// <summary>
+    /// Enneagram sonuçları Excel export
+    /// </summary>
+    public async Task<ExcelExportDto> ExportEnneagramResultsToExcelAsync(EnneagramFilterDto filter)
+    {
+        // Tüm sonuçları al (sayfalama yok)
+        filter.PageSize = int.MaxValue;
+        var (results, summary, _) = await GetEnneagramResultsAsync(filter);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Enneagram Sonuçları");
+
+        // Header
+        var headers = new[] { "Katılımcı", "E-posta", "Proje", "Baskın Tip", "Baskın Yüzde", "Toplam Puan", "Tamamlanma Tarihi" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+        }
+
+        var headerRange = worksheet.Range(1, 1, 1, headers.Length);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        // Veri
+        var row = 2;
+        foreach (var result in results)
+        {
+            worksheet.Cell(row, 1).Value = result.RespondentName ?? "Anonim";
+            worksheet.Cell(row, 2).Value = result.RespondentEmail ?? "";
+            worksheet.Cell(row, 3).Value = result.ProjectName;
+            worksheet.Cell(row, 4).Value = result.DominantType ?? "-";
+            worksheet.Cell(row, 5).Value = result.DominantPercentage.HasValue ? $"%{result.DominantPercentage:F0}" : "-";
+            worksheet.Cell(row, 6).Value = result.TotalScore ?? 0;
+            worksheet.Cell(row, 7).Value = result.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Enneagram_Sonuclari_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    /// <summary>
+    /// Enneagram puanlarını hesapla (GroupName bazında)
+    /// Her grup için: Toplam puan / Maksimum puan (her grupta 10 soru x 5 puan = 50)
+    /// </summary>
+    private List<EnneagramPersonalityScoreDto> CalculateEnneagramScores(Evaluation evaluation)
+    {
+        var scores = new List<EnneagramPersonalityScoreDto>();
+
+        // Cevapları GroupName'e göre grupla
+        var groupedAnswers = evaluation.Answers
+            .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName))
+            .GroupBy(a => a.Question.GroupName!);
+
+        foreach (var group in groupedAnswers)
+        {
+            // Gruptaki her cevabın puanını topla
+            var totalPoints = 0;
+            var questionCount = 0;
+
+            foreach (var answer in group)
+            {
+                // En yüksek puanlı seçilen alt kriteri al (SubCriteriaSelections üzerinden)
+                var selectedPoints = answer.SubCriteriaSelections
+                    .Select(sc => sc.SubCriteria?.WeightPoints ?? 0)
+                    .DefaultIfEmpty(0)
+                    .Max();
+
+                totalPoints += (int)selectedPoints;
+                questionCount++;
+            }
+
+            // Maksimum puan: soru sayısı x 5 (en yüksek puan)
+            var maxPoints = questionCount * 5;
+            if (maxPoints == 0) maxPoints = 50; // Varsayılan 10 soru x 5 puan
+
+            var percentage = maxPoints > 0 ? (decimal)totalPoints / maxPoints * 100 : 0;
+
+            scores.Add(new EnneagramPersonalityScoreDto
+            {
+                PersonalityType = group.Key,
+                TotalPoints = totalPoints,
+                MaxPoints = maxPoints,
+                Percentage = percentage
+            });
+        }
+
+        // Yüzdeye göre sırala (yüksekten düşüğe)
+        return scores.OrderByDescending(s => s.Percentage).ToList();
+    }
+
+    /// <summary>
+    /// Enneagram proje bazlı kişilik tipi dağılımı (tüm yanıtların ortalaması)
+    /// </summary>
+    public async Task<EnneagramDistributionResultDto?> GetEnneagramDistributionAsync(int projectId)
+    {
+        var project = await _context.Projects
+            .Include(p => p.Checklist)
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+
+        if (project == null)
+            return null;
+
+        // Checklist Enneagram tipinde mi kontrol et
+        if (project.Checklist?.ChecklistTypeId != ChecklistTypes.Ids.Enneagram)
+            return null;
+
+        // Bu projedeki tamamlanmış değerlendirmeleri al
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Assignment)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => e.Assignment.ProjectId == projectId &&
+                       e.StatusId == EvaluationStatuses.Ids.Completed &&
+                       !e.IsDeleted)
+            .ToListAsync();
+
+        if (!evaluations.Any())
+        {
+            return new EnneagramDistributionResultDto
+            {
+                ProjectId = projectId,
+                ProjectName = project.Name,
+                TotalResponses = 0,
+                Distribution = new List<EnneagramDistributionDto>()
+            };
+        }
+
+        // Tüm kişilik tiplerini ve puanlarını topla
+        var personalityScores = new Dictionary<string, List<decimal>>();
+
+        foreach (var eval in evaluations)
+        {
+            var scores = CalculateEnneagramScores(eval);
+            foreach (var score in scores)
+            {
+                if (!personalityScores.ContainsKey(score.PersonalityType))
+                    personalityScores[score.PersonalityType] = new List<decimal>();
+                personalityScores[score.PersonalityType].Add(score.Percentage);
+            }
+        }
+
+        // Ortalamaları hesapla ve sırala
+        var distribution = personalityScores
+            .Select(kvp => new EnneagramDistributionDto
+            {
+                PersonalityType = kvp.Key,
+                AveragePercentage = kvp.Value.Any() ? kvp.Value.Average() : 0,
+                ResponseCount = kvp.Value.Count,
+                TotalPoints = (int)(kvp.Value.Any() ? kvp.Value.Average() * 50 / 100 : 0),
+                MaxPoints = 50
+            })
+            .OrderByDescending(d => d.AveragePercentage)
+            .ToList();
+
+        return new EnneagramDistributionResultDto
+        {
+            ProjectId = projectId,
+            ProjectName = project.Name,
+            TotalResponses = evaluations.Count,
+            Distribution = distribution
         };
     }
 }

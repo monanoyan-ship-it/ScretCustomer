@@ -14,22 +14,71 @@
     <!-- Content -->
     <div data-bind="visible: !isLoading()">
         <!-- Filters -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row align-items-end g-3">
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">@Html.T("Common.StartDate", "Başlangıç Tarihi")</label>
-                        <input type="date" class="form-control" data-bind="value: startDate" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">@Html.T("Common.EndDate", "Bitiş Tarihi")</label>
-                        <input type="date" class="form-control" data-bind="value: endDate" />
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-success" data-bind="click: loadReports">
-                            <i class="bi bi-search me-1"></i> @Html.T("Common.Filter", "Filtrele")
+        <div class="card mb-4">
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Add Filter Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                         </button>
+                        <div class="dropdown-menu p-3 filter-dropdown" style="min-width: 280px;">
+                            <!-- Filter Type Selector -->
+                            <div class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                                    <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                                    <option value="project">@Html.T("Common.Project", "Proje")</option>
+                                    <option value="organization">@Html.T("Common.Organization", "Organizasyon")</option>
+                                    <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                </select>
+                            </div>
+
+                            <!-- Project Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.SelectProject", "Proje seçin...")'"></select>
+                            </div>
+
+                            <!-- Organization Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'organization'" class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="options: organizations, optionsText: 'name', optionsValue: 'id', value: tempFilter.organizationId, optionsCaption: '@Html.T("Common.SelectOrganization", "Organizasyon seçin...")'"></select>
+                            </div>
+
+                            <!-- Date Range Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                                <div class="d-flex gap-1 mb-2">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                                    <span class="align-self-center">-</span>
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <!-- ko foreach: dateRanges -->
+                                    <button type="button" class="btn btn-sm"
+                                        data-bind="click: function() { $parent.setTempDateRange(systemName); },
+                                                   text: name,
+                                                   css: $parent.tempFilter.selectedDateRangeType() === systemName ? 'btn-success' : 'btn-outline-secondary'"></button>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
+                            <!-- Add Button -->
+                            <button type="button" class="btn btn-success btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
+                                <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Active Filters (Chips) -->
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-success d-flex align-items-center gap-1 py-2 px-2">
+                        <span data-bind="text: label"></span>: <strong data-bind="text: displayValue"></strong>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+
+                    <!-- Clear All -->
+                    <button class="btn btn-outline-secondary btn-sm" data-bind="visible: activeFilters().length > 0, click: clearFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
+                    </button>
                 </div>
             </div>
         </div>

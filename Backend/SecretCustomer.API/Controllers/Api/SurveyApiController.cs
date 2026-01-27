@@ -306,6 +306,7 @@ public class SurveyApiController : ControllerBase
         {
             valid = true,
             isExternal = false,
+            hideGroupNames = project.Checklist?.HideGroupNames ?? false,
             invitation = new
             {
                 token,
@@ -372,6 +373,7 @@ public class SurveyApiController : ControllerBase
         {
             valid = true,
             isExternal = true,
+            hideGroupNames = project.Checklist?.HideGroupNames ?? false,
             invitation = new
             {
                 token = invitation.Token,
@@ -1190,8 +1192,9 @@ public class SurveyApiController : ControllerBase
     {
         if (string.IsNullOrEmpty(text)) return text;
 
-        // Anket Linkleri - HTML link olarak (<a href="url">url</a>)
-        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl));
+        // Anket Linkleri
+        text = text.Replace(EmailPlaceholders.SurveyUrl, surveyUrl); // Düz URL
+        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl)); // HTML link olarak (<a href="url">url</a>)
         text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon
@@ -2201,6 +2204,8 @@ public class SurveyApiController : ControllerBase
     /// - email1@x.com, email2@x.com
     /// - email1@x.com; email2@x.com
     /// - email@x.com Ahmet Yılmaz (email sonrası isim)
+    /// - Ahmet Yılmaz email@x.com (email öncesi isim)
+    /// - Ahmet Yılmaz &lt;email@x.com&gt; (açılı parantez formatı)
     /// </summary>
     private List<ExternalRecipient> ParseEmailInput(string input)
     {
@@ -2219,38 +2224,65 @@ public class SurveyApiController : ControllerBase
             var trimmed = line.Trim();
             if (string.IsNullOrWhiteSpace(trimmed)) continue;
 
+            // <email> formatını kontrol et: "Ahmet Yılmaz <ahmet@example.com>"
+            var angleMatch = System.Text.RegularExpressions.Regex.Match(trimmed, @"^(.+?)\s*<([^>]+)>$");
+            if (angleMatch.Success)
+            {
+                var namePart = angleMatch.Groups[1].Value.Trim();
+                var emailPart = angleMatch.Groups[2].Value.Trim();
+
+                if (IsValidEmail(emailPart))
+                {
+                    var nameTokens = namePart.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    results.Add(CreateRecipient(emailPart.ToLower(), nameTokens));
+                    continue;
+                }
+            }
+
             // Satırı boşluk ile tokenize et
             var tokens = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             string? email = null;
-            var nameTokens = new List<string>();
+            var tokensBeforeEmail = new List<string>();
+            var tokensAfterEmail = new List<string>();
 
             foreach (var token in tokens)
             {
-                if (email == null && IsValidEmail(token))
+                // <> işaretlerini temizle
+                var cleanToken = token.Trim('<', '>');
+
+                if (email == null && IsValidEmail(cleanToken))
                 {
-                    // İlk geçerli email
-                    email = token.ToLower();
+                    // İlk geçerli email bulundu
+                    email = cleanToken.ToLower();
                 }
-                else if (email != null && IsValidEmail(token))
+                else if (email != null && IsValidEmail(cleanToken))
                 {
                     // Yeni bir email bulundu - öncekini kaydet ve yenisine geç
+                    var nameTokens = tokensBeforeEmail.Count > 0 ? tokensBeforeEmail : tokensAfterEmail;
                     results.Add(CreateRecipient(email, nameTokens));
-                    email = token.ToLower();
-                    nameTokens.Clear();
+                    email = cleanToken.ToLower();
+                    tokensBeforeEmail.Clear();
+                    tokensAfterEmail.Clear();
                 }
-                else if (email != null)
+                else if (email == null)
+                {
+                    // Email öncesi isim token'ı
+                    tokensBeforeEmail.Add(token);
+                }
+                else
                 {
                     // Email sonrası isim token'ı
-                    nameTokens.Add(token);
+                    tokensAfterEmail.Add(token);
                 }
-                // email null ve token email değilse → atla
             }
 
             // Son email'i kaydet
             if (email != null)
             {
-                results.Add(CreateRecipient(email, nameTokens));
+                // Öncelik: email öncesi isim, yoksa email sonrası isim
+                var finalNameTokens = tokensBeforeEmail.Count > 0 ? tokensBeforeEmail : tokensAfterEmail;
+                results.Add(CreateRecipient(email, finalNameTokens));
             }
         }
 
@@ -2303,8 +2335,9 @@ public class SurveyApiController : ControllerBase
     {
         if (string.IsNullOrEmpty(text)) return text;
 
-        // Anket Linkleri - HTML link olarak (<a href="url">url</a>)
-        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl));
+        // Anket Linkleri
+        text = text.Replace(EmailPlaceholders.SurveyUrl, surveyUrl); // Düz URL
+        text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl)); // HTML link olarak (<a href="url">url</a>)
         text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon

@@ -1219,7 +1219,11 @@ public class CustomerPortalApiController : ControllerBase
     /// Proje performans raporu
     /// </summary>
     [HttpGet("reports/project-performance")]
-    public async Task<IActionResult> GetProjectPerformance([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetProjectPerformance(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1234,18 +1238,32 @@ public class CustomerPortalApiController : ControllerBase
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && !p.IsDeleted)
-            .ToListAsync();
+        var projectsQuery = _context.Projects
+            .Where(p => p.CustomerId == customerId && !p.IsDeleted);
 
-        var evaluations = await _context.Evaluations
+        // Project filter
+        if (projectIds?.Any() == true)
+            projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
+
+        var projects = await projectsQuery.ToListAsync();
+
+        var evalQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .ToListAsync();
+                && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Project filter
+        if (projectIds?.Any() == true)
+            evalQuery = evalQuery.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+        // Organization filter
+        if (organizationIds?.Any() == true)
+            evalQuery = evalQuery.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
+
+        var evaluations = await evalQuery.ToListAsync();
 
         var projectPerformance = projects.Select(p =>
         {
@@ -1270,7 +1288,11 @@ public class CustomerPortalApiController : ControllerBase
     /// Dönem özet raporu
     /// </summary>
     [HttpGet("reports/summary")]
-    public async Task<IActionResult> GetReportSummary([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetReportSummary(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1284,14 +1306,23 @@ public class CustomerPortalApiController : ControllerBase
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
-        var evaluations = await _context.Evaluations
+        var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .ToListAsync();
+                && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Project filter
+        if (projectIds?.Any() == true)
+            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+        // Organization filter
+        if (organizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
+
+        var evaluations = await query.ToListAsync();
 
         var projectCount = await _context.Projects
             .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
@@ -1321,6 +1352,8 @@ public class CustomerPortalApiController : ControllerBase
     public async Task<IActionResult> GetEvaluationsByScoreRange(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds,
         [FromQuery] decimal minScore,
         [FromQuery] decimal maxScore)
     {
@@ -1336,7 +1369,7 @@ public class CustomerPortalApiController : ControllerBase
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
-        var evaluations = await _context.Evaluations
+        var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Include(e => e.EvaluatedPersonnel)
@@ -1346,7 +1379,17 @@ public class CustomerPortalApiController : ControllerBase
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && e.ScorePercentage.HasValue
                 && e.ScorePercentage >= minScore
-                && e.ScorePercentage < maxScore)
+                && e.ScorePercentage < maxScore);
+
+        // Project filter
+        if (projectIds?.Any() == true)
+            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+        // Organization filter
+        if (organizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
+
+        var evaluations = await query
             .OrderByDescending(e => e.CreatedAt)
             .Take(100)
             .Select(e => new
@@ -1370,7 +1413,11 @@ public class CustomerPortalApiController : ControllerBase
     /// Aylık trend raporu (tarih aralığına göre)
     /// </summary>
     [HttpGet("reports/monthly-trend")]
-    public async Task<IActionResult> GetReportMonthlyTrend([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetReportMonthlyTrend(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1384,14 +1431,23 @@ public class CustomerPortalApiController : ControllerBase
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
-        var evaluations = await _context.Evaluations
+        var query = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .ToListAsync();
+                && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Project filter
+        if (projectIds?.Any() == true)
+            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+
+        // Organization filter
+        if (organizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
+
+        var evaluations = await query.ToListAsync();
 
         // Aylara göre grupla
         var monthlyData = evaluations
@@ -4304,5 +4360,366 @@ public class CustomerPortalApiController : ControllerBase
             id, role);
 
         return Ok(new { message = "Taslak başarıyla silindi." });
+    }
+
+    // ==================== ENNEAGRAM RESULTS ====================
+
+    /// <summary>
+    /// Müşterinin Enneagram projelerini listeler
+    /// </summary>
+    [HttpGet("reports/enneagram-projects")]
+    public async Task<IActionResult> GetEnneagramProjects()
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        // Enneagram checklistlerini bul
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == Core.Enums.ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        var projects = await _context.Projects
+            .Where(p => p.CustomerId == customerId.Value &&
+                   enneagramChecklistIds.Contains(p.ChecklistId) &&
+                   !p.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        var result = new List<object>();
+
+        foreach (var project in projects)
+        {
+            // Tamamlanan değerlendirme sayısı
+            var completedCount = await _context.Evaluations
+                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+                .CountAsync();
+
+            result.Add(new
+            {
+                projectId = project.Id,
+                projectName = project.Name,
+                totalResponses = completedCount,
+                isActive = project.IsActive
+            });
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Enneagram sonuçlarını listeler
+    /// </summary>
+    [HttpGet("reports/enneagram-results")]
+    public async Task<IActionResult> GetEnneagramResults(
+        [FromQuery] int? projectId = null,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        // Enneagram checklistlerini bul
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == Core.Enums.ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        var query = _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Where(e => e.Assignment.Project.CustomerId == customerId.Value &&
+                   enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId) &&
+                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
+                   !e.Assignment.Project.IsDeleted)
+            .AsQueryable();
+
+        if (projectId.HasValue)
+            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    (e.EvaluatedCustomerPersonnel.FirstName.ToLower().Contains(term) ||
+                     e.EvaluatedCustomerPersonnel.LastName.ToLower().Contains(term) ||
+                     (e.EvaluatedCustomerPersonnel.Email != null && e.EvaluatedCustomerPersonnel.Email.ToLower().Contains(term)))));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CompletedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // Enneagram sorularını al (Grup adı = kişilik tipi)
+        var checklistIds = evaluations.Select(e => e.Assignment.Project.ChecklistId).Distinct().ToList();
+        var questions = await _context.Questions
+            .Where(q => checklistIds.Contains(q.ChecklistId) && !q.IsDeleted)
+            .ToListAsync();
+
+        // External invitations
+        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (evaluationIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        // Cevapları al
+        var allEvaluationIds = evaluations.Select(e => e.Id).ToList();
+        var answers = await _context.Answers
+            .Where(a => allEvaluationIds.Contains(a.EvaluationId))
+            .ToListAsync();
+
+        var results = new List<object>();
+
+        foreach (var e in evaluations)
+        {
+            string? respondentName = null;
+            string? respondentEmail = null;
+
+            if (e.EvaluatedCustomerPersonnel != null)
+            {
+                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
+                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
+            }
+            else if (externalInvitations.TryGetValue(e.Id, out var ext))
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+
+            // Kişilik tipi skorlarını hesapla
+            var evalAnswers = answers.Where(a => a.EvaluationId == e.Id).ToList();
+            var evalQuestions = questions.Where(q => q.ChecklistId == e.Assignment.Project.ChecklistId).ToList();
+
+            var personalityScores = evalQuestions
+                .GroupBy(q => q.GroupName ?? "Bilinmeyen")
+                .Select(g => new
+                {
+                    personalityType = g.Key,
+                    totalPoints = evalAnswers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0),
+                    maxPoints = g.Sum(q => (int)q.WeightPoints)
+                })
+                .OrderByDescending(x => x.totalPoints)
+                .ToList();
+
+            var dominant = personalityScores.FirstOrDefault();
+
+            results.Add(new
+            {
+                evaluationId = e.Id,
+                projectId = e.Assignment.ProjectId,
+                projectName = e.Assignment.Project.Name,
+                respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
+                respondentEmail,
+                dominantType = dominant?.personalityType,
+                dominantPercentage = dominant != null && dominant.maxPoints > 0
+                    ? Math.Round((decimal)dominant.totalPoints / dominant.maxPoints * 100, 1)
+                    : (decimal?)null,
+                totalScore = e.ScorePercentage,
+                completedAt = e.CompletedAt
+            });
+        }
+
+        // Summary
+        var allResults = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Where(e => e.Assignment.Project.CustomerId == customerId.Value &&
+                   enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId) &&
+                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
+                   !e.Assignment.Project.IsDeleted)
+            .ToListAsync();
+
+        var projectCount = allResults.Select(e => e.Assignment.ProjectId).Distinct().Count();
+
+        return Ok(new
+        {
+            results,
+            totalCount,
+            totalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            summary = new
+            {
+                totalResponses = allResults.Count,
+                projectCount,
+                dominantType = "-",
+                averageCompletionRate = (decimal?)null
+            }
+        });
+    }
+
+    /// <summary>
+    /// Tek bir Enneagram sonuç detayı
+    /// </summary>
+    [HttpGet("reports/enneagram-results/{evaluationId}")]
+    public async Task<IActionResult> GetEnneagramResultDetail(int evaluationId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+            .FirstOrDefaultAsync(e => e.Id == evaluationId &&
+                   e.Assignment.Project.CustomerId == customerId.Value);
+
+        if (evaluation == null)
+            return NotFound(new { message = "Sonuç bulunamadı." });
+
+        // Respondent info
+        string? respondentName = null;
+        string? respondentEmail = null;
+
+        if (evaluation.EvaluatedCustomerPersonnel != null)
+        {
+            respondentName = $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}".Trim();
+            respondentEmail = evaluation.EvaluatedCustomerPersonnel.Email;
+        }
+        else
+        {
+            var ext = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId == evaluationId)
+                .Select(sei => new { sei.FirstName, sei.LastName, sei.Email })
+                .FirstOrDefaultAsync();
+            if (ext != null)
+            {
+                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
+                respondentEmail = ext.Email;
+            }
+        }
+
+        // Sorular ve gruplar
+        var questions = await _context.Questions
+            .Where(q => q.ChecklistId == evaluation.Assignment.Project.ChecklistId && !q.IsDeleted)
+            .ToListAsync();
+
+        // Kişilik tipi skorları
+        var scores = questions
+            .GroupBy(q => q.GroupName ?? "Bilinmeyen")
+            .Select(g => new
+            {
+                personalityType = g.Key,
+                totalPoints = evaluation.Answers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0),
+                maxPoints = (int)g.Sum(q => q.WeightPoints),
+                percentage = g.Sum(q => q.WeightPoints) > 0
+                    ? Math.Round((decimal)evaluation.Answers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0) / g.Sum(q => q.WeightPoints) * 100, 1)
+                    : 0
+            })
+            .OrderByDescending(x => x.percentage)
+            .ToList();
+
+        var dominant = scores.FirstOrDefault();
+
+        return Ok(new
+        {
+            evaluationId = evaluation.Id,
+            projectId = evaluation.Assignment.ProjectId,
+            projectName = evaluation.Assignment.Project.Name,
+            respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
+            respondentEmail,
+            dominantType = dominant?.personalityType,
+            completedAt = evaluation.CompletedAt,
+            scores
+        });
+    }
+
+    /// <summary>
+    /// Enneagram kişilik tipi dağılımı (proje bazlı)
+    /// </summary>
+    [HttpGet("reports/enneagram-distribution/{projectId}")]
+    public async Task<IActionResult> GetEnneagramDistribution(int projectId)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId &&
+                   p.CustomerId == customerId.Value &&
+                   !p.IsDeleted);
+
+        if (project == null)
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        // Tamamlanan değerlendirmeler
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Answers)
+            .Where(e => e.Assignment.ProjectId == projectId &&
+                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
+            .ToListAsync();
+
+        if (!evaluations.Any())
+        {
+            return Ok(new
+            {
+                projectId,
+                projectName = project.Name,
+                totalResponses = 0,
+                distribution = new List<object>()
+            });
+        }
+
+        // Sorular ve gruplar
+        var questions = await _context.Questions
+            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
+            .ToListAsync();
+
+        // Kişilik tiplerine göre toplam puanlar
+        var personalityGroups = questions
+            .GroupBy(q => q.GroupName ?? "Bilinmeyen")
+            .Select(g => new
+            {
+                personalityType = g.Key,
+                questionIds = g.Select(q => q.Id).ToList(),
+                maxPointsPerResponse = (int)g.Sum(q => q.WeightPoints)
+            })
+            .ToList();
+
+        var distribution = personalityGroups.Select(pg =>
+        {
+            var totalPoints = evaluations
+                .SelectMany(e => e.Answers)
+                .Where(a => pg.questionIds.Contains(a.QuestionId))
+                .Sum(a => a.GivenPoints ?? 0);
+
+            var maxPoints = pg.maxPointsPerResponse * evaluations.Count;
+            var avgPercentage = maxPoints > 0 ? Math.Round((decimal)totalPoints / maxPoints * 100, 1) : 0;
+
+            return new
+            {
+                pg.personalityType,
+                totalPoints,
+                maxPoints = pg.maxPointsPerResponse,
+                responseCount = evaluations.Count,
+                averagePercentage = avgPercentage
+            };
+        })
+        .OrderByDescending(x => x.averagePercentage)
+        .ToList();
+
+        return Ok(new
+        {
+            projectId,
+            projectName = project.Name,
+            totalResponses = evaluations.Count,
+            distribution
+        });
     }
 }

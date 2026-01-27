@@ -470,7 +470,19 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width: 40%;">@Html.T("Evaluation.CallId", "Cagri ID")</th>
-                                                <td data-bind="text: callId || '-'"></td>
+                                                <td>
+                                                    <!-- ko if: callId -->
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <span data-bind="text: $root.truncateCallId(callId), attr: { title: callId }"></span>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" data-bind="click: function() { $root.copyToClipboard(callId); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                            <i class="bi bi-clipboard"></i>
+                                                        </button>
+                                                    </span>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot: callId -->
+                                                    <span>-</span>
+                                                    <!-- /ko -->
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CallDate", "Cagri Tarihi")</th>

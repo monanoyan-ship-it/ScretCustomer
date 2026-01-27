@@ -662,6 +662,45 @@ function PenaltiesViewModel() {
         self.detailData(null);
     };
 
+    // Truncate long CallId for display (show first 8 and last 8 chars)
+    self.truncateCallId = function(callId) {
+        if (!callId) return '-';
+        if (callId.length <= 20) return callId;
+        return callId.substring(0, 8) + '...' + callId.substring(callId.length - 8);
+    };
+
+    // Copy text to clipboard
+    self.copyToClipboard = function(text) {
+        if (!text) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                toastr.success(T('Common.CopiedToClipboard', 'Panoya kopyalandi'));
+            }).catch(function() {
+                self.fallbackCopyToClipboard(text);
+            });
+        } else {
+            self.fallbackCopyToClipboard(text);
+        }
+    };
+
+    // Fallback copy method for older browsers
+    self.fallbackCopyToClipboard = function(text) {
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            toastr.success(T('Common.CopiedToClipboard', 'Panoya kopyalandi'));
+        } catch (err) {
+            toastr.error(T('Common.CopyFailed', 'Kopyalama basarisiz'));
+        }
+        document.body.removeChild(textArea);
+    };
+
     // Initialize
     self.loadFilterOptions();
     self.loadReport();
@@ -677,7 +716,9 @@ var TRANSLATION_KEYS = [
     'Penalty.RedCard',
     'File.PenaltyReport',
     'Evaluation.NotFound',
-    'Evaluation.DetailsLoadError'
+    'Evaluation.DetailsLoadError',
+    'Common.CopiedToClipboard',
+    'Common.CopyFailed'
 ];
 
 // Apply bindings
