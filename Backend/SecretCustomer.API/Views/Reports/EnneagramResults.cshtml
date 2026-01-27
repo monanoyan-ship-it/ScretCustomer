@@ -1,0 +1,326 @@
+@{
+    ViewData["Title"] = @Html.T("Report.EnneagramResults", "Enneagram Sonuçları");
+}
+
+<div id="enneagram-results-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people text-purple"></i> @Html.T("Report.EnneagramResults", "Enneagram Kişilik Testi Sonuçları")</h2>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
+    </div>
+
+    <!-- Main Content -->
+    <div data-bind="visible: !isLoading()">
+        <!-- Filters -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">@Html.T("Report.Project", "Proje")</label>
+                        <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'projectId', optionsText: 'projectName', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">@Html.T("Report.SearchRespondent", "Katılımcı Ara")</label>
+                        <input type="text" class="form-control" data-bind="textInput: filter.searchTerm" placeholder="@Html.T("Report.SearchPlaceholder", "Ad, e-posta...")">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" data-bind="click: loadResults, disable: isLoadingResults">
+                            <i class="bi bi-search"></i> @Html.T("Common.Filter", "Filtrele")
+                        </button>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-success w-100" data-bind="click: exportResults, disable: results().length === 0">
+                            <i class="bi bi-file-earmark-excel"></i> Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 data-bind="text: summary().totalResponses || 0"></h3>
+                        <small>@Html.T("Report.TotalResponses", "Toplam Yanıt")</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 data-bind="text: summary().dominantType || '-'"></h3>
+                        <small>@Html.T("Report.MostCommonType", "En Yaygın Tip")</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 data-bind="text: summary().projectCount || 0"></h3>
+                        <small>@Html.T("Report.ProjectCount", "Proje Sayısı")</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3 data-bind="text: summary().averageCompletionRate ? summary().averageCompletionRate.toFixed(1) + '%' : '-'"></h3>
+                        <small>@Html.T("Report.CompletionRate", "Tamamlama Oranı")</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kişilik Tipi Dağılımı (Proje Seçildiğinde) -->
+        <div class="card shadow-sm mb-4" data-bind="visible: filter.projectId() && distribution().length > 0">
+            <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> @Html.T("Report.PersonalityDistribution", "Kişilik Tipi Dağılımı")</h5>
+                <small data-bind="text: distributionInfo().totalResponses + ' yanıt'"></small>
+            </div>
+            <div class="card-body">
+                <!-- Loading -->
+                <div data-bind="visible: isLoadingDistribution" class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+
+                <!-- Distribution Tables -->
+                <div data-bind="visible: !isLoadingDistribution() && distribution().length > 0">
+                    <div class="row">
+                        <!-- Rapor 1: Puan Tablosu -->
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="bi bi-table"></i> Puan Dağılımı</h6>
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Kişilik Tipi</th>
+                                        <th class="text-center">Puan</th>
+                                        <th class="text-center">Maks</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: distribution">
+                                    <tr>
+                                        <td class="small" data-bind="text: personalityType"></td>
+                                        <td class="text-center fw-bold" data-bind="text: totalPoints"></td>
+                                        <td class="text-center text-muted">50</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="table-secondary">
+                                    <tr>
+                                        <th class="small">Toplam</th>
+                                        <th class="text-center" data-bind="text: distributionTotalPoints()"></th>
+                                        <th class="text-center" data-bind="text: distribution().length * 50"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Rapor 2: Yüzde Tablosu (Sıralı) -->
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="bi bi-percent"></i> Yüzde Sıralaması</h6>
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Kişilik Tipi</th>
+                                        <th class="text-center">Yüzde</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: distribution">
+                                    <tr data-bind="css: { 'table-success': $index() === 0 }">
+                                        <td class="small">
+                                            <span data-bind="text: personalityType"></span>
+                                            <!-- ko if: $index() === 0 -->
+                                            <i class="bi bi-star-fill text-warning ms-1"></i>
+                                            <!-- /ko -->
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: averagePercentage.toFixed(0) + '%', css: { 'bg-success': averagePercentage >= 70, 'bg-warning text-dark': averagePercentage >= 50 && averagePercentage < 70, 'bg-secondary': averagePercentage < 50 }"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Görsel: Progress Bar -->
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="bi bi-bar-chart"></i> Görsel</h6>
+                            <!-- ko foreach: distribution -->
+                            <div class="mb-1">
+                                <div class="d-flex justify-content-between small">
+                                    <span data-bind="text: personalityType"></span>
+                                    <span data-bind="text: averagePercentage.toFixed(0) + '%'"></span>
+                                </div>
+                                <div class="progress" style="height: 12px;">
+                                    <div class="progress-bar" data-bind="style: { width: averagePercentage + '%' }, css: { 'bg-success': averagePercentage >= 70, 'bg-warning': averagePercentage >= 50 && averagePercentage < 70, 'bg-secondary': averagePercentage < 50 }"></div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-purple text-white">
+                <h5 class="mb-0"><i class="bi bi-table"></i> @Html.T("Report.Results", "Sonuçlar")</h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- Loading -->
+                <div data-bind="visible: isLoadingResults" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div data-bind="visible: !isLoadingResults() && results().length === 0" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">@Html.T("Report.NoResults", "Sonuç bulunamadı.")</p>
+                </div>
+
+                <!-- Results -->
+                <div class="table-responsive" data-bind="visible: !isLoadingResults() && results().length > 0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Report.Respondent", "Katılımcı")</th>
+                                <th>@Html.T("Report.Project", "Proje")</th>
+                                <th class="text-center">@Html.T("Report.DominantType", "Baskın Tip")</th>
+                                <th class="text-center">@Html.T("Report.Score", "Puan")</th>
+                                <th>@Html.T("Report.Date", "Tarih")</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: results">
+                            <tr>
+                                <td>
+                                    <div data-bind="text: respondentName || 'Anonim'"></div>
+                                    <small class="text-muted" data-bind="text: respondentEmail || ''"></small>
+                                </td>
+                                <td data-bind="text: projectName"></td>
+                                <td class="text-center">
+                                    <span class="badge bg-purple" data-bind="text: dominantType"></span>
+                                    <small class="text-muted d-block" data-bind="text: dominantPercentage ? dominantPercentage.toFixed(0) + '%' : ''"></small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary" data-bind="text: totalScore ? totalScore.toFixed(0) : '-'"></span>
+                                </td>
+                                <td>
+                                    <small data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : '-'"></small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetail" title="@Html.T("Report.ViewDetails", "Detay")">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="enneagramDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-purple text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-badge"></i> @Html.T("Report.EnneagramDetail", "Enneagram Sonuç Detayı")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isLoadingDetail" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Detail Content -->
+                    <div data-bind="visible: !isLoadingDetail() && detail()">
+                        <!-- Respondent Info -->
+                        <div class="row mb-4" data-bind="with: detail">
+                            <div class="col-md-6">
+                                <h5 data-bind="text: respondentName || 'Anonim'"></h5>
+                                <p class="text-muted mb-0" data-bind="text: respondentEmail || ''"></p>
+                                <small class="text-muted" data-bind="text: projectName"></small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="mb-2">
+                                    <span class="badge bg-purple fs-5" data-bind="text: dominantType"></span>
+                                </div>
+                                <small class="text-muted" data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : ''"></small>
+                            </div>
+                        </div>
+
+                        <!-- Personality Scores -->
+                        <div class="card" data-bind="with: detail">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> @Html.T("Report.PersonalityScores", "Kişilik Tipi Puanları")</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>@Html.T("Report.PersonalityType", "Kişilik Tipi")</th>
+                                            <th class="text-center">@Html.T("Report.Score", "Puan")</th>
+                                            <th class="text-center">@Html.T("Report.MaxScore", "Maks")</th>
+                                            <th class="text-center">@Html.T("Report.Percentage", "Yüzde")</th>
+                                            <th style="width: 30%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: scores">
+                                        <tr data-bind="css: { 'table-success': $index() === 0 }">
+                                            <td>
+                                                <strong data-bind="text: personalityType"></strong>
+                                                <!-- ko if: $index() === 0 -->
+                                                <span class="badge bg-success ms-1">@Html.T("Report.Dominant", "Baskın")</span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="text-center" data-bind="text: totalPoints"></td>
+                                            <td class="text-center" data-bind="text: maxPoints"></td>
+                                            <td class="text-center">
+                                                <span class="badge" data-bind="text: percentage.toFixed(0) + '%', css: { 'bg-success': percentage >= 70, 'bg-warning text-dark': percentage >= 50 && percentage < 70, 'bg-secondary': percentage < 50 }"></span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar" data-bind="style: { width: percentage + '%' }, css: { 'bg-success': percentage >= 70, 'bg-warning': percentage >= 50 && percentage < 70, 'bg-secondary': percentage < 50 }"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Close", "Kapat")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: exportDetail, visible: detail()">
+                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-purple {
+        background-color: #6f42c1 !important;
+    }
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/Reports/EnneagramResults.js"></script>
+}

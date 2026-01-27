@@ -19,16 +19,20 @@
             @if (isNew)
             {
                 <i class="bi bi-plus-circle me-2"></i>@Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi")
+                <span class="badge bg-info ms-2 fs-6">Anket</span>
             }
             else if (isClone)
             {
-                <i class="bi bi-files me-2"></i>@Html.T("Checklist.CloneChecklist", "Kontrol Listesi Klonla")
+                <span data-bind="text: checklist() ? checklist().name() : ''"></span>
+                <small class="text-muted ms-2"><i class="bi bi-files"></i> @Html.T("Checklist.CloneChecklist", "Klonla")</small>
+                <span class="badge bg-info ms-2 fs-6">Anket</span>
             }
             else
             {
-                <i class="bi bi-pencil me-2"></i>@Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle")
+                <span data-bind="text: checklist() ? checklist().name() : ''"></span>
+                <small class="text-muted ms-2"><i class="bi bi-pencil"></i> @Html.T("Checklist.EditChecklist", "Düzenle")</small>
+                <span class="badge bg-info ms-2 fs-6">Anket</span>
             }
-            <span class="badge bg-info ms-2">Anket</span>
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm" data-bind="click: saveChecklist, disable: isSaving">
@@ -106,8 +110,10 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.Type", "K.L. Tipi")</label>
-                            <input type="text" class="form-control bg-light" readonly value="Anket" />
-                            <small class="text-muted">@Html.T("Checklist.ChecklistTypeReadonly", "K.L. tipi değiştirilemez")</small>
+                            <select class="form-select" data-bind="value: checklistType">
+                                <option value="Survey">@Html.T("Checklist.Type.Survey", "Anket")</option>
+                                <option value="Enneagram">@Html.T("Checklist.Type.Enneagram", "Enneagram")</option>
+                            </select>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.ScoringMethod", "Puanlama Yöntemi")</label>
@@ -138,6 +144,12 @@
                             <div class="form-check mt-2">
                                 <input type="checkbox" class="form-check-input" data-bind="checked: isActive" id="isActive" />
                                 <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-2">
+                                <input type="checkbox" class="form-check-input" data-bind="checked: hideGroupNames" id="hideGroupNames" />
+                                <label class="form-check-label" for="hideGroupNames">@Html.T("Checklist.HideGroupNames", "Grup İsimlerini Gizle")</label>
                             </div>
                         </div>
                     </div>
@@ -271,6 +283,29 @@
                                     </div>
                                 </div>
 
+                                <!-- Soru Ayarları -->
+                                <div class="row mt-2 mb-2 bg-light p-2 rounded">
+                                    <div class="col-md-4">
+                                        <label class="form-label form-label-sm mb-1">@Html.T("Question.SelectionType", "Seçim Tipi")</label>
+                                        <select class="form-select form-select-sm" data-bind="value: selectionTypeId">
+                                            <option value="1">@Html.T("SelectionType.Single", "Tek Seçim")</option>
+                                            <option value="2">@Html.T("SelectionType.Multiple", "Çoklu Seçim")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <div class="form-check mt-3">
+                                            <input type="checkbox" class="form-check-input" data-bind="checked: showScoreInput" />
+                                            <label class="form-check-label">@Html.T("Question.ShowScoreInput", "Puan girişini göster")</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <div class="form-check mt-3">
+                                            <input type="checkbox" class="form-check-input" data-bind="checked: allowComment" />
+                                            <label class="form-check-label">@Html.T("Question.AllowComment", "Yorum Yapılabilir")</label>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Alt Kriterler / Öneriler -->
                                 <div class="row mt-2">
                                     <div class="col-12">
@@ -285,29 +320,6 @@
                                         </div>
 
                                         <div class="mt-2" data-bind="visible: _showSubCriteria">
-                                            <!-- Seçim Ayarları -->
-                                            <div class="row mb-2 bg-light p-2 rounded">
-                                                <div class="col-md-4">
-                                                    <label class="form-label form-label-sm mb-1">@Html.T("Question.SelectionType", "Seçim Tipi")</label>
-                                                    <select class="form-select form-select-sm" data-bind="value: selectionTypeId">
-                                                        <option value="1">@Html.T("SelectionType.Single", "Tek Seçim")</option>
-                                                        <option value="2">@Html.T("SelectionType.Multiple", "Çoklu Seçim")</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-4 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: showScoreInput" />
-                                                        <label class="form-check-label">@Html.T("Question.ShowScoreInput", "Puan girişini göster")</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4 d-flex align-items-center">
-                                                    <div class="form-check mt-3">
-                                                        <input type="checkbox" class="form-check-input" data-bind="checked: allowComment" />
-                                                        <label class="form-check-label">@Html.T("Question.AllowComment", "Yorum Yapılabilir")</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             <!-- Alt Kriterler Başlık -->
                                             <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
                                                 <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>

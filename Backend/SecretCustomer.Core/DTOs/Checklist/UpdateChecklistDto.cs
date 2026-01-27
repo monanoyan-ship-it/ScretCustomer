@@ -40,6 +40,11 @@ public class UpdateChecklistDto
     public int? CustomerOrganizationId { get; set; }
 
     /// <summary>
+    /// Soru gruplarını gizle (formda grup isimleri görünmez, raporlamada kullanılır)
+    /// </summary>
+    public bool HideGroupNames { get; set; }
+
+    /// <summary>
     /// Sorular - Direkt checklist'e bağlı, GroupName ile gruplandırılır
     /// </summary>
     public List<UpdateQuestionDto> Questions { get; set; } = new();

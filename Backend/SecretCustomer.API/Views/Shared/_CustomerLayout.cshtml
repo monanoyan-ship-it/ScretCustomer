@@ -35,7 +35,7 @@
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
                 var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings" };
-                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults" };
+                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
             }
@@ -167,6 +167,12 @@
                                 <a class="nav-link @(currentAction == "SurveyResults" ? "active" : "")" href="/CustomerPortal/SurveyResults">
                                     <i class="bi bi-clipboard-data text-info"></i>
                                     @Html.T("CustomerPortal.Menu.SurveyResults", "Anket Sonuclari")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "EnneagramResults" ? "active" : "")" href="/CustomerPortal/EnneagramResults">
+                                    <i class="bi bi-people text-purple"></i>
+                                    @Html.T("CustomerPortal.Menu.EnneagramResults", "Enneagram Sonuclari")
                                 </a>
                             </li>
                         </ul>

@@ -13,6 +13,7 @@ public class ChecklistListDto
     public int Version { get; set; }
     public DateTime CreatedAt { get; set; }
     public string ChecklistType { get; set; } = "CallPerformance";
+    public string ScoringMethod { get; set; } = "Maximum";
     public string? Code { get; set; }
     public decimal MaxTotalPoints { get; set; }
     public DateTime? ValidFrom { get; set; }
@@ -53,6 +54,11 @@ public class ChecklistDto
     public string? CustomerName { get; set; }
     public int? CustomerOrganizationId { get; set; }
     public string? CustomerOrganizationName { get; set; }
+
+    /// <summary>
+    /// Soru gruplarını gizle (formda grup isimleri görünmez, raporlamada kullanılır)
+    /// </summary>
+    public bool HideGroupNames { get; set; }
 
     /// <summary>
     /// Sorular - Direkt checklist'e bağlı

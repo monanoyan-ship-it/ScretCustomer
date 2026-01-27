@@ -1246,3 +1246,111 @@ public class GroupScoreDto
     public int EvaluationCount { get; set; }
     public int ErrorCount { get; set; }
 }
+
+// ===== ENNEAGRAM SONUÇLARI RAPORU DTO'LARI =====
+
+/// <summary>
+/// Enneagram proje listesi için DTO
+/// </summary>
+public class EnneagramProjectListItemDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? ProjectCode { get; set; }
+    public int TotalResponses { get; set; }
+    public DateTime? LastResponseAt { get; set; }
+    public bool IsActive { get; set; }
+}
+
+/// <summary>
+/// Enneagram sonuç listesi için DTO
+/// </summary>
+public class EnneagramResultListDto
+{
+    public int EvaluationId { get; set; }
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? RespondentName { get; set; }
+    public string? RespondentEmail { get; set; }
+    public string? DominantType { get; set; }
+    public decimal? DominantPercentage { get; set; }
+    public decimal? TotalScore { get; set; }
+    public DateTime? CompletedAt { get; set; }
+}
+
+/// <summary>
+/// Enneagram sonuç detayı için DTO
+/// </summary>
+public class EnneagramResultDetailDto
+{
+    public int EvaluationId { get; set; }
+    public string? RespondentName { get; set; }
+    public string? RespondentEmail { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? DominantType { get; set; }
+    public decimal? DominantPercentage { get; set; }
+    public DateTime? CompletedAt { get; set; }
+
+    /// <summary>
+    /// Kişilik tipi puanları (yüzdeye göre sıralı)
+    /// </summary>
+    public List<EnneagramPersonalityScoreDto> Scores { get; set; } = new();
+}
+
+/// <summary>
+/// Enneagram kişilik tipi puanı
+/// </summary>
+public class EnneagramPersonalityScoreDto
+{
+    public string PersonalityType { get; set; } = string.Empty;
+    public int TotalPoints { get; set; }
+    public int MaxPoints { get; set; } = 50;
+    public decimal Percentage { get; set; }
+}
+
+/// <summary>
+/// Enneagram rapor özeti
+/// </summary>
+public class EnneagramSummaryDto
+{
+    public int TotalResponses { get; set; }
+    public string? DominantType { get; set; }
+    public int ProjectCount { get; set; }
+    public decimal? AverageCompletionRate { get; set; }
+}
+
+/// <summary>
+/// Enneagram filtre DTO
+/// </summary>
+public class EnneagramFilterDto
+{
+    public List<int>? ProjectIds { get; set; }
+    public string? SearchTerm { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
+}
+
+/// <summary>
+/// Enneagram proje bazlı kişilik tipi dağılımı
+/// </summary>
+public class EnneagramDistributionDto
+{
+    public string PersonalityType { get; set; } = string.Empty;
+    public decimal AveragePercentage { get; set; }
+    public int ResponseCount { get; set; }
+    public int TotalPoints { get; set; }
+    public int MaxPoints { get; set; }
+}
+
+/// <summary>
+/// Enneagram dağılım sonuç DTO
+/// </summary>
+public class EnneagramDistributionResultDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public int TotalResponses { get; set; }
+    public List<EnneagramDistributionDto> Distribution { get; set; } = new();
+}

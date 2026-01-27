@@ -19,16 +19,20 @@
             @if (isNew)
             {
                 <i class="bi bi-plus-circle me-2"></i>@Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi")
+                <span class="badge bg-primary ms-2 fs-6">Maksimum</span>
             }
             else if (isClone)
             {
-                <i class="bi bi-files me-2"></i>@Html.T("Checklist.CloneChecklist", "Kontrol Listesi Klonla")
+                <span data-bind="text: checklist() ? checklist().name() : ''"></span>
+                <small class="text-muted ms-2"><i class="bi bi-files"></i> @Html.T("Checklist.CloneChecklist", "Klonla")</small>
+                <span class="badge bg-primary ms-2 fs-6">Maksimum</span>
             }
             else
             {
-                <i class="bi bi-pencil me-2"></i>@Html.T("Checklist.EditChecklist", "Kontrol Listesi Düzenle")
+                <span data-bind="text: checklist() ? checklist().name() : ''"></span>
+                <small class="text-muted ms-2"><i class="bi bi-pencil"></i> @Html.T("Checklist.EditChecklist", "Düzenle")</small>
+                <span class="badge bg-primary ms-2 fs-6">Maksimum</span>
             }
-            <span class="badge bg-primary ms-2">Maksimum</span>
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm" data-bind="click: saveChecklist, disable: isSaving">
@@ -111,7 +115,7 @@
                                 <option value="PhysicalAudit">@Html.T("Checklist.Type.PhysicalAudit", "Fiziksel Denetim")</option>
                                 <option value="MysteryShopping">@Html.T("Checklist.Type.MysteryShopping", "Gizli Müşteri")</option>
                                 <option value="OnlineEvaluation">@Html.T("Checklist.Type.OnlineEvaluation", "Online Değerlendirme")</option>
-                                <option value="Survey">@Html.T("Checklist.Type.Survey", "Anket")</option>
+                                <option value="BankMysteryShopping">@Html.T("Checklist.Type.BankMysteryShopping", "Banka Gizli Müşteri")</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">

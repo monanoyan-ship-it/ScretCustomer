@@ -74,4 +74,12 @@ public class ReportsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Enneagram Kişilik Testi Sonuçları
+    /// </summary>
+    public IActionResult EnneagramResults()
+    {
+        return View();
+    }
 }

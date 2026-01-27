@@ -35,36 +35,36 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// Cezalı KL Raporu (sadece CustomerManager)
+    /// Cezalı KL Raporu
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult Penalties()
     {
         return View();
     }
 
     /// <summary>
-    /// Öneriler Raporu (sadece CustomerManager)
+    /// Öneriler Raporu
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult Suggestions()
     {
         return View();
     }
 
     /// <summary>
-    /// Temsilci Karnesi (sadece CustomerManager)
+    /// Temsilci Karnesi
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult PersonnelReportCard()
     {
         return View();
     }
 
     /// <summary>
-    /// Dönemlere Göre Personel Başarı Tablosu (sadece CustomerManager)
+    /// Dönemlere Göre Personel Başarı Tablosu
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult PerformanceByPeriod()
     {
         return View();
@@ -98,18 +98,18 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// İç dinlemeler - firma personeli tarafından yapılan (sadece CustomerManager)
+    /// İç dinlemeler - firma personeli tarafından yapılan
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult InternalEvaluations()
     {
         return View();
     }
 
     /// <summary>
-    /// Dış dinlemeler - bizim tarafımızdan yapılan (sadece CustomerManager)
+    /// Dış dinlemeler - bizim tarafımızdan yapılan
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult ExternalEvaluations()
     {
         return View();
@@ -148,6 +148,16 @@ public class CustomerPortalController : Controller
     [Route("CustomerPortal/SurveyResults")]
     [Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
     public IActionResult SurveyResults()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Enneagram Sonuçları - Enneagram kişilik testi sonuçları
+    /// </summary>
+    [Route("CustomerPortal/EnneagramResults")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult EnneagramResults()
     {
         return View();
     }

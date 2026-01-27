@@ -148,4 +148,21 @@ public interface IReportService
 
     // Personel Soru Bazlı Performans Raporu Excel export
     Task<ExcelExportDto> ExportPersonnelQuestionPerformanceReportAsync(PersonnelQuestionPerformanceFilterDto filter);
+
+    // ===== ENNEAGRAM SONUÇLARI RAPORU =====
+
+    // Enneagram projeleri listesi (checklistType=Enneagram olan projeler)
+    Task<List<EnneagramProjectListItemDto>> GetEnneagramProjectsAsync();
+
+    // Enneagram sonuçları listesi (filtrelenebilir)
+    Task<(List<EnneagramResultListDto> Results, EnneagramSummaryDto Summary, int TotalCount)> GetEnneagramResultsAsync(EnneagramFilterDto filter);
+
+    // Enneagram sonuç detayı (kişilik tipi puanlarıyla)
+    Task<EnneagramResultDetailDto?> GetEnneagramResultDetailAsync(int evaluationId);
+
+    // Enneagram sonuçları Excel export
+    Task<ExcelExportDto> ExportEnneagramResultsToExcelAsync(EnneagramFilterDto filter);
+
+    // Enneagram proje bazlı kişilik tipi dağılımı
+    Task<EnneagramDistributionResultDto?> GetEnneagramDistributionAsync(int projectId);
 }

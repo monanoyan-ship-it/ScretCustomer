@@ -762,21 +762,23 @@ public class EvaluationService : IEvaluationService
         // "Her Kayıtta" bildirim gönder (tamamlandıysa)
         if (targetStatusId == EvaluationStatuses.Ids.Completed)
         {
+            var evaluationId = evaluation.Id;
             _ = Task.Run(async () =>
             {
                 try
                 {
                     using var scope = _serviceProvider.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     var notificationService = scope.ServiceProvider.GetService<IEvaluationNotificationService>();
                     if (notificationService != null)
                     {
-                        // Evaluation'ı yeniden yükle (ilişkili verilerle)
-                        var evalForNotification = await _context.Evaluations
+                        // Evaluation'ı yeniden yükle (ilişkili verilerle) - scope'tan alınan DbContext ile
+                        var evalForNotification = await dbContext.Evaluations
                             .Include(e => e.Assignment)
                                 .ThenInclude(a => a!.Project)
                             .Include(e => e.EvaluatedCustomerPersonnel)
                             .Include(e => e.EvaluatedOrganization)
-                            .FirstOrDefaultAsync(e => e.Id == evaluation.Id);
+                            .FirstOrDefaultAsync(e => e.Id == evaluationId);
 
                         if (evalForNotification != null)
                         {

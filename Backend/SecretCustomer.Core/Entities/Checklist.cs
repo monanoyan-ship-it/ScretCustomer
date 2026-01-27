@@ -84,6 +84,13 @@ public class Checklist : BaseEntity
         Description = "Kontrol listesinin geçerli olduğu bitiş tarihi")]
     public DateTime? ValidUntil { get; set; }
 
+    // ===== GÖRÜNÜM AYARLARI =====
+
+    /// <summary>
+    /// Soru gruplarını gizle (formda grup isimleri görünmez, raporlamada kullanılır)
+    /// </summary>
+    public bool HideGroupNames { get; set; } = false;
+
     // ===== FİRMA VE ORGANİZASYON =====
 
     /// <summary>

@@ -1175,4 +1175,151 @@ public class ReportsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Rapor verisi toplanırken hata oluştu.", ex));
         }
     }
+
+    // ===== ENNEAGRAM SONUÇLARI RAPORU =====
+
+    /// <summary>
+    /// Enneagram Projeleri Listesi (Enneagram checklist tipi kullanan projeler)
+    /// </summary>
+    [HttpGet("enneagram-projects")]
+    public async Task<IActionResult> GetEnneagramProjects()
+    {
+        try
+        {
+            var result = await _reportService.GetEnneagramProjectsAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading Enneagram projects");
+            return StatusCode(500, CreateErrorResponse("Enneagram projeleri yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Enneagram Sonuçları Listesi (filtrelenebilir)
+    /// </summary>
+    [HttpGet("enneagram-results")]
+    public async Task<IActionResult> GetEnneagramResults(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] string? searchTerm,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        try
+        {
+            var filter = new EnneagramFilterDto
+            {
+                ProjectIds = projectIds,
+                SearchTerm = searchTerm,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var (results, summary, totalCount) = await _reportService.GetEnneagramResultsAsync(filter);
+
+            return Ok(new
+            {
+                results,
+                summary,
+                totalCount,
+                page,
+                pageSize,
+                totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading Enneagram results");
+            return StatusCode(500, CreateErrorResponse("Enneagram sonuçları yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Enneagram Sonuç Detayı (kişilik tipi puanlarıyla)
+    /// </summary>
+    [HttpGet("enneagram-results/{evaluationId}")]
+    public async Task<IActionResult> GetEnneagramResultDetail(int evaluationId)
+    {
+        try
+        {
+            var result = await _reportService.GetEnneagramResultDetailAsync(evaluationId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Sonuç bulunamadı."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading Enneagram result detail for {EvaluationId}", evaluationId);
+            return StatusCode(500, CreateErrorResponse("Enneagram sonuç detayı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Enneagram Sonuçları Excel Export
+    /// </summary>
+    [HttpGet("enneagram-results/export")]
+    public async Task<IActionResult> ExportEnneagramResults(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] string? searchTerm,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        try
+        {
+            var filter = new EnneagramFilterDto
+            {
+                ProjectIds = projectIds,
+                SearchTerm = searchTerm
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.ExportEnneagramResultsToExcelAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting Enneagram results to Excel");
+            return StatusCode(500, CreateErrorResponse("Enneagram sonuçları export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Enneagram Proje Bazlı Kişilik Tipi Dağılımı
+    /// </summary>
+    [HttpGet("enneagram-distribution/{projectId}")]
+    public async Task<IActionResult> GetEnneagramDistribution(int projectId)
+    {
+        try
+        {
+            var result = await _reportService.GetEnneagramDistributionAsync(projectId);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Proje bulunamadı veya Enneagram projesi değil."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading Enneagram distribution for project {ProjectId}", projectId);
+            return StatusCode(500, CreateErrorResponse("Enneagram dağılımı yüklenirken hata oluştu.", ex));
+        }
+    }
 }

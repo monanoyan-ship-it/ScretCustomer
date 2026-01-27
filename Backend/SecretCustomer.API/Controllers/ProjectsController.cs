@@ -12,8 +12,10 @@ public class ProjectsController : Controller
     /// <summary>
     /// Proje yönetimi sayfası (Liste + Create/Edit/Detail modalleri)
     /// </summary>
-    public IActionResult Index()
+    /// <param name="typeId">Proje tipi ID'si (opsiyonel - menüden tipe göre filtreleme için)</param>
+    public IActionResult Index(int? typeId = null)
     {
+        ViewBag.ProjectTypeId = typeId;
         return View();
     }
 }

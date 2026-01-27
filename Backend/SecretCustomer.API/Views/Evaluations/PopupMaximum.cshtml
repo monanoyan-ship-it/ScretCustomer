@@ -7,9 +7,9 @@
                         Html.T("Evaluation.EditEvaluation", "Değerlendirme Düzenle");
 }
 
-<div id="evaluation-popup">
+<div id="evaluation-popup" style="height: 100vh; display: flex; flex-direction: column;">
     <!-- Header -->
-    <div class="bg-primary text-white p-3">
+    <div class="bg-primary text-white p-3" style="flex-shrink: 0;">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-clipboard-check"></i>
@@ -28,7 +28,7 @@
     </div>
 
     <!-- Body -->
-    <div style="overflow-y: auto; height: calc(100vh - 120px);">
+    <div style="flex: 1; overflow-y: auto;">
         <!-- Loading -->
         <div data-bind="visible: isLoading" class="text-center py-5">
             <div class="spinner-border text-primary"></div>
@@ -707,7 +707,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="bg-light p-3 border-top" data-bind="visible: !isShowingSummary()">
+    <div class="bg-light p-3 border-top" style="flex-shrink: 0;" data-bind="visible: !isShowingSummary()">
         <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary" onclick="window.close();">
                 <i class="bi bi-x"></i> @Html.T("Common.Cancel", "İptal")

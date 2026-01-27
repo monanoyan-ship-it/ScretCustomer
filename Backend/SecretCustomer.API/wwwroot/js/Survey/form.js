@@ -26,9 +26,11 @@ function SurveyFormViewModel() {
     // Data
     self.surveyInfo = ko.observable(null);
     self.questions = ko.observableArray([]);
+    self.hideGroupNames = ko.observable(false);
 
-    // Computed: Has any group name (en az bir soruda groupName var mı?)
+    // Computed: Has any group name (en az bir soruda groupName var mı?) - hideGroupNames true ise grup gösterme
     self.hasAnyGroupName = ko.computed(function() {
+        if (self.hideGroupNames()) return false; // Gruplar gizlenecekse false döndür
         return self.questions().some(function(q) {
             return q.groupName && q.groupName.trim() !== '';
         });
@@ -112,6 +114,8 @@ function SurveyFormViewModel() {
             .then(function(data) {
                 if (data.valid && data.invitation) {
                     self.surveyInfo(data.invitation);
+                    // Grup isimlerini gizle ayarı
+                    self.hideGroupNames(data.hideGroupNames || false);
                     // Load questions from response
                     self.loadQuestions(data.questions || []);
                 } else {

@@ -197,10 +197,10 @@ public static class ProjectStatuses
 // ============================================================
 public static class ProjectTypes
 {
-    public static readonly TypeItem MysteryShopping = new(1, "MysteryShopping", "ProjectType.MysteryShopping", "Gizli Musteri", "bi-incognito", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem CallAuditing = new(2, "CallAuditing", "ProjectType.CallAuditing", "Cagri Denetleme", "bi-telephone", "bg-info", 2);
-    public static readonly TypeItem PhysicalAudit = new(3, "PhysicalAudit", "ProjectType.PhysicalAudit", "Fiziksel Denetim", "bi-building-check", "bg-success", 3);
-    public static readonly TypeItem OnlineSurvey = new(4, "OnlineSurvey", "ProjectType.OnlineSurvey", "Online Anket", "bi-globe", "bg-secondary", 4);
+    public static readonly TypeItem MysteryShopping = new(1, "MysteryShopping", "ProjectType.MysteryShopping", "Gizli Musteri", "bi-incognito", "bg-primary", 3, isDefault: true);
+    public static readonly TypeItem CallAuditing = new(2, "CallAuditing", "ProjectType.CallAuditing", "Cagri Denetleme", "bi-telephone", "bg-info", 1);
+    public static readonly TypeItem PhysicalAudit = new(3, "PhysicalAudit", "ProjectType.PhysicalAudit", "Fiziksel Denetim", "bi-building-check", "bg-success", 4);
+    public static readonly TypeItem OnlineSurvey = new(4, "OnlineSurvey", "ProjectType.OnlineSurvey", "Online Anket", "bi-globe", "bg-secondary", 2);
     public static readonly TypeItem CustomerSatisfaction = new(5, "CustomerSatisfaction", "ProjectType.CustomerSatisfaction", "Musteri Memnuniyeti", "bi-emoji-smile", "bg-warning text-dark", 5);
     public static readonly TypeItem TrainingEvaluation = new(6, "TrainingEvaluation", "ProjectType.TrainingEvaluation", "Egitim Degerlendirmesi", "bi-mortarboard", "bg-purple", 6);
     public static readonly TypeItem QualityControl = new(7, "QualityControl", "ProjectType.QualityControl", "Kalite Kontrol", "bi-patch-check", "bg-danger", 7);
@@ -283,7 +283,10 @@ public static class ScoringMethods
     // Kriter Toplam: SESTEK tarzi - Secilen secenegin puani direkt alinir
     public static readonly TypeItem CriteriaTotal = new(4, "CriteriaTotal", "ScoringMethod.CriteriaTotal", "Kriter Toplam - Secenek puanlari toplanir", "bi-plus-circle", "bg-success", 2);
 
-    public static IEnumerable<TypeItem> All => new[] { Maximum, CriteriaTotal };
+    // Anket: SubCriteria bazli puanlama - Secilen seceneklerin agirliklarina gore hesaplanir
+    public static readonly TypeItem Survey = new(5, "Survey", "ScoringMethod.Survey", "Anket puanlamasi - SubCriteria agirliklari ile hesaplanir", "bi-clipboard-data", "bg-info", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Maximum, CriteriaTotal, Survey };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -292,6 +295,7 @@ public static class ScoringMethods
     {
         public const int Maximum = 1;
         public const int CriteriaTotal = 4; // Eski Sum ID'si korunuyor (DB uyumlulugu)
+        public const int Survey = 5;
     }
 }
 
@@ -614,8 +618,9 @@ public static class ChecklistTypes
     public static readonly TypeItem OnlineEvaluation = new(4, "OnlineEvaluation", "ChecklistType.OnlineEvaluation", "Online degerlendirme", "bi-globe", "bg-success", 4);
     public static readonly TypeItem Survey = new(5, "Survey", "ChecklistType.Survey", "Genel anket", "bi-clipboard-data", "bg-secondary", 5);
     public static readonly TypeItem BankMysteryShopping = new(6, "BankMysteryShopping", "ChecklistType.BankMysteryShopping", "Banka Gizli Musteri", "bi-bank", "bg-dark", 6);
+    public static readonly TypeItem Enneagram = new(7, "Enneagram", "ChecklistType.Enneagram", "Enneagram Kisilik Testi", "bi-people", "bg-purple", 7);
 
-    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, BankMysteryShopping };
+    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, BankMysteryShopping, Enneagram };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -628,6 +633,7 @@ public static class ChecklistTypes
         public const int OnlineEvaluation = 4;
         public const int Survey = 5;
         public const int BankMysteryShopping = 6;
+        public const int Enneagram = 7;
     }
 }
 

@@ -94,6 +94,7 @@ public class ChecklistService : IChecklistService
                 Version = c.Version,
                 CreatedAt = c.CreatedAt,
                 ChecklistType = ChecklistTypes.GetById(c.ChecklistTypeId) != null ? ChecklistTypes.GetById(c.ChecklistTypeId)!.SystemName : "CallPerformance",
+                ScoringMethod = ScoringMethods.GetById(c.ScoringMethodId) != null ? ScoringMethods.GetById(c.ScoringMethodId)!.SystemName : "Maximum",
                 Code = c.Code,
                 MaxTotalPoints = c.MaxTotalPoints,
                 ValidFrom = c.ValidFrom,
@@ -149,6 +150,7 @@ public class ChecklistService : IChecklistService
                 Version = c.Version,
                 CreatedAt = c.CreatedAt,
                 ChecklistType = ChecklistTypes.GetById(c.ChecklistTypeId) != null ? ChecklistTypes.GetById(c.ChecklistTypeId)!.SystemName : "CallPerformance",
+                ScoringMethod = ScoringMethods.GetById(c.ScoringMethodId) != null ? ScoringMethods.GetById(c.ScoringMethodId)!.SystemName : "Maximum",
                 Code = c.Code,
                 MaxTotalPoints = c.MaxTotalPoints,
                 ValidFrom = c.ValidFrom,
@@ -200,6 +202,8 @@ public class ChecklistService : IChecklistService
             // Firma ve Organizasyon
             CustomerId = dto.CustomerId,
             CustomerOrganizationId = dto.CustomerOrganizationId,
+            // Görünüm ayarları
+            HideGroupNames = dto.HideGroupNames,
             // Sorular - Direkt checklist'e bağlı
             Questions = dto.Questions.Select(q => new Question
             {
@@ -270,6 +274,8 @@ public class ChecklistService : IChecklistService
         // Firma ve Organizasyon
         existing.CustomerId = dto.CustomerId;
         existing.CustomerOrganizationId = dto.CustomerOrganizationId;
+        // Görünüm ayarları
+        existing.HideGroupNames = dto.HideGroupNames;
 
         // Soruları güncelle
         UpdateQuestions(existing, dto.Questions);
@@ -308,6 +314,7 @@ public class ChecklistService : IChecklistService
             ValidUntil = original.ValidUntil,
             CustomerId = original.CustomerId,
             CustomerOrganizationId = original.CustomerOrganizationId,
+            HideGroupNames = original.HideGroupNames,
             // Soruları kopyala
             Questions = original.Questions.Select(q => new Question
             {
@@ -501,7 +508,7 @@ public class ChecklistService : IChecklistService
             CreatedAt = checklist.CreatedAt,
             ChecklistType = ChecklistTypes.GetById(checklist.ChecklistTypeId)?.SystemName ?? "",
             ChecklistTypeName = await GetChecklistTypeNameAsync(checklist.ChecklistTypeId),
-            ScoringMethod = checklist.ScoringMethodId.ToString(),
+            ScoringMethod = ScoringMethods.GetById(checklist.ScoringMethodId)?.SystemName ?? "Maximum",
             ScoringMethodName = await GetScoringMethodNameAsync(checklist.ScoringMethodId),
             MaxTotalPoints = checklist.MaxTotalPoints,
             Code = checklist.Code,
@@ -512,6 +519,7 @@ public class ChecklistService : IChecklistService
             CustomerName = checklist.Customer?.CompanyName,
             CustomerOrganizationId = checklist.CustomerOrganizationId,
             CustomerOrganizationName = checklist.CustomerOrganization?.Name,
+            HideGroupNames = checklist.HideGroupNames,
             Questions = questions,
             QuestionCount = checklist.Questions.Count
         };

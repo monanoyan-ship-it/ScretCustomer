@@ -89,6 +89,7 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     base.description = ko.observable(data.description || '');
     base.isScored = ko.observable(data.isScored !== false);
     base.isActive = ko.observable(data.isActive !== false);
+    base.hideGroupNames = ko.observable(data.hideGroupNames || false);
     base.version = ko.observable(data.version || 1);
     base.code = ko.observable(data.code || '');
     base.templateName = ko.observable(data.templateName || '');
@@ -268,14 +269,11 @@ function ChecklistEditorViewModel() {
     // Load checklist
     self.loadChecklist = function () {
         if (config.isNew) {
-            // Yeni checklist - seçilen puanlama yöntemini ve tipini ata
+            // Yeni checklist - seçilen puanlama yöntemini ata, checklistType dropdown varsayılanı kullanılır
             var newChecklistData = {
-                scoringMethod: config.scoringMethod || 'Maximum'
+                scoringMethod: config.scoringMethod || 'Maximum',
+                checklistType: config.isSurvey ? 'Survey' : 'CallPerformance'
             };
-            // Survey modunda checklistType da Survey olmalı
-            if (config.isSurvey) {
-                newChecklistData.checklistType = 'Survey';
-            }
             self.checklist(new ChecklistModel(newChecklistData));
             return;
         }
@@ -286,11 +284,7 @@ function ChecklistEditorViewModel() {
         fetch('/api/checklists/' + loadId, { credentials: 'include' })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                // Survey modunda checklistType'ı zorla
-                if (config.isSurvey) {
-                    data.checklistType = 'Survey';
-                    data.scoringMethod = 'Survey';
-                }
+                // checklistType ve scoringMethod DB'den gelen değerler kullanılır
 
                 if (config.isClone) {
                     // Clone: ID'leri temizle, ismi değiştir

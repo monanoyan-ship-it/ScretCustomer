@@ -37,7 +37,10 @@ public class EnumsApiController : ControllerBase
             approvalStatuses = await MapTypeItemsAsync(ApprovalStatuses.All),
             months = await MapTypeItemsAsync(Months.All),
             daysOfWeek = await MapTypeItemsAsync(DaysOfWeek.All),
-            evaluationNotificationFrequency = await MapTypeItemsAsync(EvaluationNotificationFrequencies.All)
+            evaluationNotificationFrequency = await MapTypeItemsAsync(EvaluationNotificationFrequencies.All),
+            checklistTypes = await MapTypeItemsAsync(ChecklistTypes.All),
+            scoringMethods = await MapTypeItemsAsync(ScoringMethods.All),
+            scoringTypes = await MapTypeItemsAsync(ScoringTypes.All)
         });
     }
 

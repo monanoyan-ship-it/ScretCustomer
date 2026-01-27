@@ -284,8 +284,9 @@ function ProjectsViewModel() {
         if (!type) return;
 
         var filter = {
+            id: Date.now(),
             type: type,
-            label: self.filterLabels[type],
+            displayLabel: self.filterLabels[type],
             value: null,
             displayValue: ''
         };
@@ -357,6 +358,9 @@ function ProjectsViewModel() {
 
     // Remove filter
     self.removeFilter = function(filter) {
+        // Sabit filtreler kaldırılamaz
+        if (filter.isFixed) return;
+
         self.activeFilters.remove(filter);
         self.currentPage(1);
         self.loadProjects(); // Backend'e filtre gönder
@@ -364,7 +368,9 @@ function ProjectsViewModel() {
 
     // Clear all filters
     self.clearFilters = function() {
-        self.activeFilters([]);
+        // Sabit filtreleri koru, diğerlerini kaldır
+        var fixedFilters = self.activeFilters().filter(function(f) { return f.isFixed; });
+        self.activeFilters(fixedFilters);
         self.sorting.reset();
         self.currentPage(1);
         self.loadProjects(); // Backend'e filtre gönder
@@ -412,13 +418,22 @@ function ProjectsViewModel() {
         return role === 'Admin' || role === 'TeamLeader';
     });
 
+    // Page config - proje tipi sabitlenmiş mi?
+    self.pageProjectTypeId = (window.pageConfig && window.pageConfig.projectTypeId) ? window.pageConfig.projectTypeId : null;
+
     // Project Type mappings (EnumsService'de yok, burada kalabilir)
+    self.projectTypeById = {
+        1: 'MysteryShopping', 2: 'CallAuditing', 3: 'PhysicalAudit', 4: 'OnlineSurvey',
+        5: 'CustomerSatisfaction', 6: 'TrainingEvaluation', 7: 'QualityControl'
+    };
     self.projectTypeTexts = {
         'MysteryShopping': 'Gizli Müşteri', 'CallAuditing': 'Çağrı Denetimi',
         'PhysicalAudit': 'Fiziksel Denetim', 'OnlineSurvey': 'Online Anket',
         'CustomerSatisfaction': 'Müşteri Memnuniyeti', 'TrainingEvaluation': 'Eğitim Değerlendirme',
         'QualityControl': 'Kalite Kontrol'
     };
+    // Sabitlenmiş proje tipi varsa string değerini hesapla
+    self.pageProjectType = self.pageProjectTypeId ? self.projectTypeById[self.pageProjectTypeId] : null;
     self.projectTypeBadges = {
         'MysteryShopping': 'bg-primary', 'CallAuditing': 'bg-info',
         'PhysicalAudit': 'bg-secondary', 'OnlineSurvey': 'bg-success',
@@ -630,7 +645,13 @@ function ProjectsViewModel() {
 
     // Open create modal
     self.openCreateModal = function() {
-        var editVm = new ProjectEditViewModel();
+        // Sabitlenmiş proje tipi varsa otomatik seç
+        var initialData = {};
+        if (self.pageProjectType) {
+            initialData.projectType = self.pageProjectType;
+        }
+
+        var editVm = new ProjectEditViewModel(initialData);
         self.editingProject(editVm);
         self.availableOrganizations([]);
 
@@ -1595,6 +1616,19 @@ function ProjectsViewModel() {
         // Once EnumsService'i yukle, sonra diger verileri cek
         EnumsService.load().then(function() {
             self.loadDropdownData();
+
+            // Sabitlenmiş proje tipi varsa filtreyi baştan ekle
+            if (self.pageProjectType) {
+                self.activeFilters.push({
+                    id: Date.now(),
+                    type: 'projectType',
+                    value: self.pageProjectType,
+                    displayLabel: 'Proje Tipi',
+                    displayValue: self.projectTypeTexts[self.pageProjectType] || self.pageProjectType,
+                    isFixed: true // Sabit filtre - kaldırılamaz
+                });
+            }
+
             self.loadProjects();
         });
     };

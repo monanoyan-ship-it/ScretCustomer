@@ -1,13 +1,16 @@
 /* Popup Layout Styles */
 
-body {
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     background-color: #f8f9fa;
 }
 
 .popup-container {
-    padding: 1.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .popup-header {

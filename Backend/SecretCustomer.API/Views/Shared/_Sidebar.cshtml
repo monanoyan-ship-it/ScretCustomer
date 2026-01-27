@@ -39,6 +39,27 @@
                 </a>
             </li>
 
+            <!-- ==================== PROJELER (Admin Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
+                   data-bs-toggle="collapse" href="#menuProjects" role="button" aria-expanded="false">
+                    <span><i class="bi bi-folder me-2"></i>@Html.T("Menu.Projects", "Projeler")</span>
+                    <i class="bi bi-chevron-down collapse-icon"></i>
+                </a>
+                <div class="collapse" id="menuProjects">
+                    <ul class="nav flex-column submenu">
+                        @foreach (var projectType in SecretCustomer.Core.Enums.ProjectTypes.All.OrderBy(t => t.DisplayOrder))
+                        {
+                            <li>
+                                <a href="/Projects?typeId=@projectType.Id" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                    <i class="bi @projectType.Icon me-2"></i>@Html.T(projectType.NameResourceKey, projectType.Description)
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </li>
+
             <!-- ==================== TANIMLAR (Admin Only) ==================== -->
             <li class="nav-item" data-bind="visible: isAdmin">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
@@ -51,11 +72,6 @@
                         <li>
                             <a href="/Checklists" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-list-check me-2"></i>@Html.T("Menu.Checklists", "Kontrol Listeleri")
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/Projects" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
-                                <i class="bi bi-folder me-2"></i>@Html.T("Menu.Projects", "Projeler")
                             </a>
                         </li>
                         <li>
@@ -170,6 +186,11 @@
                         <li>
                             <a href="/Reports/SurveyResults" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-clipboard-data text-success me-2"></i>@Html.T("Menu.SurveyResults", "Anket Sonuçları")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/Reports/EnneagramResults" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-people text-purple me-2"></i>@Html.T("Menu.EnneagramResults", "Enneagram Sonuçları")
                             </a>
                         </li>
                         <li>
@@ -361,6 +382,9 @@
 
     function highlightActiveMenu() {
         var currentPath = window.location.pathname.toLowerCase();
+        var currentSearch = window.location.search.toLowerCase();
+        var currentFullUrl = currentPath + currentSearch;
+
         // Normalize: remove trailing slash and /index suffix, convert backslash to forward slash
         var normalizedCurrent = currentPath
             .replace(/\\/g, '/')
@@ -375,23 +399,40 @@
             link.style.borderRadius = '';
         });
 
-        // Second: find exact match (prioritize longer/more specific paths)
+        // Second: find exact match (prioritize full URL with querystring, then longer paths)
         var menuLinks = document.querySelectorAll('.sidebar-nav .submenu .nav-link');
         var bestMatch = null;
-        var bestMatchLength = 0;
+        var bestMatchScore = 0; // Higher = better match
 
         menuLinks.forEach(function(link) {
             var href = link.getAttribute('href');
             if (href) {
-                var linkPath = href.toLowerCase()
+                var hrefLower = href.toLowerCase();
+                var hasQuerystring = hrefLower.indexOf('?') !== -1;
+
+                // Full URL match (path + querystring)
+                if (hasQuerystring && currentFullUrl === hrefLower) {
+                    var score = 1000 + hrefLower.length; // Highest priority for exact match with querystring
+                    if (score > bestMatchScore) {
+                        bestMatch = link;
+                        bestMatchScore = score;
+                    }
+                    return;
+                }
+
+                // Path-only match (for links without querystring)
+                var linkPath = hrefLower
+                    .split('?')[0]
                     .replace(/\\/g, '/')
                     .replace(/\/index$/i, '')
                     .replace(/\/$/, '');
 
-                // Exact match - prioritize longer paths (more specific)
-                if (normalizedCurrent === linkPath && linkPath.length > bestMatchLength) {
-                    bestMatch = link;
-                    bestMatchLength = linkPath.length;
+                if (!hasQuerystring && normalizedCurrent === linkPath) {
+                    var score = linkPath.length;
+                    if (score > bestMatchScore) {
+                        bestMatch = link;
+                        bestMatchScore = score;
+                    }
                 }
             }
         });
