@@ -25,6 +25,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
+// HttpClient (Graph API için)
+builder.Services.AddHttpClient();
+
 // JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is missing");
@@ -203,7 +206,8 @@ builder.Services.AddScoped<ISavedFilterService, SavedFilterService>();
 builder.Services.AddScoped<IDealerService, DealerService>();
 builder.Services.AddScoped<IDealerRequestService, DealerRequestService>();
 builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
-builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<SmtpEmailService>();
+builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<SmtpEmailService>());
 builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 

@@ -108,6 +108,9 @@ public class ApplicationDbContext : DbContext
     // Support Requests (Destek Talepleri)
     public DbSet<SupportRequest> SupportRequests { get; set; }
 
+    // SMTP Profiles (SMTP Profilleri)
+    public DbSet<SmtpProfile> SmtpProfiles { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -179,6 +182,9 @@ public class ApplicationDbContext : DbContext
 
         // Support Requests
         modelBuilder.Entity<SupportRequest>().HasQueryFilter(e => !e.IsDeleted);
+
+        // SMTP Profiles
+        modelBuilder.Entity<SmtpProfile>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 
