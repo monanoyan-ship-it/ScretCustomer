@@ -288,7 +288,8 @@ function ProjectsViewModel() {
             type: type,
             displayLabel: self.filterLabels[type],
             value: null,
-            displayValue: ''
+            displayValue: '',
+            isFixed: false
         };
 
         switch (type) {

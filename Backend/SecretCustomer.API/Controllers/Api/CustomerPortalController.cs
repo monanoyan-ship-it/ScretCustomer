@@ -327,9 +327,9 @@ public class CustomerPortalApiController : ControllerBase
                 .Distinct()
                 .ToListAsync();
 
-            // Hiçbir organizasyona atanmamış → sadece kendisi
+            // Hiçbir organizasyona atanmamış → TÜM veriyi görebilir (null = filtre yok)
             if (!myOrgIds.Any())
-                return new List<int> { personnelId.Value };
+                return null;
 
             // 2. Bu organizasyonlarda süpervizör olduğu personeller
             var supervisedPersonnel = await _context.CustomerPersonnelOrganizations
@@ -376,6 +376,55 @@ public class CustomerPortalApiController : ControllerBase
         // CustomerOperator sadece kendini görebilir
         if (personnelId.HasValue)
             return new List<int> { personnelId.Value };
+
+        return new List<int>(); // Hiçbir şey göremez
+    }
+
+    /// <summary>
+    /// Rol bazlı organizasyon erişim kontrolü
+    /// </summary>
+    /// <returns>
+    /// null = Tüm organizasyonları görebilir (Admin/Manager veya org'a atanmamış Supervisor)
+    /// List = Sadece bu ID'lerdeki organizasyonları görebilir
+    /// </returns>
+    private async Task<List<int>?> GetAllowedOrganizationIdsAsync()
+    {
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+
+        // Admin ve CustomerManager tüm organizasyonları görebilir
+        if (role == "Admin" || role == "CustomerManager")
+            return null;
+
+        // CustomerSupervisor - Organizasyon bazında kontrol
+        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            // Süpervizörün atandığı organizasyonları bul
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .ToListAsync();
+
+            // Hiçbir organizasyona atanmamış → TÜM organizasyonları görebilir
+            if (!myOrgIds.Any())
+                return null;
+
+            // Atandığı organizasyonları döndür
+            return myOrgIds;
+        }
+
+        // CustomerOperator - Kendi organizasyonlarını görebilir
+        if (role == "CustomerOperator" && personnelId.HasValue)
+        {
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .ToListAsync();
+
+            return myOrgIds.Any() ? myOrgIds : new List<int>();
+        }
 
         return new List<int>(); // Hiçbir şey göremez
     }
@@ -1030,12 +1079,30 @@ public class CustomerPortalApiController : ControllerBase
         var customerId = GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        // Supervisor filtrelemesi
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
         var query = _context.Projects
             .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
 
         // Proje tipi filtresi
         if (projectTypeId.HasValue)
             query = query.Where(p => p.ProjectTypeId == projectTypeId.Value);
+
+        // Supervisor için sadece kendi personelinin değerlendirildiği projeler
+        if (allowedPersonnelIds != null)
+        {
+            var projectIdsWithPersonnel = await _context.Evaluations
+                .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
+                           allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                           e.Assignment.Project.CustomerId == customerId)
+                .Select(e => e.Assignment.ProjectId)
+                .Distinct()
+                .ToListAsync();
+
+            query = query.Where(p => projectIdsWithPersonnel.Contains(p.Id));
+        }
 
         var projects = await query
             .Select(p => new
@@ -1046,11 +1113,20 @@ public class CustomerPortalApiController : ControllerBase
                 City = "",
                 Address = "",
                 IsActive = p.IsActive,
-                evaluationCount = _context.Evaluations
-                    .Count(e => e.Assignment.ProjectId == p.Id),
-                averageScore = _context.Evaluations
-                    .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue)
-                    .Average(e => (double?)e.ScorePercentage) ?? 0
+                evaluationCount = allowedPersonnelIds == null
+                    ? _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id)
+                    : _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id &&
+                        e.EvaluatedCustomerPersonnelId.HasValue &&
+                        allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)),
+                averageScore = allowedPersonnelIds == null
+                    ? _context.Evaluations
+                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue)
+                        .Average(e => (double?)e.ScorePercentage) ?? 0
+                    : _context.Evaluations
+                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue &&
+                            e.EvaluatedCustomerPersonnelId.HasValue &&
+                            allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value))
+                        .Average(e => (double?)e.ScorePercentage) ?? 0
             })
             .OrderBy(p => p.Name)
             .ToListAsync();
@@ -1229,6 +1305,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
+        // Supervisor filtrelemesi
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
         var end = endDate ?? DateTime.UtcNow;
 
@@ -1255,6 +1335,14 @@ public class CustomerPortalApiController : ControllerBase
                 && e.CreatedAt <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed);
 
+        // Supervisor personel filtresi
+        if (allowedPersonnelIds != null)
+            evalQuery = evalQuery.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+
+        // Supervisor organizasyon filtresi
+        if (allowedOrgIds != null)
+            evalQuery = evalQuery.Where(e => e.EvaluatedOrganizationId.HasValue && allowedOrgIds.Contains(e.EvaluatedOrganizationId.Value));
+
         // Project filter
         if (projectIds?.Any() == true)
             evalQuery = evalQuery.Where(e => projectIds.Contains(e.Assignment.ProjectId));
@@ -1265,7 +1353,13 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await evalQuery.ToListAsync();
 
-        var projectPerformance = projects.Select(p =>
+        // Supervisor için sadece değerlendirmesi olan projeleri göster
+        var projectIdsWithEvaluations = evaluations.Select(e => e.Assignment.ProjectId).Distinct().ToHashSet();
+        var filteredProjects = allowedPersonnelIds != null
+            ? projects.Where(p => projectIdsWithEvaluations.Contains(p.Id)).ToList()
+            : projects;
+
+        var projectPerformance = filteredProjects.Select(p =>
         {
             var projectEvals = evaluations.Where(e => e.Assignment.ProjectId == p.Id).ToList();
             return new
@@ -1298,6 +1392,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
+        // Supervisor filtrelemesi
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
         var end = endDate ?? DateTime.UtcNow;
 
@@ -1314,6 +1412,14 @@ public class CustomerPortalApiController : ControllerBase
                 && e.CreatedAt <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed);
 
+        // Supervisor personel filtresi
+        if (allowedPersonnelIds != null)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+
+        // Supervisor organizasyon filtresi
+        if (allowedOrgIds != null)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && allowedOrgIds.Contains(e.EvaluatedOrganizationId.Value));
+
         // Project filter
         if (projectIds?.Any() == true)
             query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
@@ -1324,8 +1430,17 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await query.ToListAsync();
 
-        var projectCount = await _context.Projects
-            .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
+        // Supervisor için sadece değerlendirmesi olan proje sayısı
+        int projectCount;
+        if (allowedPersonnelIds != null)
+        {
+            projectCount = evaluations.Select(e => e.Assignment.ProjectId).Distinct().Count();
+        }
+        else
+        {
+            projectCount = await _context.Projects
+                .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
+        }
 
         var summary = new
         {
@@ -1361,6 +1476,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
+        // Supervisor filtrelemesi
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
         var end = endDate ?? DateTime.UtcNow;
 
@@ -1380,6 +1499,14 @@ public class CustomerPortalApiController : ControllerBase
                 && e.ScorePercentage.HasValue
                 && e.ScorePercentage >= minScore
                 && e.ScorePercentage < maxScore);
+
+        // Supervisor personel filtresi
+        if (allowedPersonnelIds != null)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+
+        // Supervisor organizasyon filtresi
+        if (allowedOrgIds != null)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && allowedOrgIds.Contains(e.EvaluatedOrganizationId.Value));
 
         // Project filter
         if (projectIds?.Any() == true)
@@ -1423,6 +1550,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
+        // Supervisor filtrelemesi
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         var start = startDate ?? DateTime.UtcNow.AddMonths(-6);
         var end = endDate ?? DateTime.UtcNow;
 
@@ -1438,6 +1569,14 @@ public class CustomerPortalApiController : ControllerBase
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Supervisor personel filtresi
+        if (allowedPersonnelIds != null)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+
+        // Supervisor organizasyon filtresi
+        if (allowedOrgIds != null)
+            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && allowedOrgIds.Contains(e.EvaluatedOrganizationId.Value));
 
         // Project filter
         if (projectIds?.Any() == true)
@@ -1476,8 +1615,17 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var organizations = await _context.CustomerOrganizations
-            .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted)
+        // Supervisor filtrelemesi
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
+        var query = _context.CustomerOrganizations
+            .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted);
+
+        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
+        if (allowedOrgIds != null)
+            query = query.Where(o => allowedOrgIds.Contains(o.Id));
+
+        var organizations = await query
             .OrderBy(o => o.ParentId)
             .ThenBy(o => o.Order)
             .ThenBy(o => o.Name)
@@ -1555,9 +1703,16 @@ public class CustomerPortalApiController : ControllerBase
         start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
         end = DateTime.SpecifyKind(end.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
+        // Supervisor filtrelemesi
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         // Organizasyonları al
         var organizationsQuery = _context.CustomerOrganizations
             .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted);
+
+        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
+        if (allowedOrgIds != null)
+            organizationsQuery = organizationsQuery.Where(o => allowedOrgIds.Contains(o.Id));
 
         if (organizationIds?.Any() == true)
         {
@@ -1705,10 +1860,17 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
+        // Supervisor filtrelemesi
+        var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
         // Süpervizör olan personelleri bul (CustomerPersonnelOrganization'da SupervisorId olarak geçenler)
         var supervisorIdsQuery = _context.CustomerPersonnelOrganizations
             .Where(cpo => cpo.SupervisorId.HasValue &&
                           cpo.CustomerOrganization.CustomerId == customerId);
+
+        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
+        if (allowedOrgIds != null)
+            supervisorIdsQuery = supervisorIdsQuery.Where(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId));
 
         // Organizasyon filtresi
         if (organizationIds?.Any() == true)
@@ -2280,6 +2442,12 @@ public class CustomerPortalApiController : ControllerBase
             if (evaluation?.Assignment?.Project?.CustomerId != customerId)
                 return Forbid();
 
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
+                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value))
+                return StatusCode(403, new { message = "Bu değerlendirmeyi görüntüleme yetkiniz bulunmamaktadır." });
+
             var detail = await _reportService.GetEvaluationDetailAsync(evaluationId);
             if (detail == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
@@ -2312,6 +2480,12 @@ public class CustomerPortalApiController : ControllerBase
 
             if (evaluation?.Assignment?.Project?.CustomerId != customerId)
                 return Forbid();
+
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
+                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value))
+                return StatusCode(403, new { message = "Bu değerlendirmenin dosyalarını görüntüleme yetkiniz bulunmamaktadır." });
 
             var attachments = await _context.EvaluationAttachments
                 .Where(a => a.EvaluationId == evaluationId && !a.IsDeleted)
@@ -2354,6 +2528,12 @@ public class CustomerPortalApiController : ControllerBase
 
             if (evaluation?.Assignment?.Project?.CustomerId != customerId)
                 return Forbid();
+
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
+                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value))
+                return StatusCode(403, new { message = "Bu değerlendirmeyi dışa aktarma yetkiniz bulunmamaktadır." });
 
             var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId, excludeEvaluatorInfo: true);
             if (result == null)
@@ -2438,11 +2618,24 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Supervisor filtrelemesi
+            var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
+            // Supervisor için organizasyon kısıtlaması
+            var effectiveOrgIds = organizationIds;
+            if (allowedOrgIds != null)
+            {
+                if (organizationIds?.Any() == true)
+                    effectiveOrgIds = organizationIds.Where(id => allowedOrgIds.Contains(id)).ToList();
+                else
+                    effectiveOrgIds = allowedOrgIds;
+            }
+
             var filter = new PenaltyFilterDto
             {
                 ProjectIds = projectIds,
                 CustomerIds = new List<int> { customerId.Value }, // Otomatik müşteri filtresi
-                OrganizationIds = organizationIds,
+                OrganizationIds = effectiveOrgIds,
                 ChecklistIds = checklistIds,
                 PenaltyTypes = penaltyTypes,
                 Page = page,
@@ -2527,6 +2720,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/suggestions")]
     public async Task<IActionResult> GetSuggestionsReport(
         [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? organizationIds,
         [FromQuery] List<int>? checklistIds,
         [FromQuery] string? searchText,
         [FromQuery] DateTime? startDate,
@@ -2540,10 +2734,24 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Supervisor filtrelemesi
+            var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
+            // Supervisor için organizasyon kısıtlaması
+            var effectiveOrgIds = organizationIds;
+            if (allowedOrgIds != null)
+            {
+                if (organizationIds?.Any() == true)
+                    effectiveOrgIds = organizationIds.Where(id => allowedOrgIds.Contains(id)).ToList();
+                else
+                    effectiveOrgIds = allowedOrgIds;
+            }
+
             var filter = new SuggestionsFilterDto
             {
                 ProjectIds = projectIds,
                 CustomerIds = new List<int> { customerId.Value }, // Otomatik müşteri filtresi
+                OrganizationIds = effectiveOrgIds,
                 ChecklistIds = checklistIds,
                 SearchText = searchText,
                 Page = page,
@@ -2798,9 +3006,26 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Supervisor filtrelemesi
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
             // Geriye uyumluluk: tekil organizationId parametresi için array'in ilk elemanını kullan
             var organizationId = organizationIds?.FirstOrDefault();
             var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId.Value, organizationId);
+
+            // Supervisor için sadece yetkili olduğu personeli filtrele
+            if (allowedPersonnelIds != null)
+            {
+                personnel = personnel.Where(p => allowedPersonnelIds.Contains(p.Id));
+            }
+
+            // Supervisor için sadece yetkili olduğu organizasyonları filtrele
+            if (allowedOrgIds != null)
+            {
+                personnel = personnel.Where(p => p.OrganizationId.HasValue && allowedOrgIds.Contains(p.OrganizationId.Value));
+            }
+
             return Ok(personnel);
         }
         catch (Exception ex)
@@ -2829,6 +3054,11 @@ public class CustomerPortalApiController : ControllerBase
             var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
             if (personnel == null || personnel.CustomerId != customerId.Value)
                 return NotFound(new { message = "Temsilci bulunamadı." });
+
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && !allowedPersonnelIds.Contains(personnelId))
+                return StatusCode(403, new { message = "Bu temsilcinin karnesini görüntüleme yetkiniz bulunmamaktadır." });
 
             var filter = new PersonnelReportCardFilterDto
             {
@@ -2876,6 +3106,11 @@ public class CustomerPortalApiController : ControllerBase
             var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
             if (personnel == null || personnel.CustomerId != customerId.Value)
                 return NotFound(new { message = "Temsilci bulunamadı." });
+
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && !allowedPersonnelIds.Contains(personnelId))
+                return StatusCode(403, new { message = "Bu temsilcinin karnesini görüntüleme yetkiniz bulunmamaktadır." });
 
             var filter = new PersonnelReportCardFilterDto
             {
@@ -2935,6 +3170,10 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Supervisor filtrelemesi
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
             // Müşteriye ait projeleri al
             var projectsQuery = _context.Projects
                 .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
@@ -2957,6 +3196,20 @@ public class CustomerPortalApiController : ControllerBase
                     .ThenInclude(cpo => cpo.CustomerOrganization)
                 .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
 
+            // Supervisor personel filtresi
+            if (allowedPersonnelIds != null)
+            {
+                personnelQuery = personnelQuery.Where(cp => allowedPersonnelIds.Contains(cp.Id));
+            }
+
+            // Supervisor organizasyon filtresi
+            if (allowedOrgIds != null)
+            {
+                personnelQuery = personnelQuery.Where(cp =>
+                    cp.OrganizationAssignments.Any(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId)));
+            }
+
+            // Kullanıcının seçtiği organizasyon filtresi
             if (organizationIds?.Any() == true)
             {
                 personnelQuery = personnelQuery.Where(cp =>
@@ -3180,6 +3433,10 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
+            // Supervisor filtrelemesi
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
+
             // Proje filtresi
             var projectsQuery = _context.Projects
                 .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
@@ -3197,6 +3454,20 @@ public class CustomerPortalApiController : ControllerBase
                     .ThenInclude(cpo => cpo.CustomerOrganization)
                 .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
 
+            // Supervisor personel filtresi
+            if (allowedPersonnelIds != null)
+            {
+                personnelQuery = personnelQuery.Where(cp => allowedPersonnelIds.Contains(cp.Id));
+            }
+
+            // Supervisor organizasyon filtresi
+            if (allowedOrgIds != null)
+            {
+                personnelQuery = personnelQuery.Where(cp =>
+                    cp.OrganizationAssignments.Any(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId)));
+            }
+
+            // Kullanıcının seçtiği organizasyon filtresi
             if (organizationIds?.Any() == true)
             {
                 personnelQuery = personnelQuery.Where(cp =>
