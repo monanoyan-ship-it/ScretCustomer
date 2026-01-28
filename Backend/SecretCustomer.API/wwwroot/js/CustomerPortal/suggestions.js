@@ -466,6 +466,47 @@ function CustomerSuggestionsViewModel() {
         self.detailsData(null);
     };
 
+    // Truncate long CallId for display (show first 8 and last 8 chars)
+    self.truncateCallId = function(callId) {
+        if (!callId) return '-';
+        if (callId.length <= 20) return callId;
+        return callId.substring(0, 8) + '...' + callId.substring(callId.length - 8);
+    };
+
+    // Copy text to clipboard
+    self.copyToClipboard = function(text) {
+        if (!text) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                toastr.success('Panoya kopyalandı');
+            }).catch(function() {
+                self.fallbackCopyToClipboard(text);
+            });
+        } else {
+            self.fallbackCopyToClipboard(text);
+        }
+    };
+
+    // Fallback for HTTP (non-secure) environments
+    self.fallbackCopyToClipboard = function(text) {
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            toastr.success('Panoya kopyalandı');
+        } catch (err) {
+            toastr.error('Kopyalama başarısız');
+        }
+        document.body.removeChild(textArea);
+    };
+
     // Initialize
     self.loadFilterOptions();
     self.loadReport();
