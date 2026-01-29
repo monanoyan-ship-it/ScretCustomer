@@ -177,6 +177,35 @@
                         <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Tamamlandi</span>
                     </div>
                 </div>
+
+                <!-- Quiz Button -->
+                <div data-bind="visible: quizStatus() && quizStatus().hasQuiz" class="mt-3 pt-3 border-top">
+                    <!-- Quiz tamamlanmamis -->
+                    <div data-bind="visible: !(quizStatus().isPassed)">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-clipboard-check text-primary me-2"></i>
+                                <span>Bu egitim icin bir anket bulunuyor</span>
+                                <!-- ko if: quizStatus().isRequired -->
+                                <span class="badge bg-warning ms-2">Zorunlu</span>
+                                <!-- /ko -->
+                            </div>
+                            <a data-bind="attr: { href: '/Training/Quiz/' + VIDEO_TOKEN }" class="btn btn-primary">
+                                <i class="bi bi-pencil-square me-1"></i> Ankete Git
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Quiz tamamlanmis -->
+                    <div data-bind="visible: quizStatus().isPassed">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Anket tamamlandi</span>
+                                <span class="badge bg-success ms-2" data-bind="text: '%' + quizStatus().lastScore"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

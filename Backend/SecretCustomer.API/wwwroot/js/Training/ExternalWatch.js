@@ -16,6 +16,9 @@
         self.lastSavedTime = 0;
         self.saveInterval = null;
 
+        // Quiz State
+        self.quizStatus = ko.observable(null);
+
         // Computed
         self.watchPercentage = ko.computed(function () {
             var info = self.videoInfo();
@@ -43,6 +46,9 @@
                 success: function (data) {
                     self.videoInfo(data);
                     self.isLoading(false);
+
+                    // Quiz durumunu yukle
+                    self.loadQuizStatus();
 
                     // Setup video player after data loads
                     setTimeout(function () {
@@ -180,7 +186,65 @@
                 success: function (data) {
                     self.videoInfo(data);
                     if (data.isCompleted) {
-                        toastr.success('Tebrikler! Egitimi basariyla tamamladiniz.');
+                        // Quiz kontrolu ve yonlendirme
+                        self.checkAndRedirectToQuiz();
+                    }
+                }
+            });
+        };
+
+        // ========== QUIZ FUNCTIONS ==========
+
+        self.loadQuizStatus = function () {
+            $.ajax({
+                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/quiz',
+                method: 'GET',
+                success: function (data) {
+                    self.quizStatus({
+                        hasQuiz: true,
+                        quizId: data.quizId,
+                        isRequired: data.isRequired,
+                        isPassed: data.lastAttemptResult && data.lastAttemptResult.isPassed,
+                        lastScore: data.lastAttemptResult ? data.lastAttemptResult.scorePercentage : null
+                    });
+                },
+                error: function (xhr) {
+                    // Quiz yok
+                    self.quizStatus({ hasQuiz: false });
+                }
+            });
+        };
+
+        self.checkAndRedirectToQuiz = function () {
+            $.ajax({
+                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/quiz',
+                method: 'GET',
+                success: function (data) {
+                    // Quiz zaten gecilmis mi?
+                    if (data.lastAttemptResult && data.lastAttemptResult.isPassed) {
+                        toastr.success('Video ve anket basariyla tamamlandi!');
+                        self.loadQuizStatus();
+                        return;
+                    }
+
+                    // Quiz varsa yonlendir
+                    if (data.isRequired) {
+                        toastr.info('Ankete yonlendiriliyorsunuz...');
+                        setTimeout(function () {
+                            window.location.href = '/Training/Quiz/' + VIDEO_TOKEN;
+                        }, 1500);
+                    } else {
+                        // Opsiyonel - kullaniciya sor
+                        if (confirm('Bu video icin opsiyonel bir anket mevcut. Anketi simdi doldurmak ister misiniz?')) {
+                            window.location.href = '/Training/Quiz/' + VIDEO_TOKEN;
+                        }
+                        self.loadQuizStatus();
+                    }
+                },
+                error: function (xhr) {
+                    // Quiz yok - normal tamamlandi
+                    if (xhr.status === 404) {
+                        toastr.success('Video basariyla tamamlandi!');
                     }
                 }
             });

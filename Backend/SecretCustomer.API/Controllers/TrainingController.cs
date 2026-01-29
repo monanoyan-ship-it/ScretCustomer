@@ -23,4 +23,19 @@ public class TrainingController : Controller
         ViewBag.Token = token;
         return View();
     }
+
+    /// <summary>
+    /// Dış katılımcı quiz sayfası (token ile erişim)
+    /// </summary>
+    [Route("Training/Quiz/{token}")]
+    public IActionResult Quiz(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return NotFound();
+        }
+
+        ViewBag.Token = token;
+        return View();
+    }
 }

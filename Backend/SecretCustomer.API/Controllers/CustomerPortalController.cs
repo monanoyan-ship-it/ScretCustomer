@@ -151,6 +151,16 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// Eğitim videosu anketi - Dahili katılımcılar için
+    /// </summary>
+    [Route("CustomerPortal/TrainingQuiz/{participantId:int}")]
+    public IActionResult TrainingQuiz(int participantId)
+    {
+        ViewBag.ParticipantId = participantId;
+        return View();
+    }
+
+    /// <summary>
     /// Personel eğitimleri - Yönetici ve süpervizörler için
     /// </summary>
     [Route("CustomerPortal/StaffTrainings")]

@@ -1102,7 +1102,10 @@ function AssignmentsViewModel() {
             fetch('/api/training-video-assignments/' + assignment.id + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
-            var internalParticipants = results[0] || [];
+            var internalParticipants = (results[0] || []).map(function(p) {
+                p.isExternal = false;
+                return p;
+            });
             var externalParticipants = (results[1] || []).map(function(p) {
                 return {
                     userName: p.fullName || p.email,

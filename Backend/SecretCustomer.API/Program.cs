@@ -210,6 +210,7 @@ builder.Services.AddScoped<SmtpEmailService>();
 builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<SmtpEmailService>());
 builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
+builder.Services.AddScoped<ITrainingQuizService, TrainingQuizService>();
 
 // Background Services
 builder.Services.AddHostedService<SecretCustomer.API.BackgroundServices.EvaluationNotificationJob>();

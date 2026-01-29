@@ -1702,3 +1702,45 @@ public static class TrainingVideoParticipantStatuses
         public const int Completed = 3;
     }
 }
+
+// ============================================================
+// TRAINING QUIZ QUESTION TYPES (Eğitim Anketi Soru Tipleri)
+// ============================================================
+public static class TrainingQuizQuestionTypes
+{
+    public static readonly TypeItem SingleChoice = new(1, "SingleChoice", "TrainingQuizQuestionType.SingleChoice", "Tek Seçim", "bi-circle", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem MultipleChoice = new(2, "MultipleChoice", "TrainingQuizQuestionType.MultipleChoice", "Çoklu Seçim", "bi-check2-square", "bg-info", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { SingleChoice, MultipleChoice };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int SingleChoice = 1;
+        public const int MultipleChoice = 2;
+    }
+}
+
+// ============================================================
+// TRAINING QUIZ RESPONSE STATUSES (Eğitim Anketi Yanıt Durumları)
+// ============================================================
+public static class TrainingQuizResponseStatuses
+{
+    public static readonly TypeItem Started = new(1, "Started", "TrainingQuizResponseStatus.Started", "Başladı", "bi-play-circle", "bg-info", 1, isDefault: true);
+    public static readonly TypeItem InProgress = new(2, "InProgress", "TrainingQuizResponseStatus.InProgress", "Devam Ediyor", "bi-hourglass-split", "bg-warning text-dark", 2);
+    public static readonly TypeItem Completed = new(3, "Completed", "TrainingQuizResponseStatus.Completed", "Tamamlandı", "bi-check-circle", "bg-success", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Started, InProgress, Completed };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Started = 1;
+        public const int InProgress = 2;
+        public const int Completed = 3;
+    }
+}

@@ -11,7 +11,17 @@ var TRANSLATION_KEYS = [
     'MyTrainings.RemainingAfter',
     'MyTrainings.CloseVideo',
     'MyTrainings.CloseVideoWarning',
-    'MyTrainings.CloseAndSave'
+    'MyTrainings.CloseAndSave',
+    'MyTrainings.Quiz.Title',
+    'MyTrainings.Quiz.Required',
+    'MyTrainings.Quiz.Optional',
+    'MyTrainings.Quiz.Start',
+    'MyTrainings.Quiz.Skip',
+    'MyTrainings.Quiz.Submit',
+    'MyTrainings.Quiz.Result',
+    'MyTrainings.Quiz.Passed',
+    'MyTrainings.Quiz.Failed',
+    'MyTrainings.Quiz.TryAgain'
 ];
 
 function MyTrainingsViewModel() {
@@ -30,6 +40,7 @@ function MyTrainingsViewModel() {
     self.watchModal = null;
     self.videoPlayer = null;
     self.progressInterval = null;
+
 
     // Tab switch
     self.switchTab = function(tab) {
@@ -126,7 +137,13 @@ function MyTrainingsViewModel() {
             })
             .then(function(data) {
                 console.log('MyTrainings API data:', data);
+                // Her training icin quiz status ekle
+                data.forEach(function(t) {
+                    t.quizStatus = null; // Baslangicta null
+                });
                 self.trainings(data);
+                // Quiz durumlarini yukle
+                self.loadQuizStatuses();
             })
             .catch(function(err) {
                 toastr.error(T('Common.Error', 'Hata olustu'));
@@ -135,6 +152,34 @@ function MyTrainingsViewModel() {
             .finally(function() {
                 self.isLoading(false);
             });
+    };
+
+    // Her training icin quiz durumunu yukle
+    self.loadQuizStatuses = function() {
+        self.trainings().forEach(function(training) {
+            customerApiFetch('/api/training-videos/participant/' + training.participantId + '/quiz')
+                .then(function(r) {
+                    if (r.status === 404) return null;
+                    return r.json();
+                })
+                .then(function(data) {
+                    if (data) {
+                        training.quizStatus = {
+                            hasQuiz: true,
+                            quizId: data.quizId,
+                            isRequired: data.isRequired,
+                            isPassed: data.lastAttemptResult && data.lastAttemptResult.isPassed,
+                            lastScore: data.lastAttemptResult ? data.lastAttemptResult.scorePercentage : null
+                        };
+                    } else {
+                        training.quizStatus = { hasQuiz: false };
+                    }
+                    self.trainings.valueHasMutated();
+                })
+                .catch(function() {
+                    training.quizStatus = { hasQuiz: false };
+                });
+        });
     };
 
     // Start watch session - video açıldığında izleme hakkını kullan
@@ -319,6 +364,60 @@ function MyTrainingsViewModel() {
     self.onVideoEnded = function() {
         self.isVideoCompleted(true);
         self.saveProgress(true);
+
+        // Quiz kontrolü - video tamamlandıktan sonra
+        self.checkAndShowQuiz();
+    };
+
+    // ===== Quiz Functions =====
+
+    // Video bittiginde quiz kontrolu ve yonlendirme
+    self.checkAndShowQuiz = function() {
+        var training = self.currentTraining();
+        if (!training) return;
+
+        customerApiFetch('/api/training-videos/participant/' + training.participantId + '/quiz')
+            .then(function(r) {
+                if (r.status === 404) {
+                    // Quiz yok - video tamamlandi mesaji goster
+                    toastr.success('Video tamamlandi!');
+                    return null;
+                }
+                return r.json();
+            })
+            .then(function(data) {
+                if (!data) return;
+
+                // Quiz zaten gecilmis mi?
+                if (data.lastAttemptResult && data.lastAttemptResult.isPassed) {
+                    toastr.success('Video ve anket basariyla tamamlandi!');
+                    return;
+                }
+
+                // Quiz zorunlu mu?
+                if (data.isRequired) {
+                    // Zorunlu - direkt yonlendir
+                    toastr.info('Ankete yonlendiriliyorsunuz...');
+                    setTimeout(function() {
+                        window.location.href = '/CustomerPortal/TrainingQuiz/' + training.participantId;
+                    }, 1500);
+                } else {
+                    // Opsiyonel - kullaniciya sor
+                    showConfirmModal({
+                        title: T('MyTrainings.Quiz.Title', 'Anket'),
+                        message: T('MyTrainings.Quiz.Optional', 'Bu video icin opsiyonel bir anket mevcut. Anketi simdi doldurmak ister misiniz?'),
+                        type: 'info',
+                        confirmText: T('MyTrainings.Quiz.Start', 'Ankete Git'),
+                        cancelText: T('MyTrainings.Quiz.Skip', 'Sonra'),
+                        onConfirm: function() {
+                            window.location.href = '/CustomerPortal/TrainingQuiz/' + training.participantId;
+                        }
+                    });
+                }
+            })
+            .catch(function(err) {
+                console.error('Quiz check error:', err);
+            });
     };
 
     // Save progress - CustomerPortal API kullanir
