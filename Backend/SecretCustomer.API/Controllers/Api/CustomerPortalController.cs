@@ -826,8 +826,7 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.ScorePercentage.HasValue);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Tarih filtresi
         if (startDate.HasValue)
@@ -848,7 +847,7 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        var scores = await evaluationsQuery.Select(e => e.ScorePercentage!.Value).ToListAsync();
+        var scores = await evaluationsQuery.Select(e => e.ScorePercentage ?? 0).ToListAsync();
 
         var distribution = new
         {
@@ -885,8 +884,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.ScorePercentage.HasValue);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Tarih filtresi
         if (startDate.HasValue)
@@ -907,7 +905,7 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        // Kategori filtresi
+        // Kategori filtresi (null değerler 0 kabul edilir - poor kategorisine düşer)
         switch (category?.ToLower())
         {
             case "excellent":
@@ -920,7 +918,7 @@ public class CustomerPortalApiController : ControllerBase
                 evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80);
                 break;
             case "poor":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage < 60);
+                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || e.ScorePercentage < 60);
                 break;
             default:
                 return BadRequest(new { message = "Geçersiz kategori. Geçerli değerler: excellent, good, average, poor" });
@@ -972,8 +970,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.ScorePercentage.HasValue);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Tarih filtresi
         if (startDate.HasValue)
@@ -994,7 +991,7 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        // Kategori filtresi
+        // Kategori filtresi (null değerler 0 kabul edilir - poor kategorisine düşer)
         var categoryLabel = "";
         switch (category?.ToLower())
         {
@@ -1011,7 +1008,7 @@ public class CustomerPortalApiController : ControllerBase
                 categoryLabel = "Orta (60-79)";
                 break;
             case "poor":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage < 60);
+                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || e.ScorePercentage < 60);
                 categoryLabel = "Düşük (<60)";
                 break;
             default:

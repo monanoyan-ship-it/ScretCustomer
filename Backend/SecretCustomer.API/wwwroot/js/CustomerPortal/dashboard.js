@@ -146,6 +146,11 @@ function CustomerDashboardViewModel() {
         // Monthly trend chart - only if we have data
         var monthlyCtx = document.getElementById('monthlyChart');
         if (monthlyCtx && monthLabels.length > 0) {
+            // Destroy existing chart if any
+            if (self.monthlyChart) {
+                self.monthlyChart.destroy();
+                self.monthlyChart = null;
+            }
             self.monthlyChart = new Chart(monthlyCtx, {
                 type: 'line',
                 data: {
