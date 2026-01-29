@@ -296,22 +296,93 @@
                         <nav>
                             <ul class="pagination mb-0">
                                 <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
-                                    <a class="page-link" href="#" data-bind="click: previousPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: previousPage">
                                         <i class="bi bi-chevron-left"></i>
                                     </a>
                                 </li>
                                 <!-- ko foreach: visiblePages -->
                                 <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
-                                    <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                                    <a class="page-link" href="javascript:void(0)" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
                                 </li>
                                 <!-- /ko -->
                                 <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
-                                    <a class="page-link" href="#" data-bind="click: nextPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: nextPage">
                                         <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>
                             </ul>
                         </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation General Notes List -->
+        <div class="col-12 mt-4">
+            <div class="card shadow">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Değerlendirme Genel Notları</h5>
+                    <span class="badge bg-secondary" data-bind="text: evaluationNotesCount() + ' kayıt'"></span>
+                </div>
+                <div class="card-body p-0">
+                    <div data-bind="visible: evaluationNotes().length === 0" class="text-center text-muted py-5">
+                        <i class="bi bi-chat-left fs-1"></i>
+                        <p class="mt-2">Genel not bulunamadı.</p>
+                    </div>
+                    <div data-bind="visible: evaluationNotes().length > 0" class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Proje</th>
+                                    <th>Personel</th>
+                                    <th>Puan</th>
+                                    <th>Genel Not</th>
+                                    <th>Denetim Yorumu</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: evaluationNotes">
+                                <tr>
+                                    <td>
+                                        <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                        <!-- ko if: callId -->
+                                        <div class="d-flex align-items-center gap-1">
+                                            <code class="text-muted small" data-bind="text: $root.truncateCallId(callId), attr: { title: callId }" style="cursor: help;"></code>
+                                            <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { $root.copyToClipboard(callId); }" title="Kopyala">
+                                                <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                            </button>
+                                        </div>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td data-bind="text: projectName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td>
+                                        <!-- ko if: scorePercentage != null -->
+                                        <span data-bind="text: scorePercentage.toFixed(1) + '%', css: { 'text-success': scorePercentage >= 70, 'text-warning': scorePercentage >= 40 && scorePercentage < 70, 'text-danger': scorePercentage < 40 }"></span>
+                                        <!-- /ko -->
+                                        <!-- ko if: scorePercentage == null -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <!-- ko if: notes -->
+                                        <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 100 ? notes.substring(0, 100) + '...' : notes, attr: { title: notes }"></div>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: notes -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <!-- ko if: evaluationComment -->
+                                        <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: evaluationComment.length > 100 ? evaluationComment.substring(0, 100) + '...' : evaluationComment, attr: { title: evaluationComment }"></div>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: evaluationComment -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

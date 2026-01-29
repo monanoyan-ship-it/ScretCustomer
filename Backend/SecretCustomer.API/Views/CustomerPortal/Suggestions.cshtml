@@ -260,9 +260,11 @@
                 </div>
                 <div class="card-body p-0" style="position: relative;">
                     <!-- Loading overlay for list -->
-                    <div data-bind="visible: isSuggestionsLoading" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.7); z-index: 10; top: 0; left: 0;">
+                    <!-- ko if: isSuggestionsLoading -->
+                    <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.7); z-index: 10; top: 0; left: 0;">
                         <div class="spinner-border text-info"></div>
                     </div>
+                    <!-- /ko -->
                     <div data-bind="visible: suggestions().length === 0 && !isSuggestionsLoading()" class="text-center text-muted py-5">
                         <i class="bi bi-inbox fs-1"></i>
                         <p class="mt-2">@Html.T("Report.NoSuggestions", "Oneri bulunamadi.")</p>
@@ -369,17 +371,17 @@
                         <nav>
                             <ul class="pagination mb-0">
                                 <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
-                                    <a class="page-link" href="#" data-bind="click: previousPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: previousPage">
                                         <i class="bi bi-chevron-left"></i>
                                     </a>
                                 </li>
                                 <!-- ko foreach: visiblePages -->
                                 <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
-                                    <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                                    <a class="page-link" href="javascript:void(0)" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
                                 </li>
                                 <!-- /ko -->
                                 <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
-                                    <a class="page-link" href="#" data-bind="click: nextPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: nextPage">
                                         <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>

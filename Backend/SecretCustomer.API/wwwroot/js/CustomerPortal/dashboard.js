@@ -649,6 +649,62 @@ function CustomerDashboardViewModel() {
             });
     };
 
+    // Export chart to PDF
+    self.exportChartToPdf = function(elementId, filename) {
+        var element = document.getElementById(elementId);
+        if (!element) {
+            toastr.error('Grafik bulunamadı');
+            return;
+        }
+
+        // Chart.js canvas'ını bul
+        var canvas = element.querySelector('canvas');
+        if (!canvas) {
+            toastr.error('Grafik canvas bulunamadı');
+            return;
+        }
+
+        toastr.info('PDF oluşturuluyor...');
+
+        // Başlığı al
+        var headerEl = element.querySelector('.card-header h6');
+        var title = headerEl ? headerEl.textContent.trim() : filename;
+
+        // Canvas'ı doğrudan image olarak al
+        var imgData = canvas.toDataURL('image/png', 1.0);
+
+        var pdf = new jspdf.jsPDF({
+            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            unit: 'mm'
+        });
+
+        var pageWidth = pdf.internal.pageSize.getWidth();
+        var pageHeight = pdf.internal.pageSize.getHeight();
+
+        // Başlık ekle
+        pdf.setFontSize(14);
+        pdf.text(title, pageWidth / 2, 15, { align: 'center' });
+
+        // Tarih ekle
+        pdf.setFontSize(10);
+        pdf.text(new Date().toLocaleDateString('tr-TR'), pageWidth / 2, 22, { align: 'center' });
+
+        var imgWidth = pageWidth - 30;
+        var imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        if (imgHeight > pageHeight - 40) {
+            imgHeight = pageHeight - 40;
+            imgWidth = (canvas.width * imgHeight) / canvas.height;
+        }
+
+        var x = (pageWidth - imgWidth) / 2;
+        var y = 28;
+
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+        pdf.save(filename + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+        toastr.success('PDF indirildi');
+    };
+
     // Initialize
     self.loadDashboard();
     self.loadQuestionGroupTrend();

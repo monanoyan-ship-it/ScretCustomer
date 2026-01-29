@@ -134,10 +134,23 @@ tbody tr:nth-last-child(-n+3) .dropdown-menu {
 
 /* ===== Print Styles ===== */
 @media print {
-    .card-header.bg-primary { background-color: #0d6efd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card-header.bg-dark { background-color: #212529 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card-header.bg-info { background-color: #0dcaf0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card-header.bg-secondary { background-color: #6c757d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header.bg-primary,
+    .card-header.bg-dark,
+    .card-header.bg-info,
+    .card-header.bg-secondary,
+    .card-header.bg-success,
+    .card-header.bg-danger,
+    .card-header.bg-warning,
+    .card-header.bg-purple,
+    .card-header.bg-gradient,
+    .card-header.bg-white,
+    .card-header.bg-light { background-color: #fba92d !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    thead.table-dark,
+    thead.table-light,
+    thead.table-dark th,
+    thead.table-light th,
+    .table > thead,
+    .table > thead th { background-color: #fba92d !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .bg-success { background-color: #198754 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .bg-warning { background-color: #ffc107 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .bg-danger { background-color: #dc3545 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -183,8 +196,10 @@ th.sortable.sort-desc .sort-icon {
 /* Dark table header variants - Bootstrap override */
 .table-dark th.sortable:hover,
 thead.table-dark th.sortable:hover,
-.table > thead.table-dark th.sortable:hover {
-    background-color: #495057 !important;
+thead.table-light th.sortable:hover,
+.table > thead.table-dark th.sortable:hover,
+.table > thead th.sortable:hover {
+    background-color: #e89a28 !important;
 }
 
 .table-dark th.sortable,
@@ -214,4 +229,76 @@ thead.table-dark th.sortable.sort-desc .sort-icon,
 .table > thead.table-dark th.sortable.sort-desc .sort-icon {
     color: #fff !important;
     opacity: 1 !important;
+}
+
+/* ===== Global Color Theme - Anket Renkleri ===== */
+/* Başlıklar: #404040 (koyu gri) - Menüler/Sidebar */
+/* Seçili/Panel başlıkları: #fba92d (turuncu) */
+
+/* Admin Sidebar */
+.sidebar.bg-dark {
+    background-color: #404040 !important;
+}
+
+/* Tablo Başlıkları - Turuncu */
+thead.table-dark,
+thead.table-light,
+.table > thead {
+    background-color: #fba92d !important;
+}
+
+thead.table-dark th,
+thead.table-light th,
+.table > thead th {
+    background-color: #fba92d !important;
+    color: #fff !important;
+    border-color: #fba92d !important;
+}
+
+/* Tüm Panel Başlıkları - Turuncu */
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-secondary,
+.card-header.bg-success,
+.card-header.bg-danger,
+.card-header.bg-warning,
+.card-header.bg-dark,
+.card-header.bg-purple,
+.card-header.bg-gradient,
+.card-header.bg-white,
+.card-header.bg-light {
+    background-color: #fba92d !important;
+    background-image: none !important;
+    border-color: #fba92d !important;
+    color: #fff !important;
+}
+
+.card-header.bg-white h5,
+.card-header.bg-white h6,
+.card-header.bg-light h5,
+.card-header.bg-light h6,
+.card-header.bg-white .mb-0,
+.card-header.bg-light .mb-0 {
+    color: #fff !important;
+}
+
+/* Tab Başlıkları - Turuncu (sadece içerik alanındaki tab'lar) */
+.card .nav-tabs .nav-link,
+.customer-content .nav-tabs .nav-link,
+main .nav-tabs .nav-link {
+    background-color: #fba92d !important;
+    border-color: #fba92d !important;
+    color: #fff !important;
+}
+
+.card .nav-tabs .nav-link.active,
+.customer-content .nav-tabs .nav-link.active,
+main .nav-tabs .nav-link.active {
+    background-color: #d4890f !important;
+    border-color: #d4890f !important;
+    color: #fff !important;
+}
+
+.nav-tabs {
+    border-bottom-color: #fba92d !important;
 }
