@@ -55,6 +55,7 @@
                                         <option value="searchTerm">Arama</option>
                                         <option value="video">Video</option>
                                         <option value="status">Durum</option>
+                                        <option value="participantType">Katilimci Tipi</option>
                                         <option value="dateRange">Tarih Araligi</option>
                                     </select>
                                 </div>
@@ -73,6 +74,14 @@
                                         <option value="">Durum secin...</option>
                                         <option value="true">Aktif</option>
                                         <option value="false">Pasif</option>
+                                    </select>
+                                </div>
+                                <!-- Katilimci Tipi -->
+                                <div data-bind="visible: selectedFilterType() === 'participantType'" class="mb-2">
+                                    <select class="form-select form-select-sm" data-bind="value: tempFilter.participantType">
+                                        <option value="">Tip secin...</option>
+                                        <option value="internal">Ic</option>
+                                        <option value="external">Dis</option>
                                     </select>
                                 </div>
                                 <!-- Date Range -->
@@ -150,6 +159,7 @@
                                 <tr>
                                     <th>Atama</th>
                                     <th>Video</th>
+                                    <th class="text-center">Tip</th>
                                     <th class="text-center">Tarih Araligi</th>
                                     <th class="text-center">Ilerleme</th>
                                     <th class="text-center">Durum</th>
@@ -163,6 +173,10 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-primary" data-bind="text: trainingVideoTitle"></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span data-bind="visible: isExternal" class="badge bg-secondary">Dis</span>
+                                        <span data-bind="visible: !isExternal" class="badge bg-info">Ic</span>
                                     </td>
                                     <td class="text-center">
                                         <small>

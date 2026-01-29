@@ -140,6 +140,7 @@ public class TrainingVideoAssignmentListDto
     public DateTime DueDate { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool IsExternal { get; set; }
     public int TotalParticipants { get; set; }
     public int CompletedParticipants { get; set; }
     public int InProgressParticipants { get; set; }
@@ -172,6 +173,7 @@ public class CreateTrainingVideoAssignmentDto
     public int TrainingVideoId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime DueDate { get; set; }
+    public bool IsExternal { get; set; } = false;
 
     // Otomatik atama kriterleri - Filtreler
     public int? CustomerId { get; set; }

@@ -36,6 +36,7 @@ function AssignmentsViewModel() {
         searchTerm: ko.observable(''),
         videoId: ko.observable(''),
         status: ko.observable(''),
+        participantType: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         dateRangeType: ko.observable(''),
@@ -50,6 +51,7 @@ function AssignmentsViewModel() {
         if (type === 'searchTerm') return self.tempFilter.searchTerm();
         if (type === 'video') return self.tempFilter.videoId();
         if (type === 'status') return self.tempFilter.status() !== '';
+        if (type === 'participantType') return self.tempFilter.participantType() !== '';
         if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
         return false;
     });
@@ -79,6 +81,11 @@ function AssignmentsViewModel() {
             label = 'Durum';
             displayValue = filter.value === 'true' ? 'Aktif' : 'Pasif';
             self.tempFilter.status('');
+        } else if (type === 'participantType') {
+            filter.value = self.tempFilter.participantType();
+            label = 'Tip';
+            displayValue = filter.value === 'internal' ? 'Ic' : 'Dis';
+            self.tempFilter.participantType('');
         } else if (type === 'dateRange') {
             filter.dateRangeType = self.tempFilter.dateRangeType();
             filter.startDate = self.tempFilter.startDate();
@@ -670,6 +677,18 @@ function AssignmentsViewModel() {
         fetch('/api/training-video-assignments?' + params.toString(), { credentials: 'include' })
             .then(function(r) { return r.json(); })
             .then(function(data) {
+                // Client-side participantType filter
+                var participantTypeFilter = ko.utils.arrayFirst(self.activeFilters(), function(f) { return f.type === 'participantType'; });
+                if (participantTypeFilter) {
+                    data = data.filter(function(a) {
+                        if (participantTypeFilter.value === 'internal') {
+                            return !a.isExternal;
+                        } else if (participantTypeFilter.value === 'external') {
+                            return a.isExternal;
+                        }
+                        return true;
+                    });
+                }
                 self.assignments(data);
             })
             .catch(function(err) {
@@ -1102,11 +1121,14 @@ function AssignmentsViewModel() {
             fetch('/api/training-video-assignments/' + assignment.id + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
-            var internalParticipants = (results[0] || []).map(function(p) {
+            var internalData = Array.isArray(results[0]) ? results[0] : [];
+            var externalData = Array.isArray(results[1]) ? results[1] : [];
+
+            var internalParticipants = internalData.map(function(p) {
                 p.isExternal = false;
                 return p;
             });
-            var externalParticipants = (results[1] || []).map(function(p) {
+            var externalParticipants = externalData.map(function(p) {
                 return {
                     userName: p.fullName || p.email,
                     email: p.email,
@@ -1222,12 +1244,15 @@ function AssignmentsViewModel() {
             fetch('/api/training-video-assignments/' + assignmentId + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
-            var internalParticipants = (results[0] || []).map(function(p) {
+            var internalData = Array.isArray(results[0]) ? results[0] : [];
+            var externalData = Array.isArray(results[1]) ? results[1] : [];
+
+            var internalParticipants = internalData.map(function(p) {
                 p.selected = ko.observable(false);
                 p.isExternal = false;
                 return p;
             });
-            var externalParticipants = (results[1] || []).map(function(p) {
+            var externalParticipants = externalData.map(function(p) {
                 return {
                     id: p.id,
                     userName: p.fullName || p.email,
