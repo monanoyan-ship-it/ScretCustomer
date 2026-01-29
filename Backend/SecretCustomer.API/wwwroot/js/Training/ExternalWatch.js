@@ -200,19 +200,31 @@
                 url: '/api/training-videos/external/' + VIDEO_TOKEN + '/quiz',
                 method: 'GET',
                 success: function (data) {
+                    var isPassed = data.lastAttemptResult && data.lastAttemptResult.isPassed;
                     self.quizStatus({
                         hasQuiz: true,
                         quizId: data.quizId,
                         isRequired: data.isRequired,
-                        isPassed: data.lastAttemptResult && data.lastAttemptResult.isPassed,
+                        isPassed: isPassed,
                         lastScore: data.lastAttemptResult ? data.lastAttemptResult.scorePercentage : null
                     });
+
+                    // Sayfa yuklenduginde: Video tamamlanmis + Quiz bekliyor = Modal goster
+                    var info = self.videoInfo();
+                    if (info && info.isCompleted && !isPassed) {
+                        self.showCompletedChoiceModal();
+                    }
                 },
                 error: function (xhr) {
                     // Quiz yok
                     self.quizStatus({ hasQuiz: false });
                 }
             });
+        };
+
+        self.showCompletedChoiceModal = function () {
+            var modal = new bootstrap.Modal(document.getElementById('completedChoiceModal'));
+            modal.show();
         };
 
         self.checkAndRedirectToQuiz = function () {
@@ -227,19 +239,15 @@
                         return;
                     }
 
-                    // Quiz varsa yonlendir
-                    if (data.isRequired) {
-                        toastr.info('Ankete yonlendiriliyorsunuz...');
-                        setTimeout(function () {
-                            window.location.href = '/Training/Quiz/' + VIDEO_TOKEN;
-                        }, 1500);
-                    } else {
-                        // Opsiyonel - kullaniciya sor
-                        if (confirm('Bu video icin opsiyonel bir anket mevcut. Anketi simdi doldurmak ister misiniz?')) {
-                            window.location.href = '/Training/Quiz/' + VIDEO_TOKEN;
-                        }
-                        self.loadQuizStatus();
-                    }
+                    // Quiz varsa modal goster
+                    self.quizStatus({
+                        hasQuiz: true,
+                        quizId: data.quizId,
+                        isRequired: data.isRequired,
+                        isPassed: false,
+                        lastScore: null
+                    });
+                    self.showCompletedChoiceModal();
                 },
                 error: function (xhr) {
                     // Quiz yok - normal tamamlandi
