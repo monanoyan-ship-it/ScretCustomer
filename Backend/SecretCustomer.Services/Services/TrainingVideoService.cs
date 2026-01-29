@@ -825,6 +825,7 @@ public class TrainingVideoService : ITrainingVideoService
         content = content.Replace(EmailPlaceholders.TrainingVideoDescription, video.Description ?? "");
         content = content.Replace(EmailPlaceholders.TrainingVideoDuration, durationStr);
         content = content.Replace(EmailPlaceholders.TrainingVideoLink, videoLinkHtml);
+        content = content.Replace(EmailPlaceholders.TrainingVideoUrl, trainingsUrl);
         content = content.Replace(EmailPlaceholders.TrainingAssignmentTitle, assignment.Title);
         content = content.Replace(EmailPlaceholders.TrainingStartDate, assignment.StartDate.ToString("dd.MM.yyyy"));
         content = content.Replace(EmailPlaceholders.TrainingDueDate, assignment.DueDate.ToString("dd.MM.yyyy"));
@@ -843,6 +844,57 @@ public class TrainingVideoService : ITrainingVideoService
         content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
         content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
         content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+        return content;
+    }
+
+    /// <summary>
+    /// Dış katılımcı email şablonundaki placeholder'ları değiştirir
+    /// Hem yeni {Placeholder} hem de eski {{Placeholder}} formatını destekler
+    /// </summary>
+    private string ReplaceExternalTrainingPlaceholders(string content, TrainingVideoAssignment assignment, TrainingVideoExternalParticipant participant, string watchUrl)
+    {
+        if (string.IsNullOrEmpty(content))
+            return content;
+
+        var video = assignment.TrainingVideo;
+
+        // Video süresi formatı
+        var duration = video.DurationSeconds;
+        var durationStr = duration >= 60
+            ? $"{duration / 60} dk {duration % 60} sn"
+            : $"{duration} sn";
+
+        // HTML anchor link
+        var videoLinkHtml = $"<a href=\"{watchUrl}\" style=\"color: #007bff; text-decoration: underline;\">Videoyu İzle</a>";
+
+        // Yeni standart placeholder'lar {Placeholder}
+        content = content.Replace(EmailPlaceholders.TrainingVideoTitle, video.Title);
+        content = content.Replace(EmailPlaceholders.TrainingVideoDescription, video.Description ?? "");
+        content = content.Replace(EmailPlaceholders.TrainingVideoDuration, durationStr);
+        content = content.Replace(EmailPlaceholders.TrainingVideoLink, videoLinkHtml);
+        content = content.Replace(EmailPlaceholders.TrainingVideoUrl, watchUrl);
+        content = content.Replace(EmailPlaceholders.TrainingAssignmentTitle, assignment.Title);
+        content = content.Replace(EmailPlaceholders.TrainingStartDate, assignment.StartDate.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.TrainingDueDate, assignment.DueDate.ToString("dd.MM.yyyy"));
+
+        // Alıcı bilgileri
+        var fullName = participant.FullName ?? participant.Email;
+        content = content.Replace(EmailPlaceholders.RecipientName, fullName);
+        content = content.Replace(EmailPlaceholders.RecipientEmail, participant.Email ?? "");
+
+        // Sistem bilgileri
+        content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+        // Eski format desteği (geriye uyumluluk) {{Placeholder}}
+        content = content.Replace("{{VideoTitle}}", video.Title);
+        content = content.Replace("{{AssignmentTitle}}", assignment.Title);
+        content = content.Replace("{{DueDate}}", assignment.DueDate.ToString("dd.MM.yyyy"));
+        content = content.Replace("{{UserName}}", fullName);
+        content = content.Replace("{{WatchUrl}}", watchUrl);
+        content = content.Replace("{{VideoLink}}", videoLinkHtml);
 
         return content;
     }
@@ -1467,18 +1519,8 @@ public class TrainingVideoService : ITrainingVideoService
 
         if (template != null)
         {
-            subject = template.Subject
-                .Replace("{{VideoTitle}}", assignment.TrainingVideo.Title)
-                .Replace("{{AssignmentTitle}}", assignment.Title)
-                .Replace("{{DueDate}}", assignment.DueDate.ToString("dd.MM.yyyy"));
-
-            body = template.Body
-                .Replace("{{UserName}}", participant.FullName ?? participant.Email)
-                .Replace("{{VideoTitle}}", assignment.TrainingVideo.Title)
-                .Replace("{{AssignmentTitle}}", assignment.Title)
-                .Replace("{{DueDate}}", assignment.DueDate.ToString("dd.MM.yyyy"))
-                .Replace("{{WatchUrl}}", watchUrl)
-                .Replace("{{VideoLink}}", $"<a href=\"{watchUrl}\">Videoyu İzle</a>");
+            subject = ReplaceExternalTrainingPlaceholders(template.Subject, assignment, participant, watchUrl);
+            body = ReplaceExternalTrainingPlaceholders(template.Body, assignment, participant, watchUrl);
         }
         else
         {

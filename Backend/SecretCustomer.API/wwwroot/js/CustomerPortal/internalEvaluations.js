@@ -209,7 +209,7 @@ function CustomerInternalEvaluationsViewModel() {
             filter.value = self.tempFilter.projectId();
             var project = self.projects().find(function(p) { return p.id == filter.value; });
             label = 'Proje';
-            displayValue = project ? project.name : filter.value;
+            displayValue = project ? (project.code ? project.name + ' (' + project.code + ')' : project.name) : filter.value;
         } else if (type === 'evaluator') {
             filter.value = self.tempFilter.evaluatorName();
             label = 'Dinleyen';
@@ -485,7 +485,7 @@ function CustomerInternalEvaluationsViewModel() {
 
             if (f.type === 'project') {
                 var project = self.projects().find(function(p) { return p.id == f.value; });
-                if (project) displayValue = project.name;
+                if (project) displayValue = project.code ? project.name + ' (' + project.code + ')' : project.name;
             } else if (f.type === 'organization') {
                 var org = self.organizations().find(function(o) { return o.id == f.value; });
                 if (org) displayValue = org.name;
@@ -648,7 +648,7 @@ function CustomerInternalEvaluationsViewModel() {
             organizationId: params.organizationId ? parseInt(params.organizationId) : null,
             startDate: params.startDate || null,
             endDate: params.endDate || null,
-            evaluationSource: 'internal' // İç dinlemeler
+            evaluationSources: ['internal'] // İç dinlemeler
         };
     };
 

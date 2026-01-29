@@ -178,3 +178,35 @@ public class ProjectTargetDto
     public int Completed { get; set; }
     public decimal Percentage { get; set; }
 }
+
+/// <summary>
+/// Kullanıcının proje bazlı değerlendirme detayı
+/// </summary>
+public class UserProjectBreakdownDto
+{
+    public int UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public int TotalEvaluations { get; set; }
+    public List<UserProjectDetailDto> Projects { get; set; } = new();
+}
+
+public class UserProjectDetailDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string? ProjectCode { get; set; }
+    public string? CustomerName { get; set; }
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
+}
+
+/// <summary>
+/// Firma bazlı aylık trend
+/// </summary>
+public class CustomerMonthlyTrendDto
+{
+    public int CustomerId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public int EvaluationCount { get; set; }
+    public decimal AverageScore { get; set; }
+}

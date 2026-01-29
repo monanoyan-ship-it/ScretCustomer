@@ -197,17 +197,17 @@
 ---
 
 ### 20. Genel UI - Renk Değişikliği
-**Durum:** ⏸️ Beklemede (Müşteriye soruldu)
+**Durum:** ✅ Tamamlandı
 **Sorunlar:**
-- [ ] Tüm sistemdeki renkler değişecek - **SORU: Hangi renkler? Tasarım var mı?** -- Bu iş şöyle. Bizim anket sayfamızda bulunan başlıkların renk kodu menülere (hem admin hem customerportal) uygulanacak. Uygulamadaki bütün panel başlıkları da ankette kullanılan seçilmiş seçeneğin (turuncu gibi bir renk) renk kodu olacak. Hiç bir panel başlığı arka planı bundan azade değil.
+- [x] Tüm sistemdeki renkler değişecek - Menüler/sidebar: #404040 (koyu gri), Panel başlıkları/tablo başlıkları/tablar: #fba92d (turuncu). app.css ve customer-layout.css'e global override'lar eklendi.
 
 ---
 
 ### 21. Grafik Export
-**Durum:** ⏸️ Beklemede (Müşteriye soruldu)
+**Durum:** ✅ Tamamlandı
 **URL:** http://45.84.191.28/CustomerPortal/dashboard
 **Sorunlar:**
-- [ ] Grafikleri PDF/Word olarak indirme - **SORU: Hangi grafikler?** --grafik olarak pdf indirilecek, filitreler aynen kullanılacak. Müşteri portal dashboardtaki grafikler. 
+- [x] Grafikleri PDF olarak indirme - Dashboard'daki 3 grafiğe (Aylık Trend, Puan Dağılımı, Soru Trendi) PDF butonu eklendi. jsPDF + canvas.toDataURL() kullanılıyor. 
 
 ---
 
@@ -282,35 +282,37 @@
 
 ---
 ### 30. Çağrı dinleme saatleri sorunu
-**Durum:** ⏸️ Beklemede
+**Durum:** ✅ Tamamlandı
 **URL:** http://45.84.191.28/Listenings
 **Sorunlar:**
-- Çağrı denetleme raporunda çağrıyı dinleme tarih saatleri gelmiyor, gelmesi gerekiyor.
+- [x] Çağrı denetleme raporunda çağrıyı dinleme tarih saatleri gelmiyor, gelmesi gerekiyor. -- Excel'e "Dinleme Tarihi" ve "Dinleme Saati" sütunları eklendi (CreatedAt kullanılıyor).
 
 - 
 ---
 
-### 31. Çağrı dinleme saatleri sorunu
-**Durum:** ⏸️ Beklemede
+### 31. Proje filtresi - Proje kodu eklenmesi
+**Durum:** ✅ Tamamlandı
 **URL:** http://45.84.191.28/CustomerPortal/ExternalEvaluations
 **Sorunlar:**
-- hem dış hem iç dinlemelerde Proje filitresinde proje isimlerinin yanına "proje kodu" varsa eklenmeli.
+- [x] hem dış hem iç dinlemelerde Proje filitresinde proje isimlerinin yanına "proje kodu" varsa eklenmeli. -- Dropdown ve aktif filtrelerde "Proje Adı (KOD)" formatında gösteriliyor.
 
 ---
 ### 32. Mail formatı sorunu
-**Durum:** ⏸️ Beklemede
+**Durum:** TEST
 **URL:** http://45.84.191.28/TrainingVideos/Assignments
 **Sorunlar:**
-- Bu sayfada atanan eğitim videoları mail formatı düzgün değil. mail formatı düzeltilmeli. ve link url ayrımı projelerdeki gibi yapılmalı.
+  - Bu sayfada atanan eğitim videoları mail formatı düzgün değil. mail formatını doldurma özelliği düzeltilmeli. ve link url ayrımı anket projelerindeki gibi yapılmalı.
+  - TEST: `{TrainingVideoUrl}` placeholder'ı eklendi (sadece URL), `{TrainingVideoLink}` mevcut (tıklanabilir link). Hem iç hem dış katılımcı mailleri için placeholder değiştirme fonksiyonları güncellendi. Dış katılımcı video izleme sayfası mevcut: `/Training/External/{token}`
 
 ---
 
-### 33. Mail formatı sorunu
-**Durum:** ⏸️ Beklemede
+### 33. Dashboard geliştirmeleri
+**Durum:** TEST
 **URL:** http://45.84.191.28/dashboard
 **Sorunlar:**
 - Bu ay en çok dinleyenler panelindeki listeye detay butonu eklenmeli. detay butonuna tıklanınca o kişinin dinlediği çağrıların proje isimleri kodu ve sayısı gelmeli.
 - Aylık değerlendirme trendindeki grafik firmalara göre de gösterilmeli. yani bizim toplamımız ve hangi firmaların kaç dinlemesi yapılmış.
+- TEST: "Bu Ay En Çok Dinleyenler" tablosuna detay butonu eklendi (göz ikonu). Butona tıklanınca modal'da proje adı, kodu, firma ve adet gösteriliyor. "Bu Ay Firma Bazlı" paneli eklendi - firmalara göre değerlendirme sayıları ve ortalamalar listeleniyor.
 
 ---
 

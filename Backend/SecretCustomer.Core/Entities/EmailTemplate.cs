@@ -96,6 +96,7 @@ public static class EmailPlaceholders
     public const string TrainingVideoDescription = "{TrainingVideoDescription}";
     public const string TrainingVideoDuration = "{TrainingVideoDuration}";
     public const string TrainingVideoLink = "{TrainingVideoLink}";
+    public const string TrainingVideoUrl = "{TrainingVideoUrl}";
     public const string TrainingAssignmentTitle = "{TrainingAssignmentTitle}";
     public const string TrainingDueDate = "{TrainingDueDate}";
     public const string TrainingStartDate = "{TrainingStartDate}";
@@ -189,7 +190,8 @@ public static class EmailPlaceholders
                     new(TrainingVideoTitle, "Video Başlığı", "Eğitim videosu başlığı"),
                     new(TrainingVideoDescription, "Video Açıklaması", "Video açıklaması"),
                     new(TrainingVideoDuration, "Video Süresi", "Video süresi (örn: 5 dk 30 sn)"),
-                    new(TrainingVideoLink, "Video Linki", "Videoyu izleme linki"),
+                    new(TrainingVideoLink, "Video Linki", "Videoyu izleme linki (HTML anchor)"),
+                    new(TrainingVideoUrl, "Video URL", "Videoyu izleme URL'si (sadece adres)"),
                     new(TrainingAssignmentTitle, "Atama Başlığı", "Eğitim ataması başlığı"),
                     new(TrainingStartDate, "Başlangıç Tarihi", "Eğitim başlangıç tarihi"),
                     new(TrainingDueDate, "Son Tarih", "Eğitim son tarihi")

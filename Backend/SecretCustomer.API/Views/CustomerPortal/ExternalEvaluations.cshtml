@@ -29,7 +29,7 @@
                             <!-- Dynamic Filter Input -->
                             <!-- Project -->
                             <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: function(item) { return item.code ? item.name + ' (' + item.code + ')' : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                             </div>
                             <!-- Personnel (text) -->
                             <div data-bind="visible: selectedFilterType() === 'personnel'" class="mb-2">

@@ -424,6 +424,7 @@ public class ReportService : IReportService
                 : null,
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
+            CreatedAt = evaluation.CreatedAt,
             DueDate = evaluation.Assignment.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
@@ -1074,6 +1075,7 @@ public class ReportService : IReportService
                 : (evaluation.CallDate.HasValue ? FormatMonthYear(evaluation.CallDate.Value) : null),
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
+            CreatedAt = evaluation.CreatedAt,
             DueDate = evaluation.Assignment.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
@@ -3050,6 +3052,8 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.CallNo", defaultValue: "Çağrı No"),
             await _localizationService.GetResourceAsync("Report.ControlDate", defaultValue: "Kontrol Tarihi"),
             await _localizationService.GetResourceAsync("Report.Time", defaultValue: "Saat"),
+            await _localizationService.GetResourceAsync("Report.ListeningDate", defaultValue: "Dinleme Tarihi"),
+            await _localizationService.GetResourceAsync("Report.ListeningTime", defaultValue: "Dinleme Saati"),
             await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre"),
             await _localizationService.GetResourceAsync("Report.Comment", defaultValue: "Yorum"),
             await _localizationService.GetResourceAsync("Report.PeriodMonth", defaultValue: "Periyot (Ay)"),
@@ -3076,17 +3080,19 @@ public class ReportService : IReportService
             worksheet.Cell(row, 4).Value = item.CallId ?? "";
             worksheet.Cell(row, 5).Value = item.CallDate?.ToString("dd.MM.yyyy") ?? item.EvaluationDate?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 6).Value = item.CallTime ?? (item.CallDate?.ToString("HH:mm") ?? "");
-            worksheet.Cell(row, 7).Value = item.Duration ?? "";
-            worksheet.Cell(row, 8).Value = item.Comment ?? "";
-            worksheet.Cell(row, 9).Value = period;
-            worksheet.Cell(row, 10).Value = item.ScorePercentage ?? 0;
+            worksheet.Cell(row, 7).Value = item.CreatedAt.ToString("dd.MM.yyyy");
+            worksheet.Cell(row, 8).Value = item.CreatedAt.ToString("HH:mm");
+            worksheet.Cell(row, 9).Value = item.Duration ?? "";
+            worksheet.Cell(row, 10).Value = item.Comment ?? "";
+            worksheet.Cell(row, 11).Value = period;
+            worksheet.Cell(row, 12).Value = item.ScorePercentage ?? 0;
 
             row++;
         }
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 4 }, noteColumns: new[] { 8 });
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 4 }, noteColumns: new[] { 10 });
 
         // Save to memory stream
         using var stream = new MemoryStream();

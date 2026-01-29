@@ -78,6 +78,7 @@ public class EvaluationReportDto
     // Dates
     public DateTime? EvaluationDate { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateTime DueDate { get; set; }
 
     // Scores

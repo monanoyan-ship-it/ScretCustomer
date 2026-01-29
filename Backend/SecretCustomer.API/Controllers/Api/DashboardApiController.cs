@@ -420,4 +420,40 @@ public class DashboardApiController : BaseApiController
             IsCustomerPersonnel = isCustomerPersonnel
         });
     }
+
+    /// <summary>
+    /// Kullanıcının bu ayki proje bazlı değerlendirme detayını getirir
+    /// </summary>
+    [HttpGet("user-projects/{userId}")]
+    public async Task<IActionResult> GetUserProjectBreakdown(int userId)
+    {
+        try
+        {
+            var breakdown = await _dashboardService.GetUserProjectBreakdownAsync(userId);
+            return Ok(breakdown);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading user project breakdown for user {UserId}", userId);
+            return StatusCode(500, CreateErrorResponse("Kullanıcı proje detayı yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Firma bazlı aylık trend verilerini getirir
+    /// </summary>
+    [HttpGet("customer-trend")]
+    public async Task<IActionResult> GetCustomerMonthlyTrend()
+    {
+        try
+        {
+            var trends = await _dashboardService.GetCustomerMonthlyTrendAsync();
+            return Ok(trends);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading customer monthly trend");
+            return StatusCode(500, CreateErrorResponse("Firma trend verileri yüklenirken hata oluştu", ex));
+        }
+    }
 }

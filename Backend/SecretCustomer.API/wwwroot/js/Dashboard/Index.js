@@ -72,6 +72,31 @@ function DashboardViewModel() {
     // Announcements
     self.announcements = ko.observableArray([]);
 
+    // Customer trend data (Firma bazlı aylık trend)
+    self.customerTrend = ko.observableArray([]);
+
+    // Customer trend totals computed
+    self.customerTrendTotal = ko.computed(function() {
+        var trends = self.customerTrend();
+        if (trends.length === 0) {
+            return { count: 0, average: 0 };
+        }
+        var totalCount = trends.reduce(function(sum, t) { return sum + t.evaluationCount; }, 0);
+        var weightedSum = trends.reduce(function(sum, t) { return sum + (t.averageScore * t.evaluationCount); }, 0);
+        var avgScore = totalCount > 0 ? weightedSum / totalCount : 0;
+        return { count: totalCount, average: avgScore };
+    });
+
+    // User project detail modal
+    self.selectedUserName = ko.observable('');
+    self.selectedUserProjectDetail = ko.observable({
+        userId: 0,
+        userName: '',
+        totalEvaluations: 0,
+        projects: []
+    });
+    self.isLoadingProjectDetail = ko.observable(false);
+
     // Chart instances
     var monthlyTrendChart = null;
 
@@ -344,6 +369,54 @@ function DashboardViewModel() {
             });
     };
 
+    // Load customer trend (Firma bazlı aylık trend)
+    self.loadCustomerTrend = function() {
+        fetch('/api/dashboard/customer-trend', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Customer trend load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.customerTrend(data);
+            })
+            .catch(function(error) {
+                console.error('Customer trend error:', error);
+            });
+    };
+
+    // Show user project detail modal
+    self.showUserProjectDetail = function(userId, userName) {
+        self.selectedUserName(userName);
+        self.isLoadingProjectDetail(true);
+        self.selectedUserProjectDetail({
+            userId: 0,
+            userName: '',
+            totalEvaluations: 0,
+            projects: []
+        });
+
+        // Show modal
+        var modal = new bootstrap.Modal(document.getElementById('userProjectDetailModal'));
+        modal.show();
+
+        // Load data
+        fetch('/api/dashboard/user-projects/' + userId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('User project detail load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.selectedUserProjectDetail(data);
+            })
+            .catch(function(error) {
+                console.error('User project detail error:', error);
+                toastr.error(T('Common.Error', 'Bir hata oluştu'));
+            })
+            .finally(function() {
+                self.isLoadingProjectDetail(false);
+            });
+    };
+
     // Daily Trend Chart (last 7 days)
     var dailyTrendChart = null;
     self.updateDailyTrendChart = function(dailyTrends) {
@@ -426,6 +499,7 @@ function DashboardViewModel() {
     self.loadDailyMetrics();
     self.loadUserPerformance();
     self.loadTargetProgress();
+    self.loadCustomerTrend();
 }
 
 // Translation keys
@@ -442,7 +516,8 @@ var TRANSLATION_KEYS = [
     'Common.Important',
     'Common.News',
     'Common.System',
-    'Common.Info'
+    'Common.Info',
+    'Common.Error'
 ];
 
 // Apply bindings when document is ready
