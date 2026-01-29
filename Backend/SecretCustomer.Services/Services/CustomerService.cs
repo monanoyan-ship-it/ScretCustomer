@@ -4,6 +4,7 @@ using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
@@ -521,6 +522,7 @@ public class CustomerService : ICustomerService
 
         // Kolon genişliklerini ayarla
         sheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet);
 
         // Excel'i byte array'e çevir
         using var stream = new MemoryStream();
@@ -548,4 +550,5 @@ public class CustomerService : ICustomerService
         sheet.Cell(row, 8).Value = p.Department ?? "";
         sheet.Cell(row, 9).Value = p.Title ?? "";
     }
+
 }

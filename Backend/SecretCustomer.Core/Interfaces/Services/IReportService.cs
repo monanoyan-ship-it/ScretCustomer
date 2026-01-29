@@ -52,6 +52,9 @@ public interface IReportService
     // Temsilci Karnesi PDF export
     Task<ExcelExportDto> ExportPersonnelReportCardToPdfAsync(PersonnelReportCardFilterDto filter);
 
+    // Temsilci Karnesi Word export
+    Task<ExcelExportDto> ExportPersonnelReportCardToWordAsync(PersonnelReportCardFilterDto filter);
+
     // ===== ÖNERİLER RAPORU (Video 5-6) =====
 
     // Öneriler raporu

@@ -93,6 +93,10 @@
                             <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-excel"></i> Excel</span>
                             <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
+                        <button class="btn btn-primary btn-sm" data-bind="click: exportToWord, disable: isExporting">
+                            <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-word"></i> Word</span>
+                            <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
                         <button class="btn btn-danger btn-sm" data-bind="click: printReport">
                             <i class="bi bi-file-pdf"></i> PDF
                         </button>
@@ -182,7 +186,7 @@
                         <div class="col">
                             <div class="card text-center h-100">
                                 <div class="card-body py-2">
-                                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h3>
+                                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= successThreshold ? 'text-success' : (averageScore >= warningThreshold ? 'text-warning' : 'text-danger')"></h3>
                                     <small class="text-muted">Ortalama</small>
                                 </div>
                             </div>
@@ -251,7 +255,7 @@
                                             <td data-bind="text: monthName"></td>
                                             <td class="text-center" data-bind="text: evaluationCount"></td>
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                                <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= $root.report().successThreshold ? 'bg-success' : (averageScore >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                             </td>
                                             <td class="text-center" data-bind="text: yellowCards"></td>
                                             <td class="text-center" data-bind="text: redCards"></td>
@@ -276,7 +280,7 @@
                                                 <td data-bind="text: groupName"></td>
                                                 <td style="width: 50%;">
                                                     <div class="progress" style="height: 18px;">
-                                                        <div class="progress-bar" data-bind="style: { width: percentageScore + '%' }, css: percentageScore >= 70 ? 'bg-success' : (percentageScore >= 50 ? 'bg-warning' : 'bg-danger'), text: percentageScore.toFixed(1) + '%'"></div>
+                                                        <div class="progress-bar" data-bind="style: { width: percentageScore + '%' }, css: percentageScore >= $root.report().successThreshold ? 'bg-success' : (percentageScore >= $root.report().warningThreshold ? 'bg-warning' : 'bg-danger'), text: percentageScore.toFixed(1) + '%'"></div>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -338,7 +342,7 @@
                                             <td data-bind="text: projectName"></td>
                                             <td data-bind="text: checklistName"></td>
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                                <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= $root.report().successThreshold ? 'bg-success' : (scorePercentage >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                             </td>
                                             <td class="text-center">
                                                 <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
@@ -419,7 +423,7 @@
                                                 <td>
                                                     <!-- ko if: callId -->
                                                     <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; navigator.clipboard ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="Kopyala">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="Kopyala">
                                                         <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                                                     </button>
                                                     <!-- /ko -->

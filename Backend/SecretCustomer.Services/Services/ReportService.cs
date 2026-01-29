@@ -1,9 +1,11 @@
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
+using NPOI.XWPF.UserModel;
 using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 
@@ -13,11 +15,13 @@ public class ReportService : IReportService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
+    private readonly IPerformanceSettingsService _performanceSettingsService;
 
-    public ReportService(ApplicationDbContext context, ILocalizationService localizationService)
+    public ReportService(ApplicationDbContext context, ILocalizationService localizationService, IPerformanceSettingsService performanceSettingsService)
     {
         _context = context;
         _localizationService = localizationService;
+        _performanceSettingsService = performanceSettingsService;
     }
 
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
@@ -489,7 +493,13 @@ public class ReportService : IReportService
                     GivenPoints = a.EarnedPoints,
                     MaxPoints = a.Question.WeightPoints,
                     AppliedPenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName,
-                    Notes = a.Notes
+                    Notes = a.Notes,
+                    // View uyumluluğu için ek alanlar
+                    AnswerNumeric = a.AnswerNumeric,
+                    AnswerText = a.AnswerText,
+                    EarnedPoints = a.EarnedPoints,
+                    QuestionMaxPoints = a.Question.WeightPoints,
+                    PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName
                 }).ToList(),
 
             // Değerlendirme yorumu
@@ -875,6 +885,7 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 15 }, noteColumns: new[] { 18 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -999,6 +1010,7 @@ public class ReportService : IReportService
         }
 
         detailSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(detailSheet, noteColumns: new[] { 12 });
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -1096,6 +1108,8 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.AssignmentPeriod)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
+            .Include(a => a.SubCriteriaSelections)
+                .ThenInclude(s => s.SubCriteria)
             .Where(a => a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None)
             .AsQueryable();
 
@@ -1199,7 +1213,16 @@ public class ReportService : IReportService
                         ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
                         : a.Evaluation.EvaluatedUnknownPersonnel),
                 EvaluationDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt,
-                Notes = a.Notes
+                Notes = a.Notes,
+                PeriodName = a.Evaluation.AssignmentPeriod != null
+                    ? a.Evaluation.AssignmentPeriod.Name
+                    : ((a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt) != null
+                        ? (a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt)!.Value.ToString("yyyyMM")
+                        : null),
+                SelectedSubCriteria = a.SubCriteriaSelections
+                    .Where(s => s.SubCriteria != null)
+                    .Select(s => s.SubCriteria.Description)
+                    .ToList()
             })
             .ToList();
 
@@ -1404,6 +1427,7 @@ public class ReportService : IReportService
         summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi");
         summarySheet.Cell(5, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
         summarySheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(summarySheet);
 
         // Penalties detail sheet (tüm veriler - pagination yok)
         var penaltiesSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.PenaltyEvaluations", defaultValue: "Cezalı Değerlendirmeler"));
@@ -1411,6 +1435,7 @@ public class ReportService : IReportService
         var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
+            await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"),
             await _localizationService.GetResourceAsync("Report.CallTime", defaultValue: "Çağrı Saati"),
             await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre"),
@@ -1419,6 +1444,7 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
+            await _localizationService.GetResourceAsync("Report.SubCriteria", defaultValue: "Alt Kriterler"),
             await _localizationService.GetResourceAsync("Report.PenaltyType", defaultValue: "Ceza Tipi")
         };
 
@@ -1448,6 +1474,11 @@ public class ReportService : IReportService
             int col = 1;
             var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt;
             penaltiesSheet.Cell(row, col++).Value = evalDate?.ToString("dd.MM.yyyy") ?? "";
+            // Periyot: AssignmentPeriod varsa adı, yoksa YYYYMM formatında
+            var periodName = a.Evaluation.AssignmentPeriod != null
+                ? a.Evaluation.AssignmentPeriod.Name
+                : (evalDate.HasValue ? evalDate.Value.ToString("yyyyMM") : "");
+            penaltiesSheet.Cell(row, col++).Value = periodName;
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallId ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallTime ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Duration ?? "";
@@ -1456,6 +1487,11 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(row, col++).Value = a.Question?.Checklist?.Name ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.GroupName ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.Text ?? "";
+            // Alt Kriterler - virgülle ayrılmış liste
+            var subCriteriaText = a.SubCriteriaSelections != null && a.SubCriteriaSelections.Any()
+                ? string.Join(", ", a.SubCriteriaSelections.Where(s => s.SubCriteria != null).Select(s => s.SubCriteria.Description))
+                : "";
+            penaltiesSheet.Cell(row, col++).Value = subCriteriaText;
             penaltiesSheet.Cell(row, col++).Value = a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard ? yellowCardText : redCardText;
 
             if (!excludeEvaluator)
@@ -1475,6 +1511,9 @@ public class ReportService : IReportService
             row++;
         }
         penaltiesSheet.Columns().AdjustToContents();
+        // CallId: 3, SubCriteria: 11, Not: son sütun (excludeEvaluator'a göre 14 veya 15)
+        var noteCol = excludeEvaluator ? 14 : 15;
+        ExcelHelper.ApplyLongTextColumnStyles(penaltiesSheet, callIdColumns: new[] { 3 }, noteColumns: new[] { noteCol }, subCriteriaColumns: new[] { 11 });
 
         // Top questions sheet - Seçilen alt kriterler ile birlikte
         var questionsSheet = workbook.Worksheets.Add("En Çok Ceza Alan Sorular");
@@ -1568,6 +1607,7 @@ public class ReportService : IReportService
             row++;
         }
         questionsSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(questionsSheet, subCriteriaColumns: new[] { 4 });
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -1812,12 +1852,26 @@ public class ReportService : IReportService
 
         if (!evaluations.Any())
         {
+            // Değerlendirme yoksa da threshold değerlerini getir (varsayılan proje tipine göre)
+            var defaultProjectTypeId = ProjectTypes.Ids.CallAuditing;
+            if (filter.ProjectIds?.Any() == true)
+            {
+                var projectType = await _context.Projects
+                    .Where(p => filter.ProjectIds.Contains(p.Id))
+                    .Select(p => p.ProjectTypeId)
+                    .FirstOrDefaultAsync();
+                if (projectType > 0) defaultProjectTypeId = projectType;
+            }
+            var defaultSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(defaultProjectTypeId);
+
             return new PersonnelReportCardDto
             {
                 PersonnelId = personnel.Id,
                 PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                 Title = personnel.Title ?? "",
-                Department = personnel.Department
+                Department = personnel.Department,
+                SuccessThreshold = defaultSettings?.SuccessThreshold ?? 80,
+                WarningThreshold = defaultSettings?.WarningThreshold ?? 60
             };
         }
 
@@ -1878,7 +1932,8 @@ public class ReportService : IReportService
                 Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? "",
                 CallId = e.CallId,
                 CallTime = e.CallTime,
-                Duration = e.Duration
+                Duration = e.Duration,
+                Notes = e.Notes
             })
             .ToList();
 
@@ -1933,6 +1988,15 @@ public class ReportService : IReportService
             .Take(5)
             .ToList();
 
+        // Proje tipine göre PerformanceSettings'ten threshold değerlerini al
+        var projectTypeId = evaluations
+            .Select(e => e.Assignment?.Project?.ProjectTypeId)
+            .FirstOrDefault(pt => pt.HasValue) ?? ProjectTypes.Ids.CallAuditing;
+
+        var performanceSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(projectTypeId);
+        var successThreshold = performanceSettings?.SuccessThreshold ?? 80;
+        var warningThreshold = performanceSettings?.WarningThreshold ?? 60;
+
         return new PersonnelReportCardDto
         {
             PersonnelId = personnel.Id,
@@ -1949,7 +2013,9 @@ public class ReportService : IReportService
             GroupPerformances = groupPerformances,
             RecentEvaluations = recentEvaluations,
             Strengths = strengths,
-            Weaknesses = weaknesses
+            Weaknesses = weaknesses,
+            SuccessThreshold = successThreshold,
+            WarningThreshold = warningThreshold
         };
     }
 
@@ -1997,6 +2063,7 @@ public class ReportService : IReportService
         infoSheet.Cell(12, 2).Value = report.TotalRedCards;
 
         infoSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(infoSheet);
 
         // Aylık Trend
         var trendSheet = workbook.Worksheets.Add("Aylık Trend");
@@ -2022,6 +2089,7 @@ public class ReportService : IReportService
             row++;
         }
         trendSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(trendSheet);
 
         // Grup Performansı
         var groupSheet = workbook.Worksheets.Add("Grup Performansı");
@@ -2041,6 +2109,7 @@ public class ReportService : IReportService
             row++;
         }
         groupSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(groupSheet);
 
         // Değerlendirmeler
         var evalSheet = workbook.Worksheets.Add("Değerlendirmeler");
@@ -2078,6 +2147,7 @@ public class ReportService : IReportService
             row++;
         }
         evalSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(evalSheet, callIdColumns: new[] { 2 });
 
         // Güçlü/Zayıf Yönler
         var analysisSheet = workbook.Worksheets.Add("Güçlü ve Zayıf Yönler");
@@ -2109,6 +2179,7 @@ public class ReportService : IReportService
             row++;
         }
         analysisSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(analysisSheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -2118,6 +2189,177 @@ public class ReportService : IReportService
             FileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi Word export
+    /// </summary>
+    public async Task<ExcelExportDto> ExportPersonnelReportCardToWordAsync(PersonnelReportCardFilterDto filter)
+    {
+        var report = await GetPersonnelReportCardAsync(filter);
+        if (report == null)
+        {
+            return new ExcelExportDto
+            {
+                FileName = "TemsilciKarnesi_Bulunamadi.docx",
+                FileContent = Array.Empty<byte>(),
+                ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            };
+        }
+
+        // Proje adı (ilk değerlendirmeden al)
+        var projectName = report.RecentEvaluations.FirstOrDefault()?.ProjectName ?? "Proje";
+
+        using var doc = new XWPFDocument();
+
+        // ===== BAŞLIK TABLOSU =====
+        var headerTable = doc.CreateTable(2, 2);
+        headerTable.Width = 5000;
+
+        // Sol üst: Personel adı
+        var nameCell = headerTable.GetRow(0).GetCell(0);
+        nameCell.SetText(report.PersonnelName);
+        if (nameCell.Paragraphs.Count > 0 && nameCell.Paragraphs[0].Runs.Count > 0)
+        {
+            nameCell.Paragraphs[0].Runs[0].IsBold = true;
+            nameCell.Paragraphs[0].Runs[0].FontSize = 14;
+        }
+
+        // Sağ üst: "Doküman Tarihi" etiketi
+        var dateLabelCell = headerTable.GetRow(0).GetCell(1);
+        dateLabelCell.SetText("Doküman Tarihi");
+        if (dateLabelCell.Paragraphs.Count > 0 && dateLabelCell.Paragraphs[0].Runs.Count > 0)
+        {
+            dateLabelCell.Paragraphs[0].Runs[0].IsBold = true;
+        }
+
+        // Sol alt: boş (personel adı devamı gibi düşünülebilir)
+        headerTable.GetRow(1).GetCell(0).SetText("");
+
+        // Sağ alt: Tarih değeri
+        var dateValueCell = headerTable.GetRow(1).GetCell(1);
+        dateValueCell.SetText(DateTime.Now.ToString("dd.MM.yyyy"));
+
+        // Boş paragraf
+        doc.CreateParagraph();
+
+        // ===== PROJE + BAŞARI ORTALAMASI =====
+        var avgPara = doc.CreateParagraph();
+        var avgRun = avgPara.CreateRun();
+        avgRun.SetText($"{projectName}");
+        avgRun.IsBold = true;
+        avgRun.FontSize = 11;
+
+        var scorePara = doc.CreateParagraph();
+        var scoreRun = scorePara.CreateRun();
+        scoreRun.SetText($"  {report.AverageScore:F2}");
+        scoreRun.IsBold = true;
+        scoreRun.FontSize = 24;
+
+        var scoreLabelPara = doc.CreateParagraph();
+        var scoreLabelRun = scoreLabelPara.CreateRun();
+        scoreLabelRun.SetText("BAŞARI ORTALAMASI");
+        scoreLabelRun.IsBold = true;
+        scoreLabelRun.FontSize = 10;
+
+        doc.CreateParagraph();
+
+        // ===== KONTROL SORULARI TABLOSU =====
+        var questionTable = doc.CreateTable(report.GroupPerformances.Count + 1, 2);
+        questionTable.Width = 5000;
+
+        // Başlık satırı
+        var qHeaderRow = questionTable.GetRow(0);
+        qHeaderRow.GetCell(0).SetText("Kontrol Sorusu");
+        qHeaderRow.GetCell(1).SetText("Puan");
+        foreach (var cell in qHeaderRow.GetTableCells())
+        {
+            if (cell.Paragraphs.Count > 0 && cell.Paragraphs[0].Runs.Count > 0)
+            {
+                cell.Paragraphs[0].Runs[0].IsBold = true;
+            }
+        }
+
+        // Veri satırları
+        for (int i = 0; i < report.GroupPerformances.Count; i++)
+        {
+            var group = report.GroupPerformances[i];
+            var dataRow = questionTable.GetRow(i + 1);
+            dataRow.GetCell(0).SetText(group.GroupName);
+            dataRow.GetCell(1).SetText($"{group.PercentageScore:F0}");
+        }
+
+        doc.CreateParagraph();
+
+        // ===== GENEL ANALİZ TABLOSU =====
+        var analysisHeader = doc.CreateParagraph();
+        var analysisHeaderRun = analysisHeader.CreateRun();
+        analysisHeaderRun.SetText("GENEL ANALİZ");
+        analysisHeaderRun.IsBold = true;
+        analysisHeaderRun.FontSize = 12;
+
+        var evalTable = doc.CreateTable(report.RecentEvaluations.Count + 1, 4);
+
+        // Tablo genişliğini sayfa genişliğine ayarla
+        evalTable.GetCTTbl().AddNewTblPr().AddNewTblW().w = "9000";
+        evalTable.GetCTTbl().tblPr.tblW.type = NPOI.OpenXmlFormats.Wordprocessing.ST_TblWidth.dxa;
+
+        // Sütun genişlikleri (twips): Tarih:1200, Çağrı:3000, Yorum:3800, Puan:1000
+        int[] colWidths = { 1200, 3000, 3800, 1000 };
+
+        // Başlık satırı
+        var evalHeaderRow = evalTable.GetRow(0);
+        string[] headers = { "Görüşme Tarihi", "Değerlendirilen Çağrı", "Denetim Yorumu", "Toplam Puan" };
+        for (int c = 0; c < 4; c++)
+        {
+            var cell = evalHeaderRow.GetCell(c);
+            cell.SetText(headers[c]);
+            // Hücre genişliği ayarla
+            var tcPr = cell.GetCTTc().AddNewTcPr();
+            tcPr.AddNewTcW().w = colWidths[c].ToString();
+            tcPr.tcW.type = NPOI.OpenXmlFormats.Wordprocessing.ST_TblWidth.dxa;
+            // Başlık kalın
+            if (cell.Paragraphs.Count > 0 && cell.Paragraphs[0].Runs.Count > 0)
+            {
+                cell.Paragraphs[0].Runs[0].IsBold = true;
+            }
+        }
+
+        // Veri satırları
+        for (int i = 0; i < report.RecentEvaluations.Count; i++)
+        {
+            var eval = report.RecentEvaluations[i];
+            var dataRow = evalTable.GetRow(i + 1);
+            string[] values = {
+                eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-",
+                eval.CallId ?? "-",
+                eval.Notes ?? "",
+                $"{eval.ScorePercentage:F0}"
+            };
+
+            for (int c = 0; c < 4; c++)
+            {
+                var cell = dataRow.GetCell(c);
+                cell.SetText(values[c]);
+                // Hücre genişliği ayarla (word wrap otomatik olur)
+                var tcPr = cell.GetCTTc().AddNewTcPr();
+                tcPr.AddNewTcW().w = colWidths[c].ToString();
+                tcPr.tcW.type = NPOI.OpenXmlFormats.Wordprocessing.ST_TblWidth.dxa;
+            }
+        }
+
+        // Word dosyasını kaydet
+        using var stream = new MemoryStream();
+        doc.Write(stream);
+
+        var safePersonnelName = string.Join("_", report.PersonnelName.Split(Path.GetInvalidFileNameChars()));
+
+        return new ExcelExportDto
+        {
+            FileName = $"MT_Karne_{safePersonnelName}_{DateTime.Now:yyyyMMdd}.docx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         };
     }
 
@@ -2139,8 +2381,12 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedPersonnel)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.EvaluatedCustomerPersonnel)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
+            .Include(a => a.SubCriteriaSelections)
+                .ThenInclude(s => s.SubCriteria)
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             // Hibrit filtre: Not/Öneri VEYA Kart VEYA Düşük puan
             .Where(a =>
@@ -2283,14 +2529,20 @@ public class ReportService : IReportService
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
-                EvaluatedPersonnelName = a.Evaluation.EvaluatedPersonnel != null
-                    ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
-                    : a.Evaluation.EvaluatedUnknownPersonnel,
+                EvaluatedPersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                    ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
+                    : (a.Evaluation.EvaluatedPersonnel != null
+                        ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
+                        : a.Evaluation.EvaluatedUnknownPersonnel),
                 EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
                 CallId = a.Evaluation.CallId,
                 IsPenaltyApplied = a.IsPenaltyApplied,
                 PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName : null,
-                ReasonType = reasonType
+                ReasonType = reasonType,
+                SelectedSubCriteria = a.SubCriteriaSelections
+                    .Where(s => s.SubCriteria != null)
+                    .Select(s => s.SubCriteria.Description)
+                    .ToList()
             };
         }).ToList();
 
@@ -2312,6 +2564,10 @@ public class ReportService : IReportService
 
         if (filter.CustomerIds?.Any() == true)
             evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+
+        // Organization filter (Supervisor için gerekli)
+        if (filter.OrganizationIds?.Any() == true)
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
 
         if (filter.DateRanges?.Any() == true)
         {
@@ -2341,10 +2597,10 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 ProjectName = e.Assignment.Project != null ? e.Assignment.Project.Name : "",
-                EvaluatedPersonnelName = e.EvaluatedPersonnel != null
-                    ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
-                    : (e.EvaluatedCustomerPersonnel != null
-                        ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : (e.EvaluatedPersonnel != null
+                        ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
                         : e.EvaluatedUnknownPersonnel),
                 EvaluationDate = e.CompletedAt ?? e.ControlDate,
                 CallId = e.CallId,
@@ -2543,6 +2799,7 @@ public class ReportService : IReportService
             .GroupBy(s => new
             {
                 s.SubCriteriaId,
+                QuestionId = s.SubCriteria!.QuestionId,
                 Description = s.SubCriteria!.Description,
                 QuestionText = s.SubCriteria.Question!.Text,
                 GroupName = s.SubCriteria.Question.GroupName ?? "",
@@ -2551,6 +2808,7 @@ public class ReportService : IReportService
             .Select(g => new SubCriteriaSummaryDto
             {
                 SubCriteriaId = g.Key.SubCriteriaId,
+                QuestionId = g.Key.QuestionId,
                 Description = g.Key.Description,
                 QuestionText = g.Key.QuestionText,
                 GroupName = g.Key.GroupName,
@@ -2561,6 +2819,67 @@ public class ReportService : IReportService
             .OrderByDescending(x => x.SelectionCount)
             .Take(top)
             .ToList();
+
+        // Her soru için toplam değerlendirme sayısını hesapla (aynı filtrelerle)
+        var questionIds = grouped.Select(g => g.QuestionId).Distinct().ToList();
+        if (questionIds.Any())
+        {
+            // Answer tablosundan bu soruların kaç değerlendirmede sorulduğunu hesapla
+            var answerQuery = _context.Answers
+                .Include(a => a.Evaluation)
+                    .ThenInclude(e => e.Assignment)
+                        .ThenInclude(a => a.Project)
+                .Where(a => questionIds.Contains(a.QuestionId))
+                .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+                .AsQueryable();
+
+            // Aynı filtreleri uygula
+            if (filter.ProjectIds?.Any() == true)
+                answerQuery = answerQuery.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+            else
+                answerQuery = answerQuery.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+
+            if (filter.CustomerIds?.Any() == true)
+                answerQuery = answerQuery.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue &&
+                    filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+
+            if (filter.ChecklistIds?.Any() == true)
+                answerQuery = answerQuery.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
+
+            // Tarih filtreleri
+            if (filter.DateRanges?.Any() == true)
+            {
+                var datePredicates = filter.DateRanges.Select(dr =>
+                {
+                    DateTime? startUtc = dr.StartDate.HasValue
+                        ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                        : null;
+                    DateTime? endUtc = dr.EndDate.HasValue
+                        ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                        : null;
+                    return (Start: startUtc, End: endUtc);
+                }).ToList();
+
+                var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+                var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+                if (minStart != DateTime.MinValue)
+                    answerQuery = answerQuery.Where(a => a.Evaluation.CompletedAt >= minStart);
+                if (maxEnd != DateTime.MaxValue)
+                    answerQuery = answerQuery.Where(a => a.Evaluation.CompletedAt <= maxEnd);
+            }
+
+            var questionEvalCounts = await answerQuery
+                .GroupBy(a => a.QuestionId)
+                .Select(g => new { QuestionId = g.Key, Count = g.Select(a => a.EvaluationId).Distinct().Count() })
+                .ToDictionaryAsync(x => x.QuestionId, x => x.Count);
+
+            // Sonuçları birleştir
+            foreach (var item in grouped)
+            {
+                item.TotalQuestionEvaluations = questionEvalCounts.GetValueOrDefault(item.QuestionId, 0);
+            }
+        }
 
         return grouped;
     }
@@ -2602,6 +2921,7 @@ public class ReportService : IReportService
         summarySheet.Cell(summaryRow, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         summarySheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(summarySheet);
 
         // Details sheet - Değerlendirici kolonu excludeEvaluator true ise eklenmez
         var detailsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.SuggestionsList", defaultValue: "Öneriler Listesi"));
@@ -2665,6 +2985,9 @@ public class ReportService : IReportService
         }
 
         detailsSheet.Columns().AdjustToContents();
+        // Notlar: 6, Öneri: 7, CallId: excludeEvaluator'a göre 12 veya 13
+        var callIdCol = excludeEvaluator ? 12 : 13;
+        ExcelHelper.ApplyLongTextColumnStyles(detailsSheet, callIdColumns: new[] { callIdCol }, noteColumns: new[] { 6, 7 });
 
         // Top Questions sheet
         var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.TopSuggestedQuestions", defaultValue: "Top Önerilen Sorular"));
@@ -2691,6 +3014,7 @@ public class ReportService : IReportService
         }
 
         questionsSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(questionsSheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -2762,6 +3086,7 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 4 }, noteColumns: new[] { 8 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -2949,6 +3274,7 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -3216,6 +3542,7 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 6 }, noteColumns: new[] { 10, 14 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -3383,6 +3710,7 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -3578,6 +3906,7 @@ public class ReportService : IReportService
         }
 
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
     }
 
     private async Task CreateMTGelisimAlaniSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
@@ -3719,6 +4048,7 @@ public class ReportService : IReportService
         }
 
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, noteColumns: new[] { 6 });
     }
 
     private async Task CreateMTSurecAnaliziSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
@@ -3797,6 +4127,7 @@ public class ReportService : IReportService
         }
 
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
     }
 
     private async Task CreateMTEndeksBasariSheet(XLWorkbook workbook, List<Core.Entities.Evaluation> evaluations)
@@ -3893,6 +4224,7 @@ public class ReportService : IReportService
         }
 
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 6 }, noteColumns: new[] { 9, 10 });
     }
 
     // ===== ANKET SONUÇLARI RAPORU =====
@@ -4126,6 +4458,7 @@ public class ReportService : IReportService
         summarySheet.Cell(6, 1).Value = "Toplam Soru:";
         summarySheet.Cell(6, 2).Value = results.TotalQuestions;
         summarySheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(summarySheet);
 
         // Questions sheet
         var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Questions", defaultValue: "Sorular"));
@@ -4151,6 +4484,7 @@ public class ReportService : IReportService
             row++;
         }
         questionsSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(questionsSheet);
 
         // SubCriteria Results sheet
         var subCriteriaSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.SubCriteria", defaultValue: "Alt Kriter Sonuçları"));
@@ -4177,6 +4511,7 @@ public class ReportService : IReportService
             }
         }
         subCriteriaSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(subCriteriaSheet, subCriteriaColumns: new[] { 2 });
 
         // Respondents sheet
         var respondentsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Respondents", defaultValue: "Katılımcılar"));
@@ -4202,6 +4537,7 @@ public class ReportService : IReportService
             row++;
         }
         respondentsSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(respondentsSheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -4461,6 +4797,7 @@ public class ReportService : IReportService
         }
 
         sheet1.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet1);
 
         // ===== Sheet 2: Cevap Detayları =====
         var sheet2 = workbook.Worksheets.Add("Cevap Detayları");
@@ -4517,6 +4854,7 @@ public class ReportService : IReportService
         }
 
         sheet2.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet2, subCriteriaColumns: new[] { 8 }, noteColumns: new[] { 9 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -4711,6 +5049,7 @@ public class ReportService : IReportService
         }
 
         sheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -4951,17 +5290,25 @@ public class ReportService : IReportService
 
         // Build dynamic columns: Katılımcı, Email, Puan, Tarih, [Soru1], [Soru1_Seçenekler], [Soru1_Yorum?], ...
         var headers = new List<string> { "Katılımcı", "Email", "Genel Puan", "Tarih" };
+        var subCriteriaColIndices = new List<int>();
+        var noteColIndices = new List<int>();
+        var colIndex = 5; // Base columns end at 4
 
         foreach (var q in questions)
         {
             headers.Add(q.Text); // Puan
+            colIndex++;
             if (q.SubCriteria.Any())
             {
                 headers.Add($"{q.Text} - Seçenekler");
+                subCriteriaColIndices.Add(colIndex);
+                colIndex++;
             }
             if (includeComments)
             {
                 headers.Add($"{q.Text} - Yorum");
+                noteColIndices.Add(colIndex);
+                colIndex++;
             }
         }
 
@@ -5040,6 +5387,9 @@ public class ReportService : IReportService
         }
 
         sheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet,
+            subCriteriaColumns: subCriteriaColIndices.Any() ? subCriteriaColIndices.ToArray() : null,
+            noteColumns: noteColIndices.Any() ? noteColIndices.ToArray() : null);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -5416,7 +5766,62 @@ public class ReportService : IReportService
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
         worksheet.Column(1).Width = 60; // Soru sütunu geniş
+
+        // ===== Cevap Dağılımı Sheet'i =====
+        var scoreDetailData = await GetSurveyQuestionScoreDetailAsync(projectId);
+        if (scoreDetailData != null && scoreDetailData.Questions.Any())
+        {
+            var answerSheet = workbook.Worksheets.Add("Cevap Dağılımı");
+
+            // Başlık
+            answerSheet.Cell(1, 1).Value = "Proje: " + project.Name;
+            answerSheet.Cell(1, 1).Style.Font.Bold = true;
+            answerSheet.Cell(1, 1).Style.Font.FontSize = 14;
+            answerSheet.Range(1, 1, 1, 5).Merge();
+
+            answerSheet.Cell(2, 1).Value = $"Toplam Yanıt: {scoreDetailData.TotalResponses}";
+            answerSheet.Range(2, 1, 2, 5).Merge();
+
+            // Headers
+            var ansHeaderRow = 4;
+            answerSheet.Cell(ansHeaderRow, 1).Value = "Soru";
+            answerSheet.Cell(ansHeaderRow, 2).Value = "Cevap";
+            answerSheet.Cell(ansHeaderRow, 3).Value = "Seçim";
+            answerSheet.Cell(ansHeaderRow, 4).Value = "Toplam";
+            answerSheet.Cell(ansHeaderRow, 5).Value = "Oran (%)";
+
+            var ansHeaderRange = answerSheet.Range(ansHeaderRow, 1, ansHeaderRow, 5);
+            ansHeaderRange.Style.Font.Bold = true;
+            ansHeaderRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            ansHeaderRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+            // Data - Flat tablo (Soru | Cevap | Seçim | Toplam | Oran)
+            var ansRow = ansHeaderRow + 1;
+            foreach (var q in scoreDetailData.Questions)
+            {
+                if (q.AnswerDistributions != null && q.AnswerDistributions.Any())
+                {
+                    foreach (var ans in q.AnswerDistributions)
+                    {
+                        answerSheet.Cell(ansRow, 1).Value = q.QuestionText;
+                        answerSheet.Cell(ansRow, 2).Value = ans.AnswerText;
+                        answerSheet.Cell(ansRow, 3).Value = ans.SelectionCount;
+                        answerSheet.Cell(ansRow, 4).Value = q.ResponseCount;
+                        answerSheet.Cell(ansRow, 5).Value = ans.Percentage;
+                        answerSheet.Cell(ansRow, 5).Style.NumberFormat.Format = "0.0";
+                        ansRow++;
+                    }
+                }
+            }
+
+            // Auto-fit columns
+            answerSheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(answerSheet);
+            answerSheet.Column(1).Width = 50; // Soru sütunu geniş
+            answerSheet.Column(2).Width = 30; // Cevap sütunu
+        }
 
         // Export
         using var stream = new MemoryStream();
@@ -6041,6 +6446,7 @@ public class ReportService : IReportService
 
         // Kolon genişlikleri
         sheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -6349,6 +6755,7 @@ public class ReportService : IReportService
         }
 
         worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
@@ -6486,4 +6893,5 @@ public class ReportService : IReportService
             Distribution = distribution
         };
     }
+
 }

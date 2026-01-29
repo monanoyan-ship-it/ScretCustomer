@@ -681,7 +681,7 @@ function OrganizationsViewModel() {
             username: username,
             email: email,
             password: password,
-            role: 3, // CustomerOperator
+            role: "CustomerOperator",
             isActive: true
         })
         .then(function(newPersonnel) {

@@ -325,6 +325,7 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>@Html.T("Report.Date", "Tarih")</th>
+                                    <th>@Html.T("Report.Period", "Periyot")</th>
                                     <th>@Html.T("Report.ProjectOrg", "Proje / Organizasyon")</th>
                                     <th>@Html.T("Report.Question", "Soru")</th>
                                     <th>@Html.T("Report.PenaltyType", "Ceza Tipi")</th>
@@ -338,12 +339,23 @@
                                         <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
                                     </td>
                                     <td>
+                                        <span data-bind="text: periodName || '-'"></span>
+                                    </td>
+                                    <td>
                                         <span data-bind="text: projectName"></span>
                                         <small class="text-muted d-block" data-bind="text: organizationName || checklistName || '-'"></small>
                                     </td>
                                     <td>
                                         <span data-bind="text: questionText"></span>
                                         <small class="text-muted d-block" data-bind="text: groupName"></small>
+                                        <!-- Alt Kriterler -->
+                                        <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                        <div class="mt-1">
+                                            <!-- ko foreach: selectedSubCriteria -->
+                                            <small class="text-info d-block"><i class="bi bi-arrow-return-right"></i> <span data-bind="text: $data"></span></small>
+                                            <!-- /ko -->
+                                        </div>
+                                        <!-- /ko -->
                                     </td>
                                     <td>
                                         <span data-bind="visible: penaltyType === 'YellowCard'" class="badge bg-warning text-dark">

@@ -30,6 +30,10 @@ function CustomerDashboardViewModel() {
     self.monthlyTrendData = null;
     self.scoreDistributionData = null;
 
+    // Monthly trend filters
+    self.monthlyTrendProjectId = ko.observable(null);
+    self.monthlyTrendProjects = ko.observableArray([]);
+
     // Score distribution filters
     self.scoreDistStartDate = ko.observable('');
     self.scoreDistEndDate = ko.observable('');
@@ -379,6 +383,8 @@ function CustomerDashboardViewModel() {
             })
             .then(function(data) {
                 self.questionTrendProjects(data.projects || []);
+                // Aynı projeleri Aylık Trend için de kullan
+                self.monthlyTrendProjects(data.projects || []);
                 self.questionTrendLabels(data.monthLabels || []);
                 self.questionTrendData(data.groupTrends || []);
                 self.isQuestionTrendLoading(false);
@@ -487,6 +493,130 @@ function CustomerDashboardViewModel() {
                 }
             }
         });
+    };
+
+    // Watch for monthly trend project change
+    self.monthlyTrendProjectId.subscribe(function() {
+        self.loadMonthlyTrend();
+    });
+
+    // Load monthly trend with project filter
+    self.loadMonthlyTrend = function() {
+        var url = '/api/customer/portal/dashboard/monthly-trend';
+        if (self.monthlyTrendProjectId()) {
+            url += '?projectId=' + self.monthlyTrendProjectId();
+        }
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.monthlyTrendData = data;
+                self.updateMonthlyChart();
+            })
+            .catch(function(error) {
+                console.error('Monthly trend load error:', error);
+            });
+    };
+
+    // Update monthly chart with new data
+    self.updateMonthlyChart = function() {
+        var monthLabels = [];
+        var scoreData = [];
+        var countData = [];
+        var yellowCardData = [];
+        var redCardData = [];
+
+        if (self.monthlyTrendData && self.monthlyTrendData.length > 0) {
+            self.monthlyTrendData.forEach(function(item) {
+                monthLabels.push(item.month);
+                scoreData.push(item.averageScore);
+                countData.push(item.count);
+                yellowCardData.push(item.yellowCardCount || 0);
+                redCardData.push(item.redCardCount || 0);
+            });
+        }
+
+        // Destroy existing chart if any
+        if (self.monthlyChart) {
+            self.monthlyChart.destroy();
+            self.monthlyChart = null;
+        }
+
+        var monthlyCtx = document.getElementById('monthlyChart');
+        if (monthlyCtx && monthLabels.length > 0) {
+            self.monthlyChart = new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Ortalama Puan',
+                        data: scoreData,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Değerlendirme Sayısı',
+                        data: countData,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }, {
+                        label: 'Sarı Kart',
+                        data: yellowCardData,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }, {
+                        label: 'Kırmızı Kart',
+                        data: redCardData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Puan'
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Adet'
+                            }
+                        }
+                    }
+                }
+            });
+        }
     };
 
     // Load score distribution with filters

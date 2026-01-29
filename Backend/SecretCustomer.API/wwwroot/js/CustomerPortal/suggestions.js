@@ -353,14 +353,27 @@ function CustomerSuggestionsViewModel() {
         })
         .finally(function() {
             self.isLoading(false);
+            // Popover'ları initialize et (Not/Öneri detay butonları için)
+            setTimeout(function() {
+                var popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+                popoverTriggerList.forEach(function(el) {
+                    // Mevcut popover'ı dispose et
+                    var existingPopover = bootstrap.Popover.getInstance(el);
+                    if (existingPopover) existingPopover.dispose();
+                    // Yeni popover oluştur
+                    new bootstrap.Popover(el, { sanitize: false });
+                });
+            }, 100);
         });
     };
 
-    // Pagination
+    // Pagination - sadece liste yüklenir, tüm sayfa değil
+    self.isSuggestionsLoading = ko.observable(false);
+
     self.goToPage = function(page) {
         if (page >= 1 && page <= self.totalPages()) {
             self.currentPage(page);
-            self.loadReport();
+            self.loadSuggestionsOnly();
         }
     };
 
@@ -374,6 +387,46 @@ function CustomerSuggestionsViewModel() {
         if (self.currentPage() < self.totalPages()) {
             self.goToPage(self.currentPage() + 1);
         }
+    };
+
+    // Sadece suggestions listesini yükle (sayfa değişikliği için)
+    self.loadSuggestionsOnly = function() {
+        self.isSuggestionsLoading(true);
+
+        var url = '/api/customer/portal/reports/suggestions' + self.buildQueryParams(true);
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Liste yüklenemedi');
+                return r.json();
+            })
+            .then(function(data) {
+                self.suggestions(data.suggestions || []);
+                self.totalCount(data.totalCount || 0);
+
+                // Listenin başına scroll
+                var listSection = document.getElementById('suggestions-list-section');
+                if (listSection) {
+                    listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // Popover'ları yeniden initialize et
+                setTimeout(function() {
+                    var popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+                    popoverTriggerList.forEach(function(el) {
+                        var existingPopover = bootstrap.Popover.getInstance(el);
+                        if (existingPopover) existingPopover.dispose();
+                        new bootstrap.Popover(el, { sanitize: false });
+                    });
+                }, 100);
+            })
+            .catch(function(error) {
+                console.error('Suggestions load error:', error);
+                toastr.error('Liste yüklenirken hata oluştu');
+            })
+            .finally(function() {
+                self.isSuggestionsLoading(false);
+            });
     };
 
     // Export to Excel

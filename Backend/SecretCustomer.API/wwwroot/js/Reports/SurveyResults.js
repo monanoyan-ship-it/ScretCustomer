@@ -20,6 +20,10 @@ function SurveyResultsViewModel() {
     self.scoreDetail = ko.observable(null);
     self.isLoadingScoreDetail = ko.observable(false);
 
+    // Flat cevap dağılımı tablosu için (Soru | Cevap | Seçim | Toplam | Oran)
+    self.answerDistributionFlat = ko.observableArray([]);
+    self.isLoadingAnswerDistribution = ko.observable(false);
+
     // Project Search
     self.projectSearchTerm = ko.observable('');
     self.filteredProjects = ko.computed(function() {
@@ -276,21 +280,50 @@ function SurveyResultsViewModel() {
         }
 
         self.isLoadingDistribution(true);
+        self.isLoadingAnswerDistribution(true);
         self.questionDistribution(null);
+        self.answerDistributionFlat([]);
 
-        var url = '/reports/survey-question-distribution?projectId=' + self.distributionFilter.projectId();
+        var projectId = self.distributionFilter.projectId();
+        var url = '/reports/survey-question-distribution?projectId=' + projectId;
 
-        apiService.get(url)
-            .then(function(data) {
-                self.questionDistribution(data);
-            })
-            .catch(function(error) {
-                console.error('Error loading question distribution:', error);
-                toastr.error('Soru puan dağılımı yüklenirken hata oluştu.');
-            })
-            .finally(function() {
-                self.isLoadingDistribution(false);
-            });
+        // Hem soru dağılımı hem de cevap dağılımı yükle
+        Promise.all([
+            apiService.get(url),
+            apiService.get('/reports/survey-projects/' + projectId + '/score-detail')
+        ])
+        .then(function(results) {
+            self.questionDistribution(results[0]);
+
+            // scoreDetail verisini flat tabloya dönüştür
+            var scoreData = results[1];
+            if (scoreData && scoreData.questions) {
+                var flatData = [];
+                scoreData.questions.forEach(function(q) {
+                    if (q.answerDistributions && q.answerDistributions.length > 0) {
+                        q.answerDistributions.forEach(function(ans) {
+                            flatData.push({
+                                questionText: q.questionText,
+                                groupName: q.groupName,
+                                answerText: ans.answerText,
+                                selectionCount: ans.selectionCount,
+                                totalCount: q.responseCount,
+                                percentage: ans.percentage
+                            });
+                        });
+                    }
+                });
+                self.answerDistributionFlat(flatData);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error loading question distribution:', error);
+            toastr.error('Soru puan dağılımı yüklenirken hata oluştu.');
+        })
+        .finally(function() {
+            self.isLoadingDistribution(false);
+            self.isLoadingAnswerDistribution(false);
+        });
     };
 
     // Export Question Distribution to Excel

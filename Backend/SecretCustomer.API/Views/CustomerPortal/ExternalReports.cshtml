@@ -1,9 +1,9 @@
 @{
-    ViewData["Title"] = @Html.T("CustomerPortal.Report.Title", "Raporlar");
+    ViewData["Title"] = @Html.T("CustomerPortal.ExternalReports.Title", "Dış Dinleme Raporları");
     Layout = "_CustomerLayout";
 }
 
-<div id="customer-reports-app">
+<div id="customer-external-reports-app">
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-success" role="status">
@@ -473,5 +473,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/CustomerPortal/reports.js"></script>
+    <script src="~/js/CustomerPortal/externalReports.js"></script>
 }

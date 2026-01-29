@@ -565,7 +565,7 @@ function CustomerInternalEvaluationsViewModel() {
         }
 
         self.isExportingDetail(true);
-        var filename = 'Dinleme_Detay_' + (data.callId || evalId) + '_' + self.getTimestamp() + '.xlsx';
+        var filename = 'Dinleme_Detay_' + self.getTimestamp() + '.xlsx';
 
         customerApiDownloadGet('/api/customer/portal/evaluations/' + evalId + '/export', filename)
             .then(function() { toastr.success('Excel dosyası indirildi'); })

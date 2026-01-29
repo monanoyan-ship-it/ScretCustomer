@@ -35,6 +35,24 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// İç Dinleme Raporları - firma personeli tarafından yapılan değerlendirmeler
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult InternalReports()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Dış Dinleme Raporları - bizim tarafımızdan yapılan değerlendirmeler
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult ExternalReports()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Cezalı KL Raporu
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]

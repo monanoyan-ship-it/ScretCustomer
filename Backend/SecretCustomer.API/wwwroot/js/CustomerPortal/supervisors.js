@@ -155,7 +155,7 @@ function CustomerSupervisorsViewModel() {
         });
 
         // Çoklu değerleri query string'e ekle
-        organizationIds.forEach(function(id) { params.push('organizationId=' + id); });
+        organizationIds.forEach(function(id) { params.push('organizationIds=' + id); });
         if (searchTexts.length > 0) {
             params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
         }
