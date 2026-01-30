@@ -7817,7 +7817,10 @@
     <Value>Bewertungen</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
-    <Value>Fragengruppe Durchschnittsbericht</Value>
+    <Value>Fragengruppe Durchschnitt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.QuestionAverage">
+    <Value>Fragenbasierter Durchschnitt</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.ProjectPerformance">
     <Value>Projektleistungsbericht</Value>

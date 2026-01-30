@@ -1349,6 +1349,7 @@ public class EnneagramResultListDto
 public class EnneagramResultDetailDto
 {
     public int EvaluationId { get; set; }
+    public int ProjectId { get; set; }
     public string? RespondentName { get; set; }
     public string? RespondentEmail { get; set; }
     public string ProjectName { get; set; } = string.Empty;

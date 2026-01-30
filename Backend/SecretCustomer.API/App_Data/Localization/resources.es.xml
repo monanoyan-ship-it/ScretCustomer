@@ -7803,7 +7803,10 @@
     <Value>Evaluaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
-    <Value>Informe Promedio de Grupo de Preguntas</Value>
+    <Value>Promedio de Grupo de Preguntas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.QuestionAverage">
+    <Value>Promedio Basado en Preguntas</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.ProjectPerformance">
     <Value>Informe de Rendimiento del Proyecto</Value>

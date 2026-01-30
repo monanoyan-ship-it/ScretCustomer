@@ -236,13 +236,13 @@ public class TrainingQuizResultDto
     public int ResponseId { get; set; }
     public int QuizId { get; set; }
     public string QuizTitle { get; set; } = string.Empty;
-    public decimal TotalScore { get; set; }
-    public decimal MaxPossibleScore { get; set; }
-    public decimal ScorePercentage { get; set; }
+    public decimal? TotalScore { get; set; }
+    public decimal? MaxPossibleScore { get; set; }
+    public decimal? ScorePercentage { get; set; }
     public int? PassingScore { get; set; }
     public bool IsPassed { get; set; }
-    public int CorrectCount { get; set; }
-    public int TotalQuestions { get; set; }
+    public int? CorrectCount { get; set; }
+    public int? TotalQuestions { get; set; }
     public bool ShowResults { get; set; }
     public List<TrainingQuizAnswerResultDto>? AnswerResults { get; set; }
 }

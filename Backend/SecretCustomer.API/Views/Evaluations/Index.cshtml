@@ -24,7 +24,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { activeTab('evaluations'); }" href="#">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { setActiveTab('evaluations'); }" href="#">
                 <i class="bi bi-headphones"></i> @Html.T("Evaluation.ListeningsVisits", "Dinlemeler/Ziyaretler")
                 <span class="badge bg-success" data-bind="text: evaluationsTotalCount()"></span>
             </a>

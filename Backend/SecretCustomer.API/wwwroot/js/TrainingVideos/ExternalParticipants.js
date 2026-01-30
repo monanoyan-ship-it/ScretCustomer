@@ -110,7 +110,6 @@
             if (self.parsedParticipants().length === 0) reasons.push('no participants');
 
             if (reasons.length > 0) {
-                console.log('canCreate false:', reasons.join(', '));
                 return false;
             }
             return true;
@@ -162,7 +161,6 @@
                 url: '/api/training-video-assignments/email-templates',
                 method: 'GET',
                 success: function (data) {
-                    console.log('Email templates loaded:', data);
                     self.emailTemplates(data || []);
                     // Varsayılan şablonu seç
                     var defaultTemplate = (data || []).find(function (t) { return t.isDefault; });
@@ -227,6 +225,7 @@
                 title: self.formTitle(),
                 startDate: self.formStartDate(),
                 dueDate: self.formDueDate(),
+                isExternal: true, // Dış katılımcı ataması
                 minWatchCount: parseInt(self.formMinWatchCount(), 10) || 1,
                 maxWatchCount: self.formMaxWatchCount() ? parseInt(self.formMaxWatchCount(), 10) : null,
                 allowSpeedChange: self.formAllowSpeedChange(),

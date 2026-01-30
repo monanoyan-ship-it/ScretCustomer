@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.TrainingQuiz;
 using SecretCustomer.Core.Entities;
@@ -598,13 +599,13 @@ public class TrainingQuizService : ITrainingQuizService
             ResponseId = response.Id,
             QuizId = quiz.Id,
             QuizTitle = quiz.Title,
-            TotalScore = totalScore,
-            MaxPossibleScore = maxPossibleScore,
-            ScorePercentage = response.ScorePercentage,
-            PassingScore = quiz.PassingScore,
+            TotalScore = quiz.ShowResults ? totalScore : null,
+            MaxPossibleScore = quiz.ShowResults ? maxPossibleScore : null,
+            ScorePercentage = quiz.ShowResults ? response.ScorePercentage : null,
+            PassingScore = quiz.ShowResults ? quiz.PassingScore : null,
             IsPassed = response.IsPassed,
-            CorrectCount = correctCount,
-            TotalQuestions = quiz.Questions.Count,
+            CorrectCount = quiz.ShowResults ? correctCount : null,
+            TotalQuestions = quiz.ShowResults ? quiz.Questions.Count : null,
             ShowResults = quiz.ShowResults,
             AnswerResults = quiz.ShowResults ? answerResults : null
         };
@@ -700,6 +701,54 @@ public class TrainingQuizService : ITrainingQuizService
         };
 
         return dto;
+    }
+
+    public async Task<Core.DTOs.Report.ExcelExportDto> ExportResponsesAsync(TrainingQuizResponseFilterDto? filter = null)
+    {
+        var responses = await GetResponsesAsync(filter);
+        var responseList = responses.ToList();
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Anket Yanıtları");
+
+        // Headers
+        var headers = new[] { "Katılımcı", "E-posta", "Tip", "Anket", "Puan", "Maks Puan", "Yüzde", "Sonuç", "Deneme", "Tamamlanma" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+            worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data
+        int row = 2;
+        foreach (var item in responseList)
+        {
+            worksheet.Cell(row, 1).Value = item.ParticipantName;
+            worksheet.Cell(row, 2).Value = item.ParticipantEmail ?? "";
+            worksheet.Cell(row, 3).Value = item.IsExternal ? "Dış" : "İç";
+            worksheet.Cell(row, 4).Value = item.QuizTitle;
+            worksheet.Cell(row, 5).Value = item.TotalScore;
+            worksheet.Cell(row, 6).Value = item.MaxPossibleScore;
+            worksheet.Cell(row, 7).Value = item.ScorePercentage;
+            worksheet.Cell(row, 7).Style.NumberFormat.Format = "0.00";
+            worksheet.Cell(row, 8).Value = item.IsPassed ? "Geçti" : "Kaldı";
+            worksheet.Cell(row, 9).Value = item.AttemptNumber;
+            worksheet.Cell(row, 10).Value = item.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new Core.DTOs.Report.ExcelExportDto
+        {
+            FileName = $"Anket_Yanitlari_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
     }
 
     #endregion

@@ -186,6 +186,25 @@ public class TrainingVideosApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Video scope'una göre personel arar (edit modal için)
+    /// </summary>
+    [HttpGet("{id}/scope-personnel")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SearchScopePersonnel(int id, [FromQuery] string? search, [FromQuery] int maxResults = 20)
+    {
+        try
+        {
+            var personnel = await _trainingVideoService.SearchScopePersonnelAsync(id, search, maxResults);
+            return Ok(personnel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching scope personnel for video {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Personel aranırken hata oluştu", ex));
+        }
+    }
+
     #endregion
 
     #region Video Streaming
@@ -402,6 +421,29 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error previewing auto assignment");
             return StatusCode(500, CreateErrorResponse("Önizleme oluşturulurken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Atama güncelle
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateTrainingVideoAssignmentDto dto)
+    {
+        try
+        {
+            var result = await _trainingVideoService.UpdateAssignmentAsync(id, dto);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(CreateErrorResponse("Atama bulunamadı"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Atama güncellenirken hata oluştu", ex));
         }
     }
 

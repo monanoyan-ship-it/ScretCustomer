@@ -6,10 +6,10 @@ var SubCriteriaModel = function (data) {
     let base = this;
     data = data || {};
 
-    base.id = ko.observable(data.id || null);
+    base.id = ko.observable(data.id !== undefined && data.id !== null ? data.id : 0);
     base.description = ko.observable(data.description || '');
     base.order = ko.observable(data.order || 0);
-    base.weightPoints = ko.observable(data.weightPoints || 1);
+    base.weightPoints = ko.observable(data.weightPoints !== undefined ? data.weightPoints : 1);
     base.isActive = ko.observable(data.isActive !== false);
 };
 
@@ -18,7 +18,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
 
-    base.id = ko.observable(data.id || null);
+    base.id = ko.observable(data.id !== undefined && data.id !== null ? data.id : 0);
     base.text = ko.observable(data.text || '');
     base.order = ko.observable(data.order || 0);
     base.isRequired = ko.observable(data.isRequired !== false);
@@ -85,7 +85,7 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     let base = this;
     data = data || {};
 
-    base.id = ko.observable(data.id || null);
+    base.id = ko.observable(data.id !== undefined && data.id !== null ? data.id : 0);
     base.name = ko.observable(data.name || '');
     base.description = ko.observable(data.description || '');
     base.isScored = ko.observable(data.isScored !== false);

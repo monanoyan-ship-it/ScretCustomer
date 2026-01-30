@@ -10,6 +10,14 @@ function EvaluationsViewModel() {
     self.errorMessage = ko.observable('');
     self.activeTab = ko.observable('assignments');
     self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
+
+    // Tab değiştirme fonksiyonu - Dinlemeler/Ziyaretler tabına geçince listeyi yenile
+    self.setActiveTab = function(tab) {
+        self.activeTab(tab);
+        if (tab === 'evaluations') {
+            self.loadEvaluations();
+        }
+    };
     self.filterStatus = ko.observable('');
     // Her tab için ayrı search
     self.assignmentsSearch = ko.observable('');

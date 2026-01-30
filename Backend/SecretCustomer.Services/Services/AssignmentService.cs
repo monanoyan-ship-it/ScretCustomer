@@ -575,8 +575,12 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
-            .FirstOrDefaultAsync(a => a.Id == id);
-        if (assignment == null || assignment.IsDeleted)
+            .Include(a => a.Checklist)
+            .Include(a => a.AssignedUser)
+            .Include(a => a.AssignedCustomerPersonnel)
+            .Include(a => a.Evaluations)
+            .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        if (assignment == null)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
         assignment.IsDeleted = true;
@@ -589,16 +593,20 @@ public class AssignmentService : IAssignmentService
             $"Atama iptal edildi: {assignment.Project?.Name} - Sebep: {reason ?? "Belirtilmedi"}",
             "AssignmentService");
 
-        return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
+        // İptal edilen atamayı direkt map et (GetByIdAsync silinen kayıtları filtreliyor)
+        return MapToDto(assignment);
     }
 
     public async Task<AssignmentDto> ReopenAssignmentAsync(int id)
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+            .Include(a => a.Checklist)
+            .Include(a => a.AssignedUser)
+            .Include(a => a.AssignedCustomerPersonnel)
             .Include(a => a.Evaluations)
-            .FirstOrDefaultAsync(a => a.Id == id);
-        if (assignment == null || assignment.IsDeleted)
+            .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
+        if (assignment == null)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
         if (!assignment.IsCompleted)
@@ -627,7 +635,7 @@ public class AssignmentService : IAssignmentService
             $"Atama yeniden açıldı: {assignment.Project?.Name}",
             "AssignmentService");
 
-        return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
+        return MapToDto(assignment);
     }
 
     public async Task<AssignmentDto> ReassignAsync(int id, ReassignAssignmentDto dto)

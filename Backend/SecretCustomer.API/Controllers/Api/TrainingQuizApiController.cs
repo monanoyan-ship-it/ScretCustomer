@@ -357,6 +357,25 @@ public class TrainingQuizApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Quiz yanıtlarını Excel'e export et
+    /// </summary>
+    [HttpGet("responses/export")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ExportResponses([FromQuery] TrainingQuizResponseFilterDto? filter)
+    {
+        try
+        {
+            var result = await _trainingQuizService.ExportResponsesAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting quiz responses");
+            return StatusCode(500, CreateErrorResponse("Export sırasında hata oluştu", ex));
+        }
+    }
+
     #endregion
 
     #region Video Quiz Durumu

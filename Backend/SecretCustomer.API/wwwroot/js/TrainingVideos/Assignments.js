@@ -182,6 +182,46 @@ function AssignmentsViewModel() {
     self.createModal = null;
     self.participantsModal = null;
     self.emailModal = null;
+    self.editModal = null;
+
+    // ===== EDIT MODAL STATE =====
+    self.editAssignmentId = ko.observable(null);
+    self.editTitle = ko.observable('');
+    self.editStartDate = ko.observable('');
+    self.editDueDate = ko.observable('');
+    self.editIsActive = ko.observable(true);
+    self.editEmailTemplateId = ko.observable('');
+    self.editMinWatchCount = ko.observable(1);
+    self.editMaxWatchCount = ko.observable('');
+    self.editAllowSpeedChange = ko.observable(false);
+    self.editAllowSeeking = ko.observable(false);
+    self.editVideoTitle = ko.observable('');
+    self.editVideoId = ko.observable(null);
+    self.editIsExternal = ko.observable(false);
+    self.isLoadingEdit = ko.observable(false);
+    self.isSavingEdit = ko.observable(false);
+
+    // Edit modal - mevcut katılımcılar
+    self.editParticipants = ko.observableArray([]);
+    self.editExternalParticipants = ko.observableArray([]);
+
+    // Edit modal - yeni katılımcı ekleme
+    self.editNewParticipantSearch = ko.observable('');
+    self.editNewParticipantId = ko.observable(null);
+    self.editNewExternalEmail = ko.observable('');
+    self.editNewExternalFirstName = ko.observable('');
+    self.editNewExternalLastName = ko.observable('');
+
+    // Edit modal - silinecek/eklenecek listeler
+    self.editRemoveParticipantIds = ko.observableArray([]);
+    self.editRemoveExternalIds = ko.observableArray([]);
+    self.editAddParticipants = ko.observableArray([]);
+    self.editAddExternals = ko.observableArray([]);
+
+    // Personel arama için
+    self.editPersonnelSearchResults = ko.observableArray([]);
+    self.isEditPersonnelDropdownVisible = ko.observable(false);
+    self.editPersonnelDropdownTimer = null;
 
     // Email modal state
     self.emailModalAssignmentId = ko.observable(null);
@@ -1102,6 +1142,298 @@ function AssignmentsViewModel() {
                     console.error(err);
                 });
             }
+        });
+    };
+
+    // ===== EDIT MODAL FUNCTIONS =====
+
+    // Edit modal aç
+    self.openEditModal = function(assignment) {
+        self.editAssignmentId(assignment.id);
+        self.editTitle(assignment.title);
+        self.editStartDate(assignment.startDate ? assignment.startDate.split('T')[0] : '');
+        self.editDueDate(assignment.dueDate ? assignment.dueDate.split('T')[0] : '');
+        self.editIsActive(assignment.isActive);
+        self.editVideoTitle(assignment.trainingVideoTitle);
+        self.editVideoId(assignment.trainingVideoId);
+        self.editIsExternal(assignment.isExternal);
+        self.editEmailTemplateId('');
+        self.editMinWatchCount(1);
+        self.editMaxWatchCount('');
+        self.editAllowSpeedChange(false);
+        self.editAllowSeeking(false);
+
+        // Reset lists
+        self.editParticipants([]);
+        self.editExternalParticipants([]);
+        self.editRemoveParticipantIds([]);
+        self.editRemoveExternalIds([]);
+        self.editAddParticipants([]);
+        self.editAddExternals([]);
+        self.editNewParticipantSearch('');
+        self.editNewParticipantId(null);
+        self.editNewExternalEmail('');
+        self.editNewExternalFirstName('');
+        self.editNewExternalLastName('');
+
+        if (!self.editModal) {
+            self.editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        }
+        self.editModal.show();
+
+        // Detay bilgileri yükle
+        self.loadAssignmentForEdit(assignment.id);
+    };
+
+    // Assignment detaylarını yükle
+    self.loadAssignmentForEdit = function(assignmentId) {
+        self.isLoadingEdit(true);
+
+        Promise.all([
+            fetch('/api/training-video-assignments/' + assignmentId, { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/training-video-assignments/' + assignmentId + '/participants', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/training-video-assignments/' + assignmentId + '/external-participants', { credentials: 'include' }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            var assignment = results[0];
+            var participants = Array.isArray(results[1]) ? results[1] : [];
+            var externals = Array.isArray(results[2]) ? results[2] : [];
+
+            // Detay alanlarını doldur
+            if (assignment.emailTemplateId) {
+                self.editEmailTemplateId(assignment.emailTemplateId.toString());
+            }
+            if (assignment.minWatchCount !== undefined) {
+                self.editMinWatchCount(assignment.minWatchCount);
+            }
+            if (assignment.maxWatchCount) {
+                self.editMaxWatchCount(assignment.maxWatchCount);
+            }
+            self.editAllowSpeedChange(assignment.allowSpeedChange || false);
+            self.editAllowSeeking(assignment.allowSeeking || false);
+
+            // Katılımcıları doldur
+            self.editParticipants(participants.map(function(p) {
+                return {
+                    id: p.id,
+                    userId: p.userId,
+                    userName: p.userName,
+                    email: p.email,
+                    statusId: p.statusId,
+                    isCompleted: p.isCompleted,
+                    markedForRemoval: ko.observable(false)
+                };
+            }));
+
+            self.editExternalParticipants(externals.map(function(p) {
+                return {
+                    id: p.id,
+                    email: p.email,
+                    firstName: p.firstName,
+                    lastName: p.lastName,
+                    fullName: p.fullName || p.email,
+                    statusId: p.statusId,
+                    isCompleted: p.isCompleted,
+                    markedForRemoval: ko.observable(false)
+                };
+            }));
+        })
+        .catch(function(err) {
+            toastr.error('Atama detayları yüklenemedi');
+            console.error(err);
+        })
+        .finally(function() {
+            self.isLoadingEdit(false);
+        });
+    };
+
+    // Katılımcıyı silme için işaretle
+    self.toggleRemoveParticipant = function(participant) {
+        participant.markedForRemoval(!participant.markedForRemoval());
+    };
+
+    // Dış katılımcıyı silme için işaretle
+    self.toggleRemoveExternal = function(external) {
+        external.markedForRemoval(!external.markedForRemoval());
+    };
+
+    // Yeni iç katılımcı ara
+    self.searchEditPersonnel = function() {
+        var searchText = self.editNewParticipantSearch();
+        var videoId = self.editVideoId();
+
+        if (!searchText || searchText.length < 2) {
+            self.editPersonnelSearchResults([]);
+            return;
+        }
+
+        if (!videoId) {
+            // VideoId yoksa eski yöntemi kullan
+            fetch('/api/customer-personnel?search=' + encodeURIComponent(searchText) + '&pageSize=20', { credentials: 'include' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var items = data.items || data || [];
+                    var existingIds = self.editParticipants().map(function(p) { return p.userId; });
+                    var addedIds = self.editAddParticipants().map(function(p) { return p.userId; });
+                    items = items.filter(function(p) {
+                        return existingIds.indexOf(p.id) === -1 && addedIds.indexOf(p.id) === -1;
+                    });
+                    self.editPersonnelSearchResults(items.map(function(p) {
+                        return { id: p.id, fullName: p.fullName || (p.firstName + ' ' + p.lastName), email: p.email, customerName: p.customerName };
+                    }));
+                });
+            return;
+        }
+
+        // Video scope'una göre personel ara
+        fetch('/api/training-videos/' + videoId + '/scope-personnel?search=' + encodeURIComponent(searchText) + '&maxResults=20', { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var items = data || [];
+                // Zaten ekli olanları filtrele
+                var existingIds = self.editParticipants().map(function(p) { return p.userId; });
+                var addedIds = self.editAddParticipants().map(function(p) { return p.userId; });
+                items = items.filter(function(p) {
+                    return existingIds.indexOf(p.id) === -1 && addedIds.indexOf(p.id) === -1;
+                });
+                self.editPersonnelSearchResults(items);
+            });
+    };
+
+    self.showEditPersonnelDropdown = function() {
+        if (self.editPersonnelDropdownTimer) clearTimeout(self.editPersonnelDropdownTimer);
+        self.isEditPersonnelDropdownVisible(true);
+    };
+
+    self.hideEditPersonnelDropdownDelayed = function() {
+        self.editPersonnelDropdownTimer = setTimeout(function() {
+            self.isEditPersonnelDropdownVisible(false);
+        }, 200);
+    };
+
+    // Yeni iç katılımcı seç
+    self.selectEditPersonnel = function(personnel) {
+        self.editAddParticipants.push({
+            userId: personnel.id,
+            userName: personnel.fullName || (personnel.firstName + ' ' + personnel.lastName),
+            email: personnel.email
+        });
+        self.editNewParticipantSearch('');
+        self.editPersonnelSearchResults([]);
+        self.isEditPersonnelDropdownVisible(false);
+    };
+
+    // Eklenmek üzere olan iç katılımcıyı kaldır
+    self.removeAddedParticipant = function(participant) {
+        self.editAddParticipants.remove(participant);
+    };
+
+    // Yeni dış katılımcı ekle
+    self.addEditExternal = function() {
+        var email = self.editNewExternalEmail();
+        if (!email || !email.trim()) {
+            toastr.warning('Email adresi gerekli');
+            return;
+        }
+
+        // Email formatı kontrol
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toastr.warning('Geçerli bir email adresi girin');
+            return;
+        }
+
+        // Zaten var mı kontrol
+        var existingEmails = self.editExternalParticipants().map(function(p) { return p.email.toLowerCase(); });
+        var addedEmails = self.editAddExternals().map(function(p) { return p.email.toLowerCase(); });
+        if (existingEmails.indexOf(email.toLowerCase()) >= 0 || addedEmails.indexOf(email.toLowerCase()) >= 0) {
+            toastr.warning('Bu email zaten listede');
+            return;
+        }
+
+        self.editAddExternals.push({
+            email: email.trim(),
+            firstName: self.editNewExternalFirstName().trim() || null,
+            lastName: self.editNewExternalLastName().trim() || null
+        });
+
+        self.editNewExternalEmail('');
+        self.editNewExternalFirstName('');
+        self.editNewExternalLastName('');
+    };
+
+    // Eklenmek üzere olan dış katılımcıyı kaldır
+    self.removeAddedExternal = function(external) {
+        self.editAddExternals.remove(external);
+    };
+
+    // Güncellemeyi kaydet
+    self.saveEdit = function() {
+        if (!self.editTitle()) {
+            toastr.warning('Başlık gerekli');
+            return;
+        }
+        if (!self.editStartDate() || !self.editDueDate()) {
+            toastr.warning('Tarihler gerekli');
+            return;
+        }
+
+        self.isSavingEdit(true);
+
+        // Silinecek katılımcıları topla
+        var removeParticipantIds = [];
+        self.editParticipants().forEach(function(p) {
+            if (p.markedForRemoval()) {
+                removeParticipantIds.push(p.id);
+            }
+        });
+
+        var removeExternalIds = [];
+        self.editExternalParticipants().forEach(function(p) {
+            if (p.markedForRemoval()) {
+                removeExternalIds.push(p.id);
+            }
+        });
+
+        var dto = {
+            title: self.editTitle(),
+            startDate: self.editStartDate(),
+            dueDate: self.editDueDate(),
+            isActive: self.editIsActive(),
+            emailTemplateId: self.editEmailTemplateId() ? parseInt(self.editEmailTemplateId()) : null,
+            minWatchCount: parseInt(self.editMinWatchCount()) || 1,
+            maxWatchCount: self.editMaxWatchCount() ? parseInt(self.editMaxWatchCount()) : null,
+            allowSpeedChange: self.editAllowSpeedChange(),
+            allowSeeking: self.editAllowSeeking(),
+            addParticipantIds: self.editAddParticipants().map(function(p) { return p.userId; }),
+            removeParticipantIds: removeParticipantIds,
+            addExternalParticipants: self.editAddExternals().map(function(p) {
+                return { email: p.email, firstName: p.firstName, lastName: p.lastName };
+            }),
+            removeExternalParticipantIds: removeExternalIds
+        };
+
+        fetch('/api/training-video-assignments/' + self.editAssignmentId(), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto),
+            credentials: 'include'
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Update failed');
+            return r.json();
+        })
+        .then(function(result) {
+            toastr.success('Atama güncellendi');
+            self.editModal.hide();
+            self.loadAssignments();
+        })
+        .catch(function(err) {
+            toastr.error('Güncelleme sırasında hata oluştu');
+            console.error(err);
+        })
+        .finally(function() {
+            self.isSavingEdit(false);
         });
     };
 

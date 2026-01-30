@@ -3245,8 +3245,43 @@ public class ReportService : IReportService
             .ThenBy(x => x.GroupName)
             .ToList();
 
+        // ===== SHEET 2: Soru Bazlı Ortalama =====
+        // Soru bazlı gruplama (soruya göre)
+        var questionData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null)
+                .Select(a => new
+                {
+                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
+                    Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                    QuestionOrder = a.Question!.Order,
+                    QuestionText = a.Question.Text,
+                    QuestionId = a.QuestionId,
+                    EarnedPoints = a.EarnedPoints ?? 0,
+                    MaxPoints = a.Question.WeightPoints,
+                    EvaluationId = e.Id
+                }))
+            .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.QuestionId, x.QuestionText, x.QuestionOrder })
+            .Select(g => new
+            {
+                ProjectName = $"{g.Key.ProjectName} {g.Key.PeriodName}",
+                QuestionText = g.Key.QuestionText,
+                QuestionOrder = g.Key.QuestionOrder,
+                Year = g.Key.Year,
+                EvaluationCount = g.Select(x => x.EvaluationId).Distinct().Count(),
+                AverageScore = g.Sum(x => x.MaxPoints) > 0
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 2)
+                    : 0
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.QuestionOrder)
+            .ToList();
+
         // Excel oluştur
         using var workbook = new XLWorkbook();
+
+        // ===== SHEET 1: Soru Grubu Ortalama =====
         var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.QuestionGroupAverage", defaultValue: "Soru Grubu Ortalama"));
 
         // Headers
@@ -3281,6 +3316,42 @@ public class ReportService : IReportService
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
         ExcelHelper.ApplyLongTextColumnStyles(worksheet);
+
+        // ===== SHEET 2: Soru Bazlı Ortalama =====
+        var worksheet2 = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.QuestionAverage", defaultValue: "Soru Bazlı Ortalama"));
+
+        // Headers for Sheet 2
+        var headers2 = new[] {
+            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
+            await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
+            await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
+            await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
+        };
+
+        for (int i = 0; i < headers2.Length; i++)
+        {
+            worksheet2.Cell(1, i + 1).Value = headers2[i];
+            worksheet2.Cell(1, i + 1).Style.Font.Bold = true;
+            worksheet2.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Data for Sheet 2
+        row = 2;
+        foreach (var item in questionData)
+        {
+            worksheet2.Cell(row, 1).Value = item.ProjectName;
+            worksheet2.Cell(row, 2).Value = item.QuestionText;
+            worksheet2.Cell(row, 3).Value = item.Year;
+            worksheet2.Cell(row, 4).Value = item.EvaluationCount;
+            worksheet2.Cell(row, 5).Value = item.AverageScore;
+            worksheet2.Cell(row, 5).Style.NumberFormat.Format = "0.00";
+            row++;
+        }
+
+        // Auto-fit columns for Sheet 2
+        worksheet2.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet2);
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -6713,6 +6784,7 @@ public class ReportService : IReportService
         return new EnneagramResultDetailDto
         {
             EvaluationId = evaluation.Id,
+            ProjectId = evaluation.Assignment.Project?.Id ?? 0,
             RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
             RespondentEmail = respondentEmail,
             ProjectName = evaluation.Assignment.Project?.Name ?? "",

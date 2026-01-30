@@ -1865,3 +1865,40 @@ Bu durumda bile mümkünse CSS class kullanılmalıdır.
 2. Admin kullanıcılar session'daki `AdminViewAsCustomerId` ile herhangi bir müşteriyi görüntüleyebilir
 3. Tüm veriler `CustomerId` filtresine tabi
 4. `_CustomerLayout.cshtml` kullanılmalı (normal `_Layout.cshtml` değil)
+
+---
+
+## 23. Entity Yapısı Notları
+
+- **Section**: **SİLİNDİ** (Ocak 2026). Questions artık direkt Checklist'e bağlı.
+- **GroupName**: Question entity'sinde var, sadece RAPORLAMA için gruplama amaçlı. UI'da gruplama yapılmamalı.
+- Section referansları kaldırıldı, `.ThenInclude(c => c.Questions)` kullanılmalı.
+
+---
+
+## 24. Production Publish
+
+**ÖNEMLİ:** Publish çıkarken mutlaka eski dosyaları temizle!
+
+```bash
+# Önce eski klasörleri sil:
+rmdir /s /q Backend\SecretCustomer.API\publish
+rmdir /s /q Backend\SecretCustomer.API\obj
+
+# Sonra publish çıkar:
+dotnet publish Backend\SecretCustomer.API\SecretCustomer.API.csproj -c Release -o Backend\SecretCustomer.API\publish --self-contained false
+```
+
+**UYARI:** `obj` klasöründe eski publish cache dosyaları kalırsa, iç içe `publish/publish/publish/...` klasörleri oluşabilir.
+
+---
+
+## 25. Commit Kuralları
+
+⛔ **KULLANICI COMMIT DEMEDİKÇE ASLA COMMIT YAPMA!** ⛔
+
+- "commit et", "bitince commit et", "commit yap" = geçerli komut
+- Kullanıcı hiçbir şey demediyse = COMMIT YAPMA
+- Her yeni iş için AYRI commit izni gerekir
+- Push için de ayrı izin gerekir
+- Şüphen varsa SOR: "Commit edeyim mi?"

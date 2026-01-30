@@ -14,20 +14,24 @@ public class EvaluationsController : Controller
     /// <summary>
     /// Maximum modu için değerlendirme popup'ı (klasik 0-5 puan girişi)
     /// </summary>
-    public IActionResult PopupMaximum(int? assignmentId, int? evaluationId)
+    /// <param name="isInternal">true ise CustomerPersonnel (iç değerlendirme), false ise User (dış değerlendirme)</param>
+    public IActionResult PopupMaximum(int? assignmentId, int? evaluationId, bool isInternal = false)
     {
         ViewBag.AssignmentId = assignmentId;
         ViewBag.EvaluationId = evaluationId;
+        ViewBag.IsInternal = isInternal;
         return View();
     }
 
     /// <summary>
     /// CriteriaTotal modu için değerlendirme popup'ı (seçenek bazlı)
     /// </summary>
-    public IActionResult PopupCriteriaTotal(int? assignmentId, int? evaluationId)
+    /// <param name="isInternal">true ise CustomerPersonnel (iç değerlendirme), false ise User (dış değerlendirme)</param>
+    public IActionResult PopupCriteriaTotal(int? assignmentId, int? evaluationId, bool isInternal = false)
     {
         ViewBag.AssignmentId = assignmentId;
         ViewBag.EvaluationId = evaluationId;
+        ViewBag.IsInternal = isInternal;
         return View();
     }
 }

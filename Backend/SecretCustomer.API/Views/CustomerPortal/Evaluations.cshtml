@@ -21,7 +21,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { activeTab('evaluations'); }" href="#">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { setActiveTab('evaluations'); }" href="#">
                 <i class="bi bi-headphones"></i> @Html.T("Evaluation.ListeningsVisits", "Dinlemeler/Ziyaretler")
                 <span class="badge bg-success" data-bind="text: allEvaluationsList().length"></span>
             </a>
@@ -106,46 +106,111 @@
 
     <!-- Dinlemeler/Ziyaretler Tab -->
     <div data-bind="visible: activeTab() === 'evaluations' && !isLoading()">
-        <!-- Filters -->
+        <!-- Filter Bar -->
         <div class="card mb-3">
             <div class="card-body py-2">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.SearchText", "Arama")</label>
-                        <input type="text" class="form-control form-control-sm" data-bind="value: evaluationsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, personel, çağrı ID...")">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Common.Status", "Durum")</label>
-                        <select class="form-select form-select-sm" data-bind="value: evaluationsStatusFilter">
-                            <option value="">@Html.T("Common.All", "Tümü")</option>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Filter Type Select -->
+                    <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalSelectedFilterType">
+                        <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
+                        <option value="search">@Html.T("Common.Search", "Arama")</option>
+                        <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
+                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                    </select>
+
+                    <!-- ko if: evalSelectedFilterType() === 'status' -->
+                    <!-- Status Filter Input -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalTempFilter.status">
+                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
                             <option value="Completed">@Html.T("Common.Status.Completed", "Tamamlandı")</option>
                             <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Ediyor")</option>
                         </select>
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.DateFrom", "Başlangıç")</label>
-                        <input type="date" class="form-control form-control-sm" data-bind="value: evaluationsDateFrom">
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'search' -->
+                    <!-- Search Filter Input -->
+                    <div class="d-flex gap-1">
+                        <input type="text" class="form-control form-control-sm" style="width: 200px;"
+                               data-bind="value: evalTempFilter.searchTerm, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Evaluation.SearchPlaceholder", "Proje, personel, çağrı ID...")">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label small mb-1">@Html.T("Evaluation.DateTo", "Bitiş")</label>
-                        <input type="date" class="form-control form-control-sm" data-bind="value: evaluationsDateTo">
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'personnel' -->
+                    <!-- Personnel Filter Input -->
+                    <div class="d-flex gap-1">
+                        <input type="text" class="form-control form-control-sm" style="width: 200px;" autocomplete="off"
+                               data-bind="value: evalTempFilter.personnelName, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Evaluation.PersonnelPlaceholder", "Temsilci adı...")">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end justify-content-end gap-1">
-                        <button class="btn btn-sm btn-outline-secondary" data-bind="click: clearEvaluationsFilters" title="@Html.T("Common.ClearFilters", "Filtreleri Temizle")">
-                            <i class="bi bi-x-circle"></i>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'project' -->
+                    <!-- Project Filter Input -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto; min-width: 200px;" data-bind="value: evalTempFilter.projectName">
+                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
+                            <!-- ko foreach: availableProjects -->
+                            <option data-bind="value: $data, text: $data"></option>
+                            <!-- /ko -->
+                        </select>
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'dateRange' -->
+                    <!-- Date Range Filter Input -->
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <span data-bind="text: evalTempFilter.selectedDateRangeType() ? evalDateRanges.find(function(r) { return r.systemName === evalTempFilter.selectedDateRangeType(); })?.name : '@Html.T("Common.QuickSelect", "Hızlı Seç")'"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <!-- ko foreach: evalDateRanges -->
+                                <li><a class="dropdown-item" href="#" data-bind="text: name, click: function() { $parent.evalSetTempDateRange(systemName); }"></a></li>
+                                <!-- /ko -->
+                            </ul>
+                        </div>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.startDate">
+                        <span class="text-muted">-</span>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.endDate">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Active Filter Chips -->
+                    <!-- ko foreach: evalActiveFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" data-bind="click: $parent.evalRemoveFilter"></button>
+                    </span>
+                    <!-- /ko -->
+
+                    <!-- Clear All & Count -->
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" data-bind="visible: evalActiveFilters().length > 0, click: evalClearFilters">
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Temizle")
                         </button>
                         <span class="text-muted small" data-bind="text: allEvaluationsList().length + ' kayıt'"></span>
                     </div>
-                </div>
-                <!-- Date Range Shortcuts -->
-                <div class="d-flex flex-wrap gap-1 mt-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('today'); }">@Html.T("Common.Today", "Bugün")</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dün")</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setEvaluationsDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
                 </div>
             </div>
         </div>

@@ -7885,7 +7885,10 @@
     <Value>Değerlendirmeler</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
-    <Value>Soru Grubu Ortalama Raporu</Value>
+    <Value>Soru Grubu Ortalama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Sheet.QuestionAverage">
+    <Value>Soru Bazlı Ortalama</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.ProjectPerformance">
     <Value>Proje Performans Raporu</Value>

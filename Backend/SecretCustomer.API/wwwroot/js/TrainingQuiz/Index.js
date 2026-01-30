@@ -422,6 +422,16 @@
             }
         };
 
+        // Tek dogru cevap secimi - radio button mantigi
+        self.setCorrectOption = function (question, selectedOption) {
+            // Tum seceneklerin isCorrect'ini false yap
+            question.options().forEach(function (opt) {
+                opt.isCorrect(false);
+            });
+            // Sadece secilen secenegin isCorrect'ini true yap
+            selectedOption.isCorrect(true);
+        };
+
         // ===== Responses Modal =====
 
         self.openResponsesModal = function (quiz) {

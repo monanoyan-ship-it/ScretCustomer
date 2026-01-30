@@ -2,6 +2,7 @@
     Layout = "_LayoutPopup";
     var assignmentId = ViewBag.AssignmentId;
     var evaluationId = ViewBag.EvaluationId;
+    var isInternal = ViewBag.IsInternal ?? false;
     var isNew = assignmentId != null;
     ViewData["Title"] = isNew ? Html.T("Evaluation.NewEvaluation", "Yeni Değerlendirme") :
                         Html.T("Evaluation.EditEvaluation", "Değerlendirme Düzenle");
@@ -735,6 +736,7 @@
         assignmentId: @(assignmentId != null ? assignmentId.ToString() : "null"),
         evaluationId: @(evaluationId != null ? evaluationId.ToString() : "null"),
         isNew: @(isNew ? "true" : "false"),
+        isInternal: @(isInternal ? "true" : "false"),
         scoringMethod: 'Maximum'
     };
 </script>

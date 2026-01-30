@@ -748,17 +748,17 @@ function CustomerOrganizationsViewModel() {
 
         self.editingPersonnel({
             customerId: self.selectedCustomer().id,
-            username: '',
-            email: '',
-            password: '',
-            firstName: '',
-            lastName: '',
-            phoneNumber: '',
-            department: '',
-            title: '',
-            role: '',
-            isActive: true,
-            notes: ''
+            username: ko.observable(''),
+            email: ko.observable(''),
+            password: ko.observable(''),
+            firstName: ko.observable(''),
+            lastName: ko.observable(''),
+            phoneNumber: ko.observable(''),
+            department: ko.observable(''),
+            title: ko.observable(''),
+            role: ko.observable(''),
+            isActive: ko.observable(true),
+            notes: ko.observable('')
         });
         self.isPersonnelModalOpen(true);
     };
@@ -772,25 +772,33 @@ function CustomerOrganizationsViewModel() {
         var personnel = self.editingPersonnel();
         if (!personnel) return;
 
+        // Observable değerlerini oku
+        var username = personnel.username();
+        var email = personnel.email();
+        var firstName = personnel.firstName();
+        var lastName = personnel.lastName();
+        var password = personnel.password();
+        var role = personnel.role();
+
         // Validation
-        if (!personnel.username || !personnel.email || !personnel.firstName || !personnel.lastName) {
+        if (!username || !email || !firstName || !lastName) {
             toastr.error('Kullanıcı adı, e-posta, ad ve soyad zorunludur.');
             return;
         }
 
         // Username format validation
         var usernameRegex = /^[a-zA-Z0-9_.-]+$/;
-        if (!usernameRegex.test(personnel.username)) {
+        if (!usernameRegex.test(username)) {
             toastr.error('Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir.');
             return;
         }
 
-        if (!personnel.password || personnel.password.length < 6) {
+        if (!password || password.length < 6) {
             toastr.error('Şifre en az 6 karakter olmalıdır.');
             return;
         }
 
-        if (!personnel.role) {
+        if (!role) {
             toastr.error('Rol seçimi zorunludur.');
             return;
         }
@@ -798,7 +806,7 @@ function CustomerOrganizationsViewModel() {
         self.isSavingPersonnel(true);
 
         // Check username uniqueness
-        fetch('/api/customer-personnel/check-username/' + encodeURIComponent(personnel.username), { credentials: 'include' })
+        fetch('/api/customer-personnel/check-username/' + encodeURIComponent(username), { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 if (data.exists) {
@@ -807,7 +815,7 @@ function CustomerOrganizationsViewModel() {
                     return Promise.reject('username_exists');
                 }
                 // Check email
-                return fetch('/api/customer-personnel/check-email/' + encodeURIComponent(personnel.email), { credentials: 'include' });
+                return fetch('/api/customer-personnel/check-email/' + encodeURIComponent(email), { credentials: 'include' });
             })
             .then(function(response) { return response.json(); })
             .then(function(data) {
@@ -830,17 +838,17 @@ function CustomerOrganizationsViewModel() {
     self.doSavePersonnel = function(personnel) {
         var dataToSend = {
             customerId: personnel.customerId,
-            username: personnel.username,
-            email: personnel.email,
-            password: personnel.password,
-            firstName: personnel.firstName,
-            lastName: personnel.lastName,
-            phoneNumber: personnel.phoneNumber || null,
-            department: personnel.department || null,
-            title: personnel.title || null,
-            role: parseInt(personnel.role, 10),
-            isActive: personnel.isActive,
-            notes: personnel.notes || null
+            username: personnel.username(),
+            email: personnel.email(),
+            password: personnel.password(),
+            firstName: personnel.firstName(),
+            lastName: personnel.lastName(),
+            phoneNumber: personnel.phoneNumber() || null,
+            department: personnel.department() || null,
+            title: personnel.title() || null,
+            role: personnel.role(), // String olarak gönder: "CustomerManager", "CustomerSupervisor", "CustomerOperator"
+            isActive: personnel.isActive(),
+            notes: personnel.notes() || null
             // organizationId is intentionally NOT sent - personnel will have no organization
         };
 

@@ -1,3 +1,4 @@
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.DTOs.TrainingQuiz;
 
 namespace SecretCustomer.Core.Interfaces.Services;
@@ -32,6 +33,7 @@ public interface ITrainingQuizService
     // Quiz yanıtları (Admin)
     Task<IEnumerable<TrainingQuizResponseListDto>> GetResponsesAsync(TrainingQuizResponseFilterDto? filter = null);
     Task<TrainingQuizResponseDto?> GetResponseByIdAsync(int responseId);
+    Task<ExcelExportDto> ExportResponsesAsync(TrainingQuizResponseFilterDto? filter = null);
 
     // Video quiz durumu
     Task<VideoQuizStatusDto> GetVideoQuizStatusAsync(int videoId, int? participantId = null, int? externalParticipantId = null);

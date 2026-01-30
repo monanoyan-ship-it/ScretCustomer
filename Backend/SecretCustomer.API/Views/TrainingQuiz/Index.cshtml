@@ -272,8 +272,10 @@
                                                 <div data-bind="foreach: options" class="options-list">
                                                     <div class="input-group input-group-sm mb-1">
                                                         <span class="input-group-text bg-secondary text-white justify-content-center fw-bold" style="width: 40px;" data-bind="text: $index() + 1"></span>
-                                                        <span class="input-group-text bg-light justify-content-center" style="width: 70px;">
-                                                            <input type="checkbox" class="form-check-input" data-bind="checked: isCorrect" title="Bu secenek dogru cevap mi?">
+                                                        <span class="input-group-text justify-content-center" style="width: 70px;" data-bind="css: { 'bg-success-subtle': isCorrect(), 'bg-light': !isCorrect() }">
+                                                            <input type="radio" class="form-check-input"
+                                                                   data-bind="checked: isCorrect, checkedValue: true, click: function() { $parents[1].setCorrectOption($parent, $data); return true; }"
+                                                                   title="Bu secenek dogru cevap">
                                                         </span>
                                                         <input type="text" class="form-control" data-bind="value: text" placeholder="Secenek metni...">
                                                         <input type="number" class="form-control text-center" style="width: 70px; max-width: 70px;" data-bind="value: weightPoints" placeholder="0" title="Bu secenek secildiginde kazanilacak puan">
@@ -283,8 +285,7 @@
                                                     </div>
                                                 </div>
                                                 <small class="text-muted d-block mt-1">
-                                                    <i class="bi bi-info-circle"></i> <strong>Dogru:</strong> Dogru cevaplari isaretleyin | <strong>Puan:</strong> Secildiginde alinacak puan (yanlis icin 0 veya negatif)
-                                                </small>
+                                                    <i class="bi bi-info-circle"></i> <strong>Dogru:</strong> Her soru icin TEK dogru cevap secin | <strong>Puan:</strong> Secildiginde alinacak puan
                                             </div>
                                         </div>
                                     </div>

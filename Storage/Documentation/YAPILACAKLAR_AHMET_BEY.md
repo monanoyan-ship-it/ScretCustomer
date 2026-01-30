@@ -189,10 +189,26 @@
 
 ---
 
-### 19. Eğitim Videoları - Anket
-**Durum:** ⏸️ Beklemede (Müşteriye soruldu)
+### 19. Eğitim Videoları - Anket (Quiz) Sistemi
+**Durum:** 🚧 Devam Ediyor
 **Sorunlar:**
-- [ ] Eğitim videolarına anket soru eklenebilir mi? - **SORU: Yeni özellik mi?** --Eğitim videolarında izleme hakkı bitince anlaşıldı mı diye anket yapmak istiyorlar. Bu yeni bir özellik ve daha sonraya planlanacak. Planlanan işler dosyasına eklenmeli.
+- [x] Entity'ler oluşturuldu: TrainingQuiz, TrainingQuizQuestion, TrainingQuizOption, TrainingQuizResponse, TrainingQuizAnswer
+- [x] DTO'lar oluşturuldu
+- [x] Service (TrainingQuizService) oluşturuldu
+- [x] API Controller'lar oluşturuldu
+- [x] Admin UI (/TrainingQuiz) oluşturuldu - Quiz yönetimi
+- [x] Video'ya quiz atama (dropdown ile)
+- [x] İç katılımcı quiz sayfası (/CustomerPortal/TrainingQuiz/{participantId})
+- [x] Dış katılımcı quiz sayfası (/Training/Quiz/{token})
+- [x] Dış katılımcı video tamamlandığında modal (Anketi Doldur / Tekrar İzle)
+- [x] Atama listesine İç/Dış tip ayrımı eklendi (IsExternal alanı + Tip sütunu + filtre)
+- [ ] Quiz JS dosyası (Training/Quiz.js) - Soru gösterme ve cevaplama mantığı
+- [ ] Quiz sonuç hesaplama ve kaydetme
+- [ ] Test
+
+**Son Commit:** `809bf8d` - Atama listesine İç/Dış tip ayrımı eklendi
+
+**Plan Dosyası:** `~/.claude/plans/composed-greeting-muffin.md`
 
 ---
 
@@ -319,7 +335,7 @@
 ## Özet
 
 | Durum | Adet | Numaralar |
-|-------|------|-----------|
+|-------|------|-----------|    
 | ✅ Tamamlandı | 15 | 1, 3, 5, 8, 10, 12, 13, 15, 22, 27, 28, 29 |
 | ⏸️ Müşteriye sorulacak | 14 | 2, 4, 6, 7, 9, 11, 14, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26 |
 
