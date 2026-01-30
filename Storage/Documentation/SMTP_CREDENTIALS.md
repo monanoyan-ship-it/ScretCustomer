@@ -1,6 +1,6 @@
-# Office 365 SMTP OAuth 2.0 Credentials
+# Office 365 Email Credentials (Microsoft Graph API)
 
-> **DIKKAT:** Bu dosya hassas bilgiler icerir. Git'e commit etmeyin veya .gitignore'a ekleyin!
+> **DURUM:** ✅ CALISIYOR (30.01.2025 tarihinde test edildi)
 
 ## Azure App Registration Bilgileri
 
@@ -12,51 +12,52 @@
 | **Client Secret** | `~u68Q~G.4uNaMnL4V3cvb3qS6G13wKk-Pbx-JbxW` |
 | **Secret Suresi** | 30.01.2028 |
 
-## SMTP Ayarlari (Uygulamada kullanilacak)
+## Kullanilan Yontem
+
+**Microsoft Graph API** kullaniliyor (SMTP degil).
+
+SMTP AUTH, Microsoft 365 tenant seviyesinde devre disi oldugu icin Graph API tercih edildi.
+
+## Uygulama Ayarlari
 
 | Ayar | Deger |
 |------|-------|
-| **Host** | `smtp.office365.com` |
-| **Port** | `587` |
-| **Use SSL** | `true` (StartTLS) |
-| **Use OAuth** | `true` |
-| **Username** | (Mail gonderecek hesabin email adresi) |
-| **From Email** | (Mail gonderecek hesabin email adresi) |
+| **Kullanici Adi / Email** | `akademi@ncacademy.com.tr` |
+| **Gonderen Email** | `akademi@ncacademy.com.tr` |
+| **Gonderen Adi** | `NCAcademy` |
+| **Microsoft Graph API Kullan** | `true` (acik) |
+| **OAuth 2.0** | `true` (acik) |
 
-## API Izinleri (Admin Consent Gerekli)
+## API Izinleri (Admin Consent Verildi ✅)
 
-- `Mail.Read` - Read mail in all mailboxes
-- `Mail.ReadWrite` - Read and write mail in all mailboxes
-- `Mail.Send` - Send mail as any user
+### Microsoft Graph
+- `Mail.Send` - Send mail as any user ✅
+- `User.Read` - Sign in and read user profile ✅
+
+### Office 365 Exchange Online
+- `Mail.Read` - Read mail in all mailboxes ✅
+- `Mail.ReadWrite` - Read and write mail in all mailboxes ✅
+- `Mail.Send` - Send mail as any user ✅
 
 ## Admin Consent Link
 
-Yonetici onay linki:
+Yonetici onay linki (gerektiginde):
 ```
 https://login.microsoftonline.com/9920645c-ae65-495d-9729-a8ac77612e14/adminconsent?client_id=ba252731-6552-44a0-a41f-dc1c093d76e2
 ```
 
-## Veritabaninda Kaydedilecek SystemSettings Kayitlari
+## Onemli Notlar
 
-```sql
--- SMTP OAuth 2.0 ayarlari
-INSERT INTO "SystemSettings" ("Key", "Value", "Description") VALUES
-('Smtp.Host', 'smtp.office365.com', 'SMTP sunucu adresi'),
-('Smtp.Port', '587', 'SMTP port'),
-('Smtp.Username', 'EMAIL_ADRESI_BURAYA', 'SMTP kullanici adi (email)'),
-('Smtp.Password', '', 'OAuth kullanildiginda bos birakilir'),
-('Smtp.UseSsl', 'true', 'SSL/TLS kullan'),
-('Smtp.FromEmail', 'EMAIL_ADRESI_BURAYA', 'Gonderen email adresi'),
-('Smtp.FromName', 'Secret Customer', 'Gonderen adi'),
-('Smtp.Enabled', 'true', 'SMTP aktif mi'),
-('Smtp.UseOAuth', 'true', 'OAuth 2.0 kullan'),
-('Smtp.TenantId', '9920645c-ae65-495d-9729-a8ac77612e14', 'Azure Tenant ID'),
-('Smtp.ClientId', 'ba252731-6552-44a0-a41f-dc1c093d76e2', 'Azure Client ID'),
-('Smtp.ClientSecret', '~u68Q~G.4uNaMnL4V3cvb3qS6G13wKk-Pbx-JbxW', 'Azure Client Secret');
-```
+1. **Graph API kullaniliyor** - SMTP AUTH tenant'ta kapali oldugu icin Graph API tercih edildi
+2. **Client Secret 30.01.2028'de sona erecek** - Bu tarihten once yenilenmeli
+3. **Admin onaylari verildi** - Newfound Creative Academy icin tum izinler onaylandi
+4. **Ayarlar uygulamada yapildi** - http://45.84.191.28/Settings/Smtp adresinden yonetiliyor
 
-## Notlar
+## Sorun Giderme
 
-1. Admin consent onaylanmadan mail gonderilemez
-2. Client Secret 30.01.2028 tarihinde sona erecek, yenilenmelidir
-3. Mail gondermek icin kullanilacak email adresi Azure AD'de tanimli olmalidir
+SMTP AUTH hatasi alinirsa (`SmtpClientAuthentication is disabled for the Tenant`):
+- Graph API kullanildiginden emin ol (uygulamada "Microsoft Graph API Kullan" acik olmali)
+- SMTP yerine Graph API secili olmali
+
+Azure Portal linki:
+https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/ba252731-6552-44a0-a41f-dc1c093d76e2

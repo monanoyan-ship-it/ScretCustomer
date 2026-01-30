@@ -85,7 +85,3 @@ Storage/ScreenShots/
 # Local test migrations (commit edilmeyecek)
 **/Migrations/*LocalTest*
 
-# Sensitive credentials (SMTP, API keys, etc.)
-Storage/Documentation/SMTP_CREDENTIALS.md
-**/CREDENTIALS*.md
-**/SECRETS*.md
