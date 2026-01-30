@@ -41,7 +41,7 @@
 
         self.loadVideoInfo = function () {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN,
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN,
                 method: 'GET',
                 success: function (data) {
                     self.videoInfo(data);
@@ -138,7 +138,7 @@
 
         self.saveProgress = function (watchedSeconds, isVideoEnded) {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/progress',
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/progress',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -169,7 +169,7 @@
         self.saveProgressSync = function (watchedSeconds, isVideoEnded) {
             // Synchronous save for beforeunload
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/training-videos/external/' + VIDEO_TOKEN + '/progress', false);
+            xhr.open('POST', '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/progress', false);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 watchedSeconds: watchedSeconds,
@@ -181,7 +181,7 @@
         self.checkCompletion = function () {
             // Reload video info to get updated completion status
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN,
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN,
                 method: 'GET',
                 success: function (data) {
                     self.videoInfo(data);
@@ -197,7 +197,7 @@
 
         self.loadQuizStatus = function () {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/quiz',
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/quiz',
                 method: 'GET',
                 success: function (data) {
                     var isPassed = data.lastAttemptResult && data.lastAttemptResult.isPassed;
@@ -229,7 +229,7 @@
 
         self.checkAndRedirectToQuiz = function () {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/quiz',
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/quiz',
                 method: 'GET',
                 success: function (data) {
                     // Quiz zaten gecilmis mi?

@@ -111,7 +111,7 @@
             <i class="bi bi-clock-history text-warning" style="font-size: 4rem;"></i>
             <h4 class="mt-3">Sure Doldu</h4>
             <p class="text-muted">Bu egitim videosunun izleme suresi dolmustur.</p>
-            <p><strong>Son Tarih:</strong> <span data-bind="text: formatDate(videoInfo().dueDate)"></span></p>
+            <p><strong>Son Tarih:</strong> <span data-bind="text: videoInfo() ? formatDate(videoInfo().dueDate) : '-'"></span></p>
         </div>
 
         <!-- Video Content -->
@@ -124,7 +124,7 @@
                         <small class="text-muted" data-bind="text: videoInfo() ? videoInfo().assignmentTitle : ''"></small>
                     </div>
                     <div data-bind="visible: videoInfo() && videoInfo().participantName">
-                        <span class="badge bg-primary"><i class="bi bi-person me-1"></i><span data-bind="text: videoInfo().participantName"></span></span>
+                        <span class="badge bg-primary"><i class="bi bi-person me-1"></i><span data-bind="text: videoInfo() ? videoInfo().participantName : ''"></span></span>
                     </div>
                 </div>
             </div>
@@ -150,7 +150,7 @@
             <div class="video-info">
                 <!-- Description -->
                 <div data-bind="visible: videoInfo() && videoInfo().videoDescription">
-                    <p class="text-muted mb-3" data-bind="text: videoInfo().videoDescription"></p>
+                    <p class="text-muted mb-3" data-bind="text: videoInfo() ? videoInfo().videoDescription : ''"></p>
                 </div>
 
                 <!-- Progress Info -->
@@ -181,12 +181,12 @@
                 <!-- Quiz Button -->
                 <div data-bind="visible: quizStatus() && quizStatus().hasQuiz" class="mt-3 pt-3 border-top">
                     <!-- Quiz tamamlanmamis -->
-                    <div data-bind="visible: !(quizStatus().isPassed)">
+                    <div data-bind="visible: quizStatus() && !quizStatus().isPassed">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
                                 <i class="bi bi-clipboard-check text-primary me-2"></i>
                                 <span>Bu egitim icin bir anket bulunuyor</span>
-                                <!-- ko if: quizStatus().isRequired -->
+                                <!-- ko if: quizStatus() && quizStatus().isRequired -->
                                 <span class="badge bg-warning ms-2">Zorunlu</span>
                                 <!-- /ko -->
                             </div>
@@ -196,12 +196,12 @@
                         </div>
                     </div>
                     <!-- Quiz tamamlanmis -->
-                    <div data-bind="visible: quizStatus().isPassed">
+                    <div data-bind="visible: quizStatus() && quizStatus().isPassed">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
                                 <i class="bi bi-check-circle-fill text-success me-2"></i>
                                 <span>Anket tamamlandi</span>
-                                <span class="badge bg-success ms-2" data-bind="text: '%' + quizStatus().lastScore"></span>
+                                <span class="badge bg-success ms-2" data-bind="text: quizStatus() ? '%' + quizStatus().lastScore : ''"></span>
                             </div>
                         </div>
                     </div>

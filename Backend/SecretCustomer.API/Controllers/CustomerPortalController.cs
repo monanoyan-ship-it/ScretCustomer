@@ -89,27 +89,27 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// Proje bazlı sonuçlar (sadece CustomerManager)
+    /// Proje bazlı sonuçlar (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Projects()
     {
         return View();
     }
 
     /// <summary>
-    /// Organizasyonlar/Şubeler (sadece CustomerManager)
+    /// Organizasyonlar/Şubeler (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Organizations()
     {
         return View();
     }
 
     /// <summary>
-    /// Süpervizörler (sadece CustomerManager)
+    /// Süpervizörler (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Supervisors()
     {
         return View();

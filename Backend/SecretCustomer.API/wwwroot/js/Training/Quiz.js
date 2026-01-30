@@ -57,7 +57,7 @@
 
         self.loadExternalQuiz = function () {
             $.ajax({
-                url: '/api/training-videos/external/' + PARTICIPANT_TOKEN + '/quiz',
+                url: '/api/training-video-assignments/external/' + PARTICIPANT_TOKEN + '/quiz',
                 method: 'GET',
                 success: function (data) {
                     self.quizData(data);
@@ -115,7 +115,7 @@
 
         self.startQuiz = function () {
             var url = IS_EXTERNAL
-                ? '/api/training-videos/external/' + PARTICIPANT_TOKEN + '/quiz/start'
+                ? '/api/training-video-assignments/external/' + PARTICIPANT_TOKEN + '/quiz/start'
                 : '/api/training-videos/participant/' + PARTICIPANT_ID + '/quiz/start';
 
             $.ajax({
@@ -236,7 +236,7 @@
             };
 
             var url = IS_EXTERNAL
-                ? '/api/training-videos/external/' + PARTICIPANT_TOKEN + '/quiz/submit'
+                ? '/api/training-video-assignments/external/' + PARTICIPANT_TOKEN + '/quiz/submit'
                 : '/api/training-videos/participant/' + PARTICIPANT_ID + '/quiz/submit';
 
             $.ajax({
