@@ -91,6 +91,7 @@ var EnumsService = (function() {
     }
 
     // SelectList icin options olustur (KnockoutJS icin)
+    // systemName: String value (backend icin), id: numeric (fallback)
     function toSelectOptions(enumArray) {
         if (!enumArray) return [];
         return enumArray.map(function(item) {
@@ -98,6 +99,7 @@ var EnumsService = (function() {
             var name = item.displayName || (typeof T === 'function' ? T(item.nameKey, item.nameKey.split('.').pop()) : item.nameKey.split('.').pop());
             return {
                 id: item.id,
+                systemName: item.systemName,
                 name: name
             };
         });

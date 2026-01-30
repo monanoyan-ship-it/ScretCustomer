@@ -3,40 +3,30 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using MimeKit;
+using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace SecretCustomer.Services.Services;
 
 /// <summary>
-/// SMTP üzerinden email gönderme servisi (OAuth 2.0 destekli)
+/// SMTP üzerinden email gönderme servisi (OAuth 2.0 ve Microsoft Graph API destekli, çoklu profil)
 /// </summary>
 public class SmtpEmailService : IEmailService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SmtpEmailService> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    // SMTP ayar key'leri
-    private const string KEY_HOST = "Smtp.Host";
-    private const string KEY_PORT = "Smtp.Port";
-    private const string KEY_USERNAME = "Smtp.Username";
-    private const string KEY_PASSWORD = "Smtp.Password";
-    private const string KEY_USE_SSL = "Smtp.UseSsl";
-    private const string KEY_FROM_EMAIL = "Smtp.FromEmail";
-    private const string KEY_FROM_NAME = "Smtp.FromName";
-    private const string KEY_ENABLED = "Smtp.Enabled";
-
-    // OAuth 2.0 ayar key'leri
-    private const string KEY_USE_OAUTH = "Smtp.UseOAuth";
-    private const string KEY_TENANT_ID = "Smtp.TenantId";
-    private const string KEY_CLIENT_ID = "Smtp.ClientId";
-    private const string KEY_CLIENT_SECRET = "Smtp.ClientSecret";
-
-    public SmtpEmailService(ApplicationDbContext context, ILogger<SmtpEmailService> logger)
+    public SmtpEmailService(ApplicationDbContext context, ILogger<SmtpEmailService> logger, IHttpClientFactory httpClientFactory)
     {
         _context = context;
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task<EmailResult> SendEmailAsync(string to, string subject, string body, bool isHtml = true)
@@ -77,22 +67,146 @@ public class SmtpEmailService : IEmailService
     {
         try
         {
-            var settings = await GetSmtpSettingsAsync();
-            if (settings == null)
+            var profile = await GetDefaultProfileAsync();
+            if (profile == null)
             {
                 return EmailResult.Fail("SMTP ayarları yapılandırılmamış.");
             }
 
-            if (!settings.Enabled)
+            if (!profile.Enabled)
             {
                 _logger.LogWarning("SMTP devre dışı, mail gönderilmedi: {Subject}", message.Subject);
                 return EmailResult.Fail("SMTP servisi devre dışı.");
             }
 
+            return await SendEmailWithProfileAsync(profile, message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Email gönderilirken hata oluştu: {To}", string.Join(",", message.To));
+            return EmailResult.Fail($"Email gönderilemedi: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Belirli bir profil ile email gönderir (controller'dan profil-specific gönderim için)
+    /// </summary>
+    public async Task<EmailResult> SendEmailWithProfileAsync(SmtpProfile profile, EmailMessage message)
+    {
+        // Microsoft Graph API kullan
+        if (profile.UseOAuth && profile.UseGraphApi && !string.IsNullOrEmpty(profile.ClientId))
+        {
+            return await SendEmailWithGraphApiAsync(profile, message);
+        }
+
+        // SMTP ile gönder
+        return await SendEmailWithSmtpAsync(profile, message);
+    }
+
+    /// <summary>
+    /// Microsoft Graph API ile email gönderir
+    /// </summary>
+    private async Task<EmailResult> SendEmailWithGraphApiAsync(SmtpProfile profile, EmailMessage message)
+    {
+        try
+        {
+            var accessToken = await GetGraphApiTokenAsync(profile);
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            // Graph API email payload
+            var emailPayload = new
+            {
+                message = new
+                {
+                    subject = message.Subject,
+                    body = new
+                    {
+                        contentType = message.IsHtml ? "HTML" : "Text",
+                        content = message.Body
+                    },
+                    from = new
+                    {
+                        emailAddress = new
+                        {
+                            address = profile.FromEmail,
+                            name = profile.FromName ?? "Secret Customer"
+                        }
+                    },
+                    toRecipients = message.To.Select(to => new
+                    {
+                        emailAddress = new { address = to }
+                    }).ToArray(),
+                    ccRecipients = message.Cc.Select(cc => new
+                    {
+                        emailAddress = new { address = cc }
+                    }).ToArray(),
+                    bccRecipients = message.Bcc.Select(bcc => new
+                    {
+                        emailAddress = new { address = bcc }
+                    }).ToArray(),
+                    replyTo = string.IsNullOrEmpty(message.ReplyTo) ? null : new[]
+                    {
+                        new { emailAddress = new { address = message.ReplyTo } }
+                    },
+                    attachments = message.Attachments.Select(att => new
+                    {
+                        @odata_type = "#microsoft.graph.fileAttachment",
+                        name = att.FileName,
+                        contentType = att.ContentType,
+                        contentBytes = Convert.ToBase64String(att.Content)
+                    }).ToArray()
+                },
+                saveToSentItems = true
+            };
+
+            var json = JsonSerializer.Serialize(emailPayload, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            });
+
+            // @odata.type düzeltmesi (JsonSerializer camelCase yapıyor)
+            json = json.Replace("\"odataType\"", "\"@odata.type\"");
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Graph API endpoint - kullanıcı adına email gönder
+            var graphUrl = $"https://graph.microsoft.com/v1.0/users/{profile.FromEmail}/sendMail";
+
+            var response = await httpClient.PostAsync(graphUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Email gönderildi (Graph API - {ProfileName}): {To}, Subject: {Subject}",
+                    profile.Name, string.Join(",", message.To), message.Subject);
+                return EmailResult.Ok();
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Graph API hatası ({ProfileName}): {StatusCode} - {Error}",
+                profile.Name, response.StatusCode, errorContent);
+            return EmailResult.Fail($"Graph API hatası: {response.StatusCode} - {errorContent}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Graph API ile email gönderilirken hata oluştu ({ProfileName}): {To}",
+                profile.Name, string.Join(",", message.To));
+            return EmailResult.Fail($"Graph API hatası: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// SMTP ile email gönderir
+    /// </summary>
+    private async Task<EmailResult> SendEmailWithSmtpAsync(SmtpProfile profile, EmailMessage message)
+    {
+        try
+        {
             var mimeMessage = new MimeMessage();
 
             // From
-            mimeMessage.From.Add(new MailboxAddress(settings.FromName, settings.FromEmail));
+            mimeMessage.From.Add(new MailboxAddress(profile.FromName ?? "Secret Customer", profile.FromEmail));
 
             // To
             foreach (var to in message.To)
@@ -143,160 +257,210 @@ public class SmtpEmailService : IEmailService
             // Send
             using var client = new SmtpClient();
 
-            var secureSocketOptions = settings.UseSsl
+            var secureSocketOptions = profile.UseSsl
                 ? SecureSocketOptions.StartTls
                 : SecureSocketOptions.Auto;
 
-            await client.ConnectAsync(settings.Host, settings.Port, secureSocketOptions);
+            await client.ConnectAsync(profile.Host, profile.Port, secureSocketOptions);
 
             // OAuth 2.0 veya Basic Auth ile kimlik doğrulama
-            if (settings.UseOAuth && !string.IsNullOrEmpty(settings.ClientId))
+            if (profile.UseOAuth && !string.IsNullOrEmpty(profile.ClientId))
             {
-                var accessToken = await GetOAuthTokenAsync(settings);
-                var oauth2 = new SaslMechanismOAuth2(settings.Username, accessToken);
+                var accessToken = await GetSmtpOAuthTokenAsync(profile);
+                var oauth2 = new SaslMechanismOAuth2(profile.Username, accessToken);
                 await client.AuthenticateAsync(oauth2);
                 _logger.LogDebug("OAuth 2.0 ile kimlik doğrulama yapıldı");
             }
-            else if (!string.IsNullOrEmpty(settings.Username))
+            else if (!string.IsNullOrEmpty(profile.Username))
             {
-                await client.AuthenticateAsync(settings.Username, settings.Password);
+                await client.AuthenticateAsync(profile.Username, profile.Password);
             }
 
             var messageId = await client.SendAsync(mimeMessage);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("Email gönderildi: {To}, Subject: {Subject}", string.Join(",", message.To), message.Subject);
+            _logger.LogInformation("Email gönderildi (SMTP - {ProfileName}): {To}, Subject: {Subject}",
+                profile.Name, string.Join(",", message.To), message.Subject);
 
             return EmailResult.Ok(messageId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Email gönderilirken hata oluştu: {To}", string.Join(",", message.To));
+            _logger.LogError(ex, "SMTP ile email gönderilirken hata oluştu ({ProfileName}): {To}",
+                profile.Name, string.Join(",", message.To));
             return EmailResult.Fail($"Email gönderilemedi: {ex.Message}");
         }
     }
 
     public async Task<EmailResult> TestConnectionAsync()
     {
+        var profile = await GetDefaultProfileAsync();
+        if (profile == null)
+        {
+            return EmailResult.Fail("SMTP ayarları yapılandırılmamış.");
+        }
+
+        return await TestConnectionWithProfileAsync(profile);
+    }
+
+    /// <summary>
+    /// Belirli bir profil ile bağlantı testi yapar
+    /// </summary>
+    public async Task<EmailResult> TestConnectionWithProfileAsync(SmtpProfile profile)
+    {
+        // Graph API testi
+        if (profile.UseOAuth && profile.UseGraphApi && !string.IsNullOrEmpty(profile.ClientId))
+        {
+            return await TestGraphApiConnectionAsync(profile);
+        }
+
+        // SMTP testi
+        return await TestSmtpConnectionAsync(profile);
+    }
+
+    /// <summary>
+    /// Microsoft Graph API bağlantı testi
+    /// </summary>
+    private async Task<EmailResult> TestGraphApiConnectionAsync(SmtpProfile profile)
+    {
         try
         {
-            var settings = await GetSmtpSettingsAsync();
-            if (settings == null)
+            // Token alabiliyorsak bağlantı başarılı
+            var accessToken = await GetGraphApiTokenAsync(profile);
+
+            // Opsiyonel: Kullanıcı bilgisini kontrol et
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await httpClient.GetAsync($"https://graph.microsoft.com/v1.0/users/{profile.FromEmail}");
+
+            if (response.IsSuccessStatusCode)
             {
-                return EmailResult.Fail("SMTP ayarları yapılandırılmamış.");
+                _logger.LogInformation("Graph API bağlantı testi başarılı ({ProfileName}): {FromEmail}",
+                    profile.Name, profile.FromEmail);
+                return EmailResult.Ok();
             }
 
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Graph API kullanıcı doğrulama hatası ({ProfileName}): {Error}", profile.Name, errorContent);
+
+            // Token alındıysa bağlantı başarılı sayılabilir, kullanıcı erişimi ayrı bir konu
+            return EmailResult.Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Graph API bağlantı testi başarısız ({ProfileName})", profile.Name);
+            return EmailResult.Fail($"Graph API bağlantı hatası: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// SMTP bağlantı testi
+    /// </summary>
+    private async Task<EmailResult> TestSmtpConnectionAsync(SmtpProfile profile)
+    {
+        try
+        {
             using var client = new SmtpClient();
 
-            var secureSocketOptions = settings.UseSsl
+            var secureSocketOptions = profile.UseSsl
                 ? SecureSocketOptions.StartTls
                 : SecureSocketOptions.Auto;
 
-            await client.ConnectAsync(settings.Host, settings.Port, secureSocketOptions);
+            await client.ConnectAsync(profile.Host, profile.Port, secureSocketOptions);
 
             // OAuth 2.0 veya Basic Auth ile kimlik doğrulama
-            if (settings.UseOAuth && !string.IsNullOrEmpty(settings.ClientId))
+            if (profile.UseOAuth && !string.IsNullOrEmpty(profile.ClientId))
             {
-                var accessToken = await GetOAuthTokenAsync(settings);
-                var oauth2 = new SaslMechanismOAuth2(settings.Username, accessToken);
+                var accessToken = await GetSmtpOAuthTokenAsync(profile);
+                var oauth2 = new SaslMechanismOAuth2(profile.Username, accessToken);
                 await client.AuthenticateAsync(oauth2);
                 _logger.LogDebug("OAuth 2.0 ile bağlantı testi yapıldı");
             }
-            else if (!string.IsNullOrEmpty(settings.Username))
+            else if (!string.IsNullOrEmpty(profile.Username))
             {
-                await client.AuthenticateAsync(settings.Username, settings.Password);
+                await client.AuthenticateAsync(profile.Username, profile.Password);
             }
 
             await client.DisconnectAsync(true);
 
-            var authMethod = settings.UseOAuth ? "OAuth 2.0" : "Basic Auth";
-            _logger.LogInformation("SMTP bağlantı testi başarılı: {Host}:{Port} ({AuthMethod})", settings.Host, settings.Port, authMethod);
+            var authMethod = profile.UseOAuth ? "OAuth 2.0 SMTP" : "Basic Auth";
+            _logger.LogInformation("SMTP bağlantı testi başarılı ({ProfileName}): {Host}:{Port} ({AuthMethod})",
+                profile.Name, profile.Host, profile.Port, authMethod);
 
             return EmailResult.Ok();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "SMTP bağlantı testi başarısız");
+            _logger.LogError(ex, "SMTP bağlantı testi başarısız ({ProfileName})", profile.Name);
             return EmailResult.Fail($"Bağlantı hatası: {ex.Message}");
         }
     }
 
     public async Task<bool> IsConfiguredAsync()
     {
-        var settings = await GetSmtpSettingsAsync();
-        return settings != null && !string.IsNullOrEmpty(settings.Host);
-    }
+        var profile = await GetDefaultProfileAsync();
+        if (profile == null) return false;
 
-    private async Task<SmtpSettings?> GetSmtpSettingsAsync()
-    {
-        var keys = new[] {
-            KEY_HOST, KEY_PORT, KEY_USERNAME, KEY_PASSWORD, KEY_USE_SSL,
-            KEY_FROM_EMAIL, KEY_FROM_NAME, KEY_ENABLED,
-            KEY_USE_OAUTH, KEY_TENANT_ID, KEY_CLIENT_ID, KEY_CLIENT_SECRET
-        };
-        var settingsDict = await _context.SystemSettings
-            .Where(s => keys.Contains(s.Key))
-            .ToDictionaryAsync(s => s.Key, s => s.Value);
-
-        if (!settingsDict.ContainsKey(KEY_HOST) || string.IsNullOrEmpty(settingsDict[KEY_HOST]))
+        // Graph API kullanılıyorsa ClientId yeterli
+        if (profile.UseGraphApi)
         {
-            return null;
+            return !string.IsNullOrEmpty(profile.ClientId);
         }
 
-        return new SmtpSettings
-        {
-            Host = settingsDict.GetValueOrDefault(KEY_HOST, ""),
-            Port = int.TryParse(settingsDict.GetValueOrDefault(KEY_PORT, "587"), out var port) ? port : 587,
-            Username = settingsDict.GetValueOrDefault(KEY_USERNAME, ""),
-            Password = settingsDict.GetValueOrDefault(KEY_PASSWORD, ""),
-            UseSsl = settingsDict.GetValueOrDefault(KEY_USE_SSL, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
-            FromEmail = settingsDict.GetValueOrDefault(KEY_FROM_EMAIL, ""),
-            FromName = settingsDict.GetValueOrDefault(KEY_FROM_NAME, "Secret Customer"),
-            Enabled = settingsDict.GetValueOrDefault(KEY_ENABLED, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
-            // OAuth 2.0 ayarları
-            UseOAuth = settingsDict.GetValueOrDefault(KEY_USE_OAUTH, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
-            TenantId = settingsDict.GetValueOrDefault(KEY_TENANT_ID, ""),
-            ClientId = settingsDict.GetValueOrDefault(KEY_CLIENT_ID, ""),
-            ClientSecret = settingsDict.GetValueOrDefault(KEY_CLIENT_SECRET, "")
-        };
+        // SMTP için Host gerekli
+        return !string.IsNullOrEmpty(profile.Host);
     }
 
     /// <summary>
-    /// Microsoft Entra ID'den OAuth 2.0 access token alır
+    /// Default SMTP profilini getirir
     /// </summary>
-    private async Task<string> GetOAuthTokenAsync(SmtpSettings settings)
+    private async Task<SmtpProfile?> GetDefaultProfileAsync()
+    {
+        return await _context.SmtpProfiles
+            .Where(p => p.IsDefault && p.Enabled)
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Microsoft Graph API için OAuth 2.0 access token alır
+    /// </summary>
+    private async Task<string> GetGraphApiTokenAsync(SmtpProfile profile)
     {
         var app = ConfidentialClientApplicationBuilder
-            .Create(settings.ClientId)
-            .WithClientSecret(settings.ClientSecret)
-            .WithAuthority($"https://login.microsoftonline.com/{settings.TenantId}")
+            .Create(profile.ClientId)
+            .WithClientSecret(profile.ClientSecret)
+            .WithAuthority($"https://login.microsoftonline.com/{profile.TenantId}")
             .Build();
 
-        // Microsoft 365 SMTP için gerekli scope
-        var scopes = new[] { "https://outlook.office365.com/.default" };
+        // Microsoft Graph API için scope
+        var scopes = new[] { "https://graph.microsoft.com/.default" };
 
         var result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
 
-        _logger.LogDebug("OAuth token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
+        _logger.LogDebug("Graph API token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
 
         return result.AccessToken;
     }
 
-    private class SmtpSettings
+    /// <summary>
+    /// SMTP OAuth 2.0 için access token alır
+    /// </summary>
+    private async Task<string> GetSmtpOAuthTokenAsync(SmtpProfile profile)
     {
-        public string Host { get; set; } = "";
-        public int Port { get; set; } = 587;
-        public string Username { get; set; } = "";
-        public string Password { get; set; } = "";
-        public bool UseSsl { get; set; } = true;
-        public string FromEmail { get; set; } = "";
-        public string FromName { get; set; } = "Secret Customer";
-        public bool Enabled { get; set; } = true;
+        var app = ConfidentialClientApplicationBuilder
+            .Create(profile.ClientId)
+            .WithClientSecret(profile.ClientSecret)
+            .WithAuthority($"https://login.microsoftonline.com/{profile.TenantId}")
+            .Build();
 
-        // OAuth 2.0 ayarları
-        public bool UseOAuth { get; set; } = false;
-        public string TenantId { get; set; } = "";
-        public string ClientId { get; set; } = "";
-        public string ClientSecret { get; set; } = "";
+        // Microsoft 365 SMTP için scope
+        var scopes = new[] { "https://outlook.office365.com/.default" };
+
+        var result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
+
+        _logger.LogDebug("SMTP OAuth token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
+
+        return result.AccessToken;
     }
 }

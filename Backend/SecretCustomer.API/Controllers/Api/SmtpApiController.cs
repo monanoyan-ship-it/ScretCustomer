@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Services.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -13,169 +13,276 @@ namespace SecretCustomer.API.Controllers.Api;
 public class SmtpApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    private readonly IEmailService _emailService;
+    private readonly SmtpEmailService _emailService;
 
-    public SmtpApiController(ApplicationDbContext context, IEmailService emailService)
+    public SmtpApiController(ApplicationDbContext context, SmtpEmailService emailService)
     {
         _context = context;
         _emailService = emailService;
     }
 
     /// <summary>
-    /// SMTP ayarlarını getir
+    /// Tüm SMTP profillerini listele
     /// </summary>
-    [HttpGet("settings")]
-    public async Task<IActionResult> GetSettings()
+    [HttpGet("profiles")]
+    public async Task<IActionResult> GetAll()
     {
-        var keys = new[]
-        {
-            SystemSettingKeys.SmtpHost,
-            SystemSettingKeys.SmtpPort,
-            SystemSettingKeys.SmtpUsername,
-            SystemSettingKeys.SmtpPassword,
-            SystemSettingKeys.SmtpUseSsl,
-            SystemSettingKeys.SmtpFromEmail,
-            SystemSettingKeys.SmtpFromName,
-            SystemSettingKeys.SmtpEnabled,
-            // OAuth 2.0
-            SystemSettingKeys.SmtpUseOAuth,
-            SystemSettingKeys.SmtpTenantId,
-            SystemSettingKeys.SmtpClientId,
-            SystemSettingKeys.SmtpClientSecret
-        };
+        var profiles = await _context.SmtpProfiles
+            .OrderByDescending(p => p.IsDefault)
+            .ThenBy(p => p.Name)
+            .Select(p => new SmtpProfileDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Host = p.Host,
+                Port = p.Port,
+                Username = p.Username,
+                Password = p.Password,
+                UseSsl = p.UseSsl,
+                FromEmail = p.FromEmail,
+                FromName = p.FromName,
+                Enabled = p.Enabled,
+                IsDefault = p.IsDefault,
+                UseOAuth = p.UseOAuth,
+                TenantId = p.TenantId,
+                ClientId = p.ClientId,
+                ClientSecret = p.ClientSecret,
+                UseGraphApi = p.UseGraphApi,
+                CreatedAt = p.CreatedAt
+            })
+            .ToListAsync();
 
-        var settings = await _context.SystemSettings
-            .Where(s => keys.Contains(s.Key))
-            .ToDictionaryAsync(s => s.Key, s => s.Value);
+        return Ok(profiles);
+    }
 
-        return Ok(new SmtpSettingsDto
+    /// <summary>
+    /// Tek profil getir
+    /// </summary>
+    [HttpGet("profiles/{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        return Ok(new SmtpProfileDto
         {
-            Host = settings.GetValueOrDefault(SystemSettingKeys.SmtpHost, ""),
-            Port = int.TryParse(settings.GetValueOrDefault(SystemSettingKeys.SmtpPort, "587"), out var port) ? port : 587,
-            Username = settings.GetValueOrDefault(SystemSettingKeys.SmtpUsername, ""),
-            Password = settings.GetValueOrDefault(SystemSettingKeys.SmtpPassword, ""),
-            UseSsl = settings.GetValueOrDefault(SystemSettingKeys.SmtpUseSsl, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
-            FromEmail = settings.GetValueOrDefault(SystemSettingKeys.SmtpFromEmail, ""),
-            FromName = settings.GetValueOrDefault(SystemSettingKeys.SmtpFromName, "Secret Customer"),
-            Enabled = settings.GetValueOrDefault(SystemSettingKeys.SmtpEnabled, "true").Equals("true", StringComparison.OrdinalIgnoreCase),
-            // OAuth 2.0
-            UseOAuth = settings.GetValueOrDefault(SystemSettingKeys.SmtpUseOAuth, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
-            TenantId = settings.GetValueOrDefault(SystemSettingKeys.SmtpTenantId, ""),
-            ClientId = settings.GetValueOrDefault(SystemSettingKeys.SmtpClientId, ""),
-            ClientSecret = settings.GetValueOrDefault(SystemSettingKeys.SmtpClientSecret, "")
+            Id = profile.Id,
+            Name = profile.Name,
+            Host = profile.Host,
+            Port = profile.Port,
+            Username = profile.Username,
+            Password = profile.Password,
+            UseSsl = profile.UseSsl,
+            FromEmail = profile.FromEmail,
+            FromName = profile.FromName,
+            Enabled = profile.Enabled,
+            IsDefault = profile.IsDefault,
+            UseOAuth = profile.UseOAuth,
+            TenantId = profile.TenantId,
+            ClientId = profile.ClientId,
+            ClientSecret = profile.ClientSecret,
+            UseGraphApi = profile.UseGraphApi,
+            CreatedAt = profile.CreatedAt
         });
     }
 
     /// <summary>
-    /// SMTP ayarlarını kaydet
+    /// Yeni profil oluştur
     /// </summary>
-    [HttpPost("settings")]
-    public async Task<IActionResult> SaveSettings([FromBody] SmtpSettingsDto dto)
+    [HttpPost("profiles")]
+    public async Task<IActionResult> Create([FromBody] SmtpProfileDto dto)
     {
-        var settingsToSave = new Dictionary<string, string>
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest(new { success = false, message = "Profil adı gerekli." });
+
+        if (string.IsNullOrWhiteSpace(dto.Host))
+            return BadRequest(new { success = false, message = "SMTP sunucu adresi gerekli." });
+
+        if (string.IsNullOrWhiteSpace(dto.FromEmail))
+            return BadRequest(new { success = false, message = "Gönderen email adresi gerekli." });
+
+        var profile = new SmtpProfile
         {
-            { SystemSettingKeys.SmtpHost, dto.Host ?? "" },
-            { SystemSettingKeys.SmtpPort, dto.Port.ToString() },
-            { SystemSettingKeys.SmtpUsername, dto.Username ?? "" },
-            { SystemSettingKeys.SmtpPassword, dto.Password ?? "" },
-            { SystemSettingKeys.SmtpUseSsl, dto.UseSsl.ToString().ToLower() },
-            { SystemSettingKeys.SmtpFromEmail, dto.FromEmail ?? "" },
-            { SystemSettingKeys.SmtpFromName, dto.FromName ?? "Secret Customer" },
-            { SystemSettingKeys.SmtpEnabled, dto.Enabled.ToString().ToLower() },
-            // OAuth 2.0
-            { SystemSettingKeys.SmtpUseOAuth, dto.UseOAuth.ToString().ToLower() },
-            { SystemSettingKeys.SmtpTenantId, dto.TenantId ?? "" },
-            { SystemSettingKeys.SmtpClientId, dto.ClientId ?? "" },
-            { SystemSettingKeys.SmtpClientSecret, dto.ClientSecret ?? "" }
+            Name = dto.Name.Trim(),
+            Host = dto.Host.Trim(),
+            Port = dto.Port,
+            Username = dto.Username?.Trim(),
+            Password = dto.Password,
+            UseSsl = dto.UseSsl,
+            FromEmail = dto.FromEmail.Trim(),
+            FromName = dto.FromName?.Trim(),
+            Enabled = dto.Enabled,
+            IsDefault = dto.IsDefault,
+            UseOAuth = dto.UseOAuth,
+            TenantId = dto.TenantId?.Trim(),
+            ClientId = dto.ClientId?.Trim(),
+            ClientSecret = dto.ClientSecret,
+            UseGraphApi = dto.UseGraphApi
         };
 
-        foreach (var kvp in settingsToSave)
+        // Eğer bu profil default yapılıyorsa, diğerlerini false yap
+        if (profile.IsDefault)
         {
-            var existing = await _context.SystemSettings.FirstOrDefaultAsync(s => s.Key == kvp.Key);
-            if (existing != null)
-            {
-                existing.Value = kvp.Value;
-                existing.UpdatedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                _context.SystemSettings.Add(new SystemSetting
-                {
-                    Key = kvp.Key,
-                    Value = kvp.Value,
-                    Category = "Smtp",
-                    ValueType = kvp.Key == SystemSettingKeys.SmtpPort ? "int" :
-                               (kvp.Key == SystemSettingKeys.SmtpUseSsl || kvp.Key == SystemSettingKeys.SmtpEnabled ? "bool" : "string"),
-                    Description = GetSettingDescription(kvp.Key),
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+            await ClearDefaultFlagAsync();
+        }
+
+        // Eğer hiç profil yoksa, ilk profili otomatik default yap
+        var hasAnyProfile = await _context.SmtpProfiles.AnyAsync();
+        if (!hasAnyProfile)
+        {
+            profile.IsDefault = true;
+        }
+
+        _context.SmtpProfiles.Add(profile);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Profil oluşturuldu.", id = profile.Id });
+    }
+
+    /// <summary>
+    /// Profil güncelle
+    /// </summary>
+    [HttpPut("profiles/{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] SmtpProfileDto dto)
+    {
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest(new { success = false, message = "Profil adı gerekli." });
+
+        if (string.IsNullOrWhiteSpace(dto.Host))
+            return BadRequest(new { success = false, message = "SMTP sunucu adresi gerekli." });
+
+        if (string.IsNullOrWhiteSpace(dto.FromEmail))
+            return BadRequest(new { success = false, message = "Gönderen email adresi gerekli." });
+
+        profile.Name = dto.Name.Trim();
+        profile.Host = dto.Host.Trim();
+        profile.Port = dto.Port;
+        profile.Username = dto.Username?.Trim();
+        profile.Password = dto.Password;
+        profile.UseSsl = dto.UseSsl;
+        profile.FromEmail = dto.FromEmail.Trim();
+        profile.FromName = dto.FromName?.Trim();
+        profile.Enabled = dto.Enabled;
+        profile.UseOAuth = dto.UseOAuth;
+        profile.TenantId = dto.TenantId?.Trim();
+        profile.ClientId = dto.ClientId?.Trim();
+        profile.ClientSecret = dto.ClientSecret;
+        profile.UseGraphApi = dto.UseGraphApi;
+
+        // IsDefault güncelleme
+        if (dto.IsDefault && !profile.IsDefault)
+        {
+            await ClearDefaultFlagAsync();
+            profile.IsDefault = true;
         }
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { success = true, message = "SMTP ayarları kaydedildi." });
+        return Ok(new { success = true, message = "Profil güncellendi." });
     }
 
     /// <summary>
-    /// SMTP bağlantısını test et
+    /// Profil sil (soft delete)
     /// </summary>
-    [HttpPost("test-connection")]
-    public async Task<IActionResult> TestConnection()
+    [HttpDelete("profiles/{id:int}")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var result = await _emailService.TestConnectionAsync();
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        if (profile.IsDefault)
+            return BadRequest(new { success = false, message = "Varsayılan profil silinemez. Önce başka bir profili varsayılan yapın." });
+
+        profile.IsDeleted = true;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Profil silindi." });
+    }
+
+    /// <summary>
+    /// Profili varsayılan yap
+    /// </summary>
+    [HttpPost("profiles/{id:int}/set-default")]
+    public async Task<IActionResult> SetDefault(int id)
+    {
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        await ClearDefaultFlagAsync();
+        profile.IsDefault = true;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = $"'{profile.Name}' varsayılan profil yapıldı." });
+    }
+
+    /// <summary>
+    /// Belirli profilin SMTP bağlantısını test et
+    /// </summary>
+    [HttpPost("profiles/{id:int}/test-connection")]
+    public async Task<IActionResult> TestConnection(int id)
+    {
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        var result = await _emailService.TestConnectionWithProfileAsync(profile);
 
         if (result.Success)
-        {
             return Ok(new { success = true, message = "SMTP bağlantısı başarılı!" });
-        }
 
         return BadRequest(new { success = false, message = result.ErrorMessage });
     }
 
     /// <summary>
-    /// Test maili gönder
+    /// Belirli profilden test maili gönder
     /// </summary>
-    [HttpPost("send-test")]
-    public async Task<IActionResult> SendTestEmail([FromBody] TestEmailDto dto)
+    [HttpPost("profiles/{id:int}/send-test")]
+    public async Task<IActionResult> SendTestEmail(int id, [FromBody] TestEmailDto dto)
     {
         if (string.IsNullOrEmpty(dto.ToEmail))
-        {
             return BadRequest(new { success = false, message = "Email adresi gerekli." });
-        }
 
-        var result = await _emailService.SendEmailAsync(
-            dto.ToEmail,
-            "Secret Customer - Test Email",
-            GetTestEmailBody(),
-            isHtml: true
-        );
+        var profile = await _context.SmtpProfiles.FindAsync(id);
+        if (profile == null)
+            return NotFound(new { success = false, message = "Profil bulunamadı." });
+
+        var message = new Core.Interfaces.Services.EmailMessage
+        {
+            To = new List<string> { dto.ToEmail },
+            Subject = "Secret Customer - Test Email",
+            Body = GetTestEmailBody(),
+            IsHtml = true
+        };
+
+        var result = await _emailService.SendEmailWithProfileAsync(profile, message);
 
         if (result.Success)
-        {
             return Ok(new { success = true, message = $"Test maili {dto.ToEmail} adresine gönderildi." });
-        }
 
         return BadRequest(new { success = false, message = result.ErrorMessage });
     }
 
-    private static string GetSettingDescription(string key) => key switch
+    /// <summary>
+    /// Tüm profillerin IsDefault'ını false yapar
+    /// </summary>
+    private async Task ClearDefaultFlagAsync()
     {
-        SystemSettingKeys.SmtpHost => "SMTP sunucu adresi",
-        SystemSettingKeys.SmtpPort => "SMTP port numarası",
-        SystemSettingKeys.SmtpUsername => "SMTP kullanıcı adı",
-        SystemSettingKeys.SmtpPassword => "SMTP şifresi",
-        SystemSettingKeys.SmtpUseSsl => "SSL/TLS kullan",
-        SystemSettingKeys.SmtpFromEmail => "Gönderen email adresi",
-        SystemSettingKeys.SmtpFromName => "Gönderen adı",
-        SystemSettingKeys.SmtpEnabled => "SMTP servisi aktif",
-        // OAuth 2.0
-        SystemSettingKeys.SmtpUseOAuth => "OAuth 2.0 kullan",
-        SystemSettingKeys.SmtpTenantId => "Azure Tenant ID",
-        SystemSettingKeys.SmtpClientId => "Azure Client ID (Application ID)",
-        SystemSettingKeys.SmtpClientSecret => "Azure Client Secret",
-        _ => ""
-    };
+        var defaultProfiles = await _context.SmtpProfiles
+            .Where(p => p.IsDefault)
+            .ToListAsync();
+
+        foreach (var p in defaultProfiles)
+        {
+            p.IsDefault = false;
+        }
+    }
 
     private static string GetTestEmailBody()
     {
@@ -218,22 +325,27 @@ public class SmtpApiController : ControllerBase
     }
 }
 
-public class SmtpSettingsDto
+public class SmtpProfileDto
 {
-    public string? Host { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Host { get; set; } = string.Empty;
     public int Port { get; set; } = 587;
     public string? Username { get; set; }
     public string? Password { get; set; }
     public bool UseSsl { get; set; } = true;
-    public string? FromEmail { get; set; }
+    public string FromEmail { get; set; } = string.Empty;
     public string? FromName { get; set; } = "Secret Customer";
     public bool Enabled { get; set; } = true;
-
+    public bool IsDefault { get; set; } = false;
     // OAuth 2.0 (Microsoft 365)
     public bool UseOAuth { get; set; } = false;
     public string? TenantId { get; set; }
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
+    // Microsoft Graph API
+    public bool UseGraphApi { get; set; } = false;
+    public DateTime? CreatedAt { get; set; }
 }
 
 public class TestEmailDto

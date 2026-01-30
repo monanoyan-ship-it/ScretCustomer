@@ -13,17 +13,230 @@ function EvaluationsViewModel() {
     self.filterStatus = ko.observable('');
     // Her tab için ayrı search
     self.assignmentsSearch = ko.observable('');
-    self.evaluationsSearch = ko.observable('');
     self.expiredSearch = ko.observable('');
 
-    // Dinlemeler/Ziyaretler filtreleri
-    self.evaluationsStatusFilter = ko.observable('');
-    self.evaluationsDateFrom = ko.observable('');
-    self.evaluationsDateTo = ko.observable('');
+    // Tab değiştirme fonksiyonu - Dinlemeler/Ziyaretler tabına geçince listeyi yenile
+    self.setActiveTab = function(tab) {
+        self.activeTab(tab);
+        if (tab === 'evaluations') {
+            self.loadEvaluations();
+        }
+    };
+
+    // ==================== EVALUATIONS FILTER SYSTEM ====================
+    self.evalSelectedFilterType = ko.observable('');
+    self.evalActiveFilters = ko.observableArray([]);
+
+    // Temp filter values
+    self.evalTempFilter = {
+        status: ko.observable(''),
+        searchTerm: ko.observable(''),
+        personnelName: ko.observable(''),
+        projectName: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        selectedDateRangeType: ko.observable(null)
+    };
+
+    // Status labels for display
+    self.evalStatusLabels = {
+        'Completed': 'Tamamlandı',
+        'Draft': 'Taslak',
+        'InProgress': 'Devam Ediyor'
+    };
+
+    // Date ranges for quick select
+    self.evalDateRanges = [
+        { name: 'Bugün', systemName: 'today' },
+        { name: 'Dün', systemName: 'yesterday' },
+        { name: 'Bu Hafta', systemName: 'thisWeek' },
+        { name: 'Geçen Hafta', systemName: 'lastWeek' },
+        { name: 'Bu Ay', systemName: 'thisMonth' },
+        { name: 'Geçen Ay', systemName: 'lastMonth' }
+    ];
+
+    // Manual date change tracking
+    self._evalManualDateChange = true;
+    self.evalTempFilter.startDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedDateRangeType(null);
+    });
+    self.evalTempFilter.endDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedDateRangeType(null);
+    });
+
+    // Can add filter check
+    self.evalCanAddFilter = ko.computed(function() {
+        var type = self.evalSelectedFilterType();
+        if (!type) return false;
+        switch (type) {
+            case 'status': return self.evalTempFilter.status();
+            case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
+            case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
+            case 'project': return self.evalTempFilter.projectName();
+            case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
+            default: return false;
+        }
+    });
+
+    // Format date helper
+    self._evalFormatDate = function(date) {
+        var d = new Date(date);
+        var month = '' + (d.getMonth() + 1);
+        var day = '' + d.getDate();
+        var year = d.getFullYear();
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        return [year, month, day].join('-');
+    };
+
+    // Set temp date range (quick select)
+    self.evalSetTempDateRange = function(range) {
+        self._evalManualDateChange = false;
+        var today = new Date();
+        var startDate, endDate;
+
+        switch (range) {
+            case 'today':
+                startDate = endDate = today;
+                break;
+            case 'yesterday':
+                startDate = endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+                break;
+            case 'thisWeek':
+                var dayOfWeek = today.getDay();
+                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                startDate = new Date(today.getFullYear(), today.getMonth(), diff);
+                endDate = today;
+                break;
+            case 'lastWeek':
+                var dayOfWeek = today.getDay();
+                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                startDate = new Date(today.getFullYear(), today.getMonth(), diff - 7);
+                endDate = new Date(today.getFullYear(), today.getMonth(), diff - 1);
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = today;
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+        }
+
+        if (startDate) self.evalTempFilter.startDate(self._evalFormatDate(startDate));
+        if (endDate) self.evalTempFilter.endDate(self._evalFormatDate(endDate));
+        self.evalTempFilter.selectedDateRangeType(range);
+        self._evalManualDateChange = true;
+    };
+
+    // Add filter
+    self.evalAddFilter = function() {
+        var type = self.evalSelectedFilterType();
+        if (!type) return;
+
+        // Aynı tipte filtre varsa önce kaldır
+        self.evalActiveFilters.remove(function(f) { return f.type === type; });
+
+        var filter = {
+            type: type,
+            label: '',
+            value: null,
+            displayValue: ''
+        };
+
+        switch (type) {
+            case 'status':
+                var status = self.evalTempFilter.status();
+                if (!status) return;
+                filter.label = 'Durum';
+                filter.value = status;
+                filter.displayValue = self.evalStatusLabels[status] || status;
+                self.evalTempFilter.status('');
+                break;
+
+            case 'search':
+                var searchTerm = self.evalTempFilter.searchTerm().trim();
+                if (!searchTerm) return;
+                filter.label = 'Arama';
+                filter.value = searchTerm;
+                filter.displayValue = '"' + searchTerm + '"';
+                self.evalTempFilter.searchTerm('');
+                break;
+
+            case 'personnel':
+                var personnelName = self.evalTempFilter.personnelName().trim();
+                if (!personnelName) return;
+                filter.label = 'Temsilci';
+                filter.value = personnelName;
+                filter.displayValue = '"' + personnelName + '"';
+                self.evalTempFilter.personnelName('');
+                break;
+
+            case 'project':
+                var projectName = self.evalTempFilter.projectName();
+                if (!projectName) return;
+                filter.label = 'Proje';
+                filter.value = projectName;
+                filter.displayValue = projectName;
+                self.evalTempFilter.projectName('');
+                break;
+
+            case 'dateRange':
+                var startDate = self.evalTempFilter.startDate();
+                var endDate = self.evalTempFilter.endDate();
+                if (!startDate && !endDate) return;
+                filter.label = 'Tarih';
+                filter.value = { start: startDate, end: endDate };
+                if (startDate && endDate) {
+                    filter.displayValue = startDate + ' - ' + endDate;
+                } else if (startDate) {
+                    filter.displayValue = startDate + ' sonrası';
+                } else {
+                    filter.displayValue = endDate + ' öncesi';
+                }
+                self.evalTempFilter.startDate('');
+                self.evalTempFilter.endDate('');
+                self.evalTempFilter.selectedDateRangeType(null);
+                break;
+        }
+
+        self.evalActiveFilters.push(filter);
+        self.evalSelectedFilterType('');
+    };
+
+    // Remove filter
+    self.evalRemoveFilter = function(filter) {
+        self.evalActiveFilters.remove(filter);
+    };
+
+    // Clear all filters
+    self.evalClearFilters = function() {
+        self.evalActiveFilters.removeAll();
+        self.evalSelectedFilterType('');
+        self.evalTempFilter.status('');
+        self.evalTempFilter.searchTerm('');
+        self.evalTempFilter.personnelName('');
+        self.evalTempFilter.projectName('');
+        self.evalTempFilter.startDate('');
+        self.evalTempFilter.endDate('');
+        self.evalTempFilter.selectedDateRangeType(null);
+    };
 
     // List Data
     self.allAssignments = ko.observableArray([]);
     self.allEvaluations = ko.observableArray([]);
+
+    // Available projects for filter dropdown (allEvaluations tanımlandıktan sonra)
+    self.availableProjects = ko.computed(function() {
+        var projects = [];
+        self.allEvaluations().forEach(function(e) {
+            if (e.projectName && projects.indexOf(e.projectName) === -1) {
+                projects.push(e.projectName);
+            }
+        });
+        return projects.sort();
+    });
 
     // Sorting states for each table
     self.assignmentsSorting = TableSorting.createSortState('dueDate', 'asc');
@@ -200,98 +413,66 @@ function EvaluationsViewModel() {
         return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
 
-    // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar)
+    // Sekme 2: Tüm Dinlemeler (yapılmış evaluation'lar) - chip-based filtre sistemi
     self.allEvaluationsList = ko.computed(function() {
-        var search = self.evaluationsSearch().toLowerCase();
-        var statusFilter = self.evaluationsStatusFilter();
-        var dateFrom = self.evaluationsDateFrom();
-        var dateTo = self.evaluationsDateTo();
+        var filters = self.evalActiveFilters();
         var sortBy = self.evaluationsSorting.sortBy();
         var sortDir = self.evaluationsSorting.sortDirection();
 
         var filtered = self.allEvaluations().filter(function(e) {
-            // Text arama
-            if (search) {
-                var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.checklistName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.evaluatedPersonnelName || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0 ||
-                                   (e.callId || '').toLowerCase().indexOf(search) >= 0;
-                if (!matchesSearch) return false;
-            }
-            // Durum filtresi
-            if (statusFilter && e.status !== statusFilter) return false;
-            // Tarih filtreleri (callDate kullan)
-            if (dateFrom && e.callDate) {
-                var evalDate = new Date(e.callDate);
-                var fromDate = new Date(dateFrom);
-                if (evalDate < fromDate) return false;
-            }
-            if (dateTo && e.callDate) {
-                var evalDate = new Date(e.callDate);
-                var toDate = new Date(dateTo);
-                toDate.setHours(23, 59, 59, 999);
-                if (evalDate > toDate) return false;
+            // Her aktif filtre için kontrol
+            for (var i = 0; i < filters.length; i++) {
+                var f = filters[i];
+
+                switch (f.type) {
+                    case 'status':
+                        if (e.status !== f.value) return false;
+                        break;
+
+                    case 'search':
+                        var search = f.value.toLowerCase();
+                        var matchesSearch = (e.projectName || '').toLowerCase().indexOf(search) >= 0 ||
+                                           (e.checklistName || '').toLowerCase().indexOf(search) >= 0 ||
+                                           (e.evaluatedPersonnelName || '').toLowerCase().indexOf(search) >= 0 ||
+                                           (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(search) >= 0 ||
+                                           (e.callId || '').toLowerCase().indexOf(search) >= 0;
+                        if (!matchesSearch) return false;
+                        break;
+
+                    case 'personnel':
+                        var personnelSearch = f.value.toLowerCase();
+                        var matchesPersonnel = (e.evaluatedPersonnelName || '').toLowerCase().indexOf(personnelSearch) >= 0 ||
+                                              (e.evaluatedUnknownPersonnel || '').toLowerCase().indexOf(personnelSearch) >= 0;
+                        if (!matchesPersonnel) return false;
+                        break;
+
+                    case 'project':
+                        if (e.projectName !== f.value) return false;
+                        break;
+
+                    case 'dateRange':
+                        if (e.callDate) {
+                            var evalDate = new Date(e.callDate);
+                            evalDate.setHours(0, 0, 0, 0);
+                            if (f.value.start) {
+                                var fromDate = new Date(f.value.start);
+                                fromDate.setHours(0, 0, 0, 0);
+                                if (evalDate < fromDate) return false;
+                            }
+                            if (f.value.end) {
+                                var toDate = new Date(f.value.end);
+                                toDate.setHours(23, 59, 59, 999);
+                                if (evalDate > toDate) return false;
+                            }
+                        }
+                        break;
+                }
             }
             return true;
         });
 
         return TableSorting.clientSort(filtered, sortBy, sortDir);
     });
-
-    // Filtreleri temizle
-    self.clearEvaluationsFilters = function() {
-        self.evaluationsSearch('');
-        self.evaluationsStatusFilter('');
-        self.evaluationsDateFrom('');
-        self.evaluationsDateTo('');
-    };
-
-    // Date range helper
-    self.calculateDateRange = function(rangeType) {
-        var today = new Date();
-        var start, end;
-
-        if (rangeType === 'today') {
-            start = end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'yesterday') {
-            var yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            start = end = yesterday.toISOString().split('T')[0];
-        } else if (rangeType === 'thisWeek') {
-            var dayOfWeek = today.getDay();
-            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            var weekStart = new Date(today);
-            weekStart.setDate(diff);
-            start = weekStart.toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'lastWeek') {
-            var dayOfWeek = today.getDay();
-            var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            var thisWeekStart = new Date(today);
-            thisWeekStart.setDate(diff);
-            var lastWeekStart = new Date(thisWeekStart);
-            lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-            var lastWeekEnd = new Date(lastWeekStart);
-            lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
-            start = lastWeekStart.toISOString().split('T')[0];
-            end = lastWeekEnd.toISOString().split('T')[0];
-        } else if (rangeType === 'thisMonth') {
-            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
-        } else if (rangeType === 'lastMonth') {
-            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
-        }
-
-        return { start: start, end: end };
-    };
-
-    self.setEvaluationsDateRange = function(rangeType) {
-        var range = self.calculateDateRange(rangeType);
-        self.evaluationsDateFrom(range.start);
-        self.evaluationsDateTo(range.end);
-    };
 
     // Sekme 3: Tarihi Geçmiş Atamalar (hala dinleme eklenebilir)
     self.expiredAssignments = ko.computed(function() {
@@ -446,15 +627,36 @@ function EvaluationsViewModel() {
     // ========================
 
     self.startEvaluation = function(assignment) {
-        self.currentAssignmentId = assignment.id;
-        self.currentEvaluationId = null;
-        self.openEvaluateModal();
+        // scoringMethod'a göre doğru popup'ı aç (isInternal=true ile)
+        self.openEvaluationPopup(assignment.id, null, assignment.scoringMethod);
     };
 
     self.continueEvaluation = function(evaluation) {
-        self.currentAssignmentId = null;
-        self.currentEvaluationId = evaluation.id;
-        self.openEvaluateModal();
+        // scoringMethod'a göre doğru popup'ı aç (isInternal=true ile)
+        self.openEvaluationPopup(null, evaluation.id, evaluation.scoringMethod);
+    };
+
+    // Değerlendirme popup'ı aç (scoringMethod'a göre farklı URL, isInternal=true)
+    self.openEvaluationPopup = function(assignmentId, evaluationId, scoringMethod) {
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+
+        var baseUrl = '/Evaluations/';
+        if (scoringMethod === 'CriteriaTotal') {
+            baseUrl += 'PopupCriteriaTotal?';
+        } else {
+            baseUrl += 'PopupMaximum?';
+        }
+
+        var url = baseUrl;
+        if (assignmentId) url += 'assignmentId=' + assignmentId + '&';
+        if (evaluationId) url += 'evaluationId=' + evaluationId + '&';
+        url += 'isInternal=true';
+
+        window.open(url, 'EvaluationPopup',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     };
 
     self.openEvaluateModal = function() {

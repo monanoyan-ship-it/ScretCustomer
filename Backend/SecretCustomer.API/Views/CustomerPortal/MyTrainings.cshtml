@@ -145,22 +145,35 @@
                     <div class="card-footer bg-transparent">
                         <!-- Aktif tab: izleme butonu -->
                         <!-- ko if: $parent.activeTab() === 'active' -->
-                        <button class="btn btn-primary w-100" data-bind="click: $parent.watchVideo, visible: !isCompleted">
+                        <button class="btn btn-primary w-100 mb-2" data-bind="click: $parent.watchVideo, visible: !isCompleted">
                             <i class="bi bi-play-fill"></i>
                             <span data-bind="visible: statusId === 1">@Html.T("MyTrainings.StartWatching", "Izlemeye Basla")</span>
                             <span data-bind="visible: statusId === 2">@Html.T("MyTrainings.ContinueWatching", "Izlemeye Devam Et")</span>
                         </button>
-                        <button class="btn btn-success w-100" data-bind="click: $parent.watchVideo, visible: isCompleted">
+                        <button class="btn btn-success w-100 mb-2" data-bind="click: $parent.watchVideo, visible: isCompleted">
                             <i class="bi bi-play-fill"></i> @Html.T("MyTrainings.WatchAgain", "Tekrar Izle")
                         </button>
+                        <!-- Quiz butonu - video tamamlanmissa ve quiz varsa -->
+                        <!-- ko if: quizStatus && quizStatus.hasQuiz && isCompleted -->
+                        <a data-bind="attr: { href: '/CustomerPortal/TrainingQuiz/' + participantId }, visible: !quizStatus.isPassed" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-pencil-square"></i> @Html.T("MyTrainings.TakeQuiz", "Ankete Git")
+                            <!-- ko if: quizStatus.isRequired -->
+                            <span class="badge bg-warning ms-1">@Html.T("Common.Required", "Zorunlu")</span>
+                            <!-- /ko -->
+                        </a>
+                        <div data-bind="visible: quizStatus.isPassed" class="text-center text-success small">
+                            <i class="bi bi-check-circle-fill"></i> @Html.T("MyTrainings.QuizCompleted", "Anket tamamlandi")
+                            <span class="badge bg-success ms-1">%<span data-bind="text: quizStatus.lastScore"></span></span>
+                        </div>
                         <!-- /ko -->
-                        <!-- Gelecek tab: başlamadı mesajı -->
+                        <!-- /ko -->
+                        <!-- Gelecek tab: baslamadi mesaji -->
                         <!-- ko if: $parent.activeTab() === 'upcoming' -->
                         <div class="text-center text-muted">
                             <i class="bi bi-clock"></i> @Html.T("MyTrainings.NotStartedYet", "Egitim henuz baslamadi")
                         </div>
                         <!-- /ko -->
-                        <!-- Geçmiş tab: süre doldu mesajı -->
+                        <!-- Gecmis tab: sure doldu mesaji -->
                         <!-- ko if: $parent.activeTab() === 'past' -->
                         <div class="text-center text-muted">
                             <i class="bi bi-hourglass-bottom"></i> @Html.T("MyTrainings.ExpiredTraining", "Egitim suresi doldu")
@@ -222,6 +235,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 @section Scripts {

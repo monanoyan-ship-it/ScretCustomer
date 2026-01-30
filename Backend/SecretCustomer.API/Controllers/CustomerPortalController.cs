@@ -35,6 +35,24 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// İç Dinleme Raporları - firma personeli tarafından yapılan değerlendirmeler
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult InternalReports()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Dış Dinleme Raporları - bizim tarafımızdan yapılan değerlendirmeler
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult ExternalReports()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Cezalı KL Raporu
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
@@ -71,27 +89,27 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
-    /// Proje bazlı sonuçlar (sadece CustomerManager)
+    /// Proje bazlı sonuçlar (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Projects()
     {
         return View();
     }
 
     /// <summary>
-    /// Organizasyonlar/Şubeler (sadece CustomerManager)
+    /// Organizasyonlar/Şubeler (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Organizations()
     {
         return View();
     }
 
     /// <summary>
-    /// Süpervizörler (sadece CustomerManager)
+    /// Süpervizörler (sadece CustomerManager ve Admin)
     /// </summary>
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,Admin")]
     public IActionResult Supervisors()
     {
         return View();
@@ -129,6 +147,16 @@ public class CustomerPortalController : Controller
     [Route("CustomerPortal/MyTrainings")]
     public IActionResult MyTrainings()
     {
+        return View();
+    }
+
+    /// <summary>
+    /// Eğitim videosu anketi - Dahili katılımcılar için
+    /// </summary>
+    [Route("CustomerPortal/TrainingQuiz/{participantId:int}")]
+    public IActionResult TrainingQuiz(int participantId)
+    {
+        ViewBag.ParticipantId = participantId;
         return View();
     }
 

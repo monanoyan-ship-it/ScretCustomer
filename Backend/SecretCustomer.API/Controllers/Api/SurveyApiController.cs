@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using SecretCustomer.Services.Helpers;
@@ -2180,6 +2181,7 @@ public class SurveyApiController : ControllerBase
             worksheet.Cell(2, 3).Value = "Yılmaz";
 
             worksheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(worksheet);
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);

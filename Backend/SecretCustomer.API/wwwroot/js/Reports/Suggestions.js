@@ -81,6 +81,8 @@ function SuggestionsViewModel() {
     // Data
     self.suggestions = ko.observableArray([]);
     self.topSuggestedQuestions = ko.observableArray([]);
+    self.evaluationNotes = ko.observableArray([]);
+    self.evaluationNotesCount = ko.observable(0);
 
     // Visible pages for pagination
     self.visiblePages = ko.computed(function() {
@@ -388,11 +390,14 @@ function SuggestionsViewModel() {
                 totalSuggestions: 0,
                 totalEvaluationsWithSuggestions: 0,
                 uniqueEvaluators: 0,
-                uniquePersonnel: 0
+                uniquePersonnel: 0,
+                evaluationNotesCount: 0
             });
             self.suggestions(data.suggestions || []);
             self.totalCount(data.totalCount || 0);
             self.topSuggestedQuestions(topQuestions || []);
+            self.evaluationNotes(data.evaluationNotes || []);
+            self.evaluationNotesCount(data.evaluationNotesCount || 0);
         })
         .catch(function(error) {
             console.error('Suggestions report error:', error);
@@ -451,6 +456,43 @@ function SuggestionsViewModel() {
             .finally(function() {
                 self.isExporting(false);
             });
+    };
+
+    // Truncate long CallId for display
+    self.truncateCallId = function(callId) {
+        if (!callId) return '-';
+        if (callId.length <= 20) return callId;
+        return callId.substring(0, 8) + '...' + callId.substring(callId.length - 8);
+    };
+
+    // Copy text to clipboard
+    self.copyToClipboard = function(text) {
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                toastr.success(T('Common.CopiedToClipboard', 'Panoya kopyalandı'));
+            }).catch(function() {
+                self.fallbackCopyToClipboard(text);
+            });
+        } else {
+            self.fallbackCopyToClipboard(text);
+        }
+    };
+
+    self.fallbackCopyToClipboard = function(text) {
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            toastr.success(T('Common.CopiedToClipboard', 'Panoya kopyalandı'));
+        } catch (err) {
+            toastr.error(T('Common.CopyFailed', 'Kopyalama başarısız'));
+        }
+        document.body.removeChild(textArea);
     };
 
     // Initialize

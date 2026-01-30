@@ -10,6 +10,14 @@ function EvaluationsViewModel() {
     self.errorMessage = ko.observable('');
     self.activeTab = ko.observable('assignments');
     self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
+
+    // Tab değiştirme fonksiyonu - Dinlemeler/Ziyaretler tabına geçince listeyi yenile
+    self.setActiveTab = function(tab) {
+        self.activeTab(tab);
+        if (tab === 'evaluations') {
+            self.loadEvaluations();
+        }
+    };
     self.filterStatus = ko.observable('');
     // Her tab için ayrı search
     self.assignmentsSearch = ko.observable('');
@@ -28,6 +36,7 @@ function EvaluationsViewModel() {
         status: ko.observable(''),
         searchTerm: ko.observable(''),
         personnelName: ko.observable(''),
+        projectName: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         selectedDateRangeType: ko.observable(null),
@@ -42,6 +51,7 @@ function EvaluationsViewModel() {
         status: 'Durum',
         search: 'Arama',
         personnel: 'Temsilci',
+        project: 'Proje',
         dateRange: 'Tarih',
         controlDate: 'Kontrol Tarihi'
     };
@@ -81,6 +91,7 @@ function EvaluationsViewModel() {
             case 'status': return self.evalTempFilter.status();
             case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
             case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
+            case 'project': return self.evalTempFilter.projectName();
             case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
             case 'controlDate': return self.evalTempFilter.controlStartDate() || self.evalTempFilter.controlEndDate();
             default: return false;
@@ -274,6 +285,14 @@ function EvaluationsViewModel() {
                 self.evalTempFilter.personnelName('');
                 break;
 
+            case 'project':
+                var projectName = self.evalTempFilter.projectName();
+                if (!projectName) return;
+                filter.value = projectName;
+                filter.displayValue = projectName;
+                self.evalTempFilter.projectName('');
+                break;
+
             case 'dateRange':
                 var startDate = self.evalTempFilter.startDate();
                 var endDate = self.evalTempFilter.endDate();
@@ -327,6 +346,7 @@ function EvaluationsViewModel() {
         self.evalTempFilter.status('');
         self.evalTempFilter.searchTerm('');
         self.evalTempFilter.personnelName('');
+        self.evalTempFilter.projectName('');
         self.evalTempFilter.startDate('');
         self.evalTempFilter.endDate('');
         self.evalTempFilter.selectedDateRangeType(null);
@@ -339,6 +359,19 @@ function EvaluationsViewModel() {
     // List Data
     self.allAssignments = ko.observableArray([]);
     self.allEvaluations = ko.observableArray([]);
+
+    // Mevcut projeler listesi (evaluations'dan çıkarılır)
+    self.availableProjects = ko.computed(function() {
+        var projects = [];
+        var seen = {};
+        self.allEvaluations().forEach(function(e) {
+            if (e.projectName && !seen[e.projectName]) {
+                seen[e.projectName] = true;
+                projects.push(e.projectName);
+            }
+        });
+        return projects.sort();
+    });
 
     // Sorting states for each table
     self.assignmentsSorting = TableSorting.createSortState('dueDate', 'asc');
@@ -527,12 +560,14 @@ function EvaluationsViewModel() {
         var searchFilter = filters.find(function(f) { return f.type === 'search'; });
         var statusFilter = filters.find(function(f) { return f.type === 'status'; });
         var personnelFilter = filters.find(function(f) { return f.type === 'personnel'; });
+        var projectFilter = filters.find(function(f) { return f.type === 'project'; });
         var dateFilter = filters.find(function(f) { return f.type === 'dateRange'; });
         var controlDateFilter = filters.find(function(f) { return f.type === 'controlDate'; });
 
         var search = searchFilter ? searchFilter.value.toLowerCase() : '';
         var status = statusFilter ? statusFilter.value : '';
         var personnelName = personnelFilter ? personnelFilter.value.toLowerCase() : '';
+        var projectName = projectFilter ? projectFilter.value : '';
         var dateFrom = dateFilter && dateFilter.value.start ? dateFilter.value.start : '';
         var dateTo = dateFilter && dateFilter.value.end ? dateFilter.value.end : '';
         var controlFrom = controlDateFilter && controlDateFilter.value.start ? controlDateFilter.value.start : '';
@@ -556,6 +591,8 @@ function EvaluationsViewModel() {
             }
             // Durum filtresi
             if (status && e.status !== status) return false;
+            // Proje filtresi
+            if (projectName && e.projectName !== projectName) return false;
 
             // Tarih filtreleri (callDate, completedAt veya createdAt kullan)
             if (dateFrom || dateTo) {
@@ -1875,6 +1912,9 @@ function EvaluationsViewModel() {
                     break;
                 case 'personnel':
                     params.push('personnel=' + encodeURIComponent(f.value));
+                    break;
+                case 'project':
+                    params.push('projectName=' + encodeURIComponent(f.value));
                     break;
                 case 'dateRange':
                     if (f.value.start) params.push('startDate=' + encodeURIComponent(f.value.start));

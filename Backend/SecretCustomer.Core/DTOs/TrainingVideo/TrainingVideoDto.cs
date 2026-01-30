@@ -140,6 +140,7 @@ public class TrainingVideoAssignmentListDto
     public DateTime DueDate { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool IsExternal { get; set; }
     public int TotalParticipants { get; set; }
     public int CompletedParticipants { get; set; }
     public int InProgressParticipants { get; set; }
@@ -161,6 +162,13 @@ public class TrainingVideoAssignmentDto : TrainingVideoAssignmentListDto
     public DateTime? SourceStartDate { get; set; }
     public DateTime? SourceEndDate { get; set; }
     public List<TrainingVideoParticipantDto> Participants { get; set; } = new();
+
+    // İzleme ayarları
+    public int MinWatchCount { get; set; }
+    public int? MaxWatchCount { get; set; }
+    public bool AllowSpeedChange { get; set; }
+    public bool AllowSeeking { get; set; }
+    public int? EmailTemplateId { get; set; }
 }
 
 /// <summary>
@@ -172,6 +180,7 @@ public class CreateTrainingVideoAssignmentDto
     public int TrainingVideoId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime DueDate { get; set; }
+    public bool IsExternal { get; set; } = false;
 
     // Otomatik atama kriterleri - Filtreler
     public int? CustomerId { get; set; }
@@ -193,6 +202,34 @@ public class CreateTrainingVideoAssignmentDto
     public int? MaxWatchCount { get; set; }
     public bool AllowSpeedChange { get; set; } = false;
     public bool AllowSeeking { get; set; } = false;
+}
+
+/// <summary>
+/// Atama güncelleme DTO
+/// </summary>
+public class UpdateTrainingVideoAssignmentDto
+{
+    public string Title { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime DueDate { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Email ayarları
+    public int? EmailTemplateId { get; set; }
+
+    // İzleme ayarları
+    public int MinWatchCount { get; set; } = 1;
+    public int? MaxWatchCount { get; set; }
+    public bool AllowSpeedChange { get; set; } = false;
+    public bool AllowSeeking { get; set; } = false;
+
+    // Katılımcı ekleme/çıkarma (iç katılımcılar)
+    public List<int>? AddParticipantIds { get; set; }
+    public List<int>? RemoveParticipantIds { get; set; }
+
+    // Dış katılımcı ekleme/çıkarma
+    public List<ExternalParticipantItemDto>? AddExternalParticipants { get; set; }
+    public List<int>? RemoveExternalParticipantIds { get; set; }
 }
 
 /// <summary>
@@ -490,4 +527,15 @@ public class ExternalVideoWatchDto
     public bool IsCompleted { get; set; }
     public bool IsExpired { get; set; }
     public string? ParticipantName { get; set; }
+}
+
+/// <summary>
+/// Video scope'una göre personel arama sonucu DTO
+/// </summary>
+public class ScopePersonnelSearchResultDto
+{
+    public int Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string? Email { get; set; }
+    public string? CustomerName { get; set; }
 }

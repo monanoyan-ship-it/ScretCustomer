@@ -153,6 +153,11 @@ public class TrainingVideoAssignment : BaseEntity
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Dış katılımcı ataması mı? (true = dış, false = iç)
+    /// </summary>
+    public bool IsExternal { get; set; } = false;
+
+    /// <summary>
     /// Kaynak proje ID (otomatik atama için)
     /// </summary>
     public int? SourceProjectId { get; set; }

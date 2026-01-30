@@ -205,6 +205,7 @@
                                     <th>@Html.T("Common.User", "Kullanıcı")</th>
                                     <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
                                     <th class="text-end">@Html.T("Common.Average", "Ortalama")</th>
+                                    <th class="text-center" style="width: 50px;"></th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: userPerformance().topEvaluatorsMonth">
@@ -215,6 +216,12 @@
                                     <td data-bind="text: userName"></td>
                                     <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
                                     <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-primary" title="@Html.T("Common.Detail", "Detay")"
+                                                data-bind="click: function() { $parent.showUserProjectDetail(userId, userName); }">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -424,6 +431,43 @@
                 </div>
             </div>
 
+            <!-- Firma Bazlı Aylık Trend -->
+            <div class="col-xl-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-gradient bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-building"></i> @Html.T("Dashboard.CustomerTrend", "Bu Ay Firma Bazlı")</h5>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                        <div data-bind="visible: customerTrend().length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">@Html.T("Common.NoData", "Henüz veri bulunmamaktadır.")</p>
+                        </div>
+                        <table class="table table-sm table-hover mb-0" data-bind="visible: customerTrend().length > 0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Html.T("Common.Customer", "Firma")</th>
+                                    <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
+                                    <th class="text-end">@Html.T("Common.Average", "Ort.")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: customerTrend">
+                                <tr>
+                                    <td data-bind="text: customerName"></td>
+                                    <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
+                                    <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light" data-bind="visible: customerTrend().length > 0">
+                                <tr>
+                                    <td><strong>@Html.T("Common.Total", "Toplam")</strong></td>
+                                    <td class="text-center"><strong data-bind="text: customerTrendTotal().count"></strong></td>
+                                    <td class="text-end"><strong><span data-bind="text: customerTrendTotal().average.toFixed(1)"></span>%</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
         </div>
 
@@ -434,6 +478,61 @@
             @Html.T("Dashboard.WelcomeMessage", "Hoş geldiniz! Atamalarınızı görmek için soldaki menüden <strong>Görevlerim</strong> seçeneğine tıklayabilirsiniz.")
         </div>
         </div>
+
+    <!-- User Project Detail Modal -->
+<div class="modal fade" id="userProjectDetailModal" tabindex="-1" aria-labelledby="userProjectDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="userProjectDetailModalLabel">
+                    <i class="bi bi-person-lines-fill"></i> <span data-bind="text: selectedUserName"></span> - @Html.T("Dashboard.ProjectBreakdown", "Proje Kırılımı")
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div data-bind="visible: isLoadingProjectDetail" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yükleniyor...")</p>
+                </div>
+                <div data-bind="visible: !isLoadingProjectDetail()">
+                    <div class="alert alert-info mb-3">
+                        <strong>@Html.T("Dashboard.TotalThisMonth", "Bu Ay Toplam"):</strong>
+                        <span data-bind="text: selectedUserProjectDetail().totalEvaluations"></span> @Html.T("Dashboard.Evaluation", "değerlendirme")
+                    </div>
+                    <div data-bind="visible: selectedUserProjectDetail().projects.length === 0" class="text-center text-muted py-3">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">@Html.T("Common.NoData", "Veri bulunmamaktadır.")</p>
+                    </div>
+                    <table class="table table-striped table-hover" data-bind="visible: selectedUserProjectDetail().projects.length > 0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("Common.Project", "Proje")</th>
+                                <th>@Html.T("Common.Code", "Kod")</th>
+                                <th>@Html.T("Common.Customer", "Firma")</th>
+                                <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
+                                <th class="text-end">@Html.T("Common.Average", "Ortalama")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: selectedUserProjectDetail().projects">
+                            <tr>
+                                <td data-bind="text: projectName"></td>
+                                <td><code data-bind="text: projectCode || '-'"></code></td>
+                                <td data-bind="text: customerName || '-'"></td>
+                                <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
+                                <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> @Html.T("Common.Close", "Kapat")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 

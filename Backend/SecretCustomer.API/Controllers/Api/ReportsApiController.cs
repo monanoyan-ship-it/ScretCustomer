@@ -581,6 +581,42 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Temsilci Karnesi Word export
+    /// </summary>
+    [HttpGet("personnel-report-card/{personnelId:int}/export-word")]
+    public async Task<IActionResult> ExportPersonnelReportCardToWord(
+        int personnelId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.ExportPersonnelReportCardToWordAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting personnel report card to Word for {PersonnelId}", personnelId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError"), ex));
+        }
+    }
+
     // ===== ÖNERİLER RAPORU (Video 5-6) =====
 
     /// <summary>

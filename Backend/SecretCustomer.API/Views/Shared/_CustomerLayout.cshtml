@@ -35,7 +35,7 @@
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
                 var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings" };
-                var reportPages = new[] { "Reports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
+                var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
             }
@@ -137,6 +137,18 @@
                                 <a class="nav-link @(currentAction == "Reports" ? "active" : "")" href="/CustomerPortal/Reports">
                                     <i class="bi bi-graph-up"></i>
                                     @Html.T("CustomerPortal.Menu.Reports", "Genel Raporlar")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "InternalReports" ? "active" : "")" href="/CustomerPortal/InternalReports">
+                                    <i class="bi bi-house-door text-success"></i>
+                                    @Html.T("CustomerPortal.Menu.InternalReports", "Ic Dinleme Raporlari")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "ExternalReports" ? "active" : "")" href="/CustomerPortal/ExternalReports">
+                                    <i class="bi bi-building text-primary"></i>
+                                    @Html.T("CustomerPortal.Menu.ExternalReports", "Dis Dinleme Raporlari")
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -309,6 +321,10 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- PDF Export (html2canvas + jsPDF) -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
     <!-- Customer Portal Auth Check - Uses main JWT auth -->
     <script>

@@ -10,6 +10,7 @@ var EvaluationPopupViewModel = function() {
     self.isSaving = ko.observable(false);
     self.errorMessage = ko.observable('');
     self.formData = ko.observable(null);
+    self.currentUserId = ko.observable(null); // Mevcut kullanıcı ID (User veya CustomerPersonnel)
 
     // Form alanları
     self.callId = ko.observable('');
@@ -18,6 +19,64 @@ var EvaluationPopupViewModel = function() {
     self.duration = ko.observable('');
     self.generalComment = ko.observable('');
 
+    // Dönem seçimi
+    self.availablePeriods = ko.observableArray([]);
+    self.selectedPeriodId = ko.observable(null);
+
+    // Açıklamalar
+    self.descriptions = ko.observableArray([ko.observable('')]);
+
+    self.addDescription = function() {
+        self.descriptions.push(ko.observable(''));
+    };
+
+    self.removeDescription = function(index) {
+        if (self.descriptions().length > 1) {
+            self.descriptions.splice(index, 1);
+        }
+    };
+
+    // CallId kontrolü
+    self.callIdExists = ko.observable(false);
+    self.isCheckingCallId = ko.observable(false);
+    var callIdCheckTimeout = null;
+
+    self.callId.subscribe(function(newValue) {
+        if (callIdCheckTimeout) clearTimeout(callIdCheckTimeout);
+        if (!newValue || newValue.length < 3) {
+            self.callIdExists(false);
+            return;
+        }
+        callIdCheckTimeout = setTimeout(function() {
+            self.checkCallIdExists(newValue);
+        }, 500);
+    });
+
+    self.checkCallIdExists = function(callId) {
+        var formData = self.formData();
+        if (!formData) return;
+
+        self.isCheckingCallId(true);
+        var customerId = formData.customerId;
+        var evaluationId = config.evaluationId || formData.evaluationId;
+
+        var url = '/api/evaluations/check-callid?callId=' + encodeURIComponent(callId);
+        if (customerId) url += '&customerId=' + customerId;
+        if (evaluationId) url += '&evaluationId=' + evaluationId;
+
+        fetch(url, { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.callIdExists(data.exists === true);
+            })
+            .catch(function() {
+                self.callIdExists(false);
+            })
+            .finally(function() {
+                self.isCheckingCallId(false);
+            });
+    };
+
     // Personel bilgileri
     self.availablePersonnel = ko.observableArray([]);
     self.evaluatedPersonnelId = ko.observable(null);
@@ -25,6 +84,25 @@ var EvaluationPopupViewModel = function() {
     self.personnelSearchText = ko.observable('');
     self.isPersonnelDropdownVisible = ko.observable(false);
     self.selectedPersonnelName = ko.observable('');
+    self.isLoadingPersonnel = ko.observable(false);
+
+    // Yeni personel modu
+    self.isNewPersonnelMode = ko.observable(false);
+    self.newPersonnelFirstName = ko.observable('');
+    self.newPersonnelLastName = ko.observable('');
+
+    self.enableNewPersonnelMode = function() {
+        self.isNewPersonnelMode(true);
+        self.evaluatedPersonnelId(null);
+        self.selectedPersonnelName('');
+        self.personnelSearchText('');
+    };
+
+    self.cancelNewPersonnelMode = function() {
+        self.isNewPersonnelMode(false);
+        self.newPersonnelFirstName('');
+        self.newPersonnelLastName('');
+    };
 
     // Filtrelenmiş personel listesi
     self.filteredPersonnel = ko.computed(function() {
@@ -74,6 +152,10 @@ var EvaluationPopupViewModel = function() {
         return (self.currentScore() / self.maxScore()) * 100;
     });
 
+    // Summary View
+    self.isShowingSummary = ko.observable(false);
+    self.summaryData = ko.observable(null);
+
     // Soru için answer objesi al/oluştur
     self.getAnswer = function(questionId) {
         if (!self.answers[questionId]) {
@@ -93,8 +175,9 @@ var EvaluationPopupViewModel = function() {
     // Seçenek seçildiğinde
     self.selectOption = function(questionId, optionId, points) {
         var answer = self.getAnswer(questionId);
-        answer.selectedOptionId(optionId);
+        // ÖNCE points'i set et, SONRA selectedOptionId'yi (subscription calculateScore'u tetikler)
         answer.points(points);
+        answer.selectedOptionId(optionId);
     };
 
     // Seçilen seçeneği al (observable döndür)
@@ -107,32 +190,39 @@ var EvaluationPopupViewModel = function() {
         return self.getAnswer(questionId).comment;
     };
 
-    // Puan hesapla
+    // Puan hesapla (orantılı)
     self.calculateScore = function() {
-        var total = 0;
-        var max = 0;
+        var earnedPoints = 0;  // Seçilen puanların toplamı
+        var rawMax = 0;        // Tüm soruların max puanları toplamı
 
         self.questions().forEach(function(q) {
-            // Maksimum puanı hesapla (en yüksek seçenek puanı)
-            if (q.subCriteria && q.subCriteria.length > 0) {
-                var maxOptionPoints = Math.max.apply(null, q.subCriteria.map(function(sc) { return sc.weightPoints || 0; }));
-                if (maxOptionPoints > 0) {
-                    max += maxOptionPoints;
-                }
-            }
+            if (!q.subCriteria || q.subCriteria.length === 0) return;
 
-            // Seçilen puanı topla
+            // Bu sorunun en yüksek puanlı seçeneğini bul
+            var maxOptionPoints = Math.max.apply(null, q.subCriteria.map(function(sc) {
+                return sc.weightPoints !== undefined ? sc.weightPoints : 0;
+            }));
+            rawMax += maxOptionPoints;
+
             var answer = self.answers[q.id];
-            if (answer && answer.points) {
+            var selectedOptionId = answer ? answer.selectedOptionId() : null;
+
+            if (selectedOptionId) {
                 var pts = answer.points();
-                if (pts !== undefined && pts !== null) {
-                    total += pts;
-                }
+                earnedPoints += (pts !== undefined && pts !== null) ? pts : 0;
             }
         });
 
-        self.currentScore(total);
-        self.maxScore(max);
+        // maxTotalPoints checklist'ten gelir (varsayılan 100)
+        var maxTotalPoints = self.formData() ? (self.formData().maxTotalPoints || 100) : 100;
+        self.maxScore(maxTotalPoints);
+
+        // Orantılı hesaplama: (kazanılan / ham max) × maxTotalPoints
+        if (rawMax > 0) {
+            self.currentScore((earnedPoints / rawMax) * maxTotalPoints);
+        } else {
+            self.currentScore(0);
+        }
     };
 
     // Form yükle
@@ -150,6 +240,16 @@ var EvaluationPopupViewModel = function() {
             self.isLoading(false);
             return;
         }
+
+        // Önce kullanıcı bilgisini al
+        fetch('/api/auth/me', { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(userData) {
+                self.currentUserId(parseInt(userData.id) || null);
+            })
+            .catch(function() {
+                console.warn('Could not fetch current user');
+            });
 
         fetch(url, { credentials: 'include' })
             .then(function(r) {
@@ -172,12 +272,21 @@ var EvaluationPopupViewModel = function() {
                 }
                 self.questions(allQuestions);
 
+                // Dönem listesini yükle
+                self.availablePeriods(data.availablePeriods || []);
+                if (data.selectedPeriodId) self.selectedPeriodId(data.selectedPeriodId);
+
                 // Mevcut değerleri yükle
                 if (data.callId) self.callId(data.callId);
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
                 if (data.callTime) self.callTime(data.callTime);
                 if (data.duration) self.duration(data.duration);
                 if (data.evaluationComment) self.generalComment(data.evaluationComment);
+
+                // Açıklamaları yükle
+                if (data.descriptions && data.descriptions.length > 0) {
+                    self.descriptions(data.descriptions.map(function(d) { return ko.observable(d); }));
+                }
 
                 // Personel listesini yükle
                 self.availablePersonnel(data.availablePersonnel || []);
@@ -189,10 +298,22 @@ var EvaluationPopupViewModel = function() {
                         self.personnelSearchText(selectedPersonnel.name);
                     }
                 }
-                if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
+                if (data.evaluatedUnknownPersonnel) {
+                    self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
+                    self.isNewPersonnelMode(true);
+                    // Ad soyad ayır
+                    var parts = data.evaluatedUnknownPersonnel.split(' ');
+                    if (parts.length >= 2) {
+                        self.newPersonnelFirstName(parts[0]);
+                        self.newPersonnelLastName(parts.slice(1).join(' '));
+                    } else {
+                        self.newPersonnelFirstName(data.evaluatedUnknownPersonnel);
+                    }
+                }
 
                 // Mevcut cevapları yükle (düzenleme modunda)
-                if (data.existingAnswers && data.existingAnswers.length > 0) {
+                var hasExistingAnswers = data.existingAnswers && data.existingAnswers.length > 0;
+                if (hasExistingAnswers) {
                     data.existingAnswers.forEach(function(a) {
                         var answer = self.getAnswer(a.questionId);
                         if (a.selectedSubCriteriaIds && a.selectedSubCriteriaIds.length > 0) {
@@ -200,6 +321,24 @@ var EvaluationPopupViewModel = function() {
                         }
                         answer.points(a.earnedPoints || 0);
                         answer.comment(a.notes || '');
+                    });
+                }
+
+                // Zorunlu sorular için en yüksek puanlı seçeneği otomatik seç (yeni değerlendirmede)
+                if (!hasExistingAnswers) {
+                    allQuestions.forEach(function(q) {
+                        if (q.isRequired && q.subCriteria && q.subCriteria.length > 0) {
+                            // En yüksek puanlı seçeneği bul
+                            var maxOption = q.subCriteria.reduce(function(best, current) {
+                                var currentPoints = current.weightPoints !== undefined ? current.weightPoints : 0;
+                                var bestPoints = best.weightPoints !== undefined ? best.weightPoints : 0;
+                                return currentPoints > bestPoints ? current : best;
+                            }, q.subCriteria[0]);
+
+                            if (maxOption) {
+                                self.selectOption(q.id, maxOption.id, maxOption.weightPoints || 0);
+                            }
+                        }
                     });
                 }
 
@@ -211,7 +350,24 @@ var EvaluationPopupViewModel = function() {
             })
             .finally(function() {
                 self.isLoading(false);
+                // Input mask'ları başlat (DOM güncellenince)
+                setTimeout(function() {
+                    self.initTimePickers();
+                }, 100);
             });
+    };
+
+    // Input mask başlatma
+    self.initTimePickers = function() {
+        if (typeof Inputmask !== 'undefined') {
+            Inputmask('99:99', { insertMode: false }).mask('.time-mask');
+            Inputmask('99:99:99', { insertMode: false }).mask('.duration-mask');
+        }
+
+        // Süre varsayılan olarak 00: ile başlasın
+        if (!self.duration()) {
+            self.duration('00:');
+        }
     };
 
     // Taslak kaydet
@@ -221,6 +377,121 @@ var EvaluationPopupViewModel = function() {
 
     // Değerlendirmeyi tamamla
     self.submitEvaluation = function() {
+        self.save(true);
+    };
+
+    // Özet göster
+    self.showSummary = function() {
+        self.errorMessage('');
+
+        // Yeni personel modunda ad soyad'ı birleştir
+        var personnelName = '';
+        if (self.isNewPersonnelMode()) {
+            var firstName = self.newPersonnelFirstName().trim();
+            var lastName = self.newPersonnelLastName().trim();
+            if (firstName && lastName) {
+                personnelName = firstName + ' ' + lastName;
+            }
+        } else if (self.selectedPersonnelName()) {
+            personnelName = self.selectedPersonnelName();
+        }
+
+        // Validasyon
+        if (!self.evaluatedPersonnelId() && !personnelName) {
+            toastr.error('Personel seçimi zorunludur');
+            return;
+        }
+        if (!self.callDate()) {
+            toastr.error('Çağrı Tarihi zorunludur');
+            return;
+        }
+        if (!self.callTime()) {
+            toastr.error('Çağrı Saati zorunludur');
+            return;
+        }
+        if (!self.duration()) {
+            toastr.error('Süre zorunludur');
+            return;
+        }
+
+        // Cevapları hazırla
+        var answersArray = [];
+        var index = 1;
+        self.questions().forEach(function(q) {
+            var answer = self.answers[q.id];
+            var selectedId = answer ? answer.selectedOptionId() : null;
+            var isAnswered = selectedId !== null;
+            var answerText = '';
+            var points = 0;
+
+            if (isAnswered && q.subCriteria) {
+                var selectedOption = q.subCriteria.find(function(sc) { return sc.id === selectedId; });
+                if (selectedOption) {
+                    answerText = selectedOption.description;
+                    points = selectedOption.weightPoints || 0;
+                }
+            }
+
+            answersArray.push({
+                index: index++,
+                questionText: q.text,
+                isRequired: q.isRequired,
+                isAnswered: isAnswered,
+                answerText: answerText,
+                points: points,
+                comment: answer ? answer.comment() : ''
+            });
+        });
+
+        // Açıklamaları string array'e çevir
+        var descriptionsArray = self.descriptions().map(function(d) {
+            return typeof d === 'function' ? d() : d;
+        }).filter(function(d) { return d && d.trim(); });
+
+        // Summary data oluştur
+        self.summaryData({
+            evaluatedPersonnelName: personnelName,
+            callId: self.callId(),
+            callDate: self.callDate(),
+            callTime: self.callTime(),
+            duration: self.duration(),
+            descriptions: descriptionsArray,
+            evaluationComment: self.generalComment(),
+            currentScore: self.currentScore(),
+            maxScore: self.maxScore(),
+            scorePercentage: self.scorePercentage(),
+            answers: answersArray
+        });
+
+        self.isShowingSummary(true);
+    };
+
+    // Forma geri dön
+    self.backToForm = function() {
+        self.isShowingSummary(false);
+        self.summaryData(null);
+    };
+
+    // Özetten onayla ve kaydet
+    self.confirmSubmit = function() {
+        // Zorunlu soruların cevaplanıp cevaplanmadığını kontrol et
+        var unansweredRequired = [];
+        self.questions().forEach(function(q, idx) {
+            if (q.isRequired) {
+                var answer = self.answers[q.id];
+                var selectedId = answer ? answer.selectedOptionId() : null;
+                if (!selectedId) {
+                    unansweredRequired.push((idx + 1) + '. ' + q.text);
+                }
+            }
+        });
+
+        if (unansweredRequired.length > 0) {
+            toastr.error('Zorunlu sorular cevaplanmalıdır: ' + unansweredRequired[0]);
+            self.isShowingSummary(false);
+            return;
+        }
+
         self.save(true);
     };
 
@@ -245,8 +516,18 @@ var EvaluationPopupViewModel = function() {
             }
         });
 
+        // Yeni personel modunda ad soyad'ı birleştir
+        var unknownPersonnel = '';
+        if (self.isNewPersonnelMode()) {
+            var firstName = self.newPersonnelFirstName().trim();
+            var lastName = self.newPersonnelLastName().trim();
+            if (firstName && lastName) {
+                unknownPersonnel = firstName + ' ' + lastName;
+            }
+        }
+
         // Validasyon
-        if (!self.evaluatedPersonnelId() && !self.evaluatedUnknownPersonnel()) {
+        if (!self.evaluatedPersonnelId() && !unknownPersonnel) {
             self.errorMessage('Personel seçimi zorunludur');
             self.isSaving(false);
             toastr.error('Personel seçimi zorunludur');
@@ -271,16 +552,34 @@ var EvaluationPopupViewModel = function() {
             return;
         }
 
+        // Açıklamaları string array'e çevir
+        var descriptionsArray = self.descriptions().map(function(d) {
+            return typeof d === 'function' ? d() : d;
+        }).filter(function(d) { return d && d.trim(); });
+
+        // isInternal parametresine göre evaluator ID'yi belirle
+        var evaluatorId = null;
+        var evaluatorCustomerPersonnelId = null;
+        if (config.isInternal) {
+            evaluatorCustomerPersonnelId = self.currentUserId();
+        } else {
+            evaluatorId = self.currentUserId();
+        }
+
         var data = {
             assignmentId: config.assignmentId || self.formData()?.assignmentId,
             evaluationId: config.evaluationId || self.formData()?.evaluationId,
+            evaluatorId: evaluatorId,
+            evaluatorCustomerPersonnelId: evaluatorCustomerPersonnelId,
+            periodId: self.selectedPeriodId() || null,
             callId: self.callId(),
             callDate: self.callDate() || null,
             callTime: self.callTime() || null,
             duration: self.duration() || null,
+            descriptions: descriptionsArray,
             evaluationComment: self.generalComment(),
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
-            evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
+            evaluatedUnknownPersonnel: unknownPersonnel || null,
             answers: answersArray
         };
 

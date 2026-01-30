@@ -24,7 +24,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { activeTab('evaluations'); }" href="#">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'evaluations' }, click: function() { setActiveTab('evaluations'); }" href="#">
                 <i class="bi bi-headphones"></i> @Html.T("Evaluation.ListeningsVisits", "Dinlemeler/Ziyaretler")
                 <span class="badge bg-success" data-bind="text: evaluationsTotalCount()"></span>
             </a>
@@ -133,6 +133,7 @@
                         <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
                         <option value="search">@Html.T("Common.Search", "Arama")</option>
                         <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
                         <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
                         <option value="controlDate">@Html.T("Evaluation.ControlDate", "Kontrol Tarihi")</option>
@@ -171,6 +172,21 @@
                         <input type="text" class="form-control form-control-sm" style="width: 200px;" autocomplete="off"
                                data-bind="value: evalTempFilter.personnelName, valueUpdate: 'afterkeydown'"
                                placeholder="@Html.T("Evaluation.PersonnelPlaceholder", "Temsilci adı...")">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'project' -->
+                    <!-- Project Filter Input -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto; min-width: 200px;" data-bind="value: evalTempFilter.projectName">
+                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
+                            <!-- ko foreach: availableProjects -->
+                            <option data-bind="value: $data, text: $data"></option>
+                            <!-- /ko -->
+                        </select>
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
                             <i class="bi bi-plus"></i>
                         </button>
@@ -294,7 +310,13 @@
                     <tbody data-bind="foreach: allEvaluationsList">
                         <tr>
                             <td>
-                                <code data-bind="text: callId ? (callId.length > 12 ? callId.substring(0, 12) + '...' : callId) : '-', attr: { title: callId }" style="cursor: help;"></code>
+                                <!-- ko if: callId -->
+                                <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
+                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                    <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                </button>
+                                <!-- /ko -->
+                                <!-- ko ifnot: callId --><span>-</span><!-- /ko -->
                             </td>
                             <td>
                                 <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>
@@ -592,7 +614,15 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                <td data-bind="text: callId || '-'"></td>
+                                                <td>
+                                                    <!-- ko if: callId -->
+                                                    <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
+                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                        <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                                    </button>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot: callId --><span>-</span><!-- /ko -->
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
@@ -840,7 +870,15 @@
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
-                                                <span class="fw-bold" data-bind="text: callId"></span>
+                                                <!-- ko if: callId -->
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <code class="fw-bold" data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
+                                                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                        <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                                    </button>
+                                                </div>
+                                                <!-- /ko -->
+                                                <!-- ko ifnot: callId --><span class="fw-bold">-</span><!-- /ko -->
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>

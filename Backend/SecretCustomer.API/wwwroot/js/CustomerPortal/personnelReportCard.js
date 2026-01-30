@@ -343,6 +343,38 @@ function CustomerPersonnelReportCardViewModel() {
             });
     };
 
+    // Export to Word
+    self.exportToWord = function() {
+        if (!self.selectedPersonnelId()) return;
+
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/personnel-report-card/' + self.selectedPersonnelId() + '/export-word' + self.buildQueryParams();
+
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Word dosyası oluşturulamadı');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                var objectUrl = URL.createObjectURL(blob);
+                a.href = objectUrl;
+                a.download = 'MT_Karne_' + (self.report() ? self.report().personnelName.replace(/ /g, '_') : 'rapor') + '.docx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+                toastr.success('Word karnesi indirildi.');
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Word dosyası oluşturulurken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
     // Details modal
     self.showDetails = function(evaluationId) {
         self.isDetailsModalOpen(true);
@@ -377,7 +409,7 @@ function CustomerPersonnelReportCardViewModel() {
         if (!data) return;
 
         self.isExportingDetail(true);
-        var filename = 'Dinleme_Detay_' + (data.callId || data.id) + '.xlsx';
+        var filename = 'Dinleme_Detay_' + new Date().toISOString().slice(0,10) + '.xlsx';
 
         customerApiDownloadGet('/api/customer/portal/evaluations/' + data.id + '/export', filename)
             .then(function() { toastr.success('Excel dosyası indirildi'); })

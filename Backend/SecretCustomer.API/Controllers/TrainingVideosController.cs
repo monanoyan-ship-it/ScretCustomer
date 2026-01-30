@@ -33,4 +33,12 @@ public class TrainingVideosController : Controller
         ViewBag.AssignmentId = id;
         return View();
     }
+
+    /// <summary>
+    /// Anket raporları sayfası
+    /// </summary>
+    public IActionResult QuizReports()
+    {
+        return View();
+    }
 }

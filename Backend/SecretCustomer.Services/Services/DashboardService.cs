@@ -499,4 +499,87 @@ public class DashboardService : IDashboardService
             ProjectTargets = projectTargets
         };
     }
+
+    /// <summary>
+    /// Kullanıcının bu ayki proje bazlı değerlendirme detayını getirir
+    /// </summary>
+    public async Task<UserProjectBreakdownDto> GetUserProjectBreakdownAsync(int userId)
+    {
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Kullanıcı bilgisi
+        var user = await _context.Users.FindAsync(userId);
+        var userName = user != null ? $"{user.FirstName} {user.LastName}" : "Bilinmeyen";
+
+        // Bu ayki değerlendirmeler - proje bazlı gruplama
+        var projectData = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a!.Project)
+                    .ThenInclude(p => p!.Customer)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId == userId)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .GroupBy(e => new
+            {
+                ProjectId = e.Assignment!.ProjectId,
+                ProjectName = e.Assignment.Project!.Name,
+                ProjectCode = e.Assignment.Project.Code,
+                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : null
+            })
+            .Select(g => new UserProjectDetailDto
+            {
+                ProjectId = g.Key.ProjectId,
+                ProjectName = g.Key.ProjectName,
+                ProjectCode = g.Key.ProjectCode,
+                CustomerName = g.Key.CustomerName,
+                EvaluationCount = g.Count(),
+                AverageScore = Math.Round(g.Average(e => e.ScorePercentage ?? 0), 2)
+            })
+            .OrderByDescending(p => p.EvaluationCount)
+            .ToListAsync();
+
+        var totalCount = projectData.Sum(p => p.EvaluationCount);
+
+        return new UserProjectBreakdownDto
+        {
+            UserId = userId,
+            UserName = userName,
+            TotalEvaluations = totalCount,
+            Projects = projectData
+        };
+    }
+
+    /// <summary>
+    /// Firma bazlı aylık trend verilerini getirir
+    /// </summary>
+    public async Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync()
+    {
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Firma bazlı gruplama
+        var customerData = await _context.Evaluations
+            .Include(e => e.Assignment)
+                .ThenInclude(a => a!.Project)
+                    .ThenInclude(p => p!.Customer)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId != null)
+            .GroupBy(e => new
+            {
+                CustomerId = e.Assignment!.Project!.CustomerId!.Value,
+                CustomerName = e.Assignment.Project.Customer!.CompanyName
+            })
+            .Select(g => new CustomerMonthlyTrendDto
+            {
+                CustomerId = g.Key.CustomerId,
+                CustomerName = g.Key.CustomerName,
+                EvaluationCount = g.Count(),
+                AverageScore = Math.Round(g.Average(e => e.ScorePercentage ?? 0), 2)
+            })
+            .OrderByDescending(c => c.EvaluationCount)
+            .ToListAsync();
+
+        return customerData;
+    }
 }

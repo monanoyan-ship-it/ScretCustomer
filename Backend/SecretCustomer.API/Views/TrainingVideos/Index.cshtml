@@ -255,6 +255,11 @@
                         </div>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">@Html.T("TrainingVideo.Quiz", "Anket")</label>
+                        <select class="form-select" data-bind="value: editQuizId, options: availableQuizzes, optionsValue: 'id', optionsText: function(item) { return item.title + ' (' + item.questionCount + ' soru)'; }, optionsCaption: T('TrainingVideo.NoQuiz', 'Anket secilmedi')"></select>
+                        <small class="text-muted">@Html.T("TrainingVideo.QuizHelp", "Video tamamlandiktan sonra gosterilecek anket")</small>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">@Html.T("TrainingVideo.Scopes", "Kapsam")</label>
                         <div class="border rounded p-3 bg-light">
                             <!-- Hierarchical Scope Selection -->

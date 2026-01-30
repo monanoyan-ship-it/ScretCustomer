@@ -594,10 +594,19 @@ function AssignmentsViewModel() {
     };
 
     // Project Picker Methods
-    self.toggleProjectPicker = function() {
+    self.toggleProjectPicker = function(data, event) {
+        if (event) event.stopPropagation();
         self.isProjectPickerOpen(!self.isProjectPickerOpen());
         if (self.isProjectPickerOpen()) {
             self.projectPickerSearch('');
+            // Dışarı tıklayınca kapat
+            setTimeout(function() {
+                $(document).one('click', function(e) {
+                    if (!$(e.target).closest('.project-picker-dropdown').length) {
+                        self.isProjectPickerOpen(false);
+                    }
+                });
+            }, 100);
         }
     };
 
@@ -720,16 +729,16 @@ function AssignmentsViewModel() {
             .then(function(savedAssignment) {
                 if (isEdit) {
                     // Guncelleme: array'de bul ve guncelle
-                    var list = self.assignments();
+                    var list = self.allAssignments();
                     for (var i = 0; i < list.length; i++) {
                         if (list[i].id === savedAssignment.id) {
-                            self.assignments.splice(i, 1, savedAssignment);
+                            self.allAssignments.splice(i, 1, savedAssignment);
                             break;
                         }
                     }
                 } else {
                     // Yeni kayit: array'e ekle (son eklenen en üstte)
-                    self.assignments.unshift(savedAssignment);
+                    self.allAssignments.unshift(savedAssignment);
                 }
                 toastr.success(isEdit ? T('Assignment.UpdateSuccess', 'Atama başarıyla güncellendi.') : T('Assignment.SaveSuccess', 'Atama başarıyla oluşturuldu.'));
                 self.closeModal();
@@ -762,15 +771,17 @@ function AssignmentsViewModel() {
 
     self.deleteAssignment = function(assignment) {
         showDeleteConfirm(T('Assignment.ThisAssignment', 'Bu atama'), function() {
-            fetch('/api/assignments/' + assignment.id, {
+            var assignmentId = assignment.id;
+            fetch('/api/assignments/' + assignmentId, {
                 method: 'DELETE',
                 credentials: 'include'
             })
                 .then(function(response) {
                     if (!response.ok) throw new Error(T('Message.DeleteError', 'Silme başarısız'));
-                    toastr.success(T('Assignment.DeleteSuccess', 'Atama başarıyla silindi.'));
-                    self.assignments.remove(assignment);
+                    // ID ile eşleştirerek sil (referans sorunu önlenir)
+                    self.allAssignments.remove(function(a) { return a.id === assignmentId; });
                     self.loadSummary();
+                    toastr.success(T('Assignment.DeleteSuccess', 'Atama başarıyla silindi.'));
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
@@ -818,10 +829,10 @@ function AssignmentsViewModel() {
             })
             .then(function(updatedAssignment) {
                 // Array'de bul ve guncelle
-                var list = self.assignments();
+                var list = self.allAssignments();
                 for (var i = 0; i < list.length; i++) {
                     if (list[i].id === updatedAssignment.id) {
-                        self.assignments.splice(i, 1, updatedAssignment);
+                        self.allAssignments.splice(i, 1, updatedAssignment);
                         break;
                     }
                 }
@@ -873,10 +884,10 @@ function AssignmentsViewModel() {
                 return res.json();
             })
             .then(function(updatedAssignment) {
-                var list = self.assignments();
+                var list = self.allAssignments();
                 for (var i = 0; i < list.length; i++) {
                     if (list[i].id === updatedAssignment.id) {
-                        self.assignments.splice(i, 1, updatedAssignment);
+                        self.allAssignments.splice(i, 1, updatedAssignment);
                         break;
                     }
                 }
@@ -913,10 +924,10 @@ function AssignmentsViewModel() {
                     })
                     .then(function(updatedAssignment) {
                         // Array'de bul ve guncelle
-                        var list = self.assignments();
+                        var list = self.allAssignments();
                         for (var i = 0; i < list.length; i++) {
                             if (list[i].id === updatedAssignment.id) {
-                                self.assignments.splice(i, 1, updatedAssignment);
+                                self.allAssignments.splice(i, 1, updatedAssignment);
                                 break;
                             }
                         }
@@ -951,10 +962,10 @@ function AssignmentsViewModel() {
                     })
                     .then(function(updatedAssignment) {
                         // Array'de bul ve guncelle
-                        var list = self.assignments();
+                        var list = self.allAssignments();
                         for (var i = 0; i < list.length; i++) {
                             if (list[i].id === updatedAssignment.id) {
-                                self.assignments.splice(i, 1, updatedAssignment);
+                                self.allAssignments.splice(i, 1, updatedAssignment);
                                 break;
                             }
                         }

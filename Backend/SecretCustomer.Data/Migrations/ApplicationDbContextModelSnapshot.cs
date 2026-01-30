@@ -2726,6 +2726,82 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("SavedFilters");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.SmtpProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClientId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FromEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FromName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TenantId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("UseGraphApi")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("UseOAuth")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("UseSsl")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SmtpProfiles");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.SupportRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -2992,6 +3068,275 @@ namespace SecretCustomer.Data.Migrations
                     b.ToTable("SystemSettings");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PassingScore")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ShowResults")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ShuffleOptions")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ShuffleQuestions")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TrainingVideoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrainingVideoId");
+
+                    b.ToTable("TrainingQuizzes");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("EarnedPoints")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("SelectedOptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SelectedOptionIds")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TrainingQuizQuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainingQuizResponseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SelectedOptionId");
+
+                    b.HasIndex("TrainingQuizQuestionId");
+
+                    b.HasIndex("TrainingQuizResponseId");
+
+                    b.ToTable("TrainingQuizAnswers");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TrainingQuizQuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("WeightPoints")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrainingQuizQuestionId");
+
+                    b.ToTable("TrainingQuizOptions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HelpText")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TrainingQuizId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrainingQuizId");
+
+                    b.ToTable("TrainingQuizQuestions");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPassed")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MaxPossibleScore")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ScorePercentage")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TrainingQuizId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TrainingVideoExternalParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TrainingVideoParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrainingQuizId");
+
+                    b.HasIndex("TrainingVideoExternalParticipantId");
+
+                    b.HasIndex("TrainingVideoParticipantId");
+
+                    b.ToTable("TrainingQuizResponses");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideo", b =>
                 {
                     b.Property<int>("Id")
@@ -3095,6 +3440,9 @@ namespace SecretCustomer.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsExternal")
                         .HasColumnType("boolean");
 
                     b.Property<int?>("MaxWatchCount")
@@ -4336,6 +4684,89 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuiz", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingVideo", "TrainingVideo")
+                        .WithMany()
+                        .HasForeignKey("TrainingVideoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("TrainingVideo");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizAnswer", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuizOption", "SelectedOption")
+                        .WithMany()
+                        .HasForeignKey("SelectedOptionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuizQuestion", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("TrainingQuizQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuizResponse", "Response")
+                        .WithMany("Answers")
+                        .HasForeignKey("TrainingQuizResponseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Response");
+
+                    b.Navigation("SelectedOption");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizOption", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuizQuestion", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("TrainingQuizQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizQuestion", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuiz", "TrainingQuiz")
+                        .WithMany("Questions")
+                        .HasForeignKey("TrainingQuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TrainingQuiz");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizResponse", b =>
+                {
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingQuiz", "TrainingQuiz")
+                        .WithMany("Responses")
+                        .HasForeignKey("TrainingQuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingVideoExternalParticipant", "ExternalParticipant")
+                        .WithMany()
+                        .HasForeignKey("TrainingVideoExternalParticipantId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SecretCustomer.Core.Entities.TrainingVideoParticipant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("TrainingVideoParticipantId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ExternalParticipant");
+
+                    b.Navigation("Participant");
+
+                    b.Navigation("TrainingQuiz");
+                });
+
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideoAssignment", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.EmailTemplate", "EmailTemplate")
@@ -4614,6 +5045,25 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.QuestionSubCriteria", b =>
                 {
                     b.Navigation("Selections");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuiz", b =>
+                {
+                    b.Navigation("Questions");
+
+                    b.Navigation("Responses");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizQuestion", b =>
+                {
+                    b.Navigation("Answers");
+
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingQuizResponse", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.TrainingVideo", b =>

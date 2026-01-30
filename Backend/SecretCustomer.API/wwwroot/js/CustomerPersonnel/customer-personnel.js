@@ -366,7 +366,7 @@ function CustomerPersonnelViewModel(customerId) {
             phoneNumber: personnel.phoneNumber || null,
             department: personnel.department || null,
             title: personnel.title || null,
-            role: parseInt(personnel.role, 10),
+            role: personnel.role, // String olarak gönder: "CustomerManager", "CustomerSupervisor", "CustomerOperator"
             isActive: personnel.isActive,
             notes: personnel.notes || null
         };

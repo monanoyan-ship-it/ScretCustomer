@@ -13,6 +13,12 @@ public interface IDashboardService
     Task<DailyMetricsDto> GetDailyMetricsAsync();
     Task<UserPerformanceDto> GetUserPerformanceAsync(int? currentUserId = null);
     Task<TargetProgressDto> GetTargetProgressAsync();
+
+    // Kullanıcı proje kırılımı (Bu ay en çok dinleyenler detayı)
+    Task<UserProjectBreakdownDto> GetUserProjectBreakdownAsync(int userId);
+
+    // Firma bazlı aylık trend
+    Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync();
 }
 
 public class RepresentativeEvaluationDto

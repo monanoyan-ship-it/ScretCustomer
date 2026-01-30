@@ -1,199 +1,126 @@
 @{
-    ViewData["Title"] = "SMTP Ayarları";
+    ViewData["Title"] = "SMTP Profilleri";
 }
 
-<div id="smtp-settings-app">
+<div id="smtp-profiles-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-envelope-at"></i> SMTP Ayarları</h2>
-        <div>
-            <button class="btn btn-outline-info me-2" data-bind="click: testConnection, disable: isTesting">
-                <span data-bind="visible: !isTesting()">
-                    <i class="bi bi-plug"></i> Bağlantıyı Test Et
-                </span>
-                <span data-bind="visible: isTesting">
-                    <span class="spinner-border spinner-border-sm"></span> Test ediliyor...
-                </span>
-            </button>
-            <button class="btn btn-primary" data-bind="click: saveSettings, disable: isSaving">
-                <span data-bind="visible: !isSaving()">
-                    <i class="bi bi-save"></i> Kaydet
-                </span>
-                <span data-bind="visible: isSaving">
-                    <span class="spinner-border spinner-border-sm"></span> Kaydediliyor...
-                </span>
-            </button>
-        </div>
+        <h4 class="mb-0"><i class="bi bi-envelope-at me-2"></i>SMTP Profilleri</h4>
+        <button class="btn btn-primary" data-bind="click: openCreateModal">
+            <i class="bi bi-plus-lg me-1"></i> Yeni Profil
+        </button>
     </div>
 
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Yükleniyor...</span>
-        </div>
-        <p class="mt-2 text-muted">Ayarlar yükleniyor...</p>
+        <div class="spinner-border text-primary" role="status"></div>
     </div>
 
-    <!-- Settings Form -->
-    <div data-bind="visible: !isLoading()" class="row">
-        <!-- Sol Panel: Sunucu Ayarları -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-server"></i> Sunucu Ayarları</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Enabled -->
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="enabled" data-bind="checked: settings.enabled" style="width: 3em; height: 1.5em;">
-                            <label class="form-check-label ms-2" for="enabled">
-                                <strong>SMTP Servisi Aktif</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted">Devre dışı bırakırsanız sistem email göndermez.</small>
-                    </div>
-
-                    <hr>
-
-                    <!-- Host -->
-                    <div class="mb-3">
-                        <label class="form-label">SMTP Sunucu <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" placeholder="smtp.gmail.com" data-bind="value: settings.host">
-                        <small class="text-muted">Örn: smtp.gmail.com, smtp.office365.com, smtp.yandex.com</small>
-                    </div>
-
-                    <!-- Port -->
-                    <div class="mb-3">
-                        <label class="form-label">Port <span class="text-danger">*</span></label>
-                        <select class="form-select" data-bind="value: settings.port">
-                            <option value="25">25 (SMTP)</option>
-                            <option value="465">465 (SMTPS / SSL)</option>
-                            <option value="587">587 (Submission / TLS) - Önerilen</option>
-                            <option value="2525">2525 (Alternatif)</option>
-                        </select>
-                    </div>
-
-                    <!-- Use SSL -->
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="useSsl" data-bind="checked: settings.useSsl">
-                            <label class="form-check-label" for="useSsl">
-                                SSL/TLS Kullan (StartTLS)
-                            </label>
-                        </div>
-                        <small class="text-muted">Güvenli bağlantı için önerilir.</small>
-                    </div>
-                </div>
+    <!-- Profiles Table -->
+    <div data-bind="visible: !isLoading()" class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div data-bind="visible: profiles().length === 0" class="text-center py-5 text-muted">
+                <i class="bi bi-envelope-x fs-1"></i>
+                <p class="mt-2">Henüz SMTP profili bulunmuyor.</p>
+                <button class="btn btn-primary btn-sm" data-bind="click: openCreateModal">
+                    <i class="bi bi-plus-lg me-1"></i> İlk Profili Oluştur
+                </button>
             </div>
-        </div>
-
-        <!-- Sağ Panel: Kimlik Doğrulama -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="bi bi-key"></i> Kimlik Doğrulama</h5>
-                </div>
-                <div class="card-body">
-                    <!-- OAuth Toggle -->
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="useOAuth" data-bind="checked: settings.useOAuth" style="width: 3em; height: 1.5em;">
-                            <label class="form-check-label ms-2" for="useOAuth">
-                                <strong>OAuth 2.0 Kullan (Microsoft 365)</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted">Microsoft 365 için önerilen modern kimlik doğrulama yöntemi.</small>
-                    </div>
-
-                    <hr>
-
-                    <!-- Username (her zaman görünür) -->
-                    <div class="mb-3">
-                        <label class="form-label">Kullanıcı Adı / Email</label>
-                        <input type="text" class="form-control" placeholder="user@domain.com" data-bind="value: settings.username">
-                    </div>
-
-                    <!-- Basic Auth: Password -->
-                    <div class="mb-3" data-bind="visible: !settings.useOAuth()">
-                        <label class="form-label">Şifre / Uygulama Şifresi</label>
-                        <div class="input-group">
-                            <input class="form-control" placeholder="••••••••"
-                                   data-bind="value: settings.password, attr: { type: showPassword() ? 'text' : 'password' }">
-                            <button class="btn btn-outline-secondary" type="button" data-bind="click: togglePassword">
-                                <i data-bind="css: showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                            </button>
-                        </div>
-                        <small class="text-muted">Gmail için "Uygulama Şifresi" kullanın.</small>
-                    </div>
-
-                    <!-- OAuth 2.0 Settings -->
-                    <div data-bind="visible: settings.useOAuth">
-                        <div class="alert alert-info py-2 mb-3">
-                            <small><i class="bi bi-info-circle"></i> Azure Portal'dan uygulama kaydı oluşturun ve SMTP.Send izni verin.</small>
-                        </div>
-
-                        <!-- Tenant ID -->
-                        <div class="mb-3">
-                            <label class="form-label">Tenant ID <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" data-bind="value: settings.tenantId">
-                            <small class="text-muted">Azure Active Directory Tenant ID</small>
-                        </div>
-
-                        <!-- Client ID -->
-                        <div class="mb-3">
-                            <label class="form-label">Client ID (Application ID) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" data-bind="value: settings.clientId">
-                            <small class="text-muted">Uygulama kaydının Application (client) ID değeri</small>
-                        </div>
-
-                        <!-- Client Secret -->
-                        <div class="mb-3">
-                            <label class="form-label">Client Secret <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input class="form-control" placeholder="••••••••"
-                                       data-bind="value: settings.clientSecret, attr: { type: showClientSecret() ? 'text' : 'password' }">
-                                <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleClientSecret">
-                                    <i data-bind="css: showClientSecret() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Certificates & secrets bölümünden oluşturulan değer</small>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <!-- From Email -->
-                    <div class="mb-3">
-                        <label class="form-label">Gönderen Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" placeholder="noreply@domain.com" data-bind="value: settings.fromEmail">
-                    </div>
-
-                    <!-- From Name -->
-                    <div class="mb-3">
-                        <label class="form-label">Gönderen Adı</label>
-                        <input type="text" class="form-control" placeholder="Secret Customer" data-bind="value: settings.fromName">
-                    </div>
-                </div>
+            <div data-bind="visible: profiles().length > 0" class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Profil Adı</th>
+                            <th>Sunucu</th>
+                            <th>Gönderen</th>
+                            <th>Kimlik Doğrulama</th>
+                            <th>Durum</th>
+                            <th width="180"></th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: profiles">
+                        <tr>
+                            <td>
+                                <strong data-bind="text: name"></strong>
+                                <!-- ko if: isDefault -->
+                                <span class="badge bg-primary ms-1">Varsayılan</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <code data-bind="text: host + ':' + port"></code>
+                                <!-- ko if: useSsl -->
+                                <span class="badge bg-success ms-1">SSL</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span data-bind="text: fromEmail"></span>
+                                <!-- ko if: fromName -->
+                                <small class="text-muted d-block" data-bind="text: fromName"></small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: useOAuth && useGraphApi -->
+                                <span class="badge bg-primary">Graph API</span>
+                                <!-- /ko -->
+                                <!-- ko if: useOAuth && !useGraphApi -->
+                                <span class="badge bg-info">OAuth 2.0</span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: useOAuth -->
+                                <span class="badge bg-secondary">Basic Auth</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <!-- ko if: enabled -->
+                                <span class="badge bg-success">Aktif</span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: enabled -->
+                                <span class="badge bg-secondary">Devre Dışı</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" data-bind="click: $parent.testConnection, disable: $parent.isTesting" title="Bağlantı Testi">
+                                        <i class="bi bi-plug"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <!-- ko ifnot: isDefault -->
+                                    <button class="btn btn-outline-warning" data-bind="click: $parent.setDefault" title="Varsayılan Yap">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteProfile" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <!-- /ko -->
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Test Email -->
-    <div data-bind="visible: !isLoading()" class="card shadow-sm">
+    <!-- Test Email Section -->
+    <div data-bind="visible: !isLoading() && profiles().length > 0" class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="bi bi-send"></i> Test Email Gönder</h5>
+            <h6 class="mb-0"><i class="bi bi-send me-2"></i>Test Email Gönder</h6>
         </div>
         <div class="card-body">
             <div class="row align-items-end">
-                <div class="col-md-8">
-                    <label class="form-label">Test Email Adresi</label>
-                    <input type="email" class="form-control" placeholder="test@example.com" data-bind="value: testEmail">
-                </div>
                 <div class="col-md-4">
+                    <label class="form-label">Profil</label>
+                    <select class="form-select" data-bind="options: profiles, optionsText: 'name', optionsValue: 'id', value: selectedTestProfileId"></select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Alıcı Email Adresi</label>
+                    <input type="email" class="form-control" placeholder="test@example.com" autocomplete="off" data-bind="value: testEmail">
+                </div>
+                <div class="col-md-3">
                     <button class="btn btn-info w-100" data-bind="click: sendTestEmail, disable: isSendingTest">
                         <span data-bind="visible: !isSendingTest()">
-                            <i class="bi bi-envelope-arrow-up"></i> Test Maili Gönder
+                            <i class="bi bi-envelope-arrow-up me-1"></i> Gönder
                         </span>
                         <span data-bind="visible: isSendingTest">
                             <span class="spinner-border spinner-border-sm"></span> Gönderiliyor...
@@ -201,230 +128,265 @@
                     </button>
                 </div>
             </div>
-            <small class="text-muted mt-2 d-block">
-                <i class="bi bi-info-circle"></i> Test maili göndermeden önce ayarları kaydedin.
-            </small>
         </div>
     </div>
 
     <!-- Help Section -->
-    <div class="card mt-4">
+    <div class="card border-0 shadow-sm mt-4" data-bind="visible: !isLoading()">
         <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-question-circle"></i> Yardım</h6>
+            <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>Yardım</h6>
         </div>
         <div class="card-body">
+            <!-- Profil Yönetimi Bilgisi -->
+            <div class="alert alert-info mb-4">
+                <h6><i class="bi bi-info-circle me-1"></i> SMTP Profil Yönetimi</h6>
+                <ul class="mb-0 small">
+                    <li><strong>Varsayılan Profil:</strong> Sistem email gönderirken (anket davetiyeleri, değerlendirme bildirimleri vb.) varsayılan profili kullanır.</li>
+                    <li><strong>Birden Fazla Profil:</strong> Farklı email sağlayıcıları için birden fazla profil oluşturabilirsiniz (örn: Office 365, Gmail).</li>
+                    <li><strong>Bağlantı Testi:</strong> Kaydetmeden önce "Bağlantı Testi" yaparak ayarların doğruluğunu kontrol edin.</li>
+                    <li><strong>Test Email:</strong> Profil seçip test maili göndererek email gönderiminin çalıştığını doğrulayın.</li>
+                </ul>
+            </div>
+
             <div class="row">
                 <div class="col-md-4">
-                    <h6><i class="bi bi-google text-danger"></i> Gmail</h6>
+                    <h6><i class="bi bi-google text-danger me-1"></i> Gmail</h6>
                     <ul class="small">
-                        <li>Host: smtp.gmail.com</li>
-                        <li>Port: 587</li>
+                        <li>Host: <code>smtp.gmail.com</code></li>
+                        <li>Port: <code>587</code></li>
                         <li>SSL: Evet</li>
                         <li><a href="https://myaccount.google.com/apppasswords" target="_blank">Uygulama Şifresi</a> oluşturun</li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h6><i class="bi bi-microsoft text-primary"></i> Microsoft 365 (OAuth 2.0)</h6>
+                    <h6><i class="bi bi-microsoft text-primary me-1"></i> Microsoft 365 (OAuth 2.0)</h6>
                     <ul class="small">
-                        <li>Host: smtp.office365.com</li>
-                        <li>Port: 587</li>
+                        <li>Host: <code>smtp.office365.com</code></li>
+                        <li>Port: <code>587</code></li>
                         <li>SSL: Evet</li>
                         <li>OAuth 2.0: <strong>Önerilen</strong></li>
                         <li><a href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank">Azure App Registration</a></li>
-                        <li>API izni: SMTP.Send</li>
+                        <li>API izni: <code>SMTP.Send</code></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h6><i class="bi bi-envelope text-warning"></i> Yandex</h6>
+                    <h6><i class="bi bi-envelope text-warning me-1"></i> Yandex</h6>
                     <ul class="small">
-                        <li>Host: smtp.yandex.com</li>
-                        <li>Port: 465 veya 587</li>
+                        <li>Host: <code>smtp.yandex.com</code></li>
+                        <li>Port: <code>465</code> veya <code>587</code></li>
                         <li>SSL: Evet</li>
                         <li>Normal şifre kullanabilirsiniz</li>
                     </ul>
                 </div>
             </div>
+
+            <!-- Microsoft Graph API Kurulum Adımları (Önerilen) -->
+            <div class="mt-4">
+                <h6><i class="bi bi-diagram-3 text-primary me-1"></i> Microsoft Graph API Kurulumu (Önerilen)</h6>
+                <p class="small text-muted mb-2">SMTP yerine Graph API kullanmak daha güvenilir ve kolaydır.</p>
+                <ol class="small">
+                    <li><a href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank">Azure Portal</a>'da yeni bir <strong>App Registration</strong> oluşturun</li>
+                    <li><strong>API permissions</strong> bölümünde:
+                        <ul>
+                            <li><code>Microsoft Graph > Mail.Send</code> (Application permission) ekleyin</li>
+                            <li><strong>Grant admin consent</strong> butonuna tıklayın</li>
+                        </ul>
+                    </li>
+                    <li><strong>Certificates & secrets</strong> bölümünde yeni bir <strong>Client Secret</strong> oluşturun ve değeri kopyalayın</li>
+                    <li><strong>Overview</strong> sayfasından:
+                        <ul>
+                            <li><strong>Application (client) ID</strong> → Client ID alanına</li>
+                            <li><strong>Directory (tenant) ID</strong> → Tenant ID alanına</li>
+                        </ul>
+                    </li>
+                    <li>Profil formunda:
+                        <ul>
+                            <li><strong>OAuth 2.0</strong> seçeneğini aktif edin</li>
+                            <li><strong>Microsoft Graph API Kullan</strong> seçeneğini aktif edin</li>
+                            <li>Azure'dan aldığınız değerleri girin</li>
+                            <li><strong>Gönderen Email</strong> alanına mailbox sahibinin email adresini girin</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- SMTP OAuth 2.0 Kurulum Adımları -->
+            <div class="mt-4">
+                <h6><i class="bi bi-gear me-1"></i> SMTP OAuth 2.0 Kurulumu (Alternatif)</h6>
+                <p class="small text-muted mb-2">Graph API yerine SMTP protokolü ile OAuth kullanmak istiyorsanız:</p>
+                <ol class="small">
+                    <li>Yukarıdaki adımları izleyin, ancak <code>Mail.Send</code> yerine farklı izinler gerekebilir</li>
+                    <li>Exchange Online'da <strong>SMTP AUTH</strong> özelliğinin aktif olduğundan emin olun</li>
+                    <li>PowerShell ile service principal yapılandırması gerekebilir</li>
+                    <li>Profil formunda <strong>Microsoft Graph API Kullan</strong> seçeneğini <strong>kapalı</strong> bırakın</li>
+                </ol>
+                <div class="alert alert-warning py-2 small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    SMTP OAuth yapılandırması karmaşıktır. Mümkünse <strong>Graph API</strong> kullanmanızı öneririz.
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span data-bind="visible: !isEditing()">Yeni SMTP Profili</span>
+                        <span data-bind="visible: isEditing">SMTP Profili Düzenle</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Sol: Sunucu Ayarları -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3"><i class="bi bi-server me-1"></i> Sunucu Ayarları</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Profil Adı <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Office 365, Gmail..." autocomplete="off" data-bind="value: form.name">
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="formEnabled" data-bind="checked: form.enabled">
+                                    <label class="form-check-label" for="formEnabled"><strong>Profil Aktif</strong></label>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label">SMTP Sunucu <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="smtp.office365.com" autocomplete="off" data-bind="value: form.host">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Port <span class="text-danger">*</span></label>
+                                <select class="form-select" data-bind="value: form.port">
+                                    <option value="25">25 (SMTP)</option>
+                                    <option value="465">465 (SMTPS / SSL)</option>
+                                    <option value="587">587 (Submission / TLS) - Önerilen</option>
+                                    <option value="2525">2525 (Alternatif)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="formUseSsl" data-bind="checked: form.useSsl">
+                                    <label class="form-check-label" for="formUseSsl">SSL/TLS Kullan (StartTLS)</label>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label">Gönderen Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" placeholder="noreply@domain.com" autocomplete="off" data-bind="value: form.fromEmail">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Gönderen Adı</label>
+                                <input type="text" class="form-control" placeholder="Secret Customer" autocomplete="off" data-bind="value: form.fromName">
+                            </div>
+                        </div>
+
+                        <!-- Sağ: Kimlik Doğrulama -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3"><i class="bi bi-key me-1"></i> Kimlik Doğrulama</h6>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="formUseOAuth" data-bind="checked: form.useOAuth">
+                                    <label class="form-check-label" for="formUseOAuth"><strong>OAuth 2.0 (Microsoft 365)</strong></label>
+                                </div>
+                                <small class="text-muted">Modern kimlik doğrulama yöntemi</small>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kullanıcı Adı / Email</label>
+                                <input type="text" class="form-control" placeholder="user@domain.com" autocomplete="username" data-bind="value: form.username">
+                            </div>
+
+                            <!-- Basic Auth: Password -->
+                            <div class="mb-3" data-bind="visible: !form.useOAuth()">
+                                <label class="form-label">Şifre / Uygulama Şifresi</label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="••••••••" autocomplete="new-password" data-bind="value: form.password, attr: { type: showPassword() ? 'text' : 'password' }">
+                                    <button class="btn btn-outline-secondary" type="button" data-bind="click: togglePassword">
+                                        <i data-bind="css: showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Gmail için "Uygulama Şifresi" kullanın.</small>
+                            </div>
+
+                            <!-- OAuth 2.0 Settings -->
+                            <div data-bind="visible: form.useOAuth">
+                                <!-- Graph API Toggle -->
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="formUseGraphApi" data-bind="checked: form.useGraphApi">
+                                        <label class="form-check-label" for="formUseGraphApi"><strong>Microsoft Graph API Kullan</strong></label>
+                                    </div>
+                                    <small class="text-muted">SMTP yerine Graph API ile email gönderir (önerilen)</small>
+                                </div>
+
+                                <div class="alert py-2 mb-3" data-bind="css: form.useGraphApi() ? 'alert-success' : 'alert-info'">
+                                    <small>
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <!-- ko if: form.useGraphApi -->
+                                        Graph API için <code>Mail.Send</code> izni gereklidir.
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: form.useGraphApi -->
+                                        SMTP OAuth için ek Exchange Online yapılandırması gerekebilir.
+                                        <!-- /ko -->
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Tenant ID <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" data-bind="value: form.tenantId">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Client ID <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" data-bind="value: form.clientId">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Client Secret <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="••••••••" autocomplete="new-password" data-bind="value: form.clientSecret, attr: { type: showClientSecret() ? 'text' : 'password' }">
+                                        <button class="btn btn-outline-secondary" type="button" data-bind="click: toggleClientSecret">
+                                            <i data-bind="css: showClientSecret() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveProfile, disable: isSaving">
+                        <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation -->
+    <partial name="_DeleteConfirmationModal" />
 </div>
 
 @section Scripts {
-    <script>
-        function SmtpSettingsViewModel() {
-            var self = this;
-
-            // State
-            self.isLoading = ko.observable(true);
-            self.isSaving = ko.observable(false);
-            self.isTesting = ko.observable(false);
-            self.isSendingTest = ko.observable(false);
-            self.showPassword = ko.observable(false);
-            self.showClientSecret = ko.observable(false);
-            self.testEmail = ko.observable('');
-
-            // Settings
-            self.settings = {
-                host: ko.observable(''),
-                port: ko.observable('587'),
-                username: ko.observable(''),
-                password: ko.observable(''),
-                useSsl: ko.observable(true),
-                fromEmail: ko.observable(''),
-                fromName: ko.observable('Secret Customer'),
-                enabled: ko.observable(true),
-                // OAuth 2.0
-                useOAuth: ko.observable(false),
-                tenantId: ko.observable(''),
-                clientId: ko.observable(''),
-                clientSecret: ko.observable('')
-            };
-
-            // Load settings
-            self.loadSettings = function() {
-                self.isLoading(true);
-                fetch('/api/smtp/settings', { credentials: 'include' })
-                    .then(function(response) { return response.json(); })
-                    .then(function(data) {
-                        self.settings.host(data.host || '');
-                        self.settings.port(String(data.port || 587));
-                        self.settings.username(data.username || '');
-                        self.settings.password(data.password || '');
-                        self.settings.useSsl(data.useSsl !== false);
-                        self.settings.fromEmail(data.fromEmail || '');
-                        self.settings.fromName(data.fromName || 'Secret Customer');
-                        self.settings.enabled(data.enabled !== false);
-                        // OAuth 2.0
-                        self.settings.useOAuth(data.useOAuth === true);
-                        self.settings.tenantId(data.tenantId || '');
-                        self.settings.clientId(data.clientId || '');
-                        self.settings.clientSecret(data.clientSecret || '');
-                    })
-                    .catch(function(error) {
-                        console.error('Error:', error);
-                        toastr.error('Ayarlar yüklenirken hata oluştu.');
-                    })
-                    .finally(function() {
-                        self.isLoading(false);
-                    });
-            };
-
-            // Save settings
-            self.saveSettings = function() {
-                self.isSaving(true);
-
-                var data = {
-                    host: self.settings.host(),
-                    port: parseInt(self.settings.port()),
-                    username: self.settings.username(),
-                    password: self.settings.password(),
-                    useSsl: self.settings.useSsl(),
-                    fromEmail: self.settings.fromEmail(),
-                    fromName: self.settings.fromName(),
-                    enabled: self.settings.enabled(),
-                    // OAuth 2.0
-                    useOAuth: self.settings.useOAuth(),
-                    tenantId: self.settings.tenantId(),
-                    clientId: self.settings.clientId(),
-                    clientSecret: self.settings.clientSecret()
-                };
-
-                fetch('/api/smtp/settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                    credentials: 'include'
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        toastr.success(result.message);
-                    } else {
-                        toastr.error(result.message);
-                    }
-                })
-                .catch(function(error) {
-                    toastr.error('Kaydetme sırasında hata oluştu.');
-                })
-                .finally(function() {
-                    self.isSaving(false);
-                });
-            };
-
-            // Test connection
-            self.testConnection = function() {
-                self.isTesting(true);
-
-                fetch('/api/smtp/test-connection', {
-                    method: 'POST',
-                    credentials: 'include'
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        toastr.success(result.message);
-                    } else {
-                        toastr.error(result.message);
-                    }
-                })
-                .catch(function(error) {
-                    toastr.error('Bağlantı testi sırasında hata oluştu.');
-                })
-                .finally(function() {
-                    self.isTesting(false);
-                });
-            };
-
-            // Send test email
-            self.sendTestEmail = function() {
-                if (!self.testEmail()) {
-                    toastr.warning('Lütfen bir email adresi girin.');
-                    return;
-                }
-
-                self.isSendingTest(true);
-
-                fetch('/api/smtp/send-test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ toEmail: self.testEmail() }),
-                    credentials: 'include'
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(result) {
-                    if (result.success) {
-                        toastr.success(result.message);
-                    } else {
-                        toastr.error(result.message);
-                    }
-                })
-                .catch(function(error) {
-                    toastr.error('Test maili gönderilirken hata oluştu.');
-                })
-                .finally(function() {
-                    self.isSendingTest(false);
-                });
-            };
-
-            // Toggle password visibility
-            self.togglePassword = function() {
-                self.showPassword(!self.showPassword());
-            };
-
-            // Toggle client secret visibility
-            self.toggleClientSecret = function() {
-                self.showClientSecret(!self.showClientSecret());
-            };
-
-            // Initialize
-            self.loadSettings();
-        }
-
-        // Apply bindings
-        document.addEventListener('DOMContentLoaded', function() {
-            var element = document.getElementById('smtp-settings-app');
-            if (element) {
-                ko.applyBindings(new SmtpSettingsViewModel(), element);
-            }
-        });
-    </script>
+    <script src="~/js/Shared/delete-confirmation.js"></script>
+    <script src="~/js/Settings/smtp.js"></script>
 }

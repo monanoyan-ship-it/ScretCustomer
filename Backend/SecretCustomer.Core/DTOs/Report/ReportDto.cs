@@ -78,6 +78,7 @@ public class EvaluationReportDto
     // Dates
     public DateTime? EvaluationDate { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateTime DueDate { get; set; }
 
     // Scores
@@ -153,6 +154,13 @@ public class EvaluationAnswerDto
     public decimal MaxPoints { get; set; }
     public string? AppliedPenaltyType { get; set; }
     public string? Notes { get; set; }
+
+    // View uyumluluğu için ek alanlar
+    public decimal? AnswerNumeric { get; set; }
+    public string? AnswerText { get; set; }
+    public decimal? EarnedPoints { get; set; }
+    public decimal? QuestionMaxPoints { get; set; }
+    public string? PenaltyType { get; set; }
 }
 
 /// <summary>
@@ -314,6 +322,14 @@ public class PenaltyDetailDto
     public string? EvaluatedPersonnelName { get; set; }
     public DateTime? EvaluationDate { get; set; }
     public string? Notes { get; set; }
+    /// <summary>
+    /// Periyot adı (varsa AssignmentPeriod.Name, yoksa "Ay Yıl" formatında)
+    /// </summary>
+    public string? PeriodName { get; set; }
+    /// <summary>
+    /// Seçilen alt kriterler listesi
+    /// </summary>
+    public List<string> SelectedSubCriteria { get; set; } = new();
 }
 
 /// <summary>
@@ -413,6 +429,17 @@ public class PersonnelReportCardDto
     // Güçlü ve zayıf yönler
     public List<PersonnelStrengthWeaknessDto> Strengths { get; set; } = new();
     public List<PersonnelStrengthWeaknessDto> Weaknesses { get; set; } = new();
+
+    // Performans eşik değerleri (PerformanceSettings'ten)
+    /// <summary>
+    /// Başarılı performans alt sınırı (%) - Yeşil gösterim
+    /// </summary>
+    public decimal SuccessThreshold { get; set; } = 80;
+
+    /// <summary>
+    /// Orta performans alt sınırı (%) - Sarı gösterim, altı kırmızı
+    /// </summary>
+    public decimal WarningThreshold { get; set; } = 60;
 }
 
 /// <summary>
@@ -458,6 +485,10 @@ public class PersonnelEvaluationSummaryDto
     public string? CallId { get; set; }
     public string? CallTime { get; set; }
     public string? Duration { get; set; }
+    /// <summary>
+    /// Denetim Yorumu (Word karne export için)
+    /// </summary>
+    public string? Notes { get; set; }
 }
 
 /// <summary>
@@ -602,6 +633,11 @@ public class SuggestionDetailDto
     /// Listeye girme sebebi: RedCard, YellowCard, LowScore, Note
     /// </summary>
     public string ReasonType { get; set; } = "Note";
+
+    /// <summary>
+    /// Seçilen alt kriterler listesi
+    /// </summary>
+    public List<string> SelectedSubCriteria { get; set; } = new();
 }
 
 /// <summary>
@@ -651,8 +687,22 @@ public class SubCriteriaSummaryDto
     public string QuestionText { get; set; } = string.Empty;
     public string GroupName { get; set; } = string.Empty;
     public string ChecklistName { get; set; } = string.Empty;
+    /// <summary>
+    /// Bu alt kriterin kaç kez seçildiği
+    /// </summary>
     public int SelectionCount { get; set; }
+    /// <summary>
+    /// Bu alt kriterin seçildiği farklı değerlendirme sayısı
+    /// </summary>
     public int EvaluationCount { get; set; }
+    /// <summary>
+    /// Bu sorunun sorulduğu toplam değerlendirme sayısı (alt kriter seçilsin veya seçilmesin)
+    /// </summary>
+    public int TotalQuestionEvaluations { get; set; }
+    /// <summary>
+    /// Bu alt kriterin bağlı olduğu soru ID'si
+    /// </summary>
+    public int QuestionId { get; set; }
 }
 
 // ===== SORU GRUBU ORTALAMA RAPORU DTO'LARI =====
@@ -1299,6 +1349,7 @@ public class EnneagramResultListDto
 public class EnneagramResultDetailDto
 {
     public int EvaluationId { get; set; }
+    public int ProjectId { get; set; }
     public string? RespondentName { get; set; }
     public string? RespondentEmail { get; set; }
     public string ProjectName { get; set; } = string.Empty;

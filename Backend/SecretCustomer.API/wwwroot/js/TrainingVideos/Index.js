@@ -42,6 +42,11 @@ function TrainingVideosViewModel() {
     self.editDescription = ko.observable('');
     self.editIsActive = ko.observable(true);
     self.editScopes = ko.observableArray([]);
+    self.editQuizId = ko.observable(null);
+    self.editOriginalQuizId = ko.observable(null);
+
+    // Quiz
+    self.availableQuizzes = ko.observableArray([]);
 
     // Scope selection (hierarchical)
     self.newScopeChecklistId = ko.observable('');
@@ -158,6 +163,18 @@ function TrainingVideosViewModel() {
             .then(function(data) {
                 self.scopeOptions(data);
                 self.checklists(data.checklists || []);
+            });
+    };
+
+    // Load available quizzes for video
+    self.loadAvailableQuizzes = function(videoId) {
+        var url = '/api/training-quiz/available-for-video';
+        if (videoId) url += '?videoId=' + videoId;
+
+        fetch(url, { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.availableQuizzes(data || []);
             });
     };
 
@@ -396,13 +413,31 @@ function TrainingVideosViewModel() {
         self.editTitle(video.title);
         self.editDescription(video.description || '');
         self.editIsActive(video.isActive);
+        self.editQuizId(null);
+        self.editOriginalQuizId(null);
         self.resetScopeSelection();
 
-        // Load full video details to get scopes
+        // Load available quizzes for this video
+        self.loadAvailableQuizzes(video.id);
+
+        // Load full video details to get scopes and quiz info
         fetch('/api/training-videos/' + video.id, { credentials: 'include' })
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 self.editScopes(data.scopes || []);
+            });
+
+        // Load current quiz assignment
+        fetch('/api/training-quiz/by-video/' + video.id, { credentials: 'include' })
+            .then(function(r) {
+                if (r.ok) return r.json();
+                return null;
+            })
+            .then(function(quiz) {
+                if (quiz) {
+                    self.editQuizId(quiz.id);
+                    self.editOriginalQuizId(quiz.id);
+                }
             });
 
         if (!self.editModal) {
@@ -434,6 +469,7 @@ function TrainingVideosViewModel() {
             })
         };
 
+        // Update video
         fetch('/api/training-videos/' + self.editId(), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -443,9 +479,27 @@ function TrainingVideosViewModel() {
         .then(function(r) { return r.json(); })
         .then(function(result) {
             if (result.id) {
-                toastr.success(T('TrainingVideo.UpdateSuccess', 'Video basariyla guncellendi'));
-                self.editModal.hide();
-                self.loadVideos();
+                // Quiz assignment changed?
+                var newQuizId = self.editQuizId() ? parseInt(self.editQuizId()) : null;
+                var originalQuizId = self.editOriginalQuizId() ? parseInt(self.editOriginalQuizId()) : null;
+
+                if (newQuizId !== originalQuizId) {
+                    // Update quiz assignment
+                    return fetch('/api/training-quiz/assign-to-video/' + self.editId(), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quizId: newQuizId }),
+                        credentials: 'include'
+                    }).then(function() {
+                        toastr.success(T('TrainingVideo.UpdateSuccess', 'Video basariyla guncellendi'));
+                        self.editModal.hide();
+                        self.loadVideos();
+                    });
+                } else {
+                    toastr.success(T('TrainingVideo.UpdateSuccess', 'Video basariyla guncellendi'));
+                    self.editModal.hide();
+                    self.loadVideos();
+                }
             } else {
                 toastr.error(result.message || T('Common.Error', 'Hata olustu'));
             }

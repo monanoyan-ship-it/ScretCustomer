@@ -9,6 +9,7 @@ var EvaluationPopupViewModel = function() {
     // STATE (Index.js EVALUATE MODAL STATE ile aynı)
     // ========================
     self.isLoading = ko.observable(true);
+    self.currentUserId = ko.observable(null); // Mevcut kullanıcı ID (User veya CustomerPersonnel)
     self.isFormLoading = ko.observable(false);
     self.isSavingForm = ko.observable(false);
     self.isSaving = ko.observable(false);
@@ -421,6 +422,16 @@ var EvaluationPopupViewModel = function() {
             return;
         }
 
+        // Önce kullanıcı bilgisini al
+        fetch('/api/auth/me', { credentials: 'include' })
+            .then(function(response) { return response.json(); })
+            .then(function(userData) {
+                self.currentUserId(parseInt(userData.id) || null);
+            })
+            .catch(function() {
+                console.warn('Could not fetch current user');
+            });
+
         fetch(url, { credentials: 'include' })
             .then(function(response) {
                 if (!response.ok) throw new Error(T('Evaluation.FormLoadError', 'Form yüklenemedi'));
@@ -696,10 +707,21 @@ var EvaluationPopupViewModel = function() {
             return d && d.trim().length > 0;
         });
 
+        // isInternal parametresine göre evaluator ID'yi belirle
+        var evaluatorId = null;
+        var evaluatorCustomerPersonnelId = null;
+        if (config.isInternal) {
+            evaluatorCustomerPersonnelId = self.currentUserId();
+        } else {
+            evaluatorId = self.currentUserId();
+        }
+
         return {
             assignmentId: self.formData().assignmentId,
             evaluationId: self.formData().evaluationId || null,
             assignmentPeriodId: self.selectedPeriodId() || null,
+            evaluatorId: evaluatorId,
+            evaluatorCustomerPersonnelId: evaluatorCustomerPersonnelId,
             answers: answers,
             notes: '',
             evaluationComment: self.evaluationComment(),

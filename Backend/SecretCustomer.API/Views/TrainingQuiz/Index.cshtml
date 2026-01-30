@@ -1,0 +1,426 @@
+@{
+    ViewData["Title"] = Html.T("TrainingQuiz.Title", "Egitim Anketleri");
+}
+
+<div id="training-quiz-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-question-circle"></i> @Html.T("TrainingQuiz.Title", "Egitim Anketleri")</h2>
+        <button class="btn btn-primary" data-bind="click: openCreateModal">
+            <i class="bi bi-plus-lg"></i> @Html.T("TrainingQuiz.Create", "Yeni Anket")
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">@Html.T("Common.Search", "Ara")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("TrainingQuiz.SearchPlaceholder", "Anket adi veya aciklama...")"
+                           data-bind="value: searchTerm, valueUpdate: 'input', event: { input: loadQuizzes }">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filterStatus, event: { change: loadQuizzes }">
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                        <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("TrainingQuiz.Required", "Zorunlu")</label>
+                    <select class="form-select" data-bind="value: filterRequired, event: { change: loadQuizzes }">
+                        <option value="">@Html.T("Common.All", "Tumu")</option>
+                        <option value="true">@Html.T("Common.Yes", "Evet")</option>
+                        <option value="false">@Html.T("Common.No", "Hayir")</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters" title="@Html.T("Common.Clear", "Temizle")">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
+    </div>
+
+    <!-- Quiz List -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm" data-bind="visible: quizzes().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.T("TrainingQuiz.QuizTitle", "Anket")</th>
+                            <th class="text-center">@Html.T("TrainingQuiz.Questions", "Sorular")</th>
+                            <th class="text-center">@Html.T("TrainingQuiz.PassingScore", "Gecme Notu")</th>
+                            <th class="text-center">@Html.T("TrainingQuiz.Required", "Zorunlu")</th>
+                            <th class="text-center">@Html.T("TrainingQuiz.Responses", "Yanitlar")</th>
+                            <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                            <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: quizzes">
+                        <tr data-bind="css: { 'opacity-50': !isActive }">
+                            <td>
+                                <div>
+                                    <strong data-bind="text: title"></strong>
+                                    <!-- ko if: description -->
+                                    <br><small class="text-muted" data-bind="text: description"></small>
+                                    <!-- /ko -->
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary" data-bind="text: questionCount + ' soru'"></span>
+                            </td>
+                            <td class="text-center">
+                                <!-- ko if: passingScore -->
+                                <span class="badge bg-warning text-dark" data-bind="text: '%' + passingScore"></span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: passingScore -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td class="text-center">
+                                <span data-bind="visible: isRequired" class="badge bg-danger">@Html.T("Common.Yes", "Evet")</span>
+                                <span data-bind="visible: !isRequired" class="badge bg-secondary">@Html.T("Common.No", "Hayir")</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info" data-bind="text: responseCount + ' yanit'"></span>
+                            </td>
+                            <td class="text-center">
+                                <span data-bind="visible: isActive" class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>
+                                <span data-bind="visible: !isActive" class="badge bg-danger">@Html.T("Common.Inactive", "Pasif")</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="@Html.T("Common.Edit", "Duzenle")">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" data-bind="click: $parent.openResponsesModal, visible: responseCount > 0" title="@Html.T("TrainingQuiz.ViewResponses", "Yanitlari Gor")">
+                                        <i class="bi bi-bar-chart"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteQuiz" title="@Html.T("Common.Delete", "Sil")">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: quizzes().length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-question-circle fs-1"></i>
+            <p class="mt-2">@Html.T("TrainingQuiz.NoQuizzes", "Henuz egitim anketi bulunmuyor.")</p>
+            <button class="btn btn-primary" data-bind="click: openCreateModal">
+                <i class="bi bi-plus-lg"></i> @Html.T("TrainingQuiz.CreateFirst", "Ilk Anketi Olustur")
+            </button>
+        </div>
+    </div>
+
+    <!-- Create/Edit Wizard Modal -->
+    <div class="modal fade" id="quizModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-question-circle me-2"></i>
+                        <span data-bind="text: isEditing() ? '@Html.T("TrainingQuiz.EditQuiz", "Anketi Duzenle")' : '@Html.T("TrainingQuiz.CreateQuiz", "Yeni Anket Olustur")'"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Step Indicator -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="step-circle" data-bind="css: { 'bg-primary text-white': currentStep() >= 1, 'bg-light': currentStep() < 1 }">1</div>
+                            <span class="mx-2" data-bind="css: { 'text-primary fw-bold': currentStep() === 1 }">@Html.T("TrainingQuiz.Step1", "Anket Bilgileri")</span>
+                            <div class="step-line" data-bind="css: { 'bg-primary': currentStep() >= 2 }"></div>
+                            <div class="step-circle" data-bind="css: { 'bg-primary text-white': currentStep() >= 2, 'bg-light': currentStep() < 2 }">2</div>
+                            <span class="mx-2" data-bind="css: { 'text-primary fw-bold': currentStep() === 2 }">@Html.T("TrainingQuiz.Step2", "Sorular")</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Quiz Info -->
+                    <div data-bind="visible: currentStep() === 1">
+                        <form id="quizForm">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">@Html.T("TrainingQuiz.QuizTitle", "Anket Basligi") <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" data-bind="value: formTitle" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">@Html.T("Common.Description", "Aciklama")</label>
+                                    <textarea class="form-control" rows="2" data-bind="value: formDescription"></textarea>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">@Html.T("TrainingQuiz.PassingScore", "Gecme Notu (%)")</label>
+                                    <input type="number" class="form-control" min="0" max="100" data-bind="value: formPassingScore" placeholder="Opsiyonel">
+                                    <small class="text-muted">@Html.T("TrainingQuiz.PassingScoreHelp", "Bos = herkes gecer")</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">@Html.T("TrainingQuiz.Required", "Zorunlu mu?")</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: formIsRequired">
+                                        <label class="form-check-label" data-bind="text: formIsRequired() ? '@Html.T("Common.Yes", "Evet")' : '@Html.T("Common.No", "Hayir")'"></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: formIsActive">
+                                        <label class="form-check-label" data-bind="text: formIsActive() ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">@Html.T("TrainingQuiz.ShowResults", "Sonuc Goster")</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: formShowResults">
+                                        <label class="form-check-label" data-bind="text: formShowResults() ? '@Html.T("Common.Yes", "Evet")' : '@Html.T("Common.No", "Hayir")'"></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr class="my-2">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: formShuffleQuestions">
+                                        <label class="form-check-label">@Html.T("TrainingQuiz.ShuffleQuestions", "Sorulari karistir")</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" data-bind="checked: formShuffleOptions">
+                                        <label class="form-check-label">@Html.T("TrainingQuiz.ShuffleOptions", "Secenekleri karistir")</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: Questions -->
+                    <div data-bind="visible: currentStep() === 2">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted" data-bind="text: formQuestions().length + ' soru eklendi'"></span>
+                            <button class="btn btn-primary btn-sm" data-bind="click: addQuestion">
+                                <i class="bi bi-plus"></i> @Html.T("TrainingQuiz.AddQuestion", "Soru Ekle")
+                            </button>
+                        </div>
+
+                        <!-- Questions List -->
+                        <div data-bind="visible: formQuestions().length > 0" class="questions-container">
+                            <div data-bind="foreach: formQuestions" class="mb-3">
+                                <div class="card mb-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-secondary me-2" data-bind="text: $index() + 1"></span>
+                                            <span class="badge" data-bind="text: questionTypeId() == 1 ? 'Tekli Secim' : 'Coklu Secim', css: { 'bg-primary': questionTypeId() == 1, 'bg-info': questionTypeId() == 2 }"></span>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-secondary" data-bind="click: $parent.moveQuestionUp, enable: $index() > 0" title="Yukari">
+                                                <i class="bi bi-chevron-up"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary" data-bind="click: $parent.moveQuestionDown, enable: $index() < $parent.formQuestions().length - 1" title="Asagi">
+                                                <i class="bi bi-chevron-down"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" data-bind="click: $parent.removeQuestion" title="Sil">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2">
+                                            <div class="col-md-8">
+                                                <label class="form-label small">@Html.T("TrainingQuiz.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
+                                                <textarea class="form-control form-control-sm" rows="2" data-bind="value: text" placeholder="Soru metnini girin..."></textarea>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small">@Html.T("TrainingQuiz.QuestionType", "Soru Tipi")</label>
+                                                <select class="form-select form-select-sm" data-bind="value: questionTypeId">
+                                                    <option value="1">@Html.T("TrainingQuiz.SingleChoice", "Tekli Secim")</option>
+                                                    <option value="2">@Html.T("TrainingQuiz.MultipleChoice", "Coklu Secim")</option>
+                                                </select>
+                                                <div class="mt-2">
+                                                    <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="Yardim metni (opsiyonel)">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label small d-flex justify-content-between align-items-center">
+                                                    <span>@Html.T("TrainingQuiz.Options", "Secenekler")</span>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm py-0" data-bind="click: $parent.addOption">
+                                                        <i class="bi bi-plus"></i> Secenek
+                                                    </button>
+                                                </label>
+                                                <!-- Seçenek başlıkları -->
+                                                <div class="d-flex align-items-center mb-1 text-muted small">
+                                                    <span style="width: 40px;" class="text-center">Sira</span>
+                                                    <span style="width: 70px;" class="text-center">Dogru</span>
+                                                    <span class="flex-grow-1 ms-1">Secenek Metni</span>
+                                                    <span style="width: 70px;" class="text-center">Puan</span>
+                                                    <span style="width: 38px;"></span>
+                                                </div>
+                                                <div data-bind="foreach: options" class="options-list">
+                                                    <div class="input-group input-group-sm mb-1">
+                                                        <span class="input-group-text bg-secondary text-white justify-content-center fw-bold" style="width: 40px;" data-bind="text: $index() + 1"></span>
+                                                        <span class="input-group-text justify-content-center" style="width: 70px;" data-bind="css: { 'bg-success-subtle': isCorrect(), 'bg-light': !isCorrect() }">
+                                                            <input type="radio" class="form-check-input"
+                                                                   data-bind="checked: isCorrect, checkedValue: true, click: function() { $parents[1].setCorrectOption($parent, $data); return true; }"
+                                                                   title="Bu secenek dogru cevap">
+                                                        </span>
+                                                        <input type="text" class="form-control" data-bind="value: text" placeholder="Secenek metni...">
+                                                        <input type="number" class="form-control text-center" style="width: 70px; max-width: 70px;" data-bind="value: weightPoints" placeholder="0" title="Bu secenek secildiginde kazanilacak puan">
+                                                        <button type="button" class="btn btn-outline-danger" data-bind="click: $parents[1].removeOption.bind($parents[1], $parent, $data), enable: $parent.options().length > 2">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    <i class="bi bi-info-circle"></i> <strong>Dogru:</strong> Her soru icin TEK dogru cevap secin | <strong>Puan:</strong> Secildiginde alinacak puan
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div data-bind="visible: formQuestions().length === 0" class="text-center py-4 border rounded bg-light">
+                            <i class="bi bi-question-circle fs-3 text-muted"></i>
+                            <p class="mt-2 text-muted mb-2">@Html.T("TrainingQuiz.NoQuestionsYet", "Henuz soru eklenmedi.")</p>
+                            <button class="btn btn-primary btn-sm" data-bind="click: addQuestion">
+                                <i class="bi bi-plus"></i> @Html.T("TrainingQuiz.AddFirstQuestion", "Ilk Soruyu Ekle")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "Iptal")</button>
+                    </div>
+                    <div>
+                        <!-- Step 1 buttons -->
+                        <div data-bind="visible: currentStep() === 1">
+                            <button type="button" class="btn btn-primary" data-bind="click: goToStep2, enable: canGoToStep2">
+                                @Html.T("Common.Next", "Sonraki") <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                        <!-- Step 2 buttons -->
+                        <div data-bind="visible: currentStep() === 2">
+                            <button type="button" class="btn btn-outline-secondary me-2" data-bind="click: goToStep1">
+                                <i class="bi bi-chevron-left"></i> @Html.T("Common.Previous", "Onceki")
+                            </button>
+                            <button type="button" class="btn btn-success" data-bind="click: saveQuiz, disable: isSaving">
+                                <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                                <i class="bi bi-check-lg"></i> @Html.T("Common.Save", "Kaydet")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responses Modal -->
+    <div class="modal fade" id="responsesModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        @Html.T("TrainingQuiz.Responses", "Yanitlar") - <span data-bind="text: selectedQuizTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="visible: responses().length > 0">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>@Html.T("TrainingQuiz.Participant", "Katilimci")</th>
+                                    <th class="text-center">@Html.T("TrainingQuiz.Score", "Puan")</th>
+                                    <th class="text-center">@Html.T("TrainingQuiz.Percentage", "Yuzde")</th>
+                                    <th class="text-center">@Html.T("TrainingQuiz.Passed", "Gecti")</th>
+                                    <th class="text-center">@Html.T("TrainingQuiz.Attempt", "Deneme")</th>
+                                    <th>@Html.T("TrainingQuiz.CompletedAt", "Tamamlanma")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: responses">
+                                <tr>
+                                    <td>
+                                        <span data-bind="text: participantName"></span>
+                                        <!-- ko if: isExternal -->
+                                        <span class="badge bg-secondary ms-1">Dis</span>
+                                        <!-- /ko -->
+                                        <!-- ko if: participantEmail -->
+                                        <br><small class="text-muted" data-bind="text: participantEmail"></small>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td class="text-center">
+                                        <span data-bind="text: totalScore + '/' + maxPossibleScore"></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge" data-bind="text: '%' + scorePercentage, css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <i data-bind="css: { 'bi-check-circle-fill text-success': isPassed, 'bi-x-circle-fill text-danger': !isPassed }"></i>
+                                    </td>
+                                    <td class="text-center" data-bind="text: attemptNumber"></td>
+                                    <td data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : '-'"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div data-bind="visible: responses().length === 0" class="text-center py-4 text-muted">
+                        @Html.T("TrainingQuiz.NoResponses", "Henuz yanit bulunmuyor.")
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border: 2px solid #dee2e6;
+    }
+    .step-circle.bg-primary {
+        border-color: var(--bs-primary);
+    }
+    .step-line {
+        width: 50px;
+        height: 3px;
+        background: #dee2e6;
+        margin: 0 10px;
+    }
+    .step-line.bg-primary {
+        background: var(--bs-primary) !important;
+    }
+    .questions-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/TrainingQuiz/Index.js" asp-append-version="true"></script>
+}

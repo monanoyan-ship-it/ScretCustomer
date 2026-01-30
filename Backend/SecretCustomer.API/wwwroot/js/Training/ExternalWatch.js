@@ -16,6 +16,9 @@
         self.lastSavedTime = 0;
         self.saveInterval = null;
 
+        // Quiz State
+        self.quizStatus = ko.observable(null);
+
         // Computed
         self.watchPercentage = ko.computed(function () {
             var info = self.videoInfo();
@@ -38,11 +41,14 @@
 
         self.loadVideoInfo = function () {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN,
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN,
                 method: 'GET',
                 success: function (data) {
                     self.videoInfo(data);
                     self.isLoading(false);
+
+                    // Quiz durumunu yukle
+                    self.loadQuizStatus();
 
                     // Setup video player after data loads
                     setTimeout(function () {
@@ -132,7 +138,7 @@
 
         self.saveProgress = function (watchedSeconds, isVideoEnded) {
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN + '/progress',
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/progress',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -163,7 +169,7 @@
         self.saveProgressSync = function (watchedSeconds, isVideoEnded) {
             // Synchronous save for beforeunload
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/training-videos/external/' + VIDEO_TOKEN + '/progress', false);
+            xhr.open('POST', '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/progress', false);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
                 watchedSeconds: watchedSeconds,
@@ -175,12 +181,78 @@
         self.checkCompletion = function () {
             // Reload video info to get updated completion status
             $.ajax({
-                url: '/api/training-videos/external/' + VIDEO_TOKEN,
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN,
                 method: 'GET',
                 success: function (data) {
                     self.videoInfo(data);
                     if (data.isCompleted) {
-                        toastr.success('Tebrikler! Egitimi basariyla tamamladiniz.');
+                        // Quiz kontrolu ve yonlendirme
+                        self.checkAndRedirectToQuiz();
+                    }
+                }
+            });
+        };
+
+        // ========== QUIZ FUNCTIONS ==========
+
+        self.loadQuizStatus = function () {
+            $.ajax({
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/quiz',
+                method: 'GET',
+                success: function (data) {
+                    var isPassed = data.lastAttemptResult && data.lastAttemptResult.isPassed;
+                    self.quizStatus({
+                        hasQuiz: true,
+                        quizId: data.quizId,
+                        isRequired: data.isRequired,
+                        isPassed: isPassed,
+                        lastScore: data.lastAttemptResult ? data.lastAttemptResult.scorePercentage : null
+                    });
+
+                    // Sayfa yuklenduginde: Video tamamlanmis + Quiz bekliyor = Modal goster
+                    var info = self.videoInfo();
+                    if (info && info.isCompleted && !isPassed) {
+                        self.showCompletedChoiceModal();
+                    }
+                },
+                error: function (xhr) {
+                    // Quiz yok
+                    self.quizStatus({ hasQuiz: false });
+                }
+            });
+        };
+
+        self.showCompletedChoiceModal = function () {
+            var modal = new bootstrap.Modal(document.getElementById('completedChoiceModal'));
+            modal.show();
+        };
+
+        self.checkAndRedirectToQuiz = function () {
+            $.ajax({
+                url: '/api/training-video-assignments/external/' + VIDEO_TOKEN + '/quiz',
+                method: 'GET',
+                success: function (data) {
+                    // Quiz zaten gecilmis mi?
+                    if (data.lastAttemptResult && data.lastAttemptResult.isPassed) {
+                        toastr.success('Video ve anket basariyla tamamlandi!');
+                        self.loadQuizStatus();
+                        return;
+                    }
+
+                    // Quiz varsa modal goster
+                    self.quizStatus({
+                        hasQuiz: true,
+                        quizId: data.quizId,
+                        isRequired: data.isRequired,
+                        isPassed: false,
+                        lastScore: null
+                    });
+                    self.showCompletedChoiceModal();
+                },
+                error: function (xhr) {
+                    // Quiz yok - normal tamamlandi
+                    if (xhr.status === 404) {
+                        toastr.success('Video basariyla tamamlandi!');
                     }
                 }
             });

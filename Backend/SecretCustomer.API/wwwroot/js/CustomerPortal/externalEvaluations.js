@@ -205,7 +205,7 @@ function CustomerExternalEvaluationsViewModel() {
             filter.value = self.tempFilter.projectId();
             var project = self.projects().find(function(p) { return p.id == filter.value; });
             label = 'Proje';
-            displayValue = project ? project.name : filter.value;
+            displayValue = project ? (project.code ? project.name + ' (' + project.code + ')' : project.name) : filter.value;
         } else if (type === 'personnel') {
             filter.value = self.tempFilter.personnelName();
             label = 'Dinlenen';
@@ -492,7 +492,7 @@ function CustomerExternalEvaluationsViewModel() {
 
             if (f.type === 'project') {
                 var project = self.projects().find(function(p) { return p.id == f.value; });
-                if (project) displayValue = project.name;
+                if (project) displayValue = project.code ? project.name + ' (' + project.code + ')' : project.name;
             } else if (f.type === 'organization') {
                 var org = self.organizations().find(function(o) { return o.id == f.value; });
                 if (org) displayValue = org.name;
@@ -572,7 +572,7 @@ function CustomerExternalEvaluationsViewModel() {
         }
 
         self.isExportingDetail(true);
-        var filename = 'Dinleme_Detay_' + (data.callId || evalId) + '_' + self.getTimestamp() + '.xlsx';
+        var filename = 'Dinleme_Detay_' + self.getTimestamp() + '.xlsx';
 
         customerApiDownloadGet('/api/customer/portal/evaluations/' + evalId + '/export', filename)
             .then(function() { toastr.success('Excel dosyası indirildi'); })
@@ -655,7 +655,7 @@ function CustomerExternalEvaluationsViewModel() {
             organizationId: params.organizationId ? parseInt(params.organizationId) : null,
             startDate: params.startDate || null,
             endDate: params.endDate || null,
-            evaluationSource: 'ours' // Dış dinlemeler (bizim tarafımızdan yapılan)
+            evaluationSources: ['ours'] // Dış dinlemeler (bizim tarafımızdan yapılan)
         };
     };
 

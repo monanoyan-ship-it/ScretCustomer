@@ -75,6 +75,13 @@ public class ApplicationDbContext : DbContext
     public DbSet<TrainingVideoExternalParticipant> TrainingVideoExternalParticipants { get; set; }
     public DbSet<TrainingVideoExternalEmailLog> TrainingVideoExternalEmailLogs { get; set; }
 
+    // Training Quiz (Eğitim Videosu Anketleri)
+    public DbSet<TrainingQuiz> TrainingQuizzes { get; set; }
+    public DbSet<TrainingQuizQuestion> TrainingQuizQuestions { get; set; }
+    public DbSet<TrainingQuizOption> TrainingQuizOptions { get; set; }
+    public DbSet<TrainingQuizResponse> TrainingQuizResponses { get; set; }
+    public DbSet<TrainingQuizAnswer> TrainingQuizAnswers { get; set; }
+
     // App Settings (tek satırlık ayar tablosu)
     public DbSet<AppSettings> AppSettings { get; set; }
 
@@ -107,6 +114,9 @@ public class ApplicationDbContext : DbContext
 
     // Support Requests (Destek Talepleri)
     public DbSet<SupportRequest> SupportRequests { get; set; }
+
+    // SMTP Profiles (SMTP Profilleri)
+    public DbSet<SmtpProfile> SmtpProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -166,6 +176,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TrainingVideoAssignment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<TrainingVideoParticipant>().HasQueryFilter(e => !e.IsDeleted);
 
+        // Training Quiz
+        modelBuilder.Entity<TrainingQuiz>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingQuizQuestion>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingQuizOption>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingQuizResponse>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<TrainingQuizAnswer>().HasQueryFilter(e => !e.IsDeleted);
+
         // Personnel Requests
         modelBuilder.Entity<PersonnelRequest>().HasQueryFilter(e => !e.IsDeleted);
 
@@ -179,6 +196,9 @@ public class ApplicationDbContext : DbContext
 
         // Support Requests
         modelBuilder.Entity<SupportRequest>().HasQueryFilter(e => !e.IsDeleted);
+
+        // SMTP Profiles
+        modelBuilder.Entity<SmtpProfile>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 
@@ -441,6 +461,87 @@ public class ApplicationDbContext : DbContext
             .HasIndex(sr => sr.CustomerPersonnelId);
         modelBuilder.Entity<SupportRequest>()
             .HasIndex(sr => sr.CreatedAt);
+
+        // ===== TrainingQuiz İlişkileri =====
+
+        // TrainingQuiz -> TrainingVideo
+        modelBuilder.Entity<TrainingQuiz>()
+            .HasOne(q => q.TrainingVideo)
+            .WithMany()
+            .HasForeignKey(q => q.TrainingVideoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TrainingQuizQuestion -> TrainingQuiz
+        modelBuilder.Entity<TrainingQuizQuestion>()
+            .HasOne(q => q.TrainingQuiz)
+            .WithMany(quiz => quiz.Questions)
+            .HasForeignKey(q => q.TrainingQuizId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TrainingQuizOption -> TrainingQuizQuestion
+        modelBuilder.Entity<TrainingQuizOption>()
+            .HasOne(o => o.Question)
+            .WithMany(q => q.Options)
+            .HasForeignKey(o => o.TrainingQuizQuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TrainingQuizResponse -> TrainingQuiz
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasOne(r => r.TrainingQuiz)
+            .WithMany(q => q.Responses)
+            .HasForeignKey(r => r.TrainingQuizId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TrainingQuizResponse -> TrainingVideoParticipant
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasOne(r => r.Participant)
+            .WithMany()
+            .HasForeignKey(r => r.TrainingVideoParticipantId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // TrainingQuizResponse -> TrainingVideoExternalParticipant
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasOne(r => r.ExternalParticipant)
+            .WithMany()
+            .HasForeignKey(r => r.TrainingVideoExternalParticipantId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // TrainingQuizAnswer -> TrainingQuizResponse
+        modelBuilder.Entity<TrainingQuizAnswer>()
+            .HasOne(a => a.Response)
+            .WithMany(r => r.Answers)
+            .HasForeignKey(a => a.TrainingQuizResponseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TrainingQuizAnswer -> TrainingQuizQuestion
+        modelBuilder.Entity<TrainingQuizAnswer>()
+            .HasOne(a => a.Question)
+            .WithMany(q => q.Answers)
+            .HasForeignKey(a => a.TrainingQuizQuestionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // TrainingQuizAnswer -> TrainingQuizOption
+        modelBuilder.Entity<TrainingQuizAnswer>()
+            .HasOne(a => a.SelectedOption)
+            .WithMany()
+            .HasForeignKey(a => a.SelectedOptionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // TrainingQuiz indexleri
+        modelBuilder.Entity<TrainingQuiz>()
+            .HasIndex(q => q.TrainingVideoId);
+        modelBuilder.Entity<TrainingQuizQuestion>()
+            .HasIndex(q => q.TrainingQuizId);
+        modelBuilder.Entity<TrainingQuizOption>()
+            .HasIndex(o => o.TrainingQuizQuestionId);
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasIndex(r => r.TrainingQuizId);
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasIndex(r => r.TrainingVideoParticipantId);
+        modelBuilder.Entity<TrainingQuizResponse>()
+            .HasIndex(r => r.TrainingVideoExternalParticipantId);
+        modelBuilder.Entity<TrainingQuizAnswer>()
+            .HasIndex(a => a.TrainingQuizResponseId);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

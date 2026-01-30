@@ -1,9 +1,11 @@
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Evaluation;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
@@ -940,6 +942,7 @@ public class EvaluationsApiController : BaseApiController
         [FromQuery] string? status = null,
         [FromQuery] string? search = null,
         [FromQuery] string? personnel = null,
+        [FromQuery] string? projectName = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] DateTime? controlStartDate = null,
@@ -963,6 +966,7 @@ public class EvaluationsApiController : BaseApiController
                     .Include(e => e.Assignment).ThenInclude(a => a.Project)
                     .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
                     .Include(e => e.EvaluatedPersonnel)
+                    .Include(e => e.EvaluatedCustomerPersonnel)
                     .Where(e => !e.IsDeleted && e.EvaluatorCustomerPersonnelId == userId);
             }
             else
@@ -971,6 +975,7 @@ public class EvaluationsApiController : BaseApiController
                     .Include(e => e.Assignment).ThenInclude(a => a.Project)
                     .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
                     .Include(e => e.EvaluatedPersonnel)
+                    .Include(e => e.EvaluatedCustomerPersonnel)
                     .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
             }
 
@@ -1030,7 +1035,14 @@ public class EvaluationsApiController : BaseApiController
                 var personnelLower = personnel.ToLower();
                 query = query.Where(e =>
                     (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(personnelLower)) ||
+                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(personnelLower)) ||
                     (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(personnelLower)));
+            }
+
+            // Proje adı filtresi
+            if (!string.IsNullOrEmpty(projectName))
+            {
+                query = query.Where(e => e.Assignment.Project != null && e.Assignment.Project.Name == projectName);
             }
 
             // Tarih aralığı filtresi (callDate, completedAt veya createdAt)
@@ -1087,9 +1099,11 @@ public class EvaluationsApiController : BaseApiController
                 worksheet.Cell(currentRow, 2).Value = e.CallDate?.ToString("dd.MM.yyyy") ?? "-";
                 worksheet.Cell(currentRow, 3).Value = e.CallTime ?? "-";
                 worksheet.Cell(currentRow, 4).Value = e.Duration ?? "-";
-                worksheet.Cell(currentRow, 5).Value = e.EvaluatedPersonnel != null
-                    ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
-                    : (e.EvaluatedUnknownPersonnel ?? "-");
+                worksheet.Cell(currentRow, 5).Value = e.EvaluatedCustomerPersonnel != null
+                    ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
+                    : (e.EvaluatedPersonnel != null
+                        ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
+                        : (e.EvaluatedUnknownPersonnel ?? "-"));
                 worksheet.Cell(currentRow, 6).Value = e.Assignment?.Project?.Name ?? "-";
                 worksheet.Cell(currentRow, 7).Value = e.Assignment?.Checklist?.Name ?? "-";
                 worksheet.Cell(currentRow, 8).Value = e.ScorePercentage?.ToString("F2") ?? "0";
@@ -1101,6 +1115,11 @@ public class EvaluationsApiController : BaseApiController
 
             // Sütun genişliklerini ayarla
             worksheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 1 });
+
+            // Minimum genişlikler (tarih sütunları için)
+            if (worksheet.Column(2).Width < 12) worksheet.Column(2).Width = 12; // Çağrı Tarihi
+            if (worksheet.Column(12).Width < 18) worksheet.Column(12).Width = 18; // Kontrol Tarihi
 
             // Dosyayı memory stream'e yaz
             using var stream = new MemoryStream();
@@ -1188,6 +1207,7 @@ public class EvaluationsApiController : BaseApiController
             return StatusCode(500, CreateErrorResponse("Taslak silinirken hata oluştu.", ex));
         }
     }
+
 }
 
 // Request DTOs

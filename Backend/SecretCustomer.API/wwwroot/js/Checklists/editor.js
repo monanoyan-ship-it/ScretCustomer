@@ -9,7 +9,7 @@ var SubCriteriaModel = function (data) {
     base.id = ko.observable(data.id || null);
     base.description = ko.observable(data.description || '');
     base.order = ko.observable(data.order || 0);
-    base.weightPoints = ko.observable(data.weightPoints || 1);
+    base.weightPoints = ko.observable(data.weightPoints !== undefined ? data.weightPoints : 1);
     base.isActive = ko.observable(data.isActive !== false);
 };
 
@@ -271,6 +271,7 @@ function ChecklistEditorViewModel() {
         if (config.isNew) {
             // Yeni checklist - seçilen puanlama yöntemini ata, checklistType dropdown varsayılanı kullanılır
             var newChecklistData = {
+                id: 0,
                 scoringMethod: config.scoringMethod || 'Maximum',
                 checklistType: config.isSurvey ? 'Survey' : 'CallPerformance'
             };
@@ -287,18 +288,18 @@ function ChecklistEditorViewModel() {
                 // checklistType ve scoringMethod DB'den gelen değerler kullanılır
 
                 if (config.isClone) {
-                    // Clone: ID'leri temizle, ismi değiştir
-                    data.id = null;
+                    // Clone: ID'leri 0 yap (yeni kayıt için), ismi değiştir
+                    data.id = 0;
                     data.name = data.name + ' (Kopya)';
                     data.code = '';
                     data.validFrom = null;
                     data.validUntil = null;
                     data.version = 1;
-                    // Question ve SubCriteria ID'lerini temizle
+                    // Question ve SubCriteria ID'lerini 0 yap (yeni kayıt için)
                     (data.questions || []).forEach(function (q) {
-                        q.id = null;
+                        q.id = 0;
                         (q.subCriteria || []).forEach(function (sc) {
-                            sc.id = null;
+                            sc.id = 0;
                         });
                     });
                     self.checklist(new ChecklistModel(data)); // Clone'da attachment yükleme yapma
@@ -389,9 +390,27 @@ function ChecklistEditorViewModel() {
 
         self.isSaving(true);
 
-        var isNew = config.isNew;
+        // Yeni kayıt veya klonlama ise POST, düzenleme ise PUT
+        var isNew = config.isNew || config.isClone;
         var url = isNew ? '/api/checklists' : '/api/checklists/' + config.checklistId;
         var method = isNew ? 'POST' : 'PUT';
+
+        // POST (yeni kayıt/klonlama) için id alanlarını sil - CreateChecklistDto'da id yok
+        if (isNew) {
+            delete data.id;
+            delete data.isActive;
+            delete data.version;
+            data.questions.forEach(function (q) {
+                delete q.id;
+                delete q.checklistId;
+                if (q.subCriteria) {
+                    q.subCriteria.forEach(function (sc) {
+                        delete sc.id;
+                        delete sc.questionId;
+                    });
+                }
+            });
+        }
 
         fetch(url, {
             method: method,

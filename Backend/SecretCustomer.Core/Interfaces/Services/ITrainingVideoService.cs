@@ -18,6 +18,7 @@ public interface ITrainingVideoService
     Task<TrainingVideoAssignmentDto?> GetAssignmentByIdAsync(int id);
     Task<IEnumerable<TrainingVideoAssignmentListDto>> GetAssignmentsAsync(TrainingVideoAssignmentFilterDto? filter = null);
     Task<TrainingVideoAssignmentDto> CreateAssignmentAsync(CreateTrainingVideoAssignmentDto dto);
+    Task<TrainingVideoAssignmentDto> UpdateAssignmentAsync(int id, UpdateTrainingVideoAssignmentDto dto);
     Task<bool> DeleteAssignmentAsync(int id);
 
     // ===== OTOMATİK ATAMA =====
@@ -40,6 +41,7 @@ public interface ITrainingVideoService
 
     // ===== SCOPE-BASED DATA =====
     Task<IEnumerable<object>> GetScopeCustomersAsync(int videoId);
+    Task<IEnumerable<ScopePersonnelSearchResultDto>> SearchScopePersonnelAsync(int videoId, string? searchTerm, int maxResults = 20);
 
     // ===== DIŞ KATILIMCI YÖNETİMİ =====
     Task<IEnumerable<TrainingVideoExternalParticipantDto>> GetExternalParticipantsAsync(int assignmentId);

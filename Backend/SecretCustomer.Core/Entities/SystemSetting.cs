@@ -45,20 +45,4 @@ public static class SystemSettingKeys
     /// Varsayılan dönem hedefi
     /// </summary>
     public const string DefaultPeriodTarget = "DefaultPeriodTarget";
-
-    // SMTP Ayarları
-    public const string SmtpHost = "Smtp.Host";
-    public const string SmtpPort = "Smtp.Port";
-    public const string SmtpUsername = "Smtp.Username";
-    public const string SmtpPassword = "Smtp.Password";
-    public const string SmtpUseSsl = "Smtp.UseSsl";
-    public const string SmtpFromEmail = "Smtp.FromEmail";
-    public const string SmtpFromName = "Smtp.FromName";
-    public const string SmtpEnabled = "Smtp.Enabled";
-
-    // OAuth 2.0 Ayarları (Microsoft 365)
-    public const string SmtpUseOAuth = "Smtp.UseOAuth";
-    public const string SmtpTenantId = "Smtp.TenantId";
-    public const string SmtpClientId = "Smtp.ClientId";
-    public const string SmtpClientSecret = "Smtp.ClientSecret";
 }

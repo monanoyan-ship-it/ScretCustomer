@@ -238,7 +238,7 @@
                             </div>
                             <div class="text-end">
                                 <span class="badge bg-warning text-dark me-1" data-bind="text: selectionCount + ' seçim'"></span>
-                                <span class="badge bg-secondary" data-bind="text: evaluationCount + ' değ.'"></span>
+                                <span class="badge bg-secondary" data-bind="text: evaluationCount + '/' + totalQuestionEvaluations + ' değ.'" title="Seçilen / Toplam değerlendirme"></span>
                             </div>
                         </li>
                     </ul>
@@ -247,14 +247,25 @@
         </div>
 
         <!-- Detailed Suggestions List -->
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4" id="suggestions-list-section">
             <div class="card shadow">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Cevap Bazlı Kayıtlar</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Cevap Bazlı Kayıtlar
+                        <!-- ko if: isSuggestionsLoading -->
+                        <span class="spinner-border spinner-border-sm ms-2 text-info"></span>
+                        <!-- /ko -->
+                    </h5>
                     <span class="badge bg-info" data-bind="text: totalCount() + ' kayit'"></span>
                 </div>
-                <div class="card-body p-0">
-                    <div data-bind="visible: suggestions().length === 0" class="text-center text-muted py-5">
+                <div class="card-body p-0" style="position: relative;">
+                    <!-- Loading overlay for list -->
+                    <!-- ko if: isSuggestionsLoading -->
+                    <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.7); z-index: 10; top: 0; left: 0;">
+                        <div class="spinner-border text-info"></div>
+                    </div>
+                    <!-- /ko -->
+                    <div data-bind="visible: suggestions().length === 0 && !isSuggestionsLoading()" class="text-center text-muted py-5">
                         <i class="bi bi-inbox fs-1"></i>
                         <p class="mt-2">@Html.T("Report.NoSuggestions", "Oneri bulunamadi.")</p>
                     </div>
@@ -289,16 +300,51 @@
                                         <small class="text-muted" data-bind="text: groupName"></small>
                                     </td>
                                     <td style="min-width: 280px; max-width: 350px;">
+                                        <!-- Alt Kriterler -->
+                                        <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                        <div class="p-2 mb-1 rounded" style="background-color: #fff3cd; border-left: 3px solid #ffc107;">
+                                            <div class="small text-warning fw-bold mb-1"><i class="bi bi-list-check"></i> Alt Kriterler</div>
+                                            <!-- ko foreach: selectedSubCriteria -->
+                                            <div class="small"><i class="bi bi-arrow-return-right text-muted"></i> <span data-bind="text: $data"></span></div>
+                                            <!-- /ko -->
+                                        </div>
+                                        <!-- /ko -->
                                         <!-- ko if: notes -->
                                         <div class="p-2 mb-1 rounded" style="background-color: #f8f9fa; border-left: 3px solid #6c757d;">
-                                            <div class="small text-muted fw-bold mb-1">@Html.T("Report.Note", "Not")</div>
-                                            <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 100 ? notes.substring(0, 100) + '...' : notes, attr: { title: notes }"></div>
+                                            <div class="small text-muted fw-bold mb-1 d-flex justify-content-between align-items-center">
+                                                <span>@Html.T("Report.Note", "Not")</span>
+                                                <!-- ko if: notes.length > 100 -->
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-secondary"
+                                                        data-bs-toggle="popover"
+                                                        data-bs-trigger="click"
+                                                        data-bs-placement="left"
+                                                        data-bs-html="true"
+                                                        data-bind="attr: { 'data-bs-content': '<div style=\'max-width:400px; max-height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;\'>' + notes.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' }"
+                                                        title="@Html.T("Common.FullText", "Tam Metin")">
+                                                    <i class="bi bi-arrows-angle-expand" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                                <!-- /ko -->
+                                            </div>
+                                            <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 100 ? notes.substring(0, 100) + '...' : notes"></div>
                                         </div>
                                         <!-- /ko -->
                                         <!-- ko if: recommendationNotes -->
                                         <div class="p-2 rounded" style="background-color: #e7f3ff; border-left: 3px solid #0dcaf0;">
-                                            <div class="small text-info fw-bold mb-1">@Html.T("Report.Suggestion", "Öneri")</div>
-                                            <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: recommendationNotes.length > 100 ? recommendationNotes.substring(0, 100) + '...' : recommendationNotes, attr: { title: recommendationNotes }"></div>
+                                            <div class="small text-info fw-bold mb-1 d-flex justify-content-between align-items-center">
+                                                <span>@Html.T("Report.Suggestion", "Öneri")</span>
+                                                <!-- ko if: recommendationNotes.length > 100 -->
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-info"
+                                                        data-bs-toggle="popover"
+                                                        data-bs-trigger="click"
+                                                        data-bs-placement="left"
+                                                        data-bs-html="true"
+                                                        data-bind="attr: { 'data-bs-content': '<div style=\'max-width:400px; max-height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;\'>' + recommendationNotes.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' }"
+                                                        title="@Html.T("Common.FullText", "Tam Metin")">
+                                                    <i class="bi bi-arrows-angle-expand" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                                <!-- /ko -->
+                                            </div>
+                                            <div class="small" style="white-space: pre-wrap; word-break: break-word;" data-bind="text: recommendationNotes.length > 100 ? recommendationNotes.substring(0, 100) + '...' : recommendationNotes"></div>
                                         </div>
                                         <!-- /ko -->
                                     </td>
@@ -325,17 +371,17 @@
                         <nav>
                             <ul class="pagination mb-0">
                                 <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
-                                    <a class="page-link" href="#" data-bind="click: previousPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: previousPage">
                                         <i class="bi bi-chevron-left"></i>
                                     </a>
                                 </li>
                                 <!-- ko foreach: visiblePages -->
                                 <li class="page-item" data-bind="css: { active: $data === $parent.currentPage() }">
-                                    <a class="page-link" href="#" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
+                                    <a class="page-link" href="javascript:void(0)" data-bind="text: $data, click: function() { $parent.goToPage($data); }"></a>
                                 </li>
                                 <!-- /ko -->
                                 <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
-                                    <a class="page-link" href="#" data-bind="click: nextPage">
+                                    <a class="page-link" href="javascript:void(0)" data-bind="click: nextPage">
                                         <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>
@@ -374,7 +420,17 @@
                                 <tr>
                                     <td>
                                         <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
-                                        <small class="text-muted d-block" data-bind="text: callId || ''"></small>
+                                        <!-- ko if: callId -->
+                                        <div class="d-flex align-items-center gap-1">
+                                            <code class="text-muted small" data-bind="text: $root.truncateCallId(callId), attr: { title: callId }" style="cursor: help;"></code>
+                                            <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { $root.copyToClipboard(callId); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                            </button>
+                                        </div>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: callId -->
+                                        <small class="text-muted">-</small>
+                                        <!-- /ko -->
                                     </td>
                                     <td data-bind="text: projectName || '-'"></td>
                                     <td data-bind="text: evaluatedPersonnelName || '-'"></td>
@@ -388,7 +444,22 @@
                                     </td>
                                     <td style="max-width: 250px;">
                                         <!-- ko if: notes -->
-                                        <div class="small p-2 rounded" style="background-color: #f8f9fa; white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 150 ? notes.substring(0, 150) + '...' : notes, attr: { title: notes }"></div>
+                                        <div class="small p-2 rounded" style="background-color: #f8f9fa;">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div style="white-space: pre-wrap; word-break: break-word;" data-bind="text: notes.length > 100 ? notes.substring(0, 100) + '...' : notes"></div>
+                                                <!-- ko if: notes.length > 100 -->
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary flex-shrink-0"
+                                                        data-bs-toggle="popover"
+                                                        data-bs-trigger="click"
+                                                        data-bs-placement="left"
+                                                        data-bs-html="true"
+                                                        data-bind="attr: { 'data-bs-content': '<div style=\'max-width:400px; max-height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;\'>' + notes.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' }"
+                                                        title="@Html.T("Common.FullText", "Tam Metin")">
+                                                    <i class="bi bi-arrows-angle-expand" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                                <!-- /ko -->
+                                            </div>
+                                        </div>
                                         <!-- /ko -->
                                         <!-- ko ifnot: notes -->
                                         <span class="text-muted">-</span>
@@ -396,7 +467,22 @@
                                     </td>
                                     <td style="max-width: 250px;">
                                         <!-- ko if: evaluationComment -->
-                                        <div class="small p-2 rounded" style="background-color: #e7f3ff; white-space: pre-wrap; word-break: break-word;" data-bind="text: evaluationComment.length > 150 ? evaluationComment.substring(0, 150) + '...' : evaluationComment, attr: { title: evaluationComment }"></div>
+                                        <div class="small p-2 rounded" style="background-color: #e7f3ff;">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div style="white-space: pre-wrap; word-break: break-word;" data-bind="text: evaluationComment.length > 100 ? evaluationComment.substring(0, 100) + '...' : evaluationComment"></div>
+                                                <!-- ko if: evaluationComment.length > 100 -->
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-info flex-shrink-0"
+                                                        data-bs-toggle="popover"
+                                                        data-bs-trigger="click"
+                                                        data-bs-placement="left"
+                                                        data-bs-html="true"
+                                                        data-bind="attr: { 'data-bs-content': '<div style=\'max-width:400px; max-height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-word;\'>' + evaluationComment.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' }"
+                                                        title="@Html.T("Common.FullText", "Tam Metin")">
+                                                    <i class="bi bi-arrows-angle-expand" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                                <!-- /ko -->
+                                            </div>
+                                        </div>
                                         <!-- /ko -->
                                         <!-- ko ifnot: evaluationComment -->
                                         <span class="text-muted">-</span>
