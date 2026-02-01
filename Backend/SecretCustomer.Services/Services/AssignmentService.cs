@@ -262,6 +262,27 @@ public class AssignmentService : IAssignmentService
                 throw new InvalidOperationException($"Bu proje için {dto.ExternalEmail} adresine zaten atama yapılmış.");
         }
 
+        // Dahili kullanıcı için mükerrer atama kontrolü
+        // Aynı kullanıcıya aynı projede tamamlanmamış ve tarih çakışan atama var mı?
+        if (dto.AssignedUserId.HasValue)
+        {
+            var newDueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc);
+            var existingAssignment = await _context.Assignments
+                .Where(a => a.ProjectId == dto.ProjectId
+                         && a.AssignedUserId == dto.AssignedUserId
+                         && !a.IsCompleted
+                         && !a.IsDeleted
+                         && newDueDate <= a.DueDate)
+                .Select(a => new { a.Id, a.DueDate })
+                .FirstOrDefaultAsync();
+
+            if (existingAssignment != null)
+            {
+                throw new InvalidOperationException(
+                    $"Bu kullanıcıya bu projede {existingAssignment.DueDate:dd.MM.yyyy} tarihine kadar tamamlanmamış bir atama zaten mevcut.");
+            }
+        }
+
         var assignment = new Assignment
         {
             ProjectId = dto.ProjectId,

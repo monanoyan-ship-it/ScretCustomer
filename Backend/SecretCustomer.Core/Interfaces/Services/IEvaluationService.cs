@@ -8,6 +8,13 @@ public interface IEvaluationService
     Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId);
     Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId);
     Task<IEnumerable<EvaluationDto>> GetByEvaluatorCustomerPersonnelIdAsync(int customerPersonnelId);
+
+    /// <summary>
+    /// Temsilcinin kendisi hakkındaki değerlendirmeleri getirir (EvaluatedCustomerPersonnelId ile)
+    /// CustomerOperator'ın kendi performansını görmesi için kullanılır
+    /// </summary>
+    Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId);
+
     Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto);
     Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId);
 

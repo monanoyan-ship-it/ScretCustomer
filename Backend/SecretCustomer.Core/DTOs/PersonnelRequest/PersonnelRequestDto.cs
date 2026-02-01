@@ -61,6 +61,12 @@ public class RejectPersonnelRequestDto
 {
     public int Id { get; set; }
     public string RejectReason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Eğer belirtilirse, değerlendirme bu personele atanır
+    /// Belirtilmezse değerlendirme taslak olarak kalır
+    /// </summary>
+    public int? CorrectPersonnelId { get; set; }
 }
 
 public class PersonnelRequestFilterDto

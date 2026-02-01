@@ -365,6 +365,40 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Temsilcinin kendisi hakkındaki değerlendirmeleri getirir
+    /// CustomerOperator'ın kendi performansını görmesi için kullanılır
+    /// </summary>
+    [HttpGet("my-evaluations")]
+    [Authorize(Roles = "CustomerOperator,CustomerSupervisor,CustomerManager,Admin")]
+    public async Task<IActionResult> GetMyEvaluations()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+            }
+
+            // Sadece CustomerPersonnel kullanıcıları için çalışır
+            if (userType != "CustomerPersonnel")
+            {
+                return BadRequest(CreateErrorResponse("Bu endpoint sadece müşteri personeli için kullanılabilir."));
+            }
+
+            var evaluations = await _evaluationService.GetByEvaluatedCustomerPersonnelIdAsync(userId);
+            return Ok(evaluations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading my evaluations for current user");
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
+        }
+    }
+
+    /// <summary>
     /// Çağrı ID'nin müşteri için mevcut olup olmadığını kontrol eder
     /// </summary>
     [HttpGet("check-call-id")]

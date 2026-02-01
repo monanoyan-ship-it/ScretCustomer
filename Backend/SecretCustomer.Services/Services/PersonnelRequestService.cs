@@ -169,12 +169,22 @@ public class PersonnelRequestService : IPersonnelRequestService
         request.ReviewedAt = DateTime.UtcNow;
         request.CreatedPersonnelId = personnel.Id;
 
-        // 3. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş TÜM evaluation'ları güncelle
+        // 3. İLGİLİ DEĞERLENDİRMEYE personeli ata (en önemli adım)
+        if (request.Evaluation != null)
+        {
+            request.Evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
+            request.Evaluation.EvaluatedUnknownPersonnel = null; // Artık tanımlı personel
+            _logger.LogInformation("Evaluation {EvaluationId} assigned to new personnel {PersonnelId}",
+                request.EvaluationId, personnel.Id);
+        }
+
+        // 4. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş DİĞER evaluation'ları da güncelle
         var fullName = $"{request.FirstName} {request.LastName}";
         var evaluationsToUpdate = await _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment.Project.CustomerId == request.CustomerId &&
+            .Where(e => e.Id != request.EvaluationId && // İlgili değerlendirmeyi zaten güncelledik
+                       e.Assignment.Project.CustomerId == request.CustomerId &&
                        e.EvaluatedUnknownPersonnel != null &&
                        (e.EvaluatedUnknownPersonnel.ToLower() == fullName.ToLower() ||
                         e.EvaluatedUnknownPersonnel.ToLower() == $"{request.FirstName.ToLower()} {request.LastName.ToLower()}"))
@@ -186,7 +196,7 @@ public class PersonnelRequestService : IPersonnelRequestService
             evaluation.EvaluatedUnknownPersonnel = null; // Artık tanımlı personel
         }
 
-        _logger.LogInformation("Updated {Count} evaluations with new personnel ID {PersonnelId}",
+        _logger.LogInformation("Updated {Count} additional evaluations with new personnel ID {PersonnelId}",
             evaluationsToUpdate.Count, personnel.Id);
 
         await _context.SaveChangesAsync();
@@ -222,11 +232,51 @@ public class PersonnelRequestService : IPersonnelRequestService
         request.ReviewedAt = DateTime.UtcNow;
         request.RejectReason = dto.RejectReason;
 
-        // 2. Tamamlanmış değerlendirmeyi taslağa al
-        if (request.Evaluation != null && request.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+        string notificationMessage;
+
+        // 2. Doğru personel seçildiyse değerlendirmeyi ona ata, seçilmediyse taslağa al
+        if (request.Evaluation != null)
         {
-            request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
-            _logger.LogInformation("Evaluation {Id} reverted to draft due to rejected personnel request", request.EvaluationId);
+            if (dto.CorrectPersonnelId.HasValue)
+            {
+                // Personel var mı kontrol et
+                var correctPersonnel = await _context.CustomerPersonnel
+                    .FirstOrDefaultAsync(cp => cp.Id == dto.CorrectPersonnelId.Value && !cp.IsDeleted);
+
+                if (correctPersonnel != null)
+                {
+                    request.Evaluation.EvaluatedCustomerPersonnelId = dto.CorrectPersonnelId.Value;
+                    // Değerlendirme tamamlanmış kalabilir, sadece personel değişir
+                    _logger.LogInformation("Evaluation {Id} reassigned to personnel {PersonnelId} due to rejected personnel request",
+                        request.EvaluationId, dto.CorrectPersonnelId.Value);
+
+                    notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. Değerlendirme {correctPersonnel.FullName} adlı personele atandı.";
+                }
+                else
+                {
+                    // Personel bulunamazsa taslağa al
+                    request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
+                    _logger.LogWarning("Correct personnel {PersonnelId} not found, evaluation {EvaluationId} reverted to draft",
+                        dto.CorrectPersonnelId.Value, request.EvaluationId);
+
+                    notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. İlgili değerlendirme taslağa alındı.";
+                }
+            }
+            else
+            {
+                // Personel seçilmedi, taslağa al
+                if (request.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
+                {
+                    request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
+                    _logger.LogInformation("Evaluation {Id} reverted to draft due to rejected personnel request", request.EvaluationId);
+                }
+
+                notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. İlgili değerlendirme taslağa alındı.";
+            }
+        }
+        else
+        {
+            notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}.";
         }
 
         await _context.SaveChangesAsync();
@@ -235,11 +285,11 @@ public class PersonnelRequestService : IPersonnelRequestService
         await CreateNotificationAsync(
             request.RequestedByUserId,
             "PersonnelRequest.Rejected",
-            $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. İlgili değerlendirme taslağa alındı.",
+            notificationMessage,
             $"/Evaluations?id={request.EvaluationId}");
 
-        _logger.LogInformation("Personnel request rejected: {Id} - {FullName}, Reason: {Reason}",
-            request.Id, request.FullName, dto.RejectReason);
+        _logger.LogInformation("Personnel request rejected: {Id} - {FullName}, Reason: {Reason}, CorrectPersonnelId: {PersonnelId}",
+            request.Id, request.FullName, dto.RejectReason, dto.CorrectPersonnelId);
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after rejection");
     }

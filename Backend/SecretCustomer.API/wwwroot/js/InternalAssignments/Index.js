@@ -272,20 +272,13 @@ function InternalAssignmentsViewModel() {
         fetch('/api/internal-assignments/summary', { credentials: 'include' })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data && data.length > 0) {
-                    var total = {
-                        totalAssignments: 0,
-                        completedAssignments: 0,
-                        pendingAssignments: 0,
-                        overdueAssignments: 0
-                    };
-                    data.forEach(function(s) {
-                        total.totalAssignments += s.totalAssignments;
-                        total.completedAssignments += s.completedAssignments;
-                        total.pendingAssignments += s.pendingAssignments;
-                        total.overdueAssignments += s.overdueAssignments;
+                if (data) {
+                    self.summary({
+                        totalAssignments: data.totalAssignments || 0,
+                        completedAssignments: data.completedAssignments || 0,
+                        pendingAssignments: data.pendingAssignments || 0,
+                        overdueAssignments: data.overdueAssignments || 0
                     });
-                    self.summary(total);
                 }
             })
             .catch(function(error) {

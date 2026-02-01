@@ -151,6 +151,17 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// Temsilcinin kendi performansı - dinlenen çağrıları, puanları, yorumları
+    /// Sadece CustomerOperator rolü için
+    /// </summary>
+    [Route("CustomerPortal/MyPerformance")]
+    [Authorize(Roles = "CustomerOperator")]
+    public IActionResult MyPerformance()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Eğitim videosu anketi - Dahili katılımcılar için
     /// </summary>
     [Route("CustomerPortal/TrainingQuiz/{participantId:int}")]

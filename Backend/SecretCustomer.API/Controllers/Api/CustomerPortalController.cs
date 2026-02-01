@@ -3136,6 +3136,62 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// Kendi Karnem - CustomerOperator'ın kendi performans karnesini görüntüler
+    /// Token'daki NameIdentifier (CustomerPersonnelId) ile kendi karnesini döner
+    /// </summary>
+    [HttpGet("reports/my-report-card")]
+    public async Task<IActionResult> GetMyReportCard(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Token'dan CustomerPersonnelId'yi al
+            var personnelIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (userType != "CustomerPersonnel" || string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
+            {
+                return BadRequest(new { message = "Bu endpoint sadece müşteri personeli için kullanılabilir." });
+            }
+
+            // Personelin bu müşteriye ait olup olmadığını doğrula
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Personel bulunamadı." });
+
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.GetPersonnelReportCardAsync(filter);
+
+            if (result == null)
+                return NotFound(new { message = "Karne verisi bulunamadı." });
+
+            // EvaluatorName alanlarını temizle (temsilci görmemeli)
+            foreach (var evaluation in result.RecentEvaluations)
+            {
+                evaluation.EvaluatorName = null;
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading my report card for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Karne yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// Temsilci Karnesi Excel Export (CustomerPortal)
     /// </summary>
     [HttpGet("reports/personnel-report-card/{personnelId}/export")]
