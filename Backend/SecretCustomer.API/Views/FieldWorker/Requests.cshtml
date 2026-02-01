@@ -62,7 +62,7 @@
             <div class="card-body p-0">
                 <!-- Empty State -->
                 <div data-bind="visible: requests().length === 0" class="text-center py-5">
-                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <i class="bi bi-inbox text-muted empty-state-icon"></i>
                     <p class="mt-3 text-muted">@Html.T("FieldWorker.NoRequests", "Henuz talep bulunmamaktadir.")</p>
                     <button class="btn btn-primary" data-bind="click: showNewRequestModal">
                         <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewDealerRequest", "Yeni Bayi Talebi")
@@ -118,15 +118,15 @@
         </div>
     </div>
 
-    <!-- New Dealer Request Modal -->
-    <div class="modal fade" id="newRequestModal" tabindex="-1">
+    <!-- ==================== NEW DEALER REQUEST MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isNewRequestModalOpen }, style: { display: isNewRequestModalOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-shop me-2"></i>@Html.T("FieldWorker.NewDealerRequest", "Yeni Bayi Talebi")
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeNewRequestModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -146,35 +146,35 @@
 
                         <div class="col-12">
                             <label class="form-label">@Html.T("Dealer.Name", "Bayi Adi") <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" data-bind="value: newRequest.name" placeholder="ABC Bayi">
+                            <input type="text" class="form-control" data-bind="value: newRequest.name" placeholder="ABC Bayi" autocomplete="off">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label">@Html.T("Dealer.Address", "Adres")</label>
-                            <input type="text" class="form-control" data-bind="value: newRequest.address" placeholder="Cadde, Sokak, No">
+                            <input type="text" class="form-control" data-bind="value: newRequest.address" placeholder="Cadde, Sokak, No" autocomplete="off">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.City", "Sehir")</label>
-                            <input type="text" class="form-control" data-bind="value: newRequest.city" placeholder="Istanbul">
+                            <input type="text" class="form-control" data-bind="value: newRequest.city" placeholder="Istanbul" autocomplete="off">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.District", "Ilce")</label>
-                            <input type="text" class="form-control" data-bind="value: newRequest.district" placeholder="Kadikoy">
+                            <input type="text" class="form-control" data-bind="value: newRequest.district" placeholder="Kadikoy" autocomplete="off">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.Phone", "Telefon")</label>
-                            <input type="tel" class="form-control" data-bind="value: newRequest.phone" placeholder="0216 123 4567">
+                            <input type="tel" class="form-control" data-bind="value: newRequest.phone" placeholder="0216 123 4567" autocomplete="off">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.ContactPerson", "Yetkili Kisi")</label>
-                            <input type="text" class="form-control" data-bind="value: newRequest.contactPerson" placeholder="Ahmet Yilmaz">
+                            <input type="text" class="form-control" data-bind="value: newRequest.contactPerson" placeholder="Ahmet Yilmaz" autocomplete="off">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label">@Html.T("Dealer.Notes", "Notlar")</label>
-                            <textarea class="form-control" rows="2" data-bind="value: newRequest.notes" placeholder="Ek bilgiler..."></textarea>
+                            <textarea class="form-control" rows="2" data-bind="value: newRequest.notes" placeholder="Ek bilgiler..." autocomplete="off"></textarea>
                         </div>
                     </div>
 
@@ -184,7 +184,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeNewRequestModal">
                         @Html.T("Common.Cancel", "Iptal")
                     </button>
                     <button type="button" class="btn btn-primary" data-bind="click: submitRequest, disable: isSaving">
@@ -200,9 +200,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade" data-bind="css: { show: isNewRequestModalOpen }, style: { display: isNewRequestModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/fieldworker-requests.css" />
+}
+
 @section Scripts {
+    <script src="~/js/Shared/localization.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
     <script src="~/js/FieldWorker/requests.js"></script>
 }

@@ -26,7 +26,13 @@ function FieldWorkerVisitsViewModel() {
     self.projects = ko.observableArray([]);
     self.dealers = ko.observableArray([]);
 
-    // New visit modal
+    // Modal state - KnockoutJS pattern
+    self.isNewVisitModalOpen = ko.observable(false);
+    self.isDetailModalOpen = ko.observable(false);
+    self.selectedVisit = ko.observable(null);
+    self.visitEvaluation = ko.observable(null);
+
+    // New visit form
     self.newVisit = {
         projectId: ko.observable(''),
         dealerId: ko.observable(''),
@@ -34,8 +40,6 @@ function FieldWorkerVisitsViewModel() {
         controlTime: ko.observable(''),
         auditorComment: ko.observable('')
     };
-
-    self.modal = null;
 
     // Filtered dealers based on selected project
     self.filteredDealers = ko.computed(function() {
@@ -67,6 +71,12 @@ function FieldWorkerVisitsViewModel() {
         return date.toLocaleDateString('tr-TR');
     };
 
+    self.formatDateTime = function(dateStr) {
+        if (!dateStr) return '-';
+        var date = new Date(dateStr);
+        return date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    };
+
     // Load projects
     self.loadProjects = function() {
         return ApiService.get('/fieldworker/projects')
@@ -87,27 +97,22 @@ function FieldWorkerVisitsViewModel() {
     self.loadVisits = function() {
         self.isLoading(true);
 
-        var params = {
-            page: self.currentPage(),
-            pageSize: self.pageSize
-        };
+        var params = new URLSearchParams();
+        params.append('page', self.currentPage());
+        params.append('pageSize', self.pageSize);
 
-        if (self.filter.searchTerm()) params.searchTerm = self.filter.searchTerm();
-        if (self.filter.projectId()) params.projectId = self.filter.projectId();
-        if (self.filter.statusId()) params.statusId = self.filter.statusId();
+        if (self.filter.searchTerm()) params.append('searchTerm', self.filter.searchTerm());
+        if (self.filter.projectId()) params.append('projectId', self.filter.projectId());
+        if (self.filter.statusId()) params.append('statusId', self.filter.statusId());
 
-        var queryString = Object.keys(params).map(function(key) {
-            return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
-        }).join('&');
-
-        ApiService.get('/fieldworker/visits?' + queryString)
+        ApiService.get('/fieldworker/visits?' + params.toString())
             .then(function(data) {
                 self.visits(data.items || []);
                 self.totalCount(data.totalCount || 0);
             })
             .catch(function(error) {
                 console.error('Error loading visits:', error);
-                toastr.error(error.message || 'Ziyaretler yuklenirken hata olustu.');
+                toastr.error(error.message || T('FieldWorker.LoadVisitsError', 'Ziyaretler yuklenirken hata olustu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -144,23 +149,18 @@ function FieldWorkerVisitsViewModel() {
         }
     };
 
-    // Show new visit modal
+    // ==================== NEW VISIT MODAL ====================
     self.showNewVisitModal = function() {
         self.newVisit.projectId('');
         self.newVisit.dealerId('');
         self.newVisit.controlDate(new Date().toISOString().split('T')[0]);
         self.newVisit.controlTime('');
         self.newVisit.auditorComment('');
+        self.isNewVisitModalOpen(true);
+    };
 
-        if (!self.modal) {
-            var modalEl = document.getElementById('newVisitModal');
-            if (modalEl) {
-                self.modal = new bootstrap.Modal(modalEl);
-            }
-        }
-        if (self.modal) {
-            self.modal.show();
-        }
+    self.closeNewVisitModal = function() {
+        self.isNewVisitModalOpen(false);
     };
 
     // Save visit
@@ -176,23 +176,20 @@ function FieldWorkerVisitsViewModel() {
     self.doSaveVisit = function(isDraft) {
         // Validation
         if (!self.newVisit.projectId()) {
-            toastr.warning('Proje secimi zorunludur.');
+            toastr.warning(T('FieldWorker.ProjectRequired', 'Proje secimi zorunludur.'));
             return;
         }
         if (!self.newVisit.dealerId()) {
-            toastr.warning('Bayi secimi zorunludur.');
+            toastr.warning(T('FieldWorker.DealerRequired', 'Bayi secimi zorunludur.'));
             return;
         }
 
         self.isSaving(true);
 
-        // Find checklist from project's first assignment
-        var project = self.projects().find(function(p) { return p.projectId === parseInt(self.newVisit.projectId()); });
-
         var data = {
             projectId: parseInt(self.newVisit.projectId()),
             dealerId: parseInt(self.newVisit.dealerId()),
-            checklistId: 0, // Will be determined by backend
+            checklistId: 0,
             controlDate: self.newVisit.controlDate() ? new Date(self.newVisit.controlDate()).toISOString() : null,
             controlTime: self.newVisit.controlTime() || null,
             auditorComment: self.newVisit.auditorComment() || null,
@@ -202,31 +199,65 @@ function FieldWorkerVisitsViewModel() {
 
         ApiService.post('/fieldworker/visits', data)
             .then(function(response) {
-                toastr.success(isDraft ? 'Ziyaret taslak olarak kaydedildi.' : 'Ziyaret basariyla kaydedildi.');
-                if (self.modal) {
-                    self.modal.hide();
-                }
+                var message = isDraft
+                    ? T('FieldWorker.VisitSavedAsDraft', 'Ziyaret taslak olarak kaydedildi.')
+                    : T('FieldWorker.VisitSaved', 'Ziyaret basariyla kaydedildi.');
+                toastr.success(message);
+                self.closeNewVisitModal();
                 self.loadVisits();
 
-                // Redirect to evaluation form
+                // Show detail modal for the new visit
                 if (response.evaluationId) {
-                    setTimeout(function() {
-                        window.location.href = '/Evaluations?id=' + response.evaluationId;
-                    }, 1000);
+                    self.showVisitDetail({ evaluationId: response.evaluationId });
                 }
             })
             .catch(function(error) {
                 console.error('Error saving visit:', error);
-                toastr.error(error.message || 'Ziyaret kaydedilirken hata olustu.');
+                toastr.error(error.message || T('FieldWorker.SaveVisitError', 'Ziyaret kaydedilirken hata olustu.'));
             })
             .finally(function() {
                 self.isSaving(false);
             });
     };
 
-    // Edit visit (redirect to evaluation)
+    // ==================== DETAIL MODAL ====================
+    self.showVisitDetail = function(visit) {
+        self.selectedVisit(visit);
+        self.visitEvaluation(null);
+        self.isDetailModalOpen(true);
+
+        // Load evaluation details
+        if (visit.evaluationId) {
+            ApiService.get('/evaluations/' + visit.evaluationId)
+                .then(function(evaluation) {
+                    self.visitEvaluation(evaluation);
+                })
+                .catch(function(error) {
+                    console.error('Error loading evaluation:', error);
+                });
+        }
+    };
+
+    self.closeDetailModal = function() {
+        self.isDetailModalOpen(false);
+        self.selectedVisit(null);
+        self.visitEvaluation(null);
+    };
+
+    // Edit visit - Open evaluation form in new window
     self.editVisit = function(visit) {
-        window.location.href = '/Evaluations?id=' + visit.evaluationId;
+        if (visit.evaluationId) {
+            window.open('/Evaluations?id=' + visit.evaluationId, '_blank');
+        }
+    };
+
+    // Continue evaluation from detail modal
+    self.continueEvaluation = function() {
+        var visit = self.selectedVisit();
+        if (visit && visit.evaluationId) {
+            window.open('/Evaluations?id=' + visit.evaluationId, '_blank');
+            self.closeDetailModal();
+        }
     };
 
     // Initialize
@@ -250,10 +281,24 @@ function FieldWorkerVisitsViewModel() {
     self.init();
 }
 
+// Translation keys used in this module
+var TRANSLATION_KEYS = [
+    'FieldWorker.LoadVisitsError',
+    'FieldWorker.ProjectRequired',
+    'FieldWorker.DealerRequired',
+    'FieldWorker.VisitSavedAsDraft',
+    'FieldWorker.VisitSaved',
+    'FieldWorker.SaveVisitError',
+    'Common.Confirm',
+    'Common.Cancel'
+];
+
 // Initialize when document is ready
 $(document).ready(function() {
     var app = document.getElementById('fieldworker-visits-app');
     if (app) {
-        ko.applyBindings(new FieldWorkerVisitsViewModel(), app);
+        Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+            ko.applyBindings(new FieldWorkerVisitsViewModel(), app);
+        });
     }
 });

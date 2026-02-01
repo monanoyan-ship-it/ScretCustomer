@@ -36,7 +36,7 @@
                                 <h3 class="mb-0" data-bind="text: totalVisits">0</h3>
                                 <small>@Html.T("FieldWorker.TotalVisits", "Toplam Ziyaret")</small>
                             </div>
-                            <i class="bi bi-clipboard-check" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <i class="bi bi-clipboard-check stat-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                                 <h3 class="mb-0" data-bind="text: todayVisits">0</h3>
                                 <small>@Html.T("FieldWorker.TodayVisits", "Bugunki Ziyaret")</small>
                             </div>
-                            <i class="bi bi-calendar-check" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <i class="bi bi-calendar-check stat-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                                 <h3 class="mb-0" data-bind="text: thisWeekVisits">0</h3>
                                 <small>@Html.T("FieldWorker.WeekVisits", "Bu Hafta")</small>
                             </div>
-                            <i class="bi bi-calendar-week" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <i class="bi bi-calendar-week stat-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                                 <h3 class="mb-0" data-bind="text: pendingRequests">0</h3>
                                 <small>@Html.T("FieldWorker.PendingRequests", "Bekleyen Talep")</small>
                             </div>
-                            <i class="bi bi-hourglass-split" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <i class="bi bi-hourglass-split stat-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div data-bind="visible: assignedProjects().length === 0" class="text-center py-4">
-                            <i class="bi bi-folder-x text-muted" style="font-size: 2rem;"></i>
+                            <i class="bi bi-folder-x text-muted empty-state-icon"></i>
                             <p class="text-muted mt-2">@Html.T("FieldWorker.NoProjects", "Atanmis proje bulunmamaktadir.")</p>
                         </div>
                         <div class="list-group list-group-flush" data-bind="foreach: assignedProjects">
@@ -123,7 +123,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div data-bind="visible: recentVisits().length === 0" class="text-center py-4">
-                            <i class="bi bi-clipboard text-muted" style="font-size: 2rem;"></i>
+                            <i class="bi bi-clipboard text-muted empty-state-icon"></i>
                             <p class="text-muted mt-2">@Html.T("FieldWorker.NoVisits", "Henuz ziyaret bulunmamaktadir.")</p>
                         </div>
                         <div class="list-group list-group-flush" data-bind="foreach: recentVisits">
@@ -165,25 +165,25 @@
                         <div class="row text-center">
                             <div class="col-md-3">
                                 <a href="/FieldWorker/Visits" class="btn btn-outline-primary btn-lg w-100 mb-2">
-                                    <i class="bi bi-plus-circle d-block mb-2" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-plus-circle d-block mb-2 quick-action-icon"></i>
                                     @Html.T("FieldWorker.NewVisit", "Yeni Ziyaret")
                                 </a>
                             </div>
                             <div class="col-md-3">
                                 <a href="/FieldWorker/Visits?status=1" class="btn btn-outline-warning btn-lg w-100 mb-2">
-                                    <i class="bi bi-pencil-square d-block mb-2" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-pencil-square d-block mb-2 quick-action-icon"></i>
                                     @Html.T("FieldWorker.DraftVisits", "Taslak Ziyaretler")
                                 </a>
                             </div>
                             <div class="col-md-3">
                                 <a href="/FieldWorker/Requests" class="btn btn-outline-success btn-lg w-100 mb-2">
-                                    <i class="bi bi-shop d-block mb-2" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-shop d-block mb-2 quick-action-icon"></i>
                                     @Html.T("FieldWorker.NewDealerRequest", "Bayi Talebi")
                                 </a>
                             </div>
                             <div class="col-md-3">
                                 <a href="/FieldWorker/Requests?tab=my" class="btn btn-outline-info btn-lg w-100 mb-2">
-                                    <i class="bi bi-list-check d-block mb-2" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-list-check d-block mb-2 quick-action-icon"></i>
                                     @Html.T("FieldWorker.MyRequests", "Taleplerim")
                                 </a>
                             </div>
@@ -195,7 +195,12 @@
     </div>
 </div>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/fieldworker-dashboard.css" />
+}
+
 @section Scripts {
+    <script src="~/js/Shared/localization.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
     <script src="~/js/FieldWorker/dashboard.js"></script>
 }

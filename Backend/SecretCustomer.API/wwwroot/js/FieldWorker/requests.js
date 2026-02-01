@@ -6,6 +6,9 @@ function FieldWorkerRequestsViewModel() {
     self.isLoading = ko.observable(true);
     self.isSaving = ko.observable(false);
 
+    // Modal state - KnockoutJS pattern
+    self.isNewRequestModalOpen = ko.observable(false);
+
     // Stats
     self.pendingCount = ko.observable(0);
     self.approvedCount = ko.observable(0);
@@ -15,7 +18,7 @@ function FieldWorkerRequestsViewModel() {
     self.requests = ko.observableArray([]);
     self.customers = ko.observableArray([]);
 
-    // New request modal
+    // New request form
     self.newRequest = {
         customerId: ko.observable(''),
         dealerTypeId: ko.observable(1),
@@ -28,14 +31,12 @@ function FieldWorkerRequestsViewModel() {
         notes: ko.observable('')
     };
 
-    self.modal = null;
-
     // Helpers
     self.getRequestTypeName = function(typeId) {
         var types = {
-            1: 'Yeni Bayi',
-            2: 'Bayi Guncelleme',
-            3: 'Yeni Personel'
+            1: T('DealerRequest.NewDealer', 'Yeni Bayi'),
+            2: T('DealerRequest.UpdateDealer', 'Bayi Guncelleme'),
+            3: T('DealerRequest.NewPersonnel', 'Yeni Personel')
         };
         return types[typeId] || typeId;
     };
@@ -51,9 +52,9 @@ function FieldWorkerRequestsViewModel() {
 
     self.getStatusText = function(statusId) {
         var statuses = {
-            1: 'Beklemede',
-            2: 'Onaylandi',
-            3: 'Reddedildi'
+            1: T('Status.Pending', 'Beklemede'),
+            2: T('Status.Approved', 'Onaylandi'),
+            3: T('Status.Rejected', 'Reddedildi')
         };
         return statuses[statusId] || statusId;
     };
@@ -123,14 +124,14 @@ function FieldWorkerRequestsViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading requests:', error);
-                toastr.error(error.message || 'Talepler yuklenirken hata olustu.');
+                toastr.error(error.message || T('FieldWorker.LoadRequestsError', 'Talepler yuklenirken hata olustu.'));
             })
             .finally(function() {
                 self.isLoading(false);
             });
     };
 
-    // Show new request modal
+    // ==================== NEW REQUEST MODAL ====================
     self.showNewRequestModal = function() {
         self.newRequest.customerId('');
         self.newRequest.dealerTypeId(1);
@@ -141,27 +142,22 @@ function FieldWorkerRequestsViewModel() {
         self.newRequest.phone('');
         self.newRequest.contactPerson('');
         self.newRequest.notes('');
+        self.isNewRequestModalOpen(true);
+    };
 
-        if (!self.modal) {
-            var modalEl = document.getElementById('newRequestModal');
-            if (modalEl) {
-                self.modal = new bootstrap.Modal(modalEl);
-            }
-        }
-        if (self.modal) {
-            self.modal.show();
-        }
+    self.closeNewRequestModal = function() {
+        self.isNewRequestModalOpen(false);
     };
 
     // Submit request
     self.submitRequest = function() {
         // Validation
         if (!self.newRequest.customerId()) {
-            toastr.warning('Firma secimi zorunludur.');
+            toastr.warning(T('FieldWorker.CustomerRequired', 'Firma secimi zorunludur.'));
             return;
         }
         if (!self.newRequest.name()) {
-            toastr.warning('Bayi adi zorunludur.');
+            toastr.warning(T('FieldWorker.DealerNameRequired', 'Bayi adi zorunludur.'));
             return;
         }
 
@@ -186,15 +182,13 @@ function FieldWorkerRequestsViewModel() {
 
         ApiService.post('/dealer-requests', data)
             .then(function() {
-                toastr.success('Bayi talebi basariyla gonderildi.');
-                if (self.modal) {
-                    self.modal.hide();
-                }
+                toastr.success(T('FieldWorker.RequestSubmitted', 'Bayi talebi basariyla gonderildi.'));
+                self.closeNewRequestModal();
                 self.loadRequests();
             })
             .catch(function(error) {
                 console.error('Error submitting request:', error);
-                toastr.error(error.message || 'Talep gonderilirken hata olustu.');
+                toastr.error(error.message || T('FieldWorker.SubmitRequestError', 'Talep gonderilirken hata olustu.'));
             })
             .finally(function() {
                 self.isSaving(false);
@@ -213,10 +207,29 @@ function FieldWorkerRequestsViewModel() {
     self.init();
 }
 
+// Translation keys used in this module
+var TRANSLATION_KEYS = [
+    'DealerRequest.NewDealer',
+    'DealerRequest.UpdateDealer',
+    'DealerRequest.NewPersonnel',
+    'Status.Pending',
+    'Status.Approved',
+    'Status.Rejected',
+    'FieldWorker.LoadRequestsError',
+    'FieldWorker.CustomerRequired',
+    'FieldWorker.DealerNameRequired',
+    'FieldWorker.RequestSubmitted',
+    'FieldWorker.SubmitRequestError',
+    'Common.Confirm',
+    'Common.Cancel'
+];
+
 // Initialize when document is ready
 $(document).ready(function() {
     var app = document.getElementById('fieldworker-requests-app');
     if (app) {
-        ko.applyBindings(new FieldWorkerRequestsViewModel(), app);
+        Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+            ko.applyBindings(new FieldWorkerRequestsViewModel(), app);
+        });
     }
 });

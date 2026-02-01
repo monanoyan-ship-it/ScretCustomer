@@ -1,0 +1,14 @@
+/* FieldWorker Dashboard Page Styles */
+
+.stat-icon {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.empty-state-icon {
+    font-size: 2rem;
+}
+
+.quick-action-icon {
+    font-size: 2rem;
+}

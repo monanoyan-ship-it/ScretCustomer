@@ -160,7 +160,9 @@ public class ApprovalsApiController : BaseApiController
                 RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
                 RequestedAt = a.RequestedAt,
                 DueDate = a.DueDate,
-                Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName
+                Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,
+                RelatedEntityId = a.RelatedEntityId,
+                RelatedEntityType = a.RelatedEntityType
             })
             .ToListAsync();
 
@@ -190,7 +192,9 @@ public class ApprovalsApiController : BaseApiController
                 RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
                 RequestedAt = a.RequestedAt,
                 DueDate = a.DueDate,
-                Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName
+                Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,
+                RelatedEntityId = a.RelatedEntityId,
+                RelatedEntityType = a.RelatedEntityType
             })
             .ToListAsync();
 
@@ -429,7 +433,9 @@ public class ApprovalsApiController : BaseApiController
                     RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
                     RequestedAt = a.RequestedAt,
                     DueDate = a.DueDate,
-                    Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName
+                    Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,
+                    RelatedEntityId = a.RelatedEntityId,
+                    RelatedEntityType = a.RelatedEntityType
                 })
                 .ToListAsync()
         };

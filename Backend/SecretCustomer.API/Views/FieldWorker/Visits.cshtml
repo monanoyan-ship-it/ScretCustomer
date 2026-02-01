@@ -6,11 +6,8 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="/FieldWorker" class="btn btn-outline-secondary btn-sm me-3">
-                <i class="bi bi-arrow-left me-1"></i>@Html.T("Common.Back", "Geri")
-            </a>
             <span class="h2 mb-0">
-                <i class="bi bi-clipboard-check me-2"></i>@Html.T("FieldWorker.Visits", "Ziyaretlerim")
+                <i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.Visits", "Ziyaretlerim")
             </span>
         </div>
         <button class="btn btn-primary" data-bind="click: showNewVisitModal">
@@ -25,7 +22,7 @@
                 <div class="col-md-3">
                     <label class="form-label">@Html.T("Common.Search", "Arama")</label>
                     <input type="text" class="form-control" placeholder="@Html.T("FieldWorker.SearchVisits", "Ziyaret ID, Bayi...")"
-                           data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'">
+                           data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" autocomplete="off">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@Html.T("Common.Project", "Proje")</label>
@@ -70,7 +67,7 @@
 
                 <!-- Empty State -->
                 <div data-bind="visible: visits().length === 0" class="text-center py-5">
-                    <i class="bi bi-clipboard text-muted" style="font-size: 3rem;"></i>
+                    <i class="bi bi-clipboard text-muted empty-state-icon"></i>
                     <p class="mt-3 text-muted">@Html.T("FieldWorker.NoVisits", "Henuz ziyaret bulunmamaktadir.")</p>
                     <button class="btn btn-primary" data-bind="click: showNewVisitModal">
                         <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewVisit", "Yeni Ziyaret")
@@ -88,7 +85,7 @@
                                 <th>@Html.T("Common.Score", "Puan")</th>
                                 <th>@Html.T("Common.Status", "Durum")</th>
                                 <th>@Html.T("Common.Date", "Tarih")</th>
-                                <th style="width: 100px;">@Html.T("Common.Actions", "Islemler")</th>
+                                <th class="actions-col">@Html.T("Common.Actions", "Islemler")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: visits">
@@ -122,11 +119,11 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a class="btn btn-outline-primary" data-bind="attr: { href: '/Evaluations?id=' + evaluationId }" title="@Html.T("Common.View", "Goruntule")">
+                                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showVisitDetail($data); }" title="@Html.T("Common.View", "Goruntule")">
                                             <i class="bi bi-eye"></i>
-                                        </a>
+                                        </button>
                                         <!-- ko if: statusId === 1 -->
-                                        <button class="btn btn-outline-warning" data-bind="click: $parent.editVisit" title="@Html.T("Common.Edit", "Duzenle")">
+                                        <button class="btn btn-outline-warning" data-bind="click: function() { $parent.editVisit($data); }" title="@Html.T("Common.Edit", "Duzenle")">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <!-- /ko -->
@@ -157,15 +154,15 @@
         </div>
     </div>
 
-    <!-- New Visit Modal -->
-    <div class="modal fade" id="newVisitModal" tabindex="-1">
+    <!-- ==================== NEW VISIT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isNewVisitModalOpen }, style: { display: isNewVisitModalOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-plus-circle me-2"></i>@Html.T("FieldWorker.NewVisit", "Yeni Ziyaret")
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeNewVisitModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -179,25 +176,25 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("FieldWorker.ControlDate", "Kontrol Tarihi")</label>
-                            <input type="date" class="form-control" data-bind="value: newVisit.controlDate">
+                            <input type="date" class="form-control" data-bind="value: newVisit.controlDate" autocomplete="off">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("FieldWorker.ControlTime", "Kontrol Saati")</label>
-                            <input type="time" class="form-control" data-bind="value: newVisit.controlTime">
+                            <input type="time" class="form-control" data-bind="value: newVisit.controlTime" autocomplete="off">
                         </div>
                         <div class="col-12">
                             <label class="form-label">@Html.T("FieldWorker.Comment", "Yorum")</label>
-                            <textarea class="form-control" rows="3" data-bind="value: newVisit.auditorComment" placeholder="@Html.T("FieldWorker.CommentPlaceholder", "Ziyaret hakkinda notlariniz...")"></textarea>
+                            <textarea class="form-control" rows="3" data-bind="value: newVisit.auditorComment" placeholder="@Html.T("FieldWorker.CommentPlaceholder", "Ziyaret hakkinda notlariniz...")" autocomplete="off"></textarea>
                         </div>
                     </div>
 
                     <div class="alert alert-info mt-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        @Html.T("FieldWorker.VisitNote", "Ziyaret kaydedildikten sonra Degerlendirmeler sayfasindan form doldurabilirsiniz.")
+                        @Html.T("FieldWorker.VisitNote", "Ziyaret kaydedildikten sonra degerlendirme formunu doldurabilirsiniz.")
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeNewVisitModal">
                         @Html.T("Common.Cancel", "Iptal")
                     </button>
                     <button type="button" class="btn btn-outline-warning" data-bind="click: saveAsDraft, disable: isSaving">
@@ -216,9 +213,118 @@
             </div>
         </div>
     </div>
+
+    <!-- ==================== VISIT DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: selectedVisit">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.VisitDetail", "Ziyaret Detayi")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>@Html.T("FieldWorker.VisitInfo", "Ziyaret Bilgileri")</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-muted">@Html.T("FieldWorker.VisitId", "Ziyaret ID"):</td>
+                                    <td><strong data-bind="text: visitId"></strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Dealer.Name", "Bayi"):</td>
+                                    <td data-bind="text: dealerName || '-'"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Dealer.City", "Sehir"):</td>
+                                    <td data-bind="text: dealerCity || '-'"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Project", "Proje"):</td>
+                                    <td data-bind="text: projectName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Customer", "Firma"):</td>
+                                    <td data-bind="text: customerName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                    <td><span class="badge" data-bind="css: $parent.getStatusBadgeClass(statusId), text: statusName"></span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Date", "Tarih"):</td>
+                                    <td data-bind="text: $parent.formatDateTime(createdAt)"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>@Html.T("FieldWorker.EvaluationInfo", "Degerlendirme Bilgileri")</h6>
+                            <!-- ko if: $parent.visitEvaluation() -->
+                            <div data-bind="with: $parent.visitEvaluation">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Id", "Degerlendirme No"):</td>
+                                        <td><strong data-bind="text: id"></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Checklist", "Kontrol Listesi"):</td>
+                                        <td data-bind="text: checklistName || '-'"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                        <td data-bind="text: status"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Score", "Puan"):</td>
+                                        <td data-bind="text: scorePercentage != null ? (scorePercentage.toFixed(2) + '%') : '-'"></td>
+                                    </tr>
+                                    <!-- ko if: completedAt -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.CompletedAt", "Tamamlanma"):</td>
+                                        <td data-bind="text: $parents[1].formatDateTime(completedAt)"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko ifnot: $parent.visitEvaluation() -->
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle me-2"></i>
+                                @Html.T("FieldWorker.LoadingEvaluation", "Degerlendirme bilgileri yukleniyor...")
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- ko if: statusId === 1 -->
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.continueEvaluation">
+                        <i class="bi bi-pencil-square me-1"></i>@Html.T("FieldWorker.ContinueEvaluation", "Degerlendirmeye Devam Et")
+                    </button>
+                    <!-- /ko -->
+                    <!-- ko if: statusId === 2 -->
+                    <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.continueEvaluation">
+                        <i class="bi bi-eye me-1"></i>@Html.T("FieldWorker.ViewEvaluation", "Degerlendirmeyi Gor")
+                    </button>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div class="modal-backdrop fade" data-bind="css: { show: isNewVisitModalOpen() || isDetailModalOpen() }, style: { display: (isNewVisitModalOpen() || isDetailModalOpen()) ? 'block' : 'none' }"></div>
 </div>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/fieldworker-visits.css" />
+}
+
 @section Scripts {
+    <script src="~/js/Shared/localization.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
     <script src="~/js/FieldWorker/visits.js"></script>
 }

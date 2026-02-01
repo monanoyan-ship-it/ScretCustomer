@@ -85,9 +85,9 @@
                     <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filterStatus">
                         <option value="">@Html.T("Common.All", "Tumu")</option>
-                        <option value="1">@Html.T("Approval.Status.Pending", "Beklemede")</option>
-                        <option value="2">@Html.T("Approval.Status.Approved", "Onaylandi")</option>
-                        <option value="3">@Html.T("Approval.Status.Rejected", "Reddedildi")</option>
+                        <option value="0">@Html.T("Approval.Status.Pending", "Beklemede")</option>
+                        <option value="1">@Html.T("Approval.Status.Approved", "Onaylandi")</option>
+                        <option value="2">@Html.T("Approval.Status.Rejected", "Reddedildi")</option>
                     </select>
                 </div>
                 <div class="col-md-7">
@@ -227,7 +227,7 @@
                                 <td data-bind="text: $parent.formatDate(requestedAt)"></td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <!-- ko if: status === 1 -->
+                                        <!-- ko if: status === 0 -->
                                         <button class="btn btn-success" data-bind="click: function() { $parent.showApprovePersonnelModal($data); }" title="@Html.T("Approval.Approve", "Onayla")">
                                             <i class="bi bi-check-lg"></i>
                                         </button>
@@ -388,9 +388,102 @@
         </div>
     </div>
 
+    <!-- ==================== PERSONNEL DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isPersonnelDetailModalOpen }, style: { display: isPersonnelDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: selectedPersonnelRequest">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>@Html.T("PersonnelRequest.Detail", "Personel Talebi Detayi")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closePersonnelDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>@Html.T("PersonnelRequest.PersonInfo", "Personel Bilgileri")</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-muted">@Html.T("PersonnelRequest.Name", "Ad Soyad"):</td>
+                                    <td><strong data-bind="text: fullName"></strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("PersonnelRequest.Title", "Unvan"):</td>
+                                    <td data-bind="text: title || '-'"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Customer", "Firma"):</td>
+                                    <td data-bind="text: customerName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Organization", "Organizasyon"):</td>
+                                    <td data-bind="text: customerOrganizationName"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>@Html.T("PersonnelRequest.RequestInfo", "Talep Bilgileri")</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-muted">@Html.T("Approval.RequestedBy", "Talep Eden"):</td>
+                                    <td data-bind="text: requestedByUserName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Date", "Tarih"):</td>
+                                    <td data-bind="text: $parent.formatDate(requestedAt)"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                    <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span></td>
+                                </tr>
+                                <!-- ko if: reviewedByUserName -->
+                                <tr>
+                                    <td class="text-muted">@Html.T("PersonnelRequest.ReviewedBy", "Isleyen"):</td>
+                                    <td data-bind="text: reviewedByUserName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("PersonnelRequest.ReviewedAt", "Islem Tarihi"):</td>
+                                    <td data-bind="text: $parent.formatDate(reviewedAt)"></td>
+                                </tr>
+                                <!-- /ko -->
+                            </table>
+                        </div>
+                    </div>
+                    <!-- ko if: notes -->
+                    <div class="alert alert-secondary mt-3">
+                        <strong>@Html.T("PersonnelRequest.Notes", "Notlar"):</strong><br/>
+                        <span data-bind="text: notes"></span>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: rejectReason -->
+                    <div class="alert alert-danger mt-3">
+                        <strong>@Html.T("PersonnelRequest.RejectReason", "Red Sebebi"):</strong><br/>
+                        <span data-bind="text: rejectReason"></span>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: createdPersonnelName -->
+                    <div class="alert alert-success mt-3">
+                        <strong>@Html.T("PersonnelRequest.CreatedPersonnel", "Olusturulan Personel"):</strong><br/>
+                        <span data-bind="text: createdPersonnelName"></span>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-footer">
+                    <!-- ko if: status === 0 -->
+                    <button type="button" class="btn btn-success" data-bind="click: function() { $parent.closePersonnelDetailModal(); $parent.showApprovePersonnelModal($data); }">
+                        <i class="bi bi-check-lg me-1"></i>@Html.T("Approval.Approve", "Onayla")
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bind="click: function() { $parent.closePersonnelDetailModal(); $parent.showRejectPersonnelModal($data); }">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Approval.Reject", "Reddet")
+                    </button>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closePersonnelDetailModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== PERSONNEL REJECT MODAL ==================== -->
     <div class="modal fade" data-bind="css: { show: isRejectModalOpen }, style: { display: isRejectModalOpen() ? 'block' : 'none' }" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>@Html.T("PersonnelRequest.Reject", "Personel Talebini Reddet")</h5>
@@ -402,9 +495,19 @@
                         <span data-bind="text: fullName"></span> - <span data-bind="text: customerOrganizationName"></span>
                     </div>
 
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        @Html.T("PersonnelRequest.RejectWarning", "Talebi reddettiginizde ilgili degerlendirme taslaga alinacaktir.")
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        @Html.T("PersonnelRequest.RejectInfo", "Talebi reddedince degerlendirmeye dogru personeli atayabilirsiniz.")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("PersonnelRequest.SelectCorrectPersonnel", "Dogru Personel") <span class="text-muted">(@Html.T("Common.Optional", "opsiyonel"))</span></label>
+                        <select class="form-select" data-bind="options: $parent.availablePersonnelForReject,
+                                                                optionsText: 'fullName',
+                                                                optionsValue: 'id',
+                                                                value: $parent.rejectSelectedPersonnelId,
+                                                                optionsCaption: '@Html.T("PersonnelRequest.KeepAsDraft", "Taslak olarak birak (personel atama)")'"></select>
+                        <small class="text-muted">@Html.T("PersonnelRequest.SelectPersonnelHint", "Dogru personeli secerseniz degerlendirme ona atanir, secmezseniz taslak olarak kalir.")</small>
                     </div>
 
                     <div class="mb-3">
@@ -542,8 +645,142 @@
         </div>
     </div>
 
+    <!-- ==================== DRAFT REQUEST DETAIL MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isDraftDetailModalOpen }, style: { display: isDraftDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: selectedDraftRequest">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("DraftRequest.Detail", "Taslaga Alma Talebi Detayi")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeDraftDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>@Html.T("DraftRequest.RequestInfo", "Talep Bilgileri")</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="text-muted">@Html.T("Approval.Reference", "Referans"):</td>
+                                    <td><strong data-bind="text: referenceNumber"></strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Title", "Baslik"):</td>
+                                    <td data-bind="text: title"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Approval.RequestedBy", "Talep Eden"):</td>
+                                    <td data-bind="text: requestedByUserName"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Date", "Tarih"):</td>
+                                    <td data-bind="text: $parent.formatDate(requestedAt)"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                    <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadgeClass(status)"></span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>@Html.T("DraftRequest.EvaluationInfo", "Degerlendirme Bilgileri")</h6>
+                            <!-- ko if: $parent.draftEvaluationDetail() -->
+                            <div data-bind="with: $parent.draftEvaluationDetail">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Id", "Degerlendirme No"):</td>
+                                        <td><strong data-bind="text: id"></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Project", "Proje"):</td>
+                                        <td data-bind="text: projectName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Customer", "Firma"):</td>
+                                        <td data-bind="text: customerName || '-'"></td>
+                                    </tr>
+                                    <!-- ko if: organizationName -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Organization", "Organizasyon"):</td>
+                                        <td data-bind="text: organizationName"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Common.Status", "Durum"):</td>
+                                        <td data-bind="text: status"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Score", "Puan"):</td>
+                                        <td data-bind="text: scorePercentage != null ? (scorePercentage.toFixed(2) + '%') : '-'"></td>
+                                    </tr>
+                                    <!-- ko if: evaluatedPersonnelName -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Personnel", "Personel"):</td>
+                                        <td data-bind="text: evaluatedPersonnelName"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                    <!-- ko if: evaluatedUnknownPersonnel -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Personnel", "Personel"):</td>
+                                        <td><span class="text-warning" data-bind="text: evaluatedUnknownPersonnel"></span> <small class="text-muted">(listede yok)</small></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                    <!-- ko if: evaluatorName -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Evaluator", "Degerlendiren"):</td>
+                                        <td data-bind="text: evaluatorName"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                    <!-- ko if: completedAt -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.CompletedAt", "Tamamlanma"):</td>
+                                        <td data-bind="text: $parents[1].formatDate(completedAt)"></td>
+                                    </tr>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko ifnot: $parent.draftEvaluationDetail() -->
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <!-- ko if: relatedEntityId -->
+                                <span>@Html.T("DraftRequest.LoadingEvaluation", "Degerlendirme bilgileri yukleniyor...")</span>
+                                <!-- /ko -->
+                                <!-- ko ifnot: relatedEntityId -->
+                                <span>@Html.T("DraftRequest.NoEvaluationLinked", "Bu talebe bagli degerlendirme bulunamadi.")</span>
+                                <!-- /ko -->
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                    <!-- ko if: $parent.draftRequestDetail() && $parent.draftRequestDetail().description -->
+                    <div class="alert alert-secondary mt-3">
+                        <strong>@Html.T("DraftRequest.Reason", "Taslaga Alma Nedeni"):</strong><br/>
+                        <span data-bind="text: $parent.draftRequestDetail().description"></span>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: $parent.draftRequestDetail() && $parent.draftRequestDetail().responseNote -->
+                    <div class="alert alert-info mt-3">
+                        <strong>@Html.T("DraftRequest.ResponseNote", "Yanit Notu"):</strong><br/>
+                        <span data-bind="text: $parent.draftRequestDetail().responseNote"></span>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-footer">
+                    <!-- ko if: status === 'Pending' -->
+                    <button type="button" class="btn btn-success" data-bind="click: function() { $parent.closeDraftDetailModal(); $parent.approveDraftRequest($data); }">
+                        <i class="bi bi-check-lg me-1"></i>@Html.T("Approval.Approve", "Onayla")
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bind="click: function() { $parent.closeDraftDetailModal(); $parent.rejectDraftRequest($data); }">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Approval.Reject", "Reddet")
+                    </button>
+                    <!-- /ko -->
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDraftDetailModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" data-bind="css: { show: isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen() }, style: { display: (isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen()) ? 'block' : 'none' }"></div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen() || isPersonnelDetailModalOpen() || isDraftDetailModalOpen() }, style: { display: (isApproveModalOpen() || isRejectModalOpen() || isDealerDetailModalOpen() || isDealerRejectModalOpen() || isPersonnelDetailModalOpen() || isDraftDetailModalOpen()) ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {

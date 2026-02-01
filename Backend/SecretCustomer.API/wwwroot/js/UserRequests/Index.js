@@ -32,6 +32,12 @@ function UserRequestsViewModel() {
     self.rejectingDealerRequest = ko.observable(null);
     self.dealerRejectReason = ko.observable('');
 
+    // Draft Detail Modal
+    self.isDraftDetailModalOpen = ko.observable(false);
+    self.selectedDraftRequest = ko.observable(null);
+    self.draftRequestDetail = ko.observable(null);
+    self.draftEvaluationDetail = ko.observable(null);
+
     // ==================== SORTING ====================
     self.draftSorting = TableSorting.createSortState('requestedAt', 'desc');
     self.personnelSorting = TableSorting.createSortState('requestedAt', 'desc');
@@ -64,6 +70,10 @@ function UserRequestsViewModel() {
         return TableSorting.clientSort(items, sortBy, sortDir);
     });
 
+    // Personnel Detail Modal
+    self.isPersonnelDetailModalOpen = ko.observable(false);
+    self.selectedPersonnelRequest = ko.observable(null);
+
     // Personnel Approve Modal
     self.isApproveModalOpen = ko.observable(false);
     self.approvingRequest = ko.observable(null);
@@ -76,6 +86,8 @@ function UserRequestsViewModel() {
     self.isRejectModalOpen = ko.observable(false);
     self.rejectingRequest = ko.observable(null);
     self.rejectReason = ko.observable('');
+    self.rejectSelectedPersonnelId = ko.observable(null);
+    self.availablePersonnelForReject = ko.observableArray([]);
 
     // Current counts based on active tab
     self.currentCounts = ko.computed(function() {
@@ -182,12 +194,34 @@ function UserRequestsViewModel() {
     };
 
     self.showDraftDetail = function(request) {
-        // Navigate to evaluation detail
+        self.selectedDraftRequest(request);
+        self.draftRequestDetail(null);
+        self.draftEvaluationDetail(null);
+        self.isDraftDetailModalOpen(true);
+
+        // Load approval detail for description
+        $.get('/api/approvals/' + request.id)
+            .done(function(detail) {
+                self.draftRequestDetail(detail);
+            });
+
+        // Load evaluation detail if available
         if (request.relatedEntityId) {
-            window.location.href = '/Evaluations?id=' + request.relatedEntityId;
-        } else {
-            toastr.info(T('DraftRequest.NoEvaluationLinked', 'Bu talebe bagli degerlendirme bulunamadi.'));
+            $.get('/api/evaluations/' + request.relatedEntityId)
+                .done(function(evaluation) {
+                    self.draftEvaluationDetail(evaluation);
+                })
+                .fail(function() {
+                    self.draftEvaluationDetail(null);
+                });
         }
+    };
+
+    self.closeDraftDetailModal = function() {
+        self.isDraftDetailModalOpen(false);
+        self.selectedDraftRequest(null);
+        self.draftRequestDetail(null);
+        self.draftEvaluationDetail(null);
     };
 
     self.approveDraftRequest = function(request) {
@@ -289,12 +323,13 @@ function UserRequestsViewModel() {
     };
 
     self.showPersonnelDetail = function(request) {
-        // Navigate to evaluation if exists
-        if (request.evaluationId) {
-            window.location.href = '/Evaluations?id=' + request.evaluationId;
-        } else {
-            toastr.info(T('PersonnelRequest.NoEvaluationLinked', 'Bu talebe bagli degerlendirme bulunamadi.'));
-        }
+        self.selectedPersonnelRequest(request);
+        self.isPersonnelDetailModalOpen(true);
+    };
+
+    self.closePersonnelDetailModal = function() {
+        self.isPersonnelDetailModalOpen(false);
+        self.selectedPersonnelRequest(null);
     };
 
     // ==================== PERSONNEL APPROVE MODAL ====================
@@ -353,6 +388,26 @@ function UserRequestsViewModel() {
     self.showRejectPersonnelModal = function(request) {
         self.rejectingRequest(request);
         self.rejectReason('');
+        self.rejectSelectedPersonnelId(null);
+        self.availablePersonnelForReject([]);
+
+        // Load personnel for the organization
+        if (request.customerOrganizationId) {
+            $.get('/api/customer-personnel/by-organization/' + request.customerOrganizationId)
+                .done(function(personnel) {
+                    self.availablePersonnelForReject(personnel || []);
+                })
+                .fail(function() {
+                    // Fallback: try loading by customer
+                    if (request.customerId) {
+                        $.get('/api/customer-personnel/by-customer/' + request.customerId)
+                            .done(function(personnel) {
+                                self.availablePersonnelForReject(personnel || []);
+                            });
+                    }
+                });
+        }
+
         self.isRejectModalOpen(true);
     };
 
@@ -368,16 +423,26 @@ function UserRequestsViewModel() {
             return;
         }
 
+        var data = {
+            rejectReason: self.rejectReason()
+        };
+
+        // Eğer personel seçildiyse ekle
+        if (self.rejectSelectedPersonnelId()) {
+            data.correctPersonnelId = self.rejectSelectedPersonnelId();
+        }
+
         $.ajax({
             url: '/api/personnel-requests/' + request.id + '/reject',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({
-                rejectReason: self.rejectReason()
-            })
+            data: JSON.stringify(data)
         })
         .done(function() {
-            toastr.success(T('PersonnelRequest.RejectSuccess', 'Personel talebi reddedildi. Ilgili degerlendirme taslaga alindi.'));
+            var message = self.rejectSelectedPersonnelId()
+                ? T('PersonnelRequest.RejectSuccessWithPersonnel', 'Talep reddedildi. Degerlendirme secilen personele atandi.')
+                : T('PersonnelRequest.RejectSuccess', 'Personel talebi reddedildi. Ilgili degerlendirme taslaga alindi.');
+            toastr.success(message);
             self.closeRejectModal();
             self.refreshAll();
         })
@@ -557,12 +622,12 @@ function UserRequestsViewModel() {
 
     // ==================== HELPERS ====================
     self.getStatusText = function(status) {
-        // Personnel uses int (1=Pending, 2=Approved, 3=Rejected)
+        // Personnel uses int (0=Pending, 1=Approved, 2=Rejected)
         // Draft uses string (Pending, Approved, Rejected)
         var statusMap = {
-            1: T('Approval.Status.Pending', 'Beklemede'),
-            2: T('Approval.Status.Approved', 'Onaylandi'),
-            3: T('Approval.Status.Rejected', 'Reddedildi'),
+            0: T('Approval.Status.Pending', 'Beklemede'),
+            1: T('Approval.Status.Approved', 'Onaylandi'),
+            2: T('Approval.Status.Rejected', 'Reddedildi'),
             'Pending': T('Approval.Status.Pending', 'Beklemede'),
             'Approved': T('Approval.Status.Approved', 'Onaylandi'),
             'Rejected': T('Approval.Status.Rejected', 'Reddedildi'),
@@ -573,9 +638,9 @@ function UserRequestsViewModel() {
 
     self.getStatusBadgeClass = function(status) {
         var classMap = {
-            1: 'bg-warning text-dark',
-            2: 'bg-success',
-            3: 'bg-danger',
+            0: 'bg-warning text-dark',
+            1: 'bg-success',
+            2: 'bg-danger',
             'Pending': 'bg-warning text-dark',
             'Approved': 'bg-success',
             'Rejected': 'bg-danger',

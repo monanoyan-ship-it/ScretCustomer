@@ -46,6 +46,8 @@ public class ApprovalListDto
     public DateTime RequestedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string Priority { get; set; } = string.Empty;
+    public int? RelatedEntityId { get; set; }
+    public string? RelatedEntityType { get; set; }
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status == "Pending";
 }
 

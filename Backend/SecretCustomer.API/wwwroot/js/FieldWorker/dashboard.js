@@ -49,7 +49,7 @@ function FieldWorkerDashboardViewModel() {
             })
             .catch(function(error) {
                 console.error('Error loading dashboard:', error);
-                toastr.error(error.message || 'Dashboard yuklenirken hata olustu.');
+                toastr.error(error.message || T('FieldWorker.LoadDashboardError', 'Dashboard yuklenirken hata olustu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -60,10 +60,17 @@ function FieldWorkerDashboardViewModel() {
     self.loadDashboard();
 }
 
+// Translation keys used in this module
+var TRANSLATION_KEYS = [
+    'FieldWorker.LoadDashboardError'
+];
+
 // Initialize when document is ready
 $(document).ready(function() {
     var app = document.getElementById('fieldworker-dashboard-app');
     if (app) {
-        ko.applyBindings(new FieldWorkerDashboardViewModel(), app);
+        Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+            ko.applyBindings(new FieldWorkerDashboardViewModel(), app);
+        });
     }
 });
