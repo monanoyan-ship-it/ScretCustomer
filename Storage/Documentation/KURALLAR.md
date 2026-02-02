@@ -544,7 +544,50 @@ PostgreSQL bağlantısı `appsettings.json` ve `appsettings.Development.json`'da
 
 ---
 
-## 14. JavaScript Localization Pattern (Çok Dilli Destek)
+## 14. Localization Sistemi (Çok Dilli Destek)
+
+### 🔥 ÖNEMLİ: Yeni Key Eklerken UNUTMA!
+
+**XML Dosya Konumları:**
+```
+Backend/SecretCustomer.API/App_Data/Localization/
+├── resources.tr.xml    # Türkçe (master)
+├── resources.en.xml    # English
+├── resources.de.xml    # Deutsch
+└── resources.es.xml    # Español
+```
+
+**Son Durum (Şubat 2026):** Tüm diller 3475 key ile eşitlendi.
+
+### Yeni Localization Key Eklerken Checklist
+
+1. [ ] **4 XML dosyasına da ekle** (TR, EN, DE, ES)
+2. [ ] Sadece Türkçe/İngilizce kopyalama! Her dil için DOĞRU çeviri yaz
+3. [ ] Key format: `ModuleName.ActionOrDescription` (örn: `Evaluation.SaveSuccess`)
+4. [ ] Import et: `/Languages` sayfasından veya API ile
+5. [ ] Cache otomatik temizlenir (her key için SetResourceAsync çağrılır)
+
+### Eksik Key Bulma
+
+```bash
+# Views'da Html.T() kullanımları
+grep -r "Html.T\(" Backend/SecretCustomer.API/Views/
+
+# JavaScript'te T() kullanımları
+grep -r "T\(['\"]" Backend/SecretCustomer.API/wwwroot/js/
+
+# C#'ta GetResourceAsync kullanımları
+grep -r "GetResourceAsync" Backend/SecretCustomer.Services/
+```
+
+### Import API
+
+```bash
+# Tek dil için (languageId: 1=TR, 2=EN, 3=DE, 4=ES)
+POST /api/localization/import/{languageId}/default
+```
+
+---
 
 ### ⚠️ ÖNEMLİ: Layout'a localization.js Dahil Edilmeli
 
