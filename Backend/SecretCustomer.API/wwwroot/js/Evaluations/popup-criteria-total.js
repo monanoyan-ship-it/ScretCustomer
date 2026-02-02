@@ -195,21 +195,22 @@ var EvaluationPopupViewModel = function() {
     // Puan hesapla (orantılı)
     self.calculateScore = function() {
         var earnedPoints = 0;  // Seçilen puanların toplamı
-        var rawMax = 0;        // Tüm soruların max puanları toplamı
+        var rawMax = 0;        // Cevaplanmış soruların max puanları toplamı
 
         self.questions().forEach(function(q) {
             if (!q.subCriteria || q.subCriteria.length === 0) return;
 
-            // Bu sorunun en yüksek puanlı seçeneğini bul
-            var maxOptionPoints = Math.max.apply(null, q.subCriteria.map(function(sc) {
-                return sc.weightPoints !== undefined ? sc.weightPoints : 0;
-            }));
-            rawMax += maxOptionPoints;
-
             var answer = self.answers[q.id];
             var selectedOptionId = answer ? answer.selectedOptionId() : null;
 
+            // Sadece cevaplanmış soruları hesaba kat
             if (selectedOptionId) {
+                // Bu sorunun en yüksek puanlı seçeneğini bul
+                var maxOptionPoints = Math.max.apply(null, q.subCriteria.map(function(sc) {
+                    return sc.weightPoints !== undefined ? sc.weightPoints : 0;
+                }));
+                rawMax += maxOptionPoints;
+
                 var pts = answer.points();
                 earnedPoints += (pts !== undefined && pts !== null) ? pts : 0;
             }
