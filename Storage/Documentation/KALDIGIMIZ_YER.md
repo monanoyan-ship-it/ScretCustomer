@@ -1,8 +1,29 @@
-# Kaldığımız Yer - 1 Şubat 2026
+# Kaldığımız Yer - 2 Şubat 2026
 
 ---
 
-## 🚧 DEVAM EDEN İŞ: FieldWorker Modülü Test
+## 🚧 DEVAM EDEN İŞ: Proje Genelinde Localizasyon Kontrolü
+
+### Özet
+Localizasyon dosyaları güncellendi ve import edildi, cache temizlendi. Ancak uygulamada hala localize olmamış çok sayıda text var.
+
+### Sorunlar
+1. **Hardcoded textler** - View ve JS dosyalarında `Html.T()` / `T()` kullanılmadan yazılmış metinler
+2. **Eksik key'ler** - XML dosyalarında tanımlanmamış key'ler
+
+### Yapılacaklar
+- [ ] Tüm projede adım adım localizasyon kontrolü yapılacak
+- [ ] Her modül tek tek taranacak (Views, JS dosyaları)
+- [ ] Hardcoded textler `Html.T("Key", "Fallback")` / `T("Key", "Fallback")` ile değiştirilecek
+- [ ] Eksik key'ler XML dosyalarına eklenecek (TR, EN, DE, ES)
+
+### Notlar
+- XML dosyaları: `Backend/SecretCustomer.API/App_Data/Localization/`
+- Son durum: 3475 key mevcut (Şubat 2026)
+
+---
+
+## ✅ FieldWorker Modülü (Test Bekliyor)
 
 ### Özet
 FieldWorker modülü KURALLAR.md standartlarına uygun hale getirildi. Test edilmesi gerekiyor.
