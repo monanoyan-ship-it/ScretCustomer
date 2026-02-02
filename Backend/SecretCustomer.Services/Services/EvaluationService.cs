@@ -1102,28 +1102,63 @@ public class EvaluationService : IEvaluationService
         if (questions == null || !questions.Any())
             return new List<PenaltyGroupDto>();
 
+        // Tüm grupları topla (GroupName + minOrder ile)
+        var allGroups = new List<(string Name, string PenaltyType, int MinOrder, List<Question> Questions)>();
+
+        // 1. GroupName'i dolu olan soruları GroupName'e göre grupla
+        var groupedByName = questions
+            .Where(q => !string.IsNullOrWhiteSpace(q.GroupName))
+            .GroupBy(q => q.GroupName!)
+            .ToList();
+
+        foreach (var group in groupedByName)
+        {
+            var groupQuestions = group.OrderBy(q => q.Order).ToList();
+            var dominantPenaltyType = group
+                .GroupBy(q => q.PenaltyTypeId)
+                .OrderByDescending(g => g.Count())
+                .First().Key;
+            var penaltyTypeName = PenaltyTypes.GetById(dominantPenaltyType)?.SystemName ?? "None";
+
+            allGroups.Add((group.Key, penaltyTypeName, groupQuestions.Min(q => q.Order), groupQuestions));
+        }
+
+        // 2. GroupName'i BOŞ olan normal sorular → "Genel"
+        var normalWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.None)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (normalWithoutGroup.Any())
+        {
+            allGroups.Add(("Genel", "None", normalWithoutGroup.Min(q => q.Order), normalWithoutGroup));
+        }
+
+        // 3. GroupName'i BOŞ olan Sarı Kartlar → "Sarı Kartlar"
+        var yellowWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.YellowCard)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (yellowWithoutGroup.Any())
+        {
+            allGroups.Add(("Sarı Kartlar", "YellowCard", yellowWithoutGroup.Min(q => q.Order), yellowWithoutGroup));
+        }
+
+        // 4. GroupName'i BOŞ olan Kırmızı Kartlar → "Kırmızı Kartlar"
+        var redWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.RedCard)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (redWithoutGroup.Any())
+        {
+            allGroups.Add(("Kırmızı Kartlar", "RedCard", redWithoutGroup.Min(q => q.Order), redWithoutGroup));
+        }
+
+        // TÜM grupları MinOrder'a göre sırala
         var result = new List<PenaltyGroupDto>();
         var order = 1;
-
-        // 1. Normal Sorular (PenaltyType = None)
-        var normalQuestions = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.None).OrderBy(q => q.Order).ToList();
-        if (normalQuestions.Any())
+        foreach (var group in allGroups.OrderBy(g => g.MinOrder))
         {
-            result.Add(CreatePenaltyGroup(normalQuestions, "Sorular", "None", order++));
-        }
-
-        // 2. Sarı Kartlar
-        var yellowCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.YellowCard).OrderBy(q => q.Order).ToList();
-        if (yellowCards.Any())
-        {
-            result.Add(CreatePenaltyGroup(yellowCards, "Sarı Kartlar", "YellowCard", order++));
-        }
-
-        // 3. Kırmızı Kartlar
-        var redCards = questions.Where(q => q.PenaltyTypeId == PenaltyTypes.Ids.RedCard).OrderBy(q => q.Order).ToList();
-        if (redCards.Any())
-        {
-            result.Add(CreatePenaltyGroup(redCards, "Kırmızı Kartlar", "RedCard", order++));
+            result.Add(CreatePenaltyGroup(group.Questions, group.Name, group.PenaltyType, order++));
         }
 
         return result;

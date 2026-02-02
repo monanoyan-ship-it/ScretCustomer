@@ -392,43 +392,65 @@
                     </div>
                 </div>
 
-                <!-- Sorular (CriteriaTotal modu - Seçenek bazlı) -->
-                <div data-bind="foreach: questions">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge bg-secondary me-2" data-bind="text: $index() + 1"></span>
-                                <strong data-bind="text: text"></strong>
-                                <!-- ko if: !isRequired -->
-                                <span class="badge bg-warning text-dark ms-2">@Html.T("Evaluation.Optional", "Opsiyonel")</span>
-                                <!-- /ko -->
-                            </div>
-                            <div>
-                                <!-- ko if: helpText -->
-                                <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bind="attr: { title: helpText }"></i>
-                                <!-- /ko -->
+                <!-- Soru Grupları (CriteriaTotal modu - Seçenek bazlı) -->
+                <div data-bind="foreach: penaltyGroups">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header" data-bind="css: penaltyType === 'RedCard' ? 'bg-danger text-white' : (penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-primary text-white')">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <!-- ko if: penaltyType === 'YellowCard' -->
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <!-- /ko -->
+                                    <!-- ko if: penaltyType === 'RedCard' -->
+                                    <i class="bi bi-x-circle-fill me-2"></i>
+                                    <!-- /ko -->
+                                    <!-- ko if: penaltyType === 'None' -->
+                                    <i class="bi bi-list-check me-2"></i>
+                                    <!-- /ko -->
+                                    <span data-bind="text: name"></span>
+                                    <span class="badge bg-white text-dark ms-2" data-bind="text: questions.length + ' soru'"></span>
+                                </h5>
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <!-- SubCriteria Seçenekleri (Survey gibi liste stili) -->
-                            <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
-                                <label class="list-group-item list-group-item-action py-2 px-3 d-flex align-items-center"
-                                       data-bind="css: { 'active': $parents[1].getSelectedOption($parent.id)() === id }, click: function() { $parents[1].selectOption($parent.id, id, weightPoints); }">
-                                    <input type="radio" class="form-check-input me-3 flex-shrink-0"
-                                           data-bind="attr: { name: 'q_' + $parent.id, value: id }, checked: $parents[1].getSelectedOption($parent.id), checkedValue: id" />
-                                    <span class="flex-grow-1" data-bind="text: description"></span>
-                                    <span class="badge ms-2" data-bind="text: (weightPoints >= 0 ? '+' : '') + weightPoints, css: { 'bg-success': weightPoints > 0, 'bg-warning text-dark': weightPoints === 0, 'bg-danger': weightPoints < 0 }"></span>
-                                </label>
-                            </div>
+                            <!-- Gruptaki Sorular -->
+                            <div data-bind="foreach: questions">
+                                <div class="border-bottom">
+                                    <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-secondary me-2" data-bind="text: order"></span>
+                                            <strong data-bind="text: text"></strong>
+                                            <!-- ko if: !isRequired -->
+                                            <span class="badge bg-warning text-dark ms-2">@Html.T("Evaluation.Optional", "Opsiyonel")</span>
+                                            <!-- /ko -->
+                                        </div>
+                                        <div>
+                                            <!-- ko if: helpText -->
+                                            <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bind="attr: { title: helpText }"></i>
+                                            <!-- /ko -->
+                                        </div>
+                                    </div>
+                                    <!-- SubCriteria Seçenekleri -->
+                                    <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
+                                        <label class="list-group-item list-group-item-action py-2 px-3 d-flex align-items-center"
+                                               data-bind="css: { 'active': $root.getSelectedOption($parent.id)() === id }, click: function() { $root.selectOption($parent.id, id, weightPoints); }">
+                                            <input type="radio" class="form-check-input me-3 flex-shrink-0"
+                                                   data-bind="attr: { name: 'q_' + $parent.id, value: id }, checked: $root.getSelectedOption($parent.id), checkedValue: id" />
+                                            <span class="flex-grow-1" data-bind="text: description"></span>
+                                            <span class="badge ms-2" data-bind="text: (weightPoints >= 0 ? '+' : '') + weightPoints, css: { 'bg-success': weightPoints > 0, 'bg-warning text-dark': weightPoints === 0, 'bg-danger': weightPoints < 0 }"></span>
+                                        </label>
+                                    </div>
 
-                            <!-- Yorum alanı -->
-                            <!-- ko if: allowComment -->
-                            <div class="p-3 border-top">
-                                <textarea class="form-control form-control-sm" rows="2"
-                                          data-bind="value: $parent.getComment(id)"
-                                          placeholder="@Html.T("Evaluation.AddComment", "Yorum ekle (opsiyonel)")"></textarea>
+                                    <!-- Yorum alanı -->
+                                    <!-- ko if: allowComment -->
+                                    <div class="p-3 border-top">
+                                        <textarea class="form-control form-control-sm" rows="2"
+                                                  data-bind="value: $root.getComment(id)"
+                                                  placeholder="@Html.T("Evaluation.AddComment", "Yorum ekle (opsiyonel)")"></textarea>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
                             </div>
-                            <!-- /ko -->
                         </div>
                     </div>
                 </div>

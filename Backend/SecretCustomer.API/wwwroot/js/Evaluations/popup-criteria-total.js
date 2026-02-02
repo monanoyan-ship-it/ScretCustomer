@@ -140,6 +140,8 @@ var EvaluationPopupViewModel = function() {
 
     // Sorular (formData'dan yüklenir)
     self.questions = ko.observableArray([]);
+    // Gruplar (görüntü için)
+    self.penaltyGroups = ko.observableArray([]);
 
     // Cevaplar - { questionId: { selectedOptionId: ko.observable, points: ko.observable, comment: ko.observable } }
     self.answers = {};
@@ -259,9 +261,10 @@ var EvaluationPopupViewModel = function() {
             .then(function(data) {
                 self.formData(data);
 
-                // penaltyGroups'tan soruları düzleştir
+                // penaltyGroups'u sakla (görüntü için) ve soruları düzleştir (hesaplama için)
                 var allQuestions = [];
                 if (data.penaltyGroups && data.penaltyGroups.length > 0) {
+                    self.penaltyGroups(data.penaltyGroups);
                     data.penaltyGroups.forEach(function(group) {
                         if (group.questions && group.questions.length > 0) {
                             group.questions.forEach(function(q) {

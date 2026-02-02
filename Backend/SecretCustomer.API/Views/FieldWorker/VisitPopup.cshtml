@@ -410,16 +410,16 @@
                 <!-- ko if: formData() -->
                 <div data-bind="foreach: formData().penaltyGroups">
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header" data-bind="css: name === 'Kırmızı Kartlar' ? 'bg-danger text-white' : (name === 'Sarı Kartlar' ? 'bg-warning text-dark' : 'bg-primary text-white')">
+                        <div class="card-header" data-bind="css: penaltyType === 'RedCard' ? 'bg-danger text-white' : (penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-primary text-white')">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
-                                    <!-- ko if: name === 'Sarı Kartlar' -->
+                                    <!-- ko if: penaltyType === 'YellowCard' -->
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                     <!-- /ko -->
-                                    <!-- ko if: name === 'Kırmızı Kartlar' -->
+                                    <!-- ko if: penaltyType === 'RedCard' -->
                                     <i class="bi bi-x-circle-fill me-2"></i>
                                     <!-- /ko -->
-                                    <!-- ko if: name === 'Sorular' -->
+                                    <!-- ko if: penaltyType === 'None' -->
                                     <i class="bi bi-list-check me-2"></i>
                                     <!-- /ko -->
                                     <span data-bind="text: name"></span>
