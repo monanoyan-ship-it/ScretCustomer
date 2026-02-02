@@ -12,6 +12,11 @@ public class CreateAssignmentDto
 
     public int? AssignedUserId { get; set; }
 
+    /// <summary>
+    /// Saha Çalışanı (FieldWorker) ID - Fiziksel denetim atamaları için
+    /// </summary>
+    public int? AssignedFieldWorkerId { get; set; }
+
     public int? AssignedCustomerPersonnelId { get; set; }
 
     [EmailAddress]
@@ -29,6 +34,12 @@ public class CreateAssignmentDto
     /// True ise proje aktif değilse otomatik aktif edilir
     /// </summary>
     public bool ForceActivateProject { get; set; } = false;
+
+    /// <summary>
+    /// Atamaya dahil edilecek şube (CustomerDealer) ID listesi
+    /// Fiziksel denetim atamaları için kullanılır
+    /// </summary>
+    public List<int>? CustomerDealerIds { get; set; }
 }
 
 public class UpdateAssignmentDto
@@ -61,6 +72,12 @@ public class UpdateAssignmentDto
 public class ReassignAssignmentDto
 {
     public int? NewAssignedUserId { get; set; }
+
+    /// <summary>
+    /// Saha Çalışanı (FieldWorker) ID - Fiziksel denetim atamaları için
+    /// </summary>
+    public int? NewAssignedFieldWorkerId { get; set; }
+
     public int? NewAssignedCustomerPersonnelId { get; set; }
     public string? NewExternalEmail { get; set; }
     public string? NewExternalName { get; set; }

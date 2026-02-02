@@ -187,8 +187,8 @@ public class Evaluation : BaseEntity
     /// <summary>
     /// Ziyaret edilen bayi (FieldWorker değerlendirmeleri için)
     /// </summary>
-    public int? DealerId { get; set; }
-    public Dealer? Dealer { get; set; }
+    public int? CustomerDealerId { get; set; }
+    public CustomerDealer? CustomerDealer { get; set; }
 
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();

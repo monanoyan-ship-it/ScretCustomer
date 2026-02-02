@@ -117,6 +117,16 @@ public class AssignmentDetailDto : AssignmentDto
     /// Projeye ait dosyalar - QualitySpecialist/FieldWorker görebilir
     /// </summary>
     public List<ProjectFileInfoDto> ProjectFiles { get; set; } = new();
+
+    /// <summary>
+    /// Atamaya bağlı şubeler (Saha çalışanı atamaları için)
+    /// </summary>
+    public List<AssignmentCustomerDealerDto> Dealers { get; set; } = new();
+
+    /// <summary>
+    /// Proje müşteri ID (şube ekleme için gerekli)
+    /// </summary>
+    public int? CustomerId { get; set; }
 }
 
 /// <summary>

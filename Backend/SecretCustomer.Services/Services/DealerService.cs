@@ -18,8 +18,9 @@ public class DealerService : IDealerService
 
     public async Task<PagedDealerResult> GetAllAsync(DealerFilterDto filter)
     {
-        var query = _context.Dealers
+        var query = _context.CustomerDealers
             .Include(d => d.Customer)
+            .Include(d => d.ContactPersonnel)
             .AsQueryable();
 
         // Apply filters
@@ -67,8 +68,8 @@ public class DealerService : IDealerService
         // Get evaluation stats
         var dealerIds = dealers.Select(d => d.Id).ToList();
         var evaluationStats = await _context.Evaluations
-            .Where(e => e.DealerId != null && dealerIds.Contains(e.DealerId.Value))
-            .GroupBy(e => e.DealerId)
+            .Where(e => e.CustomerDealerId != null && dealerIds.Contains(e.CustomerDealerId.Value))
+            .GroupBy(e => e.CustomerDealerId)
             .Select(g => new
             {
                 DealerId = g.Key,
@@ -94,8 +95,9 @@ public class DealerService : IDealerService
 
     public async Task<DealerDto?> GetByIdAsync(int id)
     {
-        var dealer = await _context.Dealers
+        var dealer = await _context.CustomerDealers
             .Include(d => d.Customer)
+            .Include(d => d.ContactPersonnel)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (dealer == null)
@@ -103,8 +105,8 @@ public class DealerService : IDealerService
 
         // Get evaluation stats
         var stats = await _context.Evaluations
-            .Where(e => e.DealerId == id)
-            .GroupBy(e => e.DealerId)
+            .Where(e => e.CustomerDealerId == id)
+            .GroupBy(e => e.CustomerDealerId)
             .Select(g => new
             {
                 Count = g.Count(),
@@ -120,7 +122,7 @@ public class DealerService : IDealerService
         // Generate code
         var code = await GenerateCodeAsync(dto.CustomerId);
 
-        var dealer = new Dealer
+        var dealer = new CustomerDealer
         {
             Code = code,
             Name = dto.Name,
@@ -132,6 +134,7 @@ public class DealerService : IDealerService
             Phone = dto.Phone,
             Email = dto.Email,
             ContactPerson = dto.ContactPerson,
+            ContactPersonnelId = dto.ContactPersonnelId,
             WorkingHoursJson = dto.WorkingHoursJson,
             DealerTypeId = dto.DealerTypeId,
             IsActive = dto.IsActive,
@@ -139,7 +142,7 @@ public class DealerService : IDealerService
             CustomerId = dto.CustomerId
         };
 
-        _context.Dealers.Add(dealer);
+        _context.CustomerDealers.Add(dealer);
         await _context.SaveChangesAsync();
 
         return (await GetByIdAsync(dealer.Id))!;
@@ -147,7 +150,7 @@ public class DealerService : IDealerService
 
     public async Task<DealerDto?> UpdateAsync(int id, UpdateDealerDto dto)
     {
-        var dealer = await _context.Dealers.FindAsync(id);
+        var dealer = await _context.CustomerDealers.FindAsync(id);
         if (dealer == null)
             return null;
 
@@ -160,6 +163,7 @@ public class DealerService : IDealerService
         dealer.Phone = dto.Phone;
         dealer.Email = dto.Email;
         dealer.ContactPerson = dto.ContactPerson;
+        dealer.ContactPersonnelId = dto.ContactPersonnelId;
         dealer.WorkingHoursJson = dto.WorkingHoursJson;
         dealer.DealerTypeId = dto.DealerTypeId;
         dealer.IsActive = dto.IsActive;
@@ -172,7 +176,7 @@ public class DealerService : IDealerService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var dealer = await _context.Dealers.FindAsync(id);
+        var dealer = await _context.CustomerDealers.FindAsync(id);
         if (dealer == null)
             return false;
 
@@ -183,8 +187,9 @@ public class DealerService : IDealerService
 
     public async Task<List<DealerDto>> GetByCustomerAsync(int customerId)
     {
-        var dealers = await _context.Dealers
+        var dealers = await _context.CustomerDealers
             .Include(d => d.Customer)
+            .Include(d => d.ContactPersonnel)
             .Where(d => d.CustomerId == customerId)
             .OrderBy(d => d.Name)
             .ToListAsync();
@@ -192,8 +197,8 @@ public class DealerService : IDealerService
         // Get evaluation stats
         var dealerIds = dealers.Select(d => d.Id).ToList();
         var evaluationStats = await _context.Evaluations
-            .Where(e => e.DealerId != null && dealerIds.Contains(e.DealerId.Value))
-            .GroupBy(e => e.DealerId)
+            .Where(e => e.CustomerDealerId != null && dealerIds.Contains(e.CustomerDealerId.Value))
+            .GroupBy(e => e.CustomerDealerId)
             .Select(g => new
             {
                 DealerId = g.Key,
@@ -212,7 +217,7 @@ public class DealerService : IDealerService
     public async Task<string> GenerateCodeAsync(int customerId)
     {
         // Get last dealer code for this customer
-        var lastDealer = await _context.Dealers
+        var lastDealer = await _context.CustomerDealers
             .Where(d => d.CustomerId == customerId)
             .OrderByDescending(d => d.Code)
             .FirstOrDefaultAsync();
@@ -230,7 +235,7 @@ public class DealerService : IDealerService
         return $"BAY-{nextNumber:D3}";
     }
 
-    private static DealerDto MapToDto(Dealer dealer, int evaluationCount = 0, decimal? averageScore = null)
+    private static DealerDto MapToDto(CustomerDealer dealer, int evaluationCount = 0, decimal? averageScore = null)
     {
         return new DealerDto
         {
@@ -245,6 +250,10 @@ public class DealerService : IDealerService
             Phone = dealer.Phone,
             Email = dealer.Email,
             ContactPerson = dealer.ContactPerson,
+            ContactPersonnelId = dealer.ContactPersonnelId,
+            ContactPersonnelName = dealer.ContactPersonnel != null
+                ? $"{dealer.ContactPersonnel.FirstName} {dealer.ContactPersonnel.LastName}"
+                : null,
             WorkingHoursJson = dealer.WorkingHoursJson,
             DealerTypeId = dealer.DealerTypeId,
             IsActive = dealer.IsActive,

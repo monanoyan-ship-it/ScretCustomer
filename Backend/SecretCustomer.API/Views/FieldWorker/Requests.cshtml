@@ -89,10 +89,10 @@
                                 </td>
                                 <td data-bind="text: customerName"></td>
                                 <td>
-                                    <!-- ko if: dealerName -->
-                                    <span data-bind="text: dealerName"></span>
+                                    <!-- ko if: customerDealerName -->
+                                    <span data-bind="text: customerDealerName"></span>
                                     <!-- /ko -->
-                                    <!-- ko ifnot: dealerName -->
+                                    <!-- ko ifnot: customerDealerName -->
                                     <span class="text-muted" data-bind="text: $parent.getDealerNameFromJson(requestDataJson)"></span>
                                     <!-- /ko -->
                                 </td>

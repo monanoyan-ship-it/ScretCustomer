@@ -801,6 +801,8 @@ public class EvaluationService : IEvaluationService
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
         evaluation.ControlDate = ToUtc(dto.ControlDate);
         evaluation.ControlTime = dto.ControlTime;
+        // FieldWorker ziyaretleri için bayi ID
+        evaluation.CustomerDealerId = dto.CustomerDealerId > 0 ? dto.CustomerDealerId : null;
         evaluation.YellowCardCount = scoreResult.YellowCardCount;
         evaluation.RedCardCount = scoreResult.RedCardCount;
         evaluation.UpdatedAt = DateTime.UtcNow;

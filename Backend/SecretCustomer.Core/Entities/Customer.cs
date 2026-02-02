@@ -112,5 +112,5 @@ public class Customer : BaseEntity
     /// <summary>
     /// Firma altındaki bayiler (FieldWorker ziyaretleri için)
     /// </summary>
-    public ICollection<Dealer> Dealers { get; set; } = new List<Dealer>();
+    public ICollection<CustomerDealer> CustomerDealers { get; set; } = new List<CustomerDealer>();
 }

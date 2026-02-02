@@ -3,9 +3,9 @@ using SecretCustomer.Core.Enums;
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
-/// Bayi Talebi - FieldWorker'ların oluşturduğu bayi ekleme/güncelleme talepleri
+/// Müşteri Bayi Talebi - FieldWorker'ların oluşturduğu bayi ekleme/güncelleme talepleri
 /// </summary>
-public class DealerRequest : BaseEntity
+public class CustomerDealerRequest : BaseEntity
 {
     /// <summary>
     /// Talebin ait olduğu müşteri
@@ -22,18 +22,18 @@ public class DealerRequest : BaseEntity
     /// <summary>
     /// Talep tipi (Yeni Bayi, Bayi Güncelleme)
     /// </summary>
-    public int RequestTypeId { get; set; } = RequestTypes.Ids.NewDealer;
+    public int RequestTypeId { get; set; } = CustomerDealerRequestTypes.Ids.NewDealer;
 
     /// <summary>
     /// Talep durumu (Beklemede, Onaylandı, Reddedildi)
     /// </summary>
-    public int StatusId { get; set; } = RequestStatuses.Ids.Pending;
+    public int StatusId { get; set; } = CustomerDealerRequestStatuses.Ids.Pending;
 
     /// <summary>
     /// Güncelleme talebi için mevcut bayi ID
     /// </summary>
-    public int? DealerId { get; set; }
-    public Dealer? Dealer { get; set; }
+    public int? CustomerDealerId { get; set; }
+    public CustomerDealer? CustomerDealer { get; set; }
 
     /// <summary>
     /// Talep edilen bilgiler (JSON formatında)

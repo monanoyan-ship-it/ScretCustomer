@@ -1,17 +1,76 @@
-// FieldWorker Visits ViewModel
+// FieldWorker Visits ViewModel - Tab yapısı ile Atamalar + Ziyaretler
 function FieldWorkerVisitsViewModel() {
     var self = this;
 
-    // State
+    // ========================
+    // GLOBAL STATE
+    // ========================
     self.isLoading = ko.observable(true);
     self.isSaving = ko.observable(false);
+    self.activeTab = ko.observable('assignments');
 
-    // Filter
-    self.filter = {
-        searchTerm: ko.observable(''),
-        projectId: ko.observable(''),
-        statusId: ko.observable('')
+    // Tab değiştirme - Ziyaretler tabına geçince listeyi yükle
+    self.setActiveTab = function(tab) {
+        self.activeTab(tab);
+        if (tab === 'visits' && self.visits().length === 0) {
+            self.loadVisits();
+        }
     };
+
+    // ========================
+    // ASSIGNMENTS TAB
+    // ========================
+    self.isAssignmentsLoading = ko.observable(true);
+    self.assignments = ko.observableArray([]);
+    self.assignmentsSearch = ko.observable('');
+
+    // Filtered assignments based on search
+    self.filteredAssignments = ko.computed(function() {
+        var search = self.assignmentsSearch().toLowerCase();
+        if (!search) return self.assignments();
+
+        return self.assignments().filter(function(a) {
+            return (a.projectName && a.projectName.toLowerCase().indexOf(search) > -1) ||
+                   (a.customerName && a.customerName.toLowerCase().indexOf(search) > -1);
+        });
+    });
+
+    // Load assignments (projects)
+    self.loadAssignments = function() {
+        self.isAssignmentsLoading(true);
+        return ApiService.get('/fieldworker/projects')
+            .then(function(data) {
+                self.assignments(data || []);
+                // projects dizisini de güncelle (modal için)
+                self.projects(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading assignments:', error);
+                toastr.error(T('FieldWorker.LoadAssignmentsError', 'Atamalar yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.isAssignmentsLoading(false);
+            });
+    };
+
+    // Start new visit from assignment - popup olarak aç
+    self.startNewVisit = function(assignment) {
+        var url = '/FieldWorker/VisitPopup?assignmentId=' + assignment.assignmentId;
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open(url, 'FieldWorkerVisitPopup',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+    };
+
+    // ========================
+    // VISITS TAB
+    // ========================
+    self.isVisitsLoading = ko.observable(false);
+    self.visits = ko.observableArray([]);
+    self.projects = ko.observableArray([]);
+    self.dealers = ko.observableArray([]);
 
     // Pagination
     self.currentPage = ko.observable(1);
@@ -21,40 +80,224 @@ function FieldWorkerVisitsViewModel() {
         return Math.ceil(self.totalCount() / self.pageSize) || 1;
     });
 
-    // Data
-    self.visits = ko.observableArray([]);
-    self.projects = ko.observableArray([]);
-    self.dealers = ko.observableArray([]);
+    // ==================== FILTER SYSTEM ====================
+    self.selectedFilterType = ko.observable('');
+    self.activeFilters = ko.observableArray([]);
 
-    // Modal state - KnockoutJS pattern
-    self.isNewVisitModalOpen = ko.observable(false);
-    self.isDetailModalOpen = ko.observable(false);
-    self.selectedVisit = ko.observable(null);
-    self.visitEvaluation = ko.observable(null);
-
-    // New visit form
-    self.newVisit = {
+    // Temp filter values
+    self.tempFilter = {
+        searchTerm: ko.observable(''),
         projectId: ko.observable(''),
-        dealerId: ko.observable(''),
-        controlDate: ko.observable(''),
-        controlTime: ko.observable(''),
-        auditorComment: ko.observable('')
+        status: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable('')
     };
 
-    // Filtered dealers based on selected project
-    self.filteredDealers = ko.computed(function() {
-        var projectId = self.newVisit.projectId();
-        if (!projectId) return [];
+    // Filter labels
+    self.filterLabels = {
+        search: 'Arama',
+        project: 'Proje',
+        status: 'Durum',
+        dateRange: 'Tarih'
+    };
 
-        var project = self.projects().find(function(p) { return p.projectId === parseInt(projectId); });
-        if (!project) return [];
+    self.statusLabels = {
+        '1': 'Taslak',
+        '2': 'Tamamlandı'
+    };
 
-        return self.dealers().filter(function(d) {
-            return d.customerId === project.customerId;
-        });
+    // Can add filter check
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        switch (type) {
+            case 'search': return self.tempFilter.searchTerm().trim() !== '';
+            case 'project': return self.tempFilter.projectId();
+            case 'status': return self.tempFilter.status();
+            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            default: return false;
+        }
     });
 
-    // Status helpers
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type, label: self.filterLabels[type] };
+
+        switch (type) {
+            case 'search':
+                filter.value = self.tempFilter.searchTerm().trim();
+                filter.displayValue = filter.value;
+                self.tempFilter.searchTerm('');
+                break;
+            case 'project':
+                filter.value = self.tempFilter.projectId();
+                var project = self.projects().find(function(p) { return p.projectId == filter.value; });
+                filter.displayValue = project ? project.projectName : filter.value;
+                self.tempFilter.projectId('');
+                break;
+            case 'status':
+                filter.value = self.tempFilter.status();
+                filter.displayValue = self.statusLabels[filter.value] || filter.value;
+                self.tempFilter.status('');
+                break;
+            case 'dateRange':
+                filter.startDate = self.tempFilter.startDate();
+                filter.endDate = self.tempFilter.endDate();
+                filter.displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                break;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.currentPage(1);
+        self.loadVisits();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.currentPage(1);
+        self.loadVisits();
+    };
+
+    // Clear all filters
+    self.clearAllFilters = function() {
+        self.activeFilters.removeAll();
+        self.currentPage(1);
+        self.loadVisits();
+    };
+
+    // Date range quick select
+    self.setTempDateRange = function(range) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = null;
+        var endDate = null;
+
+        var getMonday = function(d) {
+            var date = new Date(d.getTime());
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
+
+        var formatDate = function(d) {
+            return d.toISOString().split('T')[0];
+        };
+
+        switch (range) {
+            case 'today':
+                startDate = endDate = formatDate(today);
+                break;
+            case 'yesterday':
+                var yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = endDate = formatDate(yesterday);
+                break;
+            case 'thisWeek':
+                startDate = formatDate(getMonday(today));
+                endDate = formatDate(today);
+                break;
+            case 'lastWeek':
+                var lastWeekStart = getMonday(today);
+                lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                var lastWeekEnd = new Date(lastWeekStart);
+                lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+                startDate = formatDate(lastWeekStart);
+                endDate = formatDate(lastWeekEnd);
+                break;
+            case 'thisMonth':
+                startDate = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+                endDate = formatDate(today);
+                break;
+            case 'lastMonth':
+                startDate = formatDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+                endDate = formatDate(new Date(today.getFullYear(), today.getMonth(), 0));
+                break;
+        }
+
+        self.tempFilter.startDate(startDate);
+        self.tempFilter.endDate(endDate);
+    };
+
+    // Build filter params for API
+    self.buildFilterParams = function() {
+        var params = new URLSearchParams();
+        params.append('page', self.currentPage());
+        params.append('pageSize', self.pageSize);
+
+        self.activeFilters().forEach(function(filter) {
+            switch (filter.type) {
+                case 'search':
+                    params.append('searchTerm', filter.value);
+                    break;
+                case 'project':
+                    params.append('projectId', filter.value);
+                    break;
+                case 'status':
+                    params.append('statusId', filter.value);
+                    break;
+                case 'dateRange':
+                    if (filter.startDate) params.append('startDate', filter.startDate);
+                    if (filter.endDate) params.append('endDate', filter.endDate);
+                    break;
+            }
+        });
+
+        return params.toString();
+    };
+
+    // Load visits
+    self.loadVisits = function() {
+        self.isVisitsLoading(true);
+
+        var queryString = self.buildFilterParams();
+        ApiService.get('/fieldworker/visits?' + queryString)
+            .then(function(data) {
+                self.visits(data.items || []);
+                self.totalCount(data.totalCount || 0);
+            })
+            .catch(function(error) {
+                console.error('Error loading visits:', error);
+                toastr.error(T('FieldWorker.LoadVisitsError', 'Ziyaretler yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.isVisitsLoading(false);
+            });
+    };
+
+    // Load dealers
+    self.loadDealers = function() {
+        return ApiService.get('/fieldworker/dealers')
+            .then(function(data) {
+                self.dealers(data || []);
+            });
+    };
+
+    // Pagination
+    self.prevPage = function() {
+        if (self.currentPage() > 1) {
+            self.currentPage(self.currentPage() - 1);
+            self.loadVisits();
+        }
+    };
+
+    self.nextPage = function() {
+        if (self.currentPage() < self.totalPages()) {
+            self.currentPage(self.currentPage() + 1);
+            self.loadVisits();
+        }
+    };
+
+    // ========================
+    // HELPERS
+    // ========================
     self.getStatusBadgeClass = function(statusId) {
         var classes = {
             1: 'bg-warning text-dark',
@@ -77,156 +320,190 @@ function FieldWorkerVisitsViewModel() {
         return date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     };
 
-    // Load projects
-    self.loadProjects = function() {
-        return ApiService.get('/fieldworker/projects')
-            .then(function(data) {
-                self.projects(data || []);
-            });
+    // ========================
+    // NEW VISIT MODAL
+    // ========================
+    self.isNewVisitModalOpen = ko.observable(false);
+    self.newVisit = {
+        projectId: ko.observable(''),
+        customerDealerId: ko.observable(''),
+        controlDate: ko.observable(''),
+        controlTime: ko.observable(''),
+        auditorComment: ko.observable('')
     };
 
-    // Load dealers
-    self.loadDealers = function() {
-        return ApiService.get('/fieldworker/dealers')
+    // Checklist soruları için
+    self.formData = ko.observable(null);
+    self.questions = ko.observableArray([]);
+    self.isLoadingQuestions = ko.observable(false);
+
+    // Proje seçildiğinde soruları yükle
+    self.newVisit.projectId.subscribe(function(projectId) {
+        if (!projectId) {
+            self.formData(null);
+            self.questions([]);
+            return;
+        }
+
+        var project = self.projects().find(function(p) { return p.projectId === parseInt(projectId); });
+        if (!project || !project.assignmentId) {
+            self.formData(null);
+            self.questions([]);
+            return;
+        }
+
+        self.isLoadingQuestions(true);
+        ApiService.get('/evaluations/form/' + project.assignmentId)
             .then(function(data) {
-                self.dealers(data || []);
-            });
-    };
-
-    // Load visits
-    self.loadVisits = function() {
-        self.isLoading(true);
-
-        var params = new URLSearchParams();
-        params.append('page', self.currentPage());
-        params.append('pageSize', self.pageSize);
-
-        if (self.filter.searchTerm()) params.append('searchTerm', self.filter.searchTerm());
-        if (self.filter.projectId()) params.append('projectId', self.filter.projectId());
-        if (self.filter.statusId()) params.append('statusId', self.filter.statusId());
-
-        ApiService.get('/fieldworker/visits?' + params.toString())
-            .then(function(data) {
-                self.visits(data.items || []);
-                self.totalCount(data.totalCount || 0);
+                self.formData(data);
+                // penaltyGroups'tan soruları düzleştir
+                var allQuestions = [];
+                if (data.penaltyGroups && data.penaltyGroups.length > 0) {
+                    data.penaltyGroups.forEach(function(group) {
+                        if (group.questions && group.questions.length > 0) {
+                            group.questions.forEach(function(q) {
+                                // Her soru için observable'lar ekle
+                                q.selectedValue = ko.observable(q.answer || '');
+                                q.notes = ko.observable(q.notes || '');
+                                allQuestions.push(q);
+                            });
+                        }
+                    });
+                }
+                self.questions(allQuestions);
             })
             .catch(function(error) {
-                console.error('Error loading visits:', error);
-                toastr.error(error.message || T('FieldWorker.LoadVisitsError', 'Ziyaretler yuklenirken hata olustu.'));
+                console.error('Error loading questions:', error);
+                toastr.error(T('FieldWorker.LoadQuestionsError', 'Sorular yüklenirken hata oluştu.'));
+                self.formData(null);
+                self.questions([]);
             })
             .finally(function() {
-                self.isLoading(false);
+                self.isLoadingQuestions(false);
             });
-    };
+    });
 
-    // Apply filters
-    self.applyFilters = function() {
-        self.currentPage(1);
-        self.loadVisits();
-    };
+    // Filtered dealers based on selected project
+    self.filteredDealers = ko.computed(function() {
+        var projectId = self.newVisit.projectId();
+        if (!projectId) return [];
 
-    // Clear filters
-    self.clearFilters = function() {
-        self.filter.searchTerm('');
-        self.filter.projectId('');
-        self.filter.statusId('');
-        self.currentPage(1);
-        self.loadVisits();
-    };
+        var project = self.projects().find(function(p) { return p.projectId === parseInt(projectId); });
+        if (!project) return [];
 
-    // Pagination
-    self.prevPage = function() {
-        if (self.currentPage() > 1) {
-            self.currentPage(self.currentPage() - 1);
-            self.loadVisits();
-        }
-    };
+        return self.dealers().filter(function(d) {
+            return d.customerId === project.customerId;
+        });
+    });
 
-    self.nextPage = function() {
-        if (self.currentPage() < self.totalPages()) {
-            self.currentPage(self.currentPage() + 1);
-            self.loadVisits();
-        }
-    };
-
-    // ==================== NEW VISIT MODAL ====================
     self.showNewVisitModal = function() {
         self.newVisit.projectId('');
-        self.newVisit.dealerId('');
+        self.newVisit.customerDealerId('');
         self.newVisit.controlDate(new Date().toISOString().split('T')[0]);
         self.newVisit.controlTime('');
         self.newVisit.auditorComment('');
+        self.formData(null);
+        self.questions([]);
         self.isNewVisitModalOpen(true);
     };
 
     self.closeNewVisitModal = function() {
         self.isNewVisitModalOpen(false);
+        self.formData(null);
+        self.questions([]);
     };
 
-    // Save visit
     self.saveVisit = function() {
         self.doSaveVisit(false);
     };
 
-    // Save as draft
     self.saveAsDraft = function() {
         self.doSaveVisit(true);
     };
 
     self.doSaveVisit = function(isDraft) {
-        // Validation
         if (!self.newVisit.projectId()) {
-            toastr.warning(T('FieldWorker.ProjectRequired', 'Proje secimi zorunludur.'));
+            toastr.warning(T('FieldWorker.ProjectRequired', 'Proje seçimi zorunludur.'));
             return;
         }
-        if (!self.newVisit.dealerId()) {
-            toastr.warning(T('FieldWorker.DealerRequired', 'Bayi secimi zorunludur.'));
+        if (!self.newVisit.customerDealerId()) {
+            toastr.warning(T('FieldWorker.DealerRequired', 'Bayi seçimi zorunludur.'));
             return;
         }
 
         self.isSaving(true);
 
+        // Soruların cevaplarını topla
+        var answers = [];
+        self.questions().forEach(function(q) {
+            var value = q.selectedValue ? q.selectedValue() : '';
+            if (value !== '' && value !== null && value !== undefined) {
+                answers.push({
+                    questionId: q.id,
+                    numericAnswer: !isNaN(parseFloat(value)) ? parseFloat(value) : null,
+                    textAnswer: isNaN(parseFloat(value)) ? value : null,
+                    notes: q.notes ? q.notes() : null
+                });
+            }
+        });
+
+        // Seçili projenin checklistId'sini al
+        var project = self.projects().find(function(p) { return p.projectId === parseInt(self.newVisit.projectId()); });
+        var checklistId = project ? project.checklistId : 0;
+
         var data = {
             projectId: parseInt(self.newVisit.projectId()),
-            dealerId: parseInt(self.newVisit.dealerId()),
-            checklistId: 0,
+            customerDealerId: parseInt(self.newVisit.customerDealerId()),
+            checklistId: checklistId,
             controlDate: self.newVisit.controlDate() ? new Date(self.newVisit.controlDate()).toISOString() : null,
             controlTime: self.newVisit.controlTime() || null,
             auditorComment: self.newVisit.auditorComment() || null,
             isDraft: isDraft,
-            answers: []
+            answers: answers
         };
 
         ApiService.post('/fieldworker/visits', data)
             .then(function(response) {
                 var message = isDraft
                     ? T('FieldWorker.VisitSavedAsDraft', 'Ziyaret taslak olarak kaydedildi.')
-                    : T('FieldWorker.VisitSaved', 'Ziyaret basariyla kaydedildi.');
+                    : T('FieldWorker.VisitSaved', 'Ziyaret başarıyla kaydedildi.');
                 toastr.success(message);
                 self.closeNewVisitModal();
-                self.loadVisits();
 
-                // Show detail modal for the new visit
+                // Assignments'ı yenile (tamamlanan sayısı güncellensin)
+                self.loadAssignments();
+
+                // Visits tabındaysak listeyi yenile
+                if (self.activeTab() === 'visits') {
+                    self.loadVisits();
+                }
+
+                // Yeni ziyaretin detayını göster
                 if (response.evaluationId) {
                     self.showVisitDetail({ evaluationId: response.evaluationId });
                 }
             })
             .catch(function(error) {
                 console.error('Error saving visit:', error);
-                toastr.error(error.message || T('FieldWorker.SaveVisitError', 'Ziyaret kaydedilirken hata olustu.'));
+                toastr.error(error.message || T('FieldWorker.SaveVisitError', 'Ziyaret kaydedilirken hata oluştu.'));
             })
             .finally(function() {
                 self.isSaving(false);
             });
     };
 
-    // ==================== DETAIL MODAL ====================
+    // ========================
+    // DETAIL MODAL
+    // ========================
+    self.isDetailModalOpen = ko.observable(false);
+    self.selectedVisit = ko.observable(null);
+    self.visitEvaluation = ko.observable(null);
+
     self.showVisitDetail = function(visit) {
         self.selectedVisit(visit);
         self.visitEvaluation(null);
         self.isDetailModalOpen(true);
 
-        // Load evaluation details
         if (visit.evaluationId) {
             ApiService.get('/evaluations/' + visit.evaluationId)
                 .then(function(evaluation) {
@@ -244,45 +521,65 @@ function FieldWorkerVisitsViewModel() {
         self.visitEvaluation(null);
     };
 
-    // Edit visit - Open evaluation form in new window
     self.editVisit = function(visit) {
         if (visit.evaluationId) {
-            window.open('/Evaluations?id=' + visit.evaluationId, '_blank');
+            var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+            var width = 1200;
+            var height = 800;
+            var left = (screen.width - width) / 2;
+            var top = (screen.height - height) / 2;
+            window.open(url, 'FieldWorkerVisitPopup',
+                'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
         }
     };
 
-    // Continue evaluation from detail modal
     self.continueEvaluation = function() {
         var visit = self.selectedVisit();
         if (visit && visit.evaluationId) {
-            window.open('/Evaluations?id=' + visit.evaluationId, '_blank');
+            var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+            var width = 1200;
+            var height = 800;
+            var left = (screen.width - width) / 2;
+            var top = (screen.height - height) / 2;
+            window.open(url, 'FieldWorkerVisitPopup',
+                'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
             self.closeDetailModal();
         }
     };
 
-    // Initialize
+    // ========================
+    // INITIALIZE
+    // ========================
     self.init = function() {
-        // Check URL params
+        // URL parametrelerini kontrol et
         var urlParams = new URLSearchParams(window.location.search);
-        var status = urlParams.get('status');
-        if (status) {
-            self.filter.statusId(status);
+        var tab = urlParams.get('tab');
+        if (tab === 'visits') {
+            self.activeTab('visits');
         }
 
-        // Load data
+        // Verileri yükle
         Promise.all([
-            self.loadProjects(),
+            self.loadAssignments(),
             self.loadDealers()
         ]).then(function() {
-            self.loadVisits();
+            self.isLoading(false);
+
+            // Eğer visits tabındaysak ziyaretleri yükle
+            if (self.activeTab() === 'visits') {
+                self.loadVisits();
+            }
+        }).catch(function() {
+            self.isLoading(false);
         });
     };
 
     self.init();
 }
 
-// Translation keys used in this module
+// Translation keys
 var TRANSLATION_KEYS = [
+    'FieldWorker.LoadAssignmentsError',
     'FieldWorker.LoadVisitsError',
     'FieldWorker.ProjectRequired',
     'FieldWorker.DealerRequired',
@@ -293,7 +590,7 @@ var TRANSLATION_KEYS = [
     'Common.Cancel'
 ];
 
-// Initialize when document is ready
+// Initialize
 $(document).ready(function() {
     var app = document.getElementById('fieldworker-visits-app');
     if (app) {

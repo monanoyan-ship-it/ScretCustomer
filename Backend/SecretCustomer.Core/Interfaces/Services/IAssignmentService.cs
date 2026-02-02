@@ -59,4 +59,9 @@ public interface IAssignmentService
     Task<IEnumerable<AssignmentDto>> GetInternalAssignmentsAsync(InternalAssignmentFilterDto filter);
     Task<InternalAssignmentSummaryDto> GetInternalAssignmentSummaryAsync(int? customerId);
     Task<InternalAssignmentResultDto> CreateInternalAssignmentsAsync(CreateInternalAssignmentsDto dto);
+
+    // ===== ATAMA ŞUBE (DEALER) YÖNETİMİ =====
+    Task<IEnumerable<AssignmentCustomerDealerDto>> GetAssignmentDealersAsync(int assignmentId);
+    Task<AssignmentCustomerDealerDto> AddDealerToAssignmentAsync(int assignmentId, int customerDealerId);
+    Task RemoveDealerFromAssignmentAsync(int assignmentId, int customerDealerId);
 }

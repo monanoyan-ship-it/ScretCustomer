@@ -19,9 +19,11 @@ public class DealerDto
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? ContactPerson { get; set; }
+    public int? ContactPersonnelId { get; set; }
+    public string? ContactPersonnelName { get; set; }
     public string? WorkingHoursJson { get; set; }
     public int DealerTypeId { get; set; }
-    public string DealerTypeText => DealerTypes.GetById(DealerTypeId)?.NameResourceKey ?? "Bilinmiyor";
+    public string DealerTypeText => CustomerDealerTypes.GetById(DealerTypeId)?.NameResourceKey ?? "Bilinmiyor";
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
 
@@ -69,9 +71,14 @@ public class CreateDealerDto
     [StringLength(100, ErrorMessage = "Yetkili kişi en fazla 100 karakter olabilir")]
     public string? ContactPerson { get; set; }
 
+    /// <summary>
+    /// Yetkili kişi - CustomerPersonnel seçimi (opsiyonel)
+    /// </summary>
+    public int? ContactPersonnelId { get; set; }
+
     public string? WorkingHoursJson { get; set; }
 
-    public int DealerTypeId { get; set; } = DealerTypes.Ids.Retail;
+    public int DealerTypeId { get; set; } = CustomerDealerTypes.Ids.Retail;
 
     public bool IsActive { get; set; } = true;
 
@@ -114,9 +121,14 @@ public class UpdateDealerDto
     [StringLength(100, ErrorMessage = "Yetkili kişi en fazla 100 karakter olabilir")]
     public string? ContactPerson { get; set; }
 
+    /// <summary>
+    /// Yetkili kişi - CustomerPersonnel seçimi (opsiyonel)
+    /// </summary>
+    public int? ContactPersonnelId { get; set; }
+
     public string? WorkingHoursJson { get; set; }
 
-    public int DealerTypeId { get; set; } = DealerTypes.Ids.Retail;
+    public int DealerTypeId { get; set; } = CustomerDealerTypes.Ids.Retail;
 
     public bool IsActive { get; set; } = true;
 

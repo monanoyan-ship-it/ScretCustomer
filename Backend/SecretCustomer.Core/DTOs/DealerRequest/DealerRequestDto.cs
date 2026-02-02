@@ -20,13 +20,13 @@ public class DealerRequestDto
 
     // Talep tipi ve durumu
     public int RequestTypeId { get; set; }
-    public string RequestTypeName => RequestTypes.GetById(RequestTypeId)?.NameResourceKey ?? "Bilinmiyor";
+    public string RequestTypeName => CustomerDealerRequestTypes.GetById(RequestTypeId)?.NameResourceKey ?? "Bilinmiyor";
     public int StatusId { get; set; }
-    public string StatusName => RequestStatuses.GetById(StatusId)?.NameResourceKey ?? "Bilinmiyor";
+    public string StatusName => CustomerDealerRequestStatuses.GetById(StatusId)?.NameResourceKey ?? "Bilinmiyor";
 
     // Mevcut bayi (güncelleme talebi için)
-    public int? DealerId { get; set; }
-    public string? DealerName { get; set; }
+    public int? CustomerDealerId { get; set; }
+    public string? CustomerDealerName { get; set; }
 
     // Talep detayları
     public string RequestDataJson { get; set; } = "{}";
@@ -48,12 +48,12 @@ public class CreateDealerRequestDto
     [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
     public int CustomerId { get; set; }
 
-    public int RequestTypeId { get; set; } = RequestTypes.Ids.NewDealer;
+    public int RequestTypeId { get; set; } = CustomerDealerRequestTypes.Ids.NewDealer;
 
     /// <summary>
     /// Güncelleme talebi için mevcut bayi ID
     /// </summary>
-    public int? DealerId { get; set; }
+    public int? CustomerDealerId { get; set; }
 
     /// <summary>
     /// Talep edilen bilgiler (JSON)
@@ -127,6 +127,6 @@ public class DealerRequestData
     public string? Email { get; set; }
     public string? ContactPerson { get; set; }
     public string? WorkingHoursJson { get; set; }
-    public int DealerTypeId { get; set; } = DealerTypes.Ids.Retail;
+    public int DealerTypeId { get; set; } = CustomerDealerTypes.Ids.Retail;
     public string? Notes { get; set; }
 }

@@ -62,6 +62,10 @@ public class AssignmentService : IAssignmentService
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Periods)
                 .ThenInclude(p => p.Evaluations)
+            .Include(a => a.AssignmentCustomerDealers.Where(acd => !acd.IsDeleted))
+                .ThenInclude(acd => acd.CustomerDealer)
+            .Include(a => a.AssignmentCustomerDealers.Where(acd => !acd.IsDeleted))
+                .ThenInclude(acd => acd.Evaluation)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
 
         if (assignment == null) return null;
@@ -143,6 +147,30 @@ public class AssignmentService : IAssignmentService
                 })
                 .ToList();
         }
+
+        // Get assigned dealers (branches)
+        detailDto.Dealers = assignment.AssignmentCustomerDealers
+            .Where(acd => !acd.IsDeleted)
+            .OrderBy(acd => acd.SortOrder)
+            .Select(acd => new AssignmentCustomerDealerDto
+            {
+                Id = acd.Id,
+                AssignmentId = acd.AssignmentId,
+                CustomerDealerId = acd.CustomerDealerId,
+                CustomerDealerName = acd.CustomerDealer?.Name ?? "",
+                CustomerDealerCode = acd.CustomerDealer?.Code,
+                City = acd.CustomerDealer?.City,
+                District = acd.CustomerDealer?.District,
+                SortOrder = acd.SortOrder,
+                HasEvaluation = acd.EvaluationId.HasValue,
+                EvaluationId = acd.EvaluationId,
+                EvaluationScore = acd.Evaluation?.ScorePercentage,
+                EvaluationDate = acd.Evaluation?.CreatedAt
+            })
+            .ToList();
+
+        // CustomerId for adding dealers
+        detailDto.CustomerId = assignment.Project?.CustomerId;
 
         return detailDto;
     }
@@ -262,14 +290,17 @@ public class AssignmentService : IAssignmentService
                 throw new InvalidOperationException($"Bu proje için {dto.ExternalEmail} adresine zaten atama yapılmış.");
         }
 
+        // FieldWorker ataması ise AssignedFieldWorkerId'yi AssignedUserId olarak kullan
+        var assignedUserId = dto.AssignedFieldWorkerId ?? dto.AssignedUserId;
+
         // Dahili kullanıcı için mükerrer atama kontrolü
         // Aynı kullanıcıya aynı projede tamamlanmamış ve tarih çakışan atama var mı?
-        if (dto.AssignedUserId.HasValue)
+        if (assignedUserId.HasValue)
         {
             var newDueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc);
             var existingAssignment = await _context.Assignments
                 .Where(a => a.ProjectId == dto.ProjectId
-                         && a.AssignedUserId == dto.AssignedUserId
+                         && a.AssignedUserId == assignedUserId
                          && !a.IsCompleted
                          && !a.IsDeleted
                          && newDueDate <= a.DueDate)
@@ -283,22 +314,45 @@ public class AssignmentService : IAssignmentService
             }
         }
 
+        // Atama tipini belirle
+        var assignmentType = dto.AssignedFieldWorkerId.HasValue
+            ? AssignmentTypes.Ids.FieldWorker
+            : AssignmentTypes.Ids.InternalUser;
+
         var assignment = new Assignment
         {
             ProjectId = dto.ProjectId,
             ChecklistId = dto.ChecklistId,
-            AssignedUserId = dto.AssignedUserId,
+            AssignedUserId = assignedUserId,
             AssignedCustomerPersonnelId = dto.AssignedCustomerPersonnelId,
             ExternalEmail = dto.ExternalEmail,
             ExternalName = dto.ExternalName,
             UniqueLink = Guid.NewGuid().ToString(),
             DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
-            TypeId = AssignmentTypes.Ids.InternalUser, // Bizim değerlendirmelerimiz
+            TypeId = assignmentType,
             IsCompleted = false
         };
 
         _context.Assignments.Add(assignment);
         await _context.SaveChangesAsync();
+
+        // CustomerDealer (şube) ilişkilerini ekle
+        if (dto.CustomerDealerIds?.Any() == true)
+        {
+            var sortOrder = 0;
+            foreach (var dealerId in dto.CustomerDealerIds)
+            {
+                var assignmentDealer = new AssignmentCustomerDealer
+                {
+                    AssignmentId = assignment.Id,
+                    CustomerDealerId = dealerId,
+                    SortOrder = sortOrder++,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.AssignmentCustomerDealers.Add(assignmentDealer);
+            }
+            await _context.SaveChangesAsync();
+        }
 
         return await GetByIdAsync(assignment.Id) ?? MapToDto(assignment);
     }
@@ -670,8 +724,17 @@ public class AssignmentService : IAssignmentService
         if (assignment.IsCompleted)
             throw new InvalidOperationException("Tamamlanmış atama yeniden atanamaz.");
 
-        if (dto.NewAssignedUserId.HasValue)
+        // FieldWorker ataması ise NewAssignedFieldWorkerId'yi AssignedUserId olarak kullan
+        if (dto.NewAssignedFieldWorkerId.HasValue)
+        {
+            assignment.AssignedUserId = dto.NewAssignedFieldWorkerId;
+            assignment.TypeId = AssignmentTypes.Ids.FieldWorker;
+        }
+        else if (dto.NewAssignedUserId.HasValue)
+        {
             assignment.AssignedUserId = dto.NewAssignedUserId;
+            assignment.TypeId = AssignmentTypes.Ids.InternalUser;
+        }
 
         if (dto.NewAssignedCustomerPersonnelId.HasValue)
             assignment.AssignedCustomerPersonnelId = dto.NewAssignedCustomerPersonnelId;
@@ -1308,6 +1371,120 @@ public class AssignmentService : IAssignmentService
         }
 
         return result;
+    }
+
+    #endregion
+
+    #region ATAMA ŞUBE (DEALER) YÖNETİMİ
+
+    public async Task<IEnumerable<AssignmentCustomerDealerDto>> GetAssignmentDealersAsync(int assignmentId)
+    {
+        var assignment = await _context.Assignments
+            .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            throw new KeyNotFoundException("Atama bulunamadı");
+
+        var dealers = await _context.AssignmentCustomerDealers
+            .Include(acd => acd.CustomerDealer)
+            .Include(acd => acd.Evaluation)
+            .Where(acd => acd.AssignmentId == assignmentId && !acd.IsDeleted)
+            .OrderBy(acd => acd.SortOrder)
+            .ToListAsync();
+
+        return dealers.Select(acd => new AssignmentCustomerDealerDto
+        {
+            Id = acd.Id,
+            AssignmentId = acd.AssignmentId,
+            CustomerDealerId = acd.CustomerDealerId,
+            CustomerDealerName = acd.CustomerDealer?.Name ?? "",
+            CustomerDealerCode = acd.CustomerDealer?.Code,
+            City = acd.CustomerDealer?.City,
+            District = acd.CustomerDealer?.District,
+            SortOrder = acd.SortOrder,
+            HasEvaluation = acd.EvaluationId.HasValue,
+            EvaluationId = acd.EvaluationId,
+            EvaluationScore = acd.Evaluation?.ScorePercentage,
+            EvaluationDate = acd.Evaluation?.CreatedAt
+        });
+    }
+
+    public async Task<AssignmentCustomerDealerDto> AddDealerToAssignmentAsync(int assignmentId, int customerDealerId)
+    {
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+
+        if (assignment == null)
+            throw new KeyNotFoundException("Atama bulunamadı");
+
+        // Şubenin zaten ekli olup olmadığını kontrol et
+        var exists = await _context.AssignmentCustomerDealers
+            .AnyAsync(acd => acd.AssignmentId == assignmentId && acd.CustomerDealerId == customerDealerId && !acd.IsDeleted);
+
+        if (exists)
+            throw new InvalidOperationException("Bu şube zaten atamaya ekli");
+
+        // Şubenin projenin müşterisine ait olup olmadığını kontrol et
+        var dealer = await _context.CustomerDealers
+            .FirstOrDefaultAsync(d => d.Id == customerDealerId && !d.IsDeleted);
+
+        if (dealer == null)
+            throw new KeyNotFoundException("Şube bulunamadı");
+
+        if (assignment.Project?.CustomerId != dealer.CustomerId)
+            throw new InvalidOperationException("Şube bu projenin müşterisine ait değil");
+
+        // Mevcut en yüksek sıra numarasını bul
+        var maxSortOrder = await _context.AssignmentCustomerDealers
+            .Where(acd => acd.AssignmentId == assignmentId && !acd.IsDeleted)
+            .MaxAsync(acd => (int?)acd.SortOrder) ?? -1;
+
+        var assignmentDealer = new AssignmentCustomerDealer
+        {
+            AssignmentId = assignmentId,
+            CustomerDealerId = customerDealerId,
+            SortOrder = maxSortOrder + 1,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.AssignmentCustomerDealers.Add(assignmentDealer);
+        await _context.SaveChangesAsync();
+
+        return new AssignmentCustomerDealerDto
+        {
+            Id = assignmentDealer.Id,
+            AssignmentId = assignmentDealer.AssignmentId,
+            CustomerDealerId = assignmentDealer.CustomerDealerId,
+            CustomerDealerName = dealer.Name,
+            CustomerDealerCode = dealer.Code,
+            City = dealer.City,
+            District = dealer.District,
+            SortOrder = assignmentDealer.SortOrder,
+            HasEvaluation = false,
+            EvaluationId = null,
+            EvaluationScore = null,
+            EvaluationDate = null
+        };
+    }
+
+    public async Task RemoveDealerFromAssignmentAsync(int assignmentId, int customerDealerId)
+    {
+        var assignmentDealer = await _context.AssignmentCustomerDealers
+            .Include(acd => acd.Evaluation)
+            .FirstOrDefaultAsync(acd => acd.AssignmentId == assignmentId && acd.CustomerDealerId == customerDealerId && !acd.IsDeleted);
+
+        if (assignmentDealer == null)
+            throw new KeyNotFoundException("Atama-şube ilişkisi bulunamadı");
+
+        // Ziyaret yapılmışsa silinmesine izin verme
+        if (assignmentDealer.EvaluationId.HasValue)
+            throw new InvalidOperationException("Bu şube için ziyaret yapılmış, çıkarılamaz");
+
+        assignmentDealer.IsDeleted = true;
+        assignmentDealer.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
     }
 
     #endregion

@@ -102,8 +102,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<PersonnelRequest> PersonnelRequests { get; set; }
 
     // FieldWorker - Dealer Management (Bayi Yönetimi)
-    public DbSet<Dealer> Dealers { get; set; }
-    public DbSet<DealerRequest> DealerRequests { get; set; }
+    public DbSet<CustomerDealer> CustomerDealers { get; set; }
+    public DbSet<CustomerDealerRequest> CustomerDealerRequests { get; set; }
+    public DbSet<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; }
 
     // Survey Invitations (Anket Davetiyeleri)
     public DbSet<SurveyInvitation> SurveyInvitations { get; set; }
@@ -187,8 +188,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<PersonnelRequest>().HasQueryFilter(e => !e.IsDeleted);
 
         // FieldWorker - Dealer Management
-        modelBuilder.Entity<Dealer>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<DealerRequest>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerDealer>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerDealerRequest>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<AssignmentCustomerDealer>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<EvaluationAttachment>().HasQueryFilter(e => !e.IsDeleted);
 
         // Performance Settings
@@ -331,57 +333,82 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<PersonnelRequest>()
             .HasIndex(pr => pr.EvaluationId);
 
-        // ===== Dealer İlişkileri =====
-        modelBuilder.Entity<Dealer>()
+        // ===== CustomerDealer İlişkileri =====
+        modelBuilder.Entity<CustomerDealer>()
             .HasOne(d => d.Customer)
-            .WithMany(c => c.Dealers)
+            .WithMany(c => c.CustomerDealers)
             .HasForeignKey(d => d.CustomerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Dealer indexleri
-        modelBuilder.Entity<Dealer>()
+        // CustomerDealer indexleri
+        modelBuilder.Entity<CustomerDealer>()
             .HasIndex(d => d.CustomerId);
-        modelBuilder.Entity<Dealer>()
+        modelBuilder.Entity<CustomerDealer>()
             .HasIndex(d => d.Code);
 
-        // ===== DealerRequest İlişkileri =====
-        modelBuilder.Entity<DealerRequest>()
+        // ===== CustomerDealerRequest İlişkileri =====
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasOne(dr => dr.Customer)
             .WithMany()
             .HasForeignKey(dr => dr.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<DealerRequest>()
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasOne(dr => dr.RequestedByUser)
             .WithMany()
             .HasForeignKey(dr => dr.RequestedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<DealerRequest>()
-            .HasOne(dr => dr.Dealer)
+        modelBuilder.Entity<CustomerDealerRequest>()
+            .HasOne(dr => dr.CustomerDealer)
             .WithMany()
-            .HasForeignKey(dr => dr.DealerId)
+            .HasForeignKey(dr => dr.CustomerDealerId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<DealerRequest>()
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasOne(dr => dr.ProcessedByUser)
             .WithMany()
             .HasForeignKey(dr => dr.ProcessedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // DealerRequest indexleri
-        modelBuilder.Entity<DealerRequest>()
+        // CustomerDealerRequest indexleri
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasIndex(dr => dr.StatusId);
-        modelBuilder.Entity<DealerRequest>()
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasIndex(dr => dr.CustomerId);
-        modelBuilder.Entity<DealerRequest>()
+        modelBuilder.Entity<CustomerDealerRequest>()
             .HasIndex(dr => dr.RequestedByUserId);
 
-        // ===== Evaluation - Dealer İlişkisi =====
+        // ===== AssignmentCustomerDealer İlişkileri =====
+        modelBuilder.Entity<AssignmentCustomerDealer>()
+            .HasOne(acd => acd.Assignment)
+            .WithMany(a => a.AssignmentCustomerDealers)
+            .HasForeignKey(acd => acd.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AssignmentCustomerDealer>()
+            .HasOne(acd => acd.CustomerDealer)
+            .WithMany(cd => cd.AssignmentCustomerDealers)
+            .HasForeignKey(acd => acd.CustomerDealerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AssignmentCustomerDealer>()
+            .HasOne(acd => acd.Evaluation)
+            .WithMany()
+            .HasForeignKey(acd => acd.EvaluationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // AssignmentCustomerDealer indexleri
+        modelBuilder.Entity<AssignmentCustomerDealer>()
+            .HasIndex(acd => acd.AssignmentId);
+        modelBuilder.Entity<AssignmentCustomerDealer>()
+            .HasIndex(acd => acd.CustomerDealerId);
+
+        // ===== Evaluation - CustomerDealer İlişkisi =====
         modelBuilder.Entity<Evaluation>()
-            .HasOne(e => e.Dealer)
+            .HasOne(e => e.CustomerDealer)
             .WithMany(d => d.Evaluations)
-            .HasForeignKey(e => e.DealerId)
+            .HasForeignKey(e => e.CustomerDealerId)
             .OnDelete(DeleteBehavior.SetNull);
 
         // Evaluation VisitId indexi

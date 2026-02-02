@@ -1446,14 +1446,14 @@ public static class DaysOfWeek
 }
 
 // ============================================================
-// DEALER TYPES (Bayi Tipleri)
+// CUSTOMER DEALER TYPES (Müşteri Bayi Tipleri)
 // ============================================================
-public static class DealerTypes
+public static class CustomerDealerTypes
 {
-    public static readonly TypeItem Retail = new(1, "Retail", "DealerType.Retail", "Perakende bayi", "bi-shop", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem Wholesale = new(2, "Wholesale", "DealerType.Wholesale", "Toptan bayi", "bi-box-seam", "bg-info", 2);
-    public static readonly TypeItem Franchise = new(3, "Franchise", "DealerType.Franchise", "Franchise bayi", "bi-building", "bg-warning text-dark", 3);
-    public static readonly TypeItem Authorized = new(4, "Authorized", "DealerType.Authorized", "Yetkili bayi", "bi-award", "bg-success", 4);
+    public static readonly TypeItem Retail = new(1, "Retail", "CustomerDealerType.Retail", "Perakende bayi", "bi-shop", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Wholesale = new(2, "Wholesale", "CustomerDealerType.Wholesale", "Toptan bayi", "bi-box-seam", "bg-info", 2);
+    public static readonly TypeItem Franchise = new(3, "Franchise", "CustomerDealerType.Franchise", "Franchise bayi", "bi-building", "bg-warning text-dark", 3);
+    public static readonly TypeItem Authorized = new(4, "Authorized", "CustomerDealerType.Authorized", "Yetkili bayi", "bi-award", "bg-success", 4);
 
     public static IEnumerable<TypeItem> All => new[] { Retail, Wholesale, Franchise, Authorized };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -1470,13 +1470,13 @@ public static class DealerTypes
 }
 
 // ============================================================
-// REQUEST STATUSES (Talep Durumlari)
+// CUSTOMER DEALER REQUEST STATUSES (Müşteri Bayi Talep Durumlari)
 // ============================================================
-public static class RequestStatuses
+public static class CustomerDealerRequestStatuses
 {
-    public static readonly TypeItem Pending = new(1, "Pending", "RequestStatus.Pending", "Beklemede - Henüz işlenmedi", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
-    public static readonly TypeItem Approved = new(2, "Approved", "RequestStatus.Approved", "Onaylandı", "bi-check-circle", "bg-success", 2);
-    public static readonly TypeItem Rejected = new(3, "Rejected", "RequestStatus.Rejected", "Reddedildi", "bi-x-circle", "bg-danger", 3);
+    public static readonly TypeItem Pending = new(1, "Pending", "CustomerDealerRequestStatus.Pending", "Beklemede - Henüz işlenmedi", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Approved = new(2, "Approved", "CustomerDealerRequestStatus.Approved", "Onaylandı", "bi-check-circle", "bg-success", 2);
+    public static readonly TypeItem Rejected = new(3, "Rejected", "CustomerDealerRequestStatus.Rejected", "Reddedildi", "bi-x-circle", "bg-danger", 3);
 
     public static IEnumerable<TypeItem> All => new[] { Pending, Approved, Rejected };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -1492,15 +1492,14 @@ public static class RequestStatuses
 }
 
 // ============================================================
-// REQUEST TYPES (Talep Tipleri)
+// CUSTOMER DEALER REQUEST TYPES (Müşteri Bayi Talep Tipleri)
 // ============================================================
-public static class RequestTypes
+public static class CustomerDealerRequestTypes
 {
-    public static readonly TypeItem NewDealer = new(1, "NewDealer", "RequestType.NewDealer", "Yeni bayi talebi", "bi-plus-circle", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem UpdateDealer = new(2, "UpdateDealer", "RequestType.UpdateDealer", "Bayi güncelleme talebi", "bi-pencil", "bg-info", 2);
-    public static readonly TypeItem NewPersonnel = new(3, "NewPersonnel", "RequestType.NewPersonnel", "Yeni personel talebi", "bi-person-plus", "bg-success", 3);
+    public static readonly TypeItem NewDealer = new(1, "NewDealer", "CustomerDealerRequestType.NewDealer", "Yeni bayi talebi", "bi-plus-circle", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem UpdateDealer = new(2, "UpdateDealer", "CustomerDealerRequestType.UpdateDealer", "Bayi güncelleme talebi", "bi-pencil", "bg-info", 2);
 
-    public static IEnumerable<TypeItem> All => new[] { NewDealer, UpdateDealer, NewPersonnel };
+    public static IEnumerable<TypeItem> All => new[] { NewDealer, UpdateDealer };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -1509,7 +1508,6 @@ public static class RequestTypes
     {
         public const int NewDealer = 1;
         public const int UpdateDealer = 2;
-        public const int NewPersonnel = 3;
     }
 }
 

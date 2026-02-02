@@ -4,10 +4,10 @@ using SecretCustomer.Core.Enums;
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
-/// Bayi - Müşterilere ait bayiler (FieldWorker ziyaretleri için)
+/// Müşteri Bayisi - Müşterilere ait bayiler/şubeler (FieldWorker ziyaretleri için)
 /// </summary>
-[ExcelTemplate("Bayi", Description = "Bayiler için Excel import/export", IsAvailable = true)]
-public class Dealer : BaseEntity
+[ExcelTemplate("Müşteri Bayisi", Description = "Müşteri bayileri için Excel import/export", IsAvailable = true)]
+public class CustomerDealer : BaseEntity
 {
     /// <summary>
     /// Bayi kodu - Otomatik üretilir (BAY-001, BAY-002, ...)
@@ -55,11 +55,17 @@ public class Dealer : BaseEntity
     public string? Email { get; set; }
 
     /// <summary>
-    /// Yetkili kişi adı
+    /// Yetkili kişi adı (manuel giriş)
     /// </summary>
     [ExcelColumn("Yetkili Kişi", 10, ColumnType = ExcelColumnTypes.Ids.Text,
         Description = "Bayi yetkili kişisi", SampleValue = "Ahmet Yılmaz")]
     public string? ContactPerson { get; set; }
+
+    /// <summary>
+    /// Yetkili kişi - CustomerPersonnel referansı (opsiyonel)
+    /// </summary>
+    public int? ContactPersonnelId { get; set; }
+    public CustomerPersonnel? ContactPersonnel { get; set; }
 
     /// <summary>
     /// Çalışma saatleri (JSON formatında)
@@ -74,7 +80,7 @@ public class Dealer : BaseEntity
         Description = "Bayi tipi",
         DropdownOptions = "[\"Perakende\", \"Toptan\", \"Franchise\", \"Yetkili Bayi\"]",
         SampleValue = "Perakende")]
-    public int DealerTypeId { get; set; } = DealerTypes.Ids.Retail;
+    public int DealerTypeId { get; set; } = CustomerDealerTypes.Ids.Retail;
 
     [ExcelColumn("Aktif", 12, ColumnType = ExcelColumnTypes.Ids.Boolean,
         Description = "Bayinin aktif olup olmadığı", SampleValue = "true")]
@@ -90,4 +96,5 @@ public class Dealer : BaseEntity
 
     // Navigation Properties
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
+    public ICollection<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; } = new List<AssignmentCustomerDealer>();
 }

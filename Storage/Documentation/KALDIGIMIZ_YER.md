@@ -33,11 +33,11 @@ FieldWorker modülü KURALLAR.md standartlarına uygun hale getirildi. Test edil
 
 ---
 
-## 📋 Önceki Oturum: Training Quiz Sistemi
+## ✅ Training Quiz Sistemi (Tamamlandı)
 
-### Kalan İşler
-- [ ] Quiz sistemini TEST ET
-- [ ] Ayrı hesaplama endpoint'i yaz
+- Quiz CRUD, soru/seçenek yönetimi
+- Katılımcı quiz submit ve puan hesaplama (`SubmitQuizAsync`)
+- Internal ve External katılımcı desteği
 
 ---
 

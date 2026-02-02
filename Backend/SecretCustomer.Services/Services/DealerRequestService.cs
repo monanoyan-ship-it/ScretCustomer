@@ -22,11 +22,11 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<PagedDealerRequestResult> GetAllAsync(DealerRequestFilterDto filter)
     {
-        var query = _context.DealerRequests
+        var query = _context.CustomerDealerRequests
             .Include(r => r.Customer)
             .Include(r => r.RequestedByUser)
             .Include(r => r.ProcessedByUser)
-            .Include(r => r.Dealer)
+            .Include(r => r.CustomerDealer)
             .AsQueryable();
 
         // Apply filters
@@ -36,7 +36,7 @@ public class DealerRequestService : IDealerRequestService
             query = query.Where(r =>
                 (r.Customer != null && r.Customer.CompanyName.ToLower().Contains(term)) ||
                 (r.RequestedByUser != null && (r.RequestedByUser.FirstName + " " + r.RequestedByUser.LastName).ToLower().Contains(term)) ||
-                (r.Dealer != null && r.Dealer.Name.ToLower().Contains(term)));
+                (r.CustomerDealer != null && r.CustomerDealer.Name.ToLower().Contains(term)));
         }
 
         if (filter.CustomerId.HasValue)
@@ -55,9 +55,9 @@ public class DealerRequestService : IDealerRequestService
         var totalCount = await query.CountAsync();
 
         // Get status counts
-        var pendingCount = await query.CountAsync(r => r.StatusId == RequestStatuses.Ids.Pending);
-        var approvedCount = await query.CountAsync(r => r.StatusId == RequestStatuses.Ids.Approved);
-        var rejectedCount = await query.CountAsync(r => r.StatusId == RequestStatuses.Ids.Rejected);
+        var pendingCount = await query.CountAsync(r => r.StatusId == CustomerDealerRequestStatuses.Ids.Pending);
+        var approvedCount = await query.CountAsync(r => r.StatusId == CustomerDealerRequestStatuses.Ids.Approved);
+        var rejectedCount = await query.CountAsync(r => r.StatusId == CustomerDealerRequestStatuses.Ids.Rejected);
 
         // Apply pagination
         var requests = await query
@@ -80,11 +80,11 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<DealerRequestDto?> GetByIdAsync(int id)
     {
-        var request = await _context.DealerRequests
+        var request = await _context.CustomerDealerRequests
             .Include(r => r.Customer)
             .Include(r => r.RequestedByUser)
             .Include(r => r.ProcessedByUser)
-            .Include(r => r.Dealer)
+            .Include(r => r.CustomerDealer)
             .FirstOrDefaultAsync(r => r.Id == id);
 
         return request == null ? null : MapToDto(request);
@@ -92,11 +92,11 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<List<DealerRequestDto>> GetMyRequestsAsync(int userId)
     {
-        var requests = await _context.DealerRequests
+        var requests = await _context.CustomerDealerRequests
             .Include(r => r.Customer)
             .Include(r => r.RequestedByUser)
             .Include(r => r.ProcessedByUser)
-            .Include(r => r.Dealer)
+            .Include(r => r.CustomerDealer)
             .Where(r => r.RequestedByUserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
@@ -106,17 +106,17 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<DealerRequestDto> CreateAsync(CreateDealerRequestDto dto, int requestedByUserId)
     {
-        var request = new Core.Entities.DealerRequest
+        var request = new Core.Entities.CustomerDealerRequest
         {
             CustomerId = dto.CustomerId,
             RequestedByUserId = requestedByUserId,
             RequestTypeId = dto.RequestTypeId,
-            StatusId = RequestStatuses.Ids.Pending,
-            DealerId = dto.DealerId,
+            StatusId = CustomerDealerRequestStatuses.Ids.Pending,
+            CustomerDealerId = dto.CustomerDealerId,
             RequestDataJson = dto.RequestDataJson
         };
 
-        _context.DealerRequests.Add(request);
+        _context.CustomerDealerRequests.Add(request);
         await _context.SaveChangesAsync();
 
         return (await GetByIdAsync(request.Id))!;
@@ -124,7 +124,7 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<DealerRequestDto?> ProcessAsync(int id, ProcessDealerRequestDto dto, int processedByUserId)
     {
-        var request = await _context.DealerRequests
+        var request = await _context.CustomerDealerRequests
             .Include(r => r.Customer)
             .FirstOrDefaultAsync(r => r.Id == id);
 
@@ -132,16 +132,16 @@ public class DealerRequestService : IDealerRequestService
             return null;
 
         // Check if already processed
-        if (request.StatusId != RequestStatuses.Ids.Pending)
+        if (request.StatusId != CustomerDealerRequestStatuses.Ids.Pending)
             throw new InvalidOperationException("Bu talep zaten işlenmiş.");
 
-        request.StatusId = dto.Approve ? RequestStatuses.Ids.Approved : RequestStatuses.Ids.Rejected;
+        request.StatusId = dto.Approve ? CustomerDealerRequestStatuses.Ids.Approved : CustomerDealerRequestStatuses.Ids.Rejected;
         request.AdminResponse = dto.AdminResponse;
         request.ProcessedByUserId = processedByUserId;
         request.ProcessedAt = DateTime.UtcNow;
 
         // If approved and it's a new dealer request, create the dealer
-        if (dto.Approve && request.RequestTypeId == RequestTypes.Ids.NewDealer)
+        if (dto.Approve && request.RequestTypeId == CustomerDealerRequestTypes.Ids.NewDealer)
         {
             try
             {
@@ -167,7 +167,7 @@ public class DealerRequestService : IDealerRequestService
                     };
 
                     var dealer = await _dealerService.CreateAsync(createDealerDto);
-                    request.DealerId = dealer.Id;
+                    request.CustomerDealerId = dealer.Id;
                 }
             }
             catch (JsonException ex)
@@ -176,7 +176,7 @@ public class DealerRequestService : IDealerRequestService
             }
         }
         // If approved and it's an update request, update the dealer
-        else if (dto.Approve && request.RequestTypeId == RequestTypes.Ids.UpdateDealer && request.DealerId.HasValue)
+        else if (dto.Approve && request.RequestTypeId == CustomerDealerRequestTypes.Ids.UpdateDealer && request.CustomerDealerId.HasValue)
         {
             try
             {
@@ -200,7 +200,7 @@ public class DealerRequestService : IDealerRequestService
                         IsActive = true
                     };
 
-                    await _dealerService.UpdateAsync(request.DealerId.Value, updateDealerDto);
+                    await _dealerService.UpdateAsync(request.CustomerDealerId.Value, updateDealerDto);
                 }
             }
             catch (JsonException ex)
@@ -216,7 +216,7 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var request = await _context.DealerRequests.FindAsync(id);
+        var request = await _context.CustomerDealerRequests.FindAsync(id);
         if (request == null)
             return false;
 
@@ -227,11 +227,11 @@ public class DealerRequestService : IDealerRequestService
 
     public async Task<int> GetPendingCountAsync()
     {
-        return await _context.DealerRequests
-            .CountAsync(r => r.StatusId == RequestStatuses.Ids.Pending);
+        return await _context.CustomerDealerRequests
+            .CountAsync(r => r.StatusId == CustomerDealerRequestStatuses.Ids.Pending);
     }
 
-    private static DealerRequestDto MapToDto(Core.Entities.DealerRequest request)
+    private static DealerRequestDto MapToDto(Core.Entities.CustomerDealerRequest request)
     {
         return new DealerRequestDto
         {
@@ -244,8 +244,8 @@ public class DealerRequestService : IDealerRequestService
                 : null,
             RequestTypeId = request.RequestTypeId,
             StatusId = request.StatusId,
-            DealerId = request.DealerId,
-            DealerName = request.Dealer?.Name,
+            CustomerDealerId = request.CustomerDealerId,
+            CustomerDealerName = request.CustomerDealer?.Name,
             RequestDataJson = request.RequestDataJson,
             AdminResponse = request.AdminResponse,
             ProcessedByUserId = request.ProcessedByUserId,

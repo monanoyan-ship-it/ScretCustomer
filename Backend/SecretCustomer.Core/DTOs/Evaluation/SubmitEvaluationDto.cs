@@ -90,6 +90,11 @@ public class SubmitEvaluationDto
     public DateTime? ControlDate { get; set; }
 
     /// <summary>
+    /// Ziyaret edilen bayi ID (FieldWorker ziyaretleri için)
+    /// </summary>
+    public int? CustomerDealerId { get; set; }
+
+    /// <summary>
     /// Kontrol saati
     /// </summary>
     public string? ControlTime { get; set; }

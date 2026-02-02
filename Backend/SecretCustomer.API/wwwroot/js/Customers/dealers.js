@@ -12,6 +12,7 @@ function DealersViewModel() {
 
     // Data
     self.dealers = ko.observableArray([]);
+    self.availablePersonnel = ko.observableArray([]);
 
     // Filter object (used in view)
     self.filter = {
@@ -210,6 +211,20 @@ function DealersViewModel() {
             });
     };
 
+    // Load personnel for customer (yetkili kişi seçimi için)
+    self.loadPersonnel = function() {
+        if (!self.customerId) return;
+
+        ApiService.get('/customer-personnel/by-customer/' + self.customerId)
+            .then(function(data) {
+                self.availablePersonnel(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading personnel:', error);
+                self.availablePersonnel([]);
+            });
+    };
+
     // Build filter params from active filters (çoklu değer desteği)
     self.buildFilterParams = function() {
         var dealerTypeIds = [];
@@ -297,6 +312,7 @@ function DealersViewModel() {
             phone: ko.observable(''),
             email: ko.observable(''),
             contactPerson: ko.observable(''),
+            contactPersonnelId: ko.observable(null),
             latitude: ko.observable(null),
             longitude: ko.observable(null),
             notes: ko.observable(''),
@@ -317,6 +333,7 @@ function DealersViewModel() {
             phone: ko.observable(dealer.phone || ''),
             email: ko.observable(dealer.email || ''),
             contactPerson: ko.observable(dealer.contactPerson || ''),
+            contactPersonnelId: ko.observable(dealer.contactPersonnelId || null),
             latitude: ko.observable(dealer.latitude),
             longitude: ko.observable(dealer.longitude),
             notes: ko.observable(dealer.notes || ''),
@@ -339,6 +356,7 @@ function DealersViewModel() {
 
         self.isSaving(true);
 
+        var contactPersonnelIdVal = typeof editing.contactPersonnelId === 'function' ? editing.contactPersonnelId() : editing.contactPersonnelId;
         var data = {
             name: name.trim(),
             dealerTypeId: parseInt(typeof editing.dealerTypeId === 'function' ? editing.dealerTypeId() : editing.dealerTypeId),
@@ -348,6 +366,7 @@ function DealersViewModel() {
             phone: (typeof editing.phone === 'function' ? editing.phone() : editing.phone) || null,
             email: (typeof editing.email === 'function' ? editing.email() : editing.email) || null,
             contactPerson: (typeof editing.contactPerson === 'function' ? editing.contactPerson() : editing.contactPerson) || null,
+            contactPersonnelId: contactPersonnelIdVal ? parseInt(contactPersonnelIdVal) : null,
             latitude: (typeof editing.latitude === 'function' ? editing.latitude() : editing.latitude) || null,
             longitude: (typeof editing.longitude === 'function' ? editing.longitude() : editing.longitude) || null,
             notes: (typeof editing.notes === 'function' ? editing.notes() : editing.notes) || null,
@@ -433,6 +452,7 @@ function DealersViewModel() {
     self.init = function() {
         self.loadCustomer();
         self.loadDealers();
+        self.loadPersonnel();
     };
 
     // Start

@@ -16,6 +16,9 @@ function AssignmentEditViewModel(data) {
     self.dueDate = ko.observable(data.dueDate ? data.dueDate.split('T')[0] : '');
     self.notes = ko.observable(data.notes || '');
 
+    // CustomerDealer (Şube) seçimleri
+    self.customerDealerIds = ko.observableArray(data.customerDealerIds || []);
+
     // Assignment type (user, fieldworker, external)
     self.assignmentType = ko.observable(
         data.assignedFieldWorkerId ? 'fieldworker' :
@@ -36,12 +39,18 @@ function AssignmentEditViewModel(data) {
         dto.assignedCustomerPersonnelId = null;
         dto.externalEmail = null;
         dto.externalName = null;
+        dto.customerDealerIds = null;
 
         // Set only the relevant assignee field
         if (self.assignmentType() === 'user' && self.assignedUserId()) {
-            dto.assignedUserId = self.assignedUserId();
+            dto.assignedUserId = parseInt(self.assignedUserId());
         } else if (self.assignmentType() === 'fieldworker' && self.assignedFieldWorkerId()) {
-            dto.assignedFieldWorkerId = self.assignedFieldWorkerId();
+            dto.assignedFieldWorkerId = parseInt(self.assignedFieldWorkerId());
+            // Şube seçimleri sadece FieldWorker atamasında gönderilir
+            var dealerIds = self.customerDealerIds();
+            if (dealerIds && dealerIds.length > 0) {
+                dto.customerDealerIds = dealerIds.map(function(id) { return parseInt(id); });
+            }
         } else if (self.assignmentType() === 'external') {
             dto.externalEmail = self.externalEmail() || null;
             dto.externalName = self.externalName() || null;
@@ -115,9 +124,9 @@ function ReassignViewModel() {
         };
 
         if (self.newAssigneeType() === 'user' && self.newAssignedUserId()) {
-            dto.newAssignedUserId = self.newAssignedUserId();
+            dto.newAssignedUserId = parseInt(self.newAssignedUserId());
         } else if (self.newAssigneeType() === 'fieldworker' && self.newAssignedFieldWorkerId()) {
-            dto.newAssignedFieldWorkerId = self.newAssignedFieldWorkerId();
+            dto.newAssignedFieldWorkerId = parseInt(self.newAssignedFieldWorkerId());
         } else if (self.newAssigneeType() === 'external') {
             dto.newExternalEmail = self.newExternalEmail() || null;
             dto.newExternalName = self.newExternalName() || null;
@@ -199,8 +208,11 @@ function AssignmentsViewModel() {
     self.availableProjects = ko.observableArray([]);
     self.availableEvaluators = ko.observableArray([]);
     self.availableFieldWorkers = ko.observableArray([]);
+    self.availableDealers = ko.observableArray([]);
+    self.isDealersLoading = ko.observable(false);
     self.selectedProjectChecklistName = ko.observable('');
     self.selectedProjectType = ko.observable('');
+    self.selectedProjectCustomerId = ko.observable(null);
 
     // Project Picker
     self.projectPickerSearch = ko.observable('');
@@ -412,6 +424,15 @@ function AssignmentsViewModel() {
     self.periodModalError = ko.observable('');
     self.isSavingPeriod = ko.observable(false);
 
+    // Add Dealer Modal State
+    self.addDealerModal = {
+        isLoading: ko.observable(false),
+        isSaving: ko.observable(false),
+        availableDealers: ko.observableArray([]),
+        assignmentId: ko.observable(null),
+        customerId: ko.observable(null)
+    };
+
     // Total count for server-side pagination
     self.totalCount = ko.observable(0);
     self.totalPages = ko.computed(function() {
@@ -588,6 +609,8 @@ function AssignmentsViewModel() {
         self.selectedProjectChecklistName('');
         self.selectedProjectForDisplay(null);
         self.selectedProjectType('');
+        self.selectedProjectCustomerId(null);
+        self.availableDealers([]);
         self.projectPickerSearch('');
         self.isProjectPickerOpen(false);
         self.isModalOpen(true);
@@ -619,15 +642,45 @@ function AssignmentsViewModel() {
         self.selectedProjectChecklistName(project.checklistName || '');
         self.selectedProjectForDisplay(project);
         self.selectedProjectType(project.projectType || '');
+        self.selectedProjectCustomerId(project.customerId || null);
         self.isProjectPickerOpen(false);
         self.projectPickerSearch('');
 
         // Proje tipine göre atama türünü otomatik seç
         if (project.projectType === 'PhysicalAudit' || project.projectType === 'MysteryShopping') {
             assignment.assignmentType('fieldworker');
+            // Şubeleri yükle
+            if (project.customerId) {
+                self.loadDealersByCustomer(project.customerId);
+            }
         } else {
             assignment.assignmentType('user');
         }
+
+        // Şube seçimlerini temizle
+        assignment.customerDealerIds([]);
+    };
+
+    // Müşteriye göre şubeleri yükle
+    self.loadDealersByCustomer = function(customerId) {
+        if (!customerId) {
+            self.availableDealers([]);
+            return;
+        }
+
+        self.isDealersLoading(true);
+        fetch('/api/dealers/customer/' + customerId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.availableDealers(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading dealers:', error);
+                self.availableDealers([]);
+            })
+            .finally(function() {
+                self.isDealersLoading(false);
+            });
     };
 
     self.clearSelectedProject = function() {
@@ -638,9 +691,12 @@ function AssignmentsViewModel() {
         assignment.checklistId('');
         assignment.assignedUserId('');
         assignment.assignedFieldWorkerId('');
+        assignment.customerDealerIds([]);
         self.selectedProjectChecklistName('');
         self.selectedProjectForDisplay(null);
         self.selectedProjectType('');
+        self.selectedProjectCustomerId(null);
+        self.availableDealers([]);
     };
 
     self.onProjectChange = function() {
@@ -1094,6 +1150,117 @@ function AssignmentsViewModel() {
     // ===== Download Project File =====
     self.downloadProjectFile = function(file) {
         window.location.href = '/api/project-files/' + file.id + '/download';
+    };
+
+    // ===== Dealer Management =====
+    self.openAddDealerModal = function() {
+        var detail = self.selectedDetail();
+        if (!detail || !detail.customerId) {
+            toastr.warning(T('Assignment.NoCustomer', 'Bu atamaya ait müşteri bulunamadı.'));
+            return;
+        }
+
+        self.addDealerModal.assignmentId(detail.id);
+        self.addDealerModal.customerId(detail.customerId);
+        self.addDealerModal.isLoading(true);
+        self.addDealerModal.availableDealers([]);
+
+        // Get all dealers for this customer
+        fetch('/api/dealers/customer/' + detail.customerId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(allDealers) {
+                // Filter out already assigned dealers
+                var assignedDealerIds = (detail.dealers || []).map(function(d) { return d.customerDealerId; });
+                var availableDealers = allDealers.filter(function(d) {
+                    return assignedDealerIds.indexOf(d.id) === -1;
+                });
+                self.addDealerModal.availableDealers(availableDealers);
+            })
+            .catch(function(error) {
+                console.error('Error loading dealers:', error);
+                toastr.error(T('Dealer.LoadError', 'Şubeler yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.addDealerModal.isLoading(false);
+            });
+
+        var modal = new bootstrap.Modal(document.getElementById('addDealerModal'));
+        modal.show();
+    };
+
+    self.addDealerToAssignment = function(customerDealerId) {
+        var assignmentId = self.addDealerModal.assignmentId();
+        if (!assignmentId || !customerDealerId) return;
+
+        self.addDealerModal.isSaving(true);
+
+        fetch('/api/assignments/' + assignmentId + '/dealers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ customerDealerId: customerDealerId })
+        })
+            .then(function(res) {
+                if (!res.ok) {
+                    return res.json().then(function(err) {
+                        throw new Error(err.message || T('Dealer.AddError', 'Şube eklenemedi'));
+                    });
+                }
+                return res.json();
+            })
+            .then(function(addedDealer) {
+                toastr.success(T('Dealer.AddSuccess', 'Şube başarıyla eklendi.'));
+
+                // Close the add dealer modal
+                var addModal = bootstrap.Modal.getInstance(document.getElementById('addDealerModal'));
+                if (addModal) addModal.hide();
+
+                // Refresh detail modal to show new dealer
+                self.showDetail({ id: assignmentId });
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                toastr.error(error.message || T('Dealer.AddError', 'Şube eklenirken bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.addDealerModal.isSaving(false);
+            });
+    };
+
+    self.removeDealerFromAssignment = function(assignmentId, customerDealerId) {
+        if (!assignmentId || !customerDealerId) return;
+
+        showConfirmModal({
+            title: T('Dealer.RemoveTitle', 'Şubeyi Çıkar'),
+            message: T('Dealer.RemoveConfirm', 'Bu şubeyi atamadan çıkarmak istediğinizden emin misiniz?'),
+            type: 'danger',
+            confirmText: T('Button.Remove', 'Çıkar'),
+            confirmIcon: 'bi-trash',
+            onConfirm: function() {
+                fetch('/api/assignments/' + assignmentId + '/dealers/' + customerDealerId, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            return res.json().then(function(err) {
+                                throw new Error(err.message || T('Dealer.RemoveError', 'Şube çıkarılamadı'));
+                            });
+                        }
+                        return res.json();
+                    })
+                    .then(function() {
+                        toastr.success(T('Dealer.RemoveSuccess', 'Şube başarıyla çıkarıldı.'));
+
+                        // Refresh detail modal
+                        self.showDetail({ id: assignmentId });
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        toastr.error(error.message || T('Dealer.RemoveError', 'Şube çıkarılırken bir hata oluştu.'));
+                    });
+            }
+        });
     };
 
     // ===== Evaluation Modal =====

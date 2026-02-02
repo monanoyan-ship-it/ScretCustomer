@@ -475,6 +475,52 @@
                                 <!-- /ko -->
                             </div>
 
+                            <!-- CustomerDealer (Şube) Selection - FieldWorker atamaları için -->
+                            <div data-bind="visible: assignmentType() === 'fieldworker' && $parent.selectedProjectForDisplay()" class="mt-3">
+                                <label class="form-label">
+                                    <i class="bi bi-shop me-1"></i>@Html.T("Assignment.Branches", "Ziyaret Edilecek Şubeler")
+                                    <span class="text-muted small">(@Html.T("Common.Optional", "İsteğe bağlı"))</span>
+                                </label>
+                                <!-- Loading state -->
+                                <div data-bind="visible: $parent.isDealersLoading()" class="text-center py-2">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <small class="ms-2">@Html.T("Common.Loading", "Yükleniyor...")</small>
+                                </div>
+                                <!-- Dealer list -->
+                                <div data-bind="visible: !$parent.isDealersLoading()">
+                                    <!-- ko if: $parent.availableDealers().length > 0 -->
+                                    <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                                        <!-- ko foreach: $parent.availableDealers -->
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   data-bind="value: id, checked: $parents[1].editingAssignment().customerDealerIds, attr: { id: 'dealer_' + id }">
+                                            <label class="form-check-label" data-bind="attr: { for: 'dealer_' + id }">
+                                                <span data-bind="text: name"></span>
+                                                <!-- ko if: code -->
+                                                <small class="text-muted">(<span data-bind="text: code"></span>)</small>
+                                                <!-- /ko -->
+                                                <!-- ko if: city || district -->
+                                                <small class="text-muted d-block">
+                                                    <i class="bi bi-geo-alt"></i>
+                                                    <span data-bind="text: (district || '') + (district && city ? ', ' : '') + (city || '')"></span>
+                                                </small>
+                                                <!-- /ko -->
+                                            </label>
+                                        </div>
+                                        <!-- /ko -->
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <span data-bind="text: customerDealerIds().length"></span> / <span data-bind="text: $parent.availableDealers().length"></span> @Html.T("Assignment.BranchesSelected", "şube seçildi")
+                                    </small>
+                                    <!-- /ko -->
+                                    <!-- ko if: $parent.availableDealers().length === 0 -->
+                                    <div class="alert alert-warning py-2 mb-0">
+                                        <i class="bi bi-info-circle me-1"></i>@Html.T("Assignment.NoBranchesFound", "Bu müşteriye ait şube bulunamadı.")
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+
                             <!-- External Email -->
                             <div data-bind="visible: assignmentType() === 'external'">
                                 <div class="row">
@@ -705,6 +751,85 @@
                         <small>@Html.T("Assignment.AddPeriodHint", "Dönem eklemek için 'Dönem Ekle' butonunu kullanın")</small>
                     </div>
 
+                    <!-- Şubeler (Dealers) - Saha Çalışanı Atamaları için -->
+                    <div data-bind="visible: $data.dealers && $data.dealers.length > 0">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-shop"></i> @Html.T("Assignment.AssignedBranches", "Atanan Şubeler")</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.openAddDealerModal">
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("Assignment.AddBranch", "Şube Ekle")
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Dealer.Name", "Şube Adı")</th>
+                                        <th>@Html.T("Dealer.Location", "Konum")</th>
+                                        <th>@Html.T("Common.Status", "Durum")</th>
+                                        <th class="text-center">@Html.T("Common.Actions", "İşlemler")</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: dealers">
+                                    <tr>
+                                        <td>
+                                            <span data-bind="text: customerDealerName"></span>
+                                            <!-- ko if: customerDealerCode -->
+                                            <small class="text-muted d-block">(<span data-bind="text: customerDealerCode"></span>)</small>
+                                            <!-- /ko -->
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <span data-bind="text: (district || '') + (district && city ? ', ' : '') + (city || '') || '-'"></span>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <!-- ko if: hasEvaluation -->
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>@Html.T("Status.Visited", "Ziyaret Edildi")
+                                            </span>
+                                            <!-- ko if: evaluationScore -->
+                                            <small class="text-muted d-block" data-bind="text: evaluationScore.toFixed(1) + '%'"></small>
+                                            <!-- /ko -->
+                                            <!-- /ko -->
+                                            <!-- ko ifnot: hasEvaluation -->
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-hourglass-split me-1"></i>@Html.T("Status.Pending", "Bekliyor")
+                                            </span>
+                                            <!-- /ko -->
+                                        </td>
+                                        <td class="text-center">
+                                            <!-- ko ifnot: hasEvaluation -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="@Html.T("Button.Remove", "Çıkar")"
+                                                    data-bind="click: function() { $parents[1].removeDealerFromAssignment($parent.id, customerDealerId); }">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                            <!-- /ko -->
+                                            <!-- ko if: hasEvaluation -->
+                                            <span class="text-muted small">-</span>
+                                            <!-- /ko -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Şube yok mesajı (Saha Çalışanı ataması ve customerId varsa) -->
+                    <div data-bind="visible: (!$data.dealers || $data.dealers.length === 0) && $data.customerId">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-shop"></i> @Html.T("Assignment.AssignedBranches", "Atanan Şubeler")</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.openAddDealerModal">
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("Assignment.AddBranch", "Şube Ekle")
+                            </button>
+                        </div>
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-shop fs-3"></i>
+                            <p class="mb-0 mt-2">@Html.T("Assignment.NoBranches", "Henüz şube atanmamış")</p>
+                        </div>
+                    </div>
+
                     <!-- Proje Dosyaları -->
                     <div data-bind="visible: $data.projectFiles && $data.projectFiles.length > 0">
                         <hr>
@@ -859,6 +984,59 @@
                             <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Saving", "Kaydediliyor...")
                         </span>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Dealer Modal -->
+    <div class="modal fade" id="addDealerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-shop"></i> @Html.T("Assignment.AddBranch", "Şube Ekle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading state -->
+                    <div data-bind="visible: addDealerModal.isLoading()" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">@Html.T("Common.Loading", "Yükleniyor...")</p>
+                    </div>
+                    <!-- Dealer list -->
+                    <div data-bind="visible: !addDealerModal.isLoading()">
+                        <p class="text-muted small">@Html.T("Assignment.SelectBranchToAdd", "Eklemek istediğiniz şubeyi seçin:")</p>
+                        <!-- ko if: addDealerModal.availableDealers().length > 0 -->
+                        <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                            <!-- ko foreach: addDealerModal.availableDealers -->
+                            <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                    data-bind="click: function() { $root.addDealerToAssignment(id); }, enable: !$root.addDealerModal.isSaving()">
+                                <div>
+                                    <span data-bind="text: name"></span>
+                                    <!-- ko if: code -->
+                                    <small class="text-muted">(<span data-bind="text: code"></span>)</small>
+                                    <!-- /ko -->
+                                    <!-- ko if: city || district -->
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span data-bind="text: (district || '') + (district && city ? ', ' : '') + (city || '')"></span>
+                                    </small>
+                                    <!-- /ko -->
+                                </div>
+                                <i class="bi bi-plus-circle text-primary"></i>
+                            </button>
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: addDealerModal.availableDealers().length === 0 -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-1"></i>@Html.T("Assignment.AllBranchesAssigned", "Tüm şubeler zaten atanmış veya bu müşteriye ait şube bulunmuyor.")
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
                 </div>
             </div>
         </div>

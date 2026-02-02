@@ -263,11 +263,21 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<ModelStateValidationFilter>();
+})
+.AddJsonOptions(options =>
+{
+    // String'den number okumaya izin ver (JS select elementlerinden gelen değerler için)
+    options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
 });
 // Also add API controllers
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ModelStateValidationFilter>();
+})
+.AddJsonOptions(options =>
+{
+    // String'den number okumaya izin ver (JS select elementlerinden gelen değerler için)
+    options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
 });
 
 var app = builder.Build();

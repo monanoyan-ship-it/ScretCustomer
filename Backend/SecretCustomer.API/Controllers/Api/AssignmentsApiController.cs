@@ -702,6 +702,87 @@ public class AssignmentsApiController : BaseApiController
 
     #endregion
 
+    #region ŞUBE (DEALER) YÖNETİMİ
+
+    /// <summary>
+    /// Get dealers assigned to an assignment
+    /// </summary>
+    [HttpGet("{id}/dealers")]
+    [Authorize(Roles = "Admin,QualitySpecialist,FieldWorker")]
+    public async Task<IActionResult> GetAssignmentDealers(int id)
+    {
+        try
+        {
+            var dealers = await _assignmentService.GetAssignmentDealersAsync(id);
+            return Ok(dealers);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading dealers for assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Şubeler yüklenirken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Add a dealer to an assignment
+    /// </summary>
+    [HttpPost("{id}/dealers")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
+    public async Task<IActionResult> AddDealerToAssignment(int id, [FromBody] AddDealerToAssignmentDto dto)
+    {
+        try
+        {
+            var dealer = await _assignmentService.AddDealerToAssignmentAsync(id, dto.CustomerDealerId);
+            return Ok(dealer);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding dealer to assignment {Id}", id);
+            return StatusCode(500, CreateErrorResponse("Şube eklenirken bir hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Remove a dealer from an assignment
+    /// </summary>
+    [HttpDelete("{id}/dealers/{customerDealerId}")]
+    [Authorize(Roles = "Admin,QualitySpecialist")]
+    public async Task<IActionResult> RemoveDealerFromAssignment(int id, int customerDealerId)
+    {
+        try
+        {
+            await _assignmentService.RemoveDealerFromAssignmentAsync(id, customerDealerId);
+            return Ok(new { message = "Şube atamadan çıkarıldı." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing dealer {DealerId} from assignment {Id}", customerDealerId, id);
+            return StatusCode(500, CreateErrorResponse("Şube çıkarılırken bir hata oluştu.", ex));
+        }
+    }
+
+    #endregion
+
     #region HELPER METHODS
 
     /// <summary>

@@ -5,150 +5,296 @@
 <div id="fieldworker-visits-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <span class="h2 mb-0">
-                <i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.Visits", "Ziyaretlerim")
-            </span>
-        </div>
-        <button class="btn btn-primary" data-bind="click: showNewVisitModal">
-            <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewVisit", "Yeni Ziyaret")
-        </button>
+        <h2><i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.Visits", "Ziyaretlerim")</h2>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
-                    <input type="text" class="form-control" placeholder="@Html.T("FieldWorker.SearchVisits", "Ziyaret ID, Bayi...")"
-                           data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'" autocomplete="off">
+    <!-- Loading State -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'assignments' }, click: function() { activeTab('assignments'); }" href="#">
+                <i class="bi bi-clipboard-check"></i> @Html.T("FieldWorker.Assignments", "Atamalar")
+                <span class="badge bg-primary" data-bind="text: assignments().length"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'visits' }, click: function() { setActiveTab('visits'); }" href="#">
+                <i class="bi bi-geo-alt"></i> @Html.T("FieldWorker.VisitsList", "Ziyaretler")
+                <span class="badge bg-success" data-bind="text: totalCount()"></span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- ==================== ATAMALAR TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'assignments' && !isLoading()">
+        <!-- Assignments Loading -->
+        <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="text-muted mt-2">@Html.T("FieldWorker.LoadingAssignments", "Atamalar yükleniyor...")</p>
+        </div>
+
+        <div data-bind="visible: !isAssignmentsLoading()">
+            <!-- Search -->
+            <div class="mb-3">
+                <div class="input-group" style="max-width: 400px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'"
+                           placeholder="@Html.T("FieldWorker.SearchAssignments", "Proje veya müşteri ara...")" autocomplete="off">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Common.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsText: 'projectName', optionsValue: 'projectId', optionsCaption: '@Html.T("Common.All", "Tumu")'"></select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
-                    <select class="form-select" data-bind="value: filter.statusId">
-                        <option value="">@Html.T("Common.All", "Tumu")</option>
-                        <option value="1">@Html.T("Status.Draft", "Taslak")</option>
-                        <option value="2">@Html.T("Status.Completed", "Tamamlandi")</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                    <button class="btn btn-primary" data-bind="click: applyFilters">
-                        <i class="bi bi-search me-1"></i>@Html.T("Common.Filter", "Filtrele")
-                    </button>
-                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters">
-                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Clear", "Temizle")
-                    </button>
-                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div data-bind="visible: filteredAssignments().length === 0" class="alert alert-info">
+                <i class="bi bi-info-circle"></i> @Html.T("FieldWorker.NoAssignments", "Aktif atama bulunmamaktadır.")
+            </div>
+        </div>
+
+        <!-- Assignments Table -->
+        <div class="card shadow-sm" data-bind="visible: !isAssignmentsLoading() && filteredAssignments().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.T("Common.Project", "Proje")</th>
+                            <th>@Html.T("Common.Customer", "Müşteri")</th>
+                            <th>@Html.T("FieldWorker.DealerCount", "Bayi Sayısı")</th>
+                            <th>@Html.T("FieldWorker.CompletedVisits", "Tamamlanan")</th>
+                            <th>@Html.T("Common.Period", "Dönem")</th>
+                            <th style="width: 180px;">@Html.T("Common.Actions", "İşlemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: filteredAssignments">
+                        <tr>
+                            <td><strong data-bind="text: projectName"></strong></td>
+                            <td data-bind="text: customerName"></td>
+                            <td>
+                                <span class="badge bg-secondary" data-bind="text: customerDealerCount"></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" data-bind="text: completedVisits"></span>
+                                <span class="text-muted">/ <span data-bind="text: customerDealerCount"></span></span>
+                            </td>
+                            <td>
+                                <small>
+                                    <span data-bind="text: startDate ? new Date(startDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                    -
+                                    <span data-bind="text: endDate ? new Date(endDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                </small>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-primary" data-bind="click: $parent.startNewVisit">
+                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewVisit", "Ziyaret Ekle")
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Loading -->
-    <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">@Html.T("Common.Loading", "Yukleniyor...")</span>
-        </div>
-    </div>
+    <!-- ==================== ZİYARETLER TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'visits' && !isLoading()">
+        <!-- Filter Bar -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Filter Type Select -->
+                    <select class="form-select form-select-sm" style="width: auto;" data-bind="value: selectedFilterType">
+                        <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
+                        <option value="search">@Html.T("Common.Search", "Arama")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
+                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                    </select>
 
-    <!-- Visits List -->
-    <div data-bind="visible: !isLoading()">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">
-                        @Html.T("Common.Total", "Toplam") <strong data-bind="text: totalCount"></strong> @Html.T("FieldWorker.Visit", "ziyaret")
+                    <!-- Search Filter Input -->
+                    <!-- ko if: selectedFilterType() === 'search' -->
+                    <div class="d-flex gap-1">
+                        <input type="text" class="form-control form-control-sm" style="width: 200px;"
+                               data-bind="value: tempFilter.searchTerm" placeholder="@Html.T("FieldWorker.SearchVisits", "Ziyaret ID, Bayi...")" autocomplete="off">
+                        <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Project Filter Input -->
+                    <!-- ko if: selectedFilterType() === 'project' -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto;" data-bind="value: tempFilter.projectId, options: projects, optionsText: 'projectName', optionsValue: 'projectId', optionsCaption: '@Html.T("Common.Select", "Seçiniz")'"></select>
+                        <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Status Filter Input -->
+                    <!-- ko if: selectedFilterType() === 'status' -->
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" style="width: auto;" data-bind="value: tempFilter.status">
+                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
+                            <option value="1">@Html.T("Status.Draft", "Taslak")</option>
+                            <option value="2">@Html.T("Status.Completed", "Tamamlandı")</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Date Range Filter Input -->
+                    <!-- ko if: selectedFilterType() === 'dateRange' -->
+                    <div class="d-flex gap-1 align-items-center">
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: tempFilter.startDate" autocomplete="off">
+                        <span>-</span>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: tempFilter.endDate" autocomplete="off">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-calendar3"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">Bugün</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">Dün</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">Bu Hafta</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">Geçen Hafta</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">Bu Ay</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">Geçen Ay</a></li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Active Filters (Chips) -->
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
                     </span>
-                </div>
+                    <!-- /ko -->
 
-                <!-- Empty State -->
-                <div data-bind="visible: visits().length === 0" class="text-center py-5">
-                    <i class="bi bi-clipboard text-muted empty-state-icon"></i>
-                    <p class="mt-3 text-muted">@Html.T("FieldWorker.NoVisits", "Henuz ziyaret bulunmamaktadir.")</p>
-                    <button class="btn btn-primary" data-bind="click: showNewVisitModal">
-                        <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewVisit", "Yeni Ziyaret")
+                    <!-- Clear All Filters -->
+                    <!-- ko if: activeFilters().length > 0 -->
+                    <button class="btn btn-sm btn-outline-danger" data-bind="click: clearAllFilters">
+                        <i class="bi bi-x-lg"></i> @Html.T("Common.ClearAll", "Temizle")
                     </button>
+                    <!-- /ko -->
                 </div>
+            </div>
+        </div>
 
-                <!-- Table -->
-                <div data-bind="visible: visits().length > 0" class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Html.T("FieldWorker.VisitId", "Ziyaret ID")</th>
-                                <th>@Html.T("Dealer.Name", "Bayi")</th>
-                                <th>@Html.T("Common.Project", "Proje")</th>
-                                <th>@Html.T("Common.Score", "Puan")</th>
-                                <th>@Html.T("Common.Status", "Durum")</th>
-                                <th>@Html.T("Common.Date", "Tarih")</th>
-                                <th class="actions-col">@Html.T("Common.Actions", "Islemler")</th>
-                            </tr>
-                        </thead>
-                        <tbody data-bind="foreach: visits">
-                            <tr>
-                                <td><span class="badge bg-primary" data-bind="text: visitId"></span></td>
-                                <td>
-                                    <div>
-                                        <div class="fw-medium" data-bind="text: dealerName || 'Belirtilmemis'"></div>
-                                        <small class="text-muted" data-bind="text: dealerCity || ''"></small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <div data-bind="text: projectName"></div>
-                                        <small class="text-muted" data-bind="text: customerName"></small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <!-- ko if: scorePercentage -->
-                                    <span class="badge bg-success" data-bind="text: scorePercentage.toFixed(2) + '%'"></span>
-                                    <!-- /ko -->
-                                    <!-- ko ifnot: scorePercentage -->
-                                    <span class="text-muted">-</span>
-                                    <!-- /ko -->
-                                </td>
-                                <td>
-                                    <span class="badge" data-bind="css: $parent.getStatusBadgeClass(statusId), text: statusName"></span>
-                                </td>
-                                <td>
-                                    <small data-bind="text: $parent.formatDate(createdAt)"></small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showVisitDetail($data); }" title="@Html.T("Common.View", "Goruntule")">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <!-- ko if: statusId === 1 -->
-                                        <button class="btn btn-outline-warning" data-bind="click: function() { $parent.editVisit($data); }" title="@Html.T("Common.Edit", "Duzenle")">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
+        <!-- Visits Loading -->
+        <div data-bind="visible: isVisitsLoading()" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+        </div>
+
+        <!-- Visits List -->
+        <div data-bind="visible: !isVisitsLoading()">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">
+                            @Html.T("Common.Total", "Toplam") <strong data-bind="text: totalCount"></strong> @Html.T("FieldWorker.Visit", "ziyaret")
+                        </span>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div data-bind="visible: visits().length === 0" class="text-center py-5">
+                        <i class="bi bi-clipboard text-muted" style="font-size: 3rem;"></i>
+                        <p class="mt-3 text-muted">@Html.T("FieldWorker.NoVisits", "Henüz ziyaret bulunmamaktadır.")</p>
+                    </div>
+
+                    <!-- Table -->
+                    <div data-bind="visible: visits().length > 0" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Html.T("FieldWorker.VisitId", "Ziyaret ID")</th>
+                                    <th>@Html.T("Dealer.Name", "Bayi")</th>
+                                    <th>@Html.T("Common.Project", "Proje")</th>
+                                    <th>@Html.T("Common.Score", "Puan")</th>
+                                    <th>@Html.T("Common.Status", "Durum")</th>
+                                    <th>@Html.T("Common.Date", "Tarih")</th>
+                                    <th class="actions-col">@Html.T("Common.Actions", "İşlemler")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: visits">
+                                <tr>
+                                    <td><span class="badge bg-primary" data-bind="text: visitId"></span></td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-medium" data-bind="text: customerDealerName || 'Belirtilmemiş'"></div>
+                                            <small class="text-muted" data-bind="text: customerDealerCity || ''"></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div data-bind="text: projectName"></div>
+                                            <small class="text-muted" data-bind="text: customerName"></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- ko if: scorePercentage -->
+                                        <span class="badge bg-success" data-bind="text: scorePercentage.toFixed(2) + '%'"></span>
                                         <!-- /ko -->
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                        <!-- ko ifnot: scorePercentage -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td>
+                                        <span class="badge" data-bind="css: $parent.getStatusBadgeClass(statusId), text: statusName"></span>
+                                    </td>
+                                    <td>
+                                        <small data-bind="text: $parent.formatDate(createdAt)"></small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" data-bind="click: function() { $parent.showVisitDetail($data); }" title="@Html.T("Common.View", "Görüntüle")">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <!-- ko if: statusId === 1 -->
+                                            <button class="btn btn-outline-warning" data-bind="click: function() { $parent.editVisit($data); }" title="@Html.T("Common.Edit", "Düzenle")">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <!-- /ko -->
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                <div data-bind="visible: totalPages() > 1" class="d-flex justify-content-center mt-3">
-                    <nav>
-                        <ul class="pagination mb-0">
-                            <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
-                                <button class="page-link" data-bind="click: prevPage">&laquo;</button>
-                            </li>
-                            <li class="page-item active">
-                                <span class="page-link" data-bind="text: currentPage() + ' / ' + totalPages()"></span>
-                            </li>
-                            <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
-                                <button class="page-link" data-bind="click: nextPage">&raquo;</button>
-                            </li>
-                        </ul>
-                    </nav>
+                    <!-- Pagination -->
+                    <div data-bind="visible: totalPages() > 1" class="d-flex justify-content-center mt-3">
+                        <nav>
+                            <ul class="pagination mb-0">
+                                <li class="page-item" data-bind="css: { disabled: currentPage() <= 1 }">
+                                    <button class="page-link" data-bind="click: prevPage">&laquo;</button>
+                                </li>
+                                <li class="page-item active">
+                                    <span class="page-link" data-bind="text: currentPage() + ' / ' + totalPages()"></span>
+                                </li>
+                                <li class="page-item" data-bind="css: { disabled: currentPage() >= totalPages() }">
+                                    <button class="page-link" data-bind="click: nextPage">&raquo;</button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,11 +314,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Common.Project", "Proje") <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: newVisit.projectId, options: projects, optionsText: 'projectName', optionsValue: 'projectId', optionsCaption: '@Html.T("Common.Select", "Seciniz")'"></select>
+                            <select class="form-select" data-bind="value: newVisit.projectId, options: projects, optionsText: 'projectName', optionsValue: 'projectId', optionsCaption: '@Html.T("Common.Select", "Seçiniz")'"></select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.Name", "Bayi") <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: newVisit.dealerId, options: filteredDealers, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seciniz")', enable: newVisit.projectId()"></select>
+                            <select class="form-select" data-bind="value: newVisit.customerDealerId, options: filteredDealers, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz")', enable: newVisit.projectId()"></select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("FieldWorker.ControlDate", "Kontrol Tarihi")</label>
@@ -184,18 +330,72 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">@Html.T("FieldWorker.Comment", "Yorum")</label>
-                            <textarea class="form-control" rows="3" data-bind="value: newVisit.auditorComment" placeholder="@Html.T("FieldWorker.CommentPlaceholder", "Ziyaret hakkinda notlariniz...")" autocomplete="off"></textarea>
+                            <textarea class="form-control" rows="3" data-bind="value: newVisit.auditorComment" placeholder="@Html.T("FieldWorker.CommentPlaceholder", "Ziyaret hakkında notlarınız...")" autocomplete="off"></textarea>
                         </div>
                     </div>
 
-                    <div class="alert alert-info mt-3">
+                    <!-- Sorular Yükleniyor -->
+                    <div data-bind="visible: isLoadingQuestions" class="text-center py-4 mt-3">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2 text-muted">@Html.T("FieldWorker.LoadingQuestions", "Sorular yükleniyor...")</p>
+                    </div>
+
+                    <!-- Sorular -->
+                    <div data-bind="visible: !isLoadingQuestions() && questions().length > 0" class="mt-3">
+                        <h6 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-list-check me-2"></i>@Html.T("FieldWorker.EvaluationQuestions", "Değerlendirme Soruları")
+                        </h6>
+                        <div class="questions-container" style="max-height: 400px; overflow-y: auto;">
+                            <!-- ko foreach: questions -->
+                            <div class="card mb-2">
+                                <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <span class="fw-medium" data-bind="text: text"></span>
+                                            <!-- ko if: isRequired -->
+                                            <span class="text-danger">*</span>
+                                            <!-- /ko -->
+                                        </div>
+                                        <div class="ms-3" style="min-width: 150px;">
+                                            <!-- ko if: questionType === 'MultipleChoice' || questionType === 'SingleChoice' -->
+                                            <select class="form-select form-select-sm" data-bind="value: selectedValue, options: options, optionsText: 'text', optionsValue: 'value', optionsCaption: '@Html.T("Common.Select", "Seçiniz")'"></select>
+                                            <!-- /ko -->
+                                            <!-- ko if: questionType === 'Numeric' || questionType === 'Scale' -->
+                                            <input type="number" class="form-control form-control-sm" data-bind="value: selectedValue" placeholder="@Html.T("Common.Score", "Puan")">
+                                            <!-- /ko -->
+                                            <!-- ko if: questionType === 'Text' -->
+                                            <input type="text" class="form-control form-control-sm" data-bind="value: selectedValue" placeholder="@Html.T("Common.Answer", "Cevap")">
+                                            <!-- /ko -->
+                                            <!-- ko if: questionType === 'YesNo' -->
+                                            <select class="form-select form-select-sm" data-bind="value: selectedValue">
+                                                <option value="">@Html.T("Common.Select", "Seçiniz")</option>
+                                                <option value="1">@Html.T("Common.Yes", "Evet")</option>
+                                                <option value="0">@Html.T("Common.No", "Hayır")</option>
+                                            </select>
+                                            <!-- /ko -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+
+                    <!-- Proje seçilmediğinde bilgi mesajı -->
+                    <div data-bind="visible: !newVisit.projectId() && !isLoadingQuestions()" class="alert alert-info mt-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        @Html.T("FieldWorker.VisitNote", "Ziyaret kaydedildikten sonra degerlendirme formunu doldurabilirsiniz.")
+                        @Html.T("FieldWorker.SelectProjectFirst", "Soruları görmek için önce proje seçiniz.")
+                    </div>
+
+                    <!-- Soru yoksa bilgi mesajı -->
+                    <div data-bind="visible: newVisit.projectId() && !isLoadingQuestions() && questions().length === 0" class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        @Html.T("FieldWorker.NoQuestions", "Bu proje için soru bulunamadı.")
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bind="click: closeNewVisitModal">
-                        @Html.T("Common.Cancel", "Iptal")
+                        @Html.T("Common.Cancel", "İptal")
                     </button>
                     <button type="button" class="btn btn-outline-warning" data-bind="click: saveAsDraft, disable: isSaving">
                         <i class="bi bi-file-earmark me-1"></i>@Html.T("Common.SaveAsDraft", "Taslak Kaydet")
@@ -220,7 +420,7 @@
             <div class="modal-content" data-bind="with: selectedVisit">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.VisitDetail", "Ziyaret Detayi")
+                        <i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.VisitDetail", "Ziyaret Detayı")
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closeDetailModal"></button>
                 </div>
@@ -235,11 +435,11 @@
                                 </tr>
                                 <tr>
                                     <td class="text-muted">@Html.T("Dealer.Name", "Bayi"):</td>
-                                    <td data-bind="text: dealerName || '-'"></td>
+                                    <td data-bind="text: customerDealerName || '-'"></td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted">@Html.T("Dealer.City", "Sehir"):</td>
-                                    <td data-bind="text: dealerCity || '-'"></td>
+                                    <td class="text-muted">@Html.T("Dealer.City", "Şehir"):</td>
+                                    <td data-bind="text: customerDealerCity || '-'"></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted">@Html.T("Common.Project", "Proje"):</td>
@@ -260,12 +460,12 @@
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h6>@Html.T("FieldWorker.EvaluationInfo", "Degerlendirme Bilgileri")</h6>
+                            <h6>@Html.T("FieldWorker.EvaluationInfo", "Değerlendirme Bilgileri")</h6>
                             <!-- ko if: $parent.visitEvaluation() -->
                             <div data-bind="with: $parent.visitEvaluation">
                                 <table class="table table-sm">
                                     <tr>
-                                        <td class="text-muted">@Html.T("Evaluation.Id", "Degerlendirme No"):</td>
+                                        <td class="text-muted">@Html.T("Evaluation.Id", "Değerlendirme No"):</td>
                                         <td><strong data-bind="text: id"></strong></td>
                                     </tr>
                                     <tr>
@@ -292,7 +492,7 @@
                             <!-- ko ifnot: $parent.visitEvaluation() -->
                             <div class="alert alert-secondary">
                                 <i class="bi bi-info-circle me-2"></i>
-                                @Html.T("FieldWorker.LoadingEvaluation", "Degerlendirme bilgileri yukleniyor...")
+                                @Html.T("FieldWorker.LoadingEvaluation", "Değerlendirme bilgileri yükleniyor...")
                             </div>
                             <!-- /ko -->
                         </div>
@@ -301,12 +501,12 @@
                 <div class="modal-footer">
                     <!-- ko if: statusId === 1 -->
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.continueEvaluation">
-                        <i class="bi bi-pencil-square me-1"></i>@Html.T("FieldWorker.ContinueEvaluation", "Degerlendirmeye Devam Et")
+                        <i class="bi bi-pencil-square me-1"></i>@Html.T("FieldWorker.ContinueEvaluation", "Değerlendirmeye Devam Et")
                     </button>
                     <!-- /ko -->
                     <!-- ko if: statusId === 2 -->
                     <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.continueEvaluation">
-                        <i class="bi bi-eye me-1"></i>@Html.T("FieldWorker.ViewEvaluation", "Degerlendirmeyi Gor")
+                        <i class="bi bi-eye me-1"></i>@Html.T("FieldWorker.ViewEvaluation", "Değerlendirmeyi Gör")
                     </button>
                     <!-- /ko -->
                     <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">@Html.T("Common.Close", "Kapat")</button>
