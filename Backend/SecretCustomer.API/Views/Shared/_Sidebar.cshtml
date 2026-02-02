@@ -23,6 +23,14 @@
                 </a>
             </li>
 
+            <!-- Dashboard - FieldWorker -->
+            <li class="nav-item" data-bind="visible: isFieldWorker">
+                <a href="/FieldWorker" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    @Html.T("Menu.Dashboard", "Dashboard")
+                </a>
+            </li>
+
             <!-- Ziyaretler - FieldWorker -->
             <li class="nav-item" data-bind="visible: isFieldWorker">
                 <a href="/FieldWorker/Visits" class="nav-link text-white" data-bind="click: closeSidebar">

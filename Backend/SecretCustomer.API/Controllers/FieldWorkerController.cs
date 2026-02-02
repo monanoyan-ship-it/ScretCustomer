@@ -20,4 +20,12 @@ public class FieldWorkerController : Controller
     {
         return View();
     }
+
+    public IActionResult VisitPopup(int? assignmentId, int? evaluationId, int? dealerId)
+    {
+        ViewBag.AssignmentId = assignmentId;
+        ViewBag.EvaluationId = evaluationId;
+        ViewBag.DealerId = dealerId;
+        return View();
+    }
 }

@@ -15,6 +15,7 @@ function FieldWorkerDashboardViewModel() {
     // Data
     self.assignedProjects = ko.observableArray([]);
     self.recentVisits = ko.observableArray([]);
+    self.pendingDealers = ko.observableArray([]);
 
     // Status helpers
     self.getStatusBadgeClass = function(statusId) {
@@ -33,28 +34,67 @@ function FieldWorkerDashboardViewModel() {
         return date.toLocaleDateString('tr-TR');
     };
 
+    // Google Maps'te aç
+    self.openInMaps = function(dealer) {
+        var lat = dealer.latitude || 0;
+        var lng = dealer.longitude || 0;
+
+        if (dealer.googleMapsUrl) {
+            window.open(dealer.googleMapsUrl, '_blank');
+        } else {
+            var url = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+            window.open(url, '_blank');
+        }
+    };
+
+    // Ziyaret popup'ını aç
+    self.startVisit = function(dealer) {
+        var url = '/FieldWorker/VisitPopup?assignmentId=' + dealer.assignmentId + '&dealerId=' + dealer.dealerId;
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open(url, 'FieldWorkerVisitPopup',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+    };
+
     // Load dashboard data
     self.loadDashboard = function() {
         self.isLoading(true);
 
-        ApiService.get('/fieldworker/dashboard')
-            .then(function(data) {
-                self.userName(data.userName || '');
-                self.totalVisits(data.totalVisits || 0);
-                self.todayVisits(data.todayVisits || 0);
-                self.thisWeekVisits(data.thisWeekVisits || 0);
-                self.pendingRequests(data.pendingRequests || 0);
-                self.assignedProjects(data.assignedProjects || []);
-                self.recentVisits(data.recentVisits || []);
-            })
-            .catch(function(error) {
-                console.error('Error loading dashboard:', error);
-                toastr.error(error.message || T('FieldWorker.LoadDashboardError', 'Dashboard yuklenirken hata olustu.'));
-            })
-            .finally(function() {
-                self.isLoading(false);
-            });
+        // Dashboard ve pending dealers'ı paralel yükle
+        Promise.all([
+            ApiService.get('/fieldworker/dashboard'),
+            ApiService.get('/fieldworker/pending-dealers')
+        ])
+        .then(function(results) {
+            var dashboardData = results[0];
+            var pendingData = results[1];
+
+            self.userName(dashboardData.userName || '');
+            self.totalVisits(dashboardData.totalVisits || 0);
+            self.todayVisits(dashboardData.todayVisits || 0);
+            self.thisWeekVisits(dashboardData.thisWeekVisits || 0);
+            self.pendingRequests(dashboardData.pendingRequests || 0);
+            self.assignedProjects(dashboardData.assignedProjects || []);
+            self.recentVisits(dashboardData.recentVisits || []);
+            self.pendingDealers(pendingData || []);
+        })
+        .catch(function(error) {
+            console.error('Error loading dashboard:', error);
+            toastr.error(error.message || T('FieldWorker.LoadDashboardError', 'Dashboard yuklenirken hata olustu.'));
+        })
+        .finally(function() {
+            self.isLoading(false);
+        });
     };
+
+    // Popup kapandığında yenile
+    window.addEventListener('message', function(event) {
+        if (event.data === 'visitSaved' || event.data === 'evaluationSaved') {
+            self.loadDashboard();
+        }
+    });
 
     // Initialize
     self.loadDashboard();
@@ -62,7 +102,8 @@ function FieldWorkerDashboardViewModel() {
 
 // Translation keys used in this module
 var TRANSLATION_KEYS = [
-    'FieldWorker.LoadDashboardError'
+    'FieldWorker.LoadDashboardError',
+    'FieldWorker.NoLocationData'
 ];
 
 // Initialize when document is ready

@@ -8,10 +8,10 @@ public class DashboardController : Controller
 {
     public IActionResult Index()
     {
-        // FieldWorker kullanıcılarını Görevlerim sayfasına yönlendir
+        // FieldWorker kullanıcılarını kendi dashboard'una yönlendir
         if (User.IsInRole("FieldWorker"))
         {
-            return RedirectToAction("Index", "MyAssignments");
+            return RedirectToAction("Index", "FieldWorker");
         }
 
         // Müşteri personelini CustomerPortal dashboard'una yönlendir

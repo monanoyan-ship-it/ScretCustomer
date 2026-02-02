@@ -96,6 +96,50 @@ public class FieldWorkerApiController : BaseApiController
     }
 
     /// <summary>
+    /// Tüm atamalardaki ziyaret bekleyen şubeler (Dashboard için)
+    /// </summary>
+    [HttpGet("pending-dealers")]
+    public async Task<IActionResult> GetPendingDealers()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == 0)
+                return Unauthorized(CreateErrorResponse("Kullanıcı kimliği bulunamadı"));
+
+            var dealers = await _fieldWorkerService.GetPendingDealersAsync(userId);
+            return Ok(dealers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting pending dealers");
+            return StatusCode(500, CreateErrorResponse("Bekleyen şubeler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Atama için erişilebilir bayiler (ziyaret edilmemiş olanlar)
+    /// </summary>
+    [HttpGet("dealers-for-assignment")]
+    public async Task<IActionResult> GetDealersForAssignment([FromQuery] int assignmentId)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == 0)
+                return Unauthorized(CreateErrorResponse("Kullanıcı kimliği bulunamadı"));
+
+            var dealers = await _fieldWorkerService.GetDealersForAssignmentAsync(userId, assignmentId);
+            return Ok(dealers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting dealers for assignment {AssignmentId}", assignmentId);
+            return StatusCode(500, CreateErrorResponse("Bayiler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
     /// Ziyaretler listesi
     /// </summary>
     [HttpGet("visits")]

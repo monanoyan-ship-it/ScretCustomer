@@ -45,13 +45,13 @@ public class FieldWorkerService : IFieldWorkerService
             .CountAsync();
 
         // Bekleyen talepler
-        var pendingRequests = await _context.DealerRequests
-            .Where(r => r.RequestedByUserId == userId && r.StatusId == RequestStatuses.Ids.Pending)
+        var pendingRequests = await _context.CustomerDealerRequests
+            .Where(r => r.RequestedByUserId == userId && r.StatusId == CustomerDealerRequestStatuses.Ids.Pending)
             .CountAsync();
 
         // Son 10 ziyaret
         var recentVisits = await _context.Evaluations
-            .Include(e => e.Dealer)
+            .Include(e => e.CustomerDealer)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -62,9 +62,9 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 EvaluationId = e.Id,
                 VisitId = e.VisitId,
-                DealerId = e.DealerId,
-                DealerName = e.Dealer != null ? e.Dealer.Name : null,
-                DealerCity = e.Dealer != null ? e.Dealer.City : null,
+                CustomerDealerId = e.CustomerDealerId,
+                CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
                 CustomerName = e.Assignment.Project.Customer.CompanyName,
                 ProjectName = e.Assignment.Project.Name,
                 ScorePercentage = e.ScorePercentage,
@@ -92,16 +92,22 @@ public class FieldWorkerService : IFieldWorkerService
         var assignments = await _context.Assignments
             .Include(a => a.Project)
                 .ThenInclude(p => p.Customer)
-            .Where(a => a.AssignedUserId == userId && !a.IsCompleted)
+            .Include(a => a.Checklist)
+            .Where(a => a.AssignedUserId == userId && !a.IsCompleted && !a.IsDeleted)
             .ToListAsync();
 
         var projectIds = assignments.Select(a => a.ProjectId).Distinct().ToList();
 
-        // Her proje için bayi sayısı
-        var dealerCounts = await _context.Dealers
-            .Where(d => projectIds.Select(pid =>
-                _context.Projects.Where(p => p.Id == pid).Select(p => p.CustomerId).FirstOrDefault()
-            ).Contains(d.CustomerId))
+        // Projelerin müşteri ID'lerini topla
+        var customerIds = assignments
+            .Where(a => a.Project?.CustomerId != null)
+            .Select(a => a.Project.CustomerId!.Value)
+            .Distinct()
+            .ToList();
+
+        // Her müşteri için bayi sayısı
+        var dealerCounts = await _context.CustomerDealers
+            .Where(d => customerIds.Contains(d.CustomerId))
             .GroupBy(d => d.CustomerId)
             .Select(g => new { CustomerId = g.Key, Count = g.Count() })
             .ToListAsync();
@@ -128,11 +134,14 @@ public class FieldWorkerService : IFieldWorkerService
                 ProjectName = project.Name,
                 CustomerId = project.CustomerId ?? 0,
                 CustomerName = project.Customer?.CompanyName ?? "",
-                DealerCount = dealerCount,
+                CustomerDealerCount = dealerCount,
                 CompletedVisits = completedVisits,
                 TotalAssignments = totalAssignments,
                 StartDate = project.StartDate,
-                EndDate = project.EndDate
+                EndDate = project.EndDate,
+                AssignmentId = assignment.Id,
+                ChecklistId = assignment.ChecklistId,
+                ChecklistName = assignment.Checklist?.Name ?? ""
             });
         }
 
@@ -150,7 +159,7 @@ public class FieldWorkerService : IFieldWorkerService
             .Distinct()
             .ToListAsync();
 
-        var dealers = await _context.Dealers
+        var dealers = await _context.CustomerDealers
             .Include(d => d.Customer)
             .Where(d => assignedCustomerIds.Contains(d.CustomerId) && d.IsActive)
             .OrderBy(d => d.Name)
@@ -159,8 +168,8 @@ public class FieldWorkerService : IFieldWorkerService
         // Her bayi için ziyaret istatistikleri
         var dealerIds = dealers.Select(d => d.Id).ToList();
         var visitStats = await _context.Evaluations
-            .Where(e => e.DealerId != null && dealerIds.Contains(e.DealerId.Value) && e.VisitId != null)
-            .GroupBy(e => e.DealerId)
+            .Where(e => e.CustomerDealerId != null && dealerIds.Contains(e.CustomerDealerId.Value) && e.VisitId != null)
+            .GroupBy(e => e.CustomerDealerId)
             .Select(g => new
             {
                 DealerId = g.Key,
@@ -195,6 +204,113 @@ public class FieldWorkerService : IFieldWorkerService
         }).ToList();
     }
 
+    public async Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId)
+    {
+        // Atamayı bul
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId && a.AssignedUserId == userId && !a.IsDeleted);
+
+        if (assignment == null)
+            return new List<FieldWorkerDealerDto>();
+
+        // Bu atama için zaten ziyaret edilmiş bayileri bul
+        var visitedDealerIds = await _context.Evaluations
+            .Where(e => e.AssignmentId == assignmentId && e.CustomerDealerId != null && !e.IsDeleted)
+            .Select(e => e.CustomerDealerId!.Value)
+            .Distinct()
+            .ToListAsync();
+
+        // Projenin müşterisinin bayilerini getir (ziyaret edilmemişler)
+        var dealers = await _context.CustomerDealers
+            .Include(d => d.Customer)
+            .Where(d => d.CustomerId == assignment.Project.CustomerId && d.IsActive)
+            .Where(d => !visitedDealerIds.Contains(d.Id))
+            .OrderBy(d => d.Name)
+            .ToListAsync();
+
+        return dealers.Select(d => new FieldWorkerDealerDto
+        {
+            Id = d.Id,
+            Code = d.Code,
+            Name = d.Name,
+            Address = d.Address,
+            City = d.City,
+            District = d.District,
+            Latitude = d.Latitude,
+            Longitude = d.Longitude,
+            Phone = d.Phone,
+            ContactPerson = d.ContactPerson,
+            DealerTypeId = d.DealerTypeId,
+            CustomerId = d.CustomerId,
+            CustomerName = d.Customer?.CompanyName ?? "",
+            VisitCount = 0,
+            LastVisitDate = null,
+            LastVisitScore = null
+        }).ToList();
+    }
+
+    public async Task<List<PendingDealerDto>> GetPendingDealersAsync(int userId)
+    {
+        // Kullanıcının aktif atamalarını al
+        var assignments = await _context.Assignments
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Customer)
+            .Include(a => a.Checklist)
+            .Where(a => a.AssignedUserId == userId && !a.IsDeleted && !a.IsCompleted)
+            .ToListAsync();
+
+        if (!assignments.Any())
+            return new List<PendingDealerDto>();
+
+        var result = new List<PendingDealerDto>();
+
+        foreach (var assignment in assignments)
+        {
+            // Bu atama için ziyaret edilmiş bayi ID'leri
+            var visitedDealerIds = await _context.Evaluations
+                .Where(e => e.AssignmentId == assignment.Id && e.CustomerDealerId != null && !e.IsDeleted)
+                .Select(e => e.CustomerDealerId!.Value)
+                .Distinct()
+                .ToListAsync();
+
+            // Projenin müşterisinin ziyaret edilmemiş bayileri
+            var pendingDealers = await _context.CustomerDealers
+                .Where(d => d.CustomerId == assignment.Project.CustomerId && d.IsActive)
+                .Where(d => !visitedDealerIds.Contains(d.Id))
+                .OrderBy(d => d.City)
+                .ThenBy(d => d.Name)
+                .ToListAsync();
+
+            foreach (var dealer in pendingDealers)
+            {
+                result.Add(new PendingDealerDto
+                {
+                    DealerId = dealer.Id,
+                    DealerCode = dealer.Code,
+                    DealerName = dealer.Name,
+                    Address = dealer.Address,
+                    City = dealer.City,
+                    District = dealer.District,
+                    Phone = dealer.Phone,
+                    ContactPerson = dealer.ContactPerson,
+                    Latitude = dealer.Latitude,
+                    Longitude = dealer.Longitude,
+                    AssignmentId = assignment.Id,
+                    ProjectId = assignment.ProjectId,
+                    ProjectName = assignment.Project?.Name ?? "",
+                    CustomerName = assignment.Project?.Customer?.CompanyName ?? "",
+                    ChecklistId = assignment.ChecklistId,
+                    ChecklistName = assignment.Checklist?.Name ?? "",
+                    ProjectStartDate = assignment.Project?.StartDate,
+                    ProjectEndDate = assignment.Project?.EndDate
+                });
+            }
+        }
+
+        return result;
+    }
+
     public async Task<PagedVisitResult> GetVisitsAsync(int userId, VisitFilterDto filter)
     {
         var user = await _context.Users.FindAsync(userId);
@@ -202,7 +318,7 @@ public class FieldWorkerService : IFieldWorkerService
             throw new InvalidOperationException("Kullanıcı bulunamadı");
 
         var query = _context.Evaluations
-            .Include(e => e.Dealer)
+            .Include(e => e.CustomerDealer)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -212,8 +328,8 @@ public class FieldWorkerService : IFieldWorkerService
         if (filter.ProjectId.HasValue)
             query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
 
-        if (filter.DealerId.HasValue)
-            query = query.Where(e => e.DealerId == filter.DealerId.Value);
+        if (filter.CustomerDealerId.HasValue)
+            query = query.Where(e => e.CustomerDealerId == filter.CustomerDealerId.Value);
 
         if (filter.CustomerId.HasValue)
             query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
@@ -249,7 +365,7 @@ public class FieldWorkerService : IFieldWorkerService
             var term = filter.SearchTerm.ToLower();
             query = query.Where(e =>
                 (e.VisitId != null && e.VisitId.ToLower().Contains(term)) ||
-                (e.Dealer != null && e.Dealer.Name.ToLower().Contains(term)));
+                (e.CustomerDealer != null && e.CustomerDealer.Name.ToLower().Contains(term)));
         }
 
         var totalCount = await query.CountAsync();
@@ -262,9 +378,9 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 EvaluationId = e.Id,
                 VisitId = e.VisitId,
-                DealerId = e.DealerId,
-                DealerName = e.Dealer != null ? e.Dealer.Name : null,
-                DealerCity = e.Dealer != null ? e.Dealer.City : null,
+                CustomerDealerId = e.CustomerDealerId,
+                CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
                 CustomerName = e.Assignment.Project.Customer.CompanyName,
                 ProjectName = e.Assignment.Project.Name,
                 ScorePercentage = e.ScorePercentage,
@@ -290,7 +406,7 @@ public class FieldWorkerService : IFieldWorkerService
             return null;
 
         return await _context.Evaluations
-            .Include(e => e.Dealer)
+            .Include(e => e.CustomerDealer)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -299,9 +415,9 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 EvaluationId = e.Id,
                 VisitId = e.VisitId,
-                DealerId = e.DealerId,
-                DealerName = e.Dealer != null ? e.Dealer.Name : null,
-                DealerCity = e.Dealer != null ? e.Dealer.City : null,
+                CustomerDealerId = e.CustomerDealerId,
+                CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
                 CustomerName = e.Assignment.Project.Customer.CompanyName,
                 ProjectName = e.Assignment.Project.Name,
                 ScorePercentage = e.ScorePercentage,
@@ -318,97 +434,230 @@ public class FieldWorkerService : IFieldWorkerService
         if (user == null)
             throw new InvalidOperationException("Kullanıcı bulunamadı");
 
-        // Atama kontrolü - kullanıcının bu projeye atanmış olması gerekir
+        // Atama kontrolü
         var assignment = await _context.Assignments
-            .FirstOrDefaultAsync(a => a.ProjectId == dto.ProjectId &&
-                                      a.ChecklistId == dto.ChecklistId &&
-                                      a.AssignedUserId == userId);
+            .Include(a => a.Checklist)
+                .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
+            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId &&
+                                      a.AssignedUserId == userId &&
+                                      !a.IsDeleted);
 
         if (assignment == null)
-            throw new InvalidOperationException("Bu proje için atamanız bulunmamaktadır.");
+            throw new InvalidOperationException("Bu atama için yetkiniz bulunmamaktadır.");
 
-        // VisitId üret
-        var visitId = await GenerateVisitIdAsync();
-
-        var evaluation = new Evaluation
+        // Mevcut evaluation var mı kontrol et (güncelleme)
+        Evaluation? evaluation = null;
+        if (dto.EvaluationId.HasValue && dto.EvaluationId.Value > 0)
         {
-            AssignmentId = assignment.Id,
-            VisitId = visitId,
-            DealerId = dto.DealerId,
-            StatusId = dto.IsDraft ? EvaluationStatuses.Ids.Draft : EvaluationStatuses.Ids.Completed,
-            ControlDate = dto.ControlDate,
-            ControlTime = dto.ControlTime,
-            EvaluationComment = dto.AuditorComment,
-            CreatedBy = user.Username
-        };
-
-        _context.Evaluations.Add(evaluation);
-        await _context.SaveChangesAsync();
-
-        // Cevapları ekle (basit format - detaylı form Evaluations sayfasından doldurulacak)
-        if (dto.Answers.Any())
-        {
-            foreach (var answerDto in dto.Answers)
-            {
-                var answer = new Answer
-                {
-                    EvaluationId = evaluation.Id,
-                    QuestionId = answerDto.QuestionId,
-                    AnswerText = answerDto.TextAnswer,
-                    AnswerNumeric = answerDto.NumericAnswer.HasValue ? (int?)answerDto.NumericAnswer.Value : null,
-                    Notes = answerDto.Notes
-                };
-
-                _context.Answers.Add(answer);
-            }
-            await _context.SaveChangesAsync();
+            evaluation = await _context.Evaluations
+                .Include(e => e.Answers)
+                .FirstOrDefaultAsync(e => e.Id == dto.EvaluationId.Value && !e.IsDeleted);
         }
 
-        return evaluation.Id;
-    }
-
-    public async Task<bool> UpdateVisitAsync(int userId, int evaluationId, CreateVisitDto dto)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-            return false;
-
-        var evaluation = await _context.Evaluations
-            .Include(e => e.Answers)
-            .FirstOrDefaultAsync(e => e.Id == evaluationId && e.CreatedBy == user.Username);
-
+        // Yeni evaluation oluştur veya mevcut olanı güncelle
         if (evaluation == null)
-            return false;
+        {
+            var visitId = await GenerateVisitIdAsync();
+            evaluation = new Evaluation
+            {
+                AssignmentId = dto.AssignmentId,
+                VisitId = visitId,
+                EvaluatorId = userId,
+                StatusId = EvaluationStatuses.Ids.InProgress,
+                StartedAt = DateTime.UtcNow,
+                CreatedBy = user.Username
+            };
+            _context.Evaluations.Add(evaluation);
+        }
 
-        // Sadece taslak durumundakiler güncellenebilir
-        if (evaluation.StatusId != EvaluationStatuses.Ids.Draft)
-            throw new InvalidOperationException("Sadece taslak durumundaki ziyaretler güncellenebilir.");
+        // Checklist sorularını al
+        var allQuestions = assignment.Checklist.Questions.Where(q => !q.IsDeleted).ToList();
 
-        evaluation.DealerId = dto.DealerId;
-        evaluation.StatusId = dto.IsDraft ? EvaluationStatuses.Ids.Draft : EvaluationStatuses.Ids.Completed;
-        evaluation.ControlDate = dto.ControlDate;
-        evaluation.ControlTime = dto.ControlTime;
-        evaluation.EvaluationComment = dto.AuditorComment;
+        // Puan hesapla (Maximum scoring)
+        var scoreResult = CalculateVisitScore(allQuestions, dto.Answers);
 
-        // Mevcut cevapları sil ve yenilerini ekle
-        _context.Answers.RemoveRange(evaluation.Answers);
+        // Mevcut cevapları temizle
+        if (evaluation.Answers.Any())
+        {
+            _context.Answers.RemoveRange(evaluation.Answers);
+        }
 
+        // Cevapları ekle
         foreach (var answerDto in dto.Answers)
         {
+            var question = allQuestions.FirstOrDefault(q => q.Id == answerDto.QuestionId);
+            if (question == null) continue;
+
             var answer = new Answer
             {
                 EvaluationId = evaluation.Id,
                 QuestionId = answerDto.QuestionId,
                 AnswerText = answerDto.TextAnswer,
                 AnswerNumeric = answerDto.NumericAnswer.HasValue ? (int?)answerDto.NumericAnswer.Value : null,
-                Notes = answerDto.Notes
+                GivenPoints = answerDto.GivenPoints,
+                Notes = answerDto.Notes,
+                RecommendationNotes = answerDto.RecommendationNotes,
+                EarnedPoints = CalculateEarnedPoints(question, answerDto)
             };
 
-            _context.Answers.Add(answer);
+            // Ceza uygulama
+            if (answerDto.ApplyPenalty && !string.IsNullOrEmpty(answerDto.SelectedPenaltyType))
+            {
+                answer.IsPenaltyApplied = true;
+                answer.AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(answerDto.SelectedPenaltyType)?.Id
+                    ?? PenaltyTypes.Ids.None;
+            }
+
+            // Alt kriter seçimleri
+            if (answerDto.SelectedSubCriteriaIds?.Any() == true)
+            {
+                foreach (var subCriteriaId in answerDto.SelectedSubCriteriaIds)
+                {
+                    answer.SubCriteriaSelections.Add(new AnswerSubCriteriaSelection
+                    {
+                        SubCriteriaId = subCriteriaId,
+                        SelectedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            evaluation.Answers.Add(answer);
+        }
+
+        // Evaluation alanlarını güncelle
+        evaluation.CustomerDealerId = dto.CustomerDealerId;
+        evaluation.StatusId = dto.IsDraft ? EvaluationStatuses.Ids.Draft : EvaluationStatuses.Ids.Completed;
+        evaluation.ControlDate = dto.ControlDate.HasValue
+            ? DateTime.SpecifyKind(dto.ControlDate.Value, DateTimeKind.Utc)
+            : null;
+        evaluation.ControlTime = dto.ControlTime;
+        evaluation.EvaluationComment = dto.EvaluationComment;
+        evaluation.DescriptionsJson = dto.Descriptions?.Any() == true
+            ? System.Text.Json.JsonSerializer.Serialize(dto.Descriptions.Where(d => !string.IsNullOrWhiteSpace(d)))
+            : null;
+        evaluation.TotalScore = scoreResult.TotalEarned;
+        evaluation.MaxScore = scoreResult.MaxPossible;
+        evaluation.ScorePercentage = scoreResult.Percentage;
+        evaluation.YellowCardCount = scoreResult.YellowCardCount;
+        evaluation.RedCardCount = scoreResult.RedCardCount;
+        evaluation.UpdatedAt = DateTime.UtcNow;
+
+        if (!dto.IsDraft)
+        {
+            evaluation.CompletedAt = DateTime.UtcNow;
         }
 
         await _context.SaveChangesAsync();
-        return true;
+        return evaluation.Id;
+    }
+
+    /// <summary>
+    /// FieldWorker ziyareti için puan hesaplama (Maximum scoring)
+    /// </summary>
+    private VisitScoreResult CalculateVisitScore(List<Question> questions, List<VisitAnswerDto> answers)
+    {
+        decimal totalWeight = 0;
+        decimal totalEarned = 0;
+        int yellowCardCount = 0;
+        int redCardCount = 0;
+
+        foreach (var question in questions)
+        {
+            var answerDto = answers.FirstOrDefault(a => a.QuestionId == question.Id);
+
+            // Dahil edilmemiş sorular atla
+            if (answerDto != null && !answerDto.IsIncluded && !question.IsRequired)
+                continue;
+
+            // Puanlı sorular
+            if (question.ScoringTypeId == ScoringTypes.Ids.Scored)
+            {
+                totalWeight += question.WeightPoints;
+
+                if (answerDto != null)
+                {
+                    var earned = CalculateEarnedPoints(question, answerDto);
+                    totalEarned += earned;
+                }
+            }
+            // Cezalı sorular
+            else if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
+            {
+                if (answerDto != null && answerDto.ApplyPenalty)
+                {
+                    var penaltyType = answerDto.SelectedPenaltyType;
+                    if (penaltyType == "YellowCard")
+                    {
+                        yellowCardCount++;
+                        totalEarned -= question.WeightPoints;
+                    }
+                    else if (penaltyType == "RedCard")
+                    {
+                        redCardCount++;
+                        totalEarned -= question.WeightPoints;
+                    }
+                }
+            }
+        }
+
+        var percentage = totalWeight > 0 ? (totalEarned / totalWeight) * 100 : 0;
+        if (percentage < 0) percentage = 0;
+        if (percentage > 100) percentage = 100;
+
+        return new VisitScoreResult
+        {
+            TotalEarned = totalEarned,
+            MaxPossible = totalWeight,
+            Percentage = percentage,
+            YellowCardCount = yellowCardCount,
+            RedCardCount = redCardCount
+        };
+    }
+
+    /// <summary>
+    /// Tek soru için kazanılan puan hesapla
+    /// </summary>
+    private decimal CalculateEarnedPoints(Question question, VisitAnswerDto answerDto)
+    {
+        if (question.ScoringTypeId != ScoringTypes.Ids.Scored)
+            return 0;
+
+        // GivenPoints varsa onu kullan (manuel puan girişi)
+        if (answerDto.GivenPoints.HasValue)
+        {
+            var ratio = question.MaxPoints > 0 ? answerDto.GivenPoints.Value / question.MaxPoints : 0;
+            return question.WeightPoints * ratio;
+        }
+
+        // NumericAnswer'dan hesapla
+        if (answerDto.NumericAnswer.HasValue)
+        {
+            var ratio = question.MaxPoints > 0 ? answerDto.NumericAnswer.Value / question.MaxPoints : 0;
+            return question.WeightPoints * ratio;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Ziyaret puan hesaplama sonucu
+    /// </summary>
+    private class VisitScoreResult
+    {
+        public decimal TotalEarned { get; set; }
+        public decimal MaxPossible { get; set; }
+        public decimal Percentage { get; set; }
+        public int YellowCardCount { get; set; }
+        public int RedCardCount { get; set; }
+    }
+
+    public async Task<bool> UpdateVisitAsync(int userId, int evaluationId, CreateVisitDto dto)
+    {
+        // CreateVisitAsync zaten güncelleme işlemini de yapıyor (EvaluationId varsa)
+        // Bu metodu geriye dönük uyumluluk için tutuyoruz
+        dto.EvaluationId = evaluationId;
+        var result = await CreateVisitAsync(userId, dto);
+        return result > 0;
     }
 
     public async Task<string> GenerateVisitIdAsync()

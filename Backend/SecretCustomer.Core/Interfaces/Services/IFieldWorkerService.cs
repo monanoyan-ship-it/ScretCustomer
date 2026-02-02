@@ -20,6 +20,16 @@ public interface IFieldWorkerService
     Task<List<FieldWorkerDealerDto>> GetAccessibleDealersAsync(int userId, int? projectId = null);
 
     /// <summary>
+    /// Atama için erişilebilir bayileri getir (ziyaret edilmemiş olanlar)
+    /// </summary>
+    Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId);
+
+    /// <summary>
+    /// Tüm atamalardaki ziyaret bekleyen şubeleri getir (Dashboard için)
+    /// </summary>
+    Task<List<PendingDealerDto>> GetPendingDealersAsync(int userId);
+
+    /// <summary>
     /// Ziyaretleri getir (sayfalı)
     /// </summary>
     Task<PagedVisitResult> GetVisitsAsync(int userId, VisitFilterDto filter);
