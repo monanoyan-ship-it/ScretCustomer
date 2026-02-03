@@ -432,6 +432,9 @@ public class PersonnelReportCardDto
     public List<PersonnelStrengthWeaknessDto> Strengths { get; set; } = new();
     public List<PersonnelStrengthWeaknessDto> Weaknesses { get; set; } = new();
 
+    // Süreç analizi (soru + periyot bazlı kırılım)
+    public List<PersonnelProcessAnalysisDto> ProcessAnalysis { get; set; } = new();
+
     // Performans eşik değerleri (PerformanceSettings'ten)
     /// <summary>
     /// Başarılı performans alt sınırı (%) - Yeşil gösterim
@@ -504,6 +507,20 @@ public class PersonnelStrengthWeaknessDto
     public decimal MaxScore { get; set; }
     public decimal PercentageScore { get; set; }
     public int EvaluationCount { get; set; }
+}
+
+/// <summary>
+/// Süreç analizi - soru bazlı periyodik performans
+/// </summary>
+public class PersonnelProcessAnalysisDto
+{
+    public string ProjectName { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string QuestionText { get; set; } = string.Empty;
+    public int Year { get; set; }
+    public string PeriodMonth { get; set; } = string.Empty; // YYYYMM
+    public decimal AverageScore { get; set; }
+    public int ErrorCount { get; set; }
 }
 
 /// <summary>

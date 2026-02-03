@@ -10491,4 +10491,31 @@
   <LocaleResource Name="UserRequest.DealerRequests">
     <Value>Solicitudes de Distribuidor</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Title">
+    <Value>Umbrales de Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Success">
+    <Value>Éxito (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Warning">
+    <Value>Advertencia (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveAll">
+    <Value>Guardar Todo</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveSuccess">
+    <Value>Umbrales de puntuación guardados exitosamente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveError">
+    <Value>Error al guardar los umbrales de puntuación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.LoadError">
+    <Value>Error al cargar los umbrales de puntuación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Info">
+    <Value>Puede establecer umbrales de éxito y advertencia para cada tipo de proyecto. Estos umbrales se utilizarán en los informes. Para tipos de proyecto sin configuración personalizada, se aplicarán los umbrales globales.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ScoreThresholds">
+    <Value>Umbrales de Puntuación</Value>
+  </LocaleResource>
 </Language>

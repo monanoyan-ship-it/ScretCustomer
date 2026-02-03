@@ -8,7 +8,7 @@ function CustomerDashboardViewModel() {
 
     // Charts
     self.monthlyChart = null;
-    self.scoreDistributionChart = null;
+    self.scoreDistributionCharts = {};
 
     // Helper functions
     self.getScoreBadgeClass = function(score) {
@@ -28,7 +28,8 @@ function CustomerDashboardViewModel() {
 
     // Chart data
     self.monthlyTrendData = null;
-    self.scoreDistributionData = null;
+    self.scoreDistributionByType = ko.observableArray([]);
+    self.isScoreDistLoading = ko.observable(false);
 
     // Monthly trend filters
     self.monthlyTrendProjectId = ko.observable(null);
@@ -47,18 +48,19 @@ function CustomerDashboardViewModel() {
     self.scoreModalPage = ko.observable(1);
     self.scoreModalPageSize = 20;
 
-    // Category labels and colors
+    // Category labels and colors (eşik tabanlı)
+    self.selectedProjectTypeId = ko.observable(null);
+    self.selectedProjectTypeName = ko.observable('');
+
     self.categoryLabels = {
-        'excellent': 'Mükemmel (90+)',
-        'good': 'İyi (80-89)',
-        'average': 'Orta (60-79)',
-        'poor': 'Düşük (<60)'
+        'success': 'Başarılı',
+        'warning': 'Uyarı',
+        'danger': 'Başarısız'
     };
     self.categoryColors = {
-        'excellent': 'bg-success',
-        'good': 'bg-primary',
-        'average': 'bg-warning',
-        'poor': 'bg-danger'
+        'success': 'bg-success',
+        'warning': 'bg-warning',
+        'danger': 'bg-danger'
     };
 
     self.selectedCategoryLabel = ko.computed(function() {
@@ -90,17 +92,12 @@ function CustomerDashboardViewModel() {
             customerApiFetch('/api/customer/portal/dashboard/monthly-trend').then(function(r) {
                 if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
                 return r.json();
-            }),
-            customerApiFetch('/api/customer/portal/dashboard/score-distribution').then(function(r) {
-                if (!r.ok) throw new Error('Score distribution API error: ' + r.status);
-                return r.json();
             })
         ])
         .then(function(results) {
             var stats = results[0];
             var evaluations = results[1];
             self.monthlyTrendData = results[2];
-            self.scoreDistributionData = results[3];
 
             self.stats({
                 totalEvaluations: stats.totalEvaluations || 0,
@@ -117,6 +114,9 @@ function CustomerDashboardViewModel() {
             setTimeout(function() {
                 self.initCharts();
             }, 100);
+
+            // Score distribution ayrı yüklenir (proje tipine göre)
+            self.loadScoreDistribution();
         })
         .catch(function(error) {
             console.error('Dashboard load error:', error);
@@ -222,64 +222,73 @@ function CustomerDashboardViewModel() {
             });
         }
 
-        // Score distribution chart
-        self.initScoreDistributionChart();
     };
 
-    // Initialize score distribution chart
-    self.initScoreDistributionChart = function() {
-        var scoreCtx = document.getElementById('scoreDistributionChart');
-        var dist = self.scoreDistributionData;
-        if (!scoreCtx || !dist) return;
+    // Initialize score distribution charts (proje tipine göre)
+    self.initScoreDistributionCharts = function() {
+        // Mevcut chart'ları temizle
+        Object.keys(self.scoreDistributionCharts).forEach(function(key) {
+            if (self.scoreDistributionCharts[key]) {
+                self.scoreDistributionCharts[key].destroy();
+            }
+        });
+        self.scoreDistributionCharts = {};
 
-        var chartData = [dist.excellent || 0, dist.good || 0, dist.average || 0, dist.poor || 0];
-        var categories = ['excellent', 'good', 'average', 'poor'];
-        var total = chartData.reduce(function(a, b) { return a + b; }, 0);
+        var types = self.scoreDistributionByType();
+        if (!types || types.length === 0) return;
 
-        // Destroy existing chart if any
-        if (self.scoreDistributionChart) {
-            self.scoreDistributionChart.destroy();
-            self.scoreDistributionChart = null;
-        }
+        types.forEach(function(item) {
+            var canvasId = 'scoreDistChart_' + item.projectTypeId;
+            var ctx = document.getElementById(canvasId);
+            if (!ctx) return;
 
-        if (total > 0) {
-            self.scoreDistributionChart = new Chart(scoreCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Mükemmel (90+)', 'İyi (80-89)', 'Orta (60-79)', 'Düşük (<60)'],
-                    datasets: [{
-                        data: chartData,
-                        backgroundColor: [
-                            '#198754',
-                            '#0d6efd',
-                            '#ffc107',
-                            '#dc3545'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
+            var chartData = [item.success || 0, item.warning || 0, item.danger || 0];
+            var categories = ['success', 'warning', 'danger'];
+            var total = chartData.reduce(function(a, b) { return a + b; }, 0);
+
+            if (total > 0) {
+                var ptId = item.projectTypeId;
+                var ptName = item.projectTypeName;
+                self.scoreDistributionCharts[ptId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            'Başarılı (≥' + item.successThreshold + '%)',
+                            'Uyarı (' + item.warningThreshold + '-' + item.successThreshold + '%)',
+                            'Başarısız (<' + item.warningThreshold + '%)'
+                        ],
+                        datasets: [{
+                            data: chartData,
+                            backgroundColor: ['#198754', '#ffc107', '#dc3545']
+                        }]
                     },
-                    onClick: function(event, elements) {
-                        if (elements.length > 0) {
-                            var index = elements[0].index;
-                            var category = categories[index];
-                            self.openScoreModal(category);
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 12 }
+                            }
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                var index = elements[0].index;
+                                var category = categories[index];
+                                self.openScoreModal(category, ptId, ptName);
+                            }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
+        });
     };
 
     // Open score modal
-    self.openScoreModal = function(category) {
+    self.openScoreModal = function(category, projectTypeId, projectTypeName) {
         self.selectedCategory(category);
+        self.selectedProjectTypeId(projectTypeId);
+        self.selectedProjectTypeName(projectTypeName || '');
         self.scoreModalPage(1);
         self.isScoreModalOpen(true);
         self.loadScoreModalEvaluations(1);
@@ -291,6 +300,7 @@ function CustomerDashboardViewModel() {
         self.scoreModalPage(page);
 
         var url = '/api/customer/portal/dashboard/score-distribution/evaluations?category=' + self.selectedCategory();
+        url += '&projectTypeId=' + self.selectedProjectTypeId();
         url += '&page=' + page + '&pageSize=' + self.scoreModalPageSize;
 
         if (self.scoreDistStartDate()) {
@@ -320,6 +330,8 @@ function CustomerDashboardViewModel() {
     self.closeScoreModal = function() {
         self.isScoreModalOpen(false);
         self.selectedCategory('');
+        self.selectedProjectTypeId(null);
+        self.selectedProjectTypeName('');
         self.scoreModalEvaluations([]);
         self.scoreModalTotal(0);
     };
@@ -327,6 +339,7 @@ function CustomerDashboardViewModel() {
     // Export score distribution to Excel
     self.exportScoreDistribution = function() {
         var url = '/api/customer/portal/dashboard/score-distribution/export?category=' + self.selectedCategory();
+        url += '&projectTypeId=' + self.selectedProjectTypeId();
 
         if (self.scoreDistStartDate()) {
             url += '&startDate=' + self.scoreDistStartDate();
@@ -624,8 +637,9 @@ function CustomerDashboardViewModel() {
         }
     };
 
-    // Load score distribution with filters
+    // Load score distribution with filters (proje tipine göre)
     self.loadScoreDistribution = function() {
+        self.isScoreDistLoading(true);
         var url = '/api/customer/portal/dashboard/score-distribution';
         var params = [];
 
@@ -646,11 +660,16 @@ function CustomerDashboardViewModel() {
                 return r.json();
             })
             .then(function(data) {
-                self.scoreDistributionData = data;
-                self.initScoreDistributionChart();
+                self.scoreDistributionByType(data || []);
+                self.isScoreDistLoading(false);
+                // Knockout foreach render ettikten sonra chart'ları oluştur
+                setTimeout(function() {
+                    self.initScoreDistributionCharts();
+                }, 150);
             })
             .catch(function(error) {
                 console.error('Score distribution load error:', error);
+                self.isScoreDistLoading(false);
             });
     };
 
@@ -739,7 +758,7 @@ function CustomerDashboardViewModel() {
                 dataObj = self.monthlyTrendData || [];
                 break;
             case 'score-distribution':
-                dataObj = self.scoreDistributionData || {};
+                dataObj = self.scoreDistributionByType() || [];
                 break;
             case 'question-trend':
                 dataObj = {

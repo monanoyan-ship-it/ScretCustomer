@@ -10500,4 +10500,31 @@
   <LocaleResource Name="UserRequest.DealerRequests">
     <Value>Dealer Requests</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Title">
+    <Value>Score Thresholds</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Success">
+    <Value>Success (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Warning">
+    <Value>Warning (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveAll">
+    <Value>Save All</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveSuccess">
+    <Value>Score thresholds saved successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveError">
+    <Value>Error saving score thresholds.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.LoadError">
+    <Value>Error loading score thresholds.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Info">
+    <Value>You can set success and warning thresholds for each project type. These thresholds will be used in reports. For project types without custom settings, global thresholds will apply.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ScoreThresholds">
+    <Value>Score Thresholds</Value>
+  </LocaleResource>
 </Language>

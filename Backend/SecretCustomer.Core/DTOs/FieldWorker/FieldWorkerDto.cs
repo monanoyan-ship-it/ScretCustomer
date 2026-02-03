@@ -18,8 +18,6 @@ public class FieldWorkerDashboardDto
     public int TotalVisits { get; set; }
     public int TodayVisits { get; set; }
     public int ThisWeekVisits { get; set; }
-    public int PendingRequests { get; set; }
-
     // Son ziyaretler
     public List<VisitSummaryDto> RecentVisits { get; set; } = new();
 }

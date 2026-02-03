@@ -10,8 +10,6 @@ function FieldWorkerDashboardViewModel() {
     self.totalVisits = ko.observable(0);
     self.todayVisits = ko.observable(0);
     self.thisWeekVisits = ko.observable(0);
-    self.pendingRequests = ko.observable(0);
-
     // Data
     self.assignedProjects = ko.observableArray([]);
     self.recentVisits = ko.observableArray([]);
@@ -75,7 +73,6 @@ function FieldWorkerDashboardViewModel() {
             self.totalVisits(dashboardData.totalVisits || 0);
             self.todayVisits(dashboardData.todayVisits || 0);
             self.thisWeekVisits(dashboardData.thisWeekVisits || 0);
-            self.pendingRequests(dashboardData.pendingRequests || 0);
             self.assignedProjects(dashboardData.assignedProjects || []);
             self.recentVisits(dashboardData.recentVisits || []);
             self.pendingDealers(pendingData || []);

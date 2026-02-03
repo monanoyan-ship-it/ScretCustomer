@@ -1470,48 +1470,6 @@ public static class CustomerDealerTypes
 }
 
 // ============================================================
-// CUSTOMER DEALER REQUEST STATUSES (Müşteri Bayi Talep Durumlari)
-// ============================================================
-public static class CustomerDealerRequestStatuses
-{
-    public static readonly TypeItem Pending = new(1, "Pending", "CustomerDealerRequestStatus.Pending", "Beklemede - Henüz işlenmedi", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
-    public static readonly TypeItem Approved = new(2, "Approved", "CustomerDealerRequestStatus.Approved", "Onaylandı", "bi-check-circle", "bg-success", 2);
-    public static readonly TypeItem Rejected = new(3, "Rejected", "CustomerDealerRequestStatus.Rejected", "Reddedildi", "bi-x-circle", "bg-danger", 3);
-
-    public static IEnumerable<TypeItem> All => new[] { Pending, Approved, Rejected };
-    public static TypeItem Default => All.First(x => x.IsDefault);
-    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
-    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
-
-    public static class Ids
-    {
-        public const int Pending = 1;
-        public const int Approved = 2;
-        public const int Rejected = 3;
-    }
-}
-
-// ============================================================
-// CUSTOMER DEALER REQUEST TYPES (Müşteri Bayi Talep Tipleri)
-// ============================================================
-public static class CustomerDealerRequestTypes
-{
-    public static readonly TypeItem NewDealer = new(1, "NewDealer", "CustomerDealerRequestType.NewDealer", "Yeni bayi talebi", "bi-plus-circle", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem UpdateDealer = new(2, "UpdateDealer", "CustomerDealerRequestType.UpdateDealer", "Bayi güncelleme talebi", "bi-pencil", "bg-info", 2);
-
-    public static IEnumerable<TypeItem> All => new[] { NewDealer, UpdateDealer };
-    public static TypeItem Default => All.First(x => x.IsDefault);
-    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
-    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
-
-    public static class Ids
-    {
-        public const int NewDealer = 1;
-        public const int UpdateDealer = 2;
-    }
-}
-
-// ============================================================
 // EMAIL TEMPLATE TYPES (Email Şablon Tipleri)
 // ============================================================
 public static class EmailTemplateTypes

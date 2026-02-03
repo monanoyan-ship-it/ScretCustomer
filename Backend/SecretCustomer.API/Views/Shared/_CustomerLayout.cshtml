@@ -34,7 +34,7 @@
 
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-                var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings" };
+                var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings", "ScoreThresholds" };
                 var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
@@ -130,6 +130,15 @@
                                     @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
                                 </a>
                             </li>
+                            @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
+                            {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "ScoreThresholds" ? "active" : "")" href="/CustomerPortal/ScoreThresholds">
+                                    <i class="bi bi-sliders text-info"></i>
+                                    @Html.T("CustomerPortal.Menu.ScoreThresholds", "Puan Esikleri")
+                                </a>
+                            </li>
+                            }
                         </ul>
                     </div>
                 </li>

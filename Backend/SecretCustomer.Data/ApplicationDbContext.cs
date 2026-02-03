@@ -103,7 +103,6 @@ public class ApplicationDbContext : DbContext
 
     // FieldWorker - Dealer Management (Bayi Yönetimi)
     public DbSet<CustomerDealer> CustomerDealers { get; set; }
-    public DbSet<CustomerDealerRequest> CustomerDealerRequests { get; set; }
     public DbSet<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; }
 
     // Survey Invitations (Anket Davetiyeleri)
@@ -112,6 +111,9 @@ public class ApplicationDbContext : DbContext
 
     // Performance Settings (Performans Ayarları)
     public DbSet<PerformanceSettings> PerformanceSettings { get; set; }
+
+    // Customer Score Thresholds (Müşteri Bazlı Puan Eşikleri)
+    public DbSet<CustomerScoreThreshold> CustomerScoreThresholds { get; set; }
 
     // Support Requests (Destek Talepleri)
     public DbSet<SupportRequest> SupportRequests { get; set; }
@@ -189,12 +191,14 @@ public class ApplicationDbContext : DbContext
 
         // FieldWorker - Dealer Management
         modelBuilder.Entity<CustomerDealer>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<CustomerDealerRequest>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<AssignmentCustomerDealer>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<EvaluationAttachment>().HasQueryFilter(e => !e.IsDeleted);
 
         // Performance Settings
         modelBuilder.Entity<PerformanceSettings>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Customer Score Thresholds
+        modelBuilder.Entity<CustomerScoreThreshold>().HasQueryFilter(e => !e.IsDeleted);
 
         // Support Requests
         modelBuilder.Entity<SupportRequest>().HasQueryFilter(e => !e.IsDeleted);
@@ -346,39 +350,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CustomerDealer>()
             .HasIndex(d => d.Code);
 
-        // ===== CustomerDealerRequest İlişkileri =====
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasOne(dr => dr.Customer)
-            .WithMany()
-            .HasForeignKey(dr => dr.CustomerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasOne(dr => dr.RequestedByUser)
-            .WithMany()
-            .HasForeignKey(dr => dr.RequestedByUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasOne(dr => dr.CustomerDealer)
-            .WithMany()
-            .HasForeignKey(dr => dr.CustomerDealerId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasOne(dr => dr.ProcessedByUser)
-            .WithMany()
-            .HasForeignKey(dr => dr.ProcessedByUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // CustomerDealerRequest indexleri
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasIndex(dr => dr.StatusId);
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasIndex(dr => dr.CustomerId);
-        modelBuilder.Entity<CustomerDealerRequest>()
-            .HasIndex(dr => dr.RequestedByUserId);
-
         // ===== AssignmentCustomerDealer İlişkileri =====
         modelBuilder.Entity<AssignmentCustomerDealer>()
             .HasOne(acd => acd.Assignment)
@@ -488,6 +459,19 @@ public class ApplicationDbContext : DbContext
             .HasIndex(sr => sr.CustomerPersonnelId);
         modelBuilder.Entity<SupportRequest>()
             .HasIndex(sr => sr.CreatedAt);
+
+        // ===== CustomerScoreThreshold İlişkileri =====
+        modelBuilder.Entity<CustomerScoreThreshold>()
+            .HasOne(s => s.Customer)
+            .WithMany()
+            .HasForeignKey(s => s.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique index: CustomerId + ProjectTypeId
+        modelBuilder.Entity<CustomerScoreThreshold>()
+            .HasIndex(s => new { s.CustomerId, s.ProjectTypeId })
+            .IsUnique()
+            .HasFilter("\"IsDeleted\" = false");
 
         // ===== TrainingQuiz İlişkileri =====
 

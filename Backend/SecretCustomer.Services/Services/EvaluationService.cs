@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.Evaluation;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -17,19 +18,22 @@ public class EvaluationService : IEvaluationService
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<EvaluationService> _logger;
 
     public EvaluationService(
         IEvaluationRepository evaluationRepository,
         IAssignmentRepository assignmentRepository,
         ApplicationDbContext context,
         ILocalizationService localizationService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        ILogger<EvaluationService> logger)
     {
         _evaluationRepository = evaluationRepository;
         _assignmentRepository = assignmentRepository;
         _context = context;
         _localizationService = localizationService;
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -854,7 +858,15 @@ public class EvaluationService : IEvaluationService
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.LastName) &&
             assignment.Project?.CustomerId != null)
         {
-            personnelRequestWarning = await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
+            try
+            {
+                personnelRequestWarning = await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PersonnelRequest oluşturulurken hata (EvaluationId: {EvaluationId})", evaluation.Id);
+                // Evaluation zaten kaydedildi, personel talebi hatası evaluation'ı etkilemesin
+            }
         }
 
         var result = await MapToDtoAsync(evaluation);
@@ -1492,16 +1504,39 @@ public class EvaluationService : IEvaluationService
             return string.Format(message, $"{firstName} {lastName}");
         }
 
+        // FK değerlerini belirle (0 atanırsa FK constraint violation olur)
+        var organizationId = dto.EvaluatedOrganizationId ?? evaluation.EvaluatedOrganizationId ?? 0;
+        var requestedByUserId = dto.EvaluatorId ?? evaluation.EvaluatorId ?? 0;
+
+        // CustomerPersonnel ise (EvaluatorId yok), ilk Admin kullanıcısını fallback olarak kullan
+        if (requestedByUserId == 0 && dto.EvaluatorCustomerPersonnelId > 0)
+        {
+            var firstAdmin = await _context.Users
+                .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+            requestedByUserId = firstAdmin;
+        }
+
+        // FK'ler geçerli değilse oluşturma (0 = geçersiz FK)
+        if (organizationId <= 0 || requestedByUserId <= 0)
+        {
+            _logger.LogWarning(
+                "PersonnelRequest oluşturulamadı: geçersiz FK değerleri (OrganizationId: {OrgId}, RequestedByUserId: {UserId}, EvaluationId: {EvalId})",
+                organizationId, requestedByUserId, evaluation.Id);
+            return null;
+        }
+
         var personnelRequest = new PersonnelRequest
         {
             EvaluationId = evaluation.Id,
             CustomerId = customerId,
-            CustomerOrganizationId = dto.EvaluatedOrganizationId ?? 0,
+            CustomerOrganizationId = organizationId,
             FirstName = firstName,
             LastName = lastName,
             Title = dto.NewPersonnel.Title?.Trim(),
             Notes = $"Değerlendirme #{evaluation.Id} sırasında oluşturuldu",
-            RequestedByUserId = dto.EvaluatorId ?? 0,
+            RequestedByUserId = requestedByUserId,
             Status = ApprovalStatuses.Ids.Pending
         };
 

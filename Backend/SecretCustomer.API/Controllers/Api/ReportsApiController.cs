@@ -571,7 +571,7 @@ public class ReportsApiController : BaseApiController
                 };
             }
 
-            var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
+            var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)

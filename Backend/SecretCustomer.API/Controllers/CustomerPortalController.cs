@@ -200,4 +200,14 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Puan Eşikleri - Müşteri bazlı başarı/uyarı eşikleri
+    /// </summary>
+    [Route("CustomerPortal/ScoreThresholds")]
+    [Authorize(Roles = "CustomerManager,Admin")]
+    public IActionResult ScoreThresholds()
+    {
+        return View();
+    }
 }

@@ -44,11 +44,6 @@ public class FieldWorkerService : IFieldWorkerService
             .Where(e => e.CreatedBy == user.Username && e.VisitId != null && e.CreatedAt >= weekStart)
             .CountAsync();
 
-        // Bekleyen talepler
-        var pendingRequests = await _context.CustomerDealerRequests
-            .Where(r => r.RequestedByUserId == userId && r.StatusId == CustomerDealerRequestStatuses.Ids.Pending)
-            .CountAsync();
-
         // Son 10 ziyaret
         var recentVisits = await _context.Evaluations
             .Include(e => e.CustomerDealer)
@@ -82,7 +77,6 @@ public class FieldWorkerService : IFieldWorkerService
             TotalVisits = totalVisits,
             TodayVisits = todayVisits,
             ThisWeekVisits = thisWeekVisits,
-            PendingRequests = pendingRequests,
             RecentVisits = recentVisits
         };
     }

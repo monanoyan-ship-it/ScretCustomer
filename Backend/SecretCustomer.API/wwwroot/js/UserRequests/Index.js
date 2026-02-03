@@ -19,19 +19,6 @@ function UserRequestsViewModel() {
     self.personnelRequests = ko.observableArray([]);
     self.personnelCounts = ko.observable({ pending: 0, approved: 0, rejected: 0, total: 0 });
 
-    // ==================== DEALER REQUESTS STATE ====================
-    self.dealerRequests = ko.observableArray([]);
-    self.dealerCounts = ko.observable({ pending: 0, approved: 0, rejected: 0, total: 0 });
-
-    // Dealer Detail Modal
-    self.isDealerDetailModalOpen = ko.observable(false);
-    self.selectedDealerRequest = ko.observable(null);
-
-    // Dealer Reject Modal
-    self.isDealerRejectModalOpen = ko.observable(false);
-    self.rejectingDealerRequest = ko.observable(null);
-    self.dealerRejectReason = ko.observable('');
-
     // Draft Detail Modal
     self.isDraftDetailModalOpen = ko.observable(false);
     self.selectedDraftRequest = ko.observable(null);
@@ -41,8 +28,6 @@ function UserRequestsViewModel() {
     // ==================== SORTING ====================
     self.draftSorting = TableSorting.createSortState('requestedAt', 'desc');
     self.personnelSorting = TableSorting.createSortState('requestedAt', 'desc');
-    self.dealerSorting = TableSorting.createSortState('createdAt', 'desc');
-
     // Sorted Draft Requests
     self.sortedDraftRequests = ko.computed(function() {
         var items = self.draftRequests();
@@ -57,15 +42,6 @@ function UserRequestsViewModel() {
         var items = self.personnelRequests();
         var sortBy = self.personnelSorting.sortBy();
         var sortDir = self.personnelSorting.sortDirection();
-        if (!sortBy || items.length === 0) return items;
-        return TableSorting.clientSort(items, sortBy, sortDir);
-    });
-
-    // Sorted Dealer Requests
-    self.sortedDealerRequests = ko.computed(function() {
-        var items = self.dealerRequests();
-        var sortBy = self.dealerSorting.sortBy();
-        var sortDir = self.dealerSorting.sortDirection();
         if (!sortBy || items.length === 0) return items;
         return TableSorting.clientSort(items, sortBy, sortDir);
     });
@@ -93,8 +69,7 @@ function UserRequestsViewModel() {
     self.currentCounts = ko.computed(function() {
         var tab = self.activeTab();
         if (tab === 'draft') return self.draftCounts();
-        if (tab === 'personnel') return self.personnelCounts();
-        return self.dealerCounts();
+        return self.personnelCounts();
     });
 
     // ==================== FILTERS ====================
@@ -133,8 +108,6 @@ function UserRequestsViewModel() {
             self.loadDraftRequests();
         } else if (tab === 'personnel') {
             self.loadPersonnelRequests();
-        } else if (tab === 'dealer') {
-            self.loadDealerRequests();
         }
     };
 
@@ -452,174 +425,6 @@ function UserRequestsViewModel() {
         });
     };
 
-    // ==================== DEALER REQUESTS ====================
-    self.loadDealerRequests = function() {
-        self.isLoading(true);
-        var params = new URLSearchParams({
-            page: 1,
-            pageSize: 100
-        });
-        if (self.filterStatus()) params.append('statusId', self.filterStatus());
-        if (self.searchTerm()) params.append('searchTerm', self.searchTerm());
-
-        $.get('/api/dealer-requests?' + params.toString())
-            .done(function(response) {
-                self.dealerRequests(response.items || []);
-                self.dealerCounts({
-                    pending: response.pendingCount || 0,
-                    approved: response.approvedCount || 0,
-                    rejected: response.rejectedCount || 0,
-                    total: response.totalCount || 0
-                });
-            })
-            .fail(function() {
-                toastr.error(T('DealerRequest.LoadError', 'Bayi talepleri yuklenirken hata olustu'));
-            })
-            .always(function() {
-                self.isLoading(false);
-            });
-    };
-
-    self.loadDealerCounts = function() {
-        $.get('/api/dealer-requests?pageSize=1')
-            .done(function(response) {
-                self.dealerCounts({
-                    pending: response.pendingCount || 0,
-                    approved: response.approvedCount || 0,
-                    rejected: response.rejectedCount || 0,
-                    total: response.totalCount || 0
-                });
-            });
-    };
-
-    self.showDealerDetail = function(request) {
-        self.selectedDealerRequest(request);
-        self.isDealerDetailModalOpen(true);
-    };
-
-    self.closeDealerDetailModal = function() {
-        self.isDealerDetailModalOpen(false);
-        self.selectedDealerRequest(null);
-    };
-
-    self.approveDealerRequest = function(request) {
-        showConfirmModal({
-            title: T('Approval.Approve', 'Onayla'),
-            message: T('DealerRequest.ConfirmApprove', 'Bu bayi talebini onaylamak istediginizden emin misiniz? Bayi otomatik olarak olusturulacaktir.'),
-            type: 'success',
-            confirmText: T('Approval.Approve', 'Onayla'),
-            confirmIcon: 'bi-check-circle',
-            onConfirm: function() {
-                self.doDealerApprove(request.id);
-            }
-        });
-    };
-
-    self.doDealerApprove = function(id) {
-        $.ajax({
-            url: '/api/dealer-requests/' + id + '/approve',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({})
-        })
-        .done(function() {
-            toastr.success(T('DealerRequest.ApproveSuccess', 'Bayi talebi onaylandi ve bayi olusturuldu.'));
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DealerRequest.ApproveError', 'Onay islemi basarisiz');
-            toastr.error(message);
-        });
-    };
-
-    self.showRejectDealerModal = function(request) {
-        self.rejectingDealerRequest(request);
-        self.dealerRejectReason('');
-        self.isDealerRejectModalOpen(true);
-    };
-
-    self.closeDealerRejectModal = function() {
-        self.isDealerRejectModalOpen(false);
-        self.rejectingDealerRequest(null);
-    };
-
-    self.confirmDealerReject = function() {
-        var request = self.rejectingDealerRequest();
-        if (!request) return;
-
-        $.ajax({
-            url: '/api/dealer-requests/' + request.id + '/reject',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                adminResponse: self.dealerRejectReason() || null
-            })
-        })
-        .done(function() {
-            toastr.success(T('DealerRequest.RejectSuccess', 'Bayi talebi reddedildi.'));
-            self.closeDealerRejectModal();
-            self.refreshAll();
-        })
-        .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DealerRequest.RejectError', 'Red islemi basarisiz');
-            toastr.error(message);
-        });
-    };
-
-    // Dealer Request Helpers
-    self.getDealerRequestTypeName = function(typeId) {
-        var types = {
-            1: T('RequestType.NewDealer', 'Yeni Bayi'),
-            2: T('RequestType.UpdateDealer', 'Bayi Guncelleme'),
-            3: T('RequestType.NewPersonnel', 'Yeni Personel')
-        };
-        return types[typeId] || typeId;
-    };
-
-    self.getDealerRequestTypeBadge = function(typeId) {
-        var classes = {
-            1: 'bg-primary',
-            2: 'bg-info',
-            3: 'bg-success'
-        };
-        return classes[typeId] || 'bg-secondary';
-    };
-
-    self.getDealerStatusText = function(statusId) {
-        var statuses = {
-            1: T('RequestStatus.Pending', 'Beklemede'),
-            2: T('RequestStatus.Approved', 'Onaylandi'),
-            3: T('RequestStatus.Rejected', 'Reddedildi')
-        };
-        return statuses[statusId] || statusId;
-    };
-
-    self.getDealerStatusBadgeClass = function(statusId) {
-        var classes = {
-            1: 'bg-warning text-dark',
-            2: 'bg-success',
-            3: 'bg-danger'
-        };
-        return classes[statusId] || 'bg-secondary';
-    };
-
-    self.getDealerNameFromJson = function(json) {
-        try {
-            var data = JSON.parse(json);
-            return data.name || data.Name || '-';
-        } catch (e) {
-            return '-';
-        }
-    };
-
-    self.parseDealerRequestData = function(json) {
-        try {
-            return JSON.parse(json);
-        } catch (e) {
-            return {};
-        }
-    };
-
     // ==================== HELPERS ====================
     self.getStatusText = function(status) {
         // Personnel uses int (0=Pending, 1=Approved, 2=Rejected)
@@ -661,8 +466,6 @@ function UserRequestsViewModel() {
         self.loadDraftCounts();
         self.loadPersonnelRequests();
         self.loadPersonnelCounts();
-        self.loadDealerRequests();
-        self.loadDealerCounts();
     };
 
     // ==================== INITIALIZE ====================
@@ -672,8 +475,6 @@ function UserRequestsViewModel() {
         var tab = urlParams.get('tab');
         if (tab === 'personnel') {
             self.activeTab('personnel');
-        } else if (tab === 'dealer') {
-            self.activeTab('dealer');
         }
 
         self.refreshAll();

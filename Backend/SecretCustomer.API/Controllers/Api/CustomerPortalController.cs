@@ -25,19 +25,22 @@ public class CustomerPortalApiController : ControllerBase
     private readonly ILocalizationService _localizationService;
     private readonly IReportService _reportService;
     private readonly IEvaluationService _evaluationService;
+    private readonly ICustomerScoreThresholdService _customerScoreThresholdService;
 
     public CustomerPortalApiController(
         ApplicationDbContext context,
         ILogger<CustomerPortalApiController> logger,
         ILocalizationService localizationService,
         IReportService reportService,
-        IEvaluationService evaluationService)
+        IEvaluationService evaluationService,
+        ICustomerScoreThresholdService customerScoreThresholdService)
     {
         _context = context;
         _logger = logger;
         _localizationService = localizationService;
         _reportService = reportService;
         _evaluationService = evaluationService;
+        _customerScoreThresholdService = customerScoreThresholdService;
     }
 
     private int? GetCustomerIdFromToken()
@@ -850,17 +853,50 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        var scores = await evaluationsQuery.Select(e => e.ScorePercentage ?? 0).ToListAsync();
+        // Proje tipi ile birlikte puanları çek
+        var scores = await evaluationsQuery
+            .Select(e => new
+            {
+                ProjectTypeId = e.Assignment!.Project!.ProjectTypeId,
+                Score = e.ScorePercentage ?? 0
+            })
+            .ToListAsync();
 
-        var distribution = new
+        // Değerlemesi olmayan proje tipleri gelmesin
+        var groupedByType = scores.GroupBy(s => s.ProjectTypeId).ToList();
+        if (groupedByType.Count == 0)
+            return Ok(new List<object>());
+
+        // Müşteriye özel eşikleri al (yoksa global fallback)
+        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
+
+        var result = groupedByType.Select(g =>
         {
-            excellent = scores.Count(s => s >= 90),   // Mükemmel (90+)
-            good = scores.Count(s => s >= 80 && s < 90),  // İyi (80-89)
-            average = scores.Count(s => s >= 60 && s < 80), // Orta (60-79)
-            poor = scores.Count(s => s < 60)  // Düşük (<60)
-        };
+            var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == g.Key);
+            var successThreshold = threshold?.SuccessThreshold ?? 80m;
+            var warningThreshold = threshold?.WarningThreshold ?? 60m;
+            var projectType = ProjectTypes.GetById(g.Key);
 
-        return Ok(distribution);
+            var typeScores = g.Select(s => s.Score).ToList();
+
+            return new
+            {
+                projectTypeId = g.Key,
+                projectTypeName = threshold?.ProjectTypeName ?? projectType?.Description ?? "Bilinmeyen",
+                projectTypeIcon = threshold?.ProjectTypeIcon ?? projectType?.Icon ?? "bi-folder",
+                projectTypeColor = threshold?.ProjectTypeColor ?? projectType?.CssClass ?? "bg-secondary",
+                successThreshold,
+                warningThreshold,
+                success = typeScores.Count(s => s >= successThreshold),
+                warning = typeScores.Count(s => s >= warningThreshold && s < successThreshold),
+                danger = typeScores.Count(s => s < warningThreshold),
+                total = typeScores.Count
+            };
+        })
+        .OrderBy(r => r.projectTypeId)
+        .ToList();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -869,6 +905,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/score-distribution/evaluations")]
     public async Task<IActionResult> GetScoreDistributionEvaluations(
         [FromQuery] string category,
+        [FromQuery] int projectTypeId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int page = 1,
@@ -887,6 +924,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
+                        e.Assignment.Project.ProjectTypeId == projectTypeId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Tarih filtresi
@@ -908,23 +946,26 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        // Kategori filtresi (null değerler 0 kabul edilir - poor kategorisine düşer)
+        // Eşikleri al (müşteriye özel, yoksa global fallback)
+        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
+        var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == projectTypeId);
+        var st = threshold?.SuccessThreshold ?? 80m;
+        var wt = threshold?.WarningThreshold ?? 60m;
+
+        // Kategori filtresi (eşiklere göre)
         switch (category?.ToLower())
         {
-            case "excellent":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 90);
+            case "success":
+                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= st);
                 break;
-            case "good":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 80 && e.ScorePercentage < 90);
+            case "warning":
+                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= wt && (e.ScorePercentage ?? 0) < st);
                 break;
-            case "average":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80);
-                break;
-            case "poor":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || e.ScorePercentage < 60);
+            case "danger":
+                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || (e.ScorePercentage ?? 0) < wt);
                 break;
             default:
-                return BadRequest(new { message = "Geçersiz kategori. Geçerli değerler: excellent, good, average, poor" });
+                return BadRequest(new { message = "Geçersiz kategori. Geçerli değerler: success, warning, danger" });
         }
 
         var total = await evaluationsQuery.CountAsync();
@@ -957,6 +998,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/score-distribution/export")]
     public async Task<IActionResult> ExportScoreDistributionEvaluations(
         [FromQuery] string category,
+        [FromQuery] int projectTypeId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -973,6 +1015,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
+                        e.Assignment.Project.ProjectTypeId == projectTypeId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Tarih filtresi
@@ -994,25 +1037,26 @@ public class CustomerPortalApiController : ControllerBase
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
         }
 
-        // Kategori filtresi (null değerler 0 kabul edilir - poor kategorisine düşer)
+        // Eşikleri al
+        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
+        var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == projectTypeId);
+        var st = threshold?.SuccessThreshold ?? 80m;
+        var wt = threshold?.WarningThreshold ?? 60m;
+
         var categoryLabel = "";
         switch (category?.ToLower())
         {
-            case "excellent":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 90);
-                categoryLabel = "Mükemmel (90+)";
+            case "success":
+                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= st);
+                categoryLabel = $"Başarılı ({st}+)";
                 break;
-            case "good":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 80 && e.ScorePercentage < 90);
-                categoryLabel = "İyi (80-89)";
+            case "warning":
+                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= wt && (e.ScorePercentage ?? 0) < st);
+                categoryLabel = $"Uyarı ({wt}-{st})";
                 break;
-            case "average":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80);
-                categoryLabel = "Orta (60-79)";
-                break;
-            case "poor":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || e.ScorePercentage < 60);
-                categoryLabel = "Düşük (<60)";
+            case "danger":
+                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || (e.ScorePercentage ?? 0) < wt);
+                categoryLabel = $"Başarısız (<{wt})";
                 break;
             default:
                 return BadRequest(new { message = "Geçersiz kategori" });
@@ -1318,7 +1362,8 @@ public class CustomerPortalApiController : ControllerBase
             var projectIdsWithPersonnel = await _context.Evaluations
                 .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
                            allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.Assignment.Project.CustomerId == customerId)
+                           e.Assignment.Project.CustomerId == customerId &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed)
                 .Select(e => e.Assignment.ProjectId)
                 .Distinct()
                 .ToListAsync();
@@ -1336,16 +1381,20 @@ public class CustomerPortalApiController : ControllerBase
                 Address = "",
                 IsActive = p.IsActive,
                 evaluationCount = allowedPersonnelIds == null
-                    ? _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id)
+                    ? _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed)
                     : _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.EvaluatedCustomerPersonnelId.HasValue &&
                         allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)),
                 averageScore = allowedPersonnelIds == null
                     ? _context.Evaluations
-                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue)
+                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue &&
+                            e.StatusId == EvaluationStatuses.Ids.Completed)
                         .Average(e => (double?)e.ScorePercentage) ?? 0
                     : _context.Evaluations
                         .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue &&
+                            e.StatusId == EvaluationStatuses.Ids.Completed &&
                             e.EvaluatedCustomerPersonnelId.HasValue &&
                             allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value))
                         .Average(e => (double?)e.ScorePercentage) ?? 0
@@ -1437,7 +1486,7 @@ public class CustomerPortalApiController : ControllerBase
                 .ThenInclude(a => a.Checklist)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed); // PRENSIP: Taslaklar rapora dahil edilmez
+                        e.StatusId != EvaluationStatuses.Ids.Cancelled); // Taslaklar dahil, iptal edilenler hariç
 
         // Rol bazlı filtreleme
         // Manager/Supervisor: Kendi yaptıkları değerlendirmeler (EvaluatorCustomerPersonnelId)
@@ -2329,7 +2378,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
-                       e.EvaluatorCustomerPersonnelId != null); // Draftlar da görünsün
+                       e.EvaluatorCustomerPersonnelId != null); // Taslaklar dahil
 
         // Rol bazlı filtreleme (İç Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar
@@ -3441,7 +3490,7 @@ public class CustomerPortalApiController : ControllerBase
                 DateRanges = dateRanges
             };
 
-            var result = await _reportService.ExportPersonnelReportCardToPdfAsync(filter);
+            var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -5396,6 +5445,53 @@ public class CustomerPortalApiController : ControllerBase
             totalResponses = evaluations.Count,
             distribution
         });
+    }
+
+    // ==================== PUAN EŞİKLERİ (Score Thresholds) ====================
+
+    /// <summary>
+    /// Müşteriye özel puan eşiklerini getirir (tüm proje tipleri için)
+    /// </summary>
+    [HttpGet("score-thresholds")]
+    public async Task<IActionResult> GetScoreThresholds()
+    {
+        try
+        {
+            var customerId = GetCustomerId();
+            if (!customerId.HasValue)
+                return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+            var result = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error getting score thresholds");
+            return StatusCode(500, new { message = "Puan eşikleri yüklenirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Müşteriye özel puan eşiklerini toplu kaydeder
+    /// </summary>
+    [HttpPost("score-thresholds/bulk")]
+    public async Task<IActionResult> BulkSaveScoreThresholds([FromBody] Core.DTOs.CustomerScoreThreshold.BulkSaveCustomerScoreThresholdDto dto)
+    {
+        try
+        {
+            var customerId = GetCustomerId();
+            if (!customerId.HasValue)
+                return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var result = await _customerScoreThresholdService.BulkSaveAsync(customerId.Value, dto, userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error saving score thresholds");
+            return StatusCode(500, new { message = "Puan eşikleri kaydedilirken hata oluştu." });
+        }
     }
 
 }

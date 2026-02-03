@@ -10495,4 +10495,31 @@
   <LocaleResource Name="UserRequest.DealerRequests">
     <Value>Bayi Talepleri</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Title">
+    <Value>Puan Eşikleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Success">
+    <Value>Başarılı (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Warning">
+    <Value>Orta (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveAll">
+    <Value>Tümünü Kaydet</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveSuccess">
+    <Value>Puan eşikleri başarıyla kaydedildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveError">
+    <Value>Puan eşikleri kaydedilirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.LoadError">
+    <Value>Puan eşikleri yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Info">
+    <Value>Her proje tipi için başarı ve uyarı eşiklerini belirleyebilirsiniz. Bu eşikler raporlarda kullanılacaktır. Ayar yapılmayan proje tiplerinde global eşikler geçerli olacaktır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ScoreThresholds">
+    <Value>Puan Eşikleri</Value>
+  </LocaleResource>
 </Language>

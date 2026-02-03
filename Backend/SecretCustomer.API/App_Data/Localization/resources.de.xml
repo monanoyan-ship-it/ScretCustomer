@@ -10493,4 +10493,31 @@
   <LocaleResource Name="UserRequest.DealerRequests">
     <Value>Händleranfragen</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Title">
+    <Value>Bewertungsschwellen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Success">
+    <Value>Erfolg (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Warning">
+    <Value>Warnung (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveAll">
+    <Value>Alle speichern</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveSuccess">
+    <Value>Bewertungsschwellen erfolgreich gespeichert.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveError">
+    <Value>Fehler beim Speichern der Bewertungsschwellen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.LoadError">
+    <Value>Fehler beim Laden der Bewertungsschwellen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.ScoreThresholds.Info">
+    <Value>Sie können Erfolgs- und Warnschwellen für jeden Projekttyp festlegen. Diese Schwellen werden in Berichten verwendet. Für Projekttypen ohne individuelle Einstellungen gelten die globalen Schwellen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.ScoreThresholds">
+    <Value>Bewertungsschwellen</Value>
+  </LocaleResource>
 </Language>

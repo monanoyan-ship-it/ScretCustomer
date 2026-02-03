@@ -16,12 +16,14 @@ public class ReportService : IReportService
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
     private readonly IPerformanceSettingsService _performanceSettingsService;
+    private readonly ICustomerScoreThresholdService _customerScoreThresholdService;
 
-    public ReportService(ApplicationDbContext context, ILocalizationService localizationService, IPerformanceSettingsService performanceSettingsService)
+    public ReportService(ApplicationDbContext context, ILocalizationService localizationService, IPerformanceSettingsService performanceSettingsService, ICustomerScoreThresholdService customerScoreThresholdService)
     {
         _context = context;
         _localizationService = localizationService;
         _performanceSettingsService = performanceSettingsService;
+        _customerScoreThresholdService = customerScoreThresholdService;
     }
 
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
@@ -1866,7 +1868,22 @@ public class ReportService : IReportService
                     .FirstOrDefaultAsync();
                 if (projectType > 0) defaultProjectTypeId = projectType;
             }
-            var defaultSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(defaultProjectTypeId);
+
+            // Önce firmaya özel eşik kontrol et, yoksa global'e düş
+            var customerThreshold = await _customerScoreThresholdService.GetByCustomerAndProjectTypeAsync(personnel.CustomerId, defaultProjectTypeId);
+            decimal emptySuccessThreshold = 80;
+            decimal emptyWarningThreshold = 60;
+            if (customerThreshold != null)
+            {
+                emptySuccessThreshold = customerThreshold.SuccessThreshold;
+                emptyWarningThreshold = customerThreshold.WarningThreshold;
+            }
+            else
+            {
+                var defaultSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(defaultProjectTypeId);
+                emptySuccessThreshold = defaultSettings?.SuccessThreshold ?? 80;
+                emptyWarningThreshold = defaultSettings?.WarningThreshold ?? 60;
+            }
 
             return new PersonnelReportCardDto
             {
@@ -1874,8 +1891,8 @@ public class ReportService : IReportService
                 PersonnelName = $"{personnel.FirstName} {personnel.LastName}",
                 Title = personnel.Title ?? "",
                 Department = personnel.Department,
-                SuccessThreshold = defaultSettings?.SuccessThreshold ?? 80,
-                WarningThreshold = defaultSettings?.WarningThreshold ?? 60
+                SuccessThreshold = emptySuccessThreshold,
+                WarningThreshold = emptyWarningThreshold
             };
         }
 
@@ -1992,14 +2009,60 @@ public class ReportService : IReportService
             .Take(5)
             .ToList();
 
-        // Proje tipine göre PerformanceSettings'ten threshold değerlerini al
+        // Proje tipine göre threshold değerlerini al: önce firmaya özel, yoksa global
         var projectTypeId = evaluations
             .Select(e => e.Assignment?.Project?.ProjectTypeId)
             .FirstOrDefault(pt => pt.HasValue) ?? ProjectTypes.Ids.CallAuditing;
 
-        var performanceSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(projectTypeId);
-        var successThreshold = performanceSettings?.SuccessThreshold ?? 80;
-        var warningThreshold = performanceSettings?.WarningThreshold ?? 60;
+        decimal successThreshold = 80;
+        decimal warningThreshold = 60;
+        var customerThresholdResult = await _customerScoreThresholdService.GetByCustomerAndProjectTypeAsync(personnel.CustomerId, projectTypeId);
+        if (customerThresholdResult != null)
+        {
+            successThreshold = customerThresholdResult.SuccessThreshold;
+            warningThreshold = customerThresholdResult.WarningThreshold;
+        }
+        else
+        {
+            var performanceSettings = await _performanceSettingsService.GetByProjectTypeIdAsync(projectTypeId);
+            successThreshold = performanceSettings?.SuccessThreshold ?? 80;
+            warningThreshold = performanceSettings?.WarningThreshold ?? 60;
+        }
+
+        // Süreç analizi: Proje + Soru + Periyot bazlı ortalama puan ve hata sayısı
+        var processAnalysis = evaluations
+            .Where(e => e.CompletedAt.HasValue)
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
+                .Select(a => new
+                {
+                    ProjectName = e.Assignment?.Project?.Name ?? "",
+                    QuestionText = a.Question!.Text,
+                    Year = e.CompletedAt!.Value.Year,
+                    Month = e.CompletedAt.Value.Month,
+                    EarnedPoints = a.EarnedPoints ?? 0,
+                    WeightPoints = a.Question.WeightPoints,
+                    IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
+                        ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
+                        : a.IsPenaltyApplied
+                }))
+            .GroupBy(x => new { x.ProjectName, x.QuestionText, x.Year, x.Month })
+            .Select(g => new PersonnelProcessAnalysisDto
+            {
+                ProjectName = g.Key.ProjectName,
+                Department = personnel.Department ?? "",
+                QuestionText = g.Key.QuestionText,
+                Year = g.Key.Year,
+                PeriodMonth = $"{g.Key.Year}{g.Key.Month:D2}",
+                AverageScore = g.Sum(x => x.WeightPoints) > 0
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.WeightPoints) * 100, 0)
+                    : 0,
+                ErrorCount = g.Count(x => x.IsError)
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.QuestionText)
+            .ThenBy(x => x.PeriodMonth)
+            .ToList();
 
         return new PersonnelReportCardDto
         {
@@ -2018,12 +2081,13 @@ public class ReportService : IReportService
             RecentEvaluations = recentEvaluations,
             Strengths = strengths,
             Weaknesses = weaknesses,
+            ProcessAnalysis = processAnalysis,
             SuccessThreshold = successThreshold,
             WarningThreshold = warningThreshold
         };
     }
 
-    public async Task<ExcelExportDto> ExportPersonnelReportCardToPdfAsync(PersonnelReportCardFilterDto filter)
+    public async Task<ExcelExportDto> ExportPersonnelReportCardToExcelAsync(PersonnelReportCardFilterDto filter)
     {
         var report = await GetPersonnelReportCardAsync(filter);
         if (report == null)
@@ -2184,6 +2248,40 @@ public class ReportService : IReportService
         }
         analysisSheet.Columns().AdjustToContents();
         ExcelHelper.ApplyLongTextColumnStyles(analysisSheet);
+
+        // Süreç Analizi
+        if (report.ProcessAnalysis.Any())
+        {
+            var processSheet = workbook.Worksheets.Add("Süreç Analizi");
+            processSheet.Cell(1, 1).Value = "Proje";
+            processSheet.Cell(1, 2).Value = "Müşteri Temsilcisi";
+            processSheet.Cell(1, 3).Value = "Departman";
+            processSheet.Cell(1, 4).Value = "Kontrol Sorusu";
+            processSheet.Cell(1, 5).Value = "Periyot";
+            processSheet.Cell(1, 6).Value = "Periyot (Ay)";
+            processSheet.Cell(1, 7).Value = "Ortalama Puan";
+            processSheet.Cell(1, 8).Value = "Hata Sayısı";
+
+            var headerRange = processSheet.Range(1, 1, 1, 8);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            row = 2;
+            foreach (var item in report.ProcessAnalysis)
+            {
+                processSheet.Cell(row, 1).Value = item.ProjectName;
+                processSheet.Cell(row, 2).Value = report.PersonnelName;
+                processSheet.Cell(row, 3).Value = item.Department;
+                processSheet.Cell(row, 4).Value = item.QuestionText;
+                processSheet.Cell(row, 5).Value = item.Year;
+                processSheet.Cell(row, 6).Value = item.PeriodMonth;
+                processSheet.Cell(row, 7).Value = item.AverageScore;
+                processSheet.Cell(row, 8).Value = item.ErrorCount;
+                row++;
+            }
+            processSheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(processSheet);
+        }
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);

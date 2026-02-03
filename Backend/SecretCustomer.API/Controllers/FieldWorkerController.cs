@@ -16,11 +16,6 @@ public class FieldWorkerController : Controller
         return View();
     }
 
-    public IActionResult Requests()
-    {
-        return View();
-    }
-
     public IActionResult VisitPopup(int? assignmentId, int? evaluationId, int? dealerId)
     {
         ViewBag.AssignmentId = assignmentId;
