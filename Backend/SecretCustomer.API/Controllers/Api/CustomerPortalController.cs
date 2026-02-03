@@ -1,7 +1,9 @@
 using ClosedXML.Excel;
+using ClosedXML.Excel.Drawings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.DTOs.Dashboard;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Helpers;
@@ -9,6 +11,7 @@ using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -1073,6 +1076,220 @@ public class CustomerPortalApiController : ControllerBase
 
         var fileName = $"PuanDagilimi_{categoryLabel.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    /// <summary>
+    /// Dashboard chart'larini Excel'e export et (chart gorseli + veri tablosu)
+    /// </summary>
+    [HttpPost("dashboard/charts/export")]
+    public IActionResult ExportChartToExcel([FromBody] ChartExportRequestDto dto)
+    {
+        if (string.IsNullOrEmpty(dto.ChartImage) || string.IsNullOrEmpty(dto.DataJson))
+            return BadRequest(new { message = "Chart image ve data gereklidir." });
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Chart");
+
+        var title = dto.ChartTitle ?? dto.ChartType;
+        // Row 1: Title (bold, merged)
+        worksheet.Cell(1, 1).Value = title;
+        worksheet.Cell(1, 1).Style.Font.Bold = true;
+        worksheet.Cell(1, 1).Style.Font.FontSize = 14;
+        worksheet.Range(1, 1, 1, 6).Merge();
+
+        // Row 2: Date
+        worksheet.Cell(2, 1).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        worksheet.Cell(2, 1).Style.Font.FontColor = XLColor.Gray;
+
+        // Row 4+: Chart image
+        var imageStartRow = 4;
+        var imageRowCount = 15; // approximate rows the image will span
+        try
+        {
+            var base64Data = dto.ChartImage;
+            if (base64Data.Contains(","))
+                base64Data = base64Data.Substring(base64Data.IndexOf(",") + 1);
+
+            var imageBytes = Convert.FromBase64String(base64Data);
+            using var imgStream = new MemoryStream(imageBytes);
+            var picture = worksheet.AddPicture(imgStream, XLPictureFormat.Png);
+            picture.MoveTo(worksheet.Cell(imageStartRow, 1));
+            picture.Scale(0.6);
+
+            // Estimate how many rows the image takes
+            imageRowCount = (int)Math.Ceiling(picture.Height / 15.0 * 0.6);
+            if (imageRowCount < 15) imageRowCount = 15;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Chart image embed failed");
+            worksheet.Cell(imageStartRow, 1).Value = "(Grafik goruntusu yuklenemedi)";
+        }
+
+        // Data table starts after image
+        var dataStartRow = imageStartRow + imageRowCount + 2;
+
+        try
+        {
+            switch (dto.ChartType?.ToLower())
+            {
+                case "monthly-trend":
+                    BuildMonthlyTrendTable(worksheet, dto.DataJson, dataStartRow);
+                    break;
+                case "score-distribution":
+                    BuildScoreDistributionTable(worksheet, dto.DataJson, dataStartRow);
+                    break;
+                case "question-trend":
+                    BuildQuestionTrendTable(worksheet, dto.DataJson, dataStartRow);
+                    break;
+                default:
+                    worksheet.Cell(dataStartRow, 1).Value = "Bilinmeyen chart tipi: " + dto.ChartType;
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Chart data table build failed for type {ChartType}", dto.ChartType);
+            worksheet.Cell(dataStartRow, 1).Value = "(Veri tablosu olusturulamadi)";
+        }
+
+        worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+
+        var fileName = $"{title.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    private void BuildMonthlyTrendTable(IXLWorksheet ws, string dataJson, int startRow)
+    {
+        var items = JsonSerializer.Deserialize<List<JsonElement>>(dataJson);
+        if (items == null || items.Count == 0) return;
+
+        // Header
+        ws.Cell(startRow, 1).Value = "Ay";
+        ws.Cell(startRow, 2).Value = "Ort. Puan";
+        ws.Cell(startRow, 3).Value = "Degerlendirme";
+        ws.Cell(startRow, 4).Value = "Sari Kart";
+        ws.Cell(startRow, 5).Value = "Kirmizi Kart";
+
+        var headerRange = ws.Range(startRow, 1, startRow, 5);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var row = startRow + 1 + i;
+            var item = items[i];
+            ws.Cell(row, 1).Value = item.GetProperty("month").GetString() ?? "";
+            ws.Cell(row, 2).Value = item.GetProperty("averageScore").GetDouble();
+            ws.Cell(row, 3).Value = item.GetProperty("count").GetInt32();
+            ws.Cell(row, 4).Value = GetJsonInt(item, "yellowCardCount");
+            ws.Cell(row, 5).Value = GetJsonInt(item, "redCardCount");
+        }
+    }
+
+    private void BuildScoreDistributionTable(IXLWorksheet ws, string dataJson, int startRow)
+    {
+        var data = JsonSerializer.Deserialize<JsonElement>(dataJson);
+
+        // Header
+        ws.Cell(startRow, 1).Value = "Kategori";
+        ws.Cell(startRow, 2).Value = "Adet";
+
+        var headerRange = ws.Range(startRow, 1, startRow, 2);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        var categories = new[] {
+            ("Mukemmel (90+)", "excellent"),
+            ("Iyi (80-89)", "good"),
+            ("Orta (60-79)", "average"),
+            ("Dusuk (<60)", "poor")
+        };
+
+        for (int i = 0; i < categories.Length; i++)
+        {
+            var row = startRow + 1 + i;
+            ws.Cell(row, 1).Value = categories[i].Item1;
+            ws.Cell(row, 2).Value = GetJsonInt(data, categories[i].Item2);
+        }
+    }
+
+    private void BuildQuestionTrendTable(IXLWorksheet ws, string dataJson, int startRow)
+    {
+        var data = JsonSerializer.Deserialize<JsonElement>(dataJson);
+        if (data.ValueKind != JsonValueKind.Object) return;
+
+        var monthLabels = new List<string>();
+        if (data.TryGetProperty("monthLabels", out var labelsEl) && labelsEl.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var label in labelsEl.EnumerateArray())
+                monthLabels.Add(label.GetString() ?? "");
+        }
+
+        // Determine which property holds trends
+        JsonElement trendsEl;
+        if (data.TryGetProperty("groupTrends", out trendsEl) || data.TryGetProperty("questionTrends", out trendsEl))
+        {
+            // ok
+        }
+        else
+        {
+            return;
+        }
+
+        if (trendsEl.ValueKind != JsonValueKind.Array) return;
+        var trends = trendsEl.EnumerateArray().ToList();
+        if (trends.Count == 0) return;
+
+        // Header row: "Soru/Grup", Month1, Month2, ...
+        ws.Cell(startRow, 1).Value = "Soru / Grup";
+        for (int j = 0; j < monthLabels.Count; j++)
+        {
+            ws.Cell(startRow, 2 + j).Value = monthLabels[j];
+        }
+
+        var colCount = 1 + monthLabels.Count;
+        var headerRange = ws.Range(startRow, 1, startRow, colCount);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        // Data rows
+        for (int i = 0; i < trends.Count; i++)
+        {
+            var row = startRow + 1 + i;
+            var trend = trends[i];
+
+            // Name from groupName or questionText
+            var name = "";
+            if (trend.TryGetProperty("groupName", out var gn)) name = gn.GetString() ?? "";
+            else if (trend.TryGetProperty("questionText", out var qt)) name = qt.GetString() ?? "";
+
+            ws.Cell(row, 1).Value = name;
+
+            if (trend.TryGetProperty("scores", out var scoresEl) && scoresEl.ValueKind == JsonValueKind.Array)
+            {
+                var scores = scoresEl.EnumerateArray().ToList();
+                for (int j = 0; j < scores.Count && j < monthLabels.Count; j++)
+                {
+                    if (scores[j].ValueKind == JsonValueKind.Number)
+                        ws.Cell(row, 2 + j).Value = scores[j].GetDouble();
+                    else if (scores[j].ValueKind == JsonValueKind.Null)
+                        ws.Cell(row, 2 + j).Value = "";
+                }
+            }
+        }
+    }
+
+    private static int GetJsonInt(JsonElement el, string property)
+    {
+        if (el.TryGetProperty(property, out var val) && val.ValueKind == JsonValueKind.Number)
+            return val.GetInt32();
+        return 0;
     }
 
     /// <summary>
@@ -2207,6 +2424,7 @@ public class CustomerPortalApiController : ControllerBase
                 e.Id,
                 evaluationDate = e.CompletedAt ?? e.CreatedAt,
                 projectName = e.Assignment.Project.Name,
+                projectCode = e.Assignment.Project.Code,
                 evaluatorName = e.EvaluatorCustomerPersonnel != null ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName : null,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
                 organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,

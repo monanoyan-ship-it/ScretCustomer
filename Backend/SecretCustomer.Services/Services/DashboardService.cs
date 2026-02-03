@@ -206,7 +206,7 @@ public class DashboardService : IDashboardService
     /// <summary>
     /// Günlük dinleme metriklerini getirir
     /// </summary>
-    public async Task<DailyMetricsDto> GetDailyMetricsAsync()
+    public async Task<DailyMetricsDto> GetDailyMetricsAsync(int? userId = null)
     {
         var now = DateTime.UtcNow;
         var today = now.Date;
@@ -217,9 +217,14 @@ public class DashboardService : IDashboardService
         // Günlük hedef
         var dailyTarget = await _systemSettingService.GetIntValueAsync(SystemSettingKeys.DailyEvaluationTarget, 55);
 
+        // Base query
+        var baseQuery = _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed);
+        if (userId.HasValue)
+            baseQuery = baseQuery.Where(e => e.EvaluatorId == userId.Value);
+
         // Bugün
-        var todayEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var todayEvaluations = await baseQuery
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
             .ToListAsync();
 
@@ -229,8 +234,7 @@ public class DashboardService : IDashboardService
             : 0;
 
         // Bu hafta
-        var weekEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var weekEvaluations = await baseQuery
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= weekStart && e.CompletedAt.Value.Date <= today)
             .ToListAsync();
 
@@ -240,8 +244,7 @@ public class DashboardService : IDashboardService
             : 0;
 
         // Bu ay
-        var monthEvaluations = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var monthEvaluations = await baseQuery
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
             .CountAsync();
 
@@ -253,8 +256,7 @@ public class DashboardService : IDashboardService
             .Select(i => today.AddDays(-6 + i))
             .ToList();
 
-        var trendData = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var trendData = await baseQuery
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= today.AddDays(-6))
             .GroupBy(e => e.CompletedAt!.Value.Date)
             .Select(g => new
@@ -395,7 +397,7 @@ public class DashboardService : IDashboardService
     /// <summary>
     /// Hedef takip metriklerini getirir
     /// </summary>
-    public async Task<TargetProgressDto> GetTargetProgressAsync()
+    public async Task<TargetProgressDto> GetTargetProgressAsync(int? userId = null)
     {
         var now = DateTime.UtcNow;
         var today = now.Date;
@@ -403,9 +405,14 @@ public class DashboardService : IDashboardService
         // Günlük hedef
         var dailyTarget = await _systemSettingService.GetIntValueAsync(SystemSettingKeys.DailyEvaluationTarget, 55);
 
+        // Base query
+        var baseQuery = _context.Evaluations
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed);
+        if (userId.HasValue)
+            baseQuery = baseQuery.Where(e => e.EvaluatorId == userId.Value);
+
         // Bugün yapılanlar
-        var todayCompleted = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var todayCompleted = await baseQuery
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
             .CountAsync();
 
@@ -430,12 +437,11 @@ public class DashboardService : IDashboardService
             periodTarget = activePeriod.TargetCount;
 
             // Dönemdeki tamamlanan değerlendirmeler
-            periodCompleted = await _context.Evaluations
-                .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+            var periodQuery = baseQuery
                 .Where(e => e.CompletedAt.HasValue &&
                            e.CompletedAt.Value >= activePeriod.StartDate &&
-                           e.CompletedAt.Value <= activePeriod.EndDate)
-                .CountAsync();
+                           e.CompletedAt.Value <= activePeriod.EndDate);
+            periodCompleted = await periodQuery.CountAsync();
 
             periodPercentage = periodTarget > 0 ? Math.Min(100, (decimal)periodCompleted / periodTarget * 100) : 0;
         }
@@ -455,10 +461,10 @@ public class DashboardService : IDashboardService
         var projectIds = activeProjects.Select(p => p.Id).ToList();
 
         // Her proje için tamamlanan değerlendirmeler
-        var projectCompletedCounts = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var projectCompletedQuery = baseQuery
             .Where(e => e.Assignment != null)
-            .Where(e => projectIds.Contains(e.Assignment!.ProjectId))
+            .Where(e => projectIds.Contains(e.Assignment!.ProjectId));
+        var projectCompletedCounts = await projectCompletedQuery
             .GroupBy(e => e.Assignment!.ProjectId)
             .Select(g => new { ProjectId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ProjectId, x => x.Count);

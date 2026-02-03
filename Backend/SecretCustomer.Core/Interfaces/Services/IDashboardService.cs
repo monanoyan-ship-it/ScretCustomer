@@ -10,9 +10,9 @@ public interface IDashboardService
     Task<ScorecardDto> GetScorecardAsync(int userId);
 
     // Yeni metrikler
-    Task<DailyMetricsDto> GetDailyMetricsAsync();
+    Task<DailyMetricsDto> GetDailyMetricsAsync(int? userId = null);
     Task<UserPerformanceDto> GetUserPerformanceAsync(int? currentUserId = null);
-    Task<TargetProgressDto> GetTargetProgressAsync();
+    Task<TargetProgressDto> GetTargetProgressAsync(int? userId = null);
 
     // Kullanıcı proje kırılımı (Bu ay en çok dinleyenler detayı)
     Task<UserProjectBreakdownDto> GetUserProjectBreakdownAsync(int userId);

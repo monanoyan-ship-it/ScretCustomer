@@ -710,6 +710,67 @@ function CustomerDashboardViewModel() {
         toastr.success('PDF indirildi');
     };
 
+    // Export chart to Excel (image + data table)
+    self.exportChartToExcel = function(chartType, elementId, filename) {
+        var element = document.getElementById(elementId);
+        if (!element) {
+            toastr.error('Grafik bulunamadi');
+            return;
+        }
+
+        var canvas = element.querySelector('canvas');
+        if (!canvas) {
+            toastr.error('Grafik canvas bulunamadi');
+            return;
+        }
+
+        toastr.info('Excel olusturuluyor...');
+
+        var chartImage = canvas.toDataURL('image/png', 1.0);
+
+        // Get chart title
+        var headerEl = element.querySelector('.card-header h6');
+        var chartTitle = headerEl ? headerEl.textContent.trim() : filename;
+
+        // Get data based on chart type
+        var dataObj;
+        switch (chartType) {
+            case 'monthly-trend':
+                dataObj = self.monthlyTrendData || [];
+                break;
+            case 'score-distribution':
+                dataObj = self.scoreDistributionData || {};
+                break;
+            case 'question-trend':
+                dataObj = {
+                    monthLabels: self.questionTrendLabels(),
+                    groupTrends: self.questionTrendTab() === 'groups' ? self.questionTrendData() : undefined,
+                    questionTrends: self.questionTrendTab() === 'questions' ? self.questionTrendData() : undefined
+                };
+                break;
+            default:
+                dataObj = {};
+        }
+
+        var requestBody = {
+            chartType: chartType,
+            chartImage: chartImage,
+            chartTitle: chartTitle,
+            dataJson: JSON.stringify(dataObj)
+        };
+
+        customerApiDownloadPost(
+            '/api/customer/portal/dashboard/charts/export',
+            requestBody,
+            filename + '_' + new Date().toISOString().split('T')[0] + '.xlsx'
+        ).then(function() {
+            toastr.success('Excel indirildi');
+        }).catch(function(error) {
+            console.error('Excel export error:', error);
+            toastr.error('Excel olusturulurken hata olustu');
+        });
+    };
+
     // Initialize
     self.loadDashboard();
     self.loadQuestionGroupTrend();

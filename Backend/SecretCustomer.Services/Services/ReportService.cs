@@ -494,7 +494,9 @@ public class ReportService : IReportService
                     GivenPoints = a.EarnedPoints,
                     MaxPoints = a.Question.WeightPoints,
                     AppliedPenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName,
+                    IsPenaltyApplied = a.IsPenaltyApplied,
                     Notes = a.Notes,
+                    RecommendationNotes = a.RecommendationNotes,
                     // View uyumluluğu için ek alanlar
                     AnswerNumeric = a.AnswerNumeric,
                     AnswerText = a.AnswerText,
@@ -3579,7 +3581,9 @@ public class ReportService : IReportService
             var periodMonth = evalDate.ToString("yyyyMM");
 
             worksheet.Cell(row, 1).Value = customerName;
-            worksheet.Cell(row, 2).Value = e.Assignment.Project?.Name ?? "";
+            var projectCode = e.Assignment.Project?.Code;
+            var projectName = e.Assignment.Project?.Name ?? "";
+            worksheet.Cell(row, 2).Value = !string.IsNullOrEmpty(projectCode) ? $"{projectCode} - {projectName}" : projectName;
             worksheet.Cell(row, 3).Value = degerlendirilenmStr;
             worksheet.Cell(row, 4).Value = personnelName;
             worksheet.Cell(row, 5).Value = departmentName;

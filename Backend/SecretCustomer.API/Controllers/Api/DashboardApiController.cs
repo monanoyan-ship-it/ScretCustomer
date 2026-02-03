@@ -114,13 +114,24 @@ public class DashboardApiController : BaseApiController
 
     /// <summary>
     /// Günlük dinleme metrikleri
+    /// Admin: Tüm şirket verisi, Non-admin: Sadece kendi verileri
     /// </summary>
     [HttpGet("daily-metrics")]
     public async Task<IActionResult> GetDailyMetrics()
     {
         try
         {
-            var metrics = await _dashboardService.GetDailyMetricsAsync();
+            int? userId = null;
+            if (!User.IsInRole("Admin"))
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var parsedId))
+                {
+                    userId = parsedId;
+                }
+            }
+
+            var metrics = await _dashboardService.GetDailyMetricsAsync(userId);
             return Ok(metrics);
         }
         catch (Exception ex)
@@ -157,13 +168,24 @@ public class DashboardApiController : BaseApiController
 
     /// <summary>
     /// Hedef takip metrikleri
+    /// Admin: Tüm şirket verisi, Non-admin: Sadece kendi verileri
     /// </summary>
     [HttpGet("target-progress")]
     public async Task<IActionResult> GetTargetProgress()
     {
         try
         {
-            var progress = await _dashboardService.GetTargetProgressAsync();
+            int? userId = null;
+            if (!User.IsInRole("Admin"))
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var parsedId))
+                {
+                    userId = parsedId;
+                }
+            }
+
+            var progress = await _dashboardService.GetTargetProgressAsync(userId);
             return Ok(progress);
         }
         catch (Exception ex)

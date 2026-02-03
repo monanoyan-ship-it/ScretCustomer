@@ -239,7 +239,13 @@
                                 <td>
                                     <span data-bind="text: duration || '-'"></span>
                                 </td>
-                                <td data-bind="text: projectName"></td>
+                                <td>
+                                    <!-- ko if: projectCode -->
+                                    <span class="text-muted" data-bind="text: projectCode"></span>
+                                    <span> - </span>
+                                    <!-- /ko -->
+                                    <span data-bind="text: projectName"></span>
+                                </td>
                                 <td data-bind="text: evaluatorName || '-'"></td>
                                 <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                 <td data-bind="text: organizationName || '-'"></td>

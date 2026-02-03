@@ -153,7 +153,9 @@ public class EvaluationAnswerDto
     public decimal? GivenPoints { get; set; }
     public decimal MaxPoints { get; set; }
     public string? AppliedPenaltyType { get; set; }
+    public bool IsPenaltyApplied { get; set; }
     public string? Notes { get; set; }
+    public string? RecommendationNotes { get; set; }
 
     // View uyumluluğu için ek alanlar
     public decimal? AnswerNumeric { get; set; }

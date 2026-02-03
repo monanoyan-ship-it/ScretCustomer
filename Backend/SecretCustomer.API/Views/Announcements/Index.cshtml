@@ -1,0 +1,267 @@
+@{
+    ViewData["Title"] = @Html.T("Announcement.Title", "Duyurular");
+}
+
+<div id="announcements-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0"><i class="bi bi-megaphone me-2"></i>@Html.T("Announcement.Title", "Duyurular")</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("Announcement.Title", "Duyurular")</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bind="click: openCreateModal">
+            <i class="bi bi-plus-lg me-1"></i>@Html.T("Announcement.Create", "Yeni Duyuru")
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Type", "Tip")</label>
+                    <select class="form-select" data-bind="value: filterTypeId">
+                        <option value="">@Html.T("Common.All", "T&uuml;m&uuml;")</option>
+                        <option value="0">@Html.T("AnnouncementType.Info", "Bilgi")</option>
+                        <option value="1">@Html.T("AnnouncementType.Warning", "Uyar&inodot;")</option>
+                        <option value="2">@Html.T("AnnouncementType.Success", "Ba&scedil;ar&inodot;")</option>
+                        <option value="3">@Html.T("AnnouncementType.Important", "&Ouml;nemli")</option>
+                        <option value="4">@Html.T("AnnouncementType.News", "Haber")</option>
+                        <option value="5">@Html.T("AnnouncementType.System", "Sistem")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Status", "Durum")</label>
+                    <select class="form-select" data-bind="value: filterStatus">
+                        <option value="">@Html.T("Common.All", "T&uuml;m&uuml;")</option>
+                        <option value="active">@Html.T("Common.Active", "Aktif")</option>
+                        <option value="inactive">@Html.T("Common.Inactive", "Pasif")</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Search", "Arama")</label>
+                    <input type="text" class="form-control" data-bind="value: filterSearch, valueUpdate: 'afterkeydown'"
+                           placeholder="@Html.T("Announcement.SearchPlaceholder", "Ba&scedil;l&inodot;k ara...")" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" data-bind="click: clearFilters">
+                        <i class="bi bi-x-circle me-1"></i>@Html.T("Common.Clear", "Temizle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Y&uuml;kleniyor...")</p>
+    </div>
+
+    <!-- Table -->
+    <div data-bind="visible: !isLoading()">
+        <div class="card shadow-sm" data-bind="visible: filteredAnnouncements().length > 0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Html.T("Announcement.FieldTitle", "Ba&scedil;l&inodot;k")</th>
+                            <th style="width:100px;">@Html.T("Common.Type", "Tip")</th>
+                            <th class="text-center" style="width:80px;">@Html.T("Announcement.Priority", "&Ouml;ncelik")</th>
+                            <th class="text-center" style="width:80px;">@Html.T("Common.Status", "Durum")</th>
+                            <th class="text-center" style="width:80px;">@Html.T("Announcement.Pinned", "Sabit")</th>
+                            <th style="width:120px;">@Html.T("Announcement.PublishDate", "Yay&inodot;n Tarihi")</th>
+                            <th style="width:120px;">@Html.T("Announcement.ExpiryDate", "Biti&scedil; Tarihi")</th>
+                            <th style="width:130px;">@Html.T("Common.CreatedBy", "Olu&scedil;turan")</th>
+                            <th class="text-end" style="width:120px;">@Html.T("Common.Actions", "&Idot;&scedil;lemler")</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: filteredAnnouncements">
+                        <tr data-bind="css: { 'opacity-50': !isActive }">
+                            <td>
+                                <strong data-bind="text: title"></strong>
+                                <!-- ko if: summary -->
+                                <br><small class="text-muted" data-bind="text: summary"></small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <span class="badge" data-bind="text: $parent.getTypeName(typeId), css: $parent.getTypeBadgeClass(typeId)"></span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary" data-bind="text: priority"></span>
+                            </td>
+                            <td class="text-center">
+                                <span data-bind="visible: isActive" class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>
+                                <span data-bind="visible: !isActive" class="badge bg-danger">@Html.T("Common.Inactive", "Pasif")</span>
+                            </td>
+                            <td class="text-center">
+                                <!-- ko if: isPinned -->
+                                <i class="bi bi-pin-fill text-warning"></i>
+                                <!-- /ko -->
+                                <!-- ko ifnot: isPinned -->
+                                <span class="text-muted">-</span>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <small data-bind="text: $parent.formatDate(publishDate)"></small>
+                            </td>
+                            <td>
+                                <!-- ko if: expiryDate -->
+                                <small data-bind="text: $parent.formatDate(expiryDate)"></small>
+                                <!-- /ko -->
+                                <!-- ko ifnot: expiryDate -->
+                                <small class="text-muted">-</small>
+                                <!-- /ko -->
+                            </td>
+                            <td>
+                                <small data-bind="text: createdByUserName || '-'"></small>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bind="click: $parent.openEditModal" title="@Html.T("Common.Edit", "D&uuml;zenle")">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bind="click: $parent.deleteAnnouncement" title="@Html.T("Common.Delete", "Sil")">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div data-bind="visible: filteredAnnouncements().length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-megaphone fs-1"></i>
+            <p class="mt-2">@Html.T("Announcement.NoRecords", "Hen&uuml;z duyuru bulunmuyor.")</p>
+            <button class="btn btn-primary" data-bind="click: openCreateModal">
+                <i class="bi bi-plus-lg me-1"></i>@Html.T("Announcement.CreateFirst", "&Idot;lk Duyuruyu Olu&scedil;tur")
+            </button>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div class="modal fade" id="announcementModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <!-- ko if: isEditing() -->
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Announcement.Edit", "Duyuru D&uuml;zenle")
+                        <!-- /ko -->
+                        <!-- ko ifnot: isEditing() -->
+                        <i class="bi bi-plus-lg me-2"></i>@Html.T("Announcement.Create", "Yeni Duyuru")
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Title -->
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Announcement.FieldTitle", "Ba&scedil;l&inodot;k") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" data-bind="value: form.title" maxlength="200" />
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Announcement.Summary", "&Ouml;zet")</label>
+                            <input type="text" class="form-control" data-bind="value: form.summary" maxlength="500"
+                                   placeholder="@Html.T("Announcement.SummaryPlaceholder", "Dashboard i&ccedil;in k&inodot;sa &ouml;zet (opsiyonel)")" />
+                        </div>
+
+                        <!-- Content -->
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Announcement.Content", "&Idot;&ccedil;erik") <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="5" data-bind="value: form.content"></textarea>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-4">
+                            <label class="form-label">@Html.T("Common.Type", "Tip")</label>
+                            <select class="form-select" data-bind="value: form.typeId">
+                                <option value="0">@Html.T("AnnouncementType.Info", "Bilgi")</option>
+                                <option value="1">@Html.T("AnnouncementType.Warning", "Uyar&inodot;")</option>
+                                <option value="2">@Html.T("AnnouncementType.Success", "Ba&scedil;ar&inodot;")</option>
+                                <option value="3">@Html.T("AnnouncementType.Important", "&Ouml;nemli")</option>
+                                <option value="4">@Html.T("AnnouncementType.News", "Haber")</option>
+                                <option value="5">@Html.T("AnnouncementType.System", "Sistem")</option>
+                            </select>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="col-md-4">
+                            <label class="form-label">@Html.T("Announcement.Priority", "&Ouml;ncelik")</label>
+                            <select class="form-select" data-bind="value: form.priority">
+                                <option value="1">1 - @Html.T("Priority.Lowest", "En D&uuml;&scedil;&uuml;k")</option>
+                                <option value="2">2 - @Html.T("Priority.Low", "D&uuml;&scedil;&uuml;k")</option>
+                                <option value="3">3 - @Html.T("Priority.Normal", "Normal")</option>
+                                <option value="4">4 - @Html.T("Priority.High", "Y&uuml;ksek")</option>
+                                <option value="5">5 - @Html.T("Priority.Highest", "En Y&uuml;ksek")</option>
+                            </select>
+                        </div>
+
+                        <!-- Target Roles -->
+                        <div class="col-md-4">
+                            <label class="form-label">@Html.T("Announcement.TargetRoles", "Hedef Roller")</label>
+                            <input type="text" class="form-control" data-bind="value: form.targetRoles"
+                                   placeholder="@Html.T("Announcement.TargetRolesPlaceholder", "Bo&scedil; = Herkes")" />
+                            <small class="text-muted">@Html.T("Announcement.TargetRolesHelp", "Virg&uuml;lle ay&inodot;r&inodot;n: Admin,QualitySpecialist")</small>
+                        </div>
+
+                        <!-- Publish Date -->
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Announcement.PublishDate", "Yay&inodot;n Tarihi")</label>
+                            <input type="datetime-local" class="form-control" data-bind="value: form.publishDate" />
+                        </div>
+
+                        <!-- Expiry Date -->
+                        <div class="col-md-6">
+                            <label class="form-label">@Html.T("Announcement.ExpiryDate", "Biti&scedil; Tarihi")</label>
+                            <input type="datetime-local" class="form-control" data-bind="value: form.expiryDate" />
+                            <small class="text-muted">@Html.T("Announcement.ExpiryDateHelp", "Bo&scedil; b&inodot;rak&inodot;l&inodot;rsa s&uuml;resiz")</small>
+                        </div>
+
+                        <!-- Switches -->
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isActiveSwitch" data-bind="checked: form.isActive">
+                                <label class="form-check-label" for="isActiveSwitch">@Html.T("Common.Active", "Aktif")</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isPinnedSwitch" data-bind="checked: form.isPinned">
+                                <label class="form-check-label" for="isPinnedSwitch">@Html.T("Announcement.Pinned", "Sabitlenmi&scedil;")</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        @Html.T("Common.Cancel", "&Idot;ptal")
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveAnnouncement, disable: isSaving">
+                        <span data-bind="visible: !isSaving()">
+                            <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Save", "Kaydet")
+                        </span>
+                        <span data-bind="visible: isSaving">
+                            <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Announcements/index.js"></script>
+}
