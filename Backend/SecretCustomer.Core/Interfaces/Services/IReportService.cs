@@ -74,6 +74,17 @@ public interface IReportService
     // Çağrı Denetleme Raporu Excel export
     Task<ExcelExportDto> ExportCallAuditReportAsync(ReportFilterDto filter);
 
+    // ===== ZİYARET DENETİM RAPORU =====
+
+    // Ziyaret Denetleme Raporu Excel export
+    Task<ExcelExportDto> ExportVisitAuditReportAsync(ReportFilterDto filter);
+
+    // Müşteri Ziyaret Değerlendirme Raporu Excel export
+    Task<ExcelExportDto> ExportVisitCustomerEvaluationReportAsync(ReportFilterDto filter);
+
+    // Ziyaret Değerlendirme Detayı Excel export
+    Task<ExcelExportDto?> ExportVisitEvaluationDetailToExcelAsync(int evaluationId);
+
     // ===== SORU GRUBU ORTALAMA RAPORU =====
 
     // Soru Grubu Ortalama Raporu Excel export
@@ -171,4 +182,13 @@ public interface IReportService
 
     // Enneagram proje bazlı kişilik tipi dağılımı
     Task<EnneagramDistributionResultDto?> GetEnneagramDistributionAsync(int projectId);
+
+    // ===== ŞUBE KARNESİ =====
+
+    Task<IEnumerable<CustomerListItemDto>> GetCustomersWithDealersAsync();
+    Task<IEnumerable<DealerListItemDto>> GetDealerListAsync(int? customerId = null);
+    Task<IEnumerable<ProjectListItemDto>> GetDealerProjectsAsync(int dealerId);
+    Task<DealerReportCardDto?> GetDealerReportCardAsync(DealerReportCardFilterDto filter);
+    Task<ExcelExportDto> ExportDealerReportCardToExcelAsync(DealerReportCardFilterDto filter);
+    Task<ExcelExportDto> ExportDealerReportCardToWordAsync(DealerReportCardFilterDto filter);
 }

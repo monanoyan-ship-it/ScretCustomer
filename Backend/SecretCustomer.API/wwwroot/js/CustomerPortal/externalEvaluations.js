@@ -386,8 +386,8 @@ function CustomerExternalEvaluationsViewModel() {
 
     // Load filter options
     self.loadFilterOptions = function() {
-        // Load projects (sadece CallAuditing = 2)
-        customerApiFetch('/api/customer/portal/projects?projectTypeId=2')
+        // Load projects (tüm proje tipleri - hem çağrı hem ziyaret)
+        customerApiFetch('/api/customer/portal/projects')
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.projects(data || []);
@@ -650,13 +650,29 @@ function CustomerExternalEvaluationsViewModel() {
     // Export Reports
     self.buildExportFilter = function() {
         var params = self.buildQueryParams();
-        return {
-            projectId: params.projectId ? parseInt(params.projectId) : null,
-            organizationId: params.organizationId ? parseInt(params.organizationId) : null,
-            startDate: params.startDate || null,
-            endDate: params.endDate || null,
-            evaluationSources: ['ours'] // Dış dinlemeler (bizim tarafımızdan yapılan)
+        var filter = {
+            evaluationSources: ['ours'],
+            // Tüm proje tiplerini dahil et - varsayılan CallAuditing filtresini bypass et
+            projectTypes: ['MysteryShopping', 'CallAuditing', 'PhysicalAudit', 'OnlineSurvey', 'CustomerSatisfaction', 'TrainingEvaluation', 'QualityControl']
         };
+
+        // ProjectIds (çoğul array) - kullanıcı proje filtresi seçtiyse
+        if (params.projectIds && params.projectIds.length > 0) {
+            filter.projectIds = params.projectIds.map(function(id) { return parseInt(id); });
+            delete filter.projectTypes; // ProjectIds varsa projectTypes gereksiz
+        }
+
+        // OrganizationIds (çoğul array)
+        if (params.organizationIds && params.organizationIds.length > 0) {
+            filter.organizationIds = params.organizationIds.map(function(id) { return parseInt(id); });
+        }
+
+        // DateRanges (DTO List<DateRangeFilter> formatında)
+        if (params.startDate || params.endDate) {
+            filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null }];
+        }
+
+        return filter;
     };
 
     self.getTimestamp = function() {

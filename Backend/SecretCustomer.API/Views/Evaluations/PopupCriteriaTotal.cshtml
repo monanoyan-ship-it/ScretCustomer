@@ -70,7 +70,7 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-6">
                                     <small class="text-muted d-block">@Html.T("Evaluation.Personnel", "Personel")</small>
-                                    <span class="fw-bold" data-bind="text: evaluatedPersonnelName"></span>
+                                    <span class="fw-bold" data-bind="text: evaluatedPersonnelName || dealerName || '-'"></span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>

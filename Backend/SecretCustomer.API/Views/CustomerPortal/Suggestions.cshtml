@@ -355,7 +355,7 @@
                                         <small class="d-block" data-bind="text: '(' + percentageScore.toFixed(1) + '%)', css: { 'text-success': percentageScore >= 70, 'text-warning': percentageScore >= 40 && percentageScore < 70, 'text-danger': percentageScore < 40 }"></small>
                                         <!-- /ko -->
                                     </td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary" data-bind="click: $root.showEvaluationDetails" title="@Html.T("Report.GoToEvaluation", "Değerlendirme Detayı")">
                                             <i class="bi bi-eye"></i>
@@ -433,7 +433,7 @@
                                         <!-- /ko -->
                                     </td>
                                     <td data-bind="text: projectName || '-'"></td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <!-- ko if: scorePercentage != null -->
                                         <span data-bind="text: scorePercentage.toFixed(1) + '%', css: { 'text-success': scorePercentage >= 70, 'text-warning': scorePercentage >= 40 && scorePercentage < 70, 'text-danger': scorePercentage < 40 }"></span>
@@ -530,7 +530,7 @@
                                 <div class="card bg-light">
                                     <div class="card-body py-2">
                                         <small class="text-muted">@Html.T("Common.Personnel", "Personel")</small>
-                                        <div class="fw-bold" data-bind="text: detailsData() ? detailsData().evaluatedPersonnelName : '-'"></div>
+                                        <div class="fw-bold" data-bind="text: detailsData() ? (detailsData().evaluatedPersonnelName || detailsData().dealerName || '-') : '-'"></div>
                                     </div>
                                 </div>
                             </div>

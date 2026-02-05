@@ -68,9 +68,10 @@ public class EvaluationReportDto
     public string? EvaluatedPersonnelName { get; set; }
     public string? SupervisorName { get; set; }
 
-    // Customer/Organization
+    // Customer/Organization/Dealer
     public string? CustomerName { get; set; }
     public string? OrganizationName { get; set; }
+    public string? DealerName { get; set; }
 
     // Period
     public string? PeriodName { get; set; }
@@ -91,11 +92,19 @@ public class EvaluationReportDto
     // Status
     public string Status { get; set; } = string.Empty;
 
+    // Project Type
+    public int? ProjectTypeId { get; set; }
+
     // Call Info
     public string? CallId { get; set; }
     public DateTime? CallDate { get; set; }
     public string? CallTime { get; set; }
     public string? Duration { get; set; }
+
+    // Visit Info
+    public string? VisitId { get; set; }
+    public DateTime? ControlDate { get; set; }
+    public string? ControlTime { get; set; }
 
     // Comment
     public string? Comment { get; set; }
@@ -322,6 +331,7 @@ public class PenaltyDetailDto
     public string? ChecklistName { get; set; }
     public string? EvaluatorName { get; set; }
     public string? EvaluatedPersonnelName { get; set; }
+    public string? DealerName { get; set; }
     public DateTime? EvaluationDate { get; set; }
     public string? Notes { get; set; }
     /// <summary>
@@ -639,6 +649,7 @@ public class SuggestionDetailDto
     // Değerlendirici ve personel
     public string? EvaluatorName { get; set; }
     public string? EvaluatedPersonnelName { get; set; }
+    public string? DealerName { get; set; }
 
     // Tarih
     public DateTime? EvaluationDate { get; set; }
@@ -667,6 +678,7 @@ public class EvaluationNoteDto
     public int EvaluationId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string? EvaluatedPersonnelName { get; set; }
+    public string? DealerName { get; set; }
     public DateTime? EvaluationDate { get; set; }
     public string? CallId { get; set; }
     public decimal? ScorePercentage { get; set; }
@@ -1437,4 +1449,65 @@ public class EnneagramDistributionResultDto
     public string ProjectName { get; set; } = string.Empty;
     public int TotalResponses { get; set; }
     public List<EnneagramDistributionDto> Distribution { get; set; } = new();
+}
+
+// ===== ŞUBE KARNESİ DTO'LARI =====
+
+public class DealerReportCardFilterDto
+{
+    public int DealerId { get; set; }
+    public List<int>? ProjectIds { get; set; }
+    public List<DateRangeFilter>? DateRanges { get; set; }
+}
+
+public class DealerReportCardDto
+{
+    public int DealerId { get; set; }
+    public string DealerName { get; set; } = string.Empty;
+    public string? DealerCode { get; set; }
+    public string? City { get; set; }
+    public string? District { get; set; }
+
+    public int TotalEvaluations { get; set; }
+    public decimal AverageScore { get; set; }
+    public decimal BestScore { get; set; }
+    public decimal WorstScore { get; set; }
+    public int TotalYellowCards { get; set; }
+    public int TotalRedCards { get; set; }
+
+    public List<PersonnelMonthlyTrendDto> MonthlyTrend { get; set; } = new();
+    public List<PersonnelGroupPerformanceDto> GroupPerformances { get; set; } = new();
+    public List<DealerEvaluationSummaryDto> RecentEvaluations { get; set; } = new();
+    public List<PersonnelStrengthWeaknessDto> Strengths { get; set; } = new();
+    public List<PersonnelStrengthWeaknessDto> Weaknesses { get; set; } = new();
+    public List<PersonnelProcessAnalysisDto> ProcessAnalysis { get; set; } = new();
+    public decimal SuccessThreshold { get; set; } = 80;
+    public decimal WarningThreshold { get; set; } = 60;
+}
+
+public class DealerEvaluationSummaryDto
+{
+    public int EvaluationId { get; set; }
+    public DateTime? EvaluationDate { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string ChecklistName { get; set; } = string.Empty;
+    public string? EvaluatorName { get; set; }
+    public string? PersonnelName { get; set; }
+    public decimal ScorePercentage { get; set; }
+    public int YellowCards { get; set; }
+    public int RedCards { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? ControlDate { get; set; }
+    public string? ControlTime { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class DealerListItemDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Code { get; set; }
+    public string? City { get; set; }
+    public int CustomerId { get; set; }
+    public string? CustomerName { get; set; }
 }

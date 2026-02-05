@@ -342,7 +342,7 @@
                                         </span>
                                     </td>
                                     <td data-bind="text: evaluatorName || '-'"></td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showEvaluationDetail" title="@Html.T("Report.ViewEvaluation", "Degerlendirmeyi Gor")">
                                             <i class="bi bi-eye"></i>
@@ -449,7 +449,7 @@
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.Evaluated", "Degerlendirilen")</th>
-                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                                <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
                                             <tr>

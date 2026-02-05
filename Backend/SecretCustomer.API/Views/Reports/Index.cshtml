@@ -226,7 +226,7 @@
                             </td>
                             <td>
                                 <span data-bind="text: $data.evaluatorName || '-'"></span>
-                                <small class="text-muted d-block" data-bind="visible: $data.evaluatedPersonnelName, text: '@Html.T("Report.EvaluatedPerson", "Denetlenen"): ' + ($data.evaluatedPersonnelName || '')"></small>
+                                <small class="text-muted d-block" data-bind="visible: $data.evaluatedPersonnelName || $data.dealerName, text: '@Html.T("Report.EvaluatedPerson", "Denetlenen"): ' + ($data.evaluatedPersonnelName || $data.dealerName || '')"></small>
                             </td>
                             <td>
                                 <span data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : '-'"></span>

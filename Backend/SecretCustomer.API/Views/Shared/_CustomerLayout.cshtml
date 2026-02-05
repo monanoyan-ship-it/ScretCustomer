@@ -35,7 +35,7 @@
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
                 var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings", "ScoreThresholds" };
-                var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
+                var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "DealerReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
             }
@@ -121,13 +121,13 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "InternalEvaluations" ? "active" : "")" href="/CustomerPortal/InternalEvaluations">
                                     <i class="bi bi-clipboard-check"></i>
-                                    @Html.T("CustomerPortal.Menu.InternalEvaluations", "Ic Dinlemeler")
+                                    @Html.T("CustomerPortal.Menu.InternalEvaluations", "İç Değerlendirmeler")
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "ExternalEvaluations" ? "active" : "")" href="/CustomerPortal/ExternalEvaluations">
                                     <i class="bi bi-clipboard-data"></i>
-                                    @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dis Dinlemeler")
+                                    @Html.T("CustomerPortal.Menu.ExternalEvaluations", "Dış Değerlendirmeler")
                                 </a>
                             </li>
                             @if (User.IsInRole("CustomerManager") || User.IsInRole("Admin"))
@@ -165,13 +165,13 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "InternalReports" ? "active" : "")" href="/CustomerPortal/InternalReports">
                                     <i class="bi bi-house-door text-success"></i>
-                                    @Html.T("CustomerPortal.Menu.InternalReports", "Ic Dinleme Raporlari")
+                                    @Html.T("CustomerPortal.Menu.InternalReports", "İç Değerlendirme Raporları")
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "ExternalReports" ? "active" : "")" href="/CustomerPortal/ExternalReports">
                                     <i class="bi bi-building text-primary"></i>
-                                    @Html.T("CustomerPortal.Menu.ExternalReports", "Dis Dinleme Raporlari")
+                                    @Html.T("CustomerPortal.Menu.ExternalReports", "Dış Değerlendirme Raporları")
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -190,6 +190,12 @@
                                 <a class="nav-link @(currentAction == "PersonnelReportCard" ? "active" : "")" href="/CustomerPortal/PersonnelReportCard">
                                     <i class="bi bi-person-badge text-primary"></i>
                                     @Html.T("CustomerPortal.Menu.PersonnelReportCard", "Temsilci Karnesi")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "DealerReportCard" ? "active" : "")" href="/CustomerPortal/DealerReportCard">
+                                    <i class="bi bi-shop text-primary"></i>
+                                    @Html.T("CustomerPortal.Menu.DealerReportCard", "Şube Karnesi")
                                 </a>
                             </li>
                             <li class="nav-item">

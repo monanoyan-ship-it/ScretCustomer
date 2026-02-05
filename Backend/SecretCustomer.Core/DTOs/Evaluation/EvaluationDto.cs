@@ -59,6 +59,11 @@ public class EvaluationDto
     public string? EvaluatedPersonnelName { get; set; }
 
     /// <summary>
+    /// Bayi adı (Dinlenen yoksa gösterilecek)
+    /// </summary>
+    public string? DealerName { get; set; }
+
+    /// <summary>
     /// Müşteri firma adı
     /// </summary>
     public string? CustomerName { get; set; }

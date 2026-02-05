@@ -26,6 +26,14 @@ public class ReportsController : Controller
     }
 
     /// <summary>
+    /// Şube Karnesi - Dealer Report Card
+    /// </summary>
+    public IActionResult DealerReportCard()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Öneriler Raporu - Suggestions Report
     /// </summary>
     public IActionResult Suggestions()

@@ -365,7 +365,7 @@
                                             <i class="bi bi-card-fill"></i> @Html.T("Report.RedCard", "Kirmizi Kart")
                                         </span>
                                     </td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td class="text-center">
                                         <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetails" title="@Html.T("Report.ViewEvaluation", "Degerlendirmeyi Gor")">
                                             <i class="bi bi-eye"></i>
@@ -429,7 +429,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.Personnel", "Personel")</small>
-                                                <strong data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || '-'"></strong>
+                                                <strong data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || dealerName || '-'"></strong>
                                             </div>
                                             <div class="col-md-3">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.Organization", "Organizasyon")</small>

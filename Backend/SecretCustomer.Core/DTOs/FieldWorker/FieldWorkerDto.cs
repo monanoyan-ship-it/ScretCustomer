@@ -67,9 +67,20 @@ public class VisitSummaryDto
     public string ProjectName { get; set; } = string.Empty;
     public decimal? ScorePercentage { get; set; }
     public int StatusId { get; set; }
-    public string StatusName => EvaluationStatuses.GetById(StatusId)?.NameResourceKey ?? "Bilinmiyor";
+    public string StatusName => GetStatusDisplayName(StatusId);
+
+    private static string GetStatusDisplayName(int statusId) => statusId switch
+    {
+        4 => "Taslak",      // Draft
+        3 => "Tamamlandı",  // Completed
+        2 => "Devam Ediyor", // InProgress
+        1 => "Beklemede",   // Pending
+        5 => "İptal",       // Cancelled
+        _ => "Bilinmiyor"
+    };
     public DateTime CreatedAt { get; set; }
     public DateTime? ControlDate { get; set; }
+    public string? PeriodName { get; set; }
 }
 
 /// <summary>

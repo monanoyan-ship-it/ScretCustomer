@@ -102,8 +102,11 @@ function FieldWorkerVisitsViewModel() {
     };
 
     self.statusLabels = {
-        '1': 'Taslak',
-        '2': 'Tamamlandı'
+        '1': 'Beklemede',
+        '2': 'Devam Ediyor',
+        '3': 'Tamamlandı',
+        '4': 'Taslak',
+        '5': 'İptal'
     };
 
     // Can add filter check
@@ -300,10 +303,11 @@ function FieldWorkerVisitsViewModel() {
     // ========================
     self.getStatusBadgeClass = function(statusId) {
         var classes = {
-            1: 'bg-warning text-dark',
-            2: 'bg-success',
-            3: 'bg-info',
-            4: 'bg-danger'
+            1: 'bg-secondary',      // Pending
+            2: 'bg-primary',        // InProgress
+            3: 'bg-success',        // Completed
+            4: 'bg-warning text-dark', // Draft
+            5: 'bg-danger'          // Cancelled
         };
         return classes[statusId] || 'bg-secondary';
     };
@@ -496,29 +500,37 @@ function FieldWorkerVisitsViewModel() {
     // DETAIL MODAL
     // ========================
     self.isDetailModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
     self.selectedVisit = ko.observable(null);
-    self.visitEvaluation = ko.observable(null);
+    self.detailsData = ko.observable(null);
 
     self.showVisitDetail = function(visit) {
         self.selectedVisit(visit);
-        self.visitEvaluation(null);
+        self.detailsData(null);
+        self.isDetailsLoading(true);
         self.isDetailModalOpen(true);
 
         if (visit.evaluationId) {
             ApiService.get('/evaluations/' + visit.evaluationId)
-                .then(function(evaluation) {
-                    self.visitEvaluation(evaluation);
+                .then(function(data) {
+                    self.detailsData(data);
                 })
                 .catch(function(error) {
                     console.error('Error loading evaluation:', error);
+                    toastr.error(T('Evaluation.DetailsLoadError', 'Değerlendirme detayları yüklenirken bir hata oluştu.'));
+                })
+                .finally(function() {
+                    self.isDetailsLoading(false);
                 });
+        } else {
+            self.isDetailsLoading(false);
         }
     };
 
     self.closeDetailModal = function() {
         self.isDetailModalOpen(false);
         self.selectedVisit(null);
-        self.visitEvaluation(null);
+        self.detailsData(null);
     };
 
     self.editVisit = function(visit) {
@@ -533,6 +545,26 @@ function FieldWorkerVisitsViewModel() {
         }
     };
 
+    // Taslak ziyareti sil
+    self.deleteVisit = function(visit) {
+        if (!visit.evaluationId) return;
+
+        if (!confirm(T('FieldWorker.ConfirmDeleteVisit', 'Bu taslak ziyareti silmek istediğinizden emin misiniz?'))) {
+            return;
+        }
+
+        ApiService.delete('/evaluations/' + visit.evaluationId)
+            .then(function(response) {
+                toastr.success(T('FieldWorker.VisitDeleted', 'Taslak ziyaret başarıyla silindi.'));
+                self.loadVisits();
+                self.loadAssignments(); // Tamamlanan sayısı güncellensin
+            })
+            .catch(function(error) {
+                console.error('Error deleting visit:', error);
+                toastr.error(error.message || T('FieldWorker.DeleteVisitError', 'Ziyaret silinirken hata oluştu.'));
+            });
+    };
+
     self.continueEvaluation = function() {
         var visit = self.selectedVisit();
         if (visit && visit.evaluationId) {
@@ -545,6 +577,61 @@ function FieldWorkerVisitsViewModel() {
                 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
             self.closeDetailModal();
         }
+    };
+
+    // ========================
+    // REVERT REQUEST (Taslağa Al Talebi)
+    // ========================
+    self.isRevertRequestModalOpen = ko.observable(false);
+    self.revertRequestReason = ko.observable('');
+    self.isSubmittingRevertRequest = ko.observable(false);
+    self.revertRequestEvaluationId = ko.observable(null);
+
+    self.openRevertRequestModal = function() {
+        if (self.detailsData()) {
+            self.revertRequestEvaluationId(self.detailsData().id);
+            self.revertRequestReason('');
+            self.isRevertRequestModalOpen(true);
+        }
+    };
+
+    self.closeRevertRequestModal = function() {
+        self.isRevertRequestModalOpen(false);
+        self.revertRequestReason('');
+        self.revertRequestEvaluationId(null);
+    };
+
+    self.submitRevertRequest = function() {
+        var evaluationId = self.revertRequestEvaluationId();
+        if (!evaluationId) return;
+
+        self.isSubmittingRevertRequest(true);
+
+        fetch('/api/evaluations/' + evaluationId + '/request-revert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason: self.revertRequestReason() || '' })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return res.json().then(function(d) {
+                    throw new Error(d.message || 'Talep gönderilemedi');
+                });
+            }
+            return res.json();
+        })
+        .then(function(result) {
+            toastr.success(T('Evaluation.RevertRequestSent', 'Taslağa alma talebi gönderildi. Admin onayı bekleniyor.'));
+            self.closeRevertRequestModal();
+            self.closeDetailModal();
+        })
+        .catch(function(err) {
+            toastr.error(err.message || T('Evaluation.RevertRequestFailed', 'Talep gönderilemedi.'));
+        })
+        .finally(function() {
+            self.isSubmittingRevertRequest(false);
+        });
     };
 
     // ========================
@@ -586,6 +673,9 @@ var TRANSLATION_KEYS = [
     'FieldWorker.VisitSavedAsDraft',
     'FieldWorker.VisitSaved',
     'FieldWorker.SaveVisitError',
+    'Evaluation.DetailsLoadError',
+    'Evaluation.RevertRequestSent',
+    'Evaluation.RevertRequestFailed',
     'Common.Confirm',
     'Common.Cancel'
 ];

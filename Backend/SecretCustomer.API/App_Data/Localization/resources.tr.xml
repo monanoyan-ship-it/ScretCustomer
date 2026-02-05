@@ -4157,10 +4157,10 @@
     <Value>Süpervizörler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.InternalEvaluations">
-    <Value>İç Dinlemeler</Value>
+    <Value>İç Değerlendirmeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.ExternalEvaluations">
-    <Value>Dış Dinlemeler</Value>
+    <Value>Dış Değerlendirmeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.Title">
     <Value>Organizasyonlar</Value>
@@ -8870,10 +8870,10 @@
     <Value>Enneagram Sonuçları</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.ExternalReports">
-    <Value>Dış Raporlar</Value>
+    <Value>Dış Değerlendirme Raporları</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.InternalReports">
-    <Value>İç Raporlar</Value>
+    <Value>İç Değerlendirme Raporları</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Management">
     <Value>Yönetim</Value>

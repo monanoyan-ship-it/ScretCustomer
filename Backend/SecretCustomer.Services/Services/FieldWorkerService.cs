@@ -47,6 +47,7 @@ public class FieldWorkerService : IFieldWorkerService
         // Son 10 ziyaret
         var recentVisits = await _context.Evaluations
             .Include(e => e.CustomerDealer)
+            .Include(e => e.AssignmentPeriod)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -65,7 +66,12 @@ public class FieldWorkerService : IFieldWorkerService
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
-                ControlDate = e.ControlDate
+                ControlDate = e.ControlDate,
+                PeriodName = e.AssignmentPeriod != null
+                    ? e.AssignmentPeriod.Name
+                    : (e.ControlDate != null
+                        ? e.ControlDate.Value.ToString("yyyyMM")
+                        : e.CreatedAt.ToString("yyyyMM"))
             })
             .ToListAsync();
 
@@ -313,6 +319,7 @@ public class FieldWorkerService : IFieldWorkerService
 
         var query = _context.Evaluations
             .Include(e => e.CustomerDealer)
+            .Include(e => e.AssignmentPeriod)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -380,7 +387,12 @@ public class FieldWorkerService : IFieldWorkerService
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
-                ControlDate = e.ControlDate
+                ControlDate = e.ControlDate,
+                PeriodName = e.AssignmentPeriod != null
+                    ? e.AssignmentPeriod.Name
+                    : (e.ControlDate != null
+                        ? e.ControlDate.Value.ToString("yyyyMM")
+                        : e.CreatedAt.ToString("yyyyMM"))
             })
             .ToListAsync();
 
@@ -401,6 +413,7 @@ public class FieldWorkerService : IFieldWorkerService
 
         return await _context.Evaluations
             .Include(e => e.CustomerDealer)
+            .Include(e => e.AssignmentPeriod)
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
                     .ThenInclude(p => p.Customer)
@@ -417,7 +430,12 @@ public class FieldWorkerService : IFieldWorkerService
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
-                ControlDate = e.ControlDate
+                ControlDate = e.ControlDate,
+                PeriodName = e.AssignmentPeriod != null
+                    ? e.AssignmentPeriod.Name
+                    : (e.ControlDate != null
+                        ? e.ControlDate.Value.ToString("yyyyMM")
+                        : e.CreatedAt.ToString("yyyyMM"))
             })
             .FirstOrDefaultAsync();
     }

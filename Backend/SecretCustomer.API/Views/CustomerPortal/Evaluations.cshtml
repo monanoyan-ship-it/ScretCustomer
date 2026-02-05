@@ -280,7 +280,7 @@
                             </td>
                             <td data-bind="text: duration || '-'"></td>
                             <td>
-                                <span data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || '-'"></span>
+                                <span data-bind="text: evaluatedPersonnelName || evaluatedUnknownPersonnel || dealerName || '-'"></span>
                             </td>
                             <td>
                                 <span data-bind="text: projectName"></span>
@@ -500,7 +500,7 @@
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
-                                                <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                                <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
                                             <tr>
@@ -773,7 +773,7 @@
                                         <div class="row g-3 mb-4">
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.Personnel", "Personel")</small>
-                                                <span class="fw-bold" data-bind="text: evaluatedPersonnelName"></span>
+                                                <span class="fw-bold" data-bind="text: evaluatedPersonnelName || dealerName || '-'"></span>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>

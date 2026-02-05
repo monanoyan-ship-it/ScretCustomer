@@ -80,6 +80,15 @@ public class CustomerPortalController : Controller
     }
 
     /// <summary>
+    /// Şube Karnesi - Dealer Report Card
+    /// </summary>
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult DealerReportCard()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Dönemlere Göre Personel Başarı Tablosu
     /// </summary>
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]

@@ -513,6 +513,12 @@
                                         <td><span class="text-warning" data-bind="text: evaluatedUnknownPersonnel"></span> <small class="text-muted">(listede yok)</small></td>
                                     </tr>
                                     <!-- /ko -->
+                                    <!-- ko if: !evaluatedPersonnelName && !evaluatedUnknownPersonnel && dealerName -->
+                                    <tr>
+                                        <td class="text-muted">@Html.T("Evaluation.Dealer", "Bayi"):</td>
+                                        <td data-bind="text: dealerName"></td>
+                                    </tr>
+                                    <!-- /ko -->
                                     <!-- ko if: evaluatorName -->
                                     <tr>
                                         <td class="text-muted">@Html.T("Evaluation.Evaluator", "Degerlendiren"):</td>

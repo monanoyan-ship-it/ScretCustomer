@@ -119,6 +119,7 @@ public class EvaluationService : IEvaluationService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel,
                 EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
                     ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
                 YellowCardCount = e.YellowCardCount,
@@ -173,6 +174,7 @@ public class EvaluationService : IEvaluationService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel,
                 EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
                     ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
                 YellowCardCount = e.YellowCardCount,
@@ -228,6 +230,7 @@ public class EvaluationService : IEvaluationService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel,
                 EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
                     ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
                 YellowCardCount = e.YellowCardCount,
@@ -281,6 +284,7 @@ public class EvaluationService : IEvaluationService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel,
                 EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
                     ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
                 YellowCardCount = e.YellowCardCount,
@@ -332,6 +336,7 @@ public class EvaluationService : IEvaluationService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel,
                 EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
                     ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
                 YellowCardCount = e.YellowCardCount,
@@ -1327,6 +1332,7 @@ public class EvaluationService : IEvaluationService
         string? customerName = null;
         string? organizationName = null;
         string? supervisorName = null;
+        string? dealerName = null;
 
         // CustomerPersonnel tablosundan bilgileri çek (EvaluatedCustomerPersonnelId kullanılıyor)
         if (evaluation.EvaluatedCustomerPersonnelId.HasValue)
@@ -1356,6 +1362,15 @@ public class EvaluationService : IEvaluationService
                         .Distinct())
                     : null;
             }
+        }
+
+        // Load dealer name if exists
+        if (evaluation.CustomerDealerId.HasValue)
+        {
+            dealerName = await _context.CustomerDealers
+                .Where(d => d.Id == evaluation.CustomerDealerId.Value)
+                .Select(d => d.Name)
+                .FirstOrDefaultAsync();
         }
 
         // Load period name if exists
@@ -1397,6 +1412,7 @@ public class EvaluationService : IEvaluationService
             EvaluatedPersonnelId = evaluation.EvaluatedCustomerPersonnelId,
             EvaluatedPersonnelName = evaluatedPersonnelName,
             EvaluatedUnknownPersonnel = evaluation.EvaluatedUnknownPersonnel,
+            DealerName = dealerName,
             CustomerName = customerName,
             OrganizationName = organizationName,
             SupervisorName = supervisorName,

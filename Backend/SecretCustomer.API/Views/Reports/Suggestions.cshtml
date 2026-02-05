@@ -280,7 +280,7 @@
                                         <!-- /ko -->
                                     </td>
                                     <td data-bind="text: evaluatorName || '-'"></td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <a class="btn btn-sm btn-outline-primary" data-bind="attr: { href: '/Evaluations?evaluationId=' + evaluationId }" title="@Html.T("Report.GoToEvaluation", "Degerlendirmeye Git")">
                                             <i class="bi bi-eye"></i>
@@ -355,7 +355,7 @@
                                         <!-- /ko -->
                                     </td>
                                     <td data-bind="text: projectName || '-'"></td>
-                                    <td data-bind="text: evaluatedPersonnelName || '-'"></td>
+                                    <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <!-- ko if: scorePercentage != null -->
                                         <span data-bind="text: scorePercentage.toFixed(1) + '%', css: { 'text-success': scorePercentage >= 70, 'text-warning': scorePercentage >= 40 && scorePercentage < 70, 'text-danger': scorePercentage < 40 }"></span>

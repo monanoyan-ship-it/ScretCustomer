@@ -258,6 +258,63 @@ public class ReportsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Ziyaret Denetleme Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/visit-audit")]
+    public async Task<IActionResult> ExportVisitAuditReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportVisitAuditReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting visit audit report to Excel");
+            return StatusCode(500, CreateErrorResponse("Ziyaret denetleme raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Müşteri Ziyaret Değerlendirme Raporu - Excel export
+    /// </summary>
+    [HttpPost("export/visit-customer-evaluation")]
+    public async Task<IActionResult> ExportVisitCustomerEvaluationReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportVisitCustomerEvaluationReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting visit customer evaluation report to Excel");
+            return StatusCode(500, CreateErrorResponse("Müşteri ziyaret değerlendirme raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Ziyaret Değerlendirme Detayı Excel export
+    /// </summary>
+    [HttpGet("evaluations/{evaluationId}/visit-export")]
+    public async Task<IActionResult> ExportVisitEvaluationDetail(int evaluationId)
+    {
+        try
+        {
+            var result = await _reportService.ExportVisitEvaluationDetailToExcelAsync(evaluationId);
+            if (result == null)
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting visit evaluation detail {EvaluationId}", evaluationId);
+            return StatusCode(500, CreateErrorResponse("Ziyaret değerlendirme detayı export edilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Soru Grubu Ortalama Raporu - Excel export
     /// </summary>
     [HttpPost("export/question-group-average")]
@@ -1356,6 +1413,156 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error loading Enneagram distribution for project {ProjectId}", projectId);
             return StatusCode(500, CreateErrorResponse("Enneagram dağılımı yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    // ===== ŞUBE KARNESİ =====
+
+    [HttpGet("dealer-report-card/customers")]
+    public async Task<IActionResult> GetDealerReportCardCustomers()
+    {
+        try
+        {
+            var customers = await _reportService.GetCustomersWithDealersAsync();
+            return Ok(customers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading customers with dealers");
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
+        }
+    }
+
+    [HttpGet("dealer-list")]
+    public async Task<IActionResult> GetDealerList([FromQuery] List<int>? customerIds = null)
+    {
+        try
+        {
+            var customerId = customerIds?.FirstOrDefault();
+            var dealers = await _reportService.GetDealerListAsync(customerId);
+            return Ok(dealers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading dealer list for report card");
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
+        }
+    }
+
+    [HttpGet("dealer-projects/{dealerId:int}")]
+    public async Task<IActionResult> GetDealerProjects(int dealerId)
+    {
+        try
+        {
+            var projects = await _reportService.GetDealerProjectsAsync(dealerId);
+            return Ok(projects);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading projects for dealer {DealerId}", dealerId);
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
+        }
+    }
+
+    [HttpGet("dealer-report-card/{dealerId:int}")]
+    public async Task<IActionResult> GetDealerReportCard(
+        int dealerId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.GetDealerReportCardAsync(filter);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Şube bulunamadı."));
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading dealer report card for {DealerId}", dealerId);
+            return StatusCode(500, CreateErrorResponse("Şube karnesi yüklenirken hata oluştu.", ex));
+        }
+    }
+
+    [HttpGet("dealer-report-card/{dealerId:int}/export")]
+    public async Task<IActionResult> ExportDealerReportCard(
+        int dealerId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.ExportDealerReportCardToExcelAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting dealer report card for {DealerId}", dealerId);
+            return StatusCode(500, CreateErrorResponse("Şube karnesi export edilirken hata oluştu.", ex));
+        }
+    }
+
+    [HttpGet("dealer-report-card/{dealerId:int}/export-word")]
+    public async Task<IActionResult> ExportDealerReportCardToWord(
+        int dealerId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var result = await _reportService.ExportDealerReportCardToWordAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting dealer report card to Word for {DealerId}", dealerId);
+            return StatusCode(500, CreateErrorResponse("Şube karnesi Word export edilirken hata oluştu.", ex));
         }
     }
 }

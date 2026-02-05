@@ -2377,6 +2377,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.CustomerDealer)
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
                        e.EvaluatorCustomerPersonnelId != null); // Taslaklar dahil
 
@@ -2476,6 +2477,7 @@ public class CustomerPortalApiController : ControllerBase
                 projectCode = e.Assignment.Project.Code,
                 evaluatorName = e.EvaluatorCustomerPersonnel != null ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName : null,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
+                dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
                 organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
                 e.TotalScore,
                 e.ScorePercentage,
@@ -2623,6 +2625,7 @@ public class CustomerPortalApiController : ControllerBase
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.CustomerDealer)
             .Where(e => e.Assignment.Project.CustomerId == customerId &&
                        e.EvaluatorId != null &&
                        e.StatusId == EvaluationStatuses.Ids.Completed);
@@ -2645,16 +2648,16 @@ public class CustomerPortalApiController : ControllerBase
         }
         // Manager ve Admin: Tüm kayıtları görür
 
-        // Date filters
+        // Date filters (ControlDate ziyaret tarihi, CallDate çağrı tarihi)
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+            query = query.Where(e => (e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+            query = query.Where(e => (e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
         }
 
         // Project filter
@@ -2712,7 +2715,7 @@ public class CustomerPortalApiController : ControllerBase
         var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
 
         var evaluations = await query
-            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
             .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
             .Take(pageSize ?? 20)
             .Select(e => new
@@ -2720,7 +2723,9 @@ public class CustomerPortalApiController : ControllerBase
                 e.Id,
                 evaluationDate = e.CompletedAt ?? e.CreatedAt,
                 projectName = e.Assignment.Project.Name,
+                projectTypeId = e.Assignment.Project.ProjectTypeId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
+                dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
                 organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
                 e.TotalScore,
                 e.ScorePercentage,
@@ -2729,7 +2734,9 @@ public class CustomerPortalApiController : ControllerBase
                 e.CallId,
                 e.CallDate,
                 e.CallTime,
-                e.Duration
+                e.Duration,
+                e.ControlDate,
+                e.ControlTime
             })
             .ToListAsync();
 
@@ -4108,6 +4115,176 @@ public class CustomerPortalApiController : ControllerBase
 
             sheet.Columns().AdjustToContents();
             ExcelHelper.ApplyLongTextColumnStyles(sheet);
+
+            // ===== GENEL RAPOR SHEET =====
+            // Düz veri: Proje, Temsilci, Departman, Kontrol Sorusu (GroupName), Periyot, Periyot (Ay), Ortalama Puan, Hata Sayısı
+            var genelRaporQuery = _context.Answers
+                .Include(a => a.Question)
+                .Include(a => a.Evaluation)
+                    .ThenInclude(e => e.Assignment)
+                        .ThenInclude(asn => asn.Project)
+                .Include(a => a.Evaluation)
+                    .ThenInclude(e => e.AssignmentPeriod)
+                .Include(a => a.Evaluation)
+                    .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+                        .ThenInclude(cp => cp!.OrganizationAssignments)
+                            .ThenInclude(oa => oa.CustomerOrganization)
+                .Where(a => a.Evaluation.Assignment != null &&
+                           a.Evaluation.Assignment.Project != null &&
+                           a.Evaluation.Assignment.Project.CustomerId == customerId &&
+                           a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
+                           a.Question.GroupName != null &&
+                           a.Question.WeightPoints > 0);
+
+            if (startDate.HasValue)
+            {
+                var startUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+                genelRaporQuery = genelRaporQuery.Where(a =>
+                    (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.EndDate >= startUtc) ||
+                    (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) >= startUtc));
+            }
+            if (endDate.HasValue)
+            {
+                var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                genelRaporQuery = genelRaporQuery.Where(a =>
+                    (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.StartDate <= endUtc) ||
+                    (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) <= endUtc));
+            }
+
+            var genelRaporAnswers = await genelRaporQuery
+                .Select(a => new
+                {
+                    ProjectName = a.Evaluation.Assignment.Project.Name,
+                    PersonnelId = a.Evaluation.EvaluatedCustomerPersonnelId,
+                    PersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                        ? a.Evaluation.EvaluatedCustomerPersonnel.FirstName + " " + a.Evaluation.EvaluatedCustomerPersonnel.LastName
+                        : "-",
+                    OrgName = a.Evaluation.EvaluatedCustomerPersonnel != null
+                        ? a.Evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
+                            .Select(oa => oa.CustomerOrganization.Name)
+                            .FirstOrDefault() ?? "-"
+                        : "-",
+                    GroupName = a.Question.GroupName!,
+                    EarnedPoints = a.EarnedPoints ?? 0,
+                    WeightPoints = a.Question.WeightPoints,
+                    PeriodName = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.Name : null,
+                    PeriodStartDate = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.StartDate : (DateTime?)null,
+                    EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt
+                })
+                .ToListAsync();
+
+            // Genel Rapor sheet'i her zaman ekle - PIVOT TABLO FORMATI
+            var genelSheet = workbook.Worksheets.Add("Genel Rapor");
+
+            if (genelRaporAnswers.Any())
+            {
+                // Önce GroupName + Personnel bazında grupla ve hesapla
+                var pivotData = genelRaporAnswers
+                    .GroupBy(a => new { a.GroupName, a.PersonnelId, a.PersonnelName })
+                    .Select(g =>
+                    {
+                        var answers = g.ToList();
+                        var sumWeight = answers.Sum(a => a.WeightPoints);
+                        var sumEarned = answers.Sum(a => a.EarnedPoints);
+                        return new
+                        {
+                            g.Key.GroupName,
+                            g.Key.PersonnelId,
+                            g.Key.PersonnelName,
+                            AvgScore = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
+                            ErrorCount = answers.Count(a => a.EarnedPoints < a.WeightPoints)
+                        };
+                    })
+                    .ToList();
+
+                // Unique değerleri al
+                var groupNames = pivotData.Select(p => p.GroupName).Distinct().OrderBy(g => g).ToList();
+                var personnelList = pivotData
+                    .Select(p => new { p.PersonnelId, p.PersonnelName })
+                    .Distinct()
+                    .OrderBy(p => p.PersonnelName)
+                    .ToList();
+
+                // Row 1: Personel isimleri (her biri 2 sütun merge) + Toplam sütunları
+                genelSheet.Cell(1, 1).Value = "Kontrol Sorusu";
+                genelSheet.Cell(1, 1).Style.Font.Bold = true;
+                int col = 2;
+                foreach (var person in personnelList)
+                {
+                    genelSheet.Cell(1, col).Value = person.PersonnelName;
+                    genelSheet.Cell(1, col).Style.Font.Bold = true;
+                    genelSheet.Range(1, col, 1, col + 1).Merge();
+                    genelSheet.Cell(1, col).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                    col += 2;
+                }
+                // Toplam sütun başlıkları
+                int totalColStart = col;
+                genelSheet.Cell(1, col).Value = "Ortalama Puan Toplamı";
+                genelSheet.Cell(1, col).Style.Font.Bold = true;
+                genelSheet.Cell(1, col + 1).Value = "Hata Sayısı Toplamı";
+                genelSheet.Cell(1, col + 1).Style.Font.Bold = true;
+
+                // Row 2: Alt başlıklar (Ortalama Puan, Hata Sayısı)
+                genelSheet.Cell(2, 1).Value = "";
+                col = 2;
+                foreach (var _ in personnelList)
+                {
+                    genelSheet.Cell(2, col).Value = "Ortalama Puan";
+                    genelSheet.Cell(2, col).Style.Font.Bold = true;
+                    genelSheet.Cell(2, col + 1).Value = "Hata Sayısı";
+                    genelSheet.Cell(2, col + 1).Style.Font.Bold = true;
+                    col += 2;
+                }
+                genelSheet.Cell(2, totalColStart).Value = "";
+                genelSheet.Cell(2, totalColStart + 1).Value = "";
+
+                // Data rows: Her GroupName için bir satır
+                int row = 3;
+                foreach (var groupName in groupNames)
+                {
+                    genelSheet.Cell(row, 1).Value = groupName;
+                    col = 2;
+                    var rowScores = new List<decimal>();
+                    var rowErrors = 0;
+                    foreach (var person in personnelList)
+                    {
+                        var data = pivotData.FirstOrDefault(p => p.GroupName == groupName && p.PersonnelId == person.PersonnelId);
+                        if (data != null)
+                        {
+                            genelSheet.Cell(row, col).Value = (double)data.AvgScore;
+                            genelSheet.Cell(row, col + 1).Value = data.ErrorCount;
+                            rowScores.Add(data.AvgScore);
+                            rowErrors += data.ErrorCount;
+                        }
+                        else
+                        {
+                            genelSheet.Cell(row, col).Value = "-";
+                            genelSheet.Cell(row, col + 1).Value = "-";
+                        }
+                        col += 2;
+                    }
+                    // Satır toplamları
+                    if (rowScores.Any())
+                    {
+                        genelSheet.Cell(row, totalColStart).Value = (double)Math.Round(rowScores.Average(), 2);
+                        genelSheet.Cell(row, totalColStart).Style.Font.Bold = true;
+                    }
+                    else
+                    {
+                        genelSheet.Cell(row, totalColStart).Value = "-";
+                    }
+                    genelSheet.Cell(row, totalColStart + 1).Value = rowErrors;
+                    genelSheet.Cell(row, totalColStart + 1).Style.Font.Bold = true;
+                    row++;
+                }
+            }
+            else
+            {
+                genelSheet.Cell(1, 1).Value = "Veri bulunamadı";
+            }
+
+            genelSheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(genelSheet);
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
@@ -5491,6 +5668,139 @@ public class CustomerPortalApiController : ControllerBase
         {
             _logger.LogError(ex, "[CustomerPortal] Error saving score thresholds");
             return StatusCode(500, new { message = "Puan eşikleri kaydedilirken hata oluştu." });
+        }
+    }
+
+    // ===== ŞUBE KARNESİ =====
+
+    [HttpGet("reports/dealer-list")]
+    public async Task<IActionResult> GetDealerList()
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var dealers = await _reportService.GetDealerListAsync(customerId.Value);
+            return Ok(dealers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading dealer list for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Şube listesi yüklenirken hata oluştu." });
+        }
+    }
+
+    [HttpGet("reports/dealer-report-card/{dealerId}")]
+    public async Task<IActionResult> GetDealerReportCard(
+        int dealerId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Güvenlik kontrolü: Dealer'ın bu müşteriye ait olup olmadığını doğrula
+            var dealer = await _context.CustomerDealers.FindAsync(dealerId);
+            if (dealer == null || dealer.CustomerId != customerId.Value)
+                return NotFound(new { message = "Şube bulunamadı." });
+
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.GetDealerReportCardAsync(filter);
+
+            if (result == null)
+                return NotFound(new { message = "Şube bulunamadı." });
+
+            // EvaluatorName alanlarını temizle (müşteri görmemeli)
+            foreach (var evaluation in result.RecentEvaluations)
+            {
+                evaluation.EvaluatorName = null;
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error loading dealer report card for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            return StatusCode(500, new { message = "Şube karnesi yüklenirken hata oluştu.", error = ex.Message, stackTrace = ex.StackTrace });
+        }
+    }
+
+    [HttpGet("reports/dealer-report-card/{dealerId}/export")]
+    public async Task<IActionResult> ExportDealerReportCard(
+        int dealerId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var dealer = await _context.CustomerDealers.FindAsync(dealerId);
+            if (dealer == null || dealer.CustomerId != customerId.Value)
+                return NotFound(new { message = "Şube bulunamadı." });
+
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.ExportDealerReportCardToExcelAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting dealer report card for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            return StatusCode(500, new { message = "Şube karnesi export edilirken hata oluştu." });
+        }
+    }
+
+    [HttpGet("reports/dealer-report-card/{dealerId}/export-word")]
+    public async Task<IActionResult> ExportDealerReportCardToWord(
+        int dealerId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var dealer = await _context.CustomerDealers
+                .FirstOrDefaultAsync(d => d.Id == dealerId && d.CustomerId == customerId);
+
+            if (dealer == null)
+                return NotFound(new { message = "Şube bulunamadı." });
+
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.ExportDealerReportCardToWordAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting dealer report card to Word for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            return StatusCode(500, new { message = "Şube karnesi Word export edilirken hata oluştu." });
         }
     }
 

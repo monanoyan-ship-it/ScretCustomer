@@ -7,3 +7,42 @@
 .actions-col {
     width: 100px;
 }
+
+/* Visit Detail Modal - Info card label width */
+.visit-detail-label {
+    width: 40%;
+}
+
+/* Visit Detail Modal - Answers table column widths */
+.visit-detail-answers-table {
+    table-layout: fixed;
+}
+
+.visit-detail-col-group {
+    width: 18%;
+}
+
+.visit-detail-col-question {
+    width: 25%;
+}
+
+.visit-detail-col-answer {
+    width: 9%;
+}
+
+.visit-detail-col-weight {
+    width: 9%;
+}
+
+.visit-detail-col-earned {
+    width: 9%;
+}
+
+.visit-detail-col-notes {
+    width: 30%;
+}
+
+/* Visit Detail Modal - Empty state icon */
+.visit-detail-empty-icon {
+    font-size: 3rem;
+}

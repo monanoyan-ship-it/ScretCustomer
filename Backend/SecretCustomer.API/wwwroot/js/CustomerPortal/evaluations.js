@@ -1597,7 +1597,7 @@ function EvaluationsViewModel() {
         }
 
         showDeleteConfirm(T('Evaluation.DraftEvaluation', 'Taslak Değerlendirme'), function() {
-            fetch('/api/customerportal/evaluations/' + evaluation.id, {
+            fetch('/api/customer/portal/evaluations/' + evaluation.id, {
                 method: 'DELETE',
                 credentials: 'include'
             })
